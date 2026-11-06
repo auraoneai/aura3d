@@ -1,0 +1,202 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JtfnwtCxHL15gF51VjE4of",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018UrPfFeuzHajHKxF3Fnqno",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01AVR53SwH51tYwqCWhMAywP",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JtfnwtCxHL15gF51VjE4of",
+    "content": "1\t# Task 8: stylized low-poly island with water and a day/night sky\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A stylized low-poly island (flat-shaded faceted terrain, a few trees or rocks on it) built procedurally from code. No model files.\n7\t2. A water surface around the island that is clearly visible and animated.\n8\t3. A sky that changes with time: a day/night cycle that moves the sun and shifts the sky colours (a full cycle in about 20 seconds is fine).\n9\t4. Lighting follows the sun, and the scene is never black.\n10\t5. The camera sits above the water and frames the whole island; it may orbit slowly.\n11\t\n12\tThe rendering contract in the next section applies.\n13\t\n14\t## Rendering contract (all tasks)\n15\t\n16\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n17\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n18\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n19\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n20\t- When you are done, call `finish`.\n21\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018UrPfFeuzHajHKxF3Fnqno",
+    "content": "1\t# Aura3D cheat sheet: if your task needs X, copy block X\n2\t\n3\t`@aura3d/engine` is installed; do not open `node_modules`. Start from the skeleton, paste the blocks you need at its marked lines, write the whole solution first, then `typecheck` once and `finish`. Only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`.\n4\t\n5\t## Rules\n6\t- `createAuraApp` owns renderer, resize and loop: write none. Per frame `app.onFrame((f) => ...)` (`f.dt` seconds); end with `await app.ready()`; set window flags after it (`declare global { interface Window { __FLAG__?: boolean } }`).\n7\t- Vectors `[x, y, z]`, colours CSS strings. Primitives are unit shapes scaled by `size` (`sphere` size = diameter, `plane` `[w, 1, d]` lies in XZ): `primitives.box|sphere|plane|cylinder|capsule|cone|torus`. Node chain: `.position(x, y, z)`, `.scale([x, y, z])`, `.rotate(x, y, z)`.\n8\t- Animate later: `.runtime({ id, mutable: true })` then `app.nodes.require(id).setPosition(x, y, z)` / `.setRotation(x, y, z)`; light `.setLight?.({ intensity, color })`; shader `.setUniform?.(name, v)`.\n9\t- Instance `colors` multiply the material colour: use base `#ffffff`. Dark frame: add `environments.neutral({ intensity: 0.5, background: false })` or a hemisphere light.\n10\t- Camera `camera.orbit({ ..., autoRotate: radPerSec })` orbits its target slowly; never `app.camera`.\n11\t\n12\t## Skeleton (forest scene: orbit camera, hemisphere + shadow sun, exponential fog, ground)\n13\t```ts\n14\timport { camera, createAuraApp, e"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01AVR53SwH51tYwqCWhMAywP",
+    "content": "1\t# Aura3D agent entry\n2\t\n3\tEverything needed for common scenes is in `llms.txt` (cheat sheet with complete working blocks). Deeper references only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`, `docs/agents/README.md`.\n4\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should check index.html to confirm the canvas element has the id \"app\", matching the selector used in createAuraApp.\n\n",
+    "signature": "CAQS6wQKEggTEAEYAjgBQgh0aGlua2luZxIMP/hK7qPcEtgODuEDGgwldy1TuILu9ukM2LsiMMHOB1fN7YfguqkgY4ueXB6izUukN8b+gR4fVmdtOHtK8g4PUhTIoR82sbW8drQKliqGBOsOvd6k8AVnREC7Ks4gYt1l1B/MVGoi0FJWbIZIULo3tZBrH1qlt4fc0ko58E4ELjZQ4GPOfEtenzfU0o+3LOWbGJP0ijnsdpmGzwveMouaolDKU7oqE7x24Z16DiqI4qvT8GiAKIIKdzPzuFNDKv4HNMH9BSvSM1b9Od932SudjSXmzZjCT42mR5xhS9o93ZWL+u27orGhO+1awSNWFh/xeo09jNfjKN9lXWjelE7sPXEMxT2V8W0Vdb6zuNcgr3sJ8BuK/mbTA5hmYDqg7XDQ02oIfmdcRFSV9vxmBobssASzz2CdgPw+S5dSTBomuYl1ZR/0+P4f6Y+WCHpT5/sOifcxIimQ+ZcyawYCDsnoA0h6ehiS1nALyb729jGSHv9ZT3DAkB1K4xi7k5KelKINxA0K63/zo28PBJa8nQGxRrzeEqZ9arGvYUiq7OWGMxGEDZaiK1EZIO7+wy1XgcTaw7SDXIGJ91etaB0DoRG0N5JcrWDgMqz5Gr70sLi90SZNsBFM9fyvTBxHB1n1cHz8oXYmTWIJwH7uzW8UiVBgm0BL0dycWO4eQKu0kNQl780UBMkKymfOq8xVEsIoG3qwXELDPjpu14m8co4mgd5uPAJAvDV45iEFEuWnnB10q9pbhok2NeAbaQe6Hobr5wDZp0JSzvZcmJWGh6oiiVs0Qstm3pNvGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014wkPvnnnc7qFHjKgUuYAN6",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01G7apcptZzD6LN5x9sTx9pv",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014wkPvnnnc7qFHjKgUuYAN6",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01G7apcptZzD6LN5x9sTx9pv",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm planning the scene structure: a custom GLSL water grid driven by time, flat-shaded island terrain, instanced trees, and a Preetham sky with day/night cycling where the sun's elevation and light intensity drop at night, syncing the water's brightness via a \"day\" uniform. I'm also setting up an auto-rotating orbit camera positioned at [0,28,55] targeting the origin.\n\nNow I'm sizing the terrain and water planes, tuning the island's radial height falloff so edges stay submerged near the waterline without visible seams, and adjusting the wave amplitude so the water doesn't cut too deeply through the shore.\n\nI'm skipping foam rendering for now and deciding to compute the sun direction in the water shader from elevation/azimuth uniforms, picking simple naming conventions that avoid clashing with existing prelude uniforms while keeping time-based wave animation intact.\n\nFor the sky, I want the scene to never go fully black at night, so I'm adding hemisphere lighting with a clamped minimum intensity and making sure the directional sun light's elevation is clamped to a reasonable minimum height so it doesn't end up shining upward from below the ground at night.\n\nFor night, I'll swap to a moon light positioned opposite the sun with a bluish color, fading its intensity in as the sun fades out near the horizon so the transition feels smooth rather than an abrupt switch.\n\nFor the hemisphere light, I'm setting a base intensity that rises with the day factor, registered as a mutable runtime light. Then I need to scatter trees and rocks across the terrain using seeded randomness tied to height, vary terrain colors between sand, grass, and rock per face, and finally flag a global ready marker once setup completes before running a type check.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01D1aztnfA55EM93sE4jts1U",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { camera, createAuraApp, environments, geometry, instances, lights, material, scene, sky, type AuraTransformSpec } from \"@aura3d/engine\";\n\ndeclare global { interface Window { __EVAL_READY__?: boolean } }\n\nconst DAY = 20;\nconst START_HOUR = 9;\nconst WATER_Y = 0.25;\n\n// ---------- sun helpers ----------\nconst sunAt = (h: number) => ({ elevationDeg: Math.sin(((h - 6) / 24) * Math.PI * 2) * 70, azimuthDeg: 90 + ((h - 6) / 12) * 180 });\nconst dirOf = (e: number, a: number, d = 60): [number, number, number] => {\n  const E = (e * Math.PI) / 180, A = (a * Math.PI) / 180;\n  return [Math.sin(A) * Math.cos(E) * d, Math.sin(E) * d, -Math.cos(A) * Math.cos(E) * d];\n};\n\n// ---------- seeded random ----------\nlet seed = 4242;\nconst rand = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);\n\n// ---------- terrain ----------\ntype V3 = [number, number, number];\nconst G = 48, S = 56;\nconst H = (x: number, z: number): number => {\n  const r2 = x * x + z * z;\n  const base = 7 * (1 - r2 / 520);\n  const bumps = Math.sin(x * 0.55) * Math.cos(z * 0.47) * 0.9 + Math.sin(x * 0.2 + z * 0.3) * 0.8;\n  return Math.max(-1.2, base + bumps * Math.max(0, Math.min(1, base / 3 + 0.3)));\n};\nconst P = (i: number, j: number): V3 => {\n  const x = (i / G - 0.5) * S, z = (j / G - 0.5) * S;\n  return [x, H(x, z), z];\n};\nconst pos: number[] = [], nor: number[] = [], col: number[] = [];\nconst face = (a: V3, b: V3, c: V3): void => {\n  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];\n  let n = [u[1]! * w[2]! - u[2]! * w[1]!, u[2]! * w[0]! - u[0]! * w[2]!, u[0]! * w[1]! - u[1]! * w[0]!];\n  const l = Math.hypot(...n) || 1, k = n[1]! < 0 ? -1 : 1;\n  n = n.map((q) => (q * k) / l);\n  const y = (a[1] + b[1] + c[1]) / 3;\n  const j = (rand() - 0.5) * 0.08;\n  const rgb = y < 0.1 ? [0.55, 0.5, 0.38] : y < 0.9 ? [0.85, 0.77, 0.5] : y < 4.6 ? [0.22 + j, 0.5 + j, 0.2 + j] : [0.52 + j, 0.48 + j, 0.44 + j];\n  for (const p of k > 0 ? [a, b, c] : [a, c, b]) { pos.push(...p); nor.push(...n); col.push(rgb[0]!, rgb[1]!, rgb[2]!, 1); }\n};\nfor (let j = 0; j < G; j += 1) for (let i = 0; i < G; i += 1) {\n  face(P(i, j), P(i, j + 1), P(i + 1, j));\n  face(P(i + 1, j), P(i, j + 1), P(i + 1, j + 1));\n}\n\n// ---------- water grid ----------\nconst N = 160, WS = 200;\nconst wpos = new Float32Array((N + 1) ** 2 * 3), wnor = new Float32Array(wpos.length), widx: number[] = [];\nfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n  const v = j * (N + 1) + i;\n  wpos.set([(i / N - 0.5) * WS, 0, (j / N - 0.5) * WS], v * 3);\n  wnor[v * 3 + 1] = 1;\n  if (i < N && j < N) widx.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n}\nconst water = material.custom({\n  glsl: {\n    vertex: `out vec3 vPos; out vec3 vN;\nvoid main() {\n  vec2 p = position.xz;\n  float a1 = dot(p, vec2(0.21, 0.13)) * 2.2 + uTime * 1.6;\n  float a2 = dot(p, vec2(-0.17, 0.25)) * 2.0 + uTime * 2.1;\n  float h = sin(a1) * 0.16 + sin(a2) * 0.1;\n  vPos = vec3(p.x, ${WATER_Y.toFixed(2)} + h, p.y);\n  vN = normalize(vec3(-cos(a1) * 0.16 * 0.46 - cos(a2) * 0.1 * -0.34, 1.0, -cos(a1) * 0.16 * 0.29 - cos(a2) * 0.1 * 0.5));\n  gl_Position = modelViewProjectionMatrix * vec4(vPos, 1.0);\n}`,\n    fragment: `in vec3 vPos; in vec3 vN; out vec4 outColor;\nfloat hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);\n  return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }\nvoid main() {\n  float E = radians(sunE), A = radians(sunA);\n  vec3 sunDir = normalize(vec3(sin(A) * cos(E), sin(E), -cos(A) * cos(E)));\n  vec3 v = normalize(cameraPosition - vPos);\n  vec3 n = normalize(vN + vec3(vnoise(vPos.xz * 1.5 + uTime * 0.8) - 0.5, 0.0, vnoise(vPos.xz * 1.5 - uTime * 0.8) - 0.5) * 0.35);\n  float fres = pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 3.0);\n  float dayAmt = clamp(sunE / 25.0 + 0.35, 0.0, 1.0);\n  vec3 skyDay = mix(vec3(0.62, 0.78, 0.92), vec3(0.2, 0.42, 0.75), clamp(reflect(-v, n).y, 0.0, 1.0));\n  vec3 skyNight = mix(vec3(0.05, 0.07, 0.15), vec3(0.02, 0.03, 0.09), clamp(reflect(-v, n).y, 0.0, 1.0));\n  float dusk = clamp(1.0 - abs(sunE) / 18.0, 0.0, 1.0);\n  vec3 skyCol = mix(skyNight, skyDay, dayAmt) + vec3(0.5, 0.2, 0.05) * dusk * 0.5;\n  vec3 deepDay = vec3(0.03, 0.30, 0.42), deepNight = vec3(0.01, 0.04, 0.09);\n  vec3 deep = mix(deepNight, deepDay, dayAmt);\n  float depthMix = clamp(length(vPos.xz) / 40.0, 0.0, 1.0);\n  vec3 shallow = mix(deep, mix(vec3(0.08, 0.02, 0.1), vec3(0.15, 0.7, 0.65), dayAmt), 0.55 * (1.0 - depthMix));\n  vec3 base = mix(shallow, skyCol, clamp(fres * 0.85 + 0.06, 0.0, 1.0));\n  float glint = pow(max(dot(reflect(-sunDir, n), v), 0.0), 120.0) * step(0.0, sunE);\n  float moon = pow(max(dot(reflect(sunDir, n), v), 0.0), 120.0) * step(sunE, 0.0);\n  float sparkle = smoothstep(0.78, 1.0, vnoise(vPos.xz * 4.0 + uTime * 0.6)) * 0.12 * dayAmt;\n  vec3 col = base + vec3(1.0, 0.9, 0.7) * glint * 1.6 + vec3(0.6, 0.7, 1.0) * moon * 0.8 + vec3(sparkle);\n  outColor = vec4(col, 1.0);\n}`\n  },\n  uniforms: { sunE: { type: \"f32\", value: 30 }, sunA: { type: \"f32\", value: 90 } }\n});\n\n// ---------- scatter trees and rocks ----------\nconst trunks: AuraTransformSpec[] = [], canopies: AuraTransformSpec[] = [], canopies2: AuraTransformSpec[] = [], rocks: AuraTransformSpec[] = [];\nconst canopyColors: string[] = [], canopyColors2: string[] = [], rockColors: string[] = [];\nlet tries = 0;\nwhile (trunks.length < 34 && tries < 4000) {\n  tries += 1;\n  const a = rand() * 6.283, r = 20 * Math.sqrt(rand());\n  const x = Math.cos(a) * r, z = Math.sin(a) * r, y = H(x, z);\n  if (y < 1.1 || y > 4.8) continue;\n  const s = 0.8 + rand() * 0.7;\n  trunks.push({ position: [x, y + 0.7 * s, z], scale: [0.35 * s, 1.4 * s, 0.35 * s] });\n  canopies.push({ position: [x, y + 1.4 * s + 1.3 * s, z], scale: [2.4 * s, 3 * s, 2.4 * s] });\n  canopies2.push({ position: [x, y + 1.4 * s + 2.6 * s, z], scale: [1.7 * s, 2.4 * s, 1.7 * s] });\n  const hue = 105 + Math.floor(rand() * 40);\n  canopyColors.push(`hsl(${hue}, 55%, ${24 + Math.floor(rand() * 10)}%)`);\n  canopyColors2.push(`hsl(${hue}, 58%, ${32 + Math.floor(rand() * 10)}%)`);\n}\ntries = 0;\nwhile (rocks.length < 28 && tries < 4000) {\n  tries += 1;\n  const a = rand() * 6.283, r = 6 + 17 * Math.sqrt(rand());\n  const x = Math.cos(a) * r, z = Math.sin(a) * r, y = H(x, z);\n  if (y < -0.2 || y > 5.5) continue;\n  const s = 0.5 + rand() * 0.9;\n  rocks.push({ position: [x, y + 0.1 * s, z], rotation: [rand(), rand() * 6, rand()], scale: [s, s * 0.7, s * 0.9] });\n  rockColors.push(`hsl(30, 6%, ${38 + Math.floor(rand() * 25)}%)`);\n}\n\n// ---------- scene ----------\nconst s0 = sunAt(START_HOUR);\nconst white = material.pbr({ color: \"#ffffff\", roughness: 0.95 });\nconst sc = scene({ background: \"#0a0e1a\" })\n  .camera(camera.orbit({ position: [0, 30, 62], target: [0, 1.5, 0], fov: 45, near: 1, far: 600, autoRotate: 0.1 }))\n  .add(sky.preetham({ sun: { ...s0, intensity: 1 } }))\n  .add(environments.neutral({ intensity: 0.25, background: false }))\n  .add(lights.hemisphere({ name: \"hemi\", skyColor: \"#cfe0f2\", groundColor: \"#5d6b45\", intensity: 1 }).runtime({ id: \"hemi\", mutable: true }))\n  .add(lights.directional({ name: \"sun\", position: dirOf(s0.elevationDeg, s0.azimuthDeg), target: [0, 0, 0], intensity: 3, shadow: true }).runtime({ id: \"sun\", mutable: true }))\n  .add(geometry.custom(geometry.define({\n    positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col),\n    indices: Array.from({ length: pos.length / 3 }, (_, i) => i),\n    bounds: { min: [-S / 2, -2, -S / 2], max: [S / 2, 9, S / 2] }\n  }), { name: \"island\", material: white }))\n  .add(geometry.custom(geometry.define({\n    positions: wpos, normals: wnor, indices: widx,\n    bounds: { min: [-WS / 2, -1, -WS / 2], max: [WS / 2, 1, WS / 2] }\n  }), { name: \"water\", material: water, castShadow: false }).runtime({ id: \"water\", mutable: true }))\n  .add(instances.cylinder({ name: \"trunks\", transforms: trunks, material: material.pbr({ color: \"#5a3d24\", roughness: 1 }), params: { radialSegments: 6 } }))\n  .add(instances.cone({ name: \"canopies\", transforms: canopies, colors: canopyColors, material: white, params: { radialSegments: 7 } }))\n  .add(instances.cone({ name: \"canopies2\", transforms: canopies2, colors: canopyColors2, material: white, params: { radialSegments: 7 } }))\n  .add(instances.sphere({ name: \"rocks\", transforms: rocks, colors: rockColors, material: white }));\n\nconst app = createAuraApp(\"#app\", { scene: sc });\n\nlet t = 0;\napp.onFrame((f) => {\n  t += f.dt;\n  const hour = (START_HOUR + (t / DAY) * 24) % 24;\n  const s = sunAt(hour);\n  const lift = Math.sin(((hour - 6) / 24) * Math.PI * 2); // +1 noon, -1 midnight\n  const sun = app.nodes.require(\"sun\");\n  const night = lift < 0;\n  // after sunset the same light becomes a dim blue moon on the opposite side of the sky\n  const dir = night ? dirOf(-s.elevationDeg, s.azimuthDeg + 180) : dirOf(s.elevationDeg, s.azimuthDeg);\n  sun.setPosition(...dir);\n  const k = Math.min(1, Math.abs(lift) * 4);\n  sun.setLight?.(night\n    ? { intensity: 0.15 + 0.5 * k, color: \"#8fa8ff\" }\n    : { intensity: 0.15 + 3.0 * k, color: lift < 0.3 ? \"#ffb070\" : \"#fff4e0\" });\n  app.nodes.require(\"hemi\").setLight?.({ intensity: 0.3 + 0.8 * Math.max(0, lift) });\n  app.atmosphere?.setSky({ sun: { ...s, intensity: 1 } });\n  const water = app.nodes.require(\"water\");\n  water.setUniform?.(\"sunE\", s.elevationDeg);\n  water.setUniform?.(\"sunA\", s.azimuthDeg);\n});\n\nawait app.ready();\nwindow.__EVAL_READY__ = true;\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013B7Q8YxwKQ9RVmtdNi58Dr",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01D1aztnfA55EM93sE4jts1U",
+    "content": "wrote src/main.ts (177 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013B7Q8YxwKQ9RVmtdNi58Dr",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm wondering whether uniforms like sunE and sunA need explicit declarations, or if the engine injects them automatically like it does with clk—worth checking the docs.\n\n",
+    "signature": "CAQShQYKEggTEAEYAjgBQgh0aGlua2luZxIM72cDOUfWXRyRc3drGgyYN4NshQc89AH5peUiMKz3choHJpBIcg+6MmyD9uZJ4Gh4MSi0JpvR5EAnIG1YFY5i6n3oTHL9hysARQ0eMiqgBWGiFwlckpQGlKgohXErC6EN5LiZi7NbtDV5bYGrY/gvVbb9aAuJru1wFF9V/P6X6zVyUOz10S0N3vQGNVClHLZ1n3YgQE1/3/KGhJlmvVcL7hrhD7cNS5JlXA+KQBr9cZHL5nFpdLg2ju4JXVc4/68ofBmNOqB8Ea9dh53su5oJI10l8ZA+7ki4K8gD1xUdt28Fq2zkRDOosmDEnqhGasDK19y32D8rzMUpe1JGPxIFcFgtI0POCzsoQMxnX14W0BxBHJnkO5mdYaBbuv1jdEVW6siAZam2ckrH96M4UwbwfaGah4Y8V6Cwm6kivxzCv/v+vJHQFeDLmpbXo0AT1D/Y/US16jS56fb3x22N1VzEXbDXtP7YOtd7FGPfNguuhNhOQXmzL19HRYlXh6U3Lq8U2ct/kz5tEo7vDGAuPA7g0U7YbghAL7C/IrbavT9X9pbwdvNmeXfgm9Su7r8GNK/Q2rgiLd5VNR5M6yJN8fnCJUaKmO6wHxSyOpbEeCrKd6l40uvqwFFUtTYfy+HMeoy/G9/V8bYvyDtwlfpl7L8Emh5PHY5ib/SQz7Q9rME7VjijryehoOUOAh3Zi7t8aXEykhu0oJjSPu76GvUWMbHN6cuoebMD3+UYJCh8Z8owZSyML490kQ+tYJeULC5bDUVez8jswWyA/rEntErCLUJ0BTGrMq+QxWh1j+RO49cWhoF4TdjhI/DZrXNtlk69C8E5yeDXbziMgg0rC0731SNMWbWN5WD92QnyubH+dZb1r/9/87VgOLZMhBNdV4gxuKnFSD7NtN106ndLAtIunfXmkmf6fW+H/Ezxs5S7cplxBjr6EC0+hxFsSua/V4fwaieNKxbjkWTHaIEptCtN4Mm9zRF9afyXw6GqUEmKwLABLxgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NuDzzi9Rv9qxb4iWVQb5AK",
+    "name": "search",
+    "input": {
+     "pattern": "uniforms: \\{",
+     "path": "docs"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NuDzzi9Rv9qxb4iWVQb5AK",
+    "content": "docs/agents/first-screen-cheatsheet.md:88:  uniforms: {}\ndocs/agents/first-screen-cheatsheet.md:92:[Omitted long matching line]\ndocs/agents/agent-quickstart.md:88:| `ShaderMaterial` | `material.custom({ glsl: { fragment }, uniforms: { uTime: { type: \"f32\", value: 0 } } })` |\ndocs/agents/threejs-to-aura3d.md:13:[Omitted long matching line]\ndocs/agents/recipes-src/water-custom-shader/main.ts:53:  uniforms: { waveClock: { type: \"f32\", value: 0 } }\ndocs/agents/recipes-src/translation-table.check.ts:39:const shader = material.custom({ glsl: { fragment: \"out vec4 outColor; void main() { outColor = vec4(1.0); }\" }, uniforms: { uTint: { type: \"f32\", value: 0 } } });\ndocs/agents/recipes.md:167:  uniforms: { waveClock: { type: \"f32\", value: 0 } } // declare uniforms here; they are auto-declared in GLSL\ndocs/agents/recipes.md:548:  uniforms: { waveClock: { type: \"f32\", value: 0 } }\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "text",
+    "text": "Uniforms are auto-declared, so the shader should compile."
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01BBnZPPuk3gTdRYozwbnd4m",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts and it passes typecheck. I haven't built it with `vite build` or run it in a browser, so I haven't seen it render.\n\n- **Island:** flat-shaded low-poly terrain with sand, grass and rock colours per face. It has about 34 two-tier cone trees with trunks and about 28 rocks, all placed procedurally.\n- **Water:** a displaced 160×160 grid with a custom GLSL shader, animated by `uTime`. It has fresnel reflection, noise ripples and sun and moon glints. The shader gets the sun's elevation and azimuth through two uniforms each frame, so its colours follow the time of day.\n- **Sky and lighting:** a Preetham sky that updates every frame, with a 20-second day/night cycle. One shadow-casting directional light acts as a warm sun by day and a dim blue moon by night. A hemisphere light and a neutral environment keep the scene from going black.\n- **Camera:** an orbit camera above the water that frames the whole island and rotates slowly.\n- **Contract:** `window.__EVAL_READY__` is set after the first frame is ready.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01BBnZPPuk3gTdRYozwbnd4m",
+    "content": "ok"
+   }
+  ]
+ }
+]

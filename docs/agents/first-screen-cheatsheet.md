@@ -52,7 +52,7 @@ sc = sc.add(instances.cylinder({ name: "trunks", transforms: trunks, material: m
 `instances.box|sphere|cylinder|cone`; later `node.setInstances(transforms, colors)`.
 
 ## Custom GLSL water: displaced grid, fresnel, noise ripple, sun glint, animated
-GLSL 3.00 (`in`/`out`, write `out vec4 outColor`). Prelude, do not declare: `position normal uv modelViewProjectionMatrix modelMatrix cameraPosition uTime` (`uTime` advances itself). The engine tone-maps and sRGB-encodes: output linear colours, no manual gamma. Camera low over the water, e.g. `camera.perspective({ position: [0, 6, 22], target: [0, 1, -30], fov: 55, near: 0.5, far: 400 })` instead of the orbit camera.
+GLSL 3.00 (`in`/`out`, write `out vec4 outColor`). Prelude, do not declare: `position normal uv modelViewProjectionMatrix modelMatrix cameraPosition`. `clk` does NOT advance: drive time with your own uniform (`clk` below) via `setUniform` every frame, or the water is frozen. The engine tone-maps and sRGB-encodes: output linear colours, no manual gamma. Camera low over the water, e.g. `camera.perspective({ position: [0, 6, 22], target: [0, 1, -30], fov: 55, near: 0.5, far: 400 })` instead of the orbit camera.
 ```ts
 const N = 200, SIZE = 160; // subdivided grid: waves are real geometry
 const positions = new Float32Array((N + 1) ** 2 * 3), normals = new Float32Array(positions.length), indices: number[] = [];
@@ -67,8 +67,8 @@ const water = material.custom({
     vertex: `out vec3 vPos; out vec3 vN;
 void main() {
   vec2 p = position.xz;
-  float ph = dot(p, vec2(0.21, 0.13)) * 3.0 + uTime;
-  vPos = vec3(p.x, sin(ph) * 0.35 + sin(dot(p, vec2(-0.17, 0.25)) * 3.0 + uTime * 1.3) * 0.2, p.y);
+  float ph = dot(p, vec2(0.21, 0.13)) * 3.0 + clk;
+  vPos = vec3(p.x, sin(ph) * 0.35 + sin(dot(p, vec2(-0.17, 0.25)) * 3.0 + clk * 1.3) * 0.2, p.y);
   vN = normalize(vec3(-cos(ph) * 0.22, 1.0, -cos(ph) * 0.14));
   gl_Position = modelViewProjectionMatrix * vec4(vPos, 1.0);
 }`,
@@ -78,18 +78,21 @@ float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 *
   return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
 void main() {
   vec3 v = normalize(cameraPosition - vPos);
-  vec3 n = normalize(vN + vec3(vnoise(vPos.xz * 2.0 + uTime) - 0.5, 0.0, vnoise(vPos.xz * 2.0 - uTime) - 0.5) * 0.25);
+  vec3 n = normalize(vN + vec3(vnoise(vPos.xz * 2.0 + clk) - 0.5, 0.0, vnoise(vPos.xz * 2.0 - clk) - 0.5) * 0.25);
   float fres = pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);
   vec3 sky = mix(vec3(0.62, 0.78, 0.92), vec3(0.15, 0.35, 0.7), clamp(reflect(-v, n).y, 0.0, 1.0));
   float glint = pow(max(dot(reflect(-normalize(vec3(0.5, 0.45, 0.35)), n), v), 0.0), 140.0);
   outColor = vec4(mix(vec3(0.02, 0.18, 0.3), sky, clamp(fres * 0.9 + 0.08, 0.0, 1.0)) + vec3(1.0, 0.93, 0.78) * glint * 1.4, 1.0);
 }`
   },
-  uniforms: {}
+  uniforms: { clk: { type: "f32", value: 0 } } // auto-declared in both stages
 });
-sc = sc.add(geometry.custom(geometry.define({ positions, normals, indices, bounds: { min: [-SIZE / 2, -1, -SIZE / 2], max: [SIZE / 2, 1, SIZE / 2] } }), { name: "water", material: water, castShadow: false }));
+sc = sc.add(geometry.custom(geometry.define({ positions, normals, indices, bounds: { min: [-SIZE / 2, -1, -SIZE / 2], max: [SIZE / 2, 1, SIZE / 2] } }), { name: "water", material: water, castShadow: false }).runtime({ id: "water", mutable: true }));
+let clk = 0;
+// per frame
+clk += f.dt;
+app.nodes.require("water").setUniform?.("clk", clk);
 ```
-Own uniform instead of `uTime`: `uniforms: { clk: { type: "f32", value: 0 } }`, node `.runtime({ id: "water", mutable: true })`, per frame `app.nodes.require("water").setUniform?.("clk", t)`.
 
 ## Sky and day/night cycle (sun-following light)
 ```ts

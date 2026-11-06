@@ -1,0 +1,1065 @@
+[
+  {
+    "runId": "b504-A-t2-aura-r1",
+    "arm": "aura",
+    "task": 2,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "instanced": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 3,
+    "agentWallSec": 12.9,
+    "tokensIn": 28910,
+    "tokensOut": 1104,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 31,
+    "srcTokens": 585,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.8571428571428571,
+    "silentNoOps": 0,
+    "glueLines": 9,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "instancing",
+          "pass": true,
+          "why": "Trunks, canopies and rocks use instances.cylinder, instances.cone and instances.sphere with transform arrays. There are 3 instanced draws and no per-object meshes."
+        },
+        {
+          "id": "count",
+          "pass": true,
+          "why": "The loops build 8000 trunk transforms, 8000 canopy transforms and 2000 rock transforms. That is 8000 trees (trunk plus canopy) and 2000 rocks, 10,000 objects in total."
+        },
+        {
+          "id": "seeded",
+          "pass": true,
+          "why": "All placement uses a seeded LCG (seed 12345). Math.random is never called."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Canopies and rocks pass per-instance hsl colors arrays over a white material. The probes show no errors and a varied, non-blank image (std 22.1). The trunks have a single colour."
+        },
+        {
+          "id": "shadow",
+          "pass": false,
+          "why": "A single directional light is created with shadow: true. No castShadow or receiveShadow is set on the instances or the ground, and the shadow frustum is not sized for a ~150-unit area. The probes give no evidence that shadows are cast or re"
+        },
+        {
+          "id": "fog",
+          "pass": true,
+          "why": "effects.fog with density 0.0045 is added, and its colour matches the background. At about 150 units of camera distance the fog factor is roughly 0.5 to 0.63, so the effect should be visible."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "camera.orbit has autoRotate 0.12 and a target at the origin. The probes show animation (diff 4.46, changedFrac 0.21) and a framed, non-blank scene."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 22,
+        "rulesLines": 0,
+        "glueLines": 9,
+        "notes": "Scene lines cover the camera, lights, fog, ground, instance definitions and seeded placement loops. Glue is the import and global declaration, the LCG rand helper, the empty array and colour-list declarations, createAuraApp, app.ready and the ready flag. There are no game rules."
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t2-aura-r2",
+    "arm": "aura",
+    "task": 2,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "instanced": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 4,
+    "agentWallSec": 17.6,
+    "tokensIn": 42562,
+    "tokensOut": 1326,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 1,
+    "writeCalls": 1,
+    "srcLines": 45,
+    "srcTokens": 599,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.8571428571428571,
+    "silentNoOps": 0,
+    "glueLines": 12,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "instancing",
+          "pass": true,
+          "why": "Trunks, canopies and rocks are each created with a single instances.cylinder, instances.cone or instances.sphere call that takes a transforms array. No per-object meshes are created."
+        },
+        {
+          "id": "count",
+          "pass": true,
+          "why": "The loops produce 8000 trunk transforms, 8000 canopy transforms and 2000 rock transforms. That is 8,000 trees and 2,000 rocks, 10,000 objects in total."
+        },
+        {
+          "id": "seeded",
+          "pass": true,
+          "why": "Placement uses a fixed-seed LCG (seed 12345) through rand(). Math.random is never called."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Canopies and rocks pass a per-instance colors array (HSL strings with random hue and lightness) over a white base material. The probes show a non-blank, varied frame (std 22.1) with no errors. Trunks have a single fixed colour, which is acc"
+        },
+        {
+          "id": "shadow",
+          "pass": false,
+          "why": "The directional light sets shadow: true, but no castShadow or receiveShadow is configured on the ground or the instanced meshes. The probes give no evidence that shadows appear, so the casting/receiving requirement is unmet."
+        },
+        {
+          "id": "fog",
+          "pass": true,
+          "why": "effects.fog is configured with density 0.0045 and a colour matching the background. At the orbit distance of about 155 units, exp2 fog attenuation is about 0.4, so it should be visible. The probe frame is consistent with a hazy scene (mean "
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "camera.orbit has autoRotate 0.12, position [0,85,130] and target [0,2,0]. The probes report animated: true (diff 4.46, changedFrac 0.206). The forest radius of 75 fits the view with far set to 450."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 14,
+        "rulesLines": 22,
+        "glueLines": 12,
+        "notes": "Scene lines cover the camera, lights, fog, ground and the three instances calls. Rules lines cover the placement loops and per-instance colour and scale generation. Glue lines cover the import and global declaration, the LCG rand helper, the spot() polar helper, createAuraApp, app.ready and the __EV"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t2-aura-r3",
+    "arm": "aura",
+    "task": 2,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "instanced": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 4,
+    "agentWallSec": 16.2,
+    "tokensIn": 40721,
+    "tokensOut": 1321,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 45,
+    "srcTokens": 599,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.8571428571428571,
+    "silentNoOps": 0,
+    "glueLines": 9,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "instancing",
+          "pass": true,
+          "why": "Trunks, canopies and rocks are each created with a single `instances.cylinder`, `instances.cone` or `instances.sphere` call, not as separate meshes."
+        },
+        {
+          "id": "count",
+          "pass": true,
+          "why": "The loops build 8000 trunk transforms, 8000 canopy transforms and 2000 rock transforms, which gives 8,000 trees and 2,000 rocks."
+        },
+        {
+          "id": "seeded",
+          "pass": true,
+          "why": "Placement uses a fixed-seed LCG (`seed = 12345`) and the source never calls Math.random."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Canopies and rocks get per-instance `colors` with varied hue and lightness on a white base material. The probe frame is non-blank with std 22.1, so rendering works. The probes do not confirm the colour variation directly. Trunks have a sing"
+        },
+        {
+          "id": "shadow",
+          "pass": false,
+          "why": "The directional light has `shadow: true`, but no cast or receive flags are set on the ground or any instanced mesh. The source does not show that casting and receiving are configured, and the probes cannot show shadows."
+        },
+        {
+          "id": "fog",
+          "pass": true,
+          "why": "`effects.fog` is added with colour matching the background and density 0.0045. The density parameter implies exponential fog. At the orbit distance of about 155 units this gives a visible blend, and the frame renders without errors."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "`camera.orbit` uses `autoRotate: 0.12`, targets the origin and sits at [0, 85, 130], which frames the 75-radius forest. The probes show an animated frame (diff 4.46, changedFrac 0.206)."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 16,
+        "rulesLines": 20,
+        "glueLines": 9,
+        "notes": "Scene: scene, camera, lights, fog, ground, materials and the three instance calls. Rules and placement: the seeded loops, `spot()`, transform and colour generation. Glue: the `declare global` block, the LCG `rand` helper, the `createAuraApp` and `ready` bootstrapping, the ready flag, and the imports"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t5-aura-r1",
+    "arm": "aura",
+    "task": 5,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 3,
+    "agentWallSec": 27.8,
+    "tokensIn": 32817,
+    "tokensOut": 2527,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 115,
+    "srcTokens": 1076,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6529.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "customshader",
+          "pass": true,
+          "why": "The water uses material.custom with hand-written GLSL vertex and fragment shaders and a clk uniform, not a stock material."
+        },
+        {
+          "id": "displacement",
+          "pass": true,
+          "why": "A 261x261 vertex grid (N=260) is displaced in the vertex shader by a four-wave sum, and the displaced position goes into gl_Position. The frame probes show moving, varied output (std 46.9, changedFrac 0.45)."
+        },
+        {
+          "id": "fresnel",
+          "pass": true,
+          "why": "The fragment shader computes a Schlick Fresnel term (0.02 + 0.98*(1-cosT)^5) that mixes the water body colour with the reflection. It also adds a sun specular glint (pow 220) and a broad lobe (pow 24)."
+        },
+        {
+          "id": "noise",
+          "pass": true,
+          "why": "A hash-based value noise with a 4-octave fbm is scrolled over time. Its finite-difference gradient perturbs the normal, which adds procedural ripple detail."
+        },
+        {
+          "id": "sky",
+          "pass": true,
+          "why": "sky.gradient provides the background dome. The water reflects a procedural gradient (skyColor, horizon to zenith) from the reflected ray, and fog blends toward the horizon colour. The shader's sky colours are hard-coded separately from the "
+        },
+        {
+          "id": "animated",
+          "pass": true,
+          "why": "probes.animated is true. The clk uniform is updated every frame through setUniform, and 45% of pixels changed between frames."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "The frame mean is 165.3 with std 46.9 and nonblack fraction 1, so the output is neither black nor washed out. The shader writes colour directly without an explicit tone map, but the measured output is well exposed."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 14,
+        "rulesLines": 0,
+        "glueLines": 30,
+        "notes": "Glue is the manual grid construction (positions, normals, indices loops, about 13 lines), the imports and window type declaration, the createAuraApp/onFrame/clk bookkeeping, and the ready flag. The wave function, vertex shader and fragment shader (about 85 lines) count as shader code. The scene, cam"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t5-aura-r2",
+    "arm": "aura",
+    "task": 5,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 30.6,
+    "tokensIn": 45519,
+    "tokensOut": 2615,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 113,
+    "srcTokens": 1106,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6529.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 26,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "customshader",
+          "pass": true,
+          "why": "The water uses material.custom with its own GLSL vertex and fragment shaders, not a stock material."
+        },
+        {
+          "id": "displacement",
+          "pass": true,
+          "why": "The vertex shader sums three sine waves to move vertices on a 241x241 subdivided grid and recomputes normals analytically. The frame renders and changes between snapshots (changedFrac 0.397), so the shader is running."
+        },
+        {
+          "id": "fresnel",
+          "pass": true,
+          "why": "The fragment shader computes a Schlick Fresnel term (0.02 + 0.98*(1-ndv)^5) that blends body colour with the reflection. It also adds a sun specular glint (pow(..., 220) along direction L)."
+        },
+        {
+          "id": "noise",
+          "pass": true,
+          "why": "A hash-based value noise (vnoise) is sampled at two scales, differenced into normal perturbations, and added to vN as ripple detail."
+        },
+        {
+          "id": "sky",
+          "pass": true,
+          "why": "sky.gradient is added to the scene, and the shader reflects an analytic horizon-to-zenith gradient (skyColor) at the reflection vector. The shader's gradient colours differ from the scene sky colours, and the fog colour is a darker horizon "
+        },
+        {
+          "id": "animated",
+          "pass": true,
+          "why": "The clk uniform is updated every frame through setUniform and drives both the waves and the noise. probes.animated is true, with diff 16.35 and changedFrac 0.397."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "The output is not washed out or black: frame mean is 163.5, std 42.7, nonblack 1, and there are no page or console errors. No explicit tone mapping is applied, but the result reads correctly."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "geometry.define({ normals })",
+          "why": "The vertex shader ignores the supplied normals attribute and computes vN analytically from the wave gradient, so the array has no effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 16,
+        "rulesLines": 0,
+        "glueLines": 26,
+        "notes": "Glue is the manual grid construction (positions, normals, index loops, about 13 lines), the imports and window.__EVAL_READY__ declaration and flag, and the createAuraApp, clock accumulator, onFrame uniform update and ready wiring. The wave function, vertex shader and fragment shader (about 65 lines)"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t5-aura-r3",
+    "arm": "aura",
+    "task": 5,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 28.4,
+    "tokensIn": 57638,
+    "tokensOut": 2427,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 1,
+    "writeCalls": 1,
+    "srcLines": 106,
+    "srcTokens": 1032,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6529.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 26,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "customshader",
+          "pass": true,
+          "why": "The water uses material.custom with hand-written GLSL vertex and fragment shaders and a clk uniform."
+        },
+        {
+          "id": "displacement",
+          "pass": true,
+          "why": "A 321x321 vertex grid is displaced in the vertex shader by three summed sine waves (waveAt). Probes show 43% of pixels change between frames, so clk reaches the shader and the displacement runs."
+        },
+        {
+          "id": "fresnel",
+          "pass": true,
+          "why": "The fragment shader uses Schlick Fresnel (0.02 + 0.98*(1-cosv)^5) to mix the water body colour with the reflection, and adds a sun specular glint (pow 220, warm colour)."
+        },
+        {
+          "id": "noise",
+          "pass": true,
+          "why": "A hash-based value-noise fbm with 4 octaves, scrolled over time, perturbs the normal, which adds ripple detail."
+        },
+        {
+          "id": "sky",
+          "pass": true,
+          "why": "The scene has sky.gradient. The water reflects an analytic skyCol gradient that matches the horizon colour, and distant water fogs into the horizon colour. The reflection is a duplicated function in the shader, not a sampled dome, but it is"
+        },
+        {
+          "id": "animated",
+          "pass": true,
+          "why": "probes.animated is true, with frame diff 17.88 and changedFrac 0.43."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Frame mean is 179.3, std 29.7, nonblack is 1 and the frame is not blank. The output is neither black nor clipped. There is no explicit tone mapping or sRGB conversion, but the result looks acceptable."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 22,
+        "rulesLines": 0,
+        "glueLines": 26,
+        "notes": "Glue is the manual grid mesh generation (positions, normals, index loop, about 13 lines), the global declaration, the onFrame clk accumulation with setUniform, ready and eval flag bootstrapping (about 13 lines). About 62 lines are shader code. The scene and material wrapper lines are counted as scen"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t8-aura-r1",
+    "arm": "aura",
+    "task": 8,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 3,
+    "agentWallSec": 34.3,
+    "tokensIn": 36252,
+    "tokensOut": 3710,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 115,
+    "srcTokens": 1818,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6531.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 38,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "terrain",
+          "pass": true,
+          "why": "The island is built procedurally from per-triangle vertices with a face normal and a height-band colour per face, so it is flat-shaded. Trees are instanced cylinders and cones, and rocks are instanced squashed spheres. No model files are lo"
+        },
+        {
+          "id": "water",
+          "pass": true,
+          "why": "A 200x200 displaced grid at about y=0.25 surrounds the island, whose edges fall below the waterline (H is clamped to -1.2). The custom shader moves the vertices with the clk uniform, which is updated every frame. The probes report animated="
+        },
+        {
+          "id": "daynight",
+          "pass": true,
+          "why": "A time-driven hour (a 20 s loop covering 24 h) moves the directional sun each frame and calls atmosphere.setSky with the new sun elevation and azimuth to change the Preetham sky. The probes cannot confirm the sky colour change directly, bec"
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The directional light follows the sun, with its position clamped to at least 15° elevation and its intensity floored at 0.48. A hemisphere light (0.6) and a neutral environment (0.35) keep a base level, and the water brightness is floored a"
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The orbit camera is at (0,30,58) looking at (0,1,0) with a 45° fov, which is well above the water at y≈0.25. At about 65 units away the view is roughly 54 units tall, and the island is about 44 across. Auto-rotate keeps the same distance, s"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 70,
+        "rulesLines": 15,
+        "glueLines": 38,
+        "notes": "Glue is the sun-direction math helpers (sunAt, dirOf), the manual face-normal and winding computation, the water grid vertex and index loops, the LCG random generator, the createAuraApp/onFrame/ready bootstrap and the global declaration. The water and terrain shader and geometry code is counted sepa"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t8-aura-r2",
+    "arm": "aura",
+    "task": 8,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 67.2,
+    "tokensIn": 75822,
+    "tokensOut": 5660,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 2,
+    "writeCalls": 1,
+    "srcLines": 197,
+    "srcTokens": 2538,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6533.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "terrain",
+          "pass": true,
+          "why": "The island is built procedurally as a non-indexed mesh with per-face normals and height-banded face colours (sand, grass, rock). It also has 34 instanced trees (trunk plus two cones) and 16 instanced rocks. No model files are loaded."
+        },
+        {
+          "id": "water",
+          "pass": true,
+          "why": "A 360-unit custom-shader water grid extends well past the island radius of about 17. The vertex shader displaces it with sines driven by the clk uniform, which the frame loop updates. The probes report animated true with changedFrac 0.71."
+        },
+        {
+          "id": "daynight",
+          "pass": true,
+          "why": "The frame loop advances an hour value (a 20 s real-time day), then moves the directional light and updates the Preetham sky sun. It also feeds sunE and sunA to the water shader, which blends night, dusk and day sky colours. A single final s"
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The directional light follows the sun position, and its colour changes with elevation. Intensity is floored at 0.18 times 3.2, the hemisphere light never drops below 0.25, and an environment light adds 0.35. The probe frame has mean 163.8 a"
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The orbit camera is at [0,30,52] looking at [0,2,0] with a 45° fov, about 60 units from the target, so it sits above the water and the island of radius about 17 fits in view. Auto-rotate keeps the same distance. The probe frame is non-blank"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 85,
+        "rulesLines": 20,
+        "glueLines": 55,
+        "notes": "Glue is the LCG rand helper, the manual face-normal and winding math, the water grid and index buffer construction, the sunAt/dirOf conversions, the per-frame setPosition/setLight/setUniform plumbing, and the manual geometry bounds. Water GLSL (about 45 lines) is shader code and is not counted in an"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t8-aura-r3",
+    "arm": "aura",
+    "task": 8,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 72.5,
+    "tokensIn": 76029,
+    "tokensOut": 5901,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 2,
+    "writeCalls": 1,
+    "srcLines": 200,
+    "srcTokens": 2593,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6533.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "terrain",
+          "pass": true,
+          "why": "The island is built procedurally from a jittered grid. Each triangle gets its own face normal and colour, so it renders flat-shaded. Instanced cones, cylinders and spheres supply trees and rocks, and no model files are loaded."
+        },
+        {
+          "id": "water",
+          "pass": true,
+          "why": "A 340-unit water plane surrounds the island. Its custom shader displaces vertices and animates normals using the clk uniform, which is updated every frame. The probes show animated=true, with a frame diff of 19.56."
+        },
+        {
+          "id": "daynight",
+          "pass": true,
+          "why": "The hour advances with time (20 s per day). The sun elevation and azimuth are updated every frame, setSky is called on the Preetham sky, and the horizon and zenith colours fed to the water shader change. The probe frame diff supports a chan"
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The directional light follows the sun by day and switches to a dim bluish moon at night. Its intensity never drops below about 0.3. The hemisphere light has a floor of 0.35 and the water has a 0.2 brightness floor. The probe shows mean 159."
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera is at (0,30,58) looking at (0,1.5,0) with a 45° FOV. That is about 65 units from the target and above the water. The island radius is at most about 24, so it fits fully in view, and the orbit autoRotate keeps the distance constan"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 80,
+        "rulesLines": 40,
+        "glueLines": 55,
+        "notes": "Scene lines cover terrain generation, tree and rock placement, and scene construction. Rules lines are the per-frame day/night logic. The water GLSL (about 45 lines) is shader code and is excluded from all three counts. Glue is the PRNG and hash helpers, the manual face-normal math, the water grid b"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t9-aura-r1",
+    "arm": "aura",
+    "task": 9,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 22,
+    "tokensIn": 43122,
+    "tokensOut": 1954,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 74,
+    "srcTokens": 906,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 15,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "parts",
+          "pass": true,
+          "why": "The robot is built from box, sphere and capsule primitives: pelvis, torso, skull sphere, two arm capsule chains and two leg capsule chains with feet. No model files are loaded."
+        },
+        {
+          "id": "joints",
+          "pass": true,
+          "why": "The source nests eleven joint groups: hips, l/r-hip, l/r-knee, chest, head, l/r-shoulder and l/r-elbow. Each is registered with runtime({id}) and rotated every frame through app.nodes.require(id).setRotation. The probes show the frames chan"
+        },
+        {
+          "id": "idle",
+          "pass": true,
+          "why": "onFrame drives sine-based breathing, weight shift, head turn and arm and knee motion. The probes report animated=true with diff 2.18 and changedFrac 0.036."
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The background is #05060a. A directional key light (intensity 5, shadow:true) is paired with a magenta #ff2fa8 directional rim light (intensity 5), and a floor plane is present. The probes show a non-blank, partly lit frame (nonblack 0.46, "
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera looks at [0,1,0] from [0.9,1.3,5.2] with fov 36. The robot spans y≈0.08 to 2.0 and sits on x=0, so it is centred and fits in view at roughly 55-60% of the frame height. The probes show a non-blank frame."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "foot(x) helper in src/main.ts",
+          "why": "The x parameter is multiplied by 0.0, so it has no effect. Both feet end up at x=0 whatever argument is passed."
+        }
+      ],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 18,
+        "glueLines": 15,
+        "notes": "Scene lines cover the materials, the scene chain (camera, lights, bloom, floor) and the joint hierarchy. Rules lines are the idle animation in onFrame. Glue lines are the imports, the Window global declaration, the limb/J/foot helpers and k counter, createAuraApp, the time accumulator, the node look"
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t9-aura-r2",
+    "arm": "aura",
+    "task": 9,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 3,
+    "agentWallSec": 15,
+    "tokensIn": 29980,
+    "tokensOut": 1665,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 50,
+    "srcTokens": 782,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 14,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "parts",
+          "pass": true,
+          "why": "The robot is built from primitives.box, sphere and capsule: pelvis, torso, skull, visor, and capsule limbs for two arms and two legs. No model files are loaded."
+        },
+        {
+          "id": "joints",
+          "pass": true,
+          "why": "Nested groups with runtime ids form a hierarchy: hips > chest > head, with shoulder > elbow on each arm and hip > knee on each leg. That is 11 joints, and onFrame sets rotation on all of them. There were no page errors, and the animated pro"
+        },
+        {
+          "id": "idle",
+          "pass": true,
+          "why": "onFrame drives breathing, weight shift, head turn, arm sway and knee flex with sin(t). The animated probe is true (diff 1.93, changedFrac 0.036)."
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The background is #05060a. A directional key light has intensity 4 and shadow:true, and a magenta (#ff2fa8) directional rim light has intensity 5 and sits behind the robot. A large floor plane receives the shadow. The probes cannot confirm "
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera is at z≈5.2 with fov 36 and targets (0,1,0). That gives a visible vertical range of about -0.7 to 2.7, which holds the robot (about 0 to 1.9) centred. The frame is not blank, and 51% of pixels are non-black."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 26,
+        "rulesLines": 11,
+        "glueLines": 14,
+        "notes": "Glue is the import and global declaration, the createAuraApp call, the onFrame wrapper with its time accumulator and node lookup helper, the J and limb helper closures with the name counter, await ready, and the ready flag. The scene, materials, hierarchy and light descriptions count as scene lines."
+      }
+    }
+  },
+  {
+    "runId": "b504-A-t9-aura-r3",
+    "arm": "aura",
+    "task": 9,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 3,
+    "agentWallSec": 22.2,
+    "tokensIn": 31915,
+    "tokensOut": 2197,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 84,
+    "srcTokens": 1065,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6486.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 15,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "parts",
+          "pass": true,
+          "why": "Head (sphere skull, box visor), torso box, pelvis, two arms and two legs are built from box, sphere, capsule and cylinder primitives. There are no model files or asset references."
+        },
+        {
+          "id": "joints",
+          "pass": true,
+          "why": "Eleven nested groups (hips, chest, head, l/r-hip, l/r-knee, l/r-shoulder, l/r-elbow) form a real hierarchy. The onFrame handler sets rotation on each by id. The build succeeded with no page errors, so the node lookups resolved."
+        },
+        {
+          "id": "idle",
+          "pass": true,
+          "why": "onFrame drives sine-based breathing, weight shift, head turn and arm and knee motion. The probes confirm animated=true with diff 2.53 and changedFrac 0.04."
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The scene has a dark #05060a background, a key directional light at intensity 6 with shadow:true, a magenta rim light (#ff2fa8) and a blue secondary rim, over a floor plane. The frame is non-blank (nonblack 0.515, std 52). The probes do not"
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera is at about 5.3 units with a 36° fov and targets (0,1,0). That gives roughly 3.4 units of visible height against a robot about 2 tall centred near y=1. The robot fits whole and centred, with a slight side offset in camera positio"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 47,
+        "rulesLines": 14,
+        "glueLines": 15,
+        "notes": "Scene lines cover the materials, the camera and lights, the floor and the nested robot hierarchy. Rules lines are the idle animation in onFrame. Glue lines are the import, the Window global declaration, the V3 type, the limb and J helpers, createAuraApp, the time accumulator, the node lookup helper,"
+      }
+    }
+  }
+]

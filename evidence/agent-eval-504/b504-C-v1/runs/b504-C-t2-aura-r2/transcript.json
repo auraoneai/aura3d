@@ -1,0 +1,238 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KcaXJ4JMyBwkQm9WzAFA34",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KcaXJ4JMyBwkQm9WzAFA34",
+    "content": "1\t# Task 2: forest of 10,000 instances\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A ground plane and exactly 10,000 scattered objects drawn with instancing (not 10,000 separate meshes): 8,000 trees (a trunk and a canopy, each instanced) and 2,000 rocks.\n7\t2. Placement is deterministic from a fixed seed (same forest every load), no overlaps needed.\n8\t3. Per-instance colour variation (canopies and rocks do not all share one colour).\n9\t4. One directional light that casts shadows, and exponential fog.\n10\t5. The camera slowly orbits the forest and the whole scene is visible.\n11\t\n12\tThe rendering contract in the next section applies.\n13\t\n14\t## Rendering contract (all tasks)\n15\t\n16\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n17\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n18\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n19\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n20\t- When you are done, call `finish`.\n21\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01S77HDK3UKg41SSS1aoSBrR",
+    "name": "aura_lookup",
+    "input": {
+     "query": "instances per-instance colors shadow directional light fog exponential camera orbit"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01BWWnpY4Bi3b2LNheHfmDq4",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01S77HDK3UKg41SSS1aoSBrR",
+    "content": "aura_lookup(\"instances per-instance colors shadow directional light fog exponential camera orbit\")\n\n### WORKING SOURCE (copy and adapt)\n[docs/agents/first-screen-cheatsheet.md :: Skeleton (forest scene: orbit camera, hemisphere + shadow sun, exponential fog, ground)]\n## Skeleton (forest scene: orbit camera, hemisphere + shadow sun, exponential fog, ground)\n```ts\nimport { camera, createAuraApp, effects, environments, geometry, group, instances, interactions, lights, material, primitives, scene, sky, type AuraTransformSpec } from \"@aura3d/engine\";\nlet sc = scene({ background: \"#b4c8d8\" })\n  .camera(camera.orbit({ position: [0, 85, 130], target: [0, 2, 0], fov: 45, near: 20, far: 450, autoRotate: 0.12 }))\n  .add(lights.hemisphere({ skyColor: \"#cfe0f2\", groundColor: \"#5d6b45\", intensity: 1.1 }))\n  .add(lights.directional({ position: [90, 130, 60], target: [0, 0, 0], intensity: 3, shadow: true }))\n  .add(effects.fog({ color: \"#b4c8d8\", density: 0.0045 }))\n  .add(primitives.plane({ name: \"ground\", size: [260, 1, 260], material: material.pbr({ color: \"#5e7a3e\", roughness: 1 }) }));\n// <blocks: top level>\nconst app = createAuraApp(\"#app\", { scene: sc });\napp.onFrame((f) => {\n  // <blocks: per frame>\n});\nawait app.ready();\n```\n\n[docs/agents/recipes.md :: 2. A forest of thousands of instances (fog, shadows, per-instance colour)]\n## 2. A forest of thousands of instances (fog, shadows, per-instance colour)\n\n```ts\nimport { createAuraApp, effects, instances, lights, material, primitives, s"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01BWWnpY4Bi3b2LNheHfmDq4",
+    "content": "1\t# Aura3D agent entry\n2\t\n3\tEverything needed for common scenes is in `llms.txt` (cheat sheet with complete working blocks). Deeper references only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`, `docs/agents/README.md`.\n4\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should check whether fog supports an exponential option and verify the ready flag, then quickly look at the effects.fog signature.\n\n",
+    "signature": "CAQS0QQKEggTEAEYAjgBQgh0aGlua2luZxIMx48OXtn5mzeBOVe7GgxTgqKUjNaJwwlBGesiMDfo4Sfn/p6k3CRoxx6CH0/m53Jk2CVUrMt1a3V/H5qK4LYlSOMJGB2keuGe/xHexSrsAz+r3/OFqG7OTpl8Udgvym67BcC0kZBy/Mp8ehkbWbQ9CVoc4/Ia8YjluDsB/JK5i65alIQmNlqYcJ20zFoaWnpTHkbSa9Y1UkXYamG0/JMGZA3n0vP3QrpGAgCwKnfL7QJIRH4HoJBedgYydLLoNEfttX4RUVKQByiiytRMXC/X8W5r6xoE38AL2NK+b7DRndvXzCaZe2mKWMa08zqznrf+P55+bkYRxAGsxsx4ZBe365XV7jVCgKmxmFDQYggyAL6t+QQBRWJcsafcoyzPa67RQa5KS/0nygL14F9QjWFzXepGT8zM+Ivk18oLU/r35wWmA2chLIxWa4K9HfUQQDsiuGHvIVcSACcmgHlobtdMA08ADvyzcKsfh7rpQ1OJCfq8mCbVPSlukcahLhQhkl7gkdi7moaH2ejAIij47DeOfHZS93hAKPTI/Z5e993wdUYuwW1VucHYspsPcqTE2uJI4OikvJ1rZuko3ElisN+Zl+xUcttsLK/buehPCOue56LPJ0bxRBi0aNsDAHdS8X8R7Uz+wG5OhWrvKt3pk3Mup8zjdT5kBNMQP18/bvibtvpR6cuaLrwZR3SQjyHXFuCa5d7YVCeBDZI2k2B0YWJvn+g7vte5ogW3AYhjhph2EDSRcws5xvKpE2z/ahgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01K7uJjWGtobLiRbn9YFtn5S",
+    "name": "search",
+    "input": {
+     "pattern": "fog\\(|__EVAL_READY__|mode: ?\"exp",
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Nigew1sFLXbAJZTPPgmbCw",
+    "name": "search",
+    "input": {
+     "pattern": "fog",
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01K7uJjWGtobLiRbn9YFtn5S",
+    "content": "19:  .add(effects.fog({ color: \"#b4c8d8\", density: 0.0045 }))\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Nigew1sFLXbAJZTPPgmbCw",
+    "content": "7: * Fields scene fog reads: the legacy compile (`density`, `color`, `intensity`)\n8: * and the C-21 height-fog spec copied by `LiveAtmosphere` (`specFromNode`).\n19: * Scene fog options: `mode` is the C-21 fog mode read by scene fog\n40:/** GU47 E-C: `effects.volumetricFog` options (adds `godRayDensity`, decoupled from scene-fog density; behaviour in E-C). */\n72:/** Full dimensions of a bounded fog volume in world units; a scalar makes a cube. */\n79:     * applied at resolve time by compiler/fog.ts under A3D_QR_VFX_FOG (a bare\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01DarF722ew8JbNakmngm1m9",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+     "limit": 40
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01DarF722ew8JbNakmngm1m9",
+    "content": "1\timport type { AuraAssetRef, AuraEffectNode, AuraVec3 } from \"../nodes/types.js\";\n2\timport { AuraNodeBuilder } from \"../nodes/builder.js\";\n3\timport type { AuraBlendMode } from \"../../../rendering/contracts/index.js\";\n4\timport type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from \"../../contracts/effects.js\";\n5\timport type { AuraHeightFogSpec } from \"../../contracts/atmosphere.js\";\n6\t/**\n7\t * Fields scene fog reads: the legacy compile (`density`, `color`, `intensity`)\n8\t * and the C-21 height-fog spec copied by `LiveAtmosphere` (`specFromNode`).\n9\t */\n10\texport declare const FOG_OPTION_KEYS: readonly string[];\n11\t/**\n12\t * Lane node-option surface: `AuraEffectNode` (shared `agent-api/index.ts`,\n13\t * prd15) does not yet declare the PRD-07 §6.2.9–11 fields, so the builders\n14\t * take a widened option bag and copy defined fields through\n15\t * `withEmitterOptions` — identical to the §6.2 emitter-option pattern above.\n16\t */\n17\ttype VfxNodeOptions = Omit<AuraEffectNode, \"kind\" | \"effect\"> & Record<string, unknown>;\n18\t/**\n19\t * Scene fog options: `mode` is the C-21 fog mode read by scene fog\n20\t * (`AuraHeightFogSpec.mode`), not the anti-alias mode the shared effect node\n21\t * declares for `effects.antiAlias`.\n22\t */\n23\ttype FogNodeOptions = Omit<AuraEffectNode, \"kind\" | \"effect\" | \"mode\"> & {\n24\t    readonly mode?: AuraHeightFogSpec[\"mode\"];\n25\t} & Record<string, unknown>;\n26\t/**\n27\t * GU47 (PRD §3.1 E-C): tilt-shift focus band on `effects.depthOfField`. The\n28\t * b"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_015DfxxyyfikSZ59YhUSugFh",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+     "pattern": "mode"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_015DfxxyyfikSZ59YhUSugFh",
+    "content": "43:    readonly model: \"preetham\";\n55:    readonly model: \"gradient\";\n68:    readonly model: \"hdri\";\n74:    readonly model: \"cubemap\";\n79:    readonly mode?: \"height\" | \"exp\" | \"exp2\" | \"linear\" | \"absorption\";\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm setting up the \"exp\" mode with autoRotate enabled for the orbit camera, and flagging it as ready once the first frame renders.\n\n",
+    "signature": "CAQSuwUKEggTEAEYAjgBQgh0aGlua2luZxIM4JtC26wR0igKHZJjGgzYtpYemfoI4oNIKb8iMLGUvxoDeKQFEAHPEQLIXXVcqF05XHsgOOgNzAzA1dF0eGMQJcHqjQ80QNE03nvbJyrWBIPfZcBWB664H48tkTXd5On1KWSgWNIGn+kq2Zxp50GpeHSpX7aX2g/CUDIlC7rXOoURowZLg6G9c6hBAn83BQ44RxBOhXa0mbOobP9Tvm8Qb9uNhO4jHL60uyNfGSy9FuJ2uhjj3+9Qt3LM4k9Iqt8IKHMnWQ8s1UBSbOIPaV2qQgp+Af4A2IDSOvmtFXN/5AxBKeLi7MlE9G5GcFg4C3qAviLUMzsxMG8aU0/SorQ+TrtPft3plbqeZ/+Wf+eeywKEJvd9IS5lus/e9LdPwa7M9Ob0BHuRP3vZNrCYwHTFElSJoButd0eU9C12vzDoW7CAHaSJUEw9Dz+GMDFyjafP7MropBPR2XeISgerM0xVASIETJIOXg669/IXoXFkdjo62Fk/I/25TCg48yF5CJHuLNVLQjXlHa7hEXhnB57G+GXMzeemT7i8ytufc/txZ114dblIGd/RSJOzVOUNbNbpZbYexxQg54dONaC3b4lpOgxy+RsxBa3h1bUaDeHVr1HUDWIysxM1F5if0d8UoY+sILZ2To16XQpS4TOZOgAy6XL7KktR9Wv+72bhbKEdC6gcFDt1+C73EGnk0lFTyTPsiLbHY/HAjE3z1524PbAZ/U+/umeJkz9dOe3rGJGzAwvfkbzdQ7oWHRGDKSspTNP3HPy77FPPactwJTm6OxVHYXaR9L9At2r9cq4EBEu2eX55r+oXUWcAIoJ1zzPS5sqwVrFkUe1AXxHeHrDLeeopBS/XibWhk1irITK+uU5fL93CZRBh8tSLpn4+RRE843kpyEiG1K4YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018ZqUmbUBhDAsXpmVhYLSsH",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { camera, createAuraApp, effects, instances, lights, material, primitives, scene, type AuraTransformSpec } from \"@aura3d/engine\";\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n  }\n}\n\nlet seed = 20240607;\nconst rand = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);\n\nconst TREES = 8000;\nconst ROCKS = 2000;\nconst RADIUS = 80;\n\nconst trunks: AuraTransformSpec[] = [];\nconst canopies: AuraTransformSpec[] = [];\nconst canopyColors: string[] = [];\nfor (let i = 0; i < TREES; i += 1) {\n  const a = rand() * Math.PI * 2;\n  const r = RADIUS * Math.sqrt(rand());\n  const x = Math.cos(a) * r;\n  const z = Math.sin(a) * r;\n  const s = 0.8 + rand() * 0.8;\n  trunks.push({ position: [x, 0.8 * s, z], scale: [0.34 * s, 1.6 * s, 0.34 * s] });\n  canopies.push({ position: [x, 1.3 * s + 2, z], scale: [2.4 * s, 4 * s, 2.4 * s] });\n  canopyColors.push(`hsl(${95 + Math.floor(rand() * 50)}, 55%, ${22 + Math.floor(rand() * 18)}%)`);\n}\n\nconst rocks: AuraTransformSpec[] = [];\nconst rockColors: string[] = [];\nfor (let i = 0; i < ROCKS; i += 1) {\n  const a = rand() * Math.PI * 2;\n  const r = RADIUS * Math.sqrt(rand());\n  const s = 0.4 + rand() * 0.9;\n  rocks.push({\n    position: [Math.cos(a) * r, 0.3 * s, Math.sin(a) * r],\n    rotation: [0, rand() * Math.PI * 2, 0],\n    scale: [s * (0.9 + rand() * 0.6), s * 0.7, s * (0.9 + rand() * 0.6)],\n  });\n  rockColors.push(`hsl(${20 + Math.floor(rand() * 30)}, ${5 + Math.floor(rand() * 10)}%, ${30 + Math.floor(rand() * 30)}%)`);\n}\n\nconst sc = scene({ background: \"#b4c8d8\" })\n  .camera(camera.orbit({ position: [0, 85, 130], target: [0, 2, 0], fov: 45, near: 20, far: 450, autoRotate: 0.12 }))\n  .add(lights.hemisphere({ skyColor: \"#cfe0f2\", groundColor: \"#5d6b45\", intensity: 1.1 }))\n  .add(lights.directional({ position: [90, 130, 60], target: [0, 0, 0], intensity: 3, shadow: true }))\n  .add(effects.fog({ color: \"#b4c8d8\", density: 0.0045, mode: \"exp\" }))\n  .add(primitives.plane({ name: \"ground\", size: [260, 1, 260], material: material.pbr({ color: \"#5e7a3e\", roughness: 1 }) }))\n  .add(instances.cylinder({ name: \"trunks\", transforms: trunks, material: material.pbr({ color: \"#5a3d24\", roughness: 0.95 }), params: { radialSegments: 6 } }))\n  .add(instances.cone({ name: \"canopies\", transforms: canopies, colors: canopyColors, material: material.pbr({ color: \"#ffffff\", roughness: 0.9 }), params: { radialSegments: 8 } }))\n  .add(instances.sphere({ name: \"rocks\", transforms: rocks, colors: rockColors, material: material.pbr({ color: \"#ffffff\", roughness: 1 }) }));\n\nconst app = createAuraApp(\"#app\", { scene: sc });\nlet first = true;\napp.onFrame(() => {\n  if (first) {\n    first = false;\n    requestAnimationFrame(() => {\n      window.__EVAL_READY__ = true;\n    });\n  }\n});\nawait app.ready();\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01YTZKGsRSjkqE5GWRFnS9sa",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018ZqUmbUBhDAsXpmVhYLSsH",
+    "content": "wrote src/main.ts (65 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01YTZKGsRSjkqE5GWRFnS9sa",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "The engine should handle continuous rendering on its own, and the sphere/cone shapes should support shadows by default, so I think this setup is good to go.\n\n",
+    "signature": "CAQS8QUKEggTEAEYAjgBQgh0aGlua2luZxIMiJutQ7bMw/GQeXsoGgzWLdJK+uK9KcAyl7kiMOa4Q9NWIrU54u1bwhPpAhUvND7lpiI9Uvl7gjIh7AAhZ+vif9GfbQKs77RDBlXzgSqMBXcoXufOIRfqNwUvHlqkHgZa7CnrTdIbOrYOkkRpFRw7FYO+EA2XJUVZM01ZZ98v2ajR3znrHAqTRiR3FgHj/ZOJVqT0cpJGgCMY8kl4z5PQJNaKuhcKvqmQx950gqnezfocR+kkR35NK+3EOKO9qskPx7b8MnwxM7abCtALnsA+POYERjCmUnNdl/ypB8L4X7kDLV4RzC8vXg1pwNzvzlZj9dt8+yGzc/J6lhahqZlNIONwHTAePn5tOn0MqskHIQWyIsc0MHxuCFC3AIiYn6RYbPYfI+cR5Bgs397h0ZagycgYL054QNrJCxm6HbY5odp/pQMxqwQicMGY0xfbRtHlSGKnqyzXzLA2JUr6hSgz9/CVWUHzTMrg27X6wZu1ozaPa7Hlnj9L4A4seypgOJ6i6ZTKDsgJwM7h+ALvbOfqlPM0q0t3yfuuyIeRm2IMLNZqCrZ8/N+u5C/ZFvFZGYNSaSpWuhvkApq05x3d+y2qqqnfelI8aiduKqO2AGvtkpxCZAbeaaMxeOxalXSx2dDe2P1mvKoFhBdJ5hCzZxEBkCfEdHebzu6NHylMvSwLNhWW/+yZFgQ2qHgtcOHmX97ZL8SSBgKgTCU4TE+g+FsvVFyUEYPvoGp1ExJWH2wnSB96jMkHmOpeUOyEt6ZJ+DcXVUxhmKQOSpyChTCdynQuYDM4XgcKRuA8VuB5UYizQXZgKxWrorUmJp9A/GWjVjOTMHnS8EDH3HEM9IEZeTrCJbvD6mfZwpWrB4VrSEcfyWGZQIwLNluPFo0Tl3jVKqtEQUidwW9Ix95uXG35f8MECYnB6Hrn8hu5q7UwnYkLS3VYDVfY5my4WAWvUZ1HkCJwMPA+nvxEYRAVmdoYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Xb7MTB5dQbHqLvRNGsM83s",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts and it passes the typecheck. I haven't run `vite build` or loaded the scene in a browser, so I haven't seen it render.\n\n- **Objects:** the forest has a ground plane and 10,000 instanced objects in three `instances.*` nodes: 8,000 trunks (cylinders), 8,000 canopies (cones) and 2,000 rocks (spheres). That makes three instanced draw calls.\n- **Placement:** a seeded linear-congruential RNG places everything inside an 80-unit radius, so the forest is the same on every load.\n- **Colour:** canopies get per-instance green hues, and rocks get per-instance grey-brown tones. Both use a white base material so the instance colours show through.\n- **Light and fog:** there is one shadow-casting directional light, plus a hemisphere light for fill and exponential fog (`mode: \"exp\"`, density 0.0045).\n- **Camera:** an orbit camera at `[0, 85, 130]` looks at the centre and rotates slowly (`autoRotate: 0.12`).\n- **Ready flag:** `window.__EVAL_READY__` is set to true after the first `onFrame` callback and one more animation frame.\n\nThe code never calls `requestAnimationFrame` for the render loop. It relies on `createAuraApp` to render continuously, which I assumed from the docs.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Xb7MTB5dQbHqLvRNGsM83s",
+    "content": "ok"
+   }
+  ]
+ }
+]

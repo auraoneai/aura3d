@@ -1,0 +1,120 @@
+{
+  "runId": "b504-A-t1-aura-r1",
+  "batch": "b504-A",
+  "arm": "aura",
+  "task": 1,
+  "idx": 1,
+  "order": 8,
+  "seed": 20261106008,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T22:26:27.783Z",
+  "docsCommit": "06b8dee1cdfd73343650abcc6eff43d74e34b8d2",
+  "docs": {
+    "files": 111,
+    "sha256": "3857b8416e6ae68f6ea9bf86f67e938e686230d3a789c9ea677207394e4594de"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 14048,
+  "usage": {
+    "input": 65243,
+    "uncachedInput": 65243,
+    "output": 724,
+    "turns": 5,
+    "perTurnInput": [
+      3334,
+      11341,
+      14513,
+      17829,
+      18226
+    ],
+    "perTurnOutput": [
+      20,
+      45,
+      14,
+      452,
+      193
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1750,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 21
+    },
+    {
+      "i": 1,
+      "t": 1750,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 169
+    },
+    {
+      "i": 2,
+      "t": 1750,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4962,
+      "type": "search",
+      "pattern": "interactions|orbit"
+    },
+    {
+      "i": 4,
+      "t": 6503,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 70
+    },
+    {
+      "i": 5,
+      "t": 10578,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 1130
+    },
+    {
+      "i": 6,
+      "t": 11045,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 7,
+      "t": 14048,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts, following the cube recipe in docs/agents/recipes.md. It passes `typecheck`. I didn't run `vite build` or open it in a browser, so I haven't seen the rendered result.\n\nThe scene has one metallic, rough PBR box on a dark-grey (#2b2b2e) background. A neutral environment, a shadow-casting key light and a blue-tinted fill light light it. `onFrame` rotates the cube continuously. `interactions.orbit` targeting the cube lets you drag to orbit the camera, including while it rotates. The orbit camera sits at [2.8, 1.9, 3.4], looking at the origin, so the whole cube is framed in the centre.\n\n`window.__EVAL_READY__` is set to true after `await app.ready()`, in the next animation frame.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

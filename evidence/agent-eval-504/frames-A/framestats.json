@@ -1,0 +1,86 @@
+{
+ "b504-A-t2-aura-r1": {
+  "mean": 169.2,
+  "std": 22.1,
+  "nonblack": 1.0,
+  "diff": 4.46,
+  "changedFrac": 0.2066
+ },
+ "b504-A-t2-aura-r2": {
+  "mean": 169.2,
+  "std": 22.1,
+  "nonblack": 1.0,
+  "diff": 4.46,
+  "changedFrac": 0.206
+ },
+ "b504-A-t2-aura-r3": {
+  "mean": 169.1,
+  "std": 22.1,
+  "nonblack": 1.0,
+  "diff": 4.46,
+  "changedFrac": 0.2062
+ },
+ "b504-A-t5-aura-r1": {
+  "mean": 165.3,
+  "std": 46.9,
+  "nonblack": 1.0,
+  "diff": 24.31,
+  "changedFrac": 0.4489
+ },
+ "b504-A-t5-aura-r2": {
+  "mean": 163.5,
+  "std": 42.7,
+  "nonblack": 1.0,
+  "diff": 16.35,
+  "changedFrac": 0.3972
+ },
+ "b504-A-t5-aura-r3": {
+  "mean": 179.3,
+  "std": 29.7,
+  "nonblack": 1.0,
+  "diff": 17.88,
+  "changedFrac": 0.4308
+ },
+ "b504-A-t8-aura-r1": {
+  "mean": 137.5,
+  "std": 60.2,
+  "nonblack": 1.0,
+  "diff": 48.49,
+  "changedFrac": 0.8158
+ },
+ "b504-A-t8-aura-r2": {
+  "mean": 163.8,
+  "std": 37.4,
+  "nonblack": 1.0,
+  "diff": 19.37,
+  "changedFrac": 0.7072
+ },
+ "b504-A-t8-aura-r3": {
+  "mean": 159.7,
+  "std": 55.5,
+  "nonblack": 1.0,
+  "diff": 19.56,
+  "changedFrac": 0.4896
+ },
+ "b504-A-t9-aura-r1": {
+  "mean": 42.7,
+  "std": 44.9,
+  "nonblack": 0.463,
+  "diff": 2.18,
+  "changedFrac": 0.0359
+ },
+ "b504-A-t9-aura-r2": {
+  "mean": 45.6,
+  "std": 46.1,
+  "nonblack": 0.515,
+  "diff": 1.93,
+  "changedFrac": 0.0364
+ },
+ "b504-A-t9-aura-r3": {
+  "mean": 52.8,
+  "std": 52.0,
+  "nonblack": 0.515,
+  "diff": 2.53,
+  "changedFrac": 0.0398
+ }
+}

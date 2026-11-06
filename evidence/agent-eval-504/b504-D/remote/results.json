@@ -1,0 +1,182 @@
+[
+  {
+    "id": "b504-D-t2-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6485.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t2-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6485.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t2-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6485.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t5-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6524.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t5-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6524.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t5-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6524.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t8-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6534.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t8-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6532
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t8-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6532.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t9-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6486.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t9-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6486.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b504-D-t9-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": 6486.6
+    },
+    "readyMs": null
+  }
+]

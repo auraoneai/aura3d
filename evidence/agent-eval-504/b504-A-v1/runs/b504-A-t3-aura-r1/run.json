@@ -1,0 +1,132 @@
+{
+  "runId": "b504-A-t3-aura-r1",
+  "batch": "b504-A",
+  "arm": "aura",
+  "task": 3,
+  "idx": 1,
+  "order": 2,
+  "seed": 20261106002,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T22:25:51.195Z",
+  "docsCommit": "06b8dee1cdfd73343650abcc6eff43d74e34b8d2",
+  "docs": {
+    "files": 111,
+    "sha256": "3857b8416e6ae68f6ea9bf86f67e938e686230d3a789c9ea677207394e4594de"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 18130,
+  "usage": {
+    "input": 59721,
+    "uncachedInput": 59721,
+    "output": 964,
+    "turns": 5,
+    "perTurnInput": [
+      3334,
+      11483,
+      13052,
+      15721,
+      16131
+    ],
+    "perTurnOutput": [
+      20,
+      41,
+      78,
+      626,
+      199
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2218,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 23
+    },
+    {
+      "i": 1,
+      "t": 2219,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 169
+    },
+    {
+      "i": 2,
+      "t": 2219,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4669,
+      "type": "list",
+      "path": "public/assets"
+    },
+    {
+      "i": 4,
+      "t": 4677,
+      "type": "search",
+      "pattern": "sha256|queryParam"
+    },
+    {
+      "i": 5,
+      "t": 8858,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 60
+    },
+    {
+      "i": 6,
+      "t": 8862,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 7,
+      "t": 14106,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 1618
+    },
+    {
+      "i": 8,
+      "t": 14565,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 9,
+      "t": 18130,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts, and it passes typecheck. I did not run the app or `vite build`, so none of the visible behavior has been checked. The scene loads /assets/soldier.glb at 1.8 units tall on a ground plane, with a perspective camera framing it. It plays Idle at start. One shadow-casting directional light plus a hemisphere fill light. R cross-fades to Run and I cross-fades back to Idle, each over 0.4 seconds. `window.__EVAL__.clip()` returns the target clip name as soon as a key is pressed. `window.__EVAL_READY__` is set after `app.ready()` and the next animation frame. The model's sha256 and clip names come from the docs example (docs/agents/recipes.md), not from hashing the file here. If the engine checks the hash at load time and the file differs, the model will fail to load.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

@@ -1,0 +1,222 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0164CF2j4v63aKnXfx89UTEu",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Gv7CLWGp7LCv3eX2mwS41s",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PikEYe1djzbi4pXYAjvpre",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0164CF2j4v63aKnXfx89UTEu",
+    "content": "1\t# Task 3: skinned character with clip crossfade\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tThe file `/assets/soldier.glb` is a skinned character with animation clips (including `Idle`, `Walk`, `Run`).\n6\t\n7\tRequirements:\n8\t1. Load `/assets/soldier.glb`, scale/position it so the whole character stands on a ground plane and is framed by the camera.\n9\t2. It starts playing `Idle`.\n10\t3. Pressing `R` cross-fades to `Run` over 0.4 seconds; pressing `I` cross-fades back to `Idle` over 0.4 seconds.\n11\t4. One shadow-casting light, shadow on the ground.\n12\t5. Expose `window.__EVAL__ = { clip: () => string }` returning the name of the clip currently being played (the target clip once a fade starts).\n13\t\n14\tThe rendering contract in the next section applies. Set `window.__EVAL_READY__ = true` after the model has loaded and the first frame is drawn.\n15\t\n16\t## Rendering contract (all tasks)\n17\t\n18\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n19\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n20\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n21\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n22\t- When you are done, call `finish`.\n23\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Gv7CLWGp7LCv3eX2mwS41s",
+    "content": "1\t# Aura3D cheat sheet: if your task needs X, copy block X\n2\t\n3\t`@aura3d/engine` is installed; do not open `node_modules`. Start from the skeleton, paste the blocks you need at its marked lines, write the whole solution first, then `typecheck` once and `finish`. Only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`.\n4\t\n5\t## Rules\n6\t- `createAuraApp` owns renderer, resize and loop: write none. Per frame `app.onFrame((f) => ...)` (`f.dt` seconds); end with `await app.ready()`; set window flags after it (`declare global { interface Window { __FLAG__?: boolean } }`).\n7\t- Vectors `[x, y, z]`, colours CSS strings. Primitives are unit shapes scaled by `size` (`sphere` size = diameter, `plane` `[w, 1, d]` lies in XZ): `primitives.box|sphere|plane|cylinder|capsule|cone|torus`. Node chain: `.position(x, y, z)`, `.scale([x, y, z])`, `.rotate(x, y, z)`.\n8\t- Animate later: `.runtime({ id, mutable: true })` then `app.nodes.require(id).setPosition(x, y, z)` / `.setRotation(x, y, z)`; light `.setLight?.({ intensity, color })`; shader `.setUniform?.(name, v)`.\n9\t- Instance `colors` multiply the material colour: use base `#ffffff`. Dark frame: add `environments.neutral({ intensity: 0.5, background: false })` or a hemisphere light.\n10\t- Camera `camera.orbit({ ..., autoRotate: radPerSec })` orbits its target slowly; never `app.camera`.\n11\t\n12\t## Skeleton (forest scene: orbit camera, hemisphere + shadow sun, exponential fog, ground)\n13\t```ts\n14\timport { camera, createAuraApp, e"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PikEYe1djzbi4pXYAjvpre",
+    "content": "1\t# Aura3D agent entry\n2\t\n3\tEverything needed for common scenes is in `llms.txt` (cheat sheet with complete working blocks). Deeper references only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`, `docs/agents/README.md`.\n4\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need a sha256 hash value but can't compute that myself, so let me check the documentation for model assets instead.\n\n",
+    "signature": "CAQSyAQKEggTEAEYAjgBQgh0aGlua2luZxIMC7K64Bgbgl3gR/h/GgwKSCAeY0kwJmjusq8iMCAEJ33aL+KSCzTTQOCgJu1gYPwaqiwFpqnElmLT39fNXRe9TMGctmqsfMydIYmfFyrjA3/knZCR7jrhQGXY5dwuL1yugOtu2HXbeqz+8KwVP+99WKDyv1gepulySQo63vbVN5bUjLlnhF41WD5MSvPSODh4ovNl1DcrDzDiBlj3dnfcPbWepBesFB/C3iFuZSQK1cPCYad4v6bL5GJHHVJeusogTErtqPmDdZMruHjM025HGq2kxeD2IKmix3BKVenjVUQcXAbhAjpGloLSjK342TcCFakTItyvbaqcryeRhK3IEVBVn/Dztwh9xOotwpIpowVBc3SUWX3G4zwM+IlZXUX5s/GrDwe3C5Og/NV+WeY+tKZS8rhSV74TEmtowY71otZ8cIDtXnjiztiCR7cVabHBLhH6sjhiAD9OPA2YiJHmZsBdNZ5z2tNM9ohRU6aYJyZtm6Pl8xVXoRwW5OQgnOSSJMNuty1KPVthuOVVd91U+zhNJlJMAOgOd+Tk0vefnsC2S+aEFE2rCif+Uf3pw9jcrQcvQsqJ/on4kh5zzU9d6PDMpc/AaXkGTVVkH1qVF2UDnzQSJqKGeHdr8WPkw8zKA1Kfpf9Mb+0SoTJR5DrpHDfMt9z5CEh8PLVCi+tEnJtDdTmH+91vm9OMbtJris/ESrXdVqZ0T7urQu6FWavRb6W+JhNb+gXkMFh/0y2gtMXtJBgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FsXqRhcgCqyaQFMdksdB7N",
+    "name": "search",
+    "input": {
+     "pattern": "sha256|defineModelAssets"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01YU2g7R2w9614G7PTxMeJus",
+    "name": "list_dir",
+    "input": {
+     "path": "public/assets"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Vf91YQatPHaX27qHGXcfSW",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FsXqRhcgCqyaQFMdksdB7N",
+    "content": "llms.txt:165:[Omitted long matching line]\ndocs/agents/game-showcase-build.md:11:[Omitted long matching line]\ndocs/agents/game-showcase-build.md:23:| Typed assets | `src/aura-assets.ts` and `aura.assets.json`, or `defineModelAssets` |\ndocs/agents/prompt-to-3d-workflow.md:28:[Omitted long matching line]\n.agents/skills/aura3d-browser-game/SKILL.md:19:`installQaHooks`, `defineModelAssets`, `installSafetyNet`); do not hand-roll a\n.agents/skills/aura3d-browser-game/SKILL.md:92:   them with a valid 64-char `sha256-...` `hash` (`defineModelAssets`).\ndocs/agents/native-capability-recipes.md:57:The mount function checks the asset's `sha256-...` hash metadata and awaits\ndocs/agents/lessons-learned.md:71:[Omitted long matching line]\nnode_modules/@aura3d/engine/templates/production-material-studio/asset-manifest.json:5:    { \"id\": \"clear-coat-test\", \"path\": \"fixtures/asset-corpus/clear-coat-test.glb\", \"sha256\": \"c3a1cbe318cd043b937130af4eb83ec2ea0b03613387b1b7d769dfab4ac15948\" },\nnode_modules/@aura3d/engine/templates/production-material-studio/asset-manifest.json:6:    { \"id\": \"sheen-test-grid\", \"path\": \"fixtures/asset-corpus/sheen-test-grid.glb\", \"sha256\": \"b3d82dde0ae6b93bef1a8085ec05540b21139f9917bfe771135c5aed9ba1c101\" },\nnode_modules/@aura3d/engine/templates/production-material-studio/asset-manifest.json:7:    { \"id\": \"studio-small-08\", \"path\": \"fixtures/environment-corpus/hdri/studio_small_08_1k.hdr\", \"sha256\": \"f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba\" }\ndoc"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01YU2g7R2w9614G7PTxMeJus",
+    "content": "soldier.glb"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Vf91YQatPHaX27qHGXcfSW",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01A8BfsiuZeEkzqY9hfZC3Lf",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/build-a-game.md",
+     "offset": 100,
+     "limit": 40
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LbgmBZrD1hsnmBfWmn6LXo",
+    "name": "read_file",
+    "input": {
+     "path": ".agents/skills/agent-docs/recipes.md",
+     "offset": 65,
+     "limit": 50
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01A8BfsiuZeEkzqY9hfZC3Lf",
+    "content": "100\t```\n101\t\n102\t## 3. Typed assets\n103\t\n104\tEvery character, vehicle, creature and landmark is a GLB admitted through the asset pipeline, never a primitive and never a raw URL (`tests/unit/agent-api/public-example-boundary.test.ts` enforces it for public examples). Get GLBs from the catalog (`aura3d assets search`), your own files (`aura3d assets add`) or Meshy through Kiro Prism (`meshy-cli` skill). `defineModelAssets` validates the sha256 and URL, and `?models=0` falls back to your stand-in. See `docs/api/model-loader.md`.\n105\t\n106\t```ts\n107\t// assets.ts\n108\timport { defineModelAssets } from \"@aura3d/engine\";\n109\t\n110\texport const assets = defineModelAssets(\n111\t  {\n112\t    hero: {\n113\t      url: new URL(\"./assets/hero.glb\", import.meta.url).pathname,\n114\t      sha256: \"0\".repeat(64),\n115\t      sizeBytes: 1_200_000\n116\t    }\n117\t  },\n118\t  { license: \"Own text prompt, generated with Meshy through Kiro Prism, 2026-10-24\" }\n119\t);\n120\t```\n121\t\n122\t## 4. The route: shell, loop, QA, safety\n123\t\n124\t```ts\n125\t// main.ts\n126\timport { camera, createFixedStepLoop, game, installQaHooks, lights, primitives, readQaParams, scene } from \"@aura3d/engine\";\n127\timport { createGame, sfxUrl } from \"@aura3d/engine/game\";\n128\timport { installSafetyNet } from \"@aura3d/debug\";\n129\timport { assets } from \"./assets\";\n130\timport { createDash, FIXED_DT, type DashInput } from \"./sim\";\n131\t\n132\tconst qa = readQaParams({ seed: { type: \"number\", default: 1 }, manual: { type: \"flag\" } });\n133\tconst sim "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LbgmBZrD1hsnmBfWmn6LXo",
+    "content": "65\t    .add(effects.fog({ color: \"#b4c8d8\", density: 0.0055 }))\n66\t    .add(primitives.plane({ name: \"ground\", size: [260, 1, 260], material: material.pbr({ color: \"#5e7a3e\", roughness: 1 }) }))\n67\t    .add(instances.cylinder({ name: \"trunks\", transforms: trunks, material: material.pbr({ color: \"#5a3d24\", roughness: 0.95 }), params: { radialSegments: 6 } }))\n68\t    .add(instances.cone({ name: \"canopies\", transforms: canopies, colors: canopyColors, material: material.pbr({ color: \"#ffffff\", roughness: 0.9 }), params: { radialSegments: 8 } }))\n69\t});\n70\t```\n71\t\n72\tAdd rocks as a third `instances.sphere` node. 10,000 instances is fine: three `instances.*` nodes are three draw calls.\n73\t\n74\t## 3. A skinned character with clips and a crossfade\n75\t\n76\t```ts\n77\timport { camera, createAuraApp, defineModelAssets, lights, material, primitives, scene } from \"@aura3d/engine\";\n78\t\n79\t// With a shell, use `aura3d assets add ./soldier.glb --name soldier` (writes src/aura-assets.ts). Without one,\n80\t// declare the same shape by hand: url (same origin), sha256 of the file, animations, license.\n81\tconst assets = defineModelAssets(\n82\t  { soldier: { url: \"/assets/soldier.glb\", sha256: \"dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b\", animations: [\"Idle\", \"Run\", \"TPose\", \"Walk\"], license: \"fixture\" } },\n83\t  { queryParam: null }\n84\t);\n85\t\n86\tconst app = createAuraApp(\"#app\", {\n87\t  scene: scene({ background: \"#2a2e36\" })\n88\t    .add(lights.hemisphere({ skyColor: \"#cfd8ea\", grou"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Good, the hash gives a value for the soldier's height, and I'll assume it positions relative to ground level at y=0.\n\n",
+    "signature": "CAQSxAUKEggTEAEYAjgBQgh0aGlua2luZxIM9SwbWDnR8e+ltmSuGgx7eAiRR3U+cOgJIQUiMJN1qTcAVHNMf9p94IpvA+mKxtoFgOHv3+hH6YZ+6+PmD+hORa7YxYtGhL8mrCZ3GCrfBFS/mjDmi1p2mST+hXNnm0FF0xWUlVxsGFPyEhfOcFrcgWyDHSV2sse9oWBVjITYa3ph7aDBYh8pqegX5LfJp2jIk6hsmVTHPLGFbT725fiHrBgEY+Bh7QRjODAZ0gcryWV1/PLikmKxNgm1z935WKm19NchKtnvPqefObGTrzRfrbEYCqa5gt6iQwJcOQxUAlXeH3hZzeQGRg5+yryzdfM0BXDSAOUhQROeTgQyyA7e2WDkpMIen2SXGB5abK56M2xjzTUY9hN9lqABnmtBmC31Yb0iZLETSB4OEdlNFWr3WvEMmp+DxRtamuS8SDCqY3Lc84u8fs+sUjQF4r/+LOLH3g3All/Q5f9f4uH81rEl9/q+6ivJRPa92iPzbqB9EalgUk+XXYyVi1kDLHwu8k9G0zBKLHwjuz2Sehu8wKPpAiKHWUaU4NSFE+CefEQbN8Be3r5b7TC0srnXhwqHoaUOnubAG6N+i8gTbf5rWNeSRr9F7zn6h9PvA6UpIXe2ic81wmuu6EMGdsgNxh/oZMOR8Lmg/XkBU1EZxPrJj5Oe5dlo0ot6wR1iXJev+hpTC/K/ECNmCLmZ1JBeGZxggLDhtFvGBMtE6n/dwHXKQwpudz0NLjkAl3zgujTBCmT75jIBDm1mDrPJu7Im3MZ9ECFsT5i5V2W2ijY/+xGZhmxndX76aby9EC6QllQq78l5O6lvrjDgMVMWVQtG49eCn41jxKFgLEvqm1teDYbj30BsrXfWw/MtkDHUsMIIWNf7zdokBrsG+Rz+sqfPqi4tmwLOnnBKkzQpzi7L13y1ohgYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016Ry58UCrjba16zC83op9NA",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { camera, createAuraApp, defineModelAssets, lights, material, primitives, scene } from \"@aura3d/engine\";\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n    __EVAL__?: { clip: () => string };\n  }\n}\n\nconst assets = defineModelAssets(\n  { soldier: { url: \"/assets/soldier.glb\", sha256: \"dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b\", animations: [\"Idle\", \"Run\", \"TPose\", \"Walk\"], license: \"fixture\" } },\n  { queryParam: null }\n);\n\nconst app = createAuraApp(\"#app\", {\n  scene: scene({ background: \"#2a2e36\" })\n    .add(lights.hemisphere({ skyColor: \"#cfd8ea\", groundColor: \"#4a4640\", intensity: 0.9 }))\n    .add(lights.directional({ position: [3, 6, 4], target: [0, 0.9, 0], intensity: 2.4, shadow: true }))\n    .camera(camera.perspective({ position: [0, 1.25, 4.6], target: [0, 0.9, 0], fov: 40 }))\n    .add(primitives.plane({ name: \"ground\", material: material.pbr({ color: \"#7b7f86\", roughness: 0.9 }), castShadow: false }).scale([12, 1, 12]))\n    .add(assets.node(\"soldier\", { name: \"soldier-model\", targetHeight: 1.8 }).animate({ clip: \"Idle\", loop: true }).runtime({ id: \"soldier\" }))\n});\n\nlet current = \"Idle\";\nwindow.__EVAL__ = { clip: () => current };\n\nwindow.addEventListener(\"keydown\", (event) => {\n  if (event.code === \"KeyR\") {\n    current = \"Run\";\n    app.nodes.require(\"soldier\").play(\"Run\", { loop: true, crossFade: 0.4 });\n  } else if (event.code === \"KeyI\") {\n    current = \"Idle\";\n    app.nodes.require(\"soldier\").play(\"Idle\", { loop: true, crossFade: 0.4 });\n  }\n});\n\nawait app.ready();\nrequestAnimationFrame(() => {\n  window.__EVAL_READY__ = true;\n});\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016L1FyKwqF2jmHfDCp24o3d",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016Ry58UCrjba16zC83op9NA",
+    "content": "wrote src/main.ts (41 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016L1FyKwqF2jmHfDCp24o3d",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01GvfvuWeTPzH84kZ6V9YQR3",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts, and it passes typecheck. I haven't built it with `vite build` or run it in a browser, so I haven't checked how the framing, shadow or crossfade look.\n\nThe scene loads `/assets/soldier.glb`, scaled to a height of 1.8. It plays `Idle` on start, with a perspective camera aimed at the character. The ground is a plane, and one directional light casts the shadow, plus a hemisphere light for fill. `R` cross-fades to `Run` and `I` cross-fades back to `Idle`, each over 0.4 seconds. `window.__EVAL__.clip()` returns the target clip as soon as a key is pressed.\n\n`window.__EVAL_READY__` is set on the first `requestAnimationFrame` after `app.ready()` resolves.\n\nI copied the soldier asset's sha256 and the scene setup from the project's `recipes.md`. I did not compute the hash myself."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01GvfvuWeTPzH84kZ6V9YQR3",
+    "content": "ok"
+   }
+  ]
+ }
+]

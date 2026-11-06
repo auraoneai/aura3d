@@ -1,0 +1,169 @@
+{
+  "runId": "b504-D-t9-aura-r1",
+  "batch": "b504-D",
+  "arm": "aura",
+  "task": 9,
+  "idx": 1,
+  "order": 10,
+  "seed": 20261106010,
+  "model": "claude-sonnet-5.5",
+  "condition": "D",
+  "startedAt": "2026-11-06T22:16:31.086Z",
+  "docsCommit": "06b8dee1cdfd73343650abcc6eff43d74e34b8d2",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 32190,
+  "usage": {
+    "input": 160898,
+    "uncachedInput": 160898,
+    "output": 2487,
+    "turns": 6,
+    "perTurnInput": [
+      3497,
+      14438,
+      27748,
+      34559,
+      40081,
+      40575
+    ],
+    "perTurnOutput": [
+      35,
+      31,
+      52,
+      44,
+      2067,
+      258
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1938,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 1938,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1938,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 1938,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 1938,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 5,
+      "t": 3944,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 212
+    },
+    {
+      "i": 6,
+      "t": 3945,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 7,
+      "t": 3945,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 8,
+      "t": 7694,
+      "type": "list",
+      "path": "docs/agents/recipes-src/procedural-humanoid"
+    },
+    {
+      "i": 9,
+      "t": 7695,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 10,
+      "t": 9790,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 78
+    },
+    {
+      "i": 11,
+      "t": 9794,
+      "type": "search",
+      "pattern": "setRotation|setPosition|\\.group\\(|groups?\\("
+    },
+    {
+      "i": 12,
+      "t": 27897,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 4996
+    },
+    {
+      "i": 13,
+      "t": 28335,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 14,
+      "t": 32190,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts and it passes typecheck. I haven't run `vite build` or looked at a rendered frame, so the lighting and framing are untested.\n\n- **Robot:** it is built from primitives as nested groups, so each joint rotates everything below it. It has 11 articulated joints: hips, chest, head, two shoulders, two elbows, two hips (legs) and two knees.\n- **Animation:** the `onFrame` callback drives the idle motion. It breathes, shifts weight side to side, and moves the head and arms gently, so frames differ over time.\n- **Lighting:**\n  - The background is near-black.\n  - A strong warm key light casts shadows onto a grey floor.\n  - A magenta rim light and a blue rim light sit behind the robot.\n- **Camera:** a perspective camera looks at the robot's centre from the front.\n- **Contract:** it draws into `#app` and renders continuously. `window.__EVAL_READY__` is set after the first frame.\n\nThe scene is adapted from the repo's `procedural-humanoid` recipe in `docs/agents/recipes-src/`.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

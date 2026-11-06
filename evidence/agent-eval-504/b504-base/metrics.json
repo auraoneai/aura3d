@@ -1,0 +1,530 @@
+[
+  {
+    "runId": "b504-base-t2-aura-r1",
+    "arm": "aura",
+    "task": 2,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": true,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "animated": false,
+      "instanced": false
+    },
+    "probePassFraction": 0.4,
+    "turns": 16,
+    "agentWallSec": 57.1,
+    "tokensIn": 597470,
+    "tokensOut": 2445,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 4,
+    "readCalls": 13,
+    "searchCalls": 11,
+    "writeCalls": 1,
+    "srcLines": 98,
+    "srcTokens": 889,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8571428571428571,
+    "silentNoOps": 0,
+    "glueLines": 20,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "instancing",
+          "pass": true,
+          "why": "Trunks, canopies and rocks are each created with a single instances.cylinder, instances.cone or instances.sphere call that takes a transforms array. There are no per-object meshes."
+        },
+        {
+          "id": "count",
+          "pass": true,
+          "why": "The source builds 8000 trunk and canopy transforms (TREES) and 2000 rock transforms (ROCKS), which gives 10,000 objects. The probes did not measure counts."
+        },
+        {
+          "id": "seeded",
+          "pass": true,
+          "why": "All placement uses a fixed-seed LCG (seed 20240607) and Math.random does not appear."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Canopies and rocks pass per-instance HSL colors over a white base material, so the colors should show. The probes are empty, so the effect is not measured. Trunks have a single color, which is fine."
+        },
+        {
+          "id": "shadow",
+          "pass": false,
+          "why": "One directional light has a shadow block (mapSize 4096, fit). No mesh or instanced mesh sets cast or receive flags, including the ground, and the probes give no evidence that shadows render. The casting/receiving requirement is not configur"
+        },
+        {
+          "id": "fog",
+          "pass": true,
+          "why": "effects.fog is added with mode 'exp', density 0.004 and a color matching the background. At the camera distance of about 140 this gives roughly 43% fog, so it should be visible. The probes are empty."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "onFrame advances the angle at 0.12 rad/s, about 52 s per revolution, and calls setPose on a radius-125 orbit that targets the forest center. This frames the 70-radius forest. The camera is called through optional chaining (app.camera?.), an"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 40,
+        "rulesLines": 28,
+        "glueLines": 20,
+        "notes": "Glue is the global Window declaration, the LCG helper, the camPos helper, the onFrame orbit update with the ready-flag handling (firstFrame/requestAnimationFrame), and the final await app.ready(). Rules covers the forest placement loops and the HSL color generation. Scene covers the createAuraApp ca"
+      }
+    }
+  },
+  {
+    "runId": "b504-base-t2-aura-r2",
+    "arm": "aura",
+    "task": 2,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": true,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "animated": false,
+      "instanced": false
+    },
+    "probePassFraction": 0.4,
+    "turns": 18,
+    "agentWallSec": 65.8,
+    "tokensIn": 660193,
+    "tokensOut": 2503,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 5,
+    "readCalls": 14,
+    "searchCalls": 11,
+    "writeCalls": 1,
+    "srcLines": 93,
+    "srcTokens": 836,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8571428571428571,
+    "silentNoOps": 0,
+    "glueLines": 16,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "instancing",
+          "pass": true,
+          "why": "Trunks, canopies and rocks are each created with a single instances.cylinder, instances.cone or instances.sphere call. That is three instanced draws, not 10,000 separate meshes."
+        },
+        {
+          "id": "count",
+          "pass": true,
+          "why": "TREE_COUNT is 8000, and each tree adds one trunk and one canopy transform. ROCK_COUNT is 2000. That gives 8,000 trees plus 2,000 rocks."
+        },
+        {
+          "id": "seeded",
+          "pass": true,
+          "why": "All placement uses a seeded LCG starting at 20240607, and Math.random is never called."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Each instanced set gets a per-instance hsl() colors array over a white base material, so the variation is applied. No probe confirms the engine parses hsl strings, so effectiveness is unverified."
+        },
+        {
+          "id": "shadow",
+          "pass": false,
+          "why": "The directional light sets shadow: true. No castShadow or receiveShadow is set on the ground or the instanced meshes, and no shadow camera bounds are set for a 75-radius forest. Nothing shows that casting and receiving are configured or wor"
+        },
+        {
+          "id": "fog",
+          "pass": true,
+          "why": "effects.fog is added with mode 'exp', density 0.004 and a colour matching the background. At about 150 units that gives roughly 45% fog, so the effect should be visible."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "camera.orbit is set with autoRotate 0.08, a target at the origin, and a position of [0, 85, 125] with far 600. That frames the 75-radius forest and orbits it slowly."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 78,
+        "rulesLines": 0,
+        "glueLines": 16,
+        "notes": "Glue is the imports, the global Window declaration, the LCG helper, and the onFrame/requestAnimationFrame ready-flag logic. The engine hides the renderer, loop and resize handling. The placement loops are counted as scene description."
+      }
+    }
+  },
+  {
+    "runId": "b504-base-t2-aura-r3",
+    "arm": "aura",
+    "task": 2,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": true,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "animated": false,
+      "instanced": false
+    },
+    "probePassFraction": 0.4,
+    "turns": 23,
+    "agentWallSec": 82,
+    "tokensIn": 848313,
+    "tokensOut": 2883,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 7,
+    "readCalls": 15,
+    "searchCalls": 19,
+    "writeCalls": 1,
+    "srcLines": 59,
+    "srcTokens": 770,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8571428571428571,
+    "silentNoOps": 0,
+    "glueLines": 18,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "instancing",
+          "pass": true,
+          "why": "Trunks, canopies and rocks each use one instances.* call (cylinder, cone, sphere) with a transforms array, so there are 3 instanced draws and no per-object meshes."
+        },
+        {
+          "id": "count",
+          "pass": true,
+          "why": "TREE_COUNT=8000 produces 8000 trunk and 8000 canopy transforms, and ROCK_COUNT=2000 produces 2000 rock transforms. That is 10,000 objects in total."
+        },
+        {
+          "id": "seeded",
+          "pass": true,
+          "why": "A fixed-seed LCG (seed 20240607) drives all placement, size and colour values. Math.random is never called."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Canopies and rocks get per-instance HSL colours through `colors`, on a white base material so the tint is not darkened. Trunks are a single colour. The probes are empty, so effectiveness is inferred from the source and the clean run."
+        },
+        {
+          "id": "shadow",
+          "pass": false,
+          "why": "The directional light has shadow:true, but no cast or receive flags are set on the ground or the instanced meshes. No shadow frustum bounds are set for a 170-unit scene either. The probes are empty, so no visible shadow is confirmed."
+        },
+        {
+          "id": "fog",
+          "pass": true,
+          "why": "effects.fog with mode 'exp', density 0.0035 and a colour matching the scene background. The fog reaches roughly 30% at 100 units, so it should be visible. The run had no errors."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "camera.orbit with autoRotate 0.08 around target [0,2,0], positioned at [0,52,92] with far=400. This frames the 58-radius forest and orbits slowly."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 44,
+        "rulesLines": 0,
+        "glueLines": 18,
+        "notes": "Glue is the global Window declaration, the LCG rand and between helpers, the __EVAL_READY__ onFrame marker and the await app.ready(). The placement loops are counted as scene description. The renderer, loop and resize are all hidden by createAuraApp."
+      }
+    }
+  },
+  {
+    "runId": "b504-base-t8-aura-r1",
+    "arm": "aura",
+    "task": 8,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": true,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.6666666666666666,
+    "turns": 24,
+    "agentWallSec": 183.5,
+    "tokensIn": 1079622,
+    "tokensOut": 8665,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 7,
+    "readCalls": 20,
+    "searchCalls": 14,
+    "writeCalls": 1,
+    "srcLines": 259,
+    "srcTokens": 3066,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6533.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 105,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "terrain",
+          "pass": true,
+          "why": "The island is built procedurally from a jittered grid with a height function. Each triangle gets its own vertices and a face normal, so shading is flat. It adds 24 trees from cylinders and cones, plus 14 rocks from spheres. No model files a"
+        },
+        {
+          "id": "water",
+          "pass": true,
+          "why": "A 320-unit subdivided plane with a custom shader surrounds the island. The vertex shader displaces it with sine waves driven by the waveClock uniform, which is set every frame. The build succeeded with no page or console errors."
+        },
+        {
+          "id": "daynight",
+          "pass": true,
+          "why": "A 20-second loop converts the clock to an hour and moves the sun and moon directions. It updates the sun and moon lights, the hemisphere light colour, and the water horizon, deep and shallow colours, and calls setSky on the Preetham sky. No"
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The directional sun light follows the sun position and colour. A moon directional light and a hemisphere light (minimum intensity 0.6) plus a constant ambient light keep the scene lit at night. The water shader adds ambient and moon terms, "
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera orbits at radius 38 and height 10.5 above the water at y=0, looking at (0,1.5,0) with a 55° FOV. The island radius is about 17 to 21, so it fits fully in frame throughout the orbit."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 90,
+        "rulesLines": 55,
+        "glueLines": 105,
+        "notes": "Glue is mostly the colour and math helpers (rand, smoothstep, mix3, hex conversion, dirFrom), the manual flat-shaded mesh buffer construction (pushTri, normals, indices), the water grid generation, per-frame uniform and light plumbing, and the ready-flag bootstrap. Shader GLSL (about 45 lines) is ex"
+      }
+    }
+  },
+  {
+    "runId": "b504-base-t8-aura-r2",
+    "arm": "aura",
+    "task": 8,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": true,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.6666666666666666,
+    "turns": 20,
+    "agentWallSec": 244.2,
+    "tokensIn": 906071,
+    "tokensOut": 11010,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 4,
+    "readCalls": 16,
+    "searchCalls": 10,
+    "writeCalls": 1,
+    "srcLines": 400,
+    "srcTokens": 4298,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6535.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "terrain",
+          "pass": true,
+          "why": "The island is built procedurally from an analytic height field on a jittered 30x30 grid. Every triangle gets its own face normal (flat shading) and a per-face colour. About 24 cone trees and 12 jittered-icosahedron rocks are added, and no m"
+        },
+        {
+          "id": "water",
+          "pass": true,
+          "why": "A 128x128 water mesh extends to 380 m around the island at y=0. A custom shader displaces it with sine waves driven by the waveClock uniform, which onFrame updates every frame, and adds shoreline foam. The probes are empty, so the animation"
+        },
+        {
+          "id": "daynight",
+          "pass": true,
+          "why": "A 20 s cycle (stateAt) moves the sun and moon positions and updates the Preetham sky sun elevation and azimuth each frame. Hemisphere colour and the water horizon colour also change over the cycle. The sky update uses optional calls (app.at"
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The directional sun follows the sun position and changes colour with elevation. A moon directional light fades in at night. The hemisphere light intensity never drops below 0.6, and the water brightness floor is lum >= 0.3, so the scene sta"
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera orbits at radius 46 and height 15 above the y=0 water, looking at (0,2,0) with a 45° fov. The island radius is at most about 25 m, so the whole island fits in the 16:9 view throughout the orbit."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 70,
+        "glueLines": 95,
+        "notes": "Estimated from source only, as the probes are empty. Glue is the math helpers (clamp, smoothstep, mix, hex, rand, hash), the manual flat-shaded triangle builder and normal computation, the bounds loop, the water grid generation, lightAt, and the per-frame uniform and light plumbing. Scene lines cove"
+      }
+    }
+  },
+  {
+    "runId": "b504-base-t8-aura-r3",
+    "arm": "aura",
+    "task": 8,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": true,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.6666666666666666,
+    "turns": 27,
+    "agentWallSec": 359.4,
+    "tokensIn": 1588558,
+    "tokensOut": 10363,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 8,
+    "readCalls": 20,
+    "searchCalls": 17,
+    "writeCalls": 3,
+    "srcLines": 331,
+    "srcTokens": 3705,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6534.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "terrain",
+          "pass": true,
+          "why": "The island is built procedurally from a jittered grid. Each triangle has its own vertices and face normal, so it is flat shaded. It has per-face vertex colours, instanced cone/cylinder trees and dodecahedron rocks, and loads no model files."
+        },
+        {
+          "id": "water",
+          "pass": true,
+          "why": "A polar-grid water mesh extends to a radius of about 650 around the island. Its vertex shader displaces the surface with sine waves driven by the waveClock uniform, which is updated every frame, so it is animated. The build succeeded and th"
+        },
+        {
+          "id": "daynight",
+          "pass": true,
+          "why": "A 20 s clock drives the sun elevation and azimuth. Each frame the code moves the sun and moon lights and calls app.atmosphere.setSky with the new sun position. It also feeds time-varying horizon and sky colours to the water. The probes are "
+        },
+        {
+          "id": "lighting",
+          "pass": true,
+          "why": "The sun and moon directional lights and the hemisphere fill follow the sun. Their intensities are blended across the cycle. The fill never drops below 0.5, the moon provides light at night, and the water shader keeps a non-zero ambient term"
+        },
+        {
+          "id": "framing",
+          "pass": true,
+          "why": "The camera orbits at about y=21 and a distance of about 41 to 46 from the origin, looking at (0,1.5,0) with a 45° fov. That is above the water (wave amplitude is about 0.34). The island radius is about 20 and its peak about 8, which fits in"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 45,
+        "glueLines": 95,
+        "notes": "Estimates cover src/main.ts plus the HTML shell. Glue is the colour and vector helpers (hexToRgb, mix3, toHex, mixHex, dirTo, scaleVec, smoothstep, clamp01, rand), the manual face-normal computation in pushTri, building the water index buffers, the per-frame plumbing that mixes colours and sets unif"
+      }
+    }
+  }
+]

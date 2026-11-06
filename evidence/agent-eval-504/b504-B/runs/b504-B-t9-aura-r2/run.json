@@ -1,0 +1,144 @@
+{
+  "runId": "b504-B-t9-aura-r2",
+  "batch": "b504-B",
+  "arm": "aura",
+  "task": 9,
+  "idx": 2,
+  "order": 7,
+  "seed": 20261106007,
+  "model": "claude-sonnet-5.5",
+  "condition": "B",
+  "startedAt": "2026-11-06T22:10:36.290Z",
+  "docsCommit": "06b8dee1cdfd73343650abcc6eff43d74e34b8d2",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 34264,
+  "usage": {
+    "input": 113928,
+    "uncachedInput": 113928,
+    "output": 2562,
+    "turns": 7,
+    "perTurnInput": [
+      3523,
+      4157,
+      14381,
+      19493,
+      23748,
+      24126,
+      24500
+    ],
+    "perTurnOutput": [
+      6,
+      21,
+      34,
+      41,
+      2169,
+      121,
+      170
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1425,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 3253,
+      "type": "lookup",
+      "query": "scene setup mesh primitives groups directional light shadows rim light",
+      "chars": 13504
+    },
+    {
+      "i": 2,
+      "t": 3253,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 6044,
+      "type": "lookup",
+      "query": "group nested children rotation pivot setRotation nodes.require hierarchy",
+      "chars": 10983
+    },
+    {
+      "i": 4,
+      "t": 8879,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 5,
+      "t": 8879,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 6,
+      "t": 26572,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 4923
+    },
+    {
+      "i": 7,
+      "t": 27017,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 30860,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 9,
+      "t": 31315,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 10,
+      "t": 34264,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts with a procedural robot built from capsules, spheres, boxes and cylinders, nested in joint groups. The joints are hips, chest, head/neck, two shoulders, two elbows, two hip joints and two knees. An onFrame idle loop drives them: breathing, a slow weight shift, head turns and gentle arm sway, so frames change over time. Lighting is a strong warm key light with shadows on the floor, a blue rim light and a magenta rim light, on a near-black background. The perspective camera is centred on the robot. `window.__EVAL_READY__` is set two animation frames after `app.ready()`. Typecheck passes. I did not run `vite build` or open it in a browser, so the framing and lighting have not been checked visually.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

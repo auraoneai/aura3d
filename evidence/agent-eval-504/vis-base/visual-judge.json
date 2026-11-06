@@ -1,0 +1,367 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "results": [
+    {
+      "task": 2,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A has a darker ground with stronger contrast, so the forest reads clearly with visible shading and color variation, while B is washed out by heavy fog that flattens the ground and reduces form and shadow definition."
+    },
+    {
+      "task": 2,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "B shows the forest with clearer contrast and form definition and visible per-instance colour variation, whereas A is washed out by heavy fog that flattens depth, shading and shadows, and its square ground plane edge and horizon look odd."
+    },
+    {
+      "task": 2,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "B shows stronger contrast, visible colour variation across the canopies, and clearer shading and form, while A is washed out by heavy fog with little shading and its ground and horizon blend into a flat haze."
+    },
+    {
+      "task": 5,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        },
+        "aura": {
+          "readability": 5,
+          "lighting": 5,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 23,
+        "three": 9
+      },
+      "winner": "aura",
+      "why": "B shows a convincing dark-blue wave surface with fresnel, ripple detail and a sun glint, while A is washed out almost to white with the water barely distinguishable from the sky."
+    },
+    {
+      "task": 5,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 22,
+        "three": 20
+      },
+      "winner": "aura",
+      "why": "A has a soft glowing sun, wispy clouds in the gradient sky, and finer, more natural wave detail with a clear sun glint path, while B has a flat disc sun and visible streaky, aliased ripple patterns on the water."
+    },
+    {
+      "task": 5,
+      "idx": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 20,
+        "three": 22
+      },
+      "winner": "three",
+      "why": "A shows a smooth, clean ocean with clear wave geometry, a soft sun glow and a readable glint column, while B has noisy, aliased ripple detail in the distance and a flatter, less attractive sun reflection."
+    },
+    {
+      "task": 8,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A has richer water depth with shallow-water gradients, stronger shading contrast, and a clear sky gradient, while B looks washed out with a pale flat sky and a visible water edge/plane boundary."
+    },
+    {
+      "task": 8,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "A has clear shading and contrast, a deep blue water surface and a gradient horizon that give the island good form, while B looks washed out with a white sky, pale flat terrain and weak shading."
+    },
+    {
+      "task": 8,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 20,
+        "three": 15
+      },
+      "winner": "aura",
+      "why": "A has a faceted island, visible wave facets with a foam shoreline, and a hazy sky, while B shows a visible dark water-plane rectangle edge, flatter water, and less shoreline detail."
+    },
+    {
+      "task": 9,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows a clearly lit, centred robot with a visible head, face details, cyan and magenta rim light and dramatic floor pools on a dark background. B's robot is dimmer and the head is a small sphere, with a flat pink floor, a hard floor edge and weaker rim light, though it does cast a visible shadow."
+    },
+    {
+      "task": 9,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A has a dark background, a clearly visible cyan and magenta rim and floor glow, a stronger key light, and a larger, better-framed robot with a readable face, while B's floor is a flat, washed-out lavender slab with weak contrast and a small robot."
+    },
+    {
+      "task": 9,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 5,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B has a dark background, a visible cyan and magenta rim light pool, a shadow on the floor, and a clearly articulated robot with a face panel, while A has a flat pink floor, weak dramatic contrast, a small robot, and a less defined rim light."
+    }
+  ]
+}
