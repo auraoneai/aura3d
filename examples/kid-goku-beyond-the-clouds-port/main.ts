@@ -64,6 +64,15 @@ const startParam = Number(params.get("chapterStart"));
 function applyStartMode(): void {
   if (Number.isFinite(startParam) && startParam > 0) game.start(startParam);
   else if ((manual || params.get("autostart") === "1") && params.get("menu") !== "1") game.start(0);
+  /* QA only (default off, no gameplay effect unless the param is present): `?qaglide=1` keeps the run on the glider (charge
+     filled and the glider key queued whenever the player is not riding) so a capture can show the ridden-cloud post chain
+     (motion blur) without scripted input. Combine with `?chapterStart=200`, where the glider map allows a ride. */
+  if (params.get("qaglide") === "1") {
+    setInterval(() => {
+      const g = game.state.glider;
+      if (game.phase === "playing" && !g.active && g.call <= 0) { g.charge = 1; oneShot.glider = true; }
+    }, 250);
+  }
 }
 
 function currentInput(): StepInput {
@@ -308,9 +317,11 @@ async function boot(): Promise<void> {
   if (STORM) registerHudFonts();
   /* A1: shared loading progress drives the title loader text (the loader is hidden by ui.ready()) */
   const progress = createLoadingProgress({ onProgress: (f) => ui?.progress(f) });
-  const rockMap = await progress.track(texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" }), 1);
+  /* flipY: false = the pixels 4.x uploaded. The loader decodes to an ImageBitmap, which WebGL cannot flip at upload (5.0.1+
+     warns TEXTURE_FLIPY_DEGRADED and uploads unflipped), so the texture is declared as what it is: the image is not flipped. */
+  const rockMap = await progress.track(texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb", flipY: false }), 1);
   rockMap.wrapS = "repeat"; rockMap.wrapT = "repeat";
-  const grassMap = await progress.track(texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" }), 1);
+  const grassMap = await progress.track(texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb", flipY: false }), 1);
   grassMap.wrapS = "repeat"; grassMap.wrapT = "repeat";
   const world = buildWorld(CH, rockMap, grassMap);
   /* Lab flags (?backend=, ?gamut=) are parsed by the app wrapper (apps/showcase-cloud-runner-port/src/lab.ts); absent = default WebGL2 path */
