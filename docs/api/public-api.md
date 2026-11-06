@@ -51,17 +51,17 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/debug/helpers` | `5.0.2` | `./dist/helpers.d.ts` | 40 |
 | `@aura3d/ecs` | `5.0.2` | `./dist/index.d.ts` | 76 |
 | `@aura3d/editor-runtime` | `5.0.2` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.0.2` | `./dist/engine/public/index.d.ts` | 10933 |
+| `@aura3d/engine` | `5.0.2` | `./dist/engine/public/index.d.ts` | 10927 |
 | `@aura3d/engine/animation` | `5.0.2` | `./dist/animation/index.d.ts` | 372 |
 | `@aura3d/engine/assets` | `5.0.2` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
 | `@aura3d/engine/audio` | `5.0.2` | `./dist/audio/index.d.ts` | 309 |
 | `@aura3d/engine/controls` | `5.0.2` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.0.2` | `./dist/engine/public/devtools.d.ts` | 10646 |
+| `@aura3d/engine/devtools` | `5.0.2` | `./dist/engine/public/devtools.d.ts` | 10640 |
 | `@aura3d/engine/ecs` | `5.0.2` | `./dist/ecs/index.d.ts` | 76 |
 | `@aura3d/engine/editor-runtime` | `5.0.2` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.0.2` | `./dist/game/index.d.ts` | 11397 |
+| `@aura3d/engine/game` | `5.0.2` | `./dist/game/index.d.ts` | 11391 |
 | `@aura3d/engine/game/art` | `5.0.2` | `./dist/game/art/index.d.ts` | 323 |
-| `@aura3d/engine/game/capture` | `5.0.2` | `./dist/game/capture/index.d.ts` | 10927 |
+| `@aura3d/engine/game/capture` | `5.0.2` | `./dist/game/capture/index.d.ts` | 10921 |
 | `@aura3d/engine/game/styles.css` | `5.0.2` | `non-code or disabled export` | 0 |
 | `@aura3d/engine/game/util` | `5.0.2` | `./dist/game/util/index.d.ts` | 2 |
 | `@aura3d/engine/geometry-tools` | `5.0.2` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
@@ -72,15 +72,15 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/engine/physics` | `5.0.2` | `./dist/physics/index.d.ts` | 279 |
 | `@aura3d/engine/physics/solverless` | `5.0.2` | `./dist/physics/solverless.d.ts` | 134 |
 | `@aura3d/engine/physics/world` | `5.0.2` | `./dist/physics/world.d.ts` | 15 |
-| `@aura3d/engine/renderer` | `5.0.2` | `./dist/engine/public/renderer.d.ts` | 10905 |
+| `@aura3d/engine/renderer` | `5.0.2` | `./dist/engine/public/renderer.d.ts` | 10899 |
 | `@aura3d/engine/scatter` | `5.0.2` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
 | `@aura3d/engine/scene` | `5.0.2` | `./dist/scene/index.d.ts` | 139 |
 | `@aura3d/engine/scene/math` | `5.0.2` | `./dist/scene/MathTypes.d.ts` | 36 |
 | `@aura3d/engine/scripting` | `5.0.2` | `./dist/scripting/index.d.ts` | 203 |
 | `@aura3d/engine/shader-graph-runtime` | `5.0.2` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
-| `@aura3d/engine/v5` | `5.0.2` | `./dist/engine/public/v5.d.ts` | 8382 |
+| `@aura3d/engine/v5` | `5.0.2` | `./dist/engine/public/v5.d.ts` | 8376 |
 | `@aura3d/engine/v5/context` | `5.0.2` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.0.2` | `./dist/game/v5.d.ts` | 11393 |
+| `@aura3d/engine/v5/game` | `5.0.2` | `./dist/game/v5.d.ts` | 11387 |
 | `@aura3d/engine/v5/internal` | `5.0.2` | `./dist/engine/public/v5-internal.d.ts` | 431 |
 | `@aura3d/engine/v5/math/hull` | `5.0.2` | `./dist/math/independent/hull-entry.d.ts` | 11 |
 | `@aura3d/engine/worker` | `5.0.2` | `./dist/engine/public/worker.d.ts` | 59 |
@@ -95,7 +95,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/physics/world` | `5.0.2` | `./dist/world.d.ts` | 15 |
 | `@aura3d/product-studio` | `5.0.2` | `./dist/index.d.ts` | 51 |
 | `@aura3d/react` | `5.0.2` | `./dist/index.d.ts` | 45 |
-| `@aura3d/rendering` | `5.0.2` | `./dist/index.d.ts` | 4289 |
+| `@aura3d/rendering` | `5.0.2` | `./dist/index.d.ts` | 4284 |
 | `@aura3d/rendering/contracts` | `5.0.2` | `./dist/contracts/index.d.ts` | 222 |
 | `@aura3d/rendering/contracts/atmosphere` | `5.0.2` | `./dist/contracts/atmosphere.d.ts` | 8 |
 | `@aura3d/rendering/contracts/blend` | `5.0.2` | `./dist/contracts/blend.d.ts` | 12 |
@@ -8050,7 +8050,7 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 ## @aura3d/assets
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -13775,7 +13775,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/assets/browser
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -18478,7 +18478,7 @@ export declare class GLTFSharedTextureCache {
 ## @aura3d/assets/exporters
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -19387,7 +19387,7 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 ## @aura3d/assets/gltf-runtime
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -21822,7 +21822,7 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 ## @aura3d/assets/importers
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -23582,7 +23582,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ## @aura3d/assets/vite
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -23679,7 +23679,7 @@ export {};
 ## @aura3d/assets/vite-client
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=7d9c025b36cd88bed4ad2333d0cb7efe624d2bb41f52d9c04cae843d6029d75d`
+- Packed identity: `archive:@aura3d/assets@5.0.2#sha256=761081b28da4ac09bf5b9a555e18b62aee0d4e44030fffc1acf0459a4e32c050`
 
 ### Export conditions
 
@@ -26325,7 +26325,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/cli@5.0.2#sha256=eef7c8eed291fcb82f51534b342218d0c53475911a66f86f110862d14a8fd0e1`
+- Packed identity: `archive:@aura3d/cli@5.0.2#sha256=22cfa9b25855c76f47e79002cbffbd3324084c777bce64c91e2a024ce1ea81f5`
 
 ### Export conditions
 
@@ -30814,7 +30814,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.0.2`
-- Packed identity: `archive:create-aura3d@5.0.2#sha256=3af66539b37f775201caa633e17ff1eb2d05deaaeef434bd5b90cbd5f485ebbb`
+- Packed identity: `archive:create-aura3d@5.0.2#sha256=465b42ed5719f9e0a1ef04b4f727711c4619e47cbf8ae8697ebd4e60a093ac2c`
 
 ### Export conditions
 
@@ -36423,7 +36423,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -42530,13 +42530,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -60515,7 +60508,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -60539,28 +60532,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -82131,9 +82105,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -82187,15 +82159,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -120741,7 +120708,7 @@ export declare function estimateGlbResourceBytes(sizeBytes: number | undefined, 
 ## @aura3d/engine/animation
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -123612,7 +123579,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -129338,7 +129305,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -131963,7 +131930,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -133765,7 +133732,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -139825,13 +139792,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -157810,7 +157770,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -157834,28 +157794,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -179426,9 +179367,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -179482,15 +179421,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -215892,7 +215826,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -216559,7 +216493,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -219141,7 +219075,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -225328,7 +225262,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -225352,28 +225286,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -246944,9 +246859,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -247000,15 +246913,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -264274,13 +264182,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -306082,7 +305983,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -309176,7 +309077,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -315157,7 +315058,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -315181,28 +315082,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -336773,9 +336655,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -336829,15 +336709,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -354103,13 +353978,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -392761,7 +392629,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -392772,7 +392640,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -392798,7 +392666,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -393525,7 +393393,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -394766,7 +394634,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -395405,7 +395273,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -397395,7 +397263,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -398020,7 +397888,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -400658,7 +400526,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -401910,7 +401778,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -402171,7 +402039,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/engine/renderer
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -407529,7 +407397,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -407553,28 +407421,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -429145,9 +428994,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -429201,15 +429048,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -440962,13 +440804,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -486226,7 +486061,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -486359,7 +486194,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -487484,7 +487319,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -487568,7 +487403,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -488748,7 +488583,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -492947,7 +492782,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -500752,7 +500587,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -500776,28 +500611,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -522368,9 +522184,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -522424,15 +522238,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -539177,13 +538986,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -559862,7 +559664,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -560108,7 +559910,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -566174,7 +565976,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -566198,28 +566000,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -587790,9 +587573,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -587846,15 +587627,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -605120,13 +604896,6 @@ interface AuraProductionBridgeEligibility {
 }
 export declare function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): AuraProductionBridgeEligibility;
 export declare function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode;
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export declare function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode;
 export declare function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode;
 /**
  * True when the scene declares content only WebGL can draw: a renderable
@@ -647021,7 +646790,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -652208,7 +651977,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -652396,7 +652165,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -652896,7 +652665,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=09a648bc6785fb82a9e4b6ddf44608cce285bdb6828037b9eebea440a565059e`
+- Packed identity: `archive:@aura3d/engine@5.0.2#sha256=5590a91f8b34ed5e8ffbdc172225fa020572c7e9947bb190c9cae3856a8879f6`
 
 ### Export conditions
 
@@ -662715,7 +662484,7 @@ export {};
 ## @aura3d/rendering
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -668033,7 +667802,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
-import { type ProgramFeatures, type ShaderFeature } from "./contracts/program.js";
+import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
 import { type QrFlags } from "./contracts/core.js";
@@ -668057,28 +667826,9 @@ export interface ForwardDrawHook {
 export declare function hasForwardDrawHooks(): boolean;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
-/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export declare function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders?: boolean, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined;
-/**
- * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
- * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
- * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
- * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
- * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
- */
-export declare function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined;
-export declare function forwardContactProvidersSafe(flags: QrFlags): boolean;
-/**
- * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
- * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
- * the mask depth cannot represent are handled one by one by the contact contributor.
- */
-export declare function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
-/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export declare function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
@@ -689649,9 +689399,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -689705,15 +689453,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -694317,7 +694060,7 @@ export declare function registerBatchedDrawShader(): void;
 ## @aura3d/rendering/contracts
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -695906,7 +695649,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/atmosphere
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -695951,7 +695694,7 @@ export {};
 ## @aura3d/rendering/contracts/blend
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -695996,7 +695739,7 @@ export declare function renderStateKey(state: RenderCommandState): number;
 ## @aura3d/rendering/contracts/core
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696066,7 +695809,7 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 ## @aura3d/rendering/contracts/deform
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696119,7 +695862,7 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 ## @aura3d/rendering/contracts/device
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696205,7 +695948,7 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 ## @aura3d/rendering/contracts/environment
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696275,7 +696018,7 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 ## @aura3d/rendering/contracts/flags.state
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696305,7 +696048,7 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 ## @aura3d/rendering/contracts/frameGraph
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696449,7 +696192,7 @@ export {};
 ## @aura3d/rendering/contracts/frameUniforms
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696507,7 +696250,7 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 ## @aura3d/rendering/contracts/geometry
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -696555,7 +696298,7 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 ## @aura3d/rendering/contracts/index
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698144,7 +697887,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/materialLobes
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698204,7 +697947,7 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 ## @aura3d/rendering/contracts/output
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698276,7 +698019,7 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 ## @aura3d/rendering/contracts/particles
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698333,7 +698076,7 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 ## @aura3d/rendering/contracts/post
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698441,7 +698184,7 @@ export interface PostPipelineOptions {
 ## @aura3d/rendering/contracts/program
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698647,7 +698390,7 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 ## @aura3d/rendering/contracts/quality
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698776,7 +698519,7 @@ export declare class StubQualityController implements AuraQualityController {
 ## @aura3d/rendering/contracts/rendererFactory
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698836,7 +698579,7 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 ## @aura3d/rendering/contracts/renderItem
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -698954,7 +698697,7 @@ export interface RenderItem {
 ## @aura3d/rendering/contracts/renderSource
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699050,7 +698793,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/sampling
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699111,7 +698854,7 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 ## @aura3d/rendering/contracts/shadows
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699187,7 +698930,7 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 ## @aura3d/rendering/contracts/structuralMemo
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699225,7 +698968,7 @@ export declare class StructuralMemo<V> {
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699258,7 +699001,7 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 ## @aura3d/rendering/contracts/textureFormats
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699291,7 +699034,7 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 ## @aura3d/rendering/contracts/velocity
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699363,7 +699106,7 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 ## @aura3d/rendering/extension-scalar-atlas
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -699404,7 +699147,7 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 ## @aura3d/rendering/lanes
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -703446,9 +703189,7 @@ export declare class RendererFrameHooks {
     private extraSceneGeometryPossible;
     private readonly phasePassCounts;
     private readonly contactGraphContributorPasses;
-    /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-    private readonly deferredContactPasses;
-    private contactProducersPlaced;
+    private contactGraphHasTransparentQueue;
     readonly timeSeconds: number;
     private readonly renderSource;
     private readonly rasterViewProjectionMatrix;
@@ -703502,15 +703243,10 @@ export declare class RendererFrameHooks {
     /** Whether contributor work outside shadow/post phases can add untracked scene geometry. */
     hasExtraSceneGeometry(): boolean;
     hasPasses(phase: AuraFramePhase): boolean;
-    /**
-     * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-     * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-     * other contributor passes in between). The exact attested producer is therefore held back and inserted
-     * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-     * scheduled between the producer's own depth draw and the receiver. Idempotent.
-     */
-    placeContactProducers(graph: RenderGraph): void;
-    /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+    /** The graph runs synchronously, but its dependency sort may interleave any
+     * contributor pass with contact predepth and the last forward receiver.
+     * Only the exact attested contact producer is currently proven not to
+     * mutate the shared depth participants during that interval. */
     contactGraphIsSafe(): boolean;
     /** "collect" phase — contributor item-list transforms, applied in order. */
     collect(items: readonly RenderItem[], validate?: (items: readonly RenderItem[]) => void): readonly RenderItem[];
@@ -706263,7 +705999,7 @@ export {};
 ## @aura3d/rendering/lighting
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -706902,7 +706638,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/rendering/production-runtime
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -710394,7 +710130,7 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 ## @aura3d/rendering/reference
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -711127,7 +710863,7 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 ## @aura3d/rendering/reflection-surfaces
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -711262,7 +710998,7 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 ## @aura3d/rendering/shader-graph
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -711505,7 +711241,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/rendering/volumetrics
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -712061,7 +711797,7 @@ export {};
 ## @aura3d/rendering/webgpu
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
@@ -714751,7 +714487,7 @@ export declare class GaussianSplatRenderer {
 ## @aura3d/rendering/world
 
 - Version: `5.0.2`
-- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=a87b333ab4ea1a3f54503790e93f4266bf4256f9233e13f8a3c129f0e63e25ee`
+- Packed identity: `archive:@aura3d/rendering@5.0.2#sha256=08faf7ed64722ffd9b9dbe8885d3906fe98d4be4d53715de6e88df90e683707a`
 
 ### Export conditions
 
