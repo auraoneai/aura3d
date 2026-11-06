@@ -28,6 +28,11 @@
       "typedRef": "assets.rooftopFloodlightTowerMeshy",
       "quality": "production",
       "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.tennisFloodMast",
+      "quality": "candidate",
+      "role": "setDressing"
     }
   ],
   "kind": "native-rebuild",

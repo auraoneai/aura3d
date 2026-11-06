@@ -13,7 +13,7 @@ import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { VENUE_LOOK_ORDER, VENUE_LOOKS } from "../../../examples/aura-slam/view/look";
 
 /** Asset metadata the audit reads (triangle counts are measured in phase 2; 0 = not judged). */
-const MANIFEST = { assets: { showcaseStadiumSeats: { role: "set-dressing" }, rooftopScoreboardRigMeshy: { role: "prop" }, rooftopFloodlightTowerMeshy: { role: "prop" } } };
+const MANIFEST = { assets: { showcaseStadiumSeats: { role: "set-dressing" }, rooftopScoreboardRigMeshy: { role: "prop" }, rooftopFloodlightTowerMeshy: { role: "prop" }, tennisFloodMast: { role: "prop" } } };
 
 function snapshotFor(venue: string): ArtDirectionSnapshot {
   const nodes = (buildTennisScene(createPoseRig(), { venue }).toJSON() as unknown as { nodes: unknown[] }).nodes;
