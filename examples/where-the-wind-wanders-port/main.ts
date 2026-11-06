@@ -20,7 +20,7 @@ import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
-import { paperPass } from "./paper-pass";
+import { PAPER_PASS_NAME, paperPass, paperScale } from "./paper-pass";
 
 import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 
@@ -42,6 +42,8 @@ const canvas = $<HTMLCanvasElement>("world");
 const PARITY_IDS = ["SH-02", "SG-03", "SG-05", "SM-02", "ST-01", "SR-02"];
 let state: WindState = createState();
 let app: AuraApp | undefined;
+/** True once the gouache paper pass is registered (High, GU47 look). */
+let paperOn = false;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let renderTime = 0;
@@ -296,6 +298,8 @@ function sizeCanvas(): void {
   const dpr = Math.min(1.25, devicePixelRatio || 1);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
+  // the paper grain is anchored to drawing-buffer pixels: re-fit it after a resize or rotation (the pass is registered once at boot)
+  if (paperOn) app?.post?.setPassUniform?.(PAPER_PASS_NAME, "u_paperScale", paperScale(canvas.width, canvas.height));
 }
 
 installQaHooks("wind", {
@@ -450,7 +454,8 @@ async function boot(): Promise<void> {
   await app.ready();
   runtime = world.bind(app);
   // WW47-P3: the gouache paper pass (High only, not on the original look)
-  if (!originalLook && !lowQuality) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height, lookPostFor(daylightKey ?? 0).paper));
+  if (!originalLook && !lowQuality) paperOn = true;
+  if (paperOn) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height, lookPostFor(daylightKey ?? 0).paper));
   stopWatching();
   ready = true;
   $("loading").classList.add("hidden");
