@@ -25,4 +25,4 @@ Verification
 
 - [ ] GC, UT (sim tests), CAP
 - [ ] `node tools/game-checks/run.mjs splat-rush-port` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] Before/after frames attached (evidence/game-upgrades-502/splat-rush-port/{before,after}.png, 960x540 headless capture, autostart+autopilot)
