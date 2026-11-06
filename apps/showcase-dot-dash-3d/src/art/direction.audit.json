@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-dot-dash-3d/src/art/direction.ts",
-  "sourceSha256": "e0dd1758398ea8477b34a8f7aa9584135f5c5023aa1153ebfb1b217a0c50a75a",
+  "sourceSha256": "91cf6134a25ded4f075ed3c5f26c5c4ab7fd00cc49c20fcabea84d21e303a68f",
   "id": "dot-dash-3d",
   "genre": "maze-arcade",
   "signatureEffect": "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
