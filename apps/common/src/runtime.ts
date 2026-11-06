@@ -125,12 +125,39 @@ export interface A3DProductionRuntimeTiming {
   readonly durationMs: number;
 }
 
+export interface A3DProductionBackendSelection {
+  readonly requested: "webgl2";
+  readonly active: "webgl2";
+  readonly missingFeatures: readonly string[];
+  readonly deviceLost: boolean;
+}
+
+export type A3DProductionReadiness =
+  | { readonly state: "pending"; readonly status: A3DProductionRuntimeStatus }
+  | { readonly state: "ready"; readonly stage: "first-frame"; readonly backend: "webgl2" }
+  | { readonly state: "failed"; readonly code: "RENDERER_MOUNT_FAILED"; readonly message: string };
+
+/** Adds `backendSelection` and `readiness` to a runtime record (idempotent; pure). */
+export function withProductionReporting(runtime: A3DProductionRuntime): A3DProductionRuntime {
+  const readiness: A3DProductionReadiness =
+    runtime.status === "error"
+      ? { state: "failed", code: "RENDERER_MOUNT_FAILED", message: runtime.error ?? runtime.lifecycle.message }
+      : runtime.status === "ready" || runtime.status === "animating"
+        ? { state: "ready", stage: "first-frame", backend: "webgl2" }
+        : { state: "pending", status: runtime.status };
+  return { ...runtime, backendSelection: { requested: "webgl2", active: "webgl2", missingFeatures: [], deviceLost: false }, readiness };
+}
+
 export interface A3DProductionRuntime {
   readonly status: A3DProductionRuntimeStatus;
   readonly error?: string;
   readonly appId: string;
   readonly sceneId: string;
   readonly rendererBackend?: "webgl2";
+  /** Same shape as `AuraDiagnostics.backendSelection`; this runtime only drives the WebGL2 renderer, so it is always webgl2 -> webgl2. */
+  readonly backendSelection?: A3DProductionBackendSelection;
+  /** Same states as `app.readiness()` (`AuraReadyOutcome`), derived from `status`. */
+  readonly readiness?: A3DProductionReadiness;
   readonly lifecycle: A3DProductionRuntimeLifecycle;
   readonly runtime?: A3DProductionRuntimeMetrics;
   readonly metadata?: ProductionGLTFRenderMetadata;
@@ -352,8 +379,9 @@ export async function runProductionInteractiveApp(scene: ProductionAppSceneDefin
 }
 
 function publishProductionRuntime(root: HTMLElement, scene: ProductionAppSceneDefinition, ui: ProductionAppUiDefinition, runtime: A3DProductionRuntime): void {
-  window.__a3dProductionRuntime = runtime;
-  mountProductionAppShell(root, scene, ui, runtime);
+  const reported = withProductionReporting(runtime);
+  window.__a3dProductionRuntime = reported;
+  mountProductionAppShell(root, scene, ui, reported);
 }
 
 function createLifecycle(

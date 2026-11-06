@@ -103,3 +103,30 @@
   .aura3d-top-bar { gap: 4px; }
   .aura3d-top-bar .a3d-credit { display: none; }
 }
+
+/* Shared loading bar (apps/showcase-port-shared/loading-progress.ts). Drive it with `createLoadingProgress({ element })`. */
+.aura3d-loading {
+  --aura3d-loading: 0;
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.aura3d-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--aura3d-loading));
+  background: currentColor;
+  transition: transform 120ms linear;
+}
+.aura3d-loading[data-complete="true"] {
+  opacity: 0;
+  transition: opacity 240ms ease 200ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aura3d-loading::after,
+  .aura3d-loading[data-complete="true"] { transition: none; }
+}
