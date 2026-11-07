@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-teleoperator/src/art/direction.ts",
-  "sourceSha256": "c24610af56e7c473573e6003f603731052f00f4994cf34244b2b9d5d4ea73fef",
+  "sourceSha256": "19d6d5f8c5fac896fdc3e45aa737a66ab5a1065be7b141a863fb246d25c6070a",
   "id": "showcase-teleoperator",
   "genre": "racing",
   "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",

@@ -28,6 +28,17 @@ A minor release: the 5.1.x lanes that were held back from 5.1.0 (typed point and
 - `effects.particles`: `shape`, `shapeSize`, `coneAngleDeg`, `wind`, `stretch`, `sizeOverLife`, `alphaOverLife` and `lifetimeColorRamp` are now simulated by the CPU emitter (they were accepted and ignored). Visible change: the Slingshot Siege chapter-1 dust motes now spread through their authored box instead of clumping at one point (the Aura Hoops Manila dust motes also take their authored box; no visible difference in the recorded frames). Kept on the 5.0.2 look: the particle fountain (`prefabs.particleFountain`, `particles.fountain`, `sceneKits.particleFountain`; a user `color` still sets the plume colour), the Cross Hop diorama ambient emitters and the Hoops Manila rain curtains no longer author these fields, so they lower exactly as before. `intensity` and `shape: "mesh-surface"` stay in `AuraParticleEmitterOptions` (declarations are additive only); neither is read yet and `intensity` is marked `@deprecated`.
 - Physics cost, stated honestly: once the Rapier backend is installed, every app that imports the engine downloads and initialises the Rapier chunk at startup (2.85 MB, 1.08 MB gzip), whether or not it uses physics. That is still the default; the `aura3d()` Vite plugin and the opt-in on-demand mode above avoid it.
 
+### Game look fixes
+
+Pip's Big Leap (all six worlds), Aura Diamond, Aura FC, Bunker Zero and Teleoperator are restored to (or near) their 4.7.18 look. Before and after frames (4.7.18, 5.0.3, this release) are in `evidence/look-521/`. Four causes:
+
+1. Since 5.0, `app.setOutput` reaches the post chain, so authored output settings that 4.7.x ignored started to apply. Each game's output is now pinned to the look that shipped: Pip's Big Leap (`presentation.ts`, ACES at exposure 1), Aura Diamond (`applyParkLook`) and Teleoperator (`applySkyOutput`) on the 4.x default (ACES, exposure 1), and Bunker Zero at exposure 1.7 for the textured corridor concrete.
+2. The WebGL2 LDR AgX tone map was a crude per-channel curve that mapped white to about 0.15. The fused LDR present now runs the coupled AgX transform (fixed in the engine).
+3. The Preetham sky uniforms after the 5.0 Perez rewrite were wrong (the sky was about 20x too bright on Aura Diamond). The WebGL2 sky program gets the correct `sunE` / `betaR` / `betaM` again (fixed in the engine).
+4. A texture-upgrade race could leave a re-tinted material without its textures (the Aura FC pitch). A superseded upgrade no longer overwrites the replacement's queued stage (fixed in the engine).
+
+Still open: the Pip's Big Leap Starfall floor is still milky, Pip's Forest is slightly flatter than in 4.7.18, and the Bunker Zero floor stencil is missing.
+
 ### Known limits
 
 - Picking is CPU only; GPU id-buffer picking is not implemented.
