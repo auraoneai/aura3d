@@ -289,6 +289,9 @@
       "@aura3d/game": [
         "packages/game/src/index.ts"
       ],
+      "@aura3d/mcp": [
+        "packages/aura3d-mcp/src/index.ts"
+      ],
       "create-aura3d": [
         "packages/create-aura3d/src/index.ts"
       ],

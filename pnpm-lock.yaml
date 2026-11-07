@@ -81,6 +81,9 @@ importers:
       '@aura3d/math':
         specifier: workspace:*
         version: link:packages/math
+      '@aura3d/mcp':
+        specifier: workspace:*
+        version: link:packages/aura3d-mcp
       '@aura3d/navigation-recast':
         specifier: workspace:*
         version: link:packages/navigation-recast
@@ -263,6 +266,12 @@ importers:
       create-aura3d:
         specifier: workspace:*
         version: link:../create-aura3d
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  packages/aura3d-mcp:
+    dependencies:
       typescript:
         specifier: ^5.8.3
         version: 5.9.3

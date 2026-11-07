@@ -1,0 +1,36 @@
+{
+  "name": "@aura3d/mcp",
+  "version": "5.0.2",
+  "private": true,
+  "type": "module",
+  "description": "Stdio MCP server that gives coding agents version-pinned, public-surface-only knowledge of Aura3D: symbol lookup from the installed .d.ts, docs search, recipes, scaffolding, asset and deploy checks, and an error-code explainer.",
+  "bin": {
+    "aura3d-mcp": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "data",
+    "dist"
+  ],
+  "scripts": {
+    "bundle-docs": "node dist/bundle/cli.js"
+  },
+  "dependencies": {
+    "typescript": "^5.8.3"
+  },
+  "keywords": [
+    "aura3d",
+    "mcp",
+    "model-context-protocol",
+    "agent"
+  ],
+  "license": "MIT"
+}
