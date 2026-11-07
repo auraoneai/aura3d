@@ -22,46 +22,12 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 18.88,
-        "difference": 5.768
+        "stdLuma": 18.52,
+        "difference": 3.992
       }
     },
     {
       "index": 2,
-      "heading": "Lights and environment (hand-built look)",
-      "lines": 11,
-      "render_mode": "static",
-      "sha256": "8c62aed6fd11f665f7769623aeec686a9d2e64fab824936f595f94b4cc94631d",
-      "typecheck": {
-        "pass": true
-      },
-      "render": {
-        "pass": true,
-        "failures": [],
-        "litFraction": 1,
-        "stdLuma": 71.04,
-        "difference": 0
-      }
-    },
-    {
-      "index": 3,
-      "heading": "Materials: metal, glass, emissive, rough",
-      "lines": 8,
-      "render_mode": "static",
-      "sha256": "36a4c55bdedfe28b98ae0d51a285e81e325f2351702a26ed28266c105e91ebba",
-      "typecheck": {
-        "pass": true
-      },
-      "render": {
-        "pass": true,
-        "failures": [],
-        "litFraction": 1,
-        "stdLuma": 6.7,
-        "difference": 0
-      }
-    },
-    {
-      "index": 4,
       "heading": "Instancing: many copies, one draw, updated live",
       "lines": 15,
       "render_mode": "animated",
@@ -73,12 +39,12 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 49.34,
-        "difference": 3.733
+        "stdLuma": 49.26,
+        "difference": 3.067
       }
     },
     {
-      "index": 5,
+      "index": 3,
       "heading": "Custom shader: your own time uniform",
       "lines": 17,
       "render_mode": "animated",
@@ -90,12 +56,12 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 68.65,
-        "difference": 16.182
+        "stdLuma": 68.82,
+        "difference": 16.261
       }
     },
     {
-      "index": 6,
+      "index": 4,
       "heading": "Procedural geometry: revolve a profile",
       "lines": 14,
       "render_mode": "static",
@@ -112,7 +78,7 @@
       }
     },
     {
-      "index": 7,
+      "index": 5,
       "heading": "Rigged model: clips and crossfade",
       "lines": 13,
       "render_mode": "asset:animated",
@@ -125,11 +91,11 @@
         "failures": [],
         "litFraction": 1,
         "stdLuma": 13.14,
-        "difference": 0.32
+        "difference": 0.249
       }
     },
     {
-      "index": 8,
+      "index": 6,
       "heading": "Game loop and input: fixed step, actions",
       "lines": 15,
       "render_mode": "animated",
@@ -141,12 +107,12 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 64.69,
-        "difference": 0.721
+        "stdLuma": 64.63,
+        "difference": 0.569
       }
     },
     {
-      "index": 9,
+      "index": 7,
       "heading": "Physics: bound bodies stepped in onFrame",
       "lines": 12,
       "render_mode": "animated",
@@ -158,12 +124,12 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 35.97,
-        "difference": 1.279
+        "stdLuma": 35.92,
+        "difference": 0.915
       }
     },
     {
-      "index": 10,
+      "index": 8,
       "heading": "Particles: built-in sprites, no art needed",
       "lines": 7,
       "render_mode": "animated",
@@ -175,25 +141,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 25.76,
-        "difference": 4.733
-      }
-    },
-    {
-      "index": 11,
-      "heading": "Sky, sun and a water plane",
-      "lines": 16,
-      "render_mode": "animated",
-      "sha256": "6809b277d1e2336a1ceda7ab09176f99d87b424185dd65722ba77495f2e12a19",
-      "typecheck": {
-        "pass": true
-      },
-      "render": {
-        "pass": true,
-        "failures": [],
-        "litFraction": 1,
-        "stdLuma": 85.25,
-        "difference": 3.533
+        "stdLuma": 25.75,
+        "difference": 4.711
       }
     }
   ]

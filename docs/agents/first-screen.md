@@ -1,6 +1,6 @@
 ## First screen: Aura3D patterns (copy the shape, change the subject)
 
-`@aura3d/engine` is installed; never open `node_modules` or `dist`. Each block is a typechecked, GPU-rendered pattern, not a finished scene: change subject and numbers. Write the whole solution, typecheck once. `createAuraApp(selector, { scene })` owns renderer, resize and loop. Vectors `[x, y, z]`, colours CSS strings, primitives are unit shapes scaled by `size`. Per frame `app.onFrame((f) => ...)` gives `f.dt`, `f.time` in seconds. To change a node later give it `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`.
+`@aura3d/engine` is installed; never open `node_modules` or `dist`. Blocks are typechecked, GPU-rendered patterns, not finished scenes: change subject and numbers; typecheck once. `createAuraApp(selector, { scene })` owns renderer, resize and loop. Vectors `[x, y, z]`, colours CSS strings, primitives are unit shapes scaled by `size`. Per frame `app.onFrame((f) => ...)` gives `f.dt`, `f.time` in seconds. To change a node later give it `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`.
 
 ### Scene skeleton: look, subject, camera, per-frame update
 ```ts render=animated
@@ -14,36 +14,7 @@ const app = createAuraApp("#app", {
 app.onFrame((f) => app.nodes.require("orb").setPosition(0, 0.8 + 0.9 * Math.abs(Math.sin(f.time * 1.7)), 0));
 await app.ready();
 ```
-Gotchas: a look brings light, shadow, fog, sky and grade; spread `looks.appOptions(id)` with it (`looks.list()`: `outdoor-day`, `night-city`, `golden-hour`, `overcast`, `space`). `camera.perspective` is fixed, `camera.orbit` adds drag. Bright looks wash out: `looks.preset(id, { exposureEv: -1 })`. Colours are `#rrggbb`, `rgb()` or names: `hsl()` strings are not parsed.
-
-### Lights and environment (hand-built look)
-```ts render=static
-import { camera, createAuraApp, effects, environments, lights, material, primitives, scene } from "@aura3d/engine";
-createAuraApp("#app", {
-  scene: scene({ background: "#1b2230" })
-    .add(environments.neutral({ intensity: 0.6, background: false }))
-    .add(lights.directional({ position: [5, 8, 3], target: [0, 0, 0], intensity: 3, shadow: true }))
-    .add(lights.point({ position: [-2, 1.5, 1], intensity: 12, color: "#ff9d5c", distance: 8 }))
-    .add(effects.fog({ color: "#1b2230", density: 0.03 }))
-    .add(primitives.plane({ name: "floor", size: [20, 1, 20], material: material.pbr({ color: "#555b66", roughness: 0.9 }) }))
-    .add(primitives.torus({ name: "ring", size: 1.4, material: material.pbr({ color: "#eeeeee", metallic: 1, roughness: 0.25 }) }).position(0, 1, 0))
-    .camera(camera.perspective({ position: [4, 2.5, 5], target: [0, 0.8, 0], fov: 42 }))
-});
-```
-Gotchas: lights with no `environments.neutral` or look give a flat dark frame and metals reflect nothing. `plane` size is `[w, 1, d]`, in XZ.
-
-### Materials: metal, glass, emissive, rough
-```ts render=static
-import { camera, createAuraApp, looks, material, primitives, scene } from "@aura3d/engine";
-const mats = [material.pbr({ color: "#c9ccd2", metallic: 1, roughness: 0.2 }), material.glass({ color: "#9fd8ff" }),
-  material.emissive({ color: "#222222", emissive: "#40ffb0", emissiveIntensity: 2 })];
-createAuraApp("#app", {
-  scene: mats.reduce((s, m, i) => s.add(primitives.sphere({ name: `s${i}`, size: 1, material: m }).position(i * 1.3 - 1.3, 0.5, 0)), scene().add(looks.preset("product-studio", { exposureEv: -1.2 })))
-    .camera(camera.perspective({ position: [0, 1.6, 5], target: [0, 0.5, 0], fov: 38 })),
-  ...looks.appOptions("product-studio")
-});
-```
-Gotchas: glow reads best with `effects.bloom({ intensity: 0.5, threshold: 0.8, radius: 0.5 })`. Instance `colors` multiply the material colour: use `#ffffff` there.
+Gotchas: a look brings light, shadow, fog, sky and grade; spread `looks.appOptions(id)` with it (`outdoor-day`, `night-city`, `golden-hour`, `overcast`, `space`). `camera.perspective` is fixed, `camera.orbit` adds drag. Bright looks wash out: `looks.preset(id, { exposureEv: -1 })`. Colours are `#rrggbb`, `rgb()` or names: `hsl()` strings are not parsed. Hand-built light needs `environments.neutral({ intensity: 0.6, background: false })` beside `lights.directional({ position, target, intensity: 3, shadow: true })`, else the frame is flat and dark and metals reflect nothing; `primitives.plane` size is `[w, 1, d]`. Glow: `effects.bloom({ intensity: 0.5, threshold: 0.8, radius: 0.5 })`.
 
 ### Instancing: many copies, one draw, updated live
 ```ts render=animated
@@ -63,7 +34,7 @@ const app = createAuraApp("#app", {
 });
 app.onFrame((f) => app.nodes.require("tiles").setInstances(cells.map((_, i) => at(i, f.time * 1.3)), colors));
 ```
-Gotchas: `instances.box|sphere|cylinder|cone|model`; `setInstances(transforms, colors)` animates, thousands are fine; pass the colours every call or they reset to the base colour. Seed your generator, not `Math.random`, if replay matters.
+Gotchas: `instances.box|sphere|cylinder|cone|model`; `setInstances(transforms, colors)` animates, thousands are fine; pass the colours every call or they reset to the base colour.
 
 ### Custom shader: your own time uniform
 ```ts render=animated
@@ -85,7 +56,7 @@ const app = createAuraApp("#app", {
 });
 app.onFrame((f) => app.nodes.require("blob").setUniform?.("clk", f.time));
 ```
-Gotchas: GLSL 3.00 (`in`/`out`, declare your own `out vec4 outColor`). Prelude, never declare: `position normal uv modelViewProjectionMatrix modelMatrix cameraPosition`. On 5.0.x `uTime` does not advance by itself: declare a uniform and push it with `setUniform` every frame on a `.runtime({ id, mutable: true })` node, or the shader is frozen. Output linear colour (the engine tone-maps). A compile error logs `CUSTOM_SHADER_COMPILE_FAILED` and skips the draw.
+Gotchas: GLSL 3.00 (`in`/`out`, declare your own `out vec4 outColor`). Prelude, never declare: `position normal uv modelViewProjectionMatrix modelMatrix cameraPosition`. On 5.0.x `uTime` does not advance by itself: declare a uniform and push it with `setUniform` every frame on a `.runtime({ id, mutable: true })` node, or the shader is frozen. A compile error logs `CUSTOM_SHADER_COMPILE_FAILED` and skips the draw.
 
 ### Procedural geometry: revolve a profile
 ```ts render=static
@@ -104,7 +75,7 @@ createAuraApp("#app", {
   ...looks.appOptions("product-studio")
 });
 ```
-Gotchas: `geometry.define({ positions, normals, indices, bounds, colors?, uvs? })` takes typed arrays, `indices: number[]` and `bounds`. Counter-clockwise triangles face out. Flat shading: non-indexed triangles, one normal per face. Under `noUncheckedIndexedAccess` indexed reads need `!`.
+Gotchas: `geometry.define({ positions, normals, indices, bounds, colors?, uvs? })` takes typed arrays, `indices: number[]` and `bounds`. Counter-clockwise triangles face out.
 
 ### Rigged model: clips and crossfade
 ```ts render=asset:animated
@@ -142,7 +113,7 @@ createFixedStepLoop({ stepSeconds: 1 / 60, step: (dt) => {
 }, render: () => app.nodes.require("player").setPosition(state.x, 0.7, 0).setRotation(0, state.t * 3, 0) }).start();
 await app.ready();
 ```
-Gotchas: simulate in `step` (no `Date.now`, no `Math.random`), copy state to nodes in `render`. HUD and menus are DOM over the canvas. Restart by resetting state and nodes, not `app.setScene`. Full games (`createGame`: pause, touch, results): `docs/agents/build-a-game.md`.
+Gotchas: simulate in `step` (no `Date.now`, no `Math.random`), copy state to nodes in `render`. Restart by resetting state and nodes, not `app.setScene`. Full games (`createGame`: pause, touch, results): `docs/agents/build-a-game.md`.
 
 ### Physics: bound bodies stepped in onFrame
 ```ts render=animated
@@ -171,28 +142,7 @@ createAuraApp("#app", {
     .camera(camera.perspective({ position: [0, 2.5, 6], target: [0, 1.5, 0], fov: 42 }))
 });
 ```
-Gotchas: `blend: "additive"` for glow, `"alpha"` for smoke; also `sprite`. Weather: `effects.rain()`, `effects.snow()`. Never DOM or CSS particles.
-
-### Sky, sun and a water plane
-```ts render=animated
-import { camera, createAuraApp, lights, material, primitives, scene, sky } from "@aura3d/engine";
-const at = (hour: number) => ({ elevationDeg: 12 + 45 * Math.sin(((hour - 6) / 12) * Math.PI), azimuthDeg: 100 + hour * 6 });
-const dir = (e: number, a: number): [number, number, number] => [40 * Math.cos(e) * Math.sin(a), 40 * Math.sin(e), -40 * Math.cos(e) * Math.cos(a)];
-const app = createAuraApp("#app", {
-  scene: scene().add(sky.preetham({ sun: { ...at(9), intensity: 1 } }))
-    .add(lights.directional({ position: dir(0.5, 1.9), target: [0, 0, 0], intensity: 3, shadow: true }).runtime({ id: "sun", mutable: true }))
-    .add(primitives.plane({ name: "sea", size: [200, 1, 200], material: material.pbr({ color: "#1f6f9a", roughness: 0.05, metallic: 0.2, opacity: 0.9 }), castShadow: false }))
-    .add(primitives.cone({ name: "rock", size: [3, 4, 3], material: material.pbr({ color: "#6d6a63", roughness: 1 }) }).position(0, 1.8, -6))
-    .camera(camera.perspective({ position: [0, 3, 14], target: [0, 2, -6], fov: 50, far: 500 }))
-});
-app.onFrame((f) => {
-  const s = at(9 + f.time), rad = Math.PI / 180;
-  app.nodes.require("sun").setPosition(...dir(s.elevationDeg * rad, s.azimuthDeg * rad));
-  app.atmosphere?.setSky({ sun: { ...s, intensity: 1 } });
-});
-await app.ready();
-```
-Gotchas: also `sky.gradient({ zenith, horizon })`, `sky.dayNight()`, `sky.hdri`. Move the sun light yourself (runtime node); `app.atmosphere?.setSky/setFog({ color, density })` is optional, use `?.`. Moving waves: custom shader on a subdivided grid, `docs/agents/recipes.md` recipe 12.
+Gotchas: `blend: "additive"` for glow, `"alpha"` for smoke; also `sprite`. Weather: `effects.rain()`, `effects.snow()`.
 
 ### Assets and find more
-A real object named in the task: `npx @aura3d/cli@latest assets resolve "<object>" --name robot`, then `model(assets.robot)` from `./src/aura-assets`. Never invent paths or ids; a route-local `new URL(..., import.meta.url)` model URL draws black (use `/aura-assets/<file>`). No match: build it procedurally from the patterns above. Exact signatures: `docs/agents/api-signatures.md`. Complete scenes (forest, water, terrain, robot, props, fire, night street): `docs/agents/recipes.md`. Setters `setUniform`, `setLight` and `app.atmosphere` are optional in types: use `?.`.
+A real object named in the task: `npx @aura3d/cli@latest assets resolve "<object>" --name robot`, then `model(assets.robot)` from `./src/aura-assets`. Never invent paths or ids; a route-local `new URL(..., import.meta.url)` model URL draws black (use `/aura-assets/<file>`). No match: build it procedurally from the patterns above. Exact signatures for `lights`, `material`, `environments`, `sky`, `effects`: `docs/agents/api-signatures.md`. Complete scenes (forest, water, terrain, robot, props, sky, fire, night street): `docs/agents/recipes.md`. Setters `setUniform`, `setLight`, `app.atmosphere` are optional: use `?.`.
