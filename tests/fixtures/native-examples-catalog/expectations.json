@@ -2386,7 +2386,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/presentation.ts",
-          "sha256": "7e003f9579425667e792dc0aa9999c9895dc13e6740fe0748b2fb90a496c38ff"
+          "sha256": "d7fd77d47bdb59a6ea42598825af4590a49331da2d6b464d823ed71b77cd06b7"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -3885,7 +3885,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "9d4639af7788858f8cd49cdc5316bbd8b7cf5ad02efd178c94a891ad44868509"
+        "sha256": "f88b2282d8f9f5825d6bf689e9728a1635cc04d8a4a28da440ad3ba72194d0c7"
       },
       "sourceDependencies": [
         {
@@ -3894,7 +3894,7 @@
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/look.ts",
-          "sha256": "ad64d6ad8832c7168931064c4f0fab0085ad8ddd5aa1860ac10857547f464012"
+          "sha256": "1910b6ce8f90d0e5345d26b94fd5e8cdf79beed25276c021fc4939642fb48b36"
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/motion.ts",
@@ -4409,7 +4409,7 @@
       },
       "source": {
         "path": "apps/showcase-teleoperator/src/main.ts",
-        "sha256": "90f08730938a62a2fea0219264b938ce2ee0812f479b05fcf6d581f80fb0c58b"
+        "sha256": "cae5cbad09cf34399f7bfaf7fed611927aba6bea2de623787cb7fff7fcf16d56"
       },
       "sourceDependencies": [
         {
@@ -8543,7 +8543,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-diamond-3d/src/main.ts",
-        "sha256": "9b5372a616e063ece23b30b6f545cebad863cc4de0f6489381c3dd759d1b5918"
+        "sha256": "3e6676a05df89f57e54833bc9ffc20515d3628f0e5730bb20303b0612bfc625f"
       },
       "sourceDependencies": [
         {
