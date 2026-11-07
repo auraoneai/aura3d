@@ -1,0 +1,43 @@
+{
+  "id": "shadow-no-receiver",
+  "run": 1,
+  "expected": [
+    "LINT_SHADOW_NO_RECEIVER"
+  ],
+  "repaired": true,
+  "repairedAtTurn": 1,
+  "turns": 1,
+  "apiCalls": 3,
+  "initialCodes": [
+    "LINT_SHADOW_NO_RECEIVER"
+  ],
+  "finalCodes": [],
+  "transcript": [
+    {
+      "turn": 1,
+      "tools": [
+        "list_files"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "read_file"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "write_file",
+        "done"
+      ]
+    },
+    {
+      "turn": 1,
+      "verifyCodes": [],
+      "ok": true
+    }
+  ],
+  "seconds": 68,
+  "finalSource": "import { camera, createAuraApp, lights, material, primitives, scene } from \"@aura3d/engine\";\n\n// The key light has shadow on and the objects cast. The floor is a material.custom node, and custom materials only\n// receive the sun shadow when the spec sets receiveShadow: true.\nconst floorMaterial = material.custom({ receiveShadow: true, glsl: { fragment: /* glsl */ `\nout vec4 outColor;\nvoid main() { outColor = vec4(0.48, 0.52, 0.58, 1.0); }` } });\nconst ballMaterial = material.custom({ glsl: { fragment: /* glsl */ `\nout vec4 outColor;\nvoid main() { outColor = vec4(0.9, 0.28, 0.3, 1.0); }` } });\nconst blockMaterial = material.custom({ glsl: { fragment: /* glsl */ `\nout vec4 outColor;\nvoid main() { outColor = vec4(0.29, 0.62, 1.0, 1.0); }` } });\n\nasync function main(): Promise<void> {\n  const app = createAuraApp(\"#app\", {\n  scene: scene({ background: \"#1b2230\" })\n    .add(lights.directional({ position: [4, 6, 3], target: [0, 0, 0], intensity: 2.5, shadow: true }))\n    .add(primitives.plane({ name: \"floor\", size: [14, 1, 14], material: floorMaterial, receiveShadow: true }))\n    .add(primitives.sphere({ name: \"ball\", material: ballMaterial, castShadow: true }).position(0, 0.8, 0))\n    .add(primitives.box({ name: \"block\", material: blockMaterial, castShadow: true }).position(2.2, 0.5, 0.4))\n    .camera(camera.orbit({ target: [0, 0.5, 0], distance: 8, fov: 40 }))\n});\n  await app.ready();\n}\nvoid main();\n"
+}

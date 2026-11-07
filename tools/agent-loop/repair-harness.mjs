@@ -148,6 +148,7 @@ async function main() {
   const results = [];
   for (const scene of manifest.scenes) {
     if (only && !only.includes(scene.id)) continue;
+    if (noBrowser && !scene.expectedStatic) { console.log(`SKIPPED ${scene.id}: no static expectation and --no-browser`); continue; }
     for (let run = 1; run <= runs; run += 1) {
       const workDir = join(seededDir, `_work-${scene.id}`);
       rmSync(workDir, { recursive: true, force: true });
