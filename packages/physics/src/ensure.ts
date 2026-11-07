@@ -3,4 +3,4 @@
 //
 // This is a pure re-export so the root barrel keeps the solver's nominal declaration types reachable. The solver-free
 // declaration surface used by `@aura3d/physics/world` (and so by the engine's declarations) is `ensureOpaque.ts`.
-export { ensurePhysics, physicsInitMode } from "@aura3d/physics-rapier";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "@aura3d/physics-rapier";

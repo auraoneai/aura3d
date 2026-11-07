@@ -1,0 +1,103 @@
+ADDED FILE dist/assets/vite/auraPhysics.d.ts
+ADDED FILE dist/aura3d-cli/physics-backend-check.d.ts
+ADDED FILE dist/engine/agent-api/physics/backendMissing.d.ts
+ADDED FILE dist/engine/agent-api/physics/onDemandPhysics.d.ts
+ADDED FILE dist/physics-rapier/rapierInit.ondemand.d.ts
+CHANGED dist/assets/vite/auraDecoders.d.ts
+  - export {};
+  + import { type AuraPhysicsBuildMode } from "./auraPhysics";
+  + export { auraPhysicsPlugin, classifyModule, findPhysicsUsage, isRapierInitRequest, PHYSICS_ON_DEMAND_CONDITION, PHYSICS_STRIPPED_MESSAGE, PHYSICS_USAGE_PATTERN, scanModuleGraphForPhysics } from "./auraPhysics";
+  + export type { AuraPhysicsBuildMode, AuraPhysicsPluginContext, AuraPhysicsPluginOptions, AuraPhysicsResolveOptions, PhysicsScanContext, PhysicsScanResult } from "./auraPhysics";
+  + export interface Aura3DVitePluginOptions {
+  + /**
+  + * `auto` (default): on `vite build`, leave Rapier out of an app whose own code never mentions physics (see
+  + * `auraPhysicsPlugin`); `true`: always keep it; `false`: always leave it out; `lazy`: keep it but download it only
+  + * when the app first uses physics.
+  + */
+  + readonly physics?: AuraPhysicsBuildMode;
+  + /** Options for the decoder deployment (`auraDecodersPlugin`), or `false` to leave it out. */
+  + readonly decoders?: AuraDecodersPluginOptions | false;
+  + /** The Aura3D Vite plugin set: same-origin decoder deployment plus build-time physics selection. */
+  + export declare function aura3d(options?: Aura3DVitePluginOptions): ({
+  + enforce: "pre";
+  + config(config: {
+  + resolve?: {
+  + conditions?: readonly string[];
+  + resolve: {
+  + conditions: string[];
+  + } | null;
+  + logger?: {
+  + info(message: string): void;
+  + buildStart(): void;
+  + resolveId(this: import("./auraPhysics").AuraPhysicsPluginContext, source: string, importer: string | undefined, resolveOptions?: import("./auraPhysics").AuraPhysicsResolveOptions): Promise<string | null>;
+  + } | {
+  + })[];
+CHANGED dist/engine/agent-api/PhysicsRuntime.d.ts
+  + * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+  + * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+  + * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+  + ready(): Promise<void>;
+CHANGED dist/engine/agent-api/nodes/types/runtime.d.ts
+  + * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+  + * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+  + * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+  + * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+  + * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+  + * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready()` (or `await app.ready()`)
+  + * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+  + * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+  + * build: await `ensurePhysics()` before creating the app).
+  + readonly load?: "eager" | "on-demand" | undefined;
+CHANGED dist/engine/agent-api/physics/PhysicsWorldAccess.d.ts
+  + * How the solver behind this access loads (`eager` when absent). `on-demand` makes `createAuraApp` defer declared
+  + * bodies and serve `app.physics` through a facade until `preload()` resolves.
+  + readonly loadMode?: "eager" | "on-demand" | "stripped" | undefined;
+CHANGED dist/engine/agent-api/physics/PhysicsWorldProvider.d.ts
+  - export type PhysicsWorldModule = Pick<typeof import("../../../physics/world"), "PhysicsWorld" | "ensurePhysics">;
+  + export { isPhysicsBackendMissing } from "./backendMissing";
+  + export type PhysicsWorldModule = Pick<typeof import("../../../physics/world"), "PhysicsWorld" | "ensurePhysics"> & Partial<Pick<typeof import("../../../physics/world"), "physicsLoadMode">>;
+CHANGED dist/physics/ensure.d.ts
+  - export { ensurePhysics, physicsInitMode } from "../physics-rapier/index";
+  + export { ensurePhysics, physicsInitMode, physicsLoadMode } from "../physics-rapier/index";
+CHANGED dist/physics/ensureOpaque.d.ts
+  + /** How this build loads the solver: `eager` (default), `on-demand` (first `ensurePhysics()`), or `stripped` (removed at build time). */
+  + export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
+CHANGED dist/physics/index.d.ts
+  - export { ensurePhysics, physicsInitMode } from "./ensure";
+  + export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensure";
+CHANGED dist/physics/world.d.ts
+  - export { ensurePhysics, physicsInitMode } from "./ensureOpaque";
+  + export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensureOpaque";
+CHANGED dist/physics-rapier/index.d.ts
+  + * How this build loads Rapier: `eager` (default; at module evaluation, or in the background under `aura3d-no-tla`),
+  + * `on-demand` (`aura3d-physics-on-demand` condition / `aura3d({ physics: "lazy" })`: on the first `ensurePhysics()`), or
+  + * `stripped` (the Aura3D Vite plugin found no physics usage and removed the backend from this build).
+  + export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
+  + /** Stable error code for an absent or unresolvable Rapier backend. */
+  + export declare const PHYSICS_BACKEND_MISSING: "PHYSICS_BACKEND_MISSING";
+  + /** The exact command that installs the pinned Rapier backend with npm. */
+  + export declare const PHYSICS_BACKEND_INSTALL_COMMAND: "npm install @dimforge/rapier3d-compat@0.20.0";
+  + * Thrown (synchronously for `new PhysicsWorld()` / declared `.physics({...})` bodies, asynchronously for
+  + * `createRapierPhysics()` and `preloadPhysics()`) when `@dimforge/rapier3d-compat` cannot be resolved. Carries the
+  + * install command so an agent or a developer can fix the project without reading docs.
+  + export declare class PhysicsBackendMissingError extends Error {
+  + readonly code: "PHYSICS_BACKEND_MISSING";
+  + readonly installCommand: "npm install @dimforge/rapier3d-compat@0.20.0";
+  + constructor(detail?: string, options?: {
+  + readonly cause?: unknown;
+  + });
+  + export type PhysicsBackendStatus = {
+  + readonly state: "ready";
+  + readonly state: "missing";
+  + readonly code: typeof PHYSICS_BACKEND_MISSING;
+  + readonly installCommand: typeof PHYSICS_BACKEND_INSTALL_COMMAND;
+  + readonly state: "failed";
+  + readonly cause: unknown;
+  + /** Observed (not predicted) backend state; `missing` also covers a lazy build that has not finished loading. */
+  + export declare function getPhysicsBackendStatus(): PhysicsBackendStatus;
+CHANGED dist/physics-rapier/rapierInit.d.ts
+  + /** How this build loads Rapier: `eager` means at module evaluation (top-level await). */
+  + export declare const rapierLoadMode: "eager" | "on-demand" | "stripped";
+CHANGED dist/physics-rapier/rapierInit.lazy.d.ts
+  + /** How this build loads Rapier: `eager` here means in the background as soon as this module is evaluated. */
+  + export declare const rapierLoadMode: "eager" | "on-demand" | "stripped";

@@ -1,0 +1,26 @@
+{
+ "question": "Should Aura3D load Rapier as a separate .wasm (non-compat @dimforge/rapier3d, WebAssembly.instantiateStreaming, separately cacheable) instead of the compat build (WASM inlined as base64 in JS)?",
+ "decision": "Not implemented; documented in docs/concepts/physics.md. The non-compat package imports its .wasm as an ES module (import * as wasm from \"./rapier_wasm3d_bg.wasm\"), which needs a WASM-ESM bundler plugin (for example vite-plugin-wasm) in every consumer, and it is a different package name than the peer dependency existing installs have (@dimforge/rapier3d-compat@0.20.0). Neither is additive.",
+ "compat_0_20_0": {
+  "note": "the Rapier chunk Vite emits for @dimforge/rapier3d-compat@0.20.0 (WASM inlined as base64)",
+  "bytes": 2853747,
+  "gzip9": 1082643,
+  "brotli": 796234
+ },
+ "nonCompat_0_20_0": {
+  "wasm": {
+   "bytes": 2021200,
+   "gzip9": 761373,
+   "brotli": 558066
+  },
+  "jsGlue_rapier_wasm3d_bg_js": {
+   "bytes": 239763,
+   "gzip9": 25187,
+   "brotli": 19907
+  },
+  "note": "npm pack @dimforge/rapier3d@0.20.0; the package also ships small per-class JS modules not counted here"
+ },
+ "saving": {
+  "gzip9Bytes": 296083
+ }
+}

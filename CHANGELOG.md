@@ -19,17 +19,17 @@ A minor release: the 5.1.x lanes that were held back from 5.1.0 (typed point and
 - Physics: a missing Rapier backend now throws a typed `PHYSICS_BACKEND_MISSING` error (with an install command), listed in `app.diagnostics().errors`, shown on the canvas and flagged by `aura3d doctor`; new physics-basics recipe.
 - Templates: the `procedural-scene` starter template is back (the `create-aura3d` template union is widened), plus richer first frames for `falling-blocks-starter`, `character-viewer`, `animation-studio` and `postprocess-scene`.
 - Engine API gaps: `createGame` accepts `renderer`, `output` and a main-thread `worker` request (the showcase `labAppOptions(flags, createWorker)` yields a `createAuraApp`-ready worker fragment); `AuraRendererInfo` and `AuraPrecompileResult` are exported; `app.info.memory` adds `bufferBytes` and `textureBytes`. See `docs/api/engine-api-gaps-5-1.md`.
+- Physics on demand: the `aura3d()` Vite plugin from `@aura3d/assets/vite` strips Rapier at build time when no physics usage is found (a no-physics app with Rapier installed goes from 3.01 MB to 1.93 MB gzip JS, with no Rapier fetch; the plugin checks a generated list of engine entry points that create bodies and keeps Rapier when uncertain), and opt-in lazy loading with `createAuraApp(..., { physics: { load: "on-demand" } })` or `aura3d({ physics: "lazy" })`, where `app.physics` calls before the load throw `PHYSICS_NOT_READY`. The default stays eager. Templates still use `auraDecodersPlugin` (switching them to `aura3d()` is a follow-up). See `docs/concepts/physics.md`.
 - `AURA3D_ONLY_ROUTE` builds one showcase route without the all-assets and `showcase-index` checks.
 
 ### Fixes and behaviour changes
 
 - Contact shadows: skinned, morphed and custom-depth participants are now drawn into the contact-shadow mask depth, and `CONTACT_SHADOW_PARTIAL` names the participants still excluded. No clearly visible gain has been confirmed in game frames yet.
 - `effects.particles`: `shape`, `shapeSize`, `coneAngleDeg`, `wind`, `stretch`, `sizeOverLife`, `alphaOverLife` and `lifetimeColorRamp` are now simulated by the CPU emitter (they were accepted and ignored). Visible change: the Slingshot Siege chapter-1 dust motes now spread through their authored box instead of clumping at one point (the Aura Hoops Manila dust motes also take their authored box; no visible difference in the recorded frames). Kept on the 5.0.2 look: the particle fountain (`prefabs.particleFountain`, `particles.fountain`, `sceneKits.particleFountain`; a user `color` still sets the plume colour), the Cross Hop diorama ambient emitters and the Hoops Manila rain curtains no longer author these fields, so they lower exactly as before. `intensity` and `shape: "mesh-surface"` stay in `AuraParticleEmitterOptions` (declarations are additive only); neither is read yet and `intensity` is marked `@deprecated`.
-- Physics cost, stated honestly: once the Rapier backend is installed, every app that imports the engine downloads and initialises the Rapier chunk at startup (2.85 MB, 1.08 MB gzip), whether or not it uses physics. An on-demand mode is in progress and is not part of this release.
+- Physics cost, stated honestly: once the Rapier backend is installed, every app that imports the engine downloads and initialises the Rapier chunk at startup (2.85 MB, 1.08 MB gzip), whether or not it uses physics. That is still the default; the `aura3d()` Vite plugin and the opt-in on-demand mode above avoid it.
 
 ### Known limits
 
-- Not in this release: on-demand physics loading (still in review).
 - Picking is CPU only; GPU id-buffer picking is not implemented.
 - Streaming and picking numbers come from one machine under load and are not public benchmark claims.
 - Browser acceptance round 3 and WebGPU evidence have not been run for this release.

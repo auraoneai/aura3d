@@ -3,6 +3,7 @@ import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { cp, copyFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { auraPhysicsPlugin, type AuraPhysicsBuildMode } from "./auraPhysics.js";
 
 const VENDOR_ROOT = fileURLToPath(new URL("../../vendor", import.meta.url));
 const WORKER_DIR = fileURLToPath(new URL("../workers/", import.meta.url));
@@ -260,3 +261,25 @@ export function auraDecodersPlugin(options: AuraDecodersPluginOptions = {}) {
 
 /** Vendored decoder root, also used by non-Vite copy scripts. */
 export function auraDecodersVendorRoot(): string { return VENDOR_ROOT; }
+
+export { auraPhysicsPlugin, classifyModule, findPhysicsUsage, isRapierInitRequest, PHYSICS_ON_DEMAND_CONDITION, PHYSICS_STRIPPED_MESSAGE, PHYSICS_USAGE_PATTERN, scanModuleGraphForPhysics } from "./auraPhysics.js";
+export type { AuraPhysicsBuildMode, AuraPhysicsPluginContext, AuraPhysicsPluginOptions, AuraPhysicsResolveOptions, PhysicsScanContext, PhysicsScanResult } from "./auraPhysics.js";
+
+export interface Aura3DVitePluginOptions {
+  /**
+   * `auto` (default): on `vite build`, leave Rapier out of an app whose own code never mentions physics (see
+   * `auraPhysicsPlugin`); `true`: always keep it; `false`: always leave it out; `lazy`: keep it but download it only
+   * when the app first uses physics.
+   */
+  readonly physics?: AuraPhysicsBuildMode;
+  /** Options for the decoder deployment (`auraDecodersPlugin`), or `false` to leave it out. */
+  readonly decoders?: AuraDecodersPluginOptions | false;
+}
+
+/** The Aura3D Vite plugin set: same-origin decoder deployment plus build-time physics selection. */
+export function aura3d(options: Aura3DVitePluginOptions = {}) {
+  return [
+    ...(options.decoders === false ? [] : [auraDecodersPlugin(options.decoders ?? {})]),
+    auraPhysicsPlugin(options.physics === undefined ? {} : { physics: options.physics })
+  ];
+}

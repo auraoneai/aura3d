@@ -37,6 +37,7 @@ import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, registerManagedRootApp, reserveRootCanvas, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import type { PhysicsWorldAccess } from "../physics/PhysicsWorldAccess.js";
 import { isPhysicsBackendMissing } from "../physics/backendMissing.js";
+import { createOnDemandPhysicsFacade, type OnDemandPhysicsFacade } from "../physics/onDemandPhysics.js";
 import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
 import { clearTypedGLBActorQrFlags, setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
@@ -354,6 +355,52 @@ export function createAuraAppWithPhysicsWorldAccess(
   };
   let appPhysicsWorldInstance: World | undefined;
   let appPhysicsInstance: AuraPhysicsRuntime | undefined;
+  /*
+   * On-demand physics (`physics: { load: "on-demand" }`, or a build made with `aura3d({ physics: "lazy" })`). Until the
+   * backend has loaded, declared bodies are recorded instead of created (and replayed in order on load), `app.physics`
+   * is a facade (see ../physics/onDemandPhysics.ts) and nothing touches the solver. The default eager build never
+   * enters this state: `physicsDeferred` stays false and every path below is the unchanged synchronous one.
+   */
+  const physicsOnDemand = options.physics?.load === "on-demand"
+    || (options.physics?.load === undefined && physicsAccess.loadMode === "on-demand");
+  let physicsDeferred = physicsOnDemand;
+  let physicsLoad: Promise<void> | undefined;
+  let physicsLoadFailure: unknown;
+  type DeferredStage = {
+    readonly candidate: AuraSceneSnapshot;
+    readonly sourceNodes: readonly AuraSceneNode[];
+    readonly incremental?: { readonly prefix: readonly string[]; readonly replaceIds: readonly string[] } | undefined;
+  };
+  const deferredStages: DeferredStage[] = [];
+  let onPhysicsLoaded: (() => void) | undefined;
+  let onPhysicsLoadFailed: ((error: unknown) => void) | undefined;
+  const startPhysicsLoad = (): Promise<void> => {
+    if (!physicsDeferred) return Promise.resolve();
+    if (physicsLoad) return physicsLoad;
+    physicsLoadFailure = undefined;
+    const attempt = physicsAccess.preload().then(
+      () => { onPhysicsLoaded?.(); },
+      (error: unknown) => {
+        physicsLoadFailure = error;
+        if (physicsLoad === attempt) physicsLoad = undefined;
+        onPhysicsLoadFailed?.(error);
+        throw error;
+      }
+    );
+    physicsLoad = attempt;
+    void attempt.catch(() => undefined);
+    return attempt;
+  };
+  const sceneDeclaresPhysics = (scene: AuraSceneSnapshot): boolean =>
+    scene.nodes.some((node) => (node.kind === "model" || node.kind === "primitive") && Boolean(node.physics));
+  /** The preview bridge for headless / canvas-2D mounts; deferred (created on load) while on-demand physics is loading. */
+  const previewScenePhysics = (scene: AuraSceneSnapshot): ReturnType<typeof createRuntimeScenePhysicsWithAccess> => {
+    if (physicsDeferred && sceneDeclaresPhysics(scene)) {
+      void startPhysicsLoad().catch(() => undefined);
+      return undefined;
+    }
+    return createRuntimeScenePhysicsWithAccess(physicsAccess, scene);
+  };
   const appPhysicsNodeNames = new Map<number, string>();
   const appPhysicsNodeBindings = new Map<number, NodeBinding>();
   const appPhysicsPivotGuards = new Map<number, () => void>();
@@ -598,6 +645,22 @@ export function createAuraAppWithPhysicsWorldAccess(
     const modelBounds = new Map<number, ModelBoundsBinding>();
     const owners = new Map<number, readonly string[]>();
     const instanceBodies = new Map<number, { readonly batch: InstanceBatch; readonly node: AuraModelNode | AuraPrimitiveNode; readonly offset?: AuraVec3 }>();
+    if (physicsDeferred && descriptors.length > 0) {
+      // Validated above exactly as in the eager path; the bodies themselves are created when the backend has loaded.
+      void startPhysicsLoad().catch(() => undefined);
+      let pendingActive = true;
+      return {
+        rollback(): void { pendingActive = false; },
+        commit(isCurrent: () => boolean = () => true): boolean {
+          if (!pendingActive) return false;
+          pendingActive = false;
+          if (!isCurrent()) return false;
+          if (!incremental) deferredStages.length = 0;
+          deferredStages.push({ candidate, sourceNodes, ...(incremental ? { incremental } : {}) });
+          return true;
+        }
+      };
+    }
     const hadWorld = appPhysicsWorldInstance !== undefined;
     let world: World | undefined;
     let active = true;
@@ -680,6 +743,8 @@ export function createAuraAppWithPhysicsWorldAccess(
       commit(isCurrent: () => boolean = () => true): boolean {
         if (!active) return false;
         if (!isCurrent()) { rollback(); return false; }
+        // A full (re)staging supersedes bodies still waiting for an on-demand backend (always empty when eager).
+        if (!incremental) deferredStages.length = 0;
         const replaced = incremental
           ? [...appPhysicsBodyOwners].filter(([, paths]) => paths.some((id) => incremental.replaceIds.includes(id))).map(([id]) => id)
           : [...appDeclaredBodyIds];
@@ -743,7 +808,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       const admittedCanvas = canvasAdmissionError ? undefined : resolved;
       const usesProductionRenderer = Boolean(admittedCanvas && hasRootRenderableContent(admittedCanvas, declaresWebGLContent(renderSnapshot.nodes), runtimeOwner) && typeof window !== "undefined");
       try {
-        initialRuntimePhysics = usesProductionRenderer ? undefined : createRuntimeScenePhysicsWithAccess(physicsAccess, renderSnapshot);
+        initialRuntimePhysics = usesProductionRenderer ? undefined : previewScenePhysics(renderSnapshot);
       } catch (error) {
         if (!isPhysicsBackendMissing(error)) throw error;
         startupPhysicsBackendFailure ??= error;
@@ -1424,6 +1489,41 @@ export function createAuraAppWithPhysicsWorldAccess(
     }
     return appPhysicsInstance;
   };
+  const onDemandPhysics: OnDemandPhysicsFacade | undefined = physicsOnDemand
+    ? createOnDemandPhysicsFacade({
+        isReady: () => !physicsDeferred,
+        load: () => startPhysicsLoad(),
+        failure: () => physicsLoadFailure,
+        real: () => appPhysics(),
+        layers: options.physics?.layers
+      })
+    : undefined;
+  onPhysicsLoaded = () => {
+    if (disposed || !physicsDeferred) return;
+    physicsDeferred = false;
+    for (const stage of deferredStages.splice(0)) {
+      // A runtime subtree removed (entirely) while the backend was loading has nothing left to simulate.
+      const ids = stage.incremental?.replaceIds ?? [];
+      if (ids.length > 0 && ids.every((id) => runtimeNodes.get(id) === undefined)) continue;
+      try { stageDeclaredBodies(stage.candidate, stage.sourceNodes, stage.incremental).commit(); }
+      catch (error) {
+        const message = `Aura3D on-demand physics could not create declared bodies: ${error instanceof Error ? error.message : String(error)}`;
+        if (!diagnosticsState.errors.includes(message)) diagnosticsState.errors.push(message);
+        if (typeof console !== "undefined") console.error(message, error);
+      }
+    }
+    if (canvasRuntimePhysics === undefined && diagnosticsState.backend !== "webgl2" && sceneDeclaresPhysics(renderSnapshot)) {
+      try { canvasRuntimePhysics = createRuntimeScenePhysicsWithAccess(physicsAccess, renderSnapshot); }
+      catch (error) { if (typeof console !== "undefined") console.error(error); }
+    }
+    onDemandPhysics?.flush();
+    if (!runtimePaused && !xrOwnsFrames && options.autoStart !== false) productionController?.invalidate?.();
+  };
+  onPhysicsLoadFailed = (error) => {
+    if (disposed) return;
+    if (isPhysicsBackendMissing(error)) reportPhysicsBackendMissing(error);
+    else if (typeof console !== "undefined") console.error(error);
+  };
   // A registration token keeps an old unsubscribe from removing a later
   // registration of the same callback.
   const frameCallbacks = new Map<AuraFrameCallback, object>();
@@ -1710,7 +1810,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     if (recoveryAttempt?.cleanupErrors.length) diagnosticsState.errors.push(...recoveryAttempt.cleanupErrors);
     canvasRuntimePhysics = prepared
       ? preparedPhysics
-      : shouldUseProductionRenderer ? undefined : createRuntimeScenePhysicsWithAccess(physicsAccess, renderSnapshot);
+      : shouldUseProductionRenderer ? undefined : previewScenePhysics(renderSnapshot);
     preparedPhysics = undefined;
     overlay?.update();
     /*
@@ -2109,7 +2209,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       // the live world or invalidating the old scene's node handles.
       const nextRuntimePhysics = shouldUseProductionRendererForScene(nextRenderSnapshot)
         ? undefined
-        : createRuntimeScenePhysicsWithAccess(physicsAccess, nextRenderSnapshot);
+        : previewScenePhysics(nextRenderSnapshot);
       let stagedBodies: ReturnType<typeof stageDeclaredBodies> | undefined;
       try {
         stagedBodies = stageDeclaredBodies(nextRenderSnapshot, nextSnapshot.nodes);
@@ -2139,6 +2239,12 @@ export function createAuraAppWithPhysicsWorldAccess(
      * signal that a route intends to use physics.
      */
     get physics() {
+      if (onDemandPhysics) {
+        // Touching app.physics is the signal that the route uses physics: start the download.
+        // A failed load is retried by app.physics.ready(), not by every property access.
+        if (physicsDeferred && physicsLoadFailure === undefined) void startPhysicsLoad().catch(() => undefined);
+        return onDemandPhysics.facade;
+      }
       return appPhysics();
     },
     get runtime() {
@@ -2210,6 +2316,8 @@ export function createAuraAppWithPhysicsWorldAccess(
     async ready() {
       // Resolves when the in-flight mount settles; immediate when there is none. See AuraApp.ready.
       await productionMountSettled;
+      // On-demand physics only: also wait for a backend load in flight (its failure is reported in diagnostics).
+      if (physicsLoad) await physicsLoad.catch(() => undefined);
     },
     readiness(readinessOptions: AuraReadinessOptions = {}) {
       if (disposed) return Promise.resolve({ state: "disposed" } as const);

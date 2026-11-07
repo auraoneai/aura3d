@@ -1030,7 +1030,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "b6540f47c392da7215b34c61a82eb70bbf6ee058921489a7afbee227388ef066"
+          "sha256": "713c0c316e8e8a6a26be0a23acb8f49e514cf5145ad5b7d09ca3495b78211308"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",

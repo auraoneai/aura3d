@@ -1,13 +1,25 @@
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { toRapierHeightfieldHeights } from "./HeightfieldLayout.js";
 
-import { ensureRapier, getRapierInitializationError, getRapierModule, rapierInitMode } from "./rapierInit.js";
+import { ensureRapier, getRapierInitializationError, getRapierModule, rapierInitMode, rapierLoadMode } from "./rapierInit.js";
 
 // `@dimforge/rapier3d-compat` is an OPTIONAL peer (see PhysicsBackendMissingError for the failure contract): it must be absent-tolerant at module evaluation so
 // `import { createAuraApp } from "@aura3d/engine"` works in consumers that never use physics. Failure defers to
 // call time. Initialisation lives in `./rapierInit.js` (top-level await by default, a lazy variant under the
 // `aura3d-no-tla` bundler condition).
 export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
+/**
+ * How this build loads Rapier: `eager` (default; at module evaluation, or in the background under `aura3d-no-tla`),
+ * `on-demand` (`aura3d-physics-on-demand` condition / `aura3d({ physics: "lazy" })`: on the first `ensurePhysics()`), or
+ * `stripped` (the Aura3D Vite plugin found no physics usage and removed the backend from this build).
+ */
+export const physicsLoadMode: "eager" | "on-demand" | "stripped" = rapierLoadMode;
+
+/** A failure that already carries the typed PHYSICS_BACKEND_MISSING code (for example a build-time strip) is reported as is. */
+function typedMissingCause(failure: { readonly cause: unknown } | null): Error | undefined {
+  const cause = failure?.cause;
+  return cause instanceof Error && (cause as { code?: unknown }).code === "PHYSICS_BACKEND_MISSING" ? cause : undefined;
+}
 
 /** Stable error code for an absent or unresolvable Rapier backend. */
 export const PHYSICS_BACKEND_MISSING = "PHYSICS_BACKEND_MISSING" as const;
@@ -40,7 +52,7 @@ export type PhysicsBackendStatus =
 export function getPhysicsBackendStatus(): PhysicsBackendStatus {
   if (getRapierModule()) return { state: "ready" };
   const failure = getRapierInitializationError();
-  if (failure) return { state: "failed", cause: failure.cause };
+  if (failure && !typedMissingCause(failure)) return { state: "failed", cause: failure.cause };
   return { state: "missing", code: PHYSICS_BACKEND_MISSING, installCommand: PHYSICS_BACKEND_INSTALL_COMMAND };
 }
 
@@ -48,9 +60,13 @@ function requireRapierModule(): RapierModule {
   const rapier = getRapierModule();
   if (!rapier) {
     const failure = getRapierInitializationError();
+    const typed = typedMissingCause(failure);
+    if (typed) throw typed;
     if (failure) throw new Error("@aura3d/engine physics failed to initialize the Rapier WASM backend.", { cause: failure.cause });
     throw new PhysicsBackendMissingError(
-      rapierInitMode === "lazy"
+      rapierLoadMode === "on-demand"
+        ? "this build loads physics on demand (aura3d({ physics: \"lazy\" })), so `await app.physics.ready()` or `await ensurePhysics()` (from @aura3d/engine/physics) before creating a world; if it still fails the Rapier backend @dimforge/rapier3d-compat is not installed."
+        : rapierInitMode === "lazy"
         ? "this build has no top-level await, so `await ensurePhysics()` (from @aura3d/engine/physics) before creating a world or calling createAuraApp; if it still fails the Rapier backend @dimforge/rapier3d-compat is not installed."
         : undefined
     );

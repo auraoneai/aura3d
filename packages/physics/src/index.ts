@@ -52,7 +52,7 @@
  * Recast/Detour adapter at the major-version boundary.
  */
 
-export { ensurePhysics, physicsInitMode } from "./ensure.js";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensure.js";
 
 // --- 1. Bodies, and the shared math/shape vocabulary the whole contract speaks in ---
 export * from "./Shape.js";

@@ -9,6 +9,11 @@ export interface PhysicsWorldAccess {
   preload(): Promise<void>;
   /** Return the constructor for this entry's synchronous physics operations. */
   requireReady(): PhysicsWorldConstructor;
+  /**
+   * How the solver behind this access loads (`eager` when absent). `on-demand` makes `createAuraApp` defer declared
+   * bodies and serve `app.physics` through a facade until `preload()` resolves.
+   */
+  readonly loadMode?: "eager" | "on-demand" | "stripped" | undefined;
 }
 
 export interface PhysicsWorldProvider extends PhysicsWorldAccess {

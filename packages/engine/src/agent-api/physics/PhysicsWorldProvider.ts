@@ -10,7 +10,8 @@ import { isPhysicsBackendMissing, physicsBackendMissingError } from "./backendMi
 
 export { isPhysicsBackendMissing } from "./backendMissing.js";
 
-export type PhysicsWorldModule = Pick<typeof import("@aura3d/physics/world"), "PhysicsWorld" | "ensurePhysics">;
+export type PhysicsWorldModule = Pick<typeof import("@aura3d/physics/world"), "PhysicsWorld" | "ensurePhysics">
+  & Partial<Pick<typeof import("@aura3d/physics/world"), "physicsLoadMode">>;
 export type PhysicsWorldLoader = () => Promise<PhysicsWorldModule>;
 
 /** Check whether a value is constructable without invoking its constructor. */
@@ -108,7 +109,15 @@ export function createLegacyPhysicsWorldAccess(module: PhysicsWorldModule): Lega
   }));
   return {
     preload: () => preloadProvider.preload(),
-    requireReady: () => constructor
+    requireReady: () => constructor,
+    // Read when an app is created, never at access creation: absent on world modules older than lane 519 (and on
+    // strict test doubles), which load eagerly.
+    get loadMode(): "eager" | "on-demand" | "stripped" | undefined {
+      try {
+        const mode = Reflect.get(module, "physicsLoadMode") as unknown;
+        return mode === "on-demand" || mode === "stripped" ? mode : undefined;
+      } catch { return undefined; }
+    }
   };
 }
 
