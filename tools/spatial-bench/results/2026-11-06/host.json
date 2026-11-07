@@ -1,0 +1,27 @@
+{
+  "chromeBrowser": "Chrome/156.0.8078.80",
+  "chromeProtocol": "1.3",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+  "macModel": "Mac16,6",
+  "cpu": "Apple M4 Max",
+  "cpuCores": 16,
+  "memoryGB": 128,
+  "macOS": "26.7.3",
+  "macBuild": "25G416",
+  "kernel": "25.6.0",
+  "node": "v26.11.1",
+  "chromeFlags": "--headless=new --enable-gpu --use-angle=metal --ignore-gpu-blocklist --enable-precise-memory-info --js-flags=--expose-gc",
+  "window": {
+    "width": 1280,
+    "height": 720
+  },
+  "deviceScaleFactor": 1,
+  "warmupMs": 3000,
+  "measureMs": 20000,
+  "startedAt": "2026-11-07T00:58:28.012Z",
+  "loadavgAtStart": [
+    5.74755859375,
+    6.0791015625,
+    6.48046875
+  ]
+}
