@@ -1,4 +1,6 @@
 {
+ "url": "http://127.0.0.1:58031/",
+ "final_url": "http://127.0.0.1:58031/",
  "events": [
   {
    "sequence": 1,
@@ -7,12 +9,14 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58006/favicon.ico",
-    "origin": "http://127.0.0.1:58006",
+    "url": "http://127.0.0.1:58031/favicon.ico",
+    "origin": "http://127.0.0.1:58031",
     "query_parameter_names": [],
     "redacted": false
    }
   }
  ],
- "completeness": "complete"
+ "completeness": {
+  "status": "complete"
+ }
 }

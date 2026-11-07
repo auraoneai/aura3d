@@ -1,4 +1,6 @@
 {
+ "url": "http://127.0.0.1:58221/",
+ "final_url": "http://127.0.0.1:58221/",
  "events": [
   {
    "sequence": 1,
@@ -7,8 +9,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/favicon.ico",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/favicon.ico",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -20,8 +22,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"idle\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -33,8 +35,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"walk\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -46,8 +48,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"jump\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -59,8 +61,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"dash\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -72,8 +74,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"guard\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -85,8 +87,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"light\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -98,8 +100,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"heavy\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -111,8 +113,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"special\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -124,8 +126,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: player state \"hitstun\" stands in with \"Idle_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -137,8 +139,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"idle\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -150,8 +152,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"walk\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -163,8 +165,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"jump\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -176,8 +178,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"dash\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -189,8 +191,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"guard\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -202,8 +204,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"light\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -215,8 +217,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"heavy\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -228,8 +230,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"special\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -241,8 +243,8 @@
    "level": "warning",
    "text": "FIGHTER_CLIP_STAND_IN: rival state \"hitstun\" stands in with \"Zombie_Walk_Fwd_Loop\".",
    "url": {
-    "url": "http://127.0.0.1:58318/assets/index-CFlGs4UC.js",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/assets/index-Dxidjr3t.js",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -254,8 +256,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/probes/probe-20ms.opus.webm",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/probes/probe-20ms.opus.webm",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -267,8 +269,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/probes/probe-20ms.m4a",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/probes/probe-20ms.m4a",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -280,8 +282,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/packs/game-sfx-core/impact.flesh.medium.00.m4a",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/packs/game-sfx-core/impact.flesh.medium.00.m4a",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -293,8 +295,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/packs/game-sfx-core/ui.confirm.00.m4a",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/packs/game-sfx-core/impact.metal.light.00.m4a",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -306,8 +308,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/packs/game-sfx-core/impact.metal.light.00.m4a",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/packs/game-sfx-core/impact.energy.heavy.00.m4a",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -319,8 +321,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/packs/game-sfx-core/impact.energy.heavy.00.m4a",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/packs/game-sfx-core/vehicle.boost.m4a",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -332,12 +334,14 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58318/packs/game-sfx-core/vehicle.boost.m4a",
-    "origin": "http://127.0.0.1:58318",
+    "url": "http://127.0.0.1:58221/packs/game-sfx-core/ui.confirm.00.m4a",
+    "origin": "http://127.0.0.1:58221",
     "query_parameter_names": [],
     "redacted": false
    }
   }
  ],
- "completeness": "complete"
+ "completeness": {
+  "status": "complete"
+ }
 }

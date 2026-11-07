@@ -1,14 +1,16 @@
 {
+ "url": "http://127.0.0.1:58313/",
+ "final_url": "http://127.0.0.1:58313/",
  "events": [
   {
    "sequence": 1,
    "step_index": 1,
    "kind": "console",
-   "level": "warning",
-   "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/assets/aura3d-vendor-DpJ8mRka.js",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/favicon.ico",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -17,11 +19,11 @@
    "sequence": 2,
    "step_index": 1,
    "kind": "console",
-   "level": "error",
-   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "level": "warning",
+   "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
    "url": {
-    "url": "http://127.0.0.1:58657/probes/probe-20ms.opus.webm",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/assets/aura3d-vendor-C_Ih8fXf.js",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -33,8 +35,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/favicon.ico",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/probes/probe-20ms.opus.webm",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -46,8 +48,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/probes/probe-20ms.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/probes/probe-20ms.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -59,8 +61,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/packs/game-sfx-core/pickup.coin.00.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/packs/game-sfx-core/pickup.coin.00.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -72,8 +74,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/packs/game-sfx-core/stinger.checkpoint.00.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/packs/game-sfx-core/stinger.checkpoint.00.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -85,8 +87,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/packs/game-sfx-core/stinger.win.00.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/packs/game-sfx-core/stinger.win.00.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -98,8 +100,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/packs/game-sfx-core/impact.rubber-ball.heavy.00.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/packs/game-sfx-core/impact.rubber-ball.heavy.00.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -111,8 +113,8 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/packs/game-sfx-core/impact.rubber-ball.light.00.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/packs/game-sfx-core/impact.rubber-ball.light.00.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
@@ -124,12 +126,14 @@
    "level": "error",
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
    "url": {
-    "url": "http://127.0.0.1:58657/packs/game-sfx-core/ui.toggle.00.m4a",
-    "origin": "http://127.0.0.1:58657",
+    "url": "http://127.0.0.1:58313/packs/game-sfx-core/ui.toggle.00.m4a",
+    "origin": "http://127.0.0.1:58313",
     "query_parameter_names": [],
     "redacted": false
    }
   }
  ],
- "completeness": "complete"
+ "completeness": {
+  "status": "complete"
+ }
 }
