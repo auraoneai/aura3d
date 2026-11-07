@@ -37,6 +37,10 @@ Rules observed: no Docker, no Playwright, no cloud. Every run takes the shared c
 
 Display target: 60 FPS renders every rAF, 30 FPS renders every second rAF (the display stays at 60 Hz). Sensor ticks (10 or 20 Hz) apply the newest due frame just before a render; frames that fall behind are counted in `ticksSkipped`, never queued.
 
+## E6-02 diagnosis tooling
+
+`results/diagnosis/DIAGNOSIS.md` explains the streamed-points slowdown. Tooling: `diagnose.mjs` (one config in a fresh headless Chrome; `--profile` V8 CPU profile, `--trace` Chrome trace with gpu categories, `--fix N` experiment bitmask, `--dbg phases,glcount,gltime`), `aggregate-profile.mjs` (source-mapped top self/inclusive tables), `profile-callers.mjs`, `trace-summary.mjs`, `diagnosis-tables.mjs`, `src/floor/main.ts` (device-layer and raw-GL floor probe). Build profile bundles with `SB_SOURCEMAP=1 SB_MINIFY=0 SB_OUT=dist-prof`; build the A/B bundle with `SB_EXPERIMENT=1 ... SB_OUT=dist-exp` (swaps in the patched copies under `experiments/`; nothing under `packages/` changes).
+
 ## Limits
 
 Not type-checked by the repo tsconfig (vite/esbuild only). Single machine, shared with other agent lanes (load average recorded per run). WebGL2 only. No GC pause data. Numbers say nothing about other hardware, and no comparison claim may be published from `REPORT.md` without the labels in `docs/agents/claims-and-boundaries.md`.

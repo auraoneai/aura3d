@@ -1,0 +1,17 @@
+## snapshot (pts-100K profile)
+1843 ms  snapshot <- assertFramePivotSupported <- createProductionRuntimeRendererInputOwned <- (anon) <- withPrd01ColorParsing
+915 ms  snapshot <- resolveProductionPrimitiveRuntimeState <- createProductionRuntimeRendererInputOwned <- (anon) <- withPrd01ColorParsing
+3 ms  snapshot <- finishFrameInspection <- (anon) <- withRendererFrameCleanup <- withRendererFrameCleanup.activePrd07Operation
+## runtimeGeometryBounds (pts-100K profile)
+1840 ms  runtimeGeometryBounds <- getBounds <- snapshot <- assertFramePivotSupported <- createProductionRuntimeRendererInputOwned
+914 ms  runtimeGeometryBounds <- getBounds <- snapshot <- resolveProductionPrimitiveRuntimeState <- createProductionRuntimeRendererInputOwned
+## refreshBounds (pts-100K profile)
+1641 ms  refreshBounds <- syncRuntimePrimitiveGeometry <- selectProductionPrimitiveResource <- createProductionRuntimeRendererInputOwned <- (anon)
+## updatedQueryGeometry (pts-100K profile)
+786 ms  updatedQueryGeometry <- updateAttribute <- applyTick <- frameBody <- onFrame
+## normalizeGeometryAttributes (pts-100K profile)
+1587 ms  normalizeGeometryAttributes <- runtimeGeometryBounds <- getBounds <- snapshot <- assertFramePivotSupported
+790 ms  normalizeGeometryAttributes <- runtimeGeometryBounds <- getBounds <- snapshot <- resolveProductionPrimitiveRuntimeState
+728 ms  normalizeGeometryAttributes <- updatedQueryGeometry <- updateAttribute <- applyTick <- frameBody
+## applyAttributeUpdateToGeometry (pts-100K profile)
+1252 ms  applyAttributeUpdateToGeometry <- syncRuntimePrimitiveGeometry <- selectProductionPrimitiveResource <- createProductionRuntimeRendererInputOwned <- (anon)

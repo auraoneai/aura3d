@@ -10,6 +10,11 @@ export interface GlCounters {
 }
 
 export const counters: GlCounters = { bufferDataCalls: 0, bufferDataBytes: 0, bufferSubDataCalls: 0, bufferSubDataBytes: 0, drawCalls: 0, drawVertices: 0, texUploadCalls: 0 };
+/** Diagnosis counters (E6-02): every other GL entry point counted by name, plus JS ms spent inside selected calls (dbg=gltime). */
+export const callCounts: Record<string, number> = {};
+export const callMs: Record<string, number> = {};
+export function resetDiag(): void { const ph = (window as unknown as { __SB_PHASES__?: Record<string, number[]> }).__SB_PHASES__; if (ph) for (const k of Object.keys(ph)) delete ph[k]; for (const k of Object.keys(callCounts)) delete callCounts[k]; for (const k of Object.keys(callMs)) delete callMs[k]; }
+const COUNTED = ["createBuffer", "deleteBuffer", "bindBuffer", "bufferData", "bufferSubData", "createVertexArray", "deleteVertexArray", "bindVertexArray", "vertexAttribPointer", "enableVertexAttribArray", "useProgram", "drawArrays", "drawElements", "drawArraysInstanced", "drawElementsInstanced", "uniform1f", "uniform4fv", "uniformMatrix4fv", "uniformBlockBinding", "bindBufferBase", "bindBufferRange", "createTexture", "texImage2D", "texSubImage2D", "readPixels", "flush", "finish", "getError", "clear", "blitFramebuffer", "bindFramebuffer", "createQuery", "getQueryParameter", "fenceSync", "clientWaitSync", "getParameter", "getUniformLocation", "compileShader", "linkProgram"];
 export function resetCounters(): void {
   for (const key of Object.keys(counters) as Array<keyof GlCounters>) counters[key] = 0;
 }
@@ -58,6 +63,21 @@ export function installHooks(): void {
     }
     counters.bufferSubDataBytes += bytes;
   });
+  if (dbg.includes("gltime") || dbg.includes("glcount")) {
+    const timed = dbg.includes("gltime");
+    for (const name of COUNTED) {
+      const original = proto[name];
+      if (!original) continue;
+      proto[name] = function (this: unknown, ...args: unknown[]) {
+        callCounts[name] = (callCounts[name] ?? 0) + 1;
+        if (!timed) return original.apply(this, args);
+        const t = performance.now();
+        const r = original.apply(this, args);
+        callMs[name] = (callMs[name] ?? 0) + (performance.now() - t);
+        return r;
+      };
+    }
+  }
   wrap("drawArrays", (a) => { counters.drawCalls++; counters.drawVertices += (a[2] as number) || 0; });
   wrap("drawElements", (a) => { counters.drawCalls++; counters.drawVertices += (a[1] as number) || 0; });
   wrap("drawArraysInstanced", (a) => { counters.drawCalls++; counters.drawVertices += ((a[2] as number) || 0) * ((a[3] as number) || 1); });

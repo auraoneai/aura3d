@@ -1,6 +1,6 @@
 // Shared measurement harness: identical timing, counters, labels and result schema for both viewers.
 import { MEASURE_MS, WARMUP_MS } from "../../configs.mjs";
-import { counters, createGpuTimer, glInfo, glState, installHooks, resetCounters } from "./hooks";
+import { callCounts, callMs, counters, createGpuTimer, glInfo, glState, installHooks, resetCounters, resetDiag } from "./hooks";
 import { generate, orbitPose, probePoints, type Cfg, type SpatialData } from "./data";
 
 installHooks();
@@ -126,6 +126,8 @@ export async function runBench(createViewer: () => Viewer, viewerName: "aura" | 
     const cpuCam: number[] = [];
     const cpuRender: number[] = [];
     const cpuLabels: number[] = [];
+    const cpuRenderTick: number[] = []; // E6-02: render ms on frames that applied a tick
+    const cpuRenderNoTick: number[] = []; // E6-02: render ms on frames without a tick
     let ticksApplied = 0;
     let ticksSkipped = 0;
     let rafCount = 0;
@@ -161,12 +163,13 @@ export async function runBench(createViewer: () => Viewer, viewerName: "aura" | 
           phase = "measure";
           window.gc?.();
           resetCounters();
+          resetDiag();
           measureStartAt = performance.now();
           heapStart = heapMB();
           lastHeapAt = measureStartAt;
           gpu.samplesMs.length = 0;
           rafDeltas.length = 0; frameDeltas.length = 0; cpuTotal.length = 0; cpuTick.length = 0; cpuConvert.length = 0;
-          cpuCam.length = 0; cpuRender.length = 0; cpuLabels.length = 0;
+          cpuCam.length = 0; cpuRender.length = 0; cpuLabels.length = 0; cpuRenderTick.length = 0; cpuRenderNoTick.length = 0;
           ticksApplied = 0; ticksSkipped = 0; rafCount = 0;
           lastRenderAt = -Infinity; lastRafAt = -Infinity;
         }
@@ -214,6 +217,7 @@ export async function runBench(createViewer: () => Viewer, viewerName: "aura" | 
             if (lastRenderAt > -Infinity) frameDeltas.push(now - lastRenderAt);
             cpuCam.push(t2 - t1);
             cpuRender.push(t3 - t2);
+            (tickMs > 0 ? cpuRenderTick : cpuRenderNoTick).push(t3 - t2);
             cpuLabels.push(t4 - t3);
             cpuTotal.push(t4 - t0);
           }
@@ -244,6 +248,11 @@ export async function runBench(createViewer: () => Viewer, viewerName: "aura" | 
       cpuCamera: quantiles(cpuCam),
       cpuRender: quantiles(cpuRender),
       cpuLabels: quantiles(cpuLabels),
+      cpuRenderTickFrames: quantiles(cpuRenderTick),
+      cpuRenderNoTickFrames: quantiles(cpuRenderNoTick),
+      glCallsPerFrame: Object.fromEntries(Object.entries(callCounts).map(([k, v]) => [k, v / frames])),
+      glCallMsPerFrame: Object.fromEntries(Object.entries(callMs).map(([k, v]) => [k, v / frames])),
+      phases: ((window as unknown as { __SB_PHASES__?: Record<string, number[]> }).__SB_PHASES__) ? Object.fromEntries(Object.entries((window as unknown as { __SB_PHASES__: Record<string, number[]> }).__SB_PHASES__).map(([k, v]) => [k, quantiles(v)])) : undefined,
       ticksApplied,
       ticksSkipped,
       heap: { startMB: heapStart, endMB: heapEnd, maxMB: heapSamples.length ? Math.max(...heapSamples, heapEnd ?? 0) : heapEnd },
