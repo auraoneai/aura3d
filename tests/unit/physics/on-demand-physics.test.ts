@@ -138,12 +138,12 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
     let open!: () => void;
     const access = onDemandAccess(new Promise<void>((resolve) => { open = resolve; }));
     const app = createAuraAppWithPhysicsWorldAccess(access, undefined as never, { scene: plainScene() });
-    app.nodes.add(primitives.box({ name: "kept", material: material.pbr({ color: "#fff" }) }).runtime({ id: "kept" })
+    app.nodes.add!(primitives.box({ name: "kept", material: material.pbr({ color: "#fff" }) }).runtime({ id: "kept" })
       .physics({ type: "dynamic", shape: "box", halfExtents: [0.5, 0.5, 0.5], mass: 1 }));
-    app.nodes.add(primitives.box({ name: "gone", material: material.pbr({ color: "#fff" }) }).runtime({ id: "gone" })
+    app.nodes.add!(primitives.box({ name: "gone", material: material.pbr({ color: "#fff" }) }).runtime({ id: "gone" })
       .physics({ type: "dynamic", shape: "box", halfExtents: [0.5, 0.5, 0.5], mass: 1 }));
     expect(access.preloads).toBe(1);
-    app.nodes.remove("gone");
+    app.nodes.remove!("gone");
     open();
     await app.physics.ready();
     expect(app.physics.bodies.has("kept")).toBe(true);
