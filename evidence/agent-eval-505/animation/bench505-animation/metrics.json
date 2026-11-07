@@ -1,0 +1,1908 @@
+[
+  {
+    "runId": "bench505-animation-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 11,
+    "agentWallSec": 143.7,
+    "tokensIn": 376408,
+    "tokensOut": 5879,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 0,
+    "readCalls": 10,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 173,
+    "srcTokens": 1920,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 22,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and main.ts calls createAuraApp(\"#app\", ...). The probes show a non-blank, animated frame."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The body group holds many distinct primitives, including cephalothorax, abdomen, pedicel, eyes, fangs and palps."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Four rows times two sides gives 8 legs. Each leg has a femur and a tibia cylinder, plus coxa, knee-ball and foot spheres, so well over 16 leg parts."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "app.onFrame calls pose((performance.now()-start)/1000) every frame. Joint angles come from smoothstep and sine functions of time through analytic IK. The probes show continuous motion (motionOk true, all 5 consecutive frame pairs changed)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "phaseOffset is 0 or 0.5 and alternates so that diagonal legs share a phase. For example r0 and l1 use 0, while l0 and r1 use 0.5. That is a half-period offset."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "bob = -BOB*cos(4π*cycle) is computed from the same cycle variable as the leg phases, and is applied to the body position each frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "PERIOD = 2 s, the loop runs continuously from onFrame, and no input is needed. The loop-closure probe was not measured, but the motion probes confirm ongoing animation."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A 'ground' plane and several lights are added (hemisphere, directional key, fill, rim). Everything is built from primitives and no model files are loaded."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The build succeeded, with pageErrors = [] and consoleErrorCount = 0."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 85,
+        "rulesLines": 45,
+        "glueLines": 22,
+        "notes": "Scene: materials, leg and body hierarchy, lights, ground and camera. Rules: pose() gait phasing, bob and foot-target logic. Glue: the declare global block, the smooth/clamp helpers, the manual IK trig and yaw-frame rotation math, and the start/signalled/__EVAL_READY__/onFrame/ready bootstrap. Estima"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 13,
+    "agentWallSec": 144.6,
+    "tokensIn": 435116,
+    "tokensOut": 4955,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 3,
+    "readCalls": 12,
+    "searchCalls": 8,
+    "writeCalls": 1,
+    "srcLines": 122,
+    "srcTokens": 1509,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 2,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 0,
+    "glueLines": 35,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the app is created with createAuraApp(\"#app\")."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The body has separate cephalothorax and abdomen spheres, plus eyes, fangs and spots."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "legs holds 2 sides x 4 indices = 8 legs. Each has a femur capsule and a tibia capsule joined by a knee group and ball, plus coxa and foot spheres, so there are more than 16 leg parts."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "app.onFrame accumulates dt into time, and update() sets rotations every frame from cosine/sine easing. There is no one-shot tween. The probe reports animated: true."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "poseLeg gives each leg diagonal = (index + (side>0?0:1)) % 2 and offsets phase by diagonal*0.5, so the two diagonal groups are half a cycle apart."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Body y is BODY_Y + 0.022*cos(4*pi*u) and roll is 0.025*sin(2*pi*u), both driven by the gait phase u. The amplitude is small."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "PERIOD = 2 s and time loops with no input. The probe shows animated true with consecutive frames changing 2-3.6%. The probe's motionOk is false and loop closure was not measured, but the source clearly loops at 2 s."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A floor plane is added. No explicit light appears in the source, but looks.preset(\"product-studio\") supplies lighting (the render is bright and not blank). Only primitives are used and no model assets are loaded."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "The probe recorded 2 console errors, both 404 Not Found resource loads. There were no page errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 60,
+        "rulesLines": 30,
+        "glueLines": 35,
+        "notes": "Glue is the import and declare global block, the Handle/LegHandles types and lazy handle lookup in update(), the segment/ball helpers, the LegSpec interface and leg-list loop, the onFrame time accumulation, and the ready/rAF flag. Scene lines are the materials, buildLeg, the body, the app and the ca"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 13,
+    "agentWallSec": 98.2,
+    "tokensIn": 463285,
+    "tokensOut": 4637,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 2,
+    "readCalls": 10,
+    "searchCalls": 5,
+    "writeCalls": 2,
+    "srcLines": 148,
+    "srcTokens": 1509,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6485.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 2,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 0,
+    "glueLines": 35,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\">, and createAuraApp(\"#app\", ...) renders to it. The probe frame is not blank."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The body uses several sphere primitives (abdomen, abdomen-mark, thorax, head), plus eyes and cone fangs."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Two sides times four rows give 8 legs. Each leg has a femur and a tibia capsule plus hip, knee and foot spheres, so there are well over 16 leg parts."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "app.onFrame accumulates t and calls pose(t) every frame. Leg angles come from a time-based gait path and IK, not a tween. The probes show the frames changing."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Each leg has phase 0 or 0.5, assigned so that (side+, even row) and (side-, odd row) share a phase. That gives two diagonal groups half a period apart."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "bodyY = BODY_HEIGHT + BOB*cos(cycle*4π) uses the same cycle value as the legs, so the bob is locked to the gait at two bobs per cycle. The IK also reads bodyY."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "PERIOD is 2 s and the gait wraps with modulo, so it loops without input. The probes report animated: true. motionOk is false and loop closure was not measured, but the code and the changing frames show continuous motion."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "There is a 40x40 ground plane. Lighting comes from looks.preset(\"product-studio\"), which is implicit in the source, but the rendered frame is lit and non-black. No external models are loaded; everything is primitives."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "The probes show consoleErrorCount 2, both 404 resource load failures. There are no page errors, but the page does not load error-free."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 75,
+        "rulesLines": 55,
+        "glueLines": 35,
+        "notes": "Scene lines cover the materials, body parts, leg builder and scene/camera setup. Rules lines cover the gait phase, swing/stance and bob logic. Glue is the global Window declaration, createAuraApp/onFrame/ready bootstrapping, the __EVAL_READY__ double-rAF, the smoothstep helper and the manual two-lin"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t10-three-r1",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 61.9,
+    "tokensIn": 31447,
+    "tokensOut": 4074,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 229,
+    "srcTokens": 1932,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 503.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the WebGLRenderer is constructed with { canvas }. The probes show a non-blank render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The body is built from separate sphere primitives: abdomen, stripe, thorax and head, plus eyes."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The side loop (2) times the leg loop (4) creates 8 legs. Each has a thigh and a shin cylinder, so 16 segments, plus knee and foot spheres."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "update(t) runs every frame from requestAnimationFrame. It derives foot position, lift and body bob from elapsed time using cos/sin and a modulo phase, then solves 2-bone IK. There is no tween. The probes show motion (animated: true, motionO"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Each leg's phase is (cyc + group*0.5) % 1, so the two groups are half a period apart. Left leg i gets index i and right leg i gets index i+1, so group = idx%2 pairs left-front with right-second and so on, which is a diagonal alternating gai"
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "bob = 0.05*cos(cyc*4π) uses the same cyc as the leg phase. It gives two bobs per cycle, one per step, and is applied to body.position.y."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "PERIOD = 2 s, so the leg phase and bob repeat every 2 s. The loop runs continuously with no input. The probes show consecutive frames changing. Loop closure was not measured, but the code is periodic."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "There is a ground PlaneGeometry mesh, a HemisphereLight and two DirectionalLights. The ground texture is generated on a 2D canvas and no model files are loaded."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The probes show pageErrors [] and consoleErrorCount 0, and the build was ok."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "key.shadow.radius = 5 with renderer.shadowMap.type = THREE.PCFSoftShadowMap",
+          "why": "shadow.radius is not applied by PCFSoftShadowMap (it only affects PCFShadowMap and VSMShadowMap), so the requested shadow blur never appears."
+        }
+      ],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 50,
+        "glueLines": 85,
+        "notes": "Rough estimate. Scene covers lights, ground, the procedural tile texture, materials and the spider meshes. Rules covers the gait phase, stance/swing profile, bob and ground scroll speed. Glue covers renderer, shadow and tone-mapping setup, the global Window declaration, the Leg interface, the mesh a"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t10-three-r2",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 4,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 62.3,
+    "tokensIn": 43495,
+    "tokensOut": 4293,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 5,
+    "srcLines": 209,
+    "srcTokens": 1890,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 505.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 90,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and main.ts passes it to WebGLRenderer({canvas}). Probes show a non-blank render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Body is separate ellipsoids for thorax, head and abdomen, plus eyes, stripes and fangs."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The loop over 2 sides x 4 legs builds 8 legs. Each has a femur and a tibia mesh (16 segments), plus knee, hip and foot joint meshes."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "update(time) runs every frame from requestAnimationFrame. It derives the phase p from time % PERIOD and drives the legs with smoothstep/sine swing and a two-bone IK solve. Probes confirm continuous motion (animated: true, motionOk: true)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "group = (j + (side>0?1:0)) % 2 pairs diagonal legs, and q = (p + group*0.5) % 1 gives the two groups a half-period offset."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "bodyY = HIP_Y + 0.07*cos(4πp) uses the same phase p as the gait. It gives two bobs per cycle, one for each group's step."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "PERIOD = 2 s, the animation loops via modulo and rAF, and needs no input. The probe's loop-closure measurement was not taken, but the motion probes show continuous change."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Ground is a CircleGeometry mesh. Hemisphere and two directional lights are present. All geometry is procedural and no loaders are used."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "pageErrors is empty and consoleErrorCount is 0."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "key.shadow.radius = 5 with renderer.shadowMap.type = THREE.PCFSoftShadowMap",
+          "why": "Shadow radius is ignored by PCFSoftShadowMap (it only applies to PCFShadowMap and VSMShadowMap), so the requested blur has no effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 130,
+        "rulesLines": 35,
+        "glueLines": 90,
+        "notes": "Glue is renderer, shadow and tone-mapping setup, the global Window declaration, the rAF loop and ready flag, the shadowed()/ellipsoid() helpers, preallocated temp vectors, and the manual placeSegment and two-bone IK math with quaternions. Scene lines are lights, ground, materials, body parts and leg"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t10-three-r3",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 59.4,
+    "tokensIn": 51406,
+    "tokensOut": 3927,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 4,
+    "srcLines": 199,
+    "srcTokens": 1788,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 504.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the WebGLRenderer is constructed with that canvas."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The body has separate sphere meshes for thorax, abdomen and head, plus eyes, fangs and an abdomen spot."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The loop over side [-1,1] and i<4 creates 8 legs. Each has seg1 and seg2 cylinders plus knee, hip and foot joint spheres, so there are 16 leg segments."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "requestAnimationFrame calls update(ms/1000) every frame. Leg positions come from cyc = (t % PERIOD)/PERIOD through stance/swing curves and IK. The probes confirm continuous motion (animated true, motionOk true)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "phase is 0 or 0.5 by (i+left)%2, so the left-even and right-odd legs form one group and the others form the second group, half a period apart. This is an alternating diagonal gait."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "bob = cos(cyc*4π) is computed from the same cyc as the leg phases and sets bodyGroup.position.y, giving two bobs per cycle, one per step. Body roll and pitch are also derived from cyc."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "PERIOD = 2.0 s, wrapped with t % PERIOD, and the loop runs without input. Loop closure was not measured by the probe, but the code is clearly periodic."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A CircleGeometry ground plane, a hemisphere light and two directional lights exist. All geometry is procedural, with no model loaders or asset URLs."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The probes report zero page errors and zero console errors, and the build succeeded."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "key.shadow.radius = 5 with renderer.shadowMap.type = THREE.PCFSoftShadowMap",
+          "why": "Three.js ignores shadow.radius when the shadow map type is PCFSoftShadowMap, so the requested extra shadow blur never appears."
+        }
+      ],
+      "glue": {
+        "sceneLines": 95,
+        "rulesLines": 30,
+        "glueLines": 55,
+        "notes": "Estimated from the source. Scene lines cover lights, ground, materials, body meshes and leg mesh creation. Rules lines cover the gait phase, stance/swing and bob logic in update(). Glue covers renderer setup, the global type declaration, the shadowed() helper, placeSegment, smooth, the manual two-bo"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 15,
+    "agentWallSec": 178.5,
+    "tokensIn": 742526,
+    "tokensOut": 7137,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 2,
+    "readCalls": 13,
+    "searchCalls": 7,
+    "writeCalls": 1,
+    "srcLines": 159,
+    "srcTokens": 2563,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6490.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app and main.ts calls createAuraApp(\"#app\"). The probes show a rendered, non-blank frame."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Plinth, trunk, hood, dial and bezel are all built from box, cylinder and sphere primitives. 12 hour marks (hour-mark-1..12) are placed at 30° steps, with larger marks at 12, 3, 6 and 9."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "hour-hand, minute-hand and second-hand are separate groups with runtime ids, each pivoting at the dial centre."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Hour and minute angles are computed from new Date() (getHours, getMinutes, getSeconds), with no hard-coded angles."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The second angle uses the integer getSeconds(), so the hand steps once per second. The probe's small face-change fraction (0.0041) matches a thin hand moving in steps."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The pendulum group sits at PIVOT_Y. The rod is offset by -ROD_LEN/2 and the bob by -ROD_LEN-0.04 inside it, so rotation happens about the top of the rod. The probes show pendulum-region pixel changes of 1–2% per frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "swing = 0.17 * sin(π * t_seconds) has a 2 s period and an amplitude of 0.17 rad, about 9.7°, which is within 5–20°."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "weight-left and weight-right are two groups whose y position drifts down at 0.002 m/s (the right one at 0.9 of that rate) and then wraps."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The room has a floor box and a wall box, and the scene has a hemisphere light, a directional light and three point lights. Everything is a primitive with no external assets, and the probes report 0 console errors and 0 page errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 135,
+        "rulesLines": 22,
+        "glueLines": 30,
+        "notes": "Glue is the import and global declaration, the hand() helper, trig for placing marks and escape-wheel teeth, TAU and the Date-to-angle math, the app/onFrame/ready/requestAnimationFrame bootstrap, and the HTML and tsconfig boilerplate. Rules lines are the update() clock, pendulum, escapement and weig"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 13,
+    "agentWallSec": 109.5,
+    "tokensIn": 575310,
+    "tokensOut": 4768,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 1,
+    "readCalls": 11,
+    "searchCalls": 4,
+    "writeCalls": 2,
+    "srcLines": 125,
+    "srcTokens": 1872,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 14,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the app is created with createAuraApp(\"#app\"). The probes show a non-blank, animated render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The case, dial bezel, face, hood and finial are built from primitives.box, cylinder and sphere. A loop of 12 `mark-i` boxes places the hour marks at 30° steps, with the quarter marks larger."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "hour-hand, minute-hand and second-hand are three separate groups, each registered with a runtime id and driven independently."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Hours and minutes come from new Date(Date.now()) via getHours(), getMinutes() and getSeconds(). They are converted to angles with fractional carry, and no angles are hard-coded."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The second hand angle uses the integer now.getSeconds() with no milliseconds, so it steps once per second. The probe shows the face changing over 3 s (faceChanged3s 0.0035)."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The pendulum group sits at PIVOT_Y. The rod spans y 0 to -0.8 and the bob is at -0.82 inside the group, so rotation about z pivots at the top of the rod. The pendulum region changes in every probe frame (about 0.01)."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "swing = -0.2*cos(π·t) gives a 2 s period. The amplitude of 0.2 rad is about 11.5°, within 5–20°."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Two weights (weight-0 and weight-1) with chains are repositioned each frame, sinking at 0.006 u/s and wrapping after 0.5 units. This is slow vertical drift. The chains are rescaled to follow."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The scene has a wall box, a floor box, and hemisphere, directional and point lights. It uses only primitives with no external models. consoleErrorCount and pageErrors are both 0."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 100,
+        "rulesLines": 22,
+        "glueLines": 14,
+        "notes": "Glue is the import, the TAU and startMs constants, the hand() group helper, the onFrame wrapper with Date construction, the app.nodes.require lookups, and the await ready plus requestAnimationFrame __EVAL_READY__ flag. The renderer, loop and resize are handled by the library. The probes report motio"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 12,
+    "agentWallSec": 116.9,
+    "tokensIn": 513335,
+    "tokensOut": 5278,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 2,
+    "readCalls": 11,
+    "searchCalls": 5,
+    "writeCalls": 2,
+    "srcLines": 109,
+    "srcTokens": 1844,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 18,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the app is created with createAuraApp(\"#app\")."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The case, hood, plinth, bezel and face are boxes, cylinders and spheres. The 12 hour marks are separate boxes (mark-0 to mark-11) placed and rotated around the ring."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "hour-hand, minute-hand and second-hand are three separate groups, each addressed by its own runtime id."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The hour and minute rotations are computed from new Date() (getHours, getMinutes, getSeconds), with no hard-coded angles."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The second hand uses only the integer getSeconds(), so it steps once per second. The probe shows only small face changes (faceChanged3s 0.0043), which is consistent with that."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The pendulum group sits at PIVOT_Y. The rod spans y=0 to -0.8 inside the group and the bob is at -0.82, so rotation about z pivots at the top of the rod. pendulumChanged is non-zero in every probe frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The angle is 0.18 * sin(2πt/2). That is a 2 s period and about 10.3° amplitude, inside the 5–20° range."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "weight-left and weight-right are two groups that sink at 0.005 m/s and 0.00425 m/s. They are positioned at runtime in onFrame and reset every 90 s. The drift is too small for the probes to confirm."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The floor, wall and baseboard boxes exist, along with hemisphere, directional and point lights. All geometry is procedural, with no model assets. Console and page errors are 0 and the frame is not blank."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 92,
+        "rulesLines": 22,
+        "glueLines": 18,
+        "notes": "Glue is the import line, the t0 and ready-flag bookkeeping, the window.__EVAL_READY__ hook, the await app.ready(), the onFrame wrapper and the HTML/CSS canvas bootstrap. The helper factories (hand, weight) and the Date-to-angle math count as scene and rules. The probes report motionOk=false, but thi"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t11-three-r1",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 82,
+    "tokensIn": 38304,
+    "tokensOut": 5988,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 322,
+    "srcTokens": 2796,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 517.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 50,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The renderer is created with `canvas: document.getElementById('app')`, and index.html defines `<canvas id=\"app\">`."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The case, base, trunk, head, dial, bezel and finial are built from Box, Cylinder, Sphere, Circle and Torus geometries. A loop creates 12 box marks at distinct angles, with the 3/6/9/12 marks larger."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "hourHand, minuteHand and secondHand are separate Groups, each with its own mesh, in different sizes and materials (the second hand is red)."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each frame reads `new Date()` and sets the hour and minute rotations from getHours, getMinutes and getSeconds, with no hard-coded angles."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The second hand rotation uses the integer `getSeconds()` (secs/60 * 2π) with no millisecond term, so it steps once per second. The probe shows the face is mostly static between frames."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The pendulum Group sits at PIVOT_Y, and the rod is offset by -ROD/2 inside it. The rotation is applied to the group, so the rod and bob swing about the top of the rod."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The rotation is `AMP*sin(π*ts)`, with ts running 0 to 2 over each 2000 ms of wall time, giving a 2 s period. AMP = 0.16 rad ≈ 9.2°, within 5–20°. The probe's pendulumChanged values show motion."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Two brass cylinder weights at x = ±0.5 sink at 0.005 units/s, and their chains are rescaled to follow. The drift is slow, as required."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The scene has a floor plane, a wall plane and several lights. All textures are procedural canvases and RoomEnvironment is generated in code, so there are no external model assets. The probe reports no page or console errors."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "key.shadow.camera.left/right/top/bottom/near/far",
+          "why": "These are set on the DirectionalLight shadow camera without calling `updateProjectionMatrix()`. The projection matrix is built at construction, so the custom frustum most likely never takes effect and the default ±5 frustum is used. The pro"
+        },
+        {
+          "where": "`const ms = now.getMilliseconds(); void ms;`",
+          "why": "The millisecond value is read and then discarded with `void`, so it has no effect on the output."
+        }
+      ],
+      "glue": {
+        "sceneLines": 235,
+        "rulesLines": 25,
+        "glueLines": 50,
+        "notes": "Glue covers the renderer, PMREM and tone-mapping setup, the camera, the `box()` and `makeHand()` helpers, the global declaration, the requestAnimationFrame loop, the ready flag and the manual angle math. The procedural canvas textures (about 60 lines) are counted as scene or asset description. Rules"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t11-three-r2",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": false
+    },
+    "probePassFraction": 0.8,
+    "turns": 6,
+    "agentWallSec": 115.9,
+    "tokensIn": 33755,
+    "tokensOut": 14986,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 2,
+    "srcLines": 259,
+    "srcTokens": 2407,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 510.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 45,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The WebGLRenderer is created with the existing canvas#app (`document.getElementById('app')`)."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The case, hood, plinth, face disc and bezel are built from Box, Cylinder, Circle, Torus and Sphere geometries. A loop of 12 box marks is placed at 30° steps, with larger marks at 12, 3, 6 and 9."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "hourHand, minuteHand and secondHand are separate Groups created by makeHand and added to faceGroup."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "`update()` reads `new Date()` each frame. The hour and minute rotations come from getHours(), getMinutes() and getSeconds()."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The second hand uses the integer `getSeconds()` with no milliseconds, so it steps once per second. The face-change probes are small but nonzero (faceChanged3s 0.0055), which is consistent with a ticking hand."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The pendulum Group sits at the pivot (y=3.25). The rod is offset by -ROD_LEN/2 and the bob by -ROD_LEN, so both rotate about the top of the rod. The pendulumChanged probe regions change on every frame (0.01 to 0.03)."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "`rotation.z = -AMP*cos(π·t)` has a 2 s period and a 9° amplitude, which is within 5 to 20°. The probes confirm pendulum motion."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Two weight cylinders at x=±0.5 sink at 0.012 units/s with a stretching chain. The drift is slow and vertical, and it wraps after about 83 s."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A floor plane, a wall plane and several lights are present. All textures come from a procedural canvas and no model files are loaded. The probes show 0 console errors and 0 page errors."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "`anchor` Group (\"escapement hint\")",
+          "why": "It is created and added to the clock at the pivot, but it has no children and is never animated, so it has no visible effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 235,
+        "rulesLines": 28,
+        "glueLines": 45,
+        "notes": "Glue is the renderer, shadow-map and canvas setup, the global `Window` declaration and `__EVAL_READY__` flag, the `mat` and `box` helpers, the requestAnimationFrame loop, and the manual chain-length and scale math for the weights. The procedural canvas plank texture (about 20 lines) is counted as sc"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t11-three-r3",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 69.9,
+    "tokensIn": 33963,
+    "tokensOut": 4863,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 222,
+    "srcTokens": 2147,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 532.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The WebGLRenderer is created with the existing canvas found by getElementById('app'), and index.html defines <canvas id=\"app\">."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The case, plinth, hood and face are built from Box, Cylinder, Torus and Sphere geometries. A loop of 12 boxes places the hour marks at distinct angles, and major marks differ in size."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "hourHand, minuteHand and secondHand are separate groups created by makeHand, each with its own rotation.z."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Hour and minute rotations are computed from new Date() getHours, getMinutes and getSeconds, with no hard-coded angles."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The second hand angle uses the integer getSeconds() value, so it steps once per second with no sub-second interpolation."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The rod is offset by -rodLen/2 inside a pendulum group positioned at the top pivot (y=3.78), and the group is rotated. The bob is a child of the same group, so both swing about the top of the rod."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "rotation.z = 0.17*sin(PI*t) has a 2 s period and an amplitude of about 9.7 degrees. The probe's pendulumChanged values show the region moving."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Two brass cylinder weights with stretching chains sink at 0.02 units/s via updateWeights. The drift is slow, though it is clamped and stops after about 80 s."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The scene has wall and floor planes plus hemisphere, point and directional lights. All geometry is procedural with no model assets, and the probes report 0 console errors and 0 page errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 185,
+        "rulesLines": 35,
+        "glueLines": 30,
+        "notes": "Glue covers the global Window declaration, canvas and renderer bootstrap, the box() helper, the ready flag, and the rAF loop and Date/time plumbing. Camera, lights, materials, geometry and hand construction are counted as scene. Animation math for the hands, pendulum and weight drift is counted as r"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t12-aura-r1",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 24,
+    "agentWallSec": 155.7,
+    "tokensIn": 1355334,
+    "tokensOut": 5876,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 9,
+    "readCalls": 18,
+    "searchCalls": 15,
+    "writeCalls": 2,
+    "srcLines": 156,
+    "srcTokens": 1613,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the app is created with createAuraApp(\"#app\"). The probes show the canvas rendering."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The bird has a sphere body, belly, head, cone beak, two eye spheres with pupils, and a tail group with 5 box feathers. All are built from primitives."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each wing is a group holding an inner box and an l/r-wing-outer group, so the outer segment is a child of the inner joint and inherits its rotation. The outer panel is a sibling of the inner box rather than a child of it, but the joint hier"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "phase = TAU*2*time gives 2 Hz. The inner wing is 0.6*sin(phase) and the outer is 0.5*sin(phase-0.8), a 0.8 rad lag. The probes show animation."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The bird-bank group's y offset is -0.1*sin(phase), the same phase that drives the wings."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The path is (6cosθ, 3.6, 6sinθ) with θ = 2πt/8. Yaw ψ = -θ maps local +z to the tangent (-sinθ, cosθ). The probes confirm motion, but loop closure was not measured."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "bird-bank has a constant 0.38 rad roll about z. Local +x (left) maps to the outward radial direction, so the positive roll lifts the outer side and banks toward the circle centre. The bank is constant rather than speed-dependent, which is a"
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "There is a ground cylinder disc of diameter 46, 17 instanced tree props (foliage cones and trunk cylinders, static), and a directional light with a shadow config. Ground and props have receiveShadow/castShadow set."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The camera is re-posed every frame at radius 13 with its target on the bird. There are no external assets, and the probes report 0 console errors and 0 page errors. The frame is non-blank with motion throughout."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 85,
+        "rulesLines": 30,
+        "glueLines": 30,
+        "notes": "Approximate counts. Glue covers the constants, TAU, the birdAt/cameraAt helpers, the onFrame/ready/t0 bootstrapping, the __EVAL_READY__ rAF flag, and the manual camera-orbit math. Scene lines cover the bird groups, tree data and instances, lights, and ground. Rules lines are the per-frame update (fl"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t12-aura-r2",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 26,
+    "agentWallSec": 198.8,
+    "tokensIn": 1379497,
+    "tokensOut": 6142,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 9,
+    "readCalls": 19,
+    "searchCalls": 13,
+    "writeCalls": 2,
+    "srcLines": 161,
+    "srcTokens": 1769,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 40,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "createAuraApp(\"#app\") targets the canvas with id app in index.html. The probe frames are not blank and animate."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The bird has a sphere body, a head group with a skull sphere, a cone beak, two eye spheres plus pupils, and a tail group with 5 box feathers. No external assets are used."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each wing is a shoulder group holding the inner box and an elbow group with the outer box and tip. The elbow is nested inside the shoulder, so it follows the inner segment's rotation, though it is a child of the shoulder group rather than o"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "inner = 0.12 + 0.5*sin(2π·2·t) is a 2 Hz flap. outer uses the same phase minus 0.8 rad, which is the lag. Both are applied each frame through setRotation on the shoulder and elbow nodes. The probes show motion, but wing motion alone is not "
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "bob = -0.08*sin(phase - 0.3) uses the flap phase and is added to the bird's height each frame."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Position is (6 sinθ, h, 6 cosθ) with θ = 2πt/8, so radius 6 and period 8 s. yaw = θ + π/2 puts local +Z along the velocity (cosθ, -sinθ), so heading follows the tangent."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A static roll of -0.32 rad sits on the inner bank group. The turn is toward the left (+X) side, and the negative roll lowers the left wing, so the bird leans into the turn. The roll is constant rather than animated, which fits a constant-ra"
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "There is a ground cylinder disc, 11 trees (3 primitives each) and 3 rocks as static props. A directional light named sun has a shadow config."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The camera orbits at radius 12, 0.5 rad behind the bird, and targets the bird each frame. The distance to the bird is about 7.3 units. No assets are loaded. pageErrors and consoleErrors are both empty."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 25,
+        "glueLines": 40,
+        "notes": "Glue is the global Window declaration, the Vec3 and BirdPose types, cameraPose, the per-frame update function that looks up nodes by id and sets transforms, the startMs timing, the onFrame hook, and the ready and double-requestAnimationFrame flag. Scene lines are the materials, bird, props, lights a"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t12-aura-r3",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 20,
+    "agentWallSec": 153.3,
+    "tokensIn": 1067616,
+    "tokensOut": 5091,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 5,
+    "readCalls": 15,
+    "searchCalls": 10,
+    "writeCalls": 1,
+    "srcLines": 142,
+    "srcTokens": 1619,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 25,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "createAuraApp(\"#app\") targets the <canvas id=\"app\"> in index.html, and the probes show it rendering."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The bird has a body sphere, a head sphere, a cone beak, two eye spheres and a tail of 5 box feathers in fanned pivot groups. All are primitives."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each wing has an inner box and a wrist group holding the outer box. The wrist is a child of the shoulder joint, so the outer segment inherits the inner segment's flap and also bends on its own. The outer box is not a child of the inner box "
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "phase = 2π·2·t gives a 2 Hz flap. The inner angle is 0.12+0.6·sin(phase). The outer angle is 0.55·sin(phase−0.9), a 0.9 rad lag. The left and right wings are mirrored. Probes confirm the scene animates."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "bob = −0.09·cos(phase−0.3) is computed from the flap phase and added to the bird's y position every frame."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The position is (6cos a, y, 6sin a) with a = 2πt/8. The heading is rotation Y = −a, which maps +Z forward to (−sin a, cos a), the circle's tangent."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The bird-bank group has a constant roll of +0.38 rad about local Z. The circle centre is on the bird's local −X side, so +Z roll lifts the outer (+X) side and lowers the inside wing, banking into the turn. The roll is a fixed value rather t"
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A 44-unit cylinder ground disc, 13 trees and 2 rocks as static props, and a directional light named sun with a shadow config (2048 map, PCF). Casters and receivers are flagged."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A chase camera outside the circle is re-aimed at the bird every frame with setPose. There are no external assets, no page errors, and the probes show 0 console errors with non-blank, animated output."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 115,
+        "rulesLines": 30,
+        "glueLines": 25,
+        "notes": "Glue is the global Window declaration, imports, the paper() material helper, frame-time accumulation and clamping, per-frame node lookups and setRotation calls, per-frame camera setPose, onFrame/ready/__EVAL_READY__ bootstrapping, and the poseAt trigonometry. Scene lines cover the materials, bird hi"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t12-three-r1",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 42.9,
+    "tokensIn": 26872,
+    "tokensOut": 3332,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 195,
+    "srcTokens": 1595,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 38,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The canvas is found with getElementById('app') and passed to WebGLRenderer. The probes show it rendering."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The bird has a scaled sphere body, a sphere head, a cone beak, two sphere eyes and a tail with 5 box feathers in a fan. All are primitives."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each wing has a shoulder group holding an inner box and an elbow group. The outer box is a child of the elbow, which is a child of the shoulder. The outer segment hangs off the inner segment's joint rather than the inner mesh itself, but it"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "phase = t*2*2π, so the flap runs at 2 Hz. The shoulder uses sin(phase) and the elbow uses sin(phase-0.9), giving the outer segment a phase lag. The probes show continuous motion."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "bird.position.y = 0.14*sin(phase+0.3), driven by the same flap phase."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The position is (cos a, sin a)*6 with a = 2πt/8, so the radius is 6 and the period is 8 s. yaw = -a maps local +Z to (-sin a, cos a), which is the tangent."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "bankGroup.rotation.z = 0.4. After the yaw, local -X points toward the circle centre, so positive Z roll lowers the inner wing and raises the outer one, which banks into the turn. The bank is a constant angle."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A CircleGeometry ground disc, 18 trees and 3 rocks as static props, and a DirectionalLight with castShadow and a configured shadow camera. The shadow map is enabled on the renderer."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The chase camera sits about 10 units from the bird and looks at it every frame. The probes show a non-blank frame with no page or console errors, and the source loads no external assets."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 165,
+        "rulesLines": 25,
+        "glueLines": 38,
+        "notes": "Glue is renderer, canvas and shadow-map setup, the global type declaration, the paper() and shadowed() helpers, the tmp vector, the start/ready flag, the requestAnimationFrame loop with time wrapping, and the camera chase math. Scene lines cover the lights, ground, trees, rocks, bird parts and wings"
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t12-three-r2",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 41.5,
+    "tokensIn": 26697,
+    "tokensOut": 3294,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 173,
+    "srcTokens": 1601,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The renderer is created with the existing canvas#app, found through getElementById('app')."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The bird has a scaled sphere body, a sphere head, a cone beak, two sphere eyes and a tail fan of 5 box feathers. All are primitives."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each wing is an inner Group with a box mesh and an outer Group added as a child of the inner one. The outer segment is hinged at the inner segment's tip (x = 0.9)."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "phi = 2π·2·t gives 2 Hz. The inner wing uses sin(phi) and the outer wing uses sin(phi - 0.9), a phase lag. The t wrap at 8 s is a whole number of flap cycles, so there is no jump."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "flyer.position.y = -0.12·sin(phi) uses the same phase as the wings. The body rises on the downstroke."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The position is (6cos θ, 4, -6sin θ) with θ = 2πt/8, a radius of 6 and a period of 8 s. Yaw = atan2(tx, tz) with the tangent (-sin θ, -cos θ) matches the derivative of the position and the bird's +Z facing."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The Euler order is YXZ, so rotation.z = -0.45 is a roll about the bird's forward axis. The bird's left (+X) side drops, which is toward the center of the counter-clockwise turn."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "There is a cylinder ground disc, 14 cone-and-trunk trees and a rock as static props, and a DirectionalLight with castShadow. The renderer's shadow map is enabled. The shadow frustum settings are ineffective (see silentNoOps), but shadows ar"
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "camera.lookAt(bird.position) runs every frame from about 9 units away, so the bird stays centered. The probes show a non-blank, animated frame, no page errors and no console errors. There are no external assets."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "sun.shadow.camera.left/right/top/bottom/near/far (±26, near 1, far 70)",
+          "why": "The shadow camera's updateProjectionMatrix() is never called. The projection keeps its defaults (±5, near 0.5, far 500), so the enlarged frustum has no effect. The bird's shadow and the outer trees' shadows are mostly outside the real ±5 ar"
+        }
+      ],
+      "glue": {
+        "sceneLines": 130,
+        "rulesLines": 28,
+        "glueLines": 30,
+        "notes": "Estimate for src/main.ts, about 190 counted lines. Glue is the renderer and canvas setup, the global type declaration, the shadowed() helper, the Wing interface, the shadow camera boilerplate, the rAF loop with the ready flag, and the chase-camera setup. Scene lines cover the lights, ground, trees, "
+      }
+    }
+  },
+  {
+    "runId": "bench505-animation-t12-three-r3",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "motionOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 49.1,
+    "tokensIn": 27780,
+    "tokensOut": 3403,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 196,
+    "srcTokens": 1588,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 35,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, and main.ts passes it to WebGLRenderer via getElementById('app'). The probes show a non-blank, animated render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Body is a scaled sphere, head a sphere, beak a cone, and there are two sphere eyes. The tail has 5 box feathers in a fan. All are primitives."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "makeWing builds an inner group and an outer group, with the outer added to the inner (inner.add(outer)). Each side has 2 hinged segments."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "w = 2π·2·t gives 2 Hz. Inner angle is 0.6·sin(w), outer angle is 0.5·sin(w − 0.7), so the outer segment lags by 0.7 rad."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "bobGroup.position.y = 0.12·sin(w + π/2 − 0.3) uses the same flap phase w, so the bob is locked to the flap."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Position is (6cos a, 4, 6sin a) with a = 2πt/8, giving radius 6 and an 8 s period. rotation.y = −a maps model +Z to (−sin a, cos a), which is the path tangent."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "bankGroup.rotation.z = 0.35 rolls about the forward axis. The circle's center is on local −X, and a positive z-rotation lowers −X, so the bird banks into the turn. The bank is constant rather than varying, which is acceptable for a steady t"
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "There is a CircleGeometry ground that receives shadows, 12 trees plus 3 rocks as static props, and a DirectionalLight with castShadow and the shadow map enabled."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The chase camera is placed outside the circle and calls lookAt on the bird every frame. No external assets are loaded, and the probes show 0 console errors and 0 page errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 140,
+        "rulesLines": 35,
+        "glueLines": 35,
+        "notes": "Glue is the global Window declaration, renderer and canvas setup, the shadowed() and paper() helpers, the bird group-hierarchy wiring, the requestAnimationFrame loop with the ready flag, and the manual circle and camera trigonometry. Scene lines cover the bird, props, lights and materials. Rules lin"
+      }
+    }
+  }
+]

@@ -1,0 +1,605 @@
+[
+  {
+    "id": "bench505-animation-sheet-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 233.6,
+        "std": 31,
+        "nonblack": 0.999,
+        "diff": 4.15,
+        "changedFrac": 0.0437,
+        "consecutiveChanged": [
+          0.0419,
+          0.0453,
+          0.0461,
+          0.0416,
+          0.0466
+        ],
+        "clusters": 6,
+        "centralChanged": [
+          0.1165,
+          0.1257,
+          0.1282,
+          0.1156,
+          0.1294
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 233.6,
+        "std": 31.0,
+        "nonblack": 0.999,
+        "diff": 4.15,
+        "changedFrac": 0.0437,
+        "consecutiveChanged": [
+          0.0419,
+          0.0453,
+          0.0461,
+          0.0416,
+          0.0466
+        ],
+        "clusters": 6,
+        "centralChanged": [
+          0.1165,
+          0.1257,
+          0.1282,
+          0.1156,
+          0.1294
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 233.8,
+        "std": 29.6,
+        "nonblack": 1,
+        "diff": 5.52,
+        "changedFrac": 0.0504,
+        "consecutiveChanged": [
+          0.0492,
+          0.0499,
+          0.0502,
+          0.0487,
+          0.0462
+        ],
+        "clusters": 4,
+        "centralChanged": [
+          0.1367,
+          0.1386,
+          0.1394,
+          0.1352,
+          0.1284
+        ],
+        "motionOk": false,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 233.8,
+        "std": 29.6,
+        "nonblack": 1.0,
+        "diff": 5.52,
+        "changedFrac": 0.0504,
+        "consecutiveChanged": [
+          0.0492,
+          0.0499,
+          0.0502,
+          0.0487,
+          0.0462
+        ],
+        "clusters": 4,
+        "centralChanged": [
+          0.1367,
+          0.1386,
+          0.1394,
+          0.1352,
+          0.1284
+        ],
+        "motionOk": false,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 232.1,
+        "std": 31.5,
+        "nonblack": 0.999,
+        "diff": 4.38,
+        "changedFrac": 0.0448,
+        "consecutiveChanged": [
+          0.0466,
+          0.0443,
+          0.0474,
+          0.045,
+          0.046
+        ],
+        "clusters": 6,
+        "centralChanged": [
+          0.1295,
+          0.123,
+          0.1317,
+          0.1249,
+          0.1278
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 232.1,
+        "std": 31.5,
+        "nonblack": 0.999,
+        "diff": 4.38,
+        "changedFrac": 0.0448,
+        "consecutiveChanged": [
+          0.0466,
+          0.0443,
+          0.0474,
+          0.045,
+          0.046
+        ],
+        "clusters": 6,
+        "centralChanged": [
+          0.1295,
+          0.123,
+          0.1317,
+          0.1249,
+          0.1278
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 120.3,
+        "std": 31.1,
+        "nonblack": 1,
+        "diff": 0.14,
+        "changedFrac": 0.0058,
+        "consecutiveChanged": [
+          0.0054,
+          0.0036,
+          0.0026,
+          0.0054,
+          0.0047
+        ],
+        "clusters": 9,
+        "pendulumChanged": [
+          0.0254,
+          0.018,
+          0.0129,
+          0.0254,
+          0.0236
+        ],
+        "centroidSpread": 0.047,
+        "faceStaticShort": 0.0027,
+        "faceChanged3s": 0.0064,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 120.3,
+        "std": 31.1,
+        "nonblack": 1.0,
+        "diff": 0.14,
+        "changedFrac": 0.0058,
+        "consecutiveChanged": [
+          0.0054,
+          0.0036,
+          0.0026,
+          0.0054,
+          0.0047
+        ],
+        "clusters": 9,
+        "pendulumChanged": [
+          0.0254,
+          0.018,
+          0.0129,
+          0.0254,
+          0.0236
+        ],
+        "centroidSpread": 0.047,
+        "faceStaticShort": 0.0027,
+        "faceChanged3s": 0.0064,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": false,
+      "frame": {
+        "mean": 89.9,
+        "std": 36,
+        "nonblack": 1,
+        "diff": 0.07,
+        "changedFrac": 0.0044,
+        "consecutiveChanged": [
+          0.0039,
+          0.0021,
+          0.0003,
+          0.0028,
+          0.0034
+        ],
+        "clusters": 9,
+        "pendulumChanged": [
+          0.0201,
+          0.0117,
+          0.0016,
+          0.0142,
+          0.0188
+        ],
+        "centroidSpread": 0.03,
+        "faceStaticShort": 0,
+        "faceChanged3s": 0.002,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 89.9,
+        "std": 36.0,
+        "nonblack": 1.0,
+        "diff": 0.07,
+        "changedFrac": 0.0044,
+        "consecutiveChanged": [
+          0.0039,
+          0.0021,
+          0.0003,
+          0.0028,
+          0.0034
+        ],
+        "clusters": 9,
+        "pendulumChanged": [
+          0.0201,
+          0.0117,
+          0.0016,
+          0.0142,
+          0.0188
+        ],
+        "centroidSpread": 0.03,
+        "faceStaticShort": 0.0,
+        "faceChanged3s": 0.002,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 99.7,
+        "std": 26.4,
+        "nonblack": 1,
+        "diff": 0.12,
+        "changedFrac": 0.0026,
+        "consecutiveChanged": [
+          0.0022,
+          0.0016,
+          0.0015,
+          0.002,
+          0.002
+        ],
+        "clusters": 10,
+        "pendulumChanged": [
+          0.0091,
+          0.0079,
+          0.0075,
+          0.0081,
+          0.0103
+        ],
+        "centroidSpread": 0.031,
+        "faceStaticShort": 0.0012,
+        "faceChanged3s": 0.005,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 99.7,
+        "std": 26.4,
+        "nonblack": 1.0,
+        "diff": 0.12,
+        "changedFrac": 0.0026,
+        "consecutiveChanged": [
+          0.0022,
+          0.0016,
+          0.0015,
+          0.002,
+          0.002
+        ],
+        "clusters": 10,
+        "pendulumChanged": [
+          0.0091,
+          0.0079,
+          0.0075,
+          0.0081,
+          0.0103
+        ],
+        "centroidSpread": 0.031,
+        "faceStaticShort": 0.0012,
+        "faceChanged3s": 0.005,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 152,
+        "std": 54.4,
+        "nonblack": 1,
+        "diff": 21.2,
+        "changedFrac": 0.2576,
+        "consecutiveChanged": [
+          0.1848,
+          0.1862,
+          0.1878,
+          0.1635,
+          0.1713
+        ],
+        "clusters": 5,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 152.0,
+        "std": 54.4,
+        "nonblack": 1.0,
+        "diff": 21.2,
+        "changedFrac": 0.2576,
+        "consecutiveChanged": [
+          0.1848,
+          0.1862,
+          0.1878,
+          0.1635,
+          0.1713
+        ],
+        "clusters": 5,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 164.6,
+        "std": 47.9,
+        "nonblack": 1,
+        "diff": 14,
+        "changedFrac": 0.1589,
+        "consecutiveChanged": [
+          0.0915,
+          0.0835,
+          0.0854,
+          0.1061,
+          0.1027
+        ],
+        "clusters": 5,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 164.6,
+        "std": 47.9,
+        "nonblack": 1.0,
+        "diff": 14.0,
+        "changedFrac": 0.1589,
+        "consecutiveChanged": [
+          0.0915,
+          0.0835,
+          0.0854,
+          0.1061,
+          0.1027
+        ],
+        "clusters": 5,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-sheet-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 161.6,
+        "std": 50.2,
+        "nonblack": 1,
+        "diff": 16.39,
+        "changedFrac": 0.2017,
+        "consecutiveChanged": [
+          0.1572,
+          0.1838,
+          0.1934,
+          0.203,
+          0.1864
+        ],
+        "clusters": 6,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 161.6,
+        "std": 50.2,
+        "nonblack": 1.0,
+        "diff": 16.39,
+        "changedFrac": 0.2017,
+        "consecutiveChanged": [
+          0.1572,
+          0.1838,
+          0.1934,
+          0.203,
+          0.1864
+        ],
+        "clusters": 6,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.5
+    },
+    "readyMs": null
+  }
+]

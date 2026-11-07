@@ -1,0 +1,214 @@
+{
+  "runId": "bench505-animation-t10-aura-r1",
+  "batch": "bench505-animation",
+  "arm": "aura",
+  "task": 10,
+  "idx": 1,
+  "order": 17,
+  "seed": 20261106017,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:36:07.984Z",
+  "docsCommit": "origin/lane/503-trial",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 143712,
+  "usage": {
+    "input": 376408,
+    "uncachedInput": 376408,
+    "output": 5879,
+    "turns": 11,
+    "perTurnInput": [
+      3334,
+      13658,
+      14284,
+      27654,
+      34482,
+      35482,
+      38171,
+      45677,
+      46428,
+      58239,
+      58999
+    ],
+    "perTurnOutput": [
+      20,
+      12,
+      32,
+      19,
+      81,
+      17,
+      76,
+      1143,
+      13,
+      4040,
+      426
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1580,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1580,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1580,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4230,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4230,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 11552,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 11552,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 212
+    },
+    {
+      "i": 7,
+      "t": 11552,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 11552,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 9,
+      "t": 13028,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 10,
+      "t": 15973,
+      "type": "search",
+      "pattern": "group\\(|setRotation|setPosition|\\.child|addChild|pivot"
+    },
+    {
+      "i": 11,
+      "t": 15981,
+      "type": "search",
+      "pattern": "setRotation|setPosition|setScale"
+    },
+    {
+      "i": 12,
+      "t": 17248,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 78
+    },
+    {
+      "i": 13,
+      "t": 31736,
+      "type": "search",
+      "pattern": "group\\("
+    },
+    {
+      "i": 14,
+      "t": 31736,
+      "type": "read",
+      "path": "docs/agents/recipes-src/translation-table.check.ts",
+      "lines": 90
+    },
+    {
+      "i": 15,
+      "t": 75914,
+      "type": "search",
+      "pattern": "product-studio"
+    },
+    {
+      "i": 16,
+      "t": 78651,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 121
+    },
+    {
+      "i": 17,
+      "t": 131274,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 9079
+    },
+    {
+      "i": 18,
+      "t": 132039,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 19,
+      "t": 143712,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "docs/agents/recipes-src/translation-table.check.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts: a spider built only from primitives, walking in place on a ground plane, using @aura3d/engine. It passes `typecheck`. I haven't run it in a browser or run `vite build`, so I haven't seen a frame. The leg geometry and the Y-rotation direction come from the docs and my own maths, and neither has been checked by eye.\n\n- **Body:** a cephalothorax, a pedicel and an abdomen with orange spots, plus four eyes, two fangs and two palps, all spheres and cones.\n- **Legs:** eight legs, each with a hip yaw joint, a hip pitch joint and a knee joint, and a femur and tibia as the two segments.\n- **Gait:** each foot target is solved with two-segment IK, so planted feet stay on the ground while the body bobs. The legs split into two diagonal groups that alternate. In each leg's half of the cycle it lifts, swings forward and plants, then slides back during stance. Time comes from `performance.now()` with a 2 s period, so the loop is seamless. The body dips twice per cycle, once at each diagonal handover.\n- **Setting:** a light grey backdrop and ground with neutral environment light, a shadow-casting key light, fill and rim lights, and a three-quarter perspective camera aimed at the whole spider.\n- **Contract:** it draws into `#app`, loads no external files, and sets `window.__EVAL_READY__` after the first frame.\n\nI didn't use `looks.preset(\"product-studio\")` because I couldn't tell from the docs what floor and backdrop it adds. I wired the lighting by hand instead, following the recipes.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

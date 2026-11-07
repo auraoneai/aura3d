@@ -28,6 +28,7 @@ export function probeChecks(task, remote) {
       mobileNoHScroll: p.mobile?.noHorizontalScroll === true
     });
   if (task === 7) Object.assign(items, { animated: p.animated === true });
+  if (task >= 10 && task <= 12) Object.assign(items, { animated: p.animated === true, motionOk: p.motionOk === true });
   const values = Object.values(items);
   return { items, passed: values.filter(Boolean).length, total: values.length };
 }

@@ -1,0 +1,1214 @@
+[
+  {
+    "id": "bench505-animation-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 240.7,
+        "std": 25.2,
+        "nonblack": 1,
+        "diff": 3.88,
+        "changedFrac": 0.0404,
+        "consecutiveChanged": [
+          0.0386,
+          0.0329,
+          0.0388,
+          0.0407,
+          0.0389
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.1071,
+          0.0914,
+          0.1078,
+          0.113,
+          0.108
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 240.7,
+        "std": 25.2,
+        "nonblack": 1.0,
+        "diff": 3.88,
+        "changedFrac": 0.0404,
+        "consecutiveChanged": [
+          0.0386,
+          0.0329,
+          0.0388,
+          0.0407,
+          0.0389
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.1071,
+          0.0914,
+          0.1078,
+          0.113,
+          0.108
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 2,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 247.9,
+        "std": 13,
+        "nonblack": 1,
+        "diff": 1.22,
+        "changedFrac": 0.0344,
+        "consecutiveChanged": [
+          0.0235,
+          0.0312,
+          0.036,
+          0.0307,
+          0.0318
+        ],
+        "clusters": 3,
+        "centralChanged": [
+          0.0653,
+          0.0866,
+          0.1001,
+          0.0854,
+          0.0883
+        ],
+        "motionOk": false,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 247.9,
+        "std": 13.0,
+        "nonblack": 1.0,
+        "diff": 1.22,
+        "changedFrac": 0.0344,
+        "consecutiveChanged": [
+          0.0235,
+          0.0312,
+          0.036,
+          0.0307,
+          0.0318
+        ],
+        "clusters": 3,
+        "centralChanged": [
+          0.0653,
+          0.0866,
+          0.1001,
+          0.0854,
+          0.0883
+        ],
+        "motionOk": false,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 2,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 250.6,
+        "std": 11.5,
+        "nonblack": 1,
+        "diff": 2.02,
+        "changedFrac": 0.051,
+        "consecutiveChanged": [
+          0.0322,
+          0.0469,
+          0.0514,
+          0.0442,
+          0.0458
+        ],
+        "clusters": 2,
+        "centralChanged": [
+          0.0895,
+          0.1303,
+          0.1425,
+          0.1223,
+          0.1272
+        ],
+        "motionOk": false,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 250.6,
+        "std": 11.5,
+        "nonblack": 1.0,
+        "diff": 2.02,
+        "changedFrac": 0.051,
+        "consecutiveChanged": [
+          0.0322,
+          0.0469,
+          0.0514,
+          0.0442,
+          0.0458
+        ],
+        "clusters": 2,
+        "centralChanged": [
+          0.0895,
+          0.1303,
+          0.1425,
+          0.1223,
+          0.1272
+        ],
+        "motionOk": false,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t10-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 196.2,
+        "std": 43.6,
+        "nonblack": 0.986,
+        "diff": 7.15,
+        "changedFrac": 0.0777,
+        "consecutiveChanged": [
+          0.064,
+          0.0791,
+          0.0693,
+          0.0764,
+          0.0783
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.1575,
+          0.196,
+          0.17,
+          0.1883,
+          0.1935
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 196.2,
+        "std": 43.6,
+        "nonblack": 0.986,
+        "diff": 7.15,
+        "changedFrac": 0.0777,
+        "consecutiveChanged": [
+          0.064,
+          0.0791,
+          0.0693,
+          0.0764,
+          0.0783
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.1575,
+          0.196,
+          0.17,
+          0.1883,
+          0.1935
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 503.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t10-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 199.1,
+        "std": 41,
+        "nonblack": 0.993,
+        "diff": 6.64,
+        "changedFrac": 0.0633,
+        "consecutiveChanged": [
+          0.0793,
+          0.0526,
+          0.0725,
+          0.0708,
+          0.0791
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.2162,
+          0.1422,
+          0.1964,
+          0.1929,
+          0.2149
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 199.1,
+        "std": 41.0,
+        "nonblack": 0.993,
+        "diff": 6.64,
+        "changedFrac": 0.0633,
+        "consecutiveChanged": [
+          0.0793,
+          0.0526,
+          0.0725,
+          0.0708,
+          0.0791
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.2162,
+          0.1422,
+          0.1964,
+          0.1929,
+          0.2149
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 505.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t10-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 210.8,
+        "std": 44.1,
+        "nonblack": 0.99,
+        "diff": 8.44,
+        "changedFrac": 0.0781,
+        "consecutiveChanged": [
+          0.0922,
+          0.0624,
+          0.0779,
+          0.0837,
+          0.0648
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.2484,
+          0.168,
+          0.2111,
+          0.2264,
+          0.1749
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 210.8,
+        "std": 44.1,
+        "nonblack": 0.99,
+        "diff": 8.44,
+        "changedFrac": 0.0781,
+        "consecutiveChanged": [
+          0.0922,
+          0.0624,
+          0.0779,
+          0.0837,
+          0.0648
+        ],
+        "clusters": 5,
+        "centralChanged": [
+          0.2484,
+          0.168,
+          0.2111,
+          0.2264,
+          0.1749
+        ],
+        "motionOk": true,
+        "loopClosure": "not measured (frames not 2.0 s apart)"
+      }
+    },
+    "bundle": {
+      "rawKB": 504.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 108.8,
+        "std": 39.2,
+        "nonblack": 1,
+        "diff": 0.11,
+        "changedFrac": 0.0041,
+        "consecutiveChanged": [
+          0.0027,
+          0.0036,
+          0.0038,
+          0.0023,
+          0.0043
+        ],
+        "clusters": 13,
+        "pendulumChanged": [
+          0.0137,
+          0.0188,
+          0.0186,
+          0.0118,
+          0.0211
+        ],
+        "centroidSpread": 0.03,
+        "faceStaticShort": 0.0034,
+        "faceChanged3s": 0.0041,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 108.8,
+        "std": 39.2,
+        "nonblack": 1.0,
+        "diff": 0.11,
+        "changedFrac": 0.0041,
+        "consecutiveChanged": [
+          0.0027,
+          0.0036,
+          0.0038,
+          0.0023,
+          0.0043
+        ],
+        "clusters": 13,
+        "pendulumChanged": [
+          0.0137,
+          0.0188,
+          0.0186,
+          0.0118,
+          0.0211
+        ],
+        "centroidSpread": 0.03,
+        "faceStaticShort": 0.0034,
+        "faceChanged3s": 0.0041,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 6490.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 139.2,
+        "std": 27.8,
+        "nonblack": 1,
+        "diff": 0.11,
+        "changedFrac": 0.0031,
+        "consecutiveChanged": [
+          0.0019,
+          0.0018,
+          0.0023,
+          0.0022,
+          0.0023
+        ],
+        "clusters": 7,
+        "pendulumChanged": [
+          0.0086,
+          0.0103,
+          0.013,
+          0.012,
+          0.0106
+        ],
+        "centroidSpread": 0.024,
+        "faceStaticShort": 0,
+        "faceChanged3s": 0.0035,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 139.2,
+        "std": 27.8,
+        "nonblack": 1.0,
+        "diff": 0.11,
+        "changedFrac": 0.0031,
+        "consecutiveChanged": [
+          0.0019,
+          0.0018,
+          0.0023,
+          0.0022,
+          0.0023
+        ],
+        "clusters": 7,
+        "pendulumChanged": [
+          0.0086,
+          0.0103,
+          0.013,
+          0.012,
+          0.0106
+        ],
+        "centroidSpread": 0.024,
+        "faceStaticShort": 0.0,
+        "faceChanged3s": 0.0035,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 109.9,
+        "std": 28.5,
+        "nonblack": 1,
+        "diff": 0.13,
+        "changedFrac": 0.004,
+        "consecutiveChanged": [
+          0.0028,
+          0.0031,
+          0.0009,
+          0.0025,
+          0.0031
+        ],
+        "clusters": 9,
+        "pendulumChanged": [
+          0.0149,
+          0.0148,
+          0.0048,
+          0.0138,
+          0.015
+        ],
+        "centroidSpread": 0.02,
+        "faceStaticShort": 0.003,
+        "faceChanged3s": 0.0043,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 109.9,
+        "std": 28.5,
+        "nonblack": 1.0,
+        "diff": 0.13,
+        "changedFrac": 0.004,
+        "consecutiveChanged": [
+          0.0028,
+          0.0031,
+          0.0009,
+          0.0025,
+          0.0031
+        ],
+        "clusters": 9,
+        "pendulumChanged": [
+          0.0149,
+          0.0148,
+          0.0048,
+          0.0138,
+          0.015
+        ],
+        "centroidSpread": 0.02,
+        "faceStaticShort": 0.003,
+        "faceChanged3s": 0.0043,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 111.9,
+        "std": 26.9,
+        "nonblack": 1,
+        "diff": 0.23,
+        "changedFrac": 0.0086,
+        "consecutiveChanged": [
+          0.0034,
+          0.0057,
+          0.0053,
+          0.0013,
+          0.0055
+        ],
+        "clusters": 8,
+        "pendulumChanged": [
+          0.0184,
+          0.0276,
+          0.0285,
+          0.0071,
+          0.0294
+        ],
+        "centroidSpread": 0.033,
+        "faceStaticShort": 0.0055,
+        "faceChanged3s": 0.0067,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 111.9,
+        "std": 26.9,
+        "nonblack": 1.0,
+        "diff": 0.23,
+        "changedFrac": 0.0086,
+        "consecutiveChanged": [
+          0.0034,
+          0.0057,
+          0.0053,
+          0.0013,
+          0.0055
+        ],
+        "clusters": 8,
+        "pendulumChanged": [
+          0.0184,
+          0.0276,
+          0.0285,
+          0.0071,
+          0.0294
+        ],
+        "centroidSpread": 0.033,
+        "faceStaticShort": 0.0055,
+        "faceChanged3s": 0.0067,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 517.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t11-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 103.5,
+        "std": 29.3,
+        "nonblack": 1,
+        "diff": 0.14,
+        "changedFrac": 0.0031,
+        "consecutiveChanged": [
+          0.0055,
+          0.0025,
+          0.0052,
+          0.006,
+          0.0045
+        ],
+        "clusters": 8,
+        "pendulumChanged": [
+          0.0287,
+          0.0102,
+          0.0267,
+          0.0308,
+          0.0209
+        ],
+        "centroidSpread": 0.027,
+        "faceStaticShort": 0.0047,
+        "faceChanged3s": 0.0055,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": false,
+      "motion": {
+        "mean": 103.5,
+        "std": 29.3,
+        "nonblack": 1.0,
+        "diff": 0.14,
+        "changedFrac": 0.0031,
+        "consecutiveChanged": [
+          0.0055,
+          0.0025,
+          0.0052,
+          0.006,
+          0.0045
+        ],
+        "clusters": 8,
+        "pendulumChanged": [
+          0.0287,
+          0.0102,
+          0.0267,
+          0.0308,
+          0.0209
+        ],
+        "centroidSpread": 0.027,
+        "faceStaticShort": 0.0047,
+        "faceChanged3s": 0.0055,
+        "motionOk": false,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 510.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t11-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 132.8,
+        "std": 40.9,
+        "nonblack": 1,
+        "diff": 0.21,
+        "changedFrac": 0.0071,
+        "consecutiveChanged": [
+          0.0026,
+          0.0051,
+          0.0046,
+          0.0005,
+          0.0046
+        ],
+        "clusters": 11,
+        "pendulumChanged": [
+          0.0128,
+          0.023,
+          0.0231,
+          0.0021,
+          0.0225
+        ],
+        "centroidSpread": 0.034,
+        "faceStaticShort": 0.0071,
+        "faceChanged3s": 0.0105,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 132.8,
+        "std": 40.9,
+        "nonblack": 1.0,
+        "diff": 0.21,
+        "changedFrac": 0.0071,
+        "consecutiveChanged": [
+          0.0026,
+          0.0051,
+          0.0046,
+          0.0005,
+          0.0046
+        ],
+        "clusters": 11,
+        "pendulumChanged": [
+          0.0128,
+          0.023,
+          0.0231,
+          0.0021,
+          0.0225
+        ],
+        "centroidSpread": 0.034,
+        "faceStaticShort": 0.0071,
+        "faceChanged3s": 0.0105,
+        "motionOk": true,
+        "loopClosure": "not measured",
+        "note": "crop boxes assume a roughly centred clock; approximate"
+      }
+    },
+    "bundle": {
+      "rawKB": 532.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 206.9,
+        "std": 34.2,
+        "nonblack": 1,
+        "diff": 23.61,
+        "changedFrac": 0.336,
+        "consecutiveChanged": [
+          0.2419,
+          0.2353,
+          0.2144,
+          0.2037,
+          0.2041
+        ],
+        "clusters": 8,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 206.9,
+        "std": 34.2,
+        "nonblack": 1.0,
+        "diff": 23.61,
+        "changedFrac": 0.336,
+        "consecutiveChanged": [
+          0.2419,
+          0.2353,
+          0.2144,
+          0.2037,
+          0.2041
+        ],
+        "clusters": 8,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 203.1,
+        "std": 23.3,
+        "nonblack": 1,
+        "diff": 7.86,
+        "changedFrac": 0.2574,
+        "consecutiveChanged": [
+          0.1602,
+          0.1535,
+          0.1628,
+          0.1583,
+          0.1916
+        ],
+        "clusters": 5,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 203.1,
+        "std": 23.3,
+        "nonblack": 1.0,
+        "diff": 7.86,
+        "changedFrac": 0.2574,
+        "consecutiveChanged": [
+          0.1602,
+          0.1535,
+          0.1628,
+          0.1583,
+          0.1916
+        ],
+        "clusters": 5,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 213.3,
+        "std": 18.7,
+        "nonblack": 1,
+        "diff": 7.25,
+        "changedFrac": 0.228,
+        "consecutiveChanged": [
+          0.1546,
+          0.1392,
+          0.2001,
+          0.2027,
+          0.172
+        ],
+        "clusters": 3,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 213.3,
+        "std": 18.7,
+        "nonblack": 1.0,
+        "diff": 7.25,
+        "changedFrac": 0.228,
+        "consecutiveChanged": [
+          0.1546,
+          0.1392,
+          0.2001,
+          0.2027,
+          0.172
+        ],
+        "clusters": 3,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t12-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 148.4,
+        "std": 58.1,
+        "nonblack": 1,
+        "diff": 18.21,
+        "changedFrac": 0.2486,
+        "consecutiveChanged": [
+          0.1824,
+          0.1841,
+          0.2138,
+          0.2318,
+          0.1922
+        ],
+        "clusters": 6,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 148.4,
+        "std": 58.1,
+        "nonblack": 1.0,
+        "diff": 18.21,
+        "changedFrac": 0.2486,
+        "consecutiveChanged": [
+          0.1824,
+          0.1841,
+          0.2138,
+          0.2318,
+          0.1922
+        ],
+        "clusters": 6,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 506.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t12-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 157.1,
+        "std": 49.4,
+        "nonblack": 1,
+        "diff": 9.47,
+        "changedFrac": 0.1283,
+        "consecutiveChanged": [
+          0.1158,
+          0.1203,
+          0.128,
+          0.1247,
+          0.1235
+        ],
+        "clusters": 6,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 157.1,
+        "std": 49.4,
+        "nonblack": 1.0,
+        "diff": 9.47,
+        "changedFrac": 0.1283,
+        "consecutiveChanged": [
+          0.1158,
+          0.1203,
+          0.128,
+          0.1247,
+          0.1235
+        ],
+        "clusters": 6,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 506
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-animation-t12-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0,
+      "consoleErrors": []
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 155.4,
+        "std": 53.2,
+        "nonblack": 1,
+        "diff": 16.3,
+        "changedFrac": 0.2144,
+        "consecutiveChanged": [
+          0.1169,
+          0.1266,
+          0.1361,
+          0.15,
+          0.1664
+        ],
+        "clusters": 7,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      },
+      "motionOk": true,
+      "motion": {
+        "mean": 155.4,
+        "std": 53.2,
+        "nonblack": 1.0,
+        "diff": 16.3,
+        "changedFrac": 0.2144,
+        "consecutiveChanged": [
+          0.1169,
+          0.1266,
+          0.1361,
+          0.15,
+          0.1664
+        ],
+        "clusters": 7,
+        "motionOk": true,
+        "loopClosure": "not measured (8 s)"
+      }
+    },
+    "bundle": {
+      "rawKB": 506.6
+    },
+    "readyMs": null
+  }
+]

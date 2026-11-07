@@ -1,0 +1,936 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "subjectBatch": "bench505-animation",
+  "threeBatch": "bench505-animation",
+  "callsPerPair": 3,
+  "results": [
+    {
+      "task": 10,
+      "idx": 1,
+      "runs": {
+        "subject": "bench505-animation-t10-aura-r1",
+        "three": "bench505-animation-t10-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 14,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "A has a clear dark body with red accents, a visible soft cast shadow that grounds the feet, and legs at different phases, while B is washed out with almost no shadow, thin legs, and a smaller spider that is harder to read."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 5,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 15,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "B has a clear cast shadow grounding the feet, a visible ground plane, good material contrast and a larger, well-framed spider, while A is small and nearly shadowless on a washed-out backdrop with legs that seem to float."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 5,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 16,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "B has a clear cast shadow that grounds the feet, a visible floor plane, and stronger material contrast, while A is washed out on a white background with almost no shadow and thin legs that appear to float."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "runs": {
+        "subject": "bench505-animation-t10-aura-r2",
+        "three": "bench505-animation-t10-three-r2"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "A shows a clear, well-lit spider with distinct two-segment legs, readable shadows and contrast, while B is heavily washed out with almost no shadow, a blown-out backdrop and a faded, low-contrast spider."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 5,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 22
+          },
+          "winner": "three",
+          "why": "B is a clear, well-lit spider with distinct two-part legs, a visible cast shadow and strong body/leg contrast, while A is washed out to near-white with no visible shadow and low contrast."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "A shows a clear, well-lit spider with distinct two-segment legs, visible cast shadows and good contrast, while B is washed out to near-white with no visible shadows and a faded, low-contrast spider."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "runs": {
+        "subject": "bench505-animation-t10-aura-r3",
+        "three": "bench505-animation-t10-three-r3"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "A shows a clear dark spider with cast shadows, visible leg joints and varied leg phases, while B is washed out and overexposed, with no visible shadow and a faded, low-contrast spider."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "A shows a clear dark spider with distinct two-segment legs, visible cast shadows and good material contrast, while B is washed out by overexposure, with no visible shadows and a faded, low-contrast spider."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 5,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 22
+          },
+          "winner": "three",
+          "why": "B shows a high-contrast dark spider with clear cast shadows, readable two-segment legs and grounded feet, while A is washed out almost to white with no visible shadow or ground contact."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "runs": {
+        "subject": "bench505-animation-t11-aura-r1",
+        "three": "bench505-animation-t11-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 5,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 18,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "A's clock is larger and has a clearly visible brass bob swinging well off-center, a detailed wood case and a glowing interior, while B's bob is dim and small and the clock is narrower with a weaker pendulum read."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 5,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 18,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "A shows a clearly visible brass bob and rod swinging well off-center inside a warm glass opening, with a larger, well-proportioned clock, while B's small, dim bob is hard to read and its thin case looks less polished."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 16,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B shows a larger, crisper face with a visible red second hand, a clearly off-center brass bob in a brighter glass opening, and better proportions and floor/wall detail, while A is washed out with a faint, small bob and a hard-to-read second hand."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "runs": {
+        "subject": "bench505-animation-t11-aura-r2",
+        "three": "bench505-animation-t11-three-r2"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 15,
+            "three": 18
+          },
+          "winner": "three",
+          "why": "B has richer warm lighting, wood and brass materials, a floor and wall with depth, and a more realistic clock, while A is flat and small with a weak pendulum and less depth."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 5,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 18,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "A has richer wood and brass materials, warm lighting, paneled wall and floor depth, while B looks flatter and plainer, even though B's pendulum swing is easier to see."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 15,
+            "three": 18
+          },
+          "winner": "three",
+          "why": "B has richer warm lighting, brass accents, wood depth, a striped wall and a plank floor, and a clearer clock face, while A is flat and small, with a less detailed case and pendulum."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "runs": {
+        "subject": "bench505-animation-t11-aura-r3",
+        "three": "bench505-animation-t11-three-r3"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 16,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "B shows a larger, crisper face with clearly distinguishable hands, a more visible pendulum and bob, brass accents, and a plank floor with warmer glow, while A's clock is small with fine details that are hard to read and a flat floor."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 18,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "A has a larger, crisper face, a clearly visible off-center bob, brass accents and a wood-plank floor with better proportions, while B is smaller with thinner hands, a tiny bob and a flat floor."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 19,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "A has a crisper, larger face, a clearly off-center bob and the proportions of a tall grandfather clock with brass and plank-floor detail, while B has better headroom and softer shadows but a squat case and a flat floor."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "runs": {
+        "subject": "bench505-animation-t12-aura-r1",
+        "three": "bench505-animation-t12-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 11,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "B has a clear bird-shaped shadow on the ground, trees with trunks and rocks that give scale, and better contrast. A's bird is tiny with thin wings, a faint shadow, and low-contrast pale ground."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 11,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "B has a clearer ground shadow shaped like the bird, better contrast between the bird and the darker green ground, and more polished props, while A's pale bird blends into the pale ground and is partly hidden by cones."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 16
+          },
+          "winner": "three",
+          "why": "A has a clear bird shadow on the ground, strong contrast against the green terrain, and visible wing and beak color, while B's bird is small and its shadow is faint and washed out against pale ground, with thin, barely readable wings."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "runs": {
+        "subject": "bench505-animation-t12-aura-r2",
+        "three": "bench505-animation-t12-three-r2"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 4,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 13,
+            "three": 15
+          },
+          "winner": "three",
+          "why": "A has a bolder, higher-contrast bird with a clear bird-shaped ground shadow and strong tree shadows, while B's bird is a yellow blob with thin line wings on a washed-out pale ground with faint shadows."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 2
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 16
+          },
+          "winner": "three",
+          "why": "B has a more readable bird with distinct body, wing segments and tail, a clearer ground shadow, and stronger color contrast against the backdrop, while A's bird is small, pale and washed out against the pale ground."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 14,
+            "three": 16
+          },
+          "winner": "three",
+          "why": "A's red body and dark wings contrast clearly with the green ground and its ground shadow is distinct, while B's pale yellow body and thin red wings are washed out against a pale scene with a faint shadow."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "runs": {
+        "subject": "bench505-animation-t12-aura-r3",
+        "three": "bench505-animation-t12-three-r3"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 13,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "A has a clear ground shadow, strong color contrast and a larger bird with a visibly bent, banked wing pose, while B's scene is washed out, its shadow is barely visible and the bird is smaller."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "subject": 14,
+            "three": 18
+          },
+          "winner": "three",
+          "why": "A has a clear ground shadow, strong color contrast and a larger bird with visible wing bend, while B is washed out with a faint shadow, though B's beak is easier to see."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 3,
+              "c4": 5,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "subject": 12,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has saturated colors, a clear ground shadow, strong bird-to-background contrast and a richer scene with trees and rocks, while A is washed out with a faint shadow and low contrast."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    }
+  ]
+}

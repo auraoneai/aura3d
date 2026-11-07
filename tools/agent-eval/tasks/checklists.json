@@ -67,5 +67,38 @@
     { "id": "idle", "text": "An idle animation runs from code (breathing or weight shift, head and arm motion) so frames differ over time." },
     { "id": "lighting", "text": "A strong key light and a visible coloured rim light are authored on a dark background, with shadows cast on a floor." },
     { "id": "framing", "text": "The camera frames the whole robot, centred." }
+  ],
+  "10": [
+    { "id": "c1", "text": "A canvas with id #app exists and is the render target" },
+    { "id": "c2", "text": "Spider has a body of at least 2 distinct primitives (e.g. abdomen and head)" },
+    { "id": "c3", "text": "Exactly 8 legs, each with at least 2 jointed segments (16+ leg parts), found in source or scene" },
+    { "id": "c4", "text": "Legs are driven by a per-frame time-based function (sinusoidal or equivalent), not a one-shot tween" },
+    { "id": "c5", "text": "Alternating diagonal gait: two leg groups with a half-period phase offset" },
+    { "id": "c6", "text": "Body bob is linked to the gait phase" },
+    { "id": "c7", "text": "Animation loops continuously with a period of roughly 1.5 to 2.5 seconds and no user input needed" },
+    { "id": "c8", "text": "A ground plane and at least one light exist; no external model assets are loaded" },
+    { "id": "c9", "text": "Page loads with no console errors" }
+  ],
+  "11": [
+    { "id": "c1", "text": "A canvas with id #app is the render target" },
+    { "id": "c2", "text": "Clock case and face built from primitives, with 12 distinct hour marks" },
+    { "id": "c3", "text": "Three hands (hour, minute, second) present as separate objects" },
+    { "id": "c4", "text": "Hour and minute hands are driven by the current Date, not hard-coded angles" },
+    { "id": "c5", "text": "Second hand ticks discretely, once per second, rather than sweeping continuously" },
+    { "id": "c6", "text": "Pendulum rod and bob pivot about a point at the top of the rod" },
+    { "id": "c7", "text": "Pendulum angle follows a time-based sinusoid with a 2 s period and an amplitude between 5 and 20 degrees" },
+    { "id": "c8", "text": "Two hanging weights with slow vertical drift" },
+    { "id": "c9", "text": "Floor, wall and at least one light present; no external model assets; no console errors" }
+  ],
+  "12": [
+    { "id": "c1", "text": "A canvas with id #app is the render target" },
+    { "id": "c2", "text": "Bird has body, head, beak, two eyes, and a tail with 3 or more feathers, all built from primitives" },
+    { "id": "c3", "text": "Each wing has 2 or more hinged segments, with the outer segment parented to the inner one" },
+    { "id": "c4", "text": "Wing flap angle is a time-based function at about 2 Hz, with a phase lag on the outer segment" },
+    { "id": "c5", "text": "Body vertical bob is tied to the flap phase" },
+    { "id": "c6", "text": "Bird follows a circular path of about 6 units radius with a period of about 8 s, and its heading follows the tangent" },
+    { "id": "c7", "text": "Bird banks (roll) into the turn" },
+    { "id": "c8", "text": "Ground disc, at least 3 static props and a directional light with shadows are present" },
+    { "id": "c9", "text": "Camera keeps the bird in frame throughout; no external model assets; no console errors" }
   ]
 }

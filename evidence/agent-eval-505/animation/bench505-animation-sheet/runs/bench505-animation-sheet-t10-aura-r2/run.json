@@ -1,0 +1,124 @@
+{
+  "runId": "bench505-animation-sheet-t10-aura-r2",
+  "batch": "bench505-animation-sheet",
+  "arm": "aura",
+  "task": 10,
+  "idx": 2,
+  "order": 5,
+  "seed": 20261106005,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:32:16.100Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 73577,
+  "usage": {
+    "input": 77082,
+    "uncachedInput": 77082,
+    "output": 3430,
+    "turns": 5,
+    "perTurnInput": [
+      3334,
+      13921,
+      14133,
+      22514,
+      23180
+    ],
+    "perTurnOutput": [
+      20,
+      515,
+      25,
+      2592,
+      278
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1681,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1681,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1681,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 26275,
+      "type": "search",
+      "pattern": "rotate\\(|group\\(|setRotation|directional\\(|__EVAL_READY__"
+    },
+    {
+      "i": 4,
+      "t": 26276,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 27685,
+      "type": "search",
+      "pattern": "export declare function group|setRotation\\(|rotate\\("
+    },
+    {
+      "i": 6,
+      "t": 66947,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 5826
+    },
+    {
+      "i": 7,
+      "t": 67423,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 73577,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts: a spider built only from primitives (ellipsoid abdomen, thorax, head, eyes, and eight legs) walking in place on a ground plane. The code passes `typecheck`. I haven't run `vite build` or looked at it in a browser, so the framing and shadows are unchecked.\n\n- **Legs:** each leg has a hip-yaw joint, a femur and a knee-joined tibia, with ball joints and a foot sphere. Every frame, a two-link IK solve plants the foot on the ground and lifts it during the swing.\n- **Gait:** opposite diagonals move together. The cycle is 2 s: half stance, half swing (lift, move forward, plant). Time is accumulated from `f.dt`, so the loop is seamless.\n- **Body:** it bobs twice per cycle, once for each diagonal step, with a slight sway.\n- **Scene:** neutral grey backdrop, hemisphere and neutral-environment light, a shadow-casting directional light, light fog, and a fixed three-quarter perspective camera.\n- **Contract:** no external assets. `window.__EVAL_READY__` is set after the first frame.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

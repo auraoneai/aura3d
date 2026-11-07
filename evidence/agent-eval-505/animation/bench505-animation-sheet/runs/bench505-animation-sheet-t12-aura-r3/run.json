@@ -1,0 +1,227 @@
+{
+  "runId": "bench505-animation-sheet-t12-aura-r3",
+  "batch": "bench505-animation-sheet",
+  "arm": "aura",
+  "task": 12,
+  "idx": 3,
+  "order": 1,
+  "seed": 20261106001,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:30:49.828Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 116220,
+  "usage": {
+    "input": 366764,
+    "uncachedInput": 366764,
+    "output": 4210,
+    "turns": 14,
+    "perTurnInput": [
+      3334,
+      11610,
+      11862,
+      18677,
+      19757,
+      21115,
+      28535,
+      28754,
+      29570,
+      31395,
+      31822,
+      43002,
+      43337,
+      43994
+    ],
+    "perTurnOutput": [
+      20,
+      85,
+      11,
+      69,
+      57,
+      48,
+      91,
+      50,
+      30,
+      96,
+      87,
+      3099,
+      79,
+      388
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2016,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2016,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 2016,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 7123,
+      "type": "search",
+      "pattern": "camera|setRotation|rotation"
+    },
+    {
+      "i": 4,
+      "t": 12459,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 5,
+      "t": 15655,
+      "type": "search",
+      "pattern": "app\\.camera|camera\\.(follow|chase)|setPosition\\(|setTarget|lookAt"
+    },
+    {
+      "i": 6,
+      "t": 18025,
+      "type": "search",
+      "pattern": "AuraCameraMode =|export interface AuraCameraController|offsetMode"
+    },
+    {
+      "i": 7,
+      "t": 19844,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 8,
+      "t": 19844,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.js",
+      "lines": 262
+    },
+    {
+      "i": 9,
+      "t": 25282,
+      "type": "search",
+      "pattern": "interface AuraCameraPose"
+    },
+    {
+      "i": 10,
+      "t": 27432,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 11,
+      "t": 27436,
+      "type": "search",
+      "pattern": "setPose"
+    },
+    {
+      "i": 12,
+      "t": 33861,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+      "lines": 90
+    },
+    {
+      "i": 13,
+      "t": 40578,
+      "type": "search",
+      "pattern": "stub|setPose"
+    },
+    {
+      "i": 14,
+      "t": 40585,
+      "type": "search",
+      "pattern": "A3D_QR_CAMERA|camera\\.follow|targetNode"
+    },
+    {
+      "i": 15,
+      "t": 47493,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/camera.js",
+      "lines": 167
+    },
+    {
+      "i": 16,
+      "t": 101735,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 5374
+    },
+    {
+      "i": 17,
+      "t": 102233,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 18,
+      "t": 108488,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 19,
+      "t": 108991,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 20,
+      "t": 116220,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/camera.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.js",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts and it passes typecheck. I couldn't build with `vite build` or run it in a browser, so none of it has been checked visually. Two risks: the follow camera's offset convention and the default shadow extents were read from engine source, not seen on screen.\n\n- **Bird:** it is built from primitives only. The body is an ellipsoid, the head a sphere, the beak a cone, and the eyes two small spheres. The tail has 5 fanned feather boxes. Each wing has a shoulder joint, an inner box, an elbow joint, and an outer box plus a tip box.\n- **Flight:** it circles at radius 6 and height 4, with the heading set to the tangent. A constant bank of about 0.38 rad tilts it toward the centre.\n- **Flap:** wings flap at 2 Hz. The outer segments lag the inner ones by 0.8 rad. The body bobs by 0.12 units with each flap.\n- **Loop:** time wraps every 8 s, which is exactly 16 flaps and one lap, so there is no jump.\n- **Scene:** a ground disc, 14 cone-on-trunk trees made with `instances` (2 near the centre, the rest outside the flight circle), a sky-coloured background with light fog, a hemisphere light, and one shadow-casting directional light.\n- **Camera:** it uses `camera.follow` with `targetNode: \"bird\"`. Its offset is [8, 3.5, -5] in the bird's own frame, so it stays outside the circle, above and slightly behind the bird, and looks at it.\n- **Ready flag:** `window.__EVAL_READY__` is set after `app.ready()`.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

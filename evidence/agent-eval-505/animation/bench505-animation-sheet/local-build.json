@@ -1,0 +1,56 @@
+{
+  "bench505-animation-sheet-t10-aura-r1": {
+    "ok": true,
+    "ms": 4528,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t10-aura-r2": {
+    "ok": true,
+    "ms": 4802,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t10-aura-r3": {
+    "ok": true,
+    "ms": 4703,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t11-aura-r1": {
+    "ok": true,
+    "ms": 4499,
+    "bundleKb": 9612,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t11-aura-r2": {
+    "ok": true,
+    "ms": 5174,
+    "bundleKb": 9612,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t11-aura-r3": {
+    "ok": true,
+    "ms": 5385,
+    "bundleKb": 9613,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t12-aura-r1": {
+    "ok": true,
+    "ms": 5029,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t12-aura-r2": {
+    "ok": true,
+    "ms": 4779,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-animation-sheet-t12-aura-r3": {
+    "ok": true,
+    "ms": 4845,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  }
+}

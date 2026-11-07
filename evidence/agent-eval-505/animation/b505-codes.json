@@ -1,0 +1,137 @@
+{
+ "B10a1": {
+  "runId": "bench505-animation-t10-aura-r1",
+  "batch": "bench505-animation",
+  "port": 47100
+ },
+ "B10a2": {
+  "runId": "bench505-animation-t10-aura-r2",
+  "batch": "bench505-animation",
+  "port": 47101
+ },
+ "B10a3": {
+  "runId": "bench505-animation-t10-aura-r3",
+  "batch": "bench505-animation",
+  "port": 47102
+ },
+ "B10t1": {
+  "runId": "bench505-animation-t10-three-r1",
+  "batch": "bench505-animation",
+  "port": 47103
+ },
+ "B10t2": {
+  "runId": "bench505-animation-t10-three-r2",
+  "batch": "bench505-animation",
+  "port": 47104
+ },
+ "B10t3": {
+  "runId": "bench505-animation-t10-three-r3",
+  "batch": "bench505-animation",
+  "port": 47105
+ },
+ "B11a1": {
+  "runId": "bench505-animation-t11-aura-r1",
+  "batch": "bench505-animation",
+  "port": 47106
+ },
+ "B11a2": {
+  "runId": "bench505-animation-t11-aura-r2",
+  "batch": "bench505-animation",
+  "port": 47107
+ },
+ "B11a3": {
+  "runId": "bench505-animation-t11-aura-r3",
+  "batch": "bench505-animation",
+  "port": 47108
+ },
+ "B11t1": {
+  "runId": "bench505-animation-t11-three-r1",
+  "batch": "bench505-animation",
+  "port": 47109
+ },
+ "B11t2": {
+  "runId": "bench505-animation-t11-three-r2",
+  "batch": "bench505-animation",
+  "port": 47110
+ },
+ "B11t3": {
+  "runId": "bench505-animation-t11-three-r3",
+  "batch": "bench505-animation",
+  "port": 47111
+ },
+ "B12a1": {
+  "runId": "bench505-animation-t12-aura-r1",
+  "batch": "bench505-animation",
+  "port": 47112
+ },
+ "B12a2": {
+  "runId": "bench505-animation-t12-aura-r2",
+  "batch": "bench505-animation",
+  "port": 47113
+ },
+ "B12a3": {
+  "runId": "bench505-animation-t12-aura-r3",
+  "batch": "bench505-animation",
+  "port": 47114
+ },
+ "B12t1": {
+  "runId": "bench505-animation-t12-three-r1",
+  "batch": "bench505-animation",
+  "port": 47115
+ },
+ "B12t2": {
+  "runId": "bench505-animation-t12-three-r2",
+  "batch": "bench505-animation",
+  "port": 47116
+ },
+ "B12t3": {
+  "runId": "bench505-animation-t12-three-r3",
+  "batch": "bench505-animation",
+  "port": 47117
+ },
+ "S10a1": {
+  "runId": "bench505-animation-sheet-t10-aura-r1",
+  "batch": "bench505-animation-sheet",
+  "port": 47200
+ },
+ "S10a2": {
+  "runId": "bench505-animation-sheet-t10-aura-r2",
+  "batch": "bench505-animation-sheet",
+  "port": 47201
+ },
+ "S10a3": {
+  "runId": "bench505-animation-sheet-t10-aura-r3",
+  "batch": "bench505-animation-sheet",
+  "port": 47202
+ },
+ "S11a1": {
+  "runId": "bench505-animation-sheet-t11-aura-r1",
+  "batch": "bench505-animation-sheet",
+  "port": 47203
+ },
+ "S11a2": {
+  "runId": "bench505-animation-sheet-t11-aura-r2",
+  "batch": "bench505-animation-sheet",
+  "port": 47204
+ },
+ "S11a3": {
+  "runId": "bench505-animation-sheet-t11-aura-r3",
+  "batch": "bench505-animation-sheet",
+  "port": 47205
+ },
+ "S12a1": {
+  "runId": "bench505-animation-sheet-t12-aura-r1",
+  "batch": "bench505-animation-sheet",
+  "port": 47206
+ },
+ "S12a2": {
+  "runId": "bench505-animation-sheet-t12-aura-r2",
+  "batch": "bench505-animation-sheet",
+  "port": 47207
+ },
+ "S12a3": {
+  "runId": "bench505-animation-sheet-t12-aura-r3",
+  "batch": "bench505-animation-sheet",
+  "port": 47208
+ }
+}
