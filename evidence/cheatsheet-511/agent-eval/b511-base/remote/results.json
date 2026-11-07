@@ -1,0 +1,425 @@
+[
+  {
+    "id": "b511-base-t31-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.23506076388888889,
+        "std": 30.298361688605397,
+        "diff": 5.566799768518519
+      }
+    },
+    "bundle": {
+      "rawKB": 9309.9
+    },
+    "readyMs": 517
+  },
+  {
+    "id": "b511-base-t31-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.36952690972222224,
+        "std": 34.83240365185958,
+        "diff": 6.6198929398148145
+      }
+    },
+    "bundle": {
+      "rawKB": 9274.1
+    },
+    "readyMs": 743
+  },
+  {
+    "id": "b511-base-t31-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.27954427083333333,
+        "std": 31.578420452629622,
+        "diff": 4.406371527777778
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.5
+    },
+    "readyMs": 722
+  },
+  {
+    "id": "b511-base-t32-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 59.76190163146175,
+        "diff": 9.893269675925925
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.5
+    },
+    "readyMs": 657
+  },
+  {
+    "id": "b511-base-t32-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 68.62898768155644,
+        "diff": 14.091238425925926
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.5
+    },
+    "readyMs": 308
+  },
+  {
+    "id": "b511-base-t32-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 95.10673560369659,
+        "diff": 21.980594618055555
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.2
+    },
+    "readyMs": 307
+  },
+  {
+    "id": "b511-base-t33-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.7512065972222223,
+        "std": 63.96224456991613,
+        "diff": 4.785844907407407
+      }
+    },
+    "bundle": {
+      "rawKB": 9274
+    },
+    "readyMs": 753
+  },
+  {
+    "id": "b511-base-t33-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.7936284722222222,
+        "std": 70.52622689570188,
+        "diff": 6.418700810185185
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.9
+    },
+    "readyMs": 480
+  },
+  {
+    "id": "b511-base-t33-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.5551649305555556,
+        "std": 60.07758663444078,
+        "diff": 3.053709490740741
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.7
+    },
+    "readyMs": 333
+  },
+  {
+    "id": "b511-base-t34-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.9998263888888889,
+        "std": 25.082974237179965,
+        "diff": 4.074194155092592
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.5
+    },
+    "readyMs": 313
+  },
+  {
+    "id": "b511-base-t34-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.9998350694444444,
+        "std": 20.251050693026713,
+        "diff": 2.6038744212962963
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.7
+    },
+    "readyMs": 620
+  },
+  {
+    "id": "b511-base-t35-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.16317708333333333,
+        "std": 36.132649743327924,
+        "diff": 7.709544270833334
+      }
+    },
+    "bundle": {
+      "rawKB": 9318.5
+    },
+    "readyMs": 825
+  },
+  {
+    "id": "b511-base-t35-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.5681163194444444,
+        "std": 31.598002015374348,
+        "diff": 7.509411168981481
+      }
+    },
+    "bundle": {
+      "rawKB": 9311.4
+    },
+    "readyMs": 664
+  },
+  {
+    "id": "b511-base-t35-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.33883680555555556,
+        "std": 38.449803985687645,
+        "diff": 8.802709780092593
+      }
+    },
+    "bundle": {
+      "rawKB": 9311.8
+    },
+    "readyMs": 385
+  },
+  {
+    "id": "b511-base-t36-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 25.88983094882701,
+        "diff": 0.7187702546296296
+      }
+    },
+    "bundle": {
+      "rawKB": 9275.6
+    },
+    "readyMs": 605
+  },
+  {
+    "id": "b511-base-t36-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 21.560290398049045,
+        "diff": 0.6660402199074074
+      }
+    },
+    "bundle": {
+      "rawKB": 9275.7
+    },
+    "readyMs": 625
+  },
+  {
+    "id": "b511-base-t36-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 23.409166414600364,
+        "diff": 0.7504166666666666
+      }
+    },
+    "bundle": {
+      "rawKB": 9275.7
+    },
+    "readyMs": 611
+  },
+  {
+    "id": "b511-base-t34-aura-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": true,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  }
+]

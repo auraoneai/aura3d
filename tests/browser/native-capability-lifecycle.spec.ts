@@ -136,6 +136,10 @@ test("typed asset remount, resize, recovery and concurrent-app disposal stay iso
             await lost;
             if (!appA.deviceLost()) throw new Error("Loss was not reported by the app");
             const restored = waitForEvent((listener) => appA.onDeviceRestored(listener));
+            // `await lost` resumes in a microtask that runs inside the webglcontextlost dispatch. Chromium only allows a restore
+            // after that dispatch has finished and the event was default-prevented; a call made inside it throws
+            // INVALID_OPERATION ("context restoration not allowed") and no restored event ever arrives. Leave the dispatch first.
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
             extension.restoreContext();
             await restored;
             appA.setScene(built());

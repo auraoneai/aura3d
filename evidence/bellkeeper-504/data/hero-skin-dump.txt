@@ -1,0 +1,20 @@
+skin Armature joints Hips,Spine02,Spine01,Spine,neck,Head,head_end,headfront,LeftShoulder,LeftArm,LeftForeArm,LeftHand,RightShoulder,RightArm,RightForeArm,RightHand,LeftUpLeg,LeftLeg,LeftFoot,LeftToeBase,RightUpLeg,RightLeg,RightFoot,RightToeBase
+meshnode char1 skin true parent Armature
+
+mesh output_unwrapped prim material BakedMaterial verts 18420 y -0.000 1.750
+ band 0 y[-0.00..] n=2289  LeftLeg:29%  RightLeg:27%  RightFoot:21%  LeftFoot:20%  RightToeBase:2%  LeftToeBase:2%
+ band 1 y[0.22..] n=1718  LeftLeg:43%  RightLeg:39%  LeftUpLeg:10%  RightUpLeg:9%  LeftFoot:0%  RightFoot:0%
+ band 2 y[0.44..] n=1271  LeftUpLeg:39%  RightUpLeg:35%  LeftLeg:13%  RightLeg:12%
+ band 3 y[0.66..] n=1695  LeftUpLeg:53%  RightUpLeg:44%  Hips:2%  LeftLeg:0%  RightLeg:0%  RightArm:0%
+ band 4 y[0.87..] n=2692  LeftUpLeg:27%  Hips:25%  RightUpLeg:16%  LeftForeArm:12%  LeftArm:12%  RightArm:3%
+ band 5 y[1.09..] n=5769  LeftForeArm:19%  LeftArm:16%  RightForeArm:13%  RightArm:11%  RightHand:11%  Spine02:10%
+ band 6 y[1.31..] n=2020  neck:21%  LeftShoulder:21%  RightShoulder:20%  RightArm:17%  LeftArm:10%  head_end:8%
+ band 7 y[1.53..] n=966  head_end:69%  Head:16%  neck:11%  LeftShoulder:3%  RightShoulder:1%  LeftArm:0%
+
+animations
+Walk
+LeftForeArm:83deg  RightLeg:77deg  LeftLeg:76deg  RightForeArm:71deg  RightArm:61deg  LeftArm:56deg  RightUpLeg:48deg  LeftUpLeg:46deg  RightShoulder:46deg  LeftFoot:44deg  LeftShoulder:40deg  RightFoot:38deg  LeftHand:37deg  RightHand:31deg
+Run
+RightLeg:148deg  LeftLeg:147deg  LeftArm:75deg  RightArm:75deg  RightUpLeg:70deg  RightHand:63deg  LeftUpLeg:63deg  RightForeArm:48deg  LeftFoot:43deg  LeftShoulder:39deg  RightShoulder:39deg  LeftHand:38deg  LeftForeArm:34deg  RightFoot:32deg
+Idle
+Hips:82deg  LeftLeg:60deg  Head:57deg  RightFoot:49deg  RightHand:49deg  RightForeArm:48deg  RightShoulder:47deg  RightArm:47deg  RightLeg:46deg  LeftHand:43deg  LeftUpLeg:42deg  LeftForeArm:41deg  LeftArm:41deg  LeftFoot:39deg

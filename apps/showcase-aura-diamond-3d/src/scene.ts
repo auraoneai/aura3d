@@ -627,7 +627,6 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       // GU47 blind panel: the typhoon-dome GLB's UVs are broken (smeared multicolour field, torn roof, smeared walls; the
       // same in 4.6.2), so GU47 draws the park's own field under the rafters, banners and truss panels instead.
       if (!gu47) nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
-      if (gu47 && DOME_PROBE_ENABLED) nodes.push(domeInfieldProbe());
       if (gu47) {
         // GU47 DIA-A1 / DIA-W2: the five rafters and four banners as two instanced draws (-7); banners in the Dome accent
         // and the crowd's gold, tinting the emissive too.
@@ -725,37 +724,6 @@ export function wallNameChord(park: ParkSpec): { centre: Vec3; yaw: number; leng
   const length = Math.hypot(dx, dz);
   const yaw = Math.atan2(-dz, dx); // local +x along the chord (left to right from home), local +z toward home
   return { centre: [pm[0] + 0.32 * Math.sin(yaw), 0, pm[2] + 0.32 * Math.cos(yaw)], yaw, length };
-}
-
-/**
- * DIA-M2: one box-projected reflection probe over the Dome's sealed (0.42 roughness) infield so it mirrors the truss
- * panels and banners instead of the HDRI hangar. Captured once at mount (6 faces at 128 px, about +2 draws' worth of
- * work on the first frame only); the parallax box is the dome interior around the diamond. A3D_QR_LIGHTING (default-on).
- */
-/**
- * GU47 phase 2: off. On the freeze build's software WebGL2 capture the probe's once-captured cube smeared the scene over
- * the whole Dome floor (grass included) and pulled the frame out of its luma band (p50 46, rb 0.89). The Dome falls back
- * to the hangar HDRI's IBL on the sealed infield until the probe capture is fixed in the engine (lane report handoff).
- */
-export const DOME_PROBE_ENABLED = false;
-
-export function domeInfieldProbe(): any {
-  // The 5.0 public engine surface has no probe builder (`probes` lived in the retired `@aura3d/engine/lanes` entry), so this
-  // is the node the builder emitted, written out. It is only mounted when DOME_PROBE_ENABLED returns.
-  return {
-    kind: "probe",
-    probe: "reflection",
-    name: "dome-infield-probe",
-    options: {
-      name: "dome-infield-probe",
-      position: [0, 6, -14],
-      box: { min: [-95, -0.5, -120], max: [95, 40, 30] },
-      resolution: 128,
-      update: "once",
-      blendDistance: 6,
-      intensity: 0.85
-    }
-  };
 }
 
 /**

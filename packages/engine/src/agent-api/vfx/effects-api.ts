@@ -10,6 +10,7 @@ import { ProductionEffectSystem, type AppLike } from "../../production-runtime/e
 import type { EffectNodeLike } from "../../production-runtime/effects/EffectNodeLowering";
 import { ownedRootRenderSourceOverlay } from "../RootRuntimeSupport";
 import { attachAppVfxBridge, bindOwnedVfxBridge, detachOwnedVfxBridge, ownedVfxBridgeOverlay, type Prd07MountAuthority } from "./bridge";
+import { parseAuraColorSrgb } from "../color.js";
 
 // Capture the engine implementations before an app can shadow public methods
 // on the diagnostics-visible ProductionEffectSystem instance.
@@ -910,5 +911,6 @@ function toVec3(c: AuraColor | undefined, fallback: readonly [number, number, nu
     return [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
   }
   if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2])];
+  if (typeof c === "string") { const [r, g, b] = parseAuraColorSrgb(c); return [r, g, b]; }
   return [fallback[0], fallback[1], fallback[2]];
 }

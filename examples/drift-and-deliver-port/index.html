@@ -17,6 +17,7 @@
       button { font: 500 13px/1 "Graphik Web", sans-serif; color: #261e1a; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
       button:disabled { opacity: 0.5; cursor: default; }
       .overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(38, 30, 26, 0.55); }
+      .aura3d-loading { color: var(--warm); background: rgba(255, 246, 230, 0.14); }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; width: min(420px, 90vw); display: grid; gap: 10px; }
       #hud { position: fixed; inset: 0; pointer-events: none; }
       #nitro { position: absolute; bottom: 26px; left: 26px; width: 250px; }
@@ -176,7 +177,7 @@
         <button id="restart">Drive another shift (R)</button>
       </div>
     </div>
-    <div id="loading" class="overlay"><div class="panel"><h1>Loading the city</h1><div class="meta" id="loading-status">Building blocks, buildings and traffic.</div></div></div>
+    <div id="loading" class="overlay"><div class="panel"><h1 id="loading-title">Loading the city</h1><div class="aura3d-loading" id="loading-bar" role="progressbar" aria-labelledby="loading-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><div class="meta" id="loading-status">Building blocks, buildings and traffic.</div></div></div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

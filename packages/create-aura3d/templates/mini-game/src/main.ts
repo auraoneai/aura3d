@@ -221,6 +221,9 @@ void miniGame.ready().then(() => {
   document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 });
 
+// model() fits every GLB to ~1.55 m by default. The level's .scale() maths below assumes each asset's native
+// bounds, so every model here opts out with scaleMode: "world".
+
 function buildScene() {
   // Platform geometry comes from the library crate (PRD 05 template-starters
   // swap, #481 mapping); the 0.824 m cube scales to each collision rect.
@@ -230,11 +233,11 @@ function buildScene() {
     [width / BLOCK_SIZE[0], height / BLOCK_SIZE[1], depth / BLOCK_SIZE[2]] as const;
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
     ...level.platforms.map((platform) =>
-      model(block, { name: `${platform.id} platform` })
+      model(block, { name: `${platform.id} platform`, scaleMode: "world" })
         .position(platform.x + platform.width / 2, platform.y, -0.05)
         .scale(blockScale(platform.width, platform.height, 1.24))),
     ...level.movingPlatforms.map((platform) =>
-      model(assets.quaterniusCubeCrate, { name: `${platform.id} moving platform` })
+      model(assets.quaterniusCubeCrate, { name: `${platform.id} moving platform`, scaleMode: "world" })
         .position(platform.x + platform.width / 2, movingLiftY(0) - platform.height / 2, 0)
         .scale([platform.width / assets.quaterniusCubeCrate.bounds[0], platform.height / assets.quaterniusCubeCrate.bounds[1], 0.7])
         .runtime(game.runtimeNode("platform-lift", { tags: ["platform", "moving"] }))),
@@ -243,6 +246,7 @@ function buildScene() {
     ...level.collectibles.map((coin) =>
       model(assets.kenneyPlatformerKitStar, {
         name: `${coin.id} collectible`,
+        scaleMode: "world",
         material: material.emissive({ color: "#ffd54d", emissive: "#ffd54d", emissiveIntensity: 4, roughness: 0.3 })
       })
         .position(coin.x, coin.y, 0.02)
@@ -250,16 +254,18 @@ function buildScene() {
         .runtime(game.runtimeNode(`coin-${coin.id}`, { tags: ["collectible"] }))),
     model(assets.quaterniusCubeCrate, {
       name: "spikes hazard",
+      scaleMode: "world",
       material: material.emissive({ color: "#e5484d", emissive: "#e5484d", emissiveIntensity: 0.9, roughness: 0.4 })
     })
       .position(level.hazards[0].x + level.hazards[0].width / 2, level.hazards[0].y, 0.05)
       .scale([level.hazards[0].width / assets.quaterniusCubeCrate.bounds[0], level.hazards[0].height / assets.quaterniusCubeCrate.bounds[1], 0.5]),
-    model(assets.kenneyPlatformerKitKey, { name: "checkpoint key" })
+    model(assets.kenneyPlatformerKitKey, { name: "checkpoint key", scaleMode: "world" })
       .position(level.checkpoints[0].x, level.checkpoints[0].y + 0.2, 0.08)
       .scale(2)
       .runtime(game.runtimeNode("checkpoint-mid", { tags: ["checkpoint"] })),
     model(assets.kenneyPlatformerKitStar, {
       name: "finish gate",
+      scaleMode: "world",
       material: material.emissive({ color: "#ffd54d", emissive: "#ffd54d", emissiveIntensity: 3, roughness: 0.3 })
     })
       .position(level.finish.x, level.finish.y + 0.5, 0.08)
@@ -271,7 +277,7 @@ function buildScene() {
   return scene()
     .add(looks.preset(LOOK_ID))
     .add(
-      model(assets.kaykitBarbarian, { name: "certified hero" })
+      model(assets.kaykitBarbarian, { name: "certified hero", scaleMode: "world" })
         .position(level.start.x + 0.38, level.start.y + 0.01, 0)
         // Barbarian is 2.4 m tall vs the 0.9 m hero the level was tuned for.
         .scale(0.91 / assets.kaykitBarbarian.bounds[1])

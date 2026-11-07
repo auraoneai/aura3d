@@ -21,8 +21,8 @@ import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
 import { FINISH_ORBIT, RAIL_SECONDS, finishOrbitPose, railPose } from "./camera";
 import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
 const params = new URLSearchParams(location.search);
@@ -586,7 +586,7 @@ async function boot(): Promise<void> {
   if (config.look === "inked") void mountSiltHud().then((loaded) => { hudFonts = loaded; });
   (window as unknown as { __SILT_HUD_FONTS__?: () => readonly string[] }).__SILT_HUD_FONTS__ = () => hudFonts;
   // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
-  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse, reducedMotion });
+  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse, reducedMotion, water: params.get("water") === "glsl" ? "glsl" : "graph" });
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
   // W-8 lab flags (?backend=auto|webgpu, ?gamut=p3): EXPERIMENTAL, default off; with no flag both fragments are empty

@@ -1,0 +1,9 @@
+{
+  "name": "agent-loop-seeded-scale-off-by-100x",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}

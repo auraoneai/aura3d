@@ -3,7 +3,6 @@
 
 import type { AuraColor } from "./nodes/types.js";
 import { clampNumber } from "./compiler/observations.js";
-import { srgbToLinearChannel } from "@aura3d/rendering";
 import { prd01ColorLinear, prd01ColorSrgb } from "./compiler/color.js";
 
 export function multiplyRgb(
@@ -19,22 +18,12 @@ export function colorToRgba(color: AuraColor): readonly [number, number, number,
 }
 
 export function colorToClearColor(color: AuraColor): readonly [number, number, number, number] {
-  // 01-S5 (C-06): under A3D_QR_CORE delegate to parseAuraColorSrgb; null = flag off or warned fallback.
-  const parsed = prd01ColorSrgb(color);
-  if (parsed !== null) return parsed;
-  if (typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color)) {
-    const value = Number.parseInt(color.slice(1), 16);
-    return [((value >> 16) & 0xff) / 255, ((value >> 8) & 0xff) / 255, (value & 0xff) / 255, 1];
-  }
-  return [0.02, 0.025, 0.035, 1];
+  // Every CSS colour form parses; an invalid value throws COLOR_INVALID (never a silent near-black fallback).
+  return prd01ColorSrgb(color);
 }
 
 function colorToLinearClearColor(color: AuraColor): readonly [number, number, number, number] {
-  // 01-S5 (C-06): under A3D_QR_CORE delegate to parseAuraColor (linear); null = flag off or warned fallback.
-  const parsed = prd01ColorLinear(color);
-  if (parsed !== null) return parsed;
-  const [red, green, blue, alpha] = colorToClearColor(color);
-  return [srgbToLinearChannel(red), srgbToLinearChannel(green), srgbToLinearChannel(blue), alpha];
+  return prd01ColorLinear(color);
 }
 
 export function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number] {

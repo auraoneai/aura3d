@@ -826,6 +826,8 @@ export function mountSpectators(): void {
 function critterMaterial(key: string, diorama: boolean): { material?: typeof CRITTER_MAT; materialOverrides?: ReturnType<typeof critterOverrides> } {
   return diorama ? { materialOverrides: critterOverrides(key) } : { material: CRITTER_MAT };
 }
+// A4 (5.0.3): not a designated shader-graph pilot, so this stays GLSL and is WebGL2-only (the portable shader graph is the
+// cross-backend path; see docs/upgrade-5.0.0/cross-hop.md).
 const SHADE_VERTEX_GLSL = `out vec2 vShade;
 void main() {
   // Unit plane in instance space: the decal shape follows the instance's own footprint.

@@ -1,6 +1,6 @@
 # Claims and Boundaries
 
-Version: 5.0.2
+Version: 5.1.0
 
 The one rulebook for agent-authored Aura3D work: what you may build, what you may say, and what evidence a claim needs. It absorbs the former anti-hallucination and no-hackjob lists (`anti-hallucination-rules.md` and `no-hackjob-rules.md` now redirect here). Read it after `llms.txt`, before writing examples, routes, templates, README copy or release notes.
 
@@ -80,6 +80,7 @@ Each receipt proves only the named behaviors. Anything beyond it needs its own e
 | Effects | `docs/agents/effects-and-scene-kits.md` with receipts `effects-ambient-occlusion`, `effects-color-grade`, `effects-vignette`, `effects-depth-of-field` (on/off frames differ as described). The historical [4.5.0 contact-shadow receipt](../../evidence/receipts/effects-contact-shadows/4.5.0.json) records a screen-space directional-light mask on software WebGL2. | General or ray-traced contact shadows, physical-GPU behavior or arbitrary materials: the recorded mask needs a shadow-casting directional light, is main-view only and is not sampled by nine textured-PBR extension variants. Colour-grade fields other than `contrast` and `saturation` need separate evidence. |
 | Scene kits | `docs/agents/effects-and-scene-kits.md` with a receipt for nine kits (two frames each; animated kits change between them) plus the original `materialLab` | That a kit is a finished product: its art direction, rules and assets stay yours |
 | Performance | A current like-for-like comparative report | Parity from an inventory, a stale capture, a package benchmark or a report with missing inputs |
+| Agent verify loop | `docs/agents/verify-loop.md` (`aura3d verify` report schema `aura3d.verify/1`; 10 seeded broken scenes; unit tests with a mocked driver; real-Chrome reports in `tests/reports/agent-loop/` for the machine and Chrome build they record; one n=1 subject repair run) | That an agent authors faster or better with it than without it or than with another engine; a lint hit rate on real agent projects; scene quality (the frame check only finds black, flat, texture-poor or frozen frames); WebGPU, other browsers or other GPUs; deterministic replay or physics |
 
 Comparison claims use repository-locked `three@0.185.1`; the selected correctness workloads are bounded evidence, not a universal verdict. Honest numbers against three.js live in `evidence/vs-threejs/RESULTS.md`, `RESULTS-4.3.7.md` and `RESULTS-4.5.0.md` (software GL, not GPU). At 4.5.0 the benchmark gate passes 7 targets, fails 7 and has no data for the real-GPU target; it fails on T1 (81 rows where three.js is better, limit 30). Public copy may state only the Aura3D-side facts from passing gate lines (first frame of the cube, draw calls, console warnings, option coverage, scene source size), each with its method, and never a three.js column, until T1 passes. The list is in `docs/comparisons/threejs-positioning.md`, "Claims to unlock".
 

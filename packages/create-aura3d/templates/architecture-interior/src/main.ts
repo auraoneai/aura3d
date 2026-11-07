@@ -10,8 +10,8 @@ createAuraApp("#app", {
   scene: scene()
     .add(looks.preset(LOOK_ID))
     .add(primitives.plane({ name: "interior apron floor", size: [14, 1, 14], material: material.fabric({ color: "#3a3129", roughness: 0.85 }), receiveShadow: true }))
-    // Room kit is 12×5.2×12 m; scale to a 4.2 m readable interior.
-    .add(model(assets.room, { name: "textured room kit" }).position(0, 0, -0.4).scale(0.35))
+    // model() fits a GLB to ~1.55 m by default; the room kit is 12×4.2×12 m native, so ask for a 4.2 m readable interior explicitly.
+    .add(model(assets.room, { name: "textured room kit", targetMaxDimension: 4.2 }).position(0, 0, -0.4))
     .add(interactions.orbit({ target: "textured room kit" }))
     .camera(camera.orbit({ target: [0, 0.95, -0.4], distance: 5.6, fov: 42 }))
 });

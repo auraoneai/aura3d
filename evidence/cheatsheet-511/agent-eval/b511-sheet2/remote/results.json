@@ -1,0 +1,440 @@
+[
+  {
+    "id": "b511-sheet2-t31-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.4754904513888889,
+        "std": 37.41544665323395,
+        "diff": 7.700771122685185
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.5
+    },
+    "readyMs": 328
+  },
+  {
+    "id": "b511-sheet2-t31-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.8648133680555555,
+        "std": 48.0363487933188,
+        "diff": 8.730147569444444
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.9
+    },
+    "readyMs": 311
+  },
+  {
+    "id": "b511-sheet2-t31-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.31046006944444443,
+        "std": 26.571925523986064,
+        "diff": 4.048569155092593
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.2
+    },
+    "readyMs": 304
+  },
+  {
+    "id": "b511-sheet2-t32-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 75.40760706197365,
+        "diff": 18.82314814814815
+      }
+    },
+    "bundle": {
+      "rawKB": 6484.9
+    },
+    "readyMs": 304
+  },
+  {
+    "id": "b511-sheet2-t32-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 87.89469346264237,
+        "diff": 15.030341435185186
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.2
+    },
+    "readyMs": 305
+  },
+  {
+    "id": "b511-sheet2-t32-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 61.49534771186196,
+        "diff": 17.44419994212963
+      }
+    },
+    "bundle": {
+      "rawKB": 6484.9
+    },
+    "readyMs": 350
+  },
+  {
+    "id": "b511-sheet2-t33-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.7144270833333334,
+        "std": 61.54194597061608,
+        "diff": 1.3858521412037037
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.6
+    },
+    "readyMs": 343
+  },
+  {
+    "id": "b511-sheet2-t33-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.5632595486111112,
+        "std": 65.11957188127147,
+        "diff": 6.403722511574074
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.9
+    },
+    "readyMs": 324
+  },
+  {
+    "id": "b511-sheet2-t33-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.6898394097222222,
+        "std": 55.30356835523425,
+        "diff": 5.86687355324074
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.3
+    },
+    "readyMs": 554
+  },
+  {
+    "id": "b511-sheet2-t34-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": true,
+    "page": {
+      "pageErrors": [
+        "exception: Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:57290/assets/world-JTaImCgw.js:1:18189)\n    at nt (http://127.0.0.1:57290/assets/world-JTaImCgw.js:1:46036)\n    at new pt (http://127.0.0.1:57290/assets/world-JTaImCgw.js:1:52899)\n    at D (http://127.0.0.1:57290/assets/index-BHTJyR2u.js:3029:53294)\n    at E (http://127.0.0.1:57290/assets/index-BHTJyR2u.js:3029:57501)\n    at cg (http://127.0.0.1:57290/assets/index-BHTJyR2u.js:3029:59645)\n    at QX (http://127.0.0.1:57290/assets/index-BHTJyR2u.js:3029:91465)\n    at ZX (http://127.0.0.1:57290/assets/index-BHTJyR2u.js:3029:92717)\n    at http://127.0.0.1:57290/assets/index-BHTJyR2u.js:3029:93261"
+      ],
+      "consoleErrorCount": 1
+    },
+    "probes": {
+      "blank": true,
+      "animated": false,
+      "frame": {
+        "nonblack": 0,
+        "std": 0,
+        "diff": 0
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b511-sheet2-t34-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": true,
+    "page": {
+      "pageErrors": [
+        "exception: Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:57499/assets/world-JTaImCgw.js:1:18189)\n    at nt (http://127.0.0.1:57499/assets/world-JTaImCgw.js:1:46036)\n    at new pt (http://127.0.0.1:57499/assets/world-JTaImCgw.js:1:52899)\n    at D (http://127.0.0.1:57499/assets/index-C9f5HBrS.js:3029:53294)\n    at E (http://127.0.0.1:57499/assets/index-C9f5HBrS.js:3029:57501)\n    at cg (http://127.0.0.1:57499/assets/index-C9f5HBrS.js:3029:59645)\n    at XX (http://127.0.0.1:57499/assets/index-C9f5HBrS.js:3029:91465)\n    at http://127.0.0.1:57499/assets/index-C9f5HBrS.js:3029:92731"
+      ],
+      "consoleErrorCount": 1
+    },
+    "probes": {
+      "blank": true,
+      "animated": false,
+      "frame": {
+        "nonblack": 0,
+        "std": 0,
+        "diff": 0
+      }
+    },
+    "bundle": {
+      "rawKB": 6484.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b511-sheet2-t34-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": true,
+    "page": {
+      "pageErrors": [
+        "exception: Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:57636/assets/world-JTaImCgw.js:1:18189)\n    at nt (http://127.0.0.1:57636/assets/world-JTaImCgw.js:1:46036)\n    at new pt (http://127.0.0.1:57636/assets/world-JTaImCgw.js:1:52899)\n    at D (http://127.0.0.1:57636/assets/index-DwplGd_H.js:3029:53294)\n    at E (http://127.0.0.1:57636/assets/index-DwplGd_H.js:3029:57501)\n    at lg (http://127.0.0.1:57636/assets/index-DwplGd_H.js:3029:59645)\n    at XX (http://127.0.0.1:57636/assets/index-DwplGd_H.js:3029:91465)\n    at http://127.0.0.1:57636/assets/index-DwplGd_H.js:3029:92782"
+      ],
+      "consoleErrorCount": 1
+    },
+    "probes": {
+      "blank": true,
+      "animated": false,
+      "frame": {
+        "nonblack": 0,
+        "std": 0,
+        "diff": 0
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "b511-sheet2-t35-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.26743055555555556,
+        "std": 27.12047315127485,
+        "diff": 7.293622685185185
+      }
+    },
+    "bundle": {
+      "rawKB": 6523.6
+    },
+    "readyMs": 358
+  },
+  {
+    "id": "b511-sheet2-t35-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.13756510416666667,
+        "std": 29.108479273675748,
+        "diff": 6.024361979166667
+      }
+    },
+    "bundle": {
+      "rawKB": 6523.4
+    },
+    "readyMs": 327
+  },
+  {
+    "id": "b511-sheet2-t35-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.2937543402777778,
+        "std": 31.734650655711437,
+        "diff": 8.950366030092592
+      }
+    },
+    "bundle": {
+      "rawKB": 6523.5
+    },
+    "readyMs": 306
+  },
+  {
+    "id": "b511-sheet2-t36-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.9999956597222223,
+        "std": 76.56835253730003,
+        "diff": 0.9659071180555555
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.4
+    },
+    "readyMs": 328
+  },
+  {
+    "id": "b511-sheet2-t36-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.9988324652777778,
+        "std": 11.994682882323586,
+        "diff": 1.5222005208333333
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.4
+    },
+    "readyMs": 318
+  },
+  {
+    "id": "b511-sheet2-t36-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 36.3882082262903,
+        "diff": 0.9349247685185185
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.6
+    },
+    "readyMs": 306
+  }
+]

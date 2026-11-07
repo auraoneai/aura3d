@@ -1,0 +1,27 @@
+[
+  {
+    "k": "console",
+    "l": "error",
+    "t": "Failed to load resource: the server responded with a status of 404 (File not found)"
+  },
+  {
+    "k": "console",
+    "l": "warning",
+    "t": "DEPTH_ALPHA_HASH_DEGRADED: \"primitive-20:car-beams:car-beams\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster."
+  },
+  {
+    "k": "console",
+    "l": "warning",
+    "t": "[prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state; an unverified custom or graph material participant; an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the sur"
+  },
+  {
+    "k": "console",
+    "l": "warning",
+    "t": "[prd02.contactShadows] effects.contactShadows() has no visible effect: no drawn program samples the mask. The mask darkens the shadow-casting sun's light on materials that receive shadows; textured-PBR materials with glTF extension textures (clearcoat, transmission and similar) do not sample it."
+  },
+  {
+    "k": "console",
+    "l": "warning",
+    "t": "[prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified custom or graph material participant; an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the surface behind them."
+  }
+]

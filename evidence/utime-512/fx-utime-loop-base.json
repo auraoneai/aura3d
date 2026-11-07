@@ -1,0 +1,29 @@
+{
+  "page": "effects-static/index.html?e=utime&loop=1",
+  "size": [
+    960,
+    540
+  ],
+  "settleMs": 3000,
+  "intervalMs": 3000,
+  "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "aura3dReady": "true",
+  "diff": 0.097,
+  "moving": false,
+  "console": [
+    "log: probe-start utime loop",
+    "log: probe-ready"
+  ],
+  "log": [],
+  "netFailures": [],
+  "exceptions": [],
+  "idle": {
+    "windowSeconds": 3.12,
+    "rafPerSecond": 60.24,
+    "drawCallsPerSecond": 240.9,
+    "pageCpuMsPerSecond": 147.04,
+    "pageScriptMsPerSecond": 136.12,
+    "gpuProcessCpuMsPerSecond": 121.8,
+    "note": "rAF/draw counters are wrapped from page start; page CPU = CDP Performance TaskDuration; GPU = CPU time of the GPU process via ps (1 s resolution), not GPU shader time."
+  }
+}

@@ -72,6 +72,9 @@ function strip(
   return m;
 }
 
+/** A9 lab flag (`?depth=reversed|logarithmic`, EXPERIMENTAL, default off): the showcase wrapper publishes the `camera({ depth })` fragment only when the flag is present. */
+const labCameraDepth = (): { depth?: { mode: "reversed" | "logarithmic"; allowFallback: true } } =>
+  (globalThis as { __A3D_LAB_CAMERA_OPTIONS__?: { depth?: { mode: "reversed" | "logarithmic"; allowFallback: true } } }).__A3D_LAB_CAMERA_OPTIONS__ ?? {};
 const dyn = (m: MeshData) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
 
 const inGap = (level: Level, s: number): boolean => level.gaps.some(([a, b]) => s > a && s < b);
@@ -541,7 +544,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const enabled = (flag: string): boolean => query.get(flag) !== "0";
   const builder: Scene = scene()
     .background(row ? row.fog.color : hexString(level.fog))
-    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }));
+    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000, ...labCameraDepth() }));
   if (row) {
     // RH47-02/03: the look row's one shadowed key (the same sun the GLSL surfaces read) and its one unshadowed fill.
     const fillDir = directionFromAngles(row.fill.elevationDeg, row.fill.azimuthDeg);

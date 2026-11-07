@@ -6,6 +6,7 @@
 
 import type { AuraVec3, AuraTransformSpec, AuraColor } from "../agent-api/nodes/types.js";
 import { srgbToLinearChannel } from "@aura3d/rendering";
+import { parseAuraColorSrgb as parseCssSrgb } from "../agent-api/color.js";
 
 export type AuraEulerOrder = "XYZ" | "XZY" | "YXZ" | "YZX" | "ZXY" | "ZYX";
 export type AuraQuat = readonly [number, number, number, number];         // shared with C-22 (PRD 08 "first public quaternion type")
@@ -99,32 +100,15 @@ export function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQ
 // AuraTransformSpec additions (PR 0a, optional): rotationOrder?: AuraEulerOrder (default "ZYX" = today's behaviour); quaternion?: AuraQuat (wins over rotation)
 // AuraNodeBuilder additions: rotate(x: number, y: number, z: number, order?: AuraEulerOrder): this; quaternion(x: number, y: number, z: number, w: number): this
 
-export class AuraColorParseError extends Error {
-  constructor(public readonly input: unknown) {
-    super(`AuraColorParseError:${String(input)}`);
-    this.name = "AuraColorParseError";
-  }
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 
 function parseSrgbChannels(color: AuraColor): readonly [number, number, number, number] {
   if (typeof color === "number" && Number.isFinite(color)) {
     const v = color >>> 0;
     return [((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255, ((v >> 24) & 0xff) / 255 || 1];
   }
-  if (typeof color === "string") {
-    const hex = /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(color);
-    if (hex) {
-      const body = hex[1];
-      if (body.length === 3) {
-        return [parseInt(body[0] + body[0], 16) / 255, parseInt(body[1] + body[1], 16) / 255, parseInt(body[2] + body[2], 16) / 255, 1];
-      }
-      const value = Number.parseInt(body, 16);
-      const alpha = body.length === 8 ? (value & 0xff) / 255 : 1;
-      const rgb = body.length === 8 ? value >>> 8 : value;
-      return [((rgb >> 16) & 0xff) / 255, ((rgb >> 8) & 0xff) / 255, (rgb & 0xff) / 255, alpha];
-    }
-  }
-  throw new AuraColorParseError(color);
+  // Every CSS colour form (hex of any length, rgb(), hsl(), oklch(), names): the single C-06 parser.
+  return parseCssSrgb(color);
 }
 
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */

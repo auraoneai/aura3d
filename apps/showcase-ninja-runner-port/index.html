@@ -26,6 +26,10 @@
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .num { font-variant-numeric: tabular-nums; }
+      .aura3d-loading { --aura3d-loading: 0; position: relative; height: 4px; overflow: hidden; border-radius: 2px; background: rgba(128, 128, 128, 0.28); color: var(--warm); }
+      .aura3d-loading::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; transition: transform 120ms linear; }
+      .aura3d-loading[data-complete="true"] { opacity: 0; transition: opacity 240ms ease 200ms; }
+      @media (prefers-reduced-motion: reduce) { .aura3d-loading::after, .aura3d-loading[data-complete="true"] { transition: none; } }
       .meta { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
       h1, h2 { margin: 0; line-height: 1.15; font-weight: 500; }
       h1 { font-size: 30px; letter-spacing: 0.12em; }
@@ -157,7 +161,7 @@
     <div id="district-banner"></div>
     <div id="countdown" class="hidden"></div>
     <div id="controls" class="hidden"><button id="pause-btn" class="glass" title="Pause (Esc)" aria-label="Pause">Pause</button><button id="mute" class="glass" title="Mute (M)" aria-pressed="false">Sound on</button></div>
-    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>SHADOWSTEP GAUNTLET</h1><p class="goal">Reach the Valley Gate, 2,640 m.</p><p class="meta" id="loading-status">Loading the village&hellip;</p><button class="primary" id="start" disabled>Run the Village &rarr;</button><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd></dl><p class="meta">Touch: swipe to move, jump and slide; tap for the spiral orb.</p><p class="meta num" id="best"></p><p class="meta"><a id="daily" href="?daily=1">Play today's course</a><a id="lowq" class="hidden" href="?quality=low"> &middot; This device draws slowly: switch to low quality</a></p></div></div>
+    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>SHADOWSTEP GAUNTLET</h1><p class="goal">Reach the Valley Gate, 2,640 m.</p><p class="meta" id="loading-status">Loading the village&hellip;</p><div class="aura3d-loading" id="loading-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><button class="primary" id="start" disabled>Run the Village &rarr;</button><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd></dl><p class="meta">Touch: swipe to move, jump and slide; tap for the spiral orb.</p><p class="meta num" id="best"></p><p class="meta"><a id="daily" href="?daily=1">Play today's course</a><a id="lowq" class="hidden" href="?quality=low"> &middot; This device draws slowly: switch to low quality</a></p></div></div>
     <div id="pause" class="overlay hidden"><div class="card"><h2>Paused</h2><p class="meta">The run is held. Everything is where you left it.</p><div class="row"><button class="primary" id="resume">Resume</button></div></div></div>
     <div id="result" class="overlay hidden"><div class="card"><span class="meta" id="result-label">RUN REPORT</span><h2 id="result-title"></h2><p id="result-copy" class="meta"></p><div class="meta num" id="result-stats"></div><div class="meta num" id="result-best"></div><div class="row"><button class="primary" id="again">Run again</button></div></div></div>
     <script type="module" src="./src/main.ts"></script>

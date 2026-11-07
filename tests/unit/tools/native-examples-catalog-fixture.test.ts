@@ -38,6 +38,9 @@ import {
 
 // These generated pixels test the oracle only. They are not screenshots or
 // evidence that a template, scenario, renderer, or browser worked.
+// racing-starter fit scales: targetLength 3.2 over the car's x/z extent, targetMaxDimension 24.65 over the circuit.
+const CAR_FIT = 1.0060381;
+const TRACK_FIT = 0.9999530;
 const WIDTH = 1280;
 const HEIGHT = 720;
 const root = process.cwd();
@@ -753,13 +756,17 @@ describe("source-backed native example catalog fixture", () => {
     const compiler = readFileSync(resolve(root, "packages/engine/src/agent-api/nodes/prompt/promptPlanV2.ts"), "utf8");
     const recipes = readFileSync(resolve(root, "packages/engine/src/agent-api/nodes/prompt/promptRecipes.ts"), "utf8");
     expect(source).toContain('sceneType: "cinematic-scene"');
-    expect(source).toContain("void app.ready().then(() => app.step(0))");
+    expect(source).toContain("for (let frame = 0; frame < 45; frame += 1) await app.stepAsync(1 / 60);");
     expect(compiler).toContain("promptRecipes[plan.sceneType](subject.asset, plan, look.id)");
     expect(recipes).toContain('name: "cyan neon sign", material: material.glowingEmissive({ color: "#32ddff", emissiveIntensity: 2.6 })');
     expect(recipes).toContain(".position(-2.22, 1.35, -1.55).rotate(0.05, 0, -0.24).scale([0.055, 1.48, 0.12])");
     expect(recipes).toContain("from: [0.46, 1.05, 4.28], to: [0.08, 0.86, 3.14], target: [-0.08, 0.56, -0.86], seconds: 8, fov: 39");
     const eye: Vec3 = [0.46, 1.05, 4.28];
     const target: Vec3 = [-0.08, 0.56, -0.86];
+    // The route warms up 45 frames at 1/60 s of the 8 s dolly before an evidence run captures it; an eased dolly has
+    // moved no further than the linear pose, so the sign must project inside the region at both ends of that span.
+    const warmProgress = 45 / 60 / 8;
+    const warmEye = [0, 1, 2].map((axis) => [0.46, 1.05, 4.28][axis]! + ([0.08, 0.86, 3.14][axis]! - [0.46, 1.05, 4.28][axis]!) * warmProgress) as unknown as Vec3;
     const halfHeight = 1.48 / 2;
     const ends: Vec3[] = [
       [-2.22, 1.35, -1.55],
@@ -767,6 +774,7 @@ describe("source-backed native example catalog fixture", () => {
       [-2.22 - Math.sin(0.24) * halfHeight, 1.35 - Math.cos(0.24) * halfHeight, -1.55]
     ];
     for (const point of ends) expect(inside(entry.regions[0]!, project(point, eye, target, 39))).toBe(true);
+    for (const point of ends) expect(inside(entry.regions[0]!, project(point, warmEye, target, 39))).toBe(true);
     const center = project(ends[0]!, eye, target, 39);
     const focal = HEIGHT / (2 * Math.tan(39 * Math.PI / 360));
     const projectedFace = 0.055 * 1.48 * (focal / center.depth) ** 2;
@@ -842,23 +850,27 @@ describe("source-backed native example catalog fixture", () => {
     const points = [[-0.4, -0.25], [2.4, -0.9], [5.4, 0.15], [5.9, 2.7], [3.2, 3.9], [0.3, 3.15], [-0.75, 1.15]] as const;
     expect(source).toContain("const ROUTE_SCALE = 3.5");
     expect(source).toContain("startProgress: 0.04");
-    expect(source).toContain("const TRACK_Y = -1.0");
-    expect(source).toContain("const CAR_RIDE_Y = 1.206");
+    expect(source).toContain("const TRACK_Y = -1.17");
+    expect(source).toContain("const CAR_RIDE_Y = 0.03");
     expect(source).toContain('.setPosition(state.position.x, CAR_RIDE_Y, state.position.y)');
     expect(source).toContain(".setRotation(0, -state.heading + Math.PI / 2, 0)");
     expect(source).toContain('target: "race-car"');
     expect(source).toContain('qualityRebuild: { flags: ["game"] }');
-    expect(source).toContain("fov: { base: 60, perSpeed: 0.4 }");
+    expect(source).toContain("distance: CHASE.back,");
+    expect(source).toContain("height: CHASE.up,");
+    expect(source).toContain("lookHeight: CHASE.lookUp,");
+    expect(source).toContain("fov: { base: CHASE.fov, perSpeed: 0.4 }");
+    expect(source).toContain("const CHASE = { back: 8, up: 3.6, lookUp: 0.8, ahead: 4, fov: 55 }");
     expect(source).toContain("lookAhead: { seconds: 0.35, max: 4 }");
-    expect(source).toContain('model(assets.carModel, { name: "typed playable sports car", castShadow: true })');
-    expect(source).toContain('model(assets.trackModel, { name: "typed kart circuit asset" })\n      .position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)\n      .scale(1)');
-    expect(source).toContain('model(assets.carModel, { name: "typed playable sports car", castShadow: true })\n      .position(0, CAR_RIDE_Y, 0)\n      .scale(1)');
+    expect(source).toContain('model(assets.carModel, { name: "typed playable sports car", castShadow: true, targetLength: 3.2 })');
+    expect(source).toContain('model(assets.trackModel, { name: "typed kart circuit asset", targetMaxDimension: 24.65 })\n      .position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)\n      .scale(1)');
+    expect(source).toContain('model(assets.carModel, { name: "typed playable sports car", castShadow: true, targetLength: 3.2 })\n      .position(0, CAR_RIDE_Y, 0)\n      .scale(1)');
     expect(source).toContain("centerX: ((-0.75 + 5.9) / 2) * ROUTE_SCALE");
     expect(source).toContain("centerZ: ((-0.9 + 3.9) / 2) * ROUTE_SCALE");
     expect(source).toContain(".position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)");
-    expect(source).toContain(".position(0.06 * ROUTE_SCALE, CAR_RIDE_Y, 0.2 * ROUTE_SCALE)");
-    expect(source).toContain(".position(0.1 * ROUTE_SCALE, CAR_RIDE_Y - 0.1, 0.05 * ROUTE_SCALE)");
-    expect(source).toContain('.scale([0.7, 1.2, 4.2])');
+    expect(source).toContain(".position(0.06 * ROUTE_SCALE, CAR_RIDE_Y + 0.05, 0.2 * ROUTE_SCALE)");
+    expect(source).toContain(".position(0.1 * ROUTE_SCALE, CAR_RIDE_Y + 0.02, 0.05 * ROUTE_SCALE)");
+    expect(source).toContain('.scale([0.7, 0.1, 3])');
     expect(source).toContain('finishMarker.setScale(state.status === "finished" ? [1.15, 0.08, 0.14] : [0.86, 0.08, 0.12])');
     for (const [x, z] of points) {
       expect(source).toContain(`{ x: ${x} * ROUTE_SCALE, y: ${z} * ROUTE_SCALE }`);
@@ -877,7 +889,7 @@ describe("source-backed native example catalog fixture", () => {
     expect(t).toBeLessThan(1);
     const dx = route[1]![0] - route[0]![0], dz = route[1]![1] - route[0]![1];
     const heading = Math.atan2(dz, dx), yaw = -heading + Math.PI / 2;
-    const position: Vec3 = [route[0]![0] + dx * t, 1.206, route[0]![1] + dz * t];
+    const position: Vec3 = [route[0]![0] + dx * t, 0.03, route[0]![1] + dz * t];
     expect(position[0]).toBeCloseTo(1.096112, 5);
     expect(position[2]).toBeCloseTo(-1.454455, 5);
     const racing = createGameRacingKit({
@@ -904,7 +916,7 @@ describe("source-backed native example catalog fixture", () => {
       expect(state.checkpoint).toBe(0);
     }
     const rig = createChaseRig({
-      target: "race-car", fov: { base: 60, perSpeed: 0.4 },
+      target: "race-car", distance: 8, height: 3.6, lookHeight: 0.8, fov: { base: 55, perSpeed: 0.4 },
       lookAhead: { seconds: 0.35, max: 4 }, bank: { gain: 0.5, maxDeg: 6 }
     });
     const subject = {
@@ -922,13 +934,13 @@ describe("source-backed native example catalog fixture", () => {
         probe: { sphereCast: () => ({ hit: false, distance: 0 }), occluders: () => [] }
       });
     }
-    expect(pose.position[0]).toBeCloseTo(-2.800276, 5);
-    expect(pose.position[1]).toBeCloseTo(3.006, 5);
-    expect(pose.position[2]).toBeCloseTo(-0.549936, 5);
+    expect(pose.position[0]).toBeCloseTo(-6.696665, 5);
+    expect(pose.position[1]).toBeCloseTo(3.63, 5);
+    expect(pose.position[2]).toBeCloseTo(0.354583, 5);
     expect(pose.target[0]).toBeCloseTo(position[0], 5);
-    expect(pose.target[1]).toBeCloseTo(2.406, 5);
+    expect(pose.target[1]).toBeCloseTo(0.83, 5);
     expect(pose.target[2]).toBeCloseTo(position[2], 5);
-    expect(pose.fov).toBe(60);
+    expect(pose.fov).toBeCloseTo(55, 3);
 
     type Accessor = { bufferView: number; byteOffset?: number; componentType: number; type: string; count: number; min?: number[]; max?: number[] };
     type RigidGlb = {
@@ -998,13 +1010,14 @@ describe("source-backed native example catalog fixture", () => {
       return { min: min as unknown as Vec3, max: max as unknown as Vec3 };
     };
     const carBounds = bounds(car.json), circuitBounds = bounds(circuit.json);
-    const fitting = (box: { min: Vec3; max: Vec3 }) => {
-      const scale = 1.55 / Math.max(...box.max.map((value, axis) => value - box.min[axis]!));
+    const fitting = (box: { min: Vec3; max: Vec3 }, fitLength?: number, fitMax?: number) => {
+      const extent = box.max.map((value, axis) => value - box.min[axis]!);
+      const scale = (fitLength ? fitLength / Math.max(extent[0]!, extent[2]!) : fitMax! / Math.max(...extent));
       return { scale, center: [(box.min[0] + box.max[0]) / 2, box.min[1], (box.min[2] + box.max[2]) / 2] as Vec3 };
     };
-    const carFit = fitting(carBounds), trackFit = fitting(circuitBounds);
-    expect(carFit.scale).toBeCloseTo(0.4872997, 6);
-    expect(trackFit.scale).toBeCloseTo(0.0628774, 6);
+    const carFit = fitting(carBounds, 3.2), trackFit = fitting(circuitBounds, undefined, 24.65);
+    expect(carFit.scale).toBeCloseTo(CAR_FIT, 6);
+    expect(trackFit.scale).toBeCloseTo(TRACK_FIT, 6);
     const worldCar = (raw: Vec3): Vec3 => {
       const v = rootTransform(raw).map((value, axis) => (value - carFit.center[axis]!) * carFit.scale);
       return [
@@ -1062,13 +1075,13 @@ describe("source-backed native example catalog fixture", () => {
     };
     const racingAssets = defineAuraAssets({ carModel: definition("carModel"), trackModel: definition("trackModel") });
     const snapshot = scene()
-      .add(model(racingAssets.trackModel, { name: "typed kart circuit asset" }).position(9.0125, -1, 5.25).scale(1))
-      .add(model(racingAssets.carModel, { name: "typed playable sports car", castShadow: true })
-        .position(0, 1.206, 0).scale(1).runtime({ id: "race-car", tags: ["player", "vehicle", "typed-asset", "runtime"] }))
+      .add(model(racingAssets.trackModel, { name: "typed kart circuit asset", targetMaxDimension: 24.65 }).position(9.0125, -1.17, 5.25).scale(1))
+      .add(model(racingAssets.carModel, { name: "typed playable sports car", castShadow: true, targetLength: 3.2 })
+        .position(0, 0.03, 0).scale(1).runtime({ id: "race-car", tags: ["player", "vehicle", "typed-asset", "runtime"] }))
       .add(primitives.box({ name: "checkpoint marker", material: material.neon({ color: "#7ff0c5", emissive: "#7ff0c5", emissiveIntensity: 0.7 }) })
-        .position(0.21, 1.206, 0.7).scale([0.7, 1.2, 4.2]).runtime({ id: "checkpoint-marker" }))
+        .position(0.21, 0.08, 0.7).scale([0.7, 0.1, 3]).runtime({ id: "checkpoint-marker" }))
       .add(primitives.box({ name: "finish stripe", material: material.neon({ color: "#f9f1d0", emissive: "#f9f1d0", emissiveIntensity: 0.75 }) })
-        .position(0.35, 1.106, 0.175).scale([3.8, 0.36, 0.5]).runtime({ id: "finish-marker" }))
+        .position(0.35, 0.05, 0.175).scale([3.8, 0.06, 0.5]).runtime({ id: "finish-marker" }))
       .camera(camera.perspective({ position: pose.position, target: pose.target, fov: pose.fov, near: pose.near, far: pose.far }))
       .toJSON();
     const nodes = snapshot.nodes.filter((node): node is AuraModelNode => node.kind === "model");
@@ -1120,12 +1133,12 @@ describe("source-backed native example catalog fixture", () => {
       for (const raw of [[0, 0, 0], [1, 2, 3], [-2, 3, -4]] as const) {
         for (const item of carItems) samePoint(transform(item.modelMatrix!, raw), worldCar(raw));
         const local = rootTransform(raw).map((value, axis) => (value - trackFit.center[axis]!) * trackFit.scale);
-        const expected: Vec3 = [9.0125 + local[0]!, -1 + local[1]!, 5.25 + local[2]!];
+        const expected: Vec3 = [9.0125 + local[0]!, -1.17 + local[1]!, 5.25 + local[2]!];
         for (const item of trackItems) samePoint(transform(item.modelMatrix!, raw), expected);
       }
       for (const [name, expectedMin, expectedMax] of [
-        ["checkpoint marker", [-0.14, 0.606, -1.4], [0.56, 1.806, 2.8]],
-        ["finish stripe", [-0.08, 1.066, 0.115], [0.78, 1.146, 0.235]]
+        ["checkpoint marker", [-0.14, 0.03, -0.8], [0.56, 0.13, 2.2]],
+        ["finish stripe", [-0.08, 0.01, 0.115], [0.78, 0.09, 0.235]]
       ] as const) {
         const item = items.find((candidate) => candidate.label?.endsWith(`:${name}`));
         expect(item).toBeDefined();
@@ -1146,7 +1159,7 @@ describe("source-backed native example catalog fixture", () => {
       // framing/collision option: its aim and arm use the handle pose.
       const queriedSubject = subjectFromHandle(handle);
       const queriedRig = createChaseRig({
-        target: "race-car", fov: { base: 60, perSpeed: 0.4 },
+        target: "race-car", distance: 8, height: 3.6, lookHeight: 0.8, fov: { base: 55, perSpeed: 0.4 },
         lookAhead: { seconds: 0.35, max: 4 }, bank: { gain: 0.5, maxDeg: 6 }
       });
       let queriedPose: AuraCameraPose = { position: [0, 1.6, 5], target: [0, 1, 0], up: [0, 1, 0], roll: 0, fov: 60, near: 0.1, far: 1000 };
@@ -1183,18 +1196,6 @@ describe("source-backed native example catalog fixture", () => {
       }
       vi.unstubAllGlobals();
     }
-    // The circuit has a similarly colored material. Its entire fitted AABB
-    // projects well right of this region in the stationary chase pose.
-    for (let bits = 0; bits < 8; bits += 1) {
-      const p: Vec3 = [
-        9.0125 + ((bits & 1 ? circuitBounds.max[0] : circuitBounds.min[0]) - trackFit.center[0]) * trackFit.scale,
-        -1 + ((bits & 2 ? circuitBounds.max[1] : circuitBounds.min[1]) - trackFit.center[1]) * trackFit.scale,
-        5.25 + ((bits & 4 ? circuitBounds.max[2] : circuitBounds.min[2]) - trackFit.center[2]) * trackFit.scale
-      ];
-      const screen = project(p, pose.position, pose.target, pose.fov);
-      expect(screen.depth).toBeGreaterThan(0);
-      expect(screen.x).toBeGreaterThan(region.x + region.width);
-    }
 
     const readIndex = (a: Accessor, index: number): number => {
       const view = car.json.bufferViews[a.bufferView]!;
@@ -1222,6 +1223,19 @@ describe("source-backed native example catalog fixture", () => {
           vertices: [vertices[readIndex(indices, offset)]!, vertices[readIndex(indices, offset + 1)]!, vertices[readIndex(indices, offset + 2)]!]
         });
       }
+    }
+    // The car now sits on the circuit (both fitted by model(): centred on x/z, lowest point on y = 0), so the circuit
+    // AABB can no longer be asserted clear of the region. Pin the grounding instead: the lowest car vertex rests
+    // at CAR_RIDE_Y, inside the fitted circuit's horizontal footprint and above its dropped base.
+    const carVertices = triangles.flatMap((triangle) => triangle.vertices);
+    expect(Math.min(...carVertices.map((v) => v[1]))).toBeCloseTo(0.03, 5);
+    const trackMinX = 9.0125 + (circuitBounds.min[0] - trackFit.center[0]) * trackFit.scale;
+    const trackMaxX = 9.0125 + (circuitBounds.max[0] - trackFit.center[0]) * trackFit.scale;
+    const trackMinZ = 5.25 + (circuitBounds.min[2] - trackFit.center[2]) * trackFit.scale;
+    const trackMaxZ = 5.25 + (circuitBounds.max[2] - trackFit.center[2]) * trackFit.scale;
+    for (const v of carVertices) {
+      expect(v[0]).toBeGreaterThan(trackMinX); expect(v[0]).toBeLessThan(trackMaxX);
+      expect(v[2]).toBeGreaterThan(trackMinZ); expect(v[2]).toBeLessThan(trackMaxZ);
     }
     const occludedByCar = (point: Vec3, candidate: Triangle): boolean => {
       const direction = subtract(point, pose.position);
@@ -1270,8 +1284,8 @@ describe("source-backed native example catalog fixture", () => {
             triangle.vertices.reduce((sum, vertex, index) => sum + vertex[axis]! * weights[index]!, 0)
           ) as unknown as Vec3;
           if (occludedByCar(point, triangle) ||
-              occludedByBox(point, [-0.14, 0.606, -1.4], [0.56, 1.806, 2.8]) ||
-              occludedByBox(point, [-0.08, 1.066, 0.115], [0.78, 1.146, 0.235])) {
+              occludedByBox(point, [-0.14, 0.03, -0.8], [0.56, 0.13, 2.2]) ||
+              occludedByBox(point, [-0.08, 0.01, 0.115], [0.78, 0.09, 0.235])) {
             clear = false;
             break;
           }

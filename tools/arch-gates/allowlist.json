@@ -1192,6 +1192,15 @@
   },
   {
     "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/material.visual.ts",
+    "to": "packages/engine/src/agent-api/compiler/customMaterial.ts",
+    "reason": "5.1 debt (lane 514 visual helpers, same as nodes/material.ts): material.strata/caustics/lightBeam value-call the custom-material spec validator (assertAuraCustomMaterialSpec) at authoring time; splitting the validator into contracts waits for the 5.x re-pin",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-07)"
+  },
+  {
+    "rule": "layering",
     "from": "packages/engine/src/agent-api/nodes/physics-core.ts",
     "to": "packages/engine/src/agent-api/compiler/sceneGraph.ts",
     "reason": "5.0 debt: node value-uses scene-graph transform helpers (sourceSceneNodeOf / parentTransformOf / worldTransformOf) that live in compiler/; moving them to a shared contracts module is deferred to 5.x",
@@ -1272,6 +1281,7 @@
       "packages/engine/src/agent-api/RuntimeNodeHandle.ts",
       "packages/engine/src/agent-api/app/renderPath.ts",
       "packages/engine/src/agent-api/app/runtimeNodes.ts",
+      "packages/engine/src/agent-api/camera/frameNodes.ts",
       "packages/engine/src/agent-api/colorUtils.ts",
       "packages/engine/src/agent-api/compiler/actors.ts",
       "packages/engine/src/agent-api/compiler/animation.ts",
@@ -1299,10 +1309,12 @@
       "packages/engine/src/agent-api/nodes/effects.post.ts",
       "packages/engine/src/agent-api/nodes/effects.toon.ts",
       "packages/engine/src/agent-api/nodes/effects.ts",
+      "packages/engine/src/agent-api/nodes/effects.visual.ts",
       "packages/engine/src/agent-api/nodes/geometry.ts",
       "packages/engine/src/agent-api/nodes/groups.ts",
       "packages/engine/src/agent-api/nodes/instances.ts",
       "packages/engine/src/agent-api/nodes/material.ts",
+      "packages/engine/src/agent-api/nodes/material.visual.ts",
       "packages/engine/src/agent-api/nodes/materialTools.ts",
       "packages/engine/src/agent-api/nodes/model.ts",
       "packages/engine/src/agent-api/nodes/neon.ts",
@@ -1327,7 +1339,7 @@
       "packages/engine/src/agent-api/sceneMath.ts"
     ],
     "expires": "2027-01-31",
-    "reason": "5.0 debt: agent-api 60-file SCC (compiler/nodes/app leaf web). Exact member snapshot 2026-11-02; 52 members are already in the existing 154-member Phase-8 SCC row (expires 2026-11-15), the 8 new ones (app/renderPath.ts, compiler/cameraDepth.ts, compiler/customMaterial.ts, nodes/effects.toon.ts, nodes/overrideMaterial.ts, nodes/prefabs/objectiveMarker.ts, nodes/shaderGraph.ts, nodes/tsl/index.ts) joined via 4.x/5.0 lane merges (custom-material validator, render-path, toon post). Subset match: shrinking stays covered, any NEW member resurfaces the finding. Converges with the layering repoints in 5.x",
+    "reason": "5.0 debt: agent-api 60-file SCC (compiler/nodes/app leaf web). Exact member snapshot 2026-11-02; 52 members are already in the existing 154-member Phase-8 SCC row (expires 2026-11-15), the 8 new ones (app/renderPath.ts, compiler/cameraDepth.ts, compiler/customMaterial.ts, nodes/effects.toon.ts, nodes/overrideMaterial.ts, nodes/prefabs/objectiveMarker.ts, nodes/shaderGraph.ts, nodes/tsl/index.ts) joined via 4.x/5.0 lane merges (custom-material validator, render-path, toon post). Subset match: shrinking stays covered, any NEW member resurfaces the finding. Converges with the layering repoints in 5.x 5.1.0 merge (2026-11-07): camera/frameNodes.ts (camera.frame), nodes/effects.visual.ts and nodes/material.visual.ts (lane 514 visual helpers) joined via the same node/compiler web; same 5.x repoint.",
     "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
     "reviewer": "agent (owner-delegated, 2026-11-02)"
   },

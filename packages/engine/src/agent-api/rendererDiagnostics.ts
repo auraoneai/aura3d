@@ -352,7 +352,8 @@ export function resolveRendererSceneCategory(snapshot: AuraSceneSnapshot, names:
     hasName("arcade") ||
     hasName("blockfall")
   ) return "game";
-  const background = colorToClearColor(snapshot.background);
+  // A hand-built snapshot may omit `background`; absent is not an invalid colour, so use scene()'s default (#070b12).
+  const background = colorToClearColor(snapshot.background ?? "#070b12");
   const luminance = background[0] * 0.2126 + background[1] * 0.7152 + background[2] * 0.0722;
   return luminance < 0.08 ? "neon" : "product";
 }

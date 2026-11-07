@@ -1,0 +1,130 @@
+{
+  "pilot": "silt-inked",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-silt-and-signal-port/?manual=1&dpr=1",
+  "probes": {
+    "glsl": {
+      "keys": [
+        "status",
+        "diagnostics",
+        "scene",
+        "parityIds"
+      ],
+      "len": 46322182,
+      "hits": [
+        "canal",
+        "canal",
+        "runtime:canal",
+        "postprocess is requested in the scene graph but no runtime composer has mounted yet",
+        "SDF text requested in the scene graph but no runtime has mounted yet",
+        "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postproce",
+        "canal",
+        "canal",
+        "C-01:frame-graph",
+        "canal",
+        ".0; }\\n\\nvoid main() {\\n  float d = abs(vWorld.x - (roadX(vWorld.z) - canalShift));\\n  vec2 flow = vec2(vWorld.x * 0.12, vWorld.z * 0.05 + siltTi",
+        " c += vec3(1.0, 0.92, 0.78) * glint * 0.5;\\n  float foam = smoothstep(canalHalf - 4.5, canalHalf - 1.2, d) * (0.45 + 0.55 * vnoise(flow * 15.0));"
+      ]
+    },
+    "glsl2": {
+      "keys": [
+        "status",
+        "diagnostics",
+        "scene",
+        "parityIds"
+      ],
+      "len": 46322182,
+      "hits": [
+        "canal",
+        "canal",
+        "runtime:canal",
+        "postprocess is requested in the scene graph but no runtime composer has mounted yet",
+        "SDF text requested in the scene graph but no runtime has mounted yet",
+        "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postproce",
+        "canal",
+        "canal",
+        "C-01:frame-graph",
+        "canal",
+        ".0; }\\n\\nvoid main() {\\n  float d = abs(vWorld.x - (roadX(vWorld.z) - canalShift));\\n  vec2 flow = vec2(vWorld.x * 0.12, vWorld.z * 0.05 + siltTi",
+        " c += vec3(1.0, 0.92, 0.78) * glint * 0.5;\\n  float foam = smoothstep(canalHalf - 4.5, canalHalf - 1.2, d) * (0.45 + 0.55 * vnoise(flow * 15.0));"
+      ]
+    },
+    "portable": {
+      "keys": [
+        "status",
+        "diagnostics",
+        "scene",
+        "parityIds"
+      ],
+      "len": 48195270,
+      "hits": [
+        "canal",
+        "canal",
+        "runtime:canal",
+        "postprocess is requested in the scene graph but no runtime composer has mounted yet",
+        "SDF text requested in the scene graph but no runtime has mounted yet",
+        "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postproce",
+        "canal",
+        "canal",
+        "C-01:frame-graph",
+        "canal",
+        "// @aura3d-graph-attributes:a_position\\nfloat auraGraph_fn_vhash21(vec2 auraGraph_param_vp) { return fract((((fract((auraGrap",
+        "h_param_vp * vec2(123.34, 456.21))) + vec2(dot(fract((auraGraph_param_vp * vec2(123.34, 456.21))), (fract((auraGraph_param_vp * vec2("
+      ]
+    }
+  },
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {
+    "glsl-vs-glsl2": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 1.4622,
+        "maxDiff255": 195,
+        "changedPct": 10.42,
+        "over4Pct": 4.047,
+        "over16Pct": 2.53
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          470,
+          230
+        ],
+        "pixels": 108100,
+        "meanAbsDiff255": 0.0057,
+        "maxDiff255": 5,
+        "changedPct": 0.556,
+        "over4Pct": 0.007,
+        "over16Pct": 0
+      }
+    },
+    "glsl-vs-portable": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 0.0024,
+        "maxDiff255": 35,
+        "changedPct": 0.234,
+        "over4Pct": 0.004,
+        "over16Pct": 0.004
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          470,
+          230
+        ],
+        "pixels": 108100,
+        "meanAbsDiff255": 0.0201,
+        "maxDiff255": 35,
+        "changedPct": 1.899,
+        "over4Pct": 0.037,
+        "over16Pct": 0.037
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "pilot": "silt-original",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-silt-and-signal-port/?manual=1&dpr=1&look=original",
+  "probes": {},
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {}
+}

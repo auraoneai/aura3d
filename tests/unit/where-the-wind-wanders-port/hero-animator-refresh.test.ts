@@ -65,7 +65,7 @@ describe("hero gait with stepped (un-interpolated) positions on a faster display
 });
 
 describe("hero gait at display refresh rates (sliding regression)", () => {
-  for (const hz of [30, 60, 75, 120, 144, 165]) {
+  for (const hz of [30, 60, 75, 120, 144, 165, 240]) {
     it(`${hz} Hz with jittered frame times: one Idle to Walk switch and a continuous cycle`, () => {
       const { calls, frames } = run(hz, 0.25, 6);
       const switches = calls.filter((c, i) => i > 0 && c.clip !== calls[i - 1]!.clip).length;

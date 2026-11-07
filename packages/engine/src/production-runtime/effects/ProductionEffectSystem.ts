@@ -19,6 +19,7 @@ import { TransientLightPool, type TransientLightFlash } from "./TransientLightPo
 import type { CollectedLight } from "@aura3d/rendering";
 import { identityMat4Into, localMatrixOf, multiplyMat4Into } from "../../agent-api/sceneGraph.js";
 import { assertWeatherTransformFields, isIdentityWeatherMatrix, rigidWeatherMatrix, weatherInstancesToWorld, weatherLocalCamera } from "./WeatherTransform.js";
+import { parseAuraColorSrgb } from "../../agent-api/color.js";
 
 const readAtmosphereSnapshot = LiveAtmosphere.prototype.renderSnapshot;
 const subscribeAtmosphereRenderChange = LiveAtmosphere.prototype.onRenderChange;
@@ -152,6 +153,7 @@ function hexToRgb(c: string): readonly [number, number, number] {
   if (c.startsWith("#") && c.length === 7) {
     return [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
   }
+  if (typeof c === "string") { const [r, g, b] = parseAuraColorSrgb(c); return [r, g, b]; }
   return [1, 1, 1];
 }
 

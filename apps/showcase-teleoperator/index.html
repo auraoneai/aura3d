@@ -1386,6 +1386,8 @@
         text-transform: uppercase;
         transition: opacity 0.25s ease;
       }
+      #boot .boot-bar { width: min(260px, 56vw); height: 3px; margin-top: 6px; border-radius: 2px; background: rgba(248, 250, 252, 0.14); overflow: hidden; }
+      #boot .boot-bar > i { display: block; height: 100%; width: 0%; background: #3fd6c6; box-shadow: 0 0 8px rgba(63, 214, 198, 0.6); transition: width 0.3s ease-out; }
       #boot.boot.done {
         opacity: 0;
         pointer-events: none;
@@ -1396,6 +1398,7 @@
     <div id="boot" class="boot">
       <div style="font-size:18px;font-weight:700;color:#3fd6c6;">GRID DISPATCH · SAN FRANCISCO</div>
       <div style="font-size:11px;opacity:0.78;">LOADING THE FLEET AND THE AVENUE...</div>
+      <div id="bootBar" class="boot-bar" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="bootFill"></i></div>
     </div>
     <div id="view">
       <canvas id="c" width="1280" height="800" aria-label="Grid Dispatch: San Francisco street view from behind your car"></canvas>

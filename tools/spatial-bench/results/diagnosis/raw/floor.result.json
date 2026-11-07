@@ -1,0 +1,88 @@
+{
+ "tag": "floor",
+ "cfg": {
+  "points": 100000,
+  "instances": 0,
+  "segments": 0,
+  "rateHz": 10,
+  "fps": 60,
+  "labels": 0,
+  "orbit": true,
+  "probe": null,
+  "variant": null,
+  "shot": false,
+  "id": "pts-100K-10hz-60fps",
+  "warmupMs": 300,
+  "measureMs": 3000
+ },
+ "viewer": "floor",
+ "dbg": null,
+ "chrome": "Chrome/156.0.8078.80",
+ "loadavg": [
+  9.61181640625,
+  11.37060546875,
+  16.51953125
+ ],
+ "profiled": false,
+ "traced": false,
+ "result": {
+  "failed": false,
+  "floor": {
+   "iter": 40,
+   "sizes": {
+    "100000": {
+     "interleave40ms": 0.2575000002980232,
+     "rawSubData40ms": 0.19250000044703483,
+     "rawSubData40finMs": 0.06999999955296517,
+     "rawSubData16ms": 0.05,
+     "rawSubData16finMs": 0.025,
+     "deviceWriteBytesMs": 0.054999999701976776,
+     "deviceWriteUploadMs": 0.49749999940395356,
+     "deviceWriteUploadFinMs": 0.39499999955296516,
+     "deviceInterleaveWriteUploadMs": 0.725,
+     "setAttributeLoopMs": 6.487499997019768,
+     "computeBoundsMs": 16.3125,
+     "typedMinMaxMs": 0.07250000014901162,
+     "isFiniteArrayFromEveryMs": 4.412499997764826,
+     "isFiniteTypedLoopMs": 0.16749999970197677,
+     "sliceCopyMs": 0.07000000029802322
+    },
+    "250000": {
+     "interleave40ms": 0.9975000001490116,
+     "rawSubData40ms": 0.33250000029802323,
+     "rawSubData40finMs": 0.3274999998509884,
+     "rawSubData16ms": 0.12249999940395355,
+     "rawSubData16finMs": 0.07000000029802322,
+     "deviceWriteBytesMs": 0.1375,
+     "deviceWriteUploadMs": 0.45,
+     "deviceWriteUploadFinMs": 0.3299999997019768,
+     "deviceInterleaveWriteUploadMs": 1.4949999995529653,
+     "setAttributeLoopMs": 15.5,
+     "computeBoundsMs": 40.42500000074506,
+     "typedMinMaxMs": 0.28499999940395354,
+     "isFiniteArrayFromEveryMs": 10.800000000745058,
+     "isFiniteTypedLoopMs": 0.2949999995529652,
+     "sliceCopyMs": 0.1649999998509884
+    },
+    "1000000": {
+     "interleave40ms": 4.210000000149011,
+     "rawSubData40ms": 1.2174999997019769,
+     "rawSubData40finMs": 1.2100000001490117,
+     "rawSubData16ms": 0.47000000029802325,
+     "rawSubData16finMs": 0.47999999970197677,
+     "deviceWriteBytesMs": 0.5699999995529652,
+     "deviceWriteUploadMs": 1.85,
+     "deviceWriteUploadFinMs": 1.6950000002980232,
+     "deviceInterleaveWriteUploadMs": 5.9824999995529655,
+     "setAttributeLoopMs": 60.63333333532015,
+     "computeBoundsMs": 173.16666666666666,
+     "typedMinMaxMs": 1.1125,
+     "isFiniteArrayFromEveryMs": 48.46666666865349,
+     "isFiniteTypedLoopMs": 1.8225000001490117,
+     "sliceCopyMs": 0.6774999998509884
+    }
+   },
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)"
+  }
+ }
+}

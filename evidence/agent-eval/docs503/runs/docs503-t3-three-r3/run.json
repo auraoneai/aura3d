@@ -1,0 +1,102 @@
+{
+  "runId": "docs503-t3-three-r3",
+  "batch": "docs503",
+  "arm": "three",
+  "task": 3,
+  "idx": 3,
+  "order": 32,
+  "seed": 20261024032,
+  "model": "claude-sonnet-5.5",
+  "startedAt": "2026-11-06T20:35:30.157Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 21604,
+  "usage": {
+    "input": 25361,
+    "uncachedInput": 25361,
+    "output": 1535,
+    "turns": 5
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1106,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 23
+    },
+    {
+      "i": 1,
+      "t": 1106,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2661,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 3,
+      "t": 2661,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 4,
+      "t": 2662,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 5,
+      "t": 3826,
+      "type": "list",
+      "path": "public/assets"
+    },
+    {
+      "i": 6,
+      "t": 17341,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 3628
+    },
+    {
+      "i": 7,
+      "t": 17890,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 21604,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts, and it passes typecheck. I haven't run it in a browser or run `vite build`, and I couldn't inspect the GLB, so the framing is untested. It loads /assets/soldier.glb and scales the model to about 1.8 units tall from its bounding box. It stands the model on a ground plane at y=0 and centres it. The camera is at z=5.2, aimed at mid-height. It starts on Idle. R cross-fades to Run and I cross-fades back to Idle, each over 0.4 s. One directional light casts a 2048 shadow map onto the ground. `window.__EVAL__.clip()` returns the target clip name as soon as a fade starts. `__EVAL_READY__` is set after the model loads and the first frame is drawn.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

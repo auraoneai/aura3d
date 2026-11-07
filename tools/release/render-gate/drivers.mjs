@@ -37,7 +37,9 @@ export function createReaCliDriver({ reaBin = DEFAULT_REA, settleMs = 10000, wid
       try {
         const file = join(dir, "scenario.json");
         writeFileSync(file, JSON.stringify(buildScenario(target.url, { width, height, settleMs })));
-        const { stdout } = await runner(reaBin, ["capture-browser-scenario", file, "--format", "json", "--full-output"], { maxBuffer: 1 << 28, timeout: timeoutMs });
+        let stdout;
+        try { ({ stdout } = await runner(reaBin, ["capture-browser-scenario", file, "--format", "json", "--full-output"], { maxBuffer: 1 << 28, timeout: timeoutMs })); }
+        catch (e) { throw new Error(`rea capture-browser-scenario ${e.killed ? `timed out after ${timeoutMs}ms` : `failed (${e.code ?? e.signal})`}: ${String(e.stderr || e.message).trim().split("\n").slice(-3).join(" | ").slice(0, 300)}`); }
         return normalizeCapture(JSON.parse(stdout));
       } finally { rmSync(dir, { recursive: true, force: true }); }
     }

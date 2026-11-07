@@ -786,6 +786,7 @@ import { decodeProductionEnvironmentImage, productionEnvironmentRequest } from "
 import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";
 import { readLightingKillSwitches } from "./lights.js";
 import { markTiming } from "../platform.js";
+import { proceduralEnvironmentEquirect, reportLookHdriMissing, type ProceduralEnvironmentKind } from "./environmentFallback.js";
 
 export interface Prd02EnvironmentBindOptions {
   readonly device: RenderDevice;
@@ -810,6 +811,11 @@ export interface Prd02EnvironmentBindOptions {
    * bind again on a later frame once the provider lands.
    */
   readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+  /**
+   * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+   * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+   */
+  readonly onHdriMissing?: (info: { readonly url: string; readonly message: string; readonly fallback: ProceduralEnvironmentKind }) => void;
 }
 
 const warnedEnvironmentUpgradeFailures = new Set<string>();
@@ -861,7 +867,7 @@ export function bindPrd02EnvironmentProbe(
   const request = resolution.probe;
   // GU47 E-B: the outcome per device + request lets a `setEnvironment` crossfade wait for its probe.
   const outcomeKey = typeof request === "object" && request !== null && "hdri" in request ? request.hdri : JSON.stringify(request);
-  const upgrade = (acquired: Promise<EnvironmentProbe>): Promise<EnvironmentProbe> => {
+  const upgrade = (acquired: Promise<EnvironmentProbe>, hdriUrl?: string): Promise<EnvironmentProbe> => {
     markTiming("a3d:env:upgrade:start");
     const pending = acquired.then((probe) => {
       markTiming("a3d:env:upgrade:ready");
@@ -873,7 +879,29 @@ export function bindPrd02EnvironmentProbe(
       if (options.signal?.aborted || (error instanceof Error && error.message === "ENVIRONMENT_CACHE_DISPOSED")) return;
       const retryable = isEnvironmentProbePendingError(error);
       if (!retryable) recordEnvironmentProbeOutcome(options.device, outcomeKey, "failed");
-      warnEnvironmentUpgradeFailureOnce(error instanceof Error ? error.message : String(error));
+      const reason = error instanceof Error ? error.message : String(error);
+      if (hdriUrl !== undefined && !retryable) {
+        // LOOK_HDRI_MISSING: degrade to a procedural probe at matched exposure, log one console.error, surface it in diagnostics.
+        const { message, fallback } = reportLookHdriMissing(hdriUrl, reason);
+        options.onHdriMissing?.({ url: hdriUrl, message, fallback });
+        const equirect = proceduralEnvironmentEquirect(fallback);
+        void cache.acquire({ url: `procedural-fallback:${fallback}`, tier }, async () => {
+          const texture = new Texture({ width: equirect.width, height: equirect.height, format: "rgba32f", data: equirect.data, label: "env-fallback" });
+          try {
+            const probe = resolveFactory().fromEquirect(texture, { faceSize: hdriProbeFaceSize(equirect.width, tier) });
+            if (probe.background !== texture) texture.dispose();
+            return probe;
+          } catch (fallbackError) {
+            texture.dispose();
+            throw fallbackError;
+          }
+        }, options.signal).then(
+          (probe) => { if (options.signal?.aborted) return; options.onUpgrade?.(probe); },
+          () => warnEnvironmentUpgradeFailureOnce(reason)
+        );
+      } else {
+        warnEnvironmentUpgradeFailureOnce(reason);
+      }
       options.onUpgradeFailed?.(error, retryable);
     });
     return pending;
@@ -898,7 +926,7 @@ export function bindPrd02EnvironmentProbe(
   if (typeof request === "object" && "hdri" in request) {
     const assets = environmentProbeAssets.get(request);
     if (!assets && !request.reflection && !options.request) {
-      return { probe: floor, pending: upgrade(cache.acquire({ url: request.hdri, tier }, undefined, options.signal)), resolution, pmremMode };
+      return { probe: floor, pending: upgrade(cache.acquire({ url: request.hdri, tier }, undefined, options.signal), request.hdri), resolution, pmremMode };
     }
     const source = assets?.illumination ?? request.hdri;
     const reflectionSource = assets?.reflection ?? request.reflection;
@@ -967,7 +995,7 @@ export function bindPrd02EnvironmentProbe(
         }
       }, options.signal);
     };
-    return { probe: floor, pending: upgrade(acquire()), resolution, pmremMode };
+    return { probe: floor, pending: upgrade(acquire(), typeof source === "string" ? source : source.url), resolution, pmremMode };
   }
   if (typeof request === "object" && "preset" in request) {
     if (request.preset === "neutral" || !options.request) {

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine",
-  "version": "5.0.2",
+  "version": "5.1.0",
   "packageManager": "pnpm@11.1.3",
   "engines": {
     "node": ">=22.12.0"
@@ -176,6 +176,12 @@
       "import": "./dist/engine/public/geometry-tools.js",
       "default": "./dist/engine/public/geometry-tools.js"
     },
+    "./procedural": {
+      "types": "./dist/engine/public/procedural.d.ts",
+      "browser": "./dist/engine/public/procedural.js",
+      "import": "./dist/engine/public/procedural.js",
+      "default": "./dist/engine/public/procedural.js"
+    },
     "./media-node": "./dist/engine/agent-api/media-node.js"
   },
   "imports": {
@@ -324,6 +330,7 @@
     "@aura3d/game": "workspace:*",
     "@aura3d/input": "workspace:*",
     "@aura3d/math": "workspace:*",
+    "@aura3d/mcp": "workspace:*",
     "@aura3d/navigation-recast": "workspace:*",
     "@aura3d/physics": "workspace:*",
     "@aura3d/physics-rapier": "workspace:*",

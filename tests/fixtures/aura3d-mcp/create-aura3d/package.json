@@ -1,0 +1,6 @@
+{
+  "name": "create-aura3d",
+  "version": "9.9.9-fixture",
+  "type": "module",
+  "main": "./dist/index.js"
+}

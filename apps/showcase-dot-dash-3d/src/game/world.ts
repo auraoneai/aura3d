@@ -7,6 +7,7 @@ import {
   primitives, material, text3D, texture, model, type AuraApp, type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../aura-assets.js";
+import { boxReflectionProbe } from "./engineCompat.js";
 import { idx, type ParsedMaze } from "./grid.js";
 import type { MazeId } from "./mazes.js";
 import {
@@ -25,7 +26,6 @@ import {
   CLEAR_LAMP_DIM, REDUCED_AMPLITUDE, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
   type CourierPose, type ShotPlan
 } from "./motion.js";
-import { boxReflectionProbe } from "./engineCompat.js";
 import { BOARD_BAKE, BOARD_BAKE_LOW, bakeBoardMaps, type BoardMaps } from "./boardMaterial.js";
 
 /** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
@@ -58,10 +58,9 @@ function lampLight(look: BoardLookRow) {
   }).runtime(game.runtimeNode("lamp"));
 }
 
-/** Phase 4 (4.7.2): SSR with the v2 fields (maxDistance, roughness, thickness) that the builder does not type yet. */
+/** Phase 4 (4.7.2): SSR with the v2 fields (maxDistance, roughness, thickness), typed by effects.screenSpaceReflections since 5.0. */
 function ssrNode(): AuraSceneNode {
-  const node = effects.screenSpaceReflections({ name: "mask reflections", intensity: GROUNDING.ssr.intensity }).toJSON();
-  return { ...node, maxDistance: GROUNDING.ssr.maxDistance, roughness: GROUNDING.ssr.roughness, thickness: GROUNDING.ssr.thickness } as AuraSceneNode;
+  return effects.screenSpaceReflections({ name: "mask reflections", intensity: GROUNDING.ssr.intensity, maxDistance: GROUNDING.ssr.maxDistance, roughness: GROUNDING.ssr.roughness, thickness: GROUNDING.ssr.thickness }).toJSON();
 }
 
 /** Phase 4 (4.7.2) courier pod model node (DD47-A1): world scale, cyan rim over the Meshy textures. */
@@ -299,7 +298,7 @@ export function buildScene(): unknown {
     // DD47-E2: the dark room past the bench, warm and thin.
     .add(effects.fog({ color: look.fog.color, density: look.fog.density }))
     // Phase 3 (4.7.1): lamp haze, a thin volumetric inscatter lit from the lamp plus a faint cone along its axis.
-    .add(effects.volumetricFog({ name: "lamp haze", ...LAMP_HAZE.fog, color: LAMP_HAZE.fog.color, lightPosition: [...LAMP.position], heightReference: 0 } as unknown as Parameters<typeof effects.volumetricFog>[0]))
+    .add(effects.volumetricFog({ name: "lamp haze", ...LAMP_HAZE.fog, color: LAMP_HAZE.fog.color, lightPosition: [...LAMP.position], heightReference: 0 }))
     .add(effects.lightCone({ name: "lamp cone", position: [...LAMP.position], direction: lampAxis(), color: LAMP_HAZE.cone.color, intensity: LAMP_HAZE.cone.intensity, length: LAMP_HAZE.cone.length, coneAngle: LAMP.angle * 0.7, softness: LAMP_HAZE.cone.softness } as Parameters<typeof effects.lightCone>[0]))
     // DD47-E1: the workshop HDRI fills and reflects at 0.35 and is never drawn (the bench is the surround); a box
     // probe over the board gives the glossy mask and the pins a parallax-correct reflection. No look preset: a look

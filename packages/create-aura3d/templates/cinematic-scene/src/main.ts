@@ -43,7 +43,12 @@ if (evidenceMode) {
   // Keep module evaluation complete while the production renderer loads its
   // typed-GLB chunk. A top-level await here can deadlock the bundled module
   // graph because that dynamic chunk imports engine modules from this graph.
-  void app.ready().then(() => app.step(0)).catch((error: unknown) => {
+  // A single step(0) leaves an automated page (WebDriver, REA, screenshots) on a near-black frame: the camera
+  // dolly, rain and typed hero need a short warm-up. Step 45 frames at 1/60 (the look-floor cadence) so the
+  // frame an evidence run captures is the lit hero shot.
+  void app.ready().then(async () => {
+    for (let frame = 0; frame < 45; frame += 1) await app.stepAsync(1 / 60);
+  }).catch((error: unknown) => {
     document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
   });
 }

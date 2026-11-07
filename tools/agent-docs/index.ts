@@ -3,6 +3,8 @@ import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:f
 import { basename, resolve } from "node:path";
 import { CREATE_AURA3D_TEMPLATES } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, noFileMatches, writeReport, type ReleaseCheck } from "../check-common";
+// @ts-ignore plain ESM module without types (tests/unit/agent-eval/modules.d.ts declares *.mjs in the check program)
+import { extractBlocks, verifyReport } from "../docs/cheatsheet-lib.mjs";
 import { runAgentSimulation } from "./simulation";
 
 const docs = [
@@ -42,6 +44,10 @@ const versionCyclePattern = new RegExp([
 const docsHaveNoVersionCycleFraming = !versionCyclePattern.test(docsText);
 const snippetReport = compileTypeScriptSnippets();
 const agentSimulation = runAgentSimulation(llmsText);
+const firstScreenText = readFileSync("docs/agents/first-screen.md", "utf8");
+const firstScreenBlocks: { readonly index: number }[] = extractBlocks(firstScreenText);
+const firstScreenReport = JSON.parse(readFileSync("evidence/cheatsheet-511/report.json", "utf8")) as unknown;
+const firstScreenProblems: string[] = verifyReport(firstScreenBlocks, firstScreenReport);
 
 const checks: ReleaseCheck[] = [
   ...docs.map((path) => existsCheck(path)),
@@ -75,6 +81,16 @@ const checks: ReleaseCheck[] = [
     id: "agent-docs-typescript-snippets-compile",
     pass: snippetReport.pass,
     detail: snippetReport.detail
+  },
+  {
+    id: "first-screen-in-llms",
+    pass: llmsText.includes(firstScreenText.trimEnd()),
+    detail: llmsText.includes(firstScreenText.trimEnd()) ? "llms.txt carries docs/agents/first-screen.md verbatim as its first screen" : "llms.txt is stale against docs/agents/first-screen.md (run node marketing/scripts/gen-seo.mjs)"
+  },
+  {
+    id: "first-screen-blocks-typecheck-and-render",
+    pass: firstScreenProblems.length === 0 && firstScreenBlocks.length > 0,
+    detail: firstScreenProblems.length === 0 ? `${firstScreenBlocks.length} first-screen blocks typechecked and rendered on the GPU (evidence/cheatsheet-511/report.json; rerun node tools/docs/check-cheatsheet-render.mjs after editing a block)` : firstScreenProblems.join("; ")
   },
   {
     id: "llms-agent-simulation-builds-working-app",

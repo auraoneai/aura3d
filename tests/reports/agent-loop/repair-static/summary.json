@@ -1,0 +1,141 @@
+{
+  "schema": "aura3d.verify-repair/1",
+  "model": "claude-sonnet-5.5",
+  "runsPerScene": 1,
+  "maxTurns": 5,
+  "browser": false,
+  "attempts": 8,
+  "repairedWithinBudget": 8,
+  "rows": [
+    {
+      "id": "frozen-utime-water",
+      "run": 1,
+      "expected": [
+        "LINT_UTIME_NOT_ANIMATED"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "LINT_UTIME_NOT_ANIMATED"
+      ],
+      "finalCodes": [],
+      "seconds": 74
+    },
+    {
+      "id": "invented-asset-path",
+      "run": 1,
+      "expected": [
+        "ASSET_PATH_INVENTED"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "ASSET_PATH_INVENTED"
+      ],
+      "finalCodes": [],
+      "seconds": 78
+    },
+    {
+      "id": "shadow-no-receiver",
+      "run": 1,
+      "expected": [
+        "LINT_SHADOW_NO_RECEIVER"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "LINT_SHADOW_NO_RECEIVER"
+      ],
+      "finalCodes": [],
+      "seconds": 68
+    },
+    {
+      "id": "ignored-effect-option",
+      "run": 1,
+      "expected": [
+        "LINT_EFFECT_OPTION_IGNORED"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 2,
+      "initialCodes": [
+        "LINT_EFFECT_OPTION_IGNORED"
+      ],
+      "finalCodes": [],
+      "seconds": 89
+    },
+    {
+      "id": "scale-off-by-100x",
+      "run": 1,
+      "expected": [
+        "LINT_SCALE_EXTREME"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "LINT_SCALE_EXTREME",
+        "LINT_CAMERA_INSIDE_OBJECT"
+      ],
+      "finalCodes": [],
+      "seconds": 102
+    },
+    {
+      "id": "camera-inside-model",
+      "run": 1,
+      "expected": [
+        "LINT_CAMERA_INSIDE_OBJECT"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "LINT_CAMERA_INSIDE_OBJECT"
+      ],
+      "finalCodes": [],
+      "seconds": 74
+    },
+    {
+      "id": "missing-await-ready",
+      "run": 1,
+      "expected": [
+        "LINT_READY_NOT_AWAITED"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 2,
+      "initialCodes": [
+        "LINT_READY_NOT_AWAITED"
+      ],
+      "finalCodes": [],
+      "seconds": 74
+    },
+    {
+      "id": "reserved-uniform-name",
+      "run": 1,
+      "expected": [
+        "LINT_UNIFORM_RESERVED"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "LINT_UTIME_NOT_ANIMATED",
+        "LINT_UNIFORM_RESERVED"
+      ],
+      "finalCodes": [],
+      "seconds": 80
+    }
+  ]
+}

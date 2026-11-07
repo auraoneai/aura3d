@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "bcf797ce34cfed73733b61a75db23bb608ca5c92a3c3695e95869c33692fc3bc",
+  "sourceSha256": "3c4a2bf0aa1a552096fd534b1787d1878cabf03540d777024966b296e3bdddde",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",

@@ -1,0 +1,129 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01WaVfcQyTQHiPmrrfpivgWF",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01UToaPKDA4NNZ2WEWoYqRqu",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Acj4k8ZMXG7iLFaesLCg8J",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01WaVfcQyTQHiPmrrfpivgWF",
+    "content": "1\t# Task 5: custom shader water\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A water surface made with a custom GLSL shader (not a stock material): vertex displacement by animated waves (the surface must be a subdivided grid so the waves are geometry, not just colour), a fresnel term (more sky reflection at grazing angles), a procedural noise-based ripple detail and a sun specular glint.\n7\t2. A sky: a gradient sky dome or background that the water reflects (a colour gradient is fine; no external textures).\n8\t3. The water animates over time (time uniform), the camera sits above the water looking toward the horizon.\n9\t4. Tone mapping and colour output must be correct (not washed out or black).\n10\t\n11\tThe rendering contract in the next section applies.\n12\t\n13\t## Rendering contract (all tasks)\n14\t\n15\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n16\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n17\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n18\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n19\t- When you are done, call `finish`.\n20\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01UToaPKDA4NNZ2WEWoYqRqu",
+    "content": "1\t# Aura3D cheat sheet: if your task needs X, copy block X\n2\t\n3\t`@aura3d/engine` is installed; do not open `node_modules`. Start from the skeleton, paste the blocks you need at its marked lines, write the whole solution first, then `typecheck` once and `finish`. Only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`.\n4\t\n5\t## Rules\n6\t- `createAuraApp` owns renderer, resize and loop: write none. Per frame `app.onFrame((f) => ...)` (`f.dt` seconds); end with `await app.ready()`; set window flags after it (`declare global { interface Window { __FLAG__?: boolean } }`).\n7\t- Vectors `[x, y, z]`, colours CSS strings. Primitives are unit shapes scaled by `size` (`sphere` size = diameter, `plane` `[w, 1, d]` lies in XZ): `primitives.box|sphere|plane|cylinder|capsule|cone|torus`. Node chain: `.position(x, y, z)`, `.scale([x, y, z])`, `.rotate(x, y, z)`.\n8\t- Animate later: `.runtime({ id, mutable: true })` then `app.nodes.require(id).setPosition(x, y, z)` / `.setRotation(x, y, z)`; light `.setLight?.({ intensity, color })`; shader `.setUniform?.(name, v)`.\n9\t- Instance `colors` multiply the material colour: use base `#ffffff`. Dark frame: add `environments.neutral({ intensity: 0.5, background: false })` or a hemisphere light.\n10\t- Camera `camera.orbit({ ..., autoRotate: radPerSec })` orbits its target slowly; never `app.camera`.\n11\t\n12\t## Skeleton (forest scene: orbit camera, hemisphere + shadow sun, exponential fog, ground)\n13\t```ts\n14\timport { camera, createAuraApp, e"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Acj4k8ZMXG7iLFaesLCg8J",
+    "content": "1\t# Aura3D agent entry\n2\t\n3\tEverything needed for common scenes is in `llms.txt` (cheat sheet with complete working blocks). Deeper references only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`, `docs/agents/README.md`.\n4\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm checking the canvas id in index.html to confirm it matches the app initialization, then setting up the sky gradient with zenith and horizon colors before writing the main entry file.\n\n",
+    "signature": "CAQS5gUKEggTEAEYAjgBQgh0aGlua2luZxIMGbr24f0LyfkFW93fGgyeX5FTeO9QhaAig+IiMP9bTCeWiFxtkPr8Ar4cj/oIK37cP1mQr73J6b9GEVYbodWnAKOgND79p8fFESFf5CqBBV2Xs3WDsO7nUJpz08VNfIXNG8pAtnlK6vpttv1JbjFf0ffYRfTDVtosTGYxMyjPi5N7Ry6EX9fna6hrek+NoXJpYecrJtAqBexJ6TdfPbGPEsDvnpetwpFy7oOwicnhqwsyCQXnmD/BC5Qj4u/Ri9pdcb/eF6KqF0JS09Gq0ytH8R6O3NRyhf1P+iZLkjsMC84K1J0/Vo2ltKexPEAv2IOinWZISDHwQiY+DvBOGC46olKTv/LRnpDt2xqtiRyvJufNFWu5ufAcm3YfoxXDoffOBLYoo9A+VaFc3cWhzE6TJdG2J+VmnmXDDGkjpq1oemcQb8evd4r4DS8YpwK8NWpp0bXGrRI/9tD5eLYQgtRppYWXFRIRdrBxKgJFyiXXgJ2P84A3+qEXtolzccnAXKh0ZBjqpn4+OMJZTipSjYKBke93sBmrRj4qIR1CL+Kzp/xJVu1Fd7ujf+Bwy6L7ppVmGZZUISSRwB0y6MbOSbtd4eRbM5TOiGiQFCN35mtzOJRouEBtAFXce3xaCwaFKUSt5akxn21c8Em3Xs2txeTcXtZaivjAoOaIORfDyMdWgtQ53izbtEdzS5hvTmLY1JG9Wcz4blTidN83lyteiy9BIRiLG8A7FQnsV4mUdrAhZzQGPpY1Oz1wGe4DOnz9R3m8vxfAT62cY+fB/eoKO6NC6NdaYcYN3XqRIE6Au3lIiwu9j1cIKKwhhF8fXt4gD9DEnRKd1h5+nXtuASuHDdSYMkqXkjMiXEl4EqBAqlS7YVsc8GirLo8wCFxzoBRLaP3UeJYvCgcLu1EtFY6h3Df3eN3ZMrh/U6aFnoTMDLPEf7mpwfRVjBJtxi5oiN4psPaBGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KESKzSDnKw8tFvEnRSQhLB",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { camera, createAuraApp, geometry, lights, material, scene, sky } from \"@aura3d/engine\";\n\ndeclare global { interface Window { __EVAL_READY__?: boolean } }\n\nlet sc = scene({ background: \"#9ec4e6\" })\n  .camera(camera.perspective({ position: [0, 6, 22], target: [0, 1, -30], fov: 55, near: 0.5, far: 400 }))\n  .add(sky.gradient({ zenith: \"#2a5fa8\", horizon: \"#cfe3f4\" }))\n  .add(lights.hemisphere({ skyColor: \"#cfe0f2\", groundColor: \"#2b5a78\", intensity: 1.0 }))\n  .add(lights.directional({ position: [50, 45, -35], target: [0, 0, 0], intensity: 2.5 }));\n\nconst N = 200, SIZE = 160;\nconst positions = new Float32Array((N + 1) ** 2 * 3), normals = new Float32Array(positions.length), indices: number[] = [];\nfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n  const v = j * (N + 1) + i;\n  positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n  normals[v * 3 + 1] = 1;\n  if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n}\n\nconst water = material.custom({\n  glsl: {\n    vertex: `out vec3 vPos; out vec3 vN;\nvoid main() {\n  vec2 p = position.xz;\n  float ph = dot(p, vec2(0.21, 0.13)) * 3.0 + clk;\n  float ph2 = dot(p, vec2(-0.17, 0.25)) * 3.0 + clk * 1.3;\n  vPos = vec3(p.x, sin(ph) * 0.35 + sin(ph2) * 0.2, p.y);\n  vN = normalize(vec3(-cos(ph) * 0.22 + cos(ph2) * 0.1, 1.0, -cos(ph) * 0.14 - cos(ph2) * 0.15));\n  gl_Position = modelViewProjectionMatrix * vec4(vPos, 1.0);\n}`,\n    fragment: `in vec3 vPos; in vec3 vN; out vec4 outColor;\nfloat hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);\n  return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }\nvoid main() {\n  vec3 v = normalize(cameraPosition - vPos);\n  vec3 n = normalize(vN + vec3(vnoise(vPos.xz * 2.0 + clk) - 0.5, 0.0, vnoise(vPos.xz * 2.0 - clk) - 0.5) * 0.25);\n  float fres = pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);\n  vec3 sky = mix(vec3(0.62, 0.78, 0.92), vec3(0.15, 0.35, 0.7), clamp(reflect(-v, n).y, 0.0, 1.0));\n  float glint = pow(max(dot(reflect(-normalize(vec3(0.5, 0.45, -0.35)), n), v), 0.0), 140.0);\n  vec3 col = mix(vec3(0.02, 0.18, 0.3), sky, clamp(fres * 0.9 + 0.08, 0.0, 1.0)) + vec3(1.0, 0.93, 0.78) * glint * 1.4;\n  outColor = vec4(col, 1.0);\n}`\n  },\n  uniforms: { clk: { type: \"f32\", value: 0 } }\n});\n\nsc = sc.add(\n  geometry.custom(\n    geometry.define({ positions, normals, indices, bounds: { min: [-SIZE / 2, -1, -SIZE / 2], max: [SIZE / 2, 1, SIZE / 2] } }),\n    { name: \"water\", material: water, castShadow: false }\n  ).runtime({ id: \"water\", mutable: true })\n);\n\nlet clk = 0;\nconst app = createAuraApp(\"#app\", { scene: sc });\napp.onFrame((f) => {\n  clk += f.dt;\n  app.nodes.require(\"water\").setUniform?.(\"clk\", clk);\n});\nawait app.ready();\nwindow.__EVAL_READY__ = true;\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01DokihSRu1eq2qhLuQcpKmU",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KESKzSDnKw8tFvEnRSQhLB",
+    "content": "wrote src/main.ts (63 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01DokihSRu1eq2qhLuQcpKmU",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "For the sun glint, I'm computing the reflection of the light direction against the surface normal, with the sun positioned in front of the camera's view direction, which checks out correctly.\n\n",
+    "signature": "CAQS1wUKEggTEAEYAjgBQgh0aGlua2luZxIMuvHcnsnAVakGbPkpGgzB+TZTKiAmu9i6iiYiMC+51fsspPy+id5nv4XUfz519xdd05HkXyvvlvwGpojeRNBWh0sppnWSR7Xy6LNdGiryBB+tqaGqB03fLg7EcDgDxCgvmPm+lbsZyUUBiqiUDbY/m9Fv9uMFoMdkFp8okJknKUEAKftB5ZMTsbFNfzM+H39EXKc950TuTTDXG6KubJrMuO7flnuJT23LWEZzsLo9Jg1lFKEuybv9Tdy+aZD09Wxv73SkCGmkDLUlZelEQ3vl19yhQ344Zb5lnbuBgyKaawFgPH4rP0rfVnGwQ7QGXQGzMpBMJpfUQqCzxJTamrgWZFJ4bjqCkEXv0ERdTUyEjxotMU4da7Crvk6wRqFEUw0svDInAR8RMePngjvLUdyC5qa6yJi75GS2gjmbiFXmpXGCfJhvWEvBNLTH6kYA/3dqZ2a6IqMc1FCa5O9W3g/KDA3wJQ2AsX72RSkJj5tu5Sk8nIqpBfpWVZ4qEf9OmXtFDDq3/4gbrCLgBYXua/18knC2Qlo4iIrz3xjlR3deZXDKoH+jM1Hjy/9tk2Jihpvcd8VJMFomTgzF4lp48pLse69tbuRebVlR0UKiCt4apJ1J++91SSe2fz3ARyroW0Q1XE4ZBI7A4mxzpZJGS+35KU6ebAm8mxI0wGuj0qxYcTxe84LyqUhPyblppLcrEZDtwMYDOABQZ05EAJmeNlUHtC5UuwuRAono2867AIKPao9Zoxx2LRcHSYZ8aFcUMt5nAA6KF40M/hAqWLqVzL+cBtiJvzmfCtu2xdOLB5P+7kOxhnrj3uh9b+jREtC9KvKzclls5Iw4D/2XONjbUBhQsCZ+0Mbmz29hp5tBxxPXgVBh9v27bjkERi2FXlkpWbEzoTC5Pu6b7r8RJIexzsKByVXhxHlZKAU8XFk/e16plv1VGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KmqHMxTjx8zUDfki6qsojd",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts with a custom GLSL water surface on a 200×200 subdivided grid, and `typecheck` passes. I couldn't run `vite build` or view the scene in a browser, so the rendering is unchecked.\n\n- **Water:** The vertex shader displaces the grid with two animated sine waves, so the waves are real geometry. The fragment shader adds a noise-based ripple to the normal, a fresnel term that blends towards sky colour at grazing angles, and a sun glint. It outputs linear colour and leaves tone mapping to the engine.\n- **Animation:** A `clk` time uniform is advanced each frame through `setUniform`.\n- **Sky and camera:** There is a gradient sky (`sky.gradient`) plus hemisphere and directional lights. The perspective camera sits above the water and looks toward the horizon. The glint direction in the shader is set to match the directional light.\n- **Ready flag:** `window.__EVAL_READY__` is set to true after `app.ready()`.\n- **Reflection caveat:** The water's reflected sky colours are hard-coded in the shader to approximate the gradient dome. The water does not sample the dome itself.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KmqHMxTjx8zUDfki6qsojd",
+    "content": "ok"
+   }
+  ]
+ }
+]

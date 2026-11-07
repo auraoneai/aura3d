@@ -138,7 +138,7 @@ describe("source-backed template catalog expectations", () => {
     {
       template: "architecture-interior",
       pins: [
-        'model(assets.room, { name: "textured room kit" }).position(0, 0, -0.4).scale(0.35)',
+        'model(assets.room, { name: "textured room kit", targetMaxDimension: 4.2 }).position(0, 0, -0.4)',
         "camera.orbit({ target: [0, 0.95, -0.4], distance: 5.6, fov: 42 })",
         'material.fabric({ color: "#3a3129", roughness: 0.85 })'
       ],
@@ -147,7 +147,7 @@ describe("source-backed template catalog expectations", () => {
     {
       template: "custom-scene",
       pins: [
-        'model(assets.ship, { name: "migrated ship mesh" }).position(0, 0.12, -0.4).rotate(0, -0.5, 0).scale(0.62)',
+        'model(assets.ship, { name: "migrated ship mesh", targetMaxDimension: 7 }).position(0, 0.12, -0.4).rotate(0, -0.5, 0)',
         "camera.orbit({ target: [0, 2.4, 0], distance: 13, fov: 40 })",
         'material.pbr({ color: "#28506b", roughness: 0.35, metallic: 0.15 })'
       ],
@@ -263,7 +263,7 @@ describe("source-backed template catalog expectations", () => {
     const fixtureCase = entry("template:mini-game");
     const main = source(fixtureCase.source.path);
     expect(main).toContain("start: { x: 0, y: 0.35 }");
-    expect(main).toContain('model(assets.kaykitBarbarian, { name: "certified hero" })\n        .position(level.start.x + 0.38, level.start.y + 0.01, 0)');
+    expect(main).toContain('model(assets.kaykitBarbarian, { name: "certified hero", scaleMode: "world" })\n        .position(level.start.x + 0.38, level.start.y + 0.01, 0)');
     expect(main).toContain(".scale(0.91 / assets.kaykitBarbarian.bounds[1])");
     expect(main).toContain('camera.rigs.follow2d({ target: "mini-player", framing: { subjectHeightFraction: 0.28 } })');
     expect(main).toContain("player.setRotation(0, state.player.facing === 1 ? Math.PI / 2 : -Math.PI / 2, 0)");

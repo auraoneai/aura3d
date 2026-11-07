@@ -1,0 +1,9 @@
+{
+  "name": "agent-loop-seeded-fog-hides-scene",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}

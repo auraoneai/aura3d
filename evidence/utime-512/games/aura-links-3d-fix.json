@@ -1,0 +1,29 @@
+{
+  "page": "index.html",
+  "size": [
+    960,
+    540
+  ],
+  "settleMs": 10000,
+  "intervalMs": 3000,
+  "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "aura3dReady": "true",
+  "diff": 28.883,
+  "moving": true,
+  "console": [
+    "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-63:golfer-shadow:golfer-shadow\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+    "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified material or geometry participant; shader feature prd04.tangentFrame; skinning or morph deformation are outside the contact shadow depth and receive the mask of the surface behind them."
+  ],
+  "log": [],
+  "netFailures": [],
+  "exceptions": [],
+  "idle": {
+    "windowSeconds": 3.27,
+    "rafPerSecond": 12.54,
+    "drawCallsPerSecond": 1767.9,
+    "pageCpuMsPerSecond": 1008.52,
+    "pageScriptMsPerSecond": 1002.47,
+    "gpuProcessCpuMsPerSecond": 116.2,
+    "note": "rAF/draw counters are wrapped from page start; page CPU = CDP Performance TaskDuration; GPU = CPU time of the GPU process via ps (1 s resolution), not GPU shader time."
+  }
+}

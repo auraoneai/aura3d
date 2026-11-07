@@ -515,10 +515,10 @@ export function courtFogNode(rig: CourtRig): AuraNodeBuilder<AuraSceneNode> {
 }
 
 /** The court's practical lights (H47-L2, H47-L3): sodium spots, tungsten bulb clusters, sign and rib rect lights. */
-export function courtPracticalNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+export function courtPracticalNodes(rig: CourtRig, photometric?: unknown): AuraNodeBuilder<AuraSceneNode>[] {
   return rig.practicals.map((p) => {
     if (p.kind === "spot") {
-      return lights.spot({ name: p.name, position: p.position, target: p.target, angle: p.angle, penumbra: p.penumbra, intensity: p.intensity, color: p.color, distance: p.distance, ...(p.shadow ? { shadow: { filter: "pcf" as const, mapSize: 1024 as const } } : {}) }) as AuraNodeBuilder<AuraSceneNode>;
+      return lights.spot({ name: p.name, position: p.position, target: p.target, angle: p.angle, penumbra: p.penumbra, intensity: p.intensity, color: p.color, distance: p.distance, ...(photometric ? { photometricProfile: photometric as never } : {}), ...(p.shadow ? { shadow: { filter: "pcf" as const, mapSize: 1024 as const } } : {}) }) as AuraNodeBuilder<AuraSceneNode>;
     }
     if (p.kind === "point") {
       return lights.point({ name: p.name, position: p.position, intensity: p.intensity, color: p.color, distance: p.distance }) as AuraNodeBuilder<AuraSceneNode>;

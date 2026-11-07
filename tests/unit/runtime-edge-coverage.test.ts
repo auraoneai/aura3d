@@ -50,6 +50,12 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/audio-browser.spec.ts"],
     edgeTerms: [/unavailable/i, /dispose/i, /spatial/i, /context/i, /lifecycle/i]
   },
+  // @aura3d/mcp (private stdio MCP server, 5.1 phase 1): protocol errors, unknown
+  // templates, missing installs and rejected internal docs are its edge behaviour.
+  "aura3d-mcp": {
+    suites: ["tests/unit/aura3d-mcp/protocol.test.ts", "tests/unit/aura3d-mcp/tools.test.ts"],
+    edgeTerms: [/errors?/i, /rejects?/i, /missing/i, /unknown/i, /never/i]
+  },
   "aura3d-cli": {
     suites: ["tests/unit/aura3d-cli/assets.test.ts", "tests/unit/aura3d-cli/deployment.test.ts"],
     edgeTerms: [/missing/i, /failed/i, /manifest/i, /warnings?/i, /deployment/i]

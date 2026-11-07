@@ -50,6 +50,8 @@ export const PACKAGE_INVENTORY = Object.freeze([
   entry('@aura3d/three-compat', 'packages/three-compat', 6, [H3]),
   entry('@aura3d/cli', 'packages/aura3d-cli', 6, ALL),
   entry('create-aura3d', 'packages/create-aura3d', 6, ALL),
+  // Agent MCP server (E3-03 phase 1): private workspace package, in no release inventory until the owner decides.
+  entry('@aura3d/mcp', 'packages/aura3d-mcp', 6, []),
   // The published root aggregate is the repository manifest itself; it has no
   // packages/ directory and therefore no workspace tier.
   entry('@aura3d/engine', '.', null, ALL),

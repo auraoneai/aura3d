@@ -1,0 +1,45 @@
+{
+  "id": "invented-asset-path",
+  "run": 1,
+  "expected": [
+    "ASSET_PATH_INVENTED"
+  ],
+  "repaired": true,
+  "repairedAtTurn": 1,
+  "turns": 1,
+  "apiCalls": 3,
+  "initialCodes": [
+    "ASSET_PATH_INVENTED"
+  ],
+  "finalCodes": [],
+  "transcript": [
+    {
+      "turn": 1,
+      "tools": [
+        "list_files"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "read_file",
+        "read_file"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "write_file",
+        "write_file",
+        "done"
+      ]
+    },
+    {
+      "turn": 1,
+      "verifyCodes": [],
+      "ok": true
+    }
+  ],
+  "seconds": 78,
+  "finalSource": "import { camera, createAuraApp, lights, material, primitives, scene } from \"@aura3d/engine\";\n\n// The robot is built from primitives, since no real robot.glb has been admitted via `aura3d assets`.\nasync function main(): Promise<void> {\n  const metal = material.pbr({ color: \"#c9d1de\", roughness: 0.4 });\n  const app = createAuraApp(\"#app\", {\n  scene: scene({ background: \"#1b2230\" })\n    .add(lights.directional({ position: [4, 6, 3], intensity: 2.5 }))\n    .add(primitives.plane({ name: \"floor\", size: [14, 1, 14], material: material.pbr({ color: \"#7b8494\", roughness: 0.8 }), receiveShadow: true }))\n    .add(primitives.box({ name: \"robot-body\", size: [0.8, 1, 0.5], position: [0, 1, 0], material: metal }))\n    .add(primitives.box({ name: \"robot-head\", size: [0.5, 0.4, 0.4], position: [0, 1.75, 0], material: metal }))\n    .add(primitives.box({ name: \"robot-leg-left\", size: [0.25, 0.5, 0.25], position: [-0.2, 0.25, 0], material: metal }))\n    .add(primitives.box({ name: \"robot-leg-right\", size: [0.25, 0.5, 0.25], position: [0.2, 0.25, 0], material: metal }))\n    .camera(camera.orbit({ target: [0, 1, 0], distance: 6, fov: 40 }))\n});\n  await app.ready();\n}\nvoid main();\n"
+}

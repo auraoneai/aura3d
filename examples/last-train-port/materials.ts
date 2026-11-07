@@ -1,5 +1,6 @@
 /** `material.custom` specs for the port's custom surfaces, kept apart so a unit test can bake exactly what the app draws with. */
-import type { material } from "@aura3d/engine";
+import { material as materialFactory, type material, type AuraMaterialSpec } from "@aura3d/engine";
+import type { ShaderGraphDocument } from "@aura3d/engine/shader-graph-runtime";
 import { CLOUD_FRAGMENT, CLOUD_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, RAIN_FRAGMENT, RAIN_VERTEX, SKY_FRAGMENT, SKY_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
@@ -39,3 +40,31 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "snow", spec: pointsSpec([0.7, 0.8, 1]) },
   { name: "rain-streaks", spec: rainSpec([0.75, 0.85, 1]) }
 ];
+
+/**
+ * A4 pilot: the rain streaks as a portable shader-graph material (`material.node({ graph })`). One graph compiles to a GLSL
+ * and a WGSL twin, so this surface also draws on `?backend=webgpu`. The GLSL `fade` author attribute becomes the geometry's
+ * `uv0.x` (the graph builtins carry no author attributes); alpha is `fade`, colour is the sRGB tint decoded to linear on the
+ * CPU (`a3dSrgbToLinear` has no graph twin). The GLSL `rainSpec` stays as the baseline (`?fx=rainglsl`) and the pixel-diff reference.
+ */
+const srgbToLinear = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+
+export const rainGraphDocument = (): ShaderGraphDocument => ({
+  version: 1,
+  stage: "material",
+  resources: [{ name: "rainTint", kind: "uniform", type: "vec3" }],
+  nodes: [
+    { id: "uv", op: "input", name: "uv0", type: "vec2" },
+    { id: "fade", op: "swizzle", type: "f32", inputs: ["uv"], components: "x" },
+    { id: "tint", op: "uniform", type: "vec3", resource: "rainTint" }
+  ],
+  outputs: { color: "tint", opacity: "fade" }
+});
+
+export const rainGraphSpec = (tint: readonly [number, number, number]): AuraMaterialSpec => materialFactory.node({
+  graph: rainGraphDocument(),
+  uniforms: { rainTint: [srgbToLinear(tint[0]), srgbToLinear(tint[1]), srgbToLinear(tint[2])] },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});

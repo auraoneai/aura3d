@@ -52,11 +52,14 @@ interface RacingStarterEvidence {
 // Genre row (aura3d-browser-game): racing-starter → golden-hour, chase fov 60.
 const LOOK_ID = "golden-hour" as const;
 
-// Both showcase GLBs are authored at real scale: the car measures
-// 3.455 × 3.428 × 2.206 m and the kart circuit 24.651 × 24.647 × 2.073 m, so
-// the models mount at scale 1 (the former 0.18 shrink is removed). The logical
-// route is scaled by the same factor the track grew (24.651 / 6.65 ≈ 3.7 → 3.5)
-// so the driven line still traces inside the visible circuit footprint.
+// Both showcase GLBs are authored off-origin and at real scale (car 3.18 m
+// long, kart circuit 24.65 m wide). model() in its default fit mode re-centres
+// each GLB on x/z and sits its lowest point on y = 0, so the car rotates about
+// its own middle and the circuit lands under the route; targetLength /
+// targetMaxDimension pin the real metre scale instead of the ~1.55 m default
+// fit. The logical route is scaled by the factor the track grew
+// (24.651 / 6.65 ≈ 3.7 -> 3.5) so the driven line still traces inside the
+// visible circuit footprint.
 const ROUTE_SCALE = 3.5;
 const route = {
   id: "starter-kart-loop",
@@ -80,15 +83,15 @@ const ROUTE_BOUNDS = {
   centerZ: ((-0.9 + 3.9) / 2) * ROUTE_SCALE
 } as const;
 
-// GLB z-extent normalizes to world height: track top surface sits at y=0 when
-// the model is dropped by its 1.0 m max. The car's raw min-y is -1.206 m, so
-// the ride height lifts it until the wheels rest on that surface.
-const TRACK_Y = -1.0;
-const CAR_RIDE_Y = 1.206;
+// The fitted circuit is 1.69 m tall with its asphalt surface ~1.17 m above its
+// lowest point, so dropping it by TRACK_Y puts the road at y = 0. The fitted
+// car already rests on y = 0; CAR_RIDE_Y only lifts it a hair off z-fighting.
+const TRACK_Y = -1.17;
+const CAR_RIDE_Y = 0.03;
 
-// Chase framing: 8 m back and 3.4 m up at fov 60 — authored in the scene spec
-// below as the flag-off fallback; the mounted rig owns it under PRD 08.
-const CHASE = { back: 8, up: 3.4, ahead: 4, fov: 60 } as const;
+// Chase framing: 8 m back and 3.6 m up at fov 55, looking at the car's roof. The
+// mounted rig owns the camera; this is the flag-off scene-camera fallback.
+const CHASE = { back: 8, up: 3.6, lookUp: 0.8, ahead: 4, fov: 55 } as const;
 
 const inputOptions = {
   actions: {
@@ -191,7 +194,10 @@ const raceEventLabels: string[] = [];
 app.camera?.use(
   camera.rigs.chase({
     target: "race-car",
-    fov: { base: 60, perSpeed: 0.4 },
+    distance: CHASE.back,
+    height: CHASE.up,
+    lookHeight: CHASE.lookUp,
+    fov: { base: CHASE.fov, perSpeed: 0.4 },
     lookAhead: { seconds: 0.35, max: 4 },
     bank: { gain: 0.5, maxDeg: 6 }
   })
@@ -253,29 +259,28 @@ renderHud(racing.snapshot());
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [
-    // Real-scale assets: kart circuit 24.651 m, sports car 3.455 m (aura-assets
-    // bounds). No 0.18 shrink — see CAR_RIDE_Y / ROUTE_SCALE comments above.
-    model(assets.trackModel, { name: "typed kart circuit asset" })
+    // Real-scale assets: kart circuit 24.65 m wide, sports car 3.2 m long, centred and grounded by model()'s fit (see the comment above).
+    model(assets.trackModel, { name: "typed kart circuit asset", targetMaxDimension: 24.65 })
       .position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)
       .scale(1),
-    model(assets.carModel, { name: "typed playable sports car", castShadow: true })
+    model(assets.carModel, { name: "typed playable sports car", castShadow: true, targetLength: 3.2 })
       .position(0, CAR_RIDE_Y, 0)
       .scale(1)
       .runtime(game.runtimeNode("race-car", { tags: ["player", "vehicle", "typed-asset", "runtime"] })),
     primitives.box({ name: "checkpoint marker", material: material.neon({ color: "#7ff0c5", emissive: "#7ff0c5", emissiveIntensity: 0.7 }) })
-      .position(0.06 * ROUTE_SCALE, CAR_RIDE_Y, 0.2 * ROUTE_SCALE)
-      .scale([0.7, 1.2, 4.2])
+      .position(0.06 * ROUTE_SCALE, CAR_RIDE_Y + 0.05, 0.2 * ROUTE_SCALE)
+      .scale([0.7, 0.1, 3])
       .runtime(game.runtimeNode("checkpoint-marker", { tags: ["checkpoint", "runtime"] })),
     primitives.box({ name: "finish stripe", material: material.neon({ color: "#f9f1d0", emissive: "#f9f1d0", emissiveIntensity: 0.75 }) })
-      .position(0.1 * ROUTE_SCALE, CAR_RIDE_Y - 0.1, 0.05 * ROUTE_SCALE)
-      .scale([3.8, 0.36, 0.5])
+      .position(0.1 * ROUTE_SCALE, CAR_RIDE_Y + 0.02, 0.05 * ROUTE_SCALE)
+      .scale([3.8, 0.06, 0.5])
       .runtime(game.runtimeNode("finish-marker", { tags: ["finish", "runtime"] }))
   ];
 
   return scene()
-    .add(looks.preset(LOOK_ID))
+    .add(looks.preset(LOOK_ID, { fogDensityScale: 0.3 }))
     .addMany(nodes)
-    .camera(camera.perspective({ position: [0, CAR_RIDE_Y + CHASE.up, -CHASE.back], target: [0, CAR_RIDE_Y, 0], fov: CHASE.fov }));
+    .camera(camera.perspective({ position: [0, CAR_RIDE_Y + CHASE.up, -CHASE.back], target: [0, CAR_RIDE_Y + CHASE.lookUp, 0], fov: CHASE.fov }));
 }
 
 function createHud(): HTMLElement {

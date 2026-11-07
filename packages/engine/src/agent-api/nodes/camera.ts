@@ -10,6 +10,16 @@ import { stubCameraRigFactories, type AuraCameraRig, type AuraCameraRigFactories
 import { rigFactory } from "../camera/rigs/registry.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { smoothingToHalflife } from "../camera/Spring.js";
+import { frameCameraPose, type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { isGroundLikeNode, worldBoundsOfNodes, type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+
+function frameBoundsOf(subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options: AuraCameraFrameOptions, scene: boolean): AuraFrameBounds {
+  const isBounds = !Array.isArray(subject) && Array.isArray((subject as AuraFrameBounds).min) && Array.isArray((subject as AuraFrameBounds).max) && (subject as { kind?: unknown }).kind === undefined;
+  if (isBounds) return subject as AuraFrameBounds;
+  const bounds = worldBoundsOfNodes(subject as AuraFrameSubject | readonly AuraFrameSubject[], { exclude: options.exclude ?? (scene ? isGroundLikeNode : undefined) } as never);
+  if (!bounds) throw new RangeError("camera.frame: the subject has no model or primitive nodes to frame.");
+  return bounds;
+}
 
 // X-1: `smoothing` is a legacy scalar; under A3D_QR_CAMERA damping is
 // expressed as a half-life. Warn once per spec object with the equivalent.
@@ -235,6 +245,40 @@ export const camera = lazyNamespace(() => ({
     const distance = extent * (options.padding ?? 2.15);
     return camera.orbit({ target: center, distance, fov: options.fov ?? 42 });
   },
+  /**
+   * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+   * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+   * controls start framed) whose eye is placed so the subject occupies
+   * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+   * the node's real world bounds (size, scale, rotation, model fit), centred.
+   *
+   * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+   * For a different or changing canvas, pass the aspect you render at, or call
+   * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+   * `app.camera.setPose`.
+   */
+  frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options: AuraCameraFrameOptions = {}): AuraCameraSpec => {
+    const pose = frameCameraPose(frameBoundsOf(subject, options, false), options);
+    return camera.orbit({ target: pose.target, position: pose.position, distance: pose.distance, fov: pose.fov, near: pose.near, far: pose.far });
+  },
+  /**
+   * Frame everything in a scene (a `scene()` builder or node array). Ground
+   * planes and nodes named like ground/floor/terrain are left out of the box
+   * unless you pass your own `exclude`.
+   */
+  frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options: AuraCameraFrameOptions = {}): AuraCameraSpec => {
+    const pose = frameCameraPose(frameBoundsOf(subject, options, true), options);
+    return camera.orbit({ target: pose.target, position: pose.position, distance: pose.distance, fov: pose.fov, near: pose.near, far: pose.far });
+  },
+  /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+  /**
+   * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+   * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+   */
+  worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options: AuraCameraFrameOptions = {}): AuraFrameBounds =>
+    frameBoundsOf(subject, options, false),
+  framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options: AuraCameraFrameOptions = {}): AuraFramePose =>
+    frameCameraPose(frameBoundsOf(subject, options, false), options),
   frameAsset: (asset: AuraAssetRef<"model">, options: AuraCameraFrameAssetOptions = {}): AuraCameraSpec => {
     const bounds = boundsFromAsset(asset);
     const size = boundsSize(bounds);

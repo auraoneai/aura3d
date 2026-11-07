@@ -931,6 +931,8 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // GU47 E-C (EC-8): `godRayDensity` (S4 shaft density, decoupled from the fog
   // `density`) and the DOF `tiltShift` band; E-F adds the factory option types.
   "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference", "godRayDensity"],
+  // Lane 514: `effects.godRays`: the S4 stage alone (no forward fog).
+  "god-rays": ["density", "color", "lightPosition", "godRayDensity", "godRayDirection", "decay", "samples"],
   "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur", "tiltShift"],
   "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   // GU47 E-C (EC-6): S3 roughness hint (cutoff 0.5) and hit thickness.
@@ -1160,6 +1162,26 @@ function selectiveBloomActive(weights: readonly unknown[]): boolean {
 }
 
 /** volumetricFog `godRayDensity` (S4 march fraction) clamped to [0.05, 1]; `undefined` when not authored. */
+/** Lane 514: only an `effects.godRays` node carries `decay` / `samples` / `godRayDirection`; a volumetric-fog node keeps 0.94 and the tier's samples. */
+function godRayDecayOf(node: AuraEffectNode): number {
+  if (node.effect !== "god-rays") return 0.94;
+  return typeof node.decay === "number" && Number.isFinite(node.decay) ? Math.min(0.995, Math.max(0.5, node.decay)) : 0.94;
+}
+/**
+ * S4 sample count. `tierSamples` is the resolved tier's count (undefined when no tier resolved). A volumetric-fog node
+ * keeps the old value (the tier's, else 32); an `effects.godRays` node uses its authored count, never above the tier's.
+ */
+function godRaySamples(node: AuraEffectNode, tierSamples: number | undefined): 32 | 48 | 64 {
+  if (node.effect !== "god-rays") return (tierSamples ?? 32) as 32 | 48 | 64;
+  const authored = node.samples === 32 || node.samples === 48 || node.samples === 64 ? node.samples : 48;
+  return Math.min(authored, tierSamples ?? 64) as 32 | 48 | 64;
+}
+function godRayDirectionOf(node: AuraEffectNode, sun: readonly [number, number, number] | null): readonly [number, number, number] | undefined {
+  const d = node.effect === "god-rays" ? node.godRayDirection : undefined;
+  if (Array.isArray(d) && d.length === 3) return [d[0], d[1], d[2]];
+  return sun ?? undefined;
+}
+
 function godRayDensityOf(node: AuraEffectNode): number | undefined {
   const value = (node as unknown as { readonly godRayDensity?: unknown }).godRayDensity;
   return typeof value === "number" && Number.isFinite(value) ? Math.min(1, Math.max(0.05, value)) : undefined;
@@ -1375,7 +1397,8 @@ export function createRootPostPipeline(
   const vignetteNode = effect("vignette");
   const grainNode = effect("film-grain");
   const caNode = effect("chromatic-aberration");
-  const volumetricNode = effect("volumetric-fog");
+  // Lane 514: an authored `effects.godRays` node drives S4 and wins over a volumetric-fog node for the shafts.
+  const volumetricNode = effect("god-rays") ?? effect("volumetric-fog");
   const dofNode = effect("depth-of-field");
   const mbNode = effect("motion-blur");
   const ssrNode = effect("screen-space-reflections");
@@ -1508,8 +1531,9 @@ export function createRootPostPipeline(
     } : {}),
     ...(volumetricNode && godRaysEnabled ? {
       godRays: {
-        samples: (tierResolution?.godRays.enabled === true ? tierResolution.godRays.samples : 32) as 32 | 48 | 64,
-        decay: 0.94,
+        samples: godRaySamples(volumetricNode, tierResolution?.godRays.enabled === true ? tierResolution.godRays.samples : undefined),
+        decay: godRayDecayOf(volumetricNode),
+        ...(volumetricNode.effect === "god-rays" ? { frameAnchored: true } : {}),
         weight: numberField(volumetricNode, "intensity", 0.7),
         // GU47 E-C (EC-8): S4 shaft density comes from `godRayDensity` only;
         // the fog `density` no longer rides along (S4 never read it), and an
@@ -1521,7 +1545,7 @@ export function createRootPostPipeline(
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
         // GU47 pass 4 (g08, g18): only a 3-number lightPosition is a world point; the UV pair is the forward anchor.
         lightWorld: Array.isArray(volumetricNode.lightPosition) && volumetricNode.lightPosition.length === 3 ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
-        ...(godRayLightDirection ? { lightDirection: godRayLightDirection } : {})
+        ...(godRayDirectionOf(volumetricNode, godRayLightDirection) ? { lightDirection: godRayDirectionOf(volumetricNode, godRayLightDirection)! } : {})
       }
     } : {}),
     ...(dofNode && dofEnabled ? {

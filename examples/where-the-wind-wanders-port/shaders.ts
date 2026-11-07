@@ -20,7 +20,7 @@ import { CLOUD_GLSL, WIND_GLSL } from "./wind";
 
 const PLAYER_FADE = /* glsl */ `
 bool playerFade(vec3 world) {
-  float t = smoothstep(0.9, 3.4, distance(world.xz, playerPos.xz));
+  float t = smoothstep(1.7, 3.6, distance(world.xz, playerPos.xz));
   float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
   return t < ign;
 }
@@ -143,6 +143,13 @@ void main() {
   float bend = uv.y * uv.y;
   p.x += (sin(w) * 0.7 + sin(w * 2.3 + phase) * 0.3) * sway * bend * windStrength * gust * 1.3;
   p.z += cos(w * 0.73 + phase) * sway * 0.55 * bend * windStrength * gust;
+  // soft clearing around the traveller: grass tufts and flowers lie down within about 1.7 m so the legs and boots read
+  // (the tips drop toward the ground height at the feet; a blade's root stays put). Cosmetic only, no gameplay effect.
+  if (kind < 1.5 && uv.y > 0.0) {
+    float cd = distance(position.xz, playerPos.xz);
+    float keep = mix(0.2, 1.0, smoothstep(0.45, 1.7, cd));
+    p.y -= max(0.0, (p.y - playerPos.y) * (1.0 - keep)) * uv.y;
+  }
   vWorld = (modelMatrix * vec4(p, 1.0)).xyz;
   gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);
 }`;
@@ -167,7 +174,7 @@ float seg(vec2 p, vec2 a, vec2 b, float r0, float r1) {
 
 void main() {
   if (nearFade(vWorld, 2.5, 7.0)) discard;
-  if (vWorld.z > playerPos.z - 0.4 && distance(vWorld.xz, playerPos.xz) < 3.4 && playerFade(vWorld)) discard;
+  if (vWorld.z > playerPos.z - 0.4 && distance(vWorld.xz, playerPos.xz) < 3.6 && playerFade(vWorld)) discard;
   int k = int(vKind + 0.5);
   vec2 uv = vUv;
   float cover = 0.0;
@@ -512,7 +519,7 @@ ${PLAYER_FADE}
 void main() {
   if (nearFade(vWorld, 4.5, 11.0)) discard;
   int k = int(vKind + 0.5);
-  if (k <= 1 && vWorld.z > playerPos.z - 0.4 && distance(vWorld.xz, playerPos.xz) < 3.4 && playerFade(vWorld)) discard;
+  if (k <= 1 && vWorld.z > playerPos.z - 0.4 && distance(vWorld.xz, playerPos.xz) < 3.6 && playerFade(vWorld)) discard;
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 n = normalize(vNormal);
   if (dot(n, view) < 0.0) n = -n;

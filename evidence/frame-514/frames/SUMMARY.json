@@ -1,0 +1,101 @@
+[
+  {
+    "id": "bird-after",
+    "subjectFill": 0.5,
+    "subjectFillRun2": 0.5,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 217.7,
+    "nearBlackFraction": 0,
+    "distinctColours16": 301,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "bird-before",
+    "subjectFill": 0.399,
+    "subjectFillRun2": 0.399,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 216.8,
+    "nearBlackFraction": 0,
+    "distinctColours16": 265,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "bird-sheet-after",
+    "subjectFill": 0.5,
+    "subjectFillRun2": 0.5,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 164,
+    "nearBlackFraction": 0,
+    "distinctColours16": 392,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "bird-sheet-before",
+    "subjectFill": 0.376,
+    "subjectFillRun2": 0.376,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 167.8,
+    "nearBlackFraction": 0,
+    "distinctColours16": 356,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "brick-after",
+    "subjectFill": 0.6,
+    "subjectFillRun2": 0.6,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 2.2,
+    "nearBlackFraction": 0.9237,
+    "distinctColours16": 159,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "brick-before",
+    "subjectFill": 0.742,
+    "subjectFillRun2": 0.742,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 6.5,
+    "nearBlackFraction": 0.8626,
+    "distinctColours16": 276,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "clock-after-fill85",
+    "subjectFill": 0.85,
+    "subjectFillRun2": 0.85,
+    "sameBuildNoiseMeanAbsDiff": 0.0133,
+    "meanLuma": 106.9,
+    "nearBlackFraction": 0,
+    "distinctColours16": 241,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "clock-after",
+    "subjectFill": 0.6,
+    "subjectFillRun2": 0.6,
+    "sameBuildNoiseMeanAbsDiff": 0,
+    "meanLuma": 103,
+    "nearBlackFraction": 0,
+    "distinctColours16": 238,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  },
+  {
+    "id": "clock-before",
+    "subjectFill": 0.808,
+    "subjectFillRun2": 0.808,
+    "sameBuildNoiseMeanAbsDiff": 0.012,
+    "meanLuma": 106,
+    "nearBlackFraction": 0,
+    "distinctColours16": 239,
+    "realGameFrame": true,
+    "consoleErrors": 0
+  }
+]

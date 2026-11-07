@@ -1,0 +1,129 @@
+{
+  "runId": "m513-M-t9-aura-r3",
+  "batch": "m513-M",
+  "arm": "aura",
+  "task": 9,
+  "idx": 3,
+  "order": 4,
+  "seed": 20261106004,
+  "model": "claude-sonnet-5.5",
+  "condition": "M",
+  "startedAt": "2026-11-07T03:40:09.068Z",
+  "docsCommit": "cd56b9d54c3ebaeea2b5954253a6e7d619c99ea9",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 27552,
+  "usage": {
+    "input": 69270,
+    "uncachedInput": 69270,
+    "output": 2615,
+    "turns": 5,
+    "perTurnInput": [
+      4515,
+      10681,
+      14424,
+      19522,
+      20128
+    ],
+    "perTurnOutput": [
+      13,
+      24,
+      55,
+      2188,
+      335
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1058,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 1058,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 2969,
+      "type": "mcp",
+      "tool": "get_recipe",
+      "chars": 7103,
+      "isError": false
+    },
+    {
+      "i": 3,
+      "t": 2969,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 4,
+      "t": 5959,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 19
+    },
+    {
+      "i": 5,
+      "t": 5960,
+      "type": "mcp",
+      "tool": "search_docs",
+      "chars": 3528,
+      "isError": false
+    },
+    {
+      "i": 6,
+      "t": 22600,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 5147
+    },
+    {
+      "i": 7,
+      "t": 23256,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 27552,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts, and it passes typecheck. I haven't built it with `vite build` or run it in a browser, so I haven't seen a rendered frame.\n\n- **Robot:** it is built from capsules, spheres and boxes, with a glowing visor and chest core. Its joints are nested groups: hips, chest, head (neck), two shoulders, two elbows, two hip joints and two knees.\n- **Idle animation:** it runs from `app.onFrame` using the frame's `dt`. The robot breathes (hips rise and fall, chest tilts) and shifts its weight (hips slide sideways and the knees alternate). The head turns and the arms swing gently, so frames differ over time.\n- **Lighting:** a strong warm key light casts shadows onto the floor. A cyan and a magenta rim light come from behind. Ambient light is low and the background is near-black.\n- **Camera:** a fixed perspective camera frames the whole robot, centred.\n- **Contract:** it draws into the existing `#app` canvas and loads no assets. `window.__EVAL_READY__` is set after `app.ready()` and one animation frame.\n\nI left out the recipe's orbit interaction, since the camera should stay fixed. I took the continuous `requestAnimationFrame` loop from the engine's own loop and didn't add one.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

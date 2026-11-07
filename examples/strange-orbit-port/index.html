@@ -52,12 +52,16 @@
       #count { font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
       .keys { position: fixed; left: 12px; bottom: 150px; font-size: 12px; color: var(--muted); pointer-events: none; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #12151c; z-index: 5; }
+      /* A1: determinate loading bar (same rules as apps/showcase-port-shared/quickbar.css .aura3d-loading). */
+      #loading .aura3d-loading { --aura3d-loading: 0; position: relative; height: 4px; margin-top: 14px; overflow: hidden; border-radius: 2px; background: rgba(255, 255, 255, 0.16); color: var(--warm); }
+      #loading .aura3d-loading::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; transition: transform 120ms linear; }
+      @media (prefers-reduced-motion: reduce) { #loading .aura3d-loading::after { transition: none; } }
     </style>
   </head>
   <body>
     <canvas id="world"></canvas>
 
-    <section id="loading"><div class="panel"><h2>Craterline GP</h2><p id="loading-status" class="meta">Mixing the pigments</p></div></section>
+    <section id="loading"><div class="panel"><h2>Craterline GP</h2><p id="loading-status" class="meta">Mixing the pigments</p><div id="loading-bar" class="aura3d-loading" role="progressbar" aria-label="Loading the course" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div></section>
 
     <section id="menu" class="overlay">
       <div class="panel">

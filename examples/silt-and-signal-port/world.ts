@@ -16,6 +16,9 @@ import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChas
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
+import { waterGraphMaterial } from "./water-graph";
+import { portableWaterMaterial } from "./portable-water";
+import { readPortableFlag } from "../shared/portable-flag";
 import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
@@ -108,6 +111,35 @@ export const waterSpec = (chapter: number, look: SiltLookMode = "original"): Cus
     depthWrite: false,
     side: "double"
   };
+};
+
+/** The values both water programs share, so the portable graph and the GLSL baseline read the same chapter data. */
+export const waterParams = (chapter: number, look: SiltLookMode = "original") => {
+  const p = CHAPTERS[chapter]!.palette;
+  const original = usesOriginalTerrain(chapter);
+  const row = chapterLook(chapter);
+  const inked = look === "inked";
+  return {
+    waterColor: hexLinear(p.water!),
+    canalShift: original ? 0 : 62,
+    canalHalf: original ? 25 : 16,
+    fogColor: (inked ? linearOf(row.fog.color) : hexLinear(chapter === 0 ? 0xdcc5b1 : p.fog!)) as Rgb,
+    fogFar: 1400,
+    inked,
+    sunDir: keyDirection(row) as Rgb,
+    sunColor: linearOf(row.key.color) as Rgb,
+    inkSky: linearOf(row.sky.horizon) as Rgb,
+    inkSkyTop: linearOf(row.sky.top) as Rgb
+  };
+};
+
+/** The canal material: the portable shader graph by default, the GLSL baseline on request or if the graph does not build. */
+export const waterMaterial = (chapter: number, look: SiltLookMode, mode: "graph" | "glsl" = "graph"): AuraMaterialSpec => {
+  if (mode === "graph") {
+    try { return waterGraphMaterial(waterParams(chapter, look)); }
+    catch (error) { console.warn("[silt] water graph unavailable, using the GLSL water", error); }
+  }
+  return material.custom(waterSpec(chapter, look));
 };
 
 export const ringSpec = (active: boolean, color: Rgb = [1, 0.82, 0.42]): CustomSpec => ({
@@ -214,6 +246,8 @@ export interface BuildOptions {
   readonly low?: boolean;
   /** PRD §6.3: halves the storm rain volume. */
   readonly reducedMotion?: boolean;
+  /** 5.0.3 A4: `"graph"` (default) draws the canal with the portable shader graph, `"glsl"` (`?water=glsl`) with the hand-written GLSL baseline. */
+  readonly water?: "graph" | "glsl";
 }
 
 /** DG-AN2: instance wind for the flora (desert breeze from the west; reduced motion keeps 30%, PRD §6.3). */
@@ -367,6 +401,11 @@ const FAR = [0, -400, 0] as const;
 const SHAKE_SECONDS = 0.25;
 const SHAKE_METRES = 0.35;
 /** QA only (`?nobeacon=1`): hides the active-ring beacon so a spec can difference two frames and measure its contrast. */
+/** QA: `?watert=N` pins the canal's flow clock so the graph and GLSL water can be compared pixel for pixel. */
+const WATER_PIN: number | undefined = (() => {
+  const v = typeof location !== "undefined" ? new URLSearchParams(location.search).get("watert") : null;
+  return v !== null && Number.isFinite(Number(v)) ? Number(v) : undefined;
+})();
 const NO_BEACON = typeof location !== "undefined" && new URLSearchParams(location.search).has("nobeacon");
 /** hoverboard.glb is 1.9 m long (x axis) and 0.37 m thick, origin at its centre; the rider's feet stand on its deck top */
 const BOARD_SCALE = 1.15;
@@ -520,7 +559,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       material: pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
     }).runtime({ id: "bank" }));
   }
-  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", material: material.custom(waterSpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "canal" }));
+  // A4 pilot (?portable=1, default off): a transparent graph material with the node-default castShadow casts a real opaque shadow,
+  // which relights the whole inked scene; the portable water therefore does not cast. Default stays the 5.0.3 water material.
+  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", ...(readPortableFlag() ? { castShadow: false } : {}), material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : waterMaterial(chapter, inked ? "inked" : "original", buildOptions.water) }).runtime({ id: "canal" }));
   const deck = terrain.deckMesh();
   if (deck.indices.length) {
     builder.add(geometry.custom(dynamicFrom(deck), {
@@ -801,7 +842,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           }
           node("sky").setPosition(state.x, state.y, state.z);
           if (flare) node("silt-flare").setPosition(state.x + keyDir[0] * FLARE_DISTANCE, state.y + keyDir[1] * FLARE_DISTANCE, state.z + keyDir[2] * FLARE_DISTANCE);
-          node("canal").setUniform?.("siltTime", time);
+          node("canal").setUniform?.("siltTime", WATER_PIN ?? time);
           if (lightning) {
             const { flash, began } = lightning.step(time);
             for (const strike of began) { strikes++; options.onThunder?.(strike.thunderDelay, strike.peak); }

@@ -6,6 +6,8 @@ import { AnimationController, camera, createAuraApp, createFixedStepLoop, effect
 { const app0 = createAuraApp("#app", { scene: scene({ background: "#101418" }) }); }
 // scene
 { const stage1 = scene({ background: "#101418" }).add(primitives.box({ name: "crate" })).camera(camera.perspective({ position: [3, 2, 5], target: [0, 0.5, 0], fov: 45 })); }
+// camera
+{ void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 }); }
 // looks
 { void looks.preset("product-studio"); }
 // material

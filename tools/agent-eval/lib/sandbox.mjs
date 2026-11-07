@@ -27,6 +27,7 @@ const ALLOWED_TOP_LEVEL = {
 
 export const TASK_ASSETS = {
   3: [{ from: "fixtures/threejs-parity/assets/character/soldier.glb", to: "public/assets/soldier.glb" }],
+  36: [{ from: "fixtures/threejs-parity/assets/character/soldier.glb", to: "public/assets/soldier.glb" }],
   7: [{ from: "fixtures/threejs-parity/assets/character/robot-expressive.glb", to: "public/assets/prop.glb" }]
 };
 
@@ -87,11 +88,23 @@ export function docSetFingerprint(dir) {
   return { files: files.length, sha256: hash.digest("hex") };
 }
 
+export const CHEATSHEET_FILE = "docs/agents/first-screen-cheatsheet.md";
+
+/** Condition A: the first screen the agent opens (llms.txt) becomes the task-complete cheat sheet; AGENTS.md shrinks to a pointer. */
+export function applyCheatsheetEntry({ dir, docsRoot }) {
+  const sheet = readFileSync(join(docsRoot, CHEATSHEET_FILE), "utf8");
+  writeFileSync(join(dir, "llms.txt"), sheet);
+  writeFileSync(
+    join(dir, "AGENTS.md"),
+    "# Aura3D agent entry\n\nEverything needed for common scenes is in `llms.txt` (cheat sheet with complete working blocks). Deeper references only if stuck: `docs/agents/api-signatures.md`, `docs/agents/recipes.md`, `docs/agents/README.md`.\n"
+  );
+}
+
 /**
  * Build an isolated sandbox. `baseDir` holds the installed node_modules for the arm (npm install of the
  * published packages); it is symlinked read-only-by-convention, never copied.
  */
-export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docsRoot = repoRoot }) {
+export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docsRoot = repoRoot, condition = {} }) {
   if (!ARMS.includes(arm)) throw new Error(`unknown arm ${arm}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(join(dir, "src"), { recursive: true });
@@ -111,9 +124,18 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docs
       const source = join(docsRoot, doc.from);
       if (!existsSync(source)) continue;
       mkdirSync(join(dir, doc.to, ".."), { recursive: true });
-      cpSync(source, join(dir, doc.to), { recursive: true });
+      // Text only: drop recipe frames and built samples (protocol docs502).
+      // Experiment files (cheat sheet, findings) never reach a condition that is not meant to see them.
+      const skip = (src) =>
+        /\.(png|jpe?g|webp)$/i.test(src) ||
+        /recipes-src\/\.dist/.test(src) ||
+        /docs\/agents\/samples/.test(src) ||
+        /docs\/agents\/turn-gap-findings\.md$/.test(src) ||
+        (!condition.cheatsheet && /docs\/agents\/first-screen-cheatsheet\.md$/.test(src));
+      cpSync(source, join(dir, doc.to), { recursive: true, filter: (src) => !skip(src) });
     }
   }
+  if (arm === "aura" && condition.cheatsheet) applyCheatsheetEntry({ dir, docsRoot });
   return { dir, docs: arm === "aura" ? docSetFingerprint(dir) : null };
 }
 
@@ -121,7 +143,7 @@ function repoSourceIndex(repoRoot) {
   // Git checkout: tracked files; ACR source pass (no .git): the staged manifest.
   const index = new Map();
   for (const path of listCandidateFiles(repoRoot, FORBIDDEN_ROOTS)) {
-    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || path.startsWith("evidence/agent-eval/")) continue;
+    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || /^evidence\/(?:[^/]+\/)?agent-eval(?:-[a-z0-9]+)?\//.test(path)) continue;
     const name = basename(path);
     if (!index.has(name)) index.set(name, []);
     index.get(name).push(path);

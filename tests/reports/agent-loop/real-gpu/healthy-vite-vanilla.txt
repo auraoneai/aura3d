@@ -1,0 +1,13 @@
+(node:14312) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+aura3d verify: PASS (0 error, 1 warning) in 18.1s
+  pass    typecheck  (0 error(s))
+  pass    assets  (no aura.assets.json)
+  pass    lint  (0 finding(s))
+  skipped build  (skipped by option)
+  pass    serve  (http://127.0.0.1:50525)
+  pass    render  (chrome-cdp, ready=true)
+  pass    inspect  (frame drawn)
+WARNING MOTION_NONE
+        Two frames 1000 ms apart are identical (0.000% of pixels changed).
+        fix: If the scene should animate, drive time yourself (`setUniform` in `app.onFrame` on a `.runtime({ mutable: true })` node) and check LINT_UTIME_NOT_ANIMATED.

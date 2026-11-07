@@ -36,6 +36,7 @@ import {
 } from "../../agent-api/world/terrain.js";
 import type { AuraWorldQualityTier } from "../../agent-api/world/types.js";
 import { tierForSettings } from "./WorldFramePasses.js";
+import { parseAuraColorSrgb } from "../../agent-api/color.js";
 
 const PATCH_FORMAT = new VertexFormat([
   { semantic: "uv", components: 2, offset: 0, shaderName: "a_grid" }
@@ -203,6 +204,7 @@ function layerTint(name: string, tint: string | undefined): readonly [number, nu
       parseInt(tint.slice(5, 7), 16) / 255
     ];
   }
+  if (tint) { const [r, g, b] = parseAuraColorSrgb(tint); return [r, g, b]; }
   return LAYER_TINTS[name] ?? [0.35, 0.35, 0.35];
 }
 
