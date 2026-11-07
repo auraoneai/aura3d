@@ -85,12 +85,15 @@ const frame = (over: Partial<PresentationFrame> = {}): PresentationFrame => ({
 const options = (reducedMotion = false) => ({ mode: "diorama" as const, reducedMotion, heroNode: nodeName.hero, gateRingNode: nodeName.gateRing });
 
 describe("pips-big-leap runtime presentation", () => {
-  it("applies the world's post preset and base fog after each mount and plays a 3.5 s fly-over once per world (PBL-P1, E1, C1)", () => {
+  it("pins the output to ACES at exposure 1, applies the base fog after each mount and plays a 3.5 s fly-over once per world (PBL-P1, E1, C1, lane 521)", () => {
     const { app, calls } = fakeApp();
     const p = createDioramaPresentation(app, options());
     const w4 = buildWorld(worldSpec("w4"));
     p.worldMounted(w4);
-    expect(calls.output).toEqual([{ preset: "arena-fight", exposure: Math.pow(2, WORLD_LOOKS.w4.exposureEv) }]);
+    // Lane 521: the world's post preset and EV never reached the post chain through 4.7.18; the looks were tuned and
+    // judged at the engine default output, which 5.x would otherwise replace with the preset's operator and the EV.
+    expect(calls.output).toEqual([{ toneMapping: "aces", exposure: 1 }]);
+    expect(WORLD_LOOKS.w4.exposureEv).not.toBe(0);
     expect(calls.fog[0]).toMatchObject({ mode: "height", heightReference: w4.presentation.baseTop });
     expect(calls.presets).toEqual(Object.values(PIP_VFX));
     expect(calls.plays.map((c) => c.id)).toEqual(["pbl-flyover-w4"]);

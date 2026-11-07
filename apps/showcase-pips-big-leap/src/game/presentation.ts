@@ -285,11 +285,15 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       const look = built.presentation.look;
       outputTouched = true;
       counts.mounted += 1;
-      // PBL-P1: the look declares its post id, but nothing applies the look's output
-      // preset on this build, so the world's preset is set after every setScene. The
-      // exposure rides along explicitly (GU47 phase 2: the first capture measured every
-      // world 2-3 EV under its band, so the world EV is written as the output multiplier).
-      app.setOutput?.({ preset: look.post.preset, exposure: Math.pow(2, look.exposureEv) });
+      // PBL-P1 / lane 521: through 4.7.18 this call wrote `{ preset: look.post.preset, exposure:
+      // 2^exposureEv }`, but app.setOutput never reached the post chain on the LegacyPost route,
+      // so every world (and every blind-panel frame) rendered with the engine default output:
+      // ACES, exposure 1, no preset effects. 5.0 forwards setOutput to the post chain, which
+      // switched w1-w3/w5 to the preset's AgX operator and pushed w4/w6 to 2.2-2.6x exposure
+      // (the 5.0.3 frames: near-black forest, washed-out ember cellar and starfall). The world
+      // look (grade, bloom, vignette, height fog) is authored on the scene; the output stays
+      // pinned to what those looks were tuned and judged under.
+      app.setOutput?.({ toneMapping: "aces", exposure: 1 });
       // PBL-E1: keep the live fog on the base height fog after the swap.
       if (built.presentation.baseTop !== null) {
         try {
