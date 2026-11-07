@@ -584,8 +584,8 @@ describe("live game inventory classification", () => {
       'path.join(repoRoot, "tools", "site", "wrong.json")'
     ))).toThrow(/canonical site games catalog/);
     expect(() => parseAliasBuildContract(realBuildSource.replace(
-      "const aliases = buildCatalogRouteAliases({ catalog, routes: publicRoutes, reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });",
-      "const aliases = [];"
+      "aliases = buildCatalogRouteAliases({ catalog, routes: publicRoutes, reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });",
+      "aliases = [];"
     ))).toThrow(/post-build catalog alias step/);
     expect(() => parseAliasBuildContract(realBuildSource.replace(
       'const reservedAliasRoutes = [...retiredPrototypeRoutes, ...supersededPublicRoutes, "aura-clash"];',

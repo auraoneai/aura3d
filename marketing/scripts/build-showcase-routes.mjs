@@ -764,10 +764,15 @@ export function main() {
       copyAuraAssets(onlyRoute);
     }
     assertBuiltRoutes(onlyRoute);
-    const aliasCatalog = onlyRoute ? { ...catalog, games: catalog.games.filter((game) => game?.appFolder === onlyRoute) } : catalog;
-    const aliases = onlyRoute && aliasCatalog.games.length === 0
-      ? []
-      : buildCatalogRouteAliases({ catalog: aliasCatalog, routes: routesInScope(onlyRoute), reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });
+    let aliases;
+    if (!onlyRoute) {
+      aliases = buildCatalogRouteAliases({ catalog, routes: publicRoutes, reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });
+    } else {
+      const aliasCatalog = { ...catalog, games: catalog.games.filter((game) => game?.appFolder === onlyRoute) };
+      aliases = aliasCatalog.games.length === 0
+        ? []
+        : buildCatalogRouteAliases({ catalog: aliasCatalog, routes: routesInScope(onlyRoute), reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });
+    }
     // Copy aliases before the optional CDN pass so both HTML copies and any
     // newly included route-local public files receive identical URL rewriting.
     if (showcaseAssetBaseUrl) rewriteBuiltAuraAssetUrls(distDir, showcaseAssetBaseUrl);
