@@ -10,7 +10,7 @@ import { createRegistry } from "@aura3d/rendering/contracts";
 export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of-day" | "scene-signal" | "neutral-room" | "legacy";
 export interface AuraEnvironmentSourceResolution {
   readonly kind: AuraEnvironmentSourceKind;
-  readonly probe: "neutral" | { readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" } | { readonly hdri: string; readonly reflection?: string } | { readonly capture: { readonly include: "sky-only" | "all"; readonly position?: AuraVec3; readonly resolution?: 64 | 128 | 256; readonly update?: "once" | "on-demand" | { readonly everyNFrames: number } } } | { readonly spaceBake: string };
+  readonly probe: "neutral" | { readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox" } | { readonly hdri: string; readonly reflection?: string } | { readonly capture: { readonly include: "sky-only" | "all"; readonly position?: AuraVec3; readonly resolution?: 64 | 128 | 256; readonly update?: "once" | "on-demand" | { readonly everyNFrames: number } } } | { readonly spaceBake: string };
   readonly intensity: number; readonly diffuseIntensity: number; readonly specularIntensity: number; readonly rotation: number;
   readonly background: false | { readonly visible: boolean; readonly blurriness: number; readonly intensity: number; readonly rotation: number };
   readonly ambient: { readonly color: AuraColor; readonly intensity: number } | null;   // ADDITIVE to IBL (never replaces it)

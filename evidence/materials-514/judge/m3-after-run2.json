@@ -1,0 +1,100 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "label": "m3-after",
+  "ourFrame": "/tmp/mat514/frames/m3-after.png",
+  "task": "12-materials-3.md",
+  "rubricMax": 25,
+  "results": [
+    {
+      "label": "m3-after",
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 18,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "B shows clearly veined Carrara marble, a visible room with bright windows and a glossy reflective floor, and a fully visible trophy on a stepped pedestal, while A has a moodier spotlight and richer gold but only faint marble veining, a mostly black room, and an off-centre subject."
+    },
+    {
+      "label": "m3-after",
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B has a warm spotlight pool with falloff, a visible soft shadow behind the pedestal, a more convincingly metallic gold trophy with a dark band, and warm marble, while A looks washed out with a cool, flat floor, a tiny trophy and little spotlight effect."
+    },
+    {
+      "label": "m3-after",
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 17
+      },
+      "winner": "aura",
+      "why": "A shows the trophy and pedestal clearly with veined marble, gold reflecting bright windows, and a glossy floor, while B is warm and moody with a nice spotlight pool but is very dark, small in frame, and its marble and gold read less clearly."
+    }
+  ]
+}

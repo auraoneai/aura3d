@@ -1,0 +1,75 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "label": "m3-after",
+  "ourFrame": "/tmp/mat514/frames/m3-after.png",
+  "task": "12-materials-3.md",
+  "rubricMax": 25,
+  "results": [
+    {
+      "label": "m3-after",
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 18,
+        "three": 15
+      },
+      "winner": "aura",
+      "why": "B shows clearly veined Carrara marble, a visible lit room with windows, and a gold trophy on a dark base, though the trophy is small and the room is a bit flat; A has a warmer mood and detailed gold, but its marble is cream with faint veining, the room is almost black, and the render is cropped and "
+    },
+    {
+      "label": "m3-after",
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B has a warm spotlight pool, visible shadow behind the pedestal and a richer gold cup with a darker band, whereas A is washed out with a mirror-like floor, a tiny trophy and little visible spotlight falloff."
+    },
+    {
+      "label": "m3-after",
+      "idx": 3,
+      "error": "Unexpected non-whitespace character after JSON at position 149 (line 3 column 1)"
+    }
+  ]
+}

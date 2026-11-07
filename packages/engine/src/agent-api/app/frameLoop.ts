@@ -16,7 +16,8 @@ import { groups } from "../nodes/groups.js";
 import { sceneConsumesClock } from "./timeConsumers.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
-import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
+import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
+import { sceneUsesStudioGlass } from "../nodes/scene.js";
 import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveCameraFrame } from "../compiler/camera.js";
@@ -96,7 +97,7 @@ export async function startProductionRender(
       );
   }
 
-  const qrFlags = appQrFlags ?? qrFlagsWithAnimationMixer(
+  const qrFlags = appQrFlags ?? qrFlagsWithStudioGlass(qrFlagsWithAnimationMixer(
     resolveQrFlags({
       options: options.qualityRebuild?.flags,
       // Same C-38 source chain as createAuraApp: URL `?a3d-qr=` applies unless
@@ -108,7 +109,7 @@ export async function startProductionRender(
         : typeof location !== "undefined" ? location.href : undefined
     }),
     options.animation?.mixer
-  );
+  ), sceneUsesStudioGlass(snapshot.nodes));
   // beat-three.js L-P1: decided per mount (setScene re-mounts re-decide). `direct` pins the
   // HDR-target route off for this renderer only; the app's own flags are untouched.
   // RP-01/RP-03: reasons found after an earlier mount on this canvas (a custom post pass) keep it off the direct path.

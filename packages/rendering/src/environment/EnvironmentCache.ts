@@ -56,7 +56,7 @@ const NEUTRAL_TAG = "__neutral__";
 
 function keyId(key: EnvironmentCacheKey): string {
   const source = key.url !== undefined ? ["url", key.url] : ["preset", key.preset ?? NEUTRAL_TAG];
-  const embeddedNeutral = key.url === undefined && key.preset === "neutral";
+  const embeddedNeutral = key.url === undefined && (key.preset === "neutral" || key.preset === "softbox");
   return JSON.stringify([source, key.tier, embeddedNeutral ? null : key.identity?.key ?? null]);
 }
 
@@ -93,7 +93,7 @@ export class EnvironmentCache {
     if (key.identity && (typeof key.identity.key !== "string" || !key.identity.key || typeof key.identity.reusable !== "boolean")) {
       throw new Error("ENVIRONMENT_IDENTITY_INVALID");
     }
-    const embeddedNeutral = key.url === undefined && key.preset === "neutral";
+    const embeddedNeutral = key.url === undefined && (key.preset === "neutral" || key.preset === "softbox");
     const reusable = embeddedNeutral || key.identity?.reusable === true;
     const base = keyId(key);
     const id = reusable ? base : JSON.stringify([base, ++this.unsharedSequence]);
@@ -532,6 +532,14 @@ export function defaultProbeLoader(
       const { loadEmbeddedNeutralProbe } = await awaitPresetOperation(loaderModule, signal);
       if (signal?.aborted) throw presetAbortReason(signal);
       return loadEmbeddedNeutralProbe();
+    }
+    if (key.preset === "softbox") {
+      // Structured studio for metal and glass: embedded like `neutral`, no /aura-environments fetch.
+      const loaderModule = import("./softboxEmbeddedLoader.js");
+      await awaitPresetOperation(whenFirstFramePresented(), signal);
+      const { loadEmbeddedSoftboxProbe } = await awaitPresetOperation(loaderModule, signal);
+      if (signal?.aborted) throw presetAbortReason(signal);
+      return loadEmbeddedSoftboxProbe();
     }
     if (key.preset) {
       if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(key.preset)) {

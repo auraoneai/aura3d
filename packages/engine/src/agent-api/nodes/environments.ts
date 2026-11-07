@@ -7,7 +7,7 @@ import { environmentMapPresets, environments } from "./environments.composite.js
 
 // ---------- PRD-02 §7 — environment sources (CCR-02-2 additions) ----------
 
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 
 export interface AuraEnvironmentBackgroundOptions {
   /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
@@ -152,10 +152,40 @@ const legacyAlias = (preset: AuraEnvironmentPresetName, label: string) =>
     background: options.background ?? false
   });
 
+const studioAlias = legacyAlias("studio", "studio ibl environment");
+
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+  /**
+   * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+   * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+   * Omitted or `"studio"` is the existing studio probe, unchanged.
+   */
+  readonly preset?: "studio" | "softbox";
+}
+
+/** `environments.studio()` with the additive `{ preset: "softbox" }` choice; every existing call is unchanged. */
+const studioBuilder = (options: AuraStudioEnvironmentOptions = {}): AuraNodeBuilder<AuraEnvironmentNode> => {
+  if (options.preset !== "softbox") return studioAlias(options);
+  const { preset: _preset, ...rest } = options;
+  return envV2({
+    kind: "environment",
+    environment: "preset",
+    preset: "softbox",
+    name: rest.name ?? "softbox studio ibl environment",
+    intensity: rest.intensity ?? 1,
+    ...(rest.diffuseIntensity !== undefined ? { diffuseIntensity: rest.diffuseIntensity } : {}),
+    ...(rest.specularIntensity !== undefined ? { specularIntensity: rest.specularIntensity } : {}),
+    ...(rest.rotation !== undefined ? { rotation: rest.rotation } : {}),
+    // Like the other studio aliases: the clear colour stays the backdrop unless the author asks for the probe behind.
+    background: rest.background ?? false,
+    ...(rest.color ? { color: rest.color } : {})
+  });
+};
+
 export const envSourceBuilders = {
   // §11 aliases: emit preset nodes; flag-off resolves via the additive
   // "preset" → "studio" key in the legacy preset table.
-  studio: legacyAlias("studio", "studio ibl environment"),
+  studio: studioBuilder,
   materialLab: legacyAlias("studio", "material lab ibl environment"),
   productHero: legacyAlias("studio", "product hero ibl environment"),
   nightCinematic: legacyAlias("night", "night cinematic ibl environment"),

@@ -1,0 +1,78 @@
+teleoperator-baseA.png 0abf785e
+teleoperator-baseB.png 73c6207b
+teleoperator-branchA.png 688e1fd8
+teleoperator-branchB.png 76622fea
+teleoperator-run3-baseA.png c27f6309
+teleoperator-run3-baseB.png 688e1fd8
+teleoperator-run3-branchA.png 768b0879
+teleoperator-run3-branchB.png 768b0879
+teleoperator-run4-baseA.png 768b0879
+teleoperator-run4-baseB.png 688e1fd8
+teleoperator-run4-branchA.png 768b0879
+teleoperator-run4-branchB.png 768b0879
+teleoperator-baseA.png | teleoperator-baseB.png: mean 0.0008 max 20
+teleoperator-baseA.png | teleoperator-branchA.png: mean 1.8947 max 80
+teleoperator-baseA.png | teleoperator-branchB.png: mean 0.0019 max 18
+teleoperator-baseA.png | teleoperator-run3-baseA.png: mean 1.8973 max 76
+teleoperator-baseA.png | teleoperator-run3-baseB.png: mean 1.8947 max 80
+teleoperator-baseA.png | teleoperator-run3-branchA.png: mean 1.8949 max 80
+teleoperator-baseA.png | teleoperator-run3-branchB.png: mean 1.8949 max 80
+teleoperator-baseA.png | teleoperator-run4-baseA.png: mean 1.8949 max 80
+teleoperator-baseA.png | teleoperator-run4-baseB.png: mean 1.8947 max 80
+teleoperator-baseA.png | teleoperator-run4-branchA.png: mean 1.8949 max 80
+teleoperator-baseA.png | teleoperator-run4-branchB.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-branchA.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-branchB.png: mean 0.0018 max 20
+teleoperator-baseB.png | teleoperator-run3-baseA.png: mean 1.8973 max 76
+teleoperator-baseB.png | teleoperator-run3-baseB.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-run3-branchA.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-run3-branchB.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-run4-baseA.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-run4-baseB.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-run4-branchA.png: mean 1.8949 max 80
+teleoperator-baseB.png | teleoperator-run4-branchB.png: mean 1.8949 max 80
+teleoperator-branchA.png | teleoperator-branchB.png: mean 1.8949 max 80
+teleoperator-branchA.png | teleoperator-run3-baseA.png: mean 2.0676 max 85
+teleoperator-branchA.png | teleoperator-run3-baseB.png: mean 0 max 0
+teleoperator-branchA.png | teleoperator-run3-branchA.png: mean 0.0021 max 18
+teleoperator-branchA.png | teleoperator-run3-branchB.png: mean 0.0021 max 18
+teleoperator-branchA.png | teleoperator-run4-baseA.png: mean 0.0021 max 18
+teleoperator-branchA.png | teleoperator-run4-baseB.png: mean 0 max 0
+teleoperator-branchA.png | teleoperator-run4-branchA.png: mean 0.0021 max 18
+teleoperator-branchA.png | teleoperator-run4-branchB.png: mean 0.0021 max 18
+teleoperator-branchB.png | teleoperator-run3-baseA.png: mean 1.8974 max 76
+teleoperator-branchB.png | teleoperator-run3-baseB.png: mean 1.8949 max 80
+teleoperator-branchB.png | teleoperator-run3-branchA.png: mean 1.8948 max 80
+teleoperator-branchB.png | teleoperator-run3-branchB.png: mean 1.8948 max 80
+teleoperator-branchB.png | teleoperator-run4-baseA.png: mean 1.8948 max 80
+teleoperator-branchB.png | teleoperator-run4-baseB.png: mean 1.8949 max 80
+teleoperator-branchB.png | teleoperator-run4-branchA.png: mean 1.8948 max 80
+teleoperator-branchB.png | teleoperator-run4-branchB.png: mean 1.8948 max 80
+teleoperator-run3-baseA.png | teleoperator-run3-baseB.png: mean 2.0676 max 85
+teleoperator-run3-baseA.png | teleoperator-run3-branchA.png: mean 2.0677 max 85
+teleoperator-run3-baseA.png | teleoperator-run3-branchB.png: mean 2.0677 max 85
+teleoperator-run3-baseA.png | teleoperator-run4-baseA.png: mean 2.0677 max 85
+teleoperator-run3-baseA.png | teleoperator-run4-baseB.png: mean 2.0676 max 85
+teleoperator-run3-baseA.png | teleoperator-run4-branchA.png: mean 2.0677 max 85
+teleoperator-run3-baseA.png | teleoperator-run4-branchB.png: mean 2.0677 max 85
+teleoperator-run3-baseB.png | teleoperator-run3-branchA.png: mean 0.0021 max 18
+teleoperator-run3-baseB.png | teleoperator-run3-branchB.png: mean 0.0021 max 18
+teleoperator-run3-baseB.png | teleoperator-run4-baseA.png: mean 0.0021 max 18
+teleoperator-run3-baseB.png | teleoperator-run4-baseB.png: mean 0 max 0
+teleoperator-run3-baseB.png | teleoperator-run4-branchA.png: mean 0.0021 max 18
+teleoperator-run3-baseB.png | teleoperator-run4-branchB.png: mean 0.0021 max 18
+teleoperator-run3-branchA.png | teleoperator-run3-branchB.png: mean 0 max 0
+teleoperator-run3-branchA.png | teleoperator-run4-baseA.png: mean 0 max 0
+teleoperator-run3-branchA.png | teleoperator-run4-baseB.png: mean 0.0021 max 18
+teleoperator-run3-branchA.png | teleoperator-run4-branchA.png: mean 0 max 0
+teleoperator-run3-branchA.png | teleoperator-run4-branchB.png: mean 0 max 0
+teleoperator-run3-branchB.png | teleoperator-run4-baseA.png: mean 0 max 0
+teleoperator-run3-branchB.png | teleoperator-run4-baseB.png: mean 0.0021 max 18
+teleoperator-run3-branchB.png | teleoperator-run4-branchA.png: mean 0 max 0
+teleoperator-run3-branchB.png | teleoperator-run4-branchB.png: mean 0 max 0
+teleoperator-run4-baseA.png | teleoperator-run4-baseB.png: mean 0.0021 max 18
+teleoperator-run4-baseA.png | teleoperator-run4-branchA.png: mean 0 max 0
+teleoperator-run4-baseA.png | teleoperator-run4-branchB.png: mean 0 max 0
+teleoperator-run4-baseB.png | teleoperator-run4-branchA.png: mean 0.0021 max 18
+teleoperator-run4-baseB.png | teleoperator-run4-branchB.png: mean 0.0021 max 18
+teleoperator-run4-branchA.png | teleoperator-run4-branchB.png: mean 0 max 0

@@ -53,16 +53,16 @@ Step 1, presets (always try first):
    `environments.productHero`, `environments.nightCinematic`,
    `environments.metalStudio`, `environments.glassStudio`, or
    `environments.forMaterial("metal" | "glass" | "product" | "studio")`.
+   Metal and glass that must read: [metal-glass](references/metal-glass.md) (`material.studioMetal`, `material.studioGlass`, softbox).
 3. Outdoor: `sky.dayNight({ hour })` returns `nodes`, `background`, and
    `dayFactor`; `weather.precipitation({ type: "rain" | "snow" })` and
    `weather.wetGround(...)`; `water.surface({ preset: "calm" | "moderate" |
    "rough" | "storm" })`. Add their `nodes` with `scene().addMany(...)` and use
    the returned `background`. Strata, caustics, god rays, beams: [visual helpers](references/visual-helpers.md).
 4. Choosing values: start from `material.presets()` and the named builders
-   above (car paint is `material.clearcoatPaint`, thin glass is
-   `material.glass`, brushed metal is `material.brushedMetal`); the in-repo
-   preset library (`GAME_READY_MATERIAL_PRESETS` in
-   `packages/engine/src/devtools/materials/MaterialValidation.ts`) is a source
+   above (car paint is `material.clearcoatPaint`, thin glass `material.glass`,
+   brushed metal `material.brushedMetal`); `GAME_READY_MATERIAL_PRESETS` in
+   `packages/engine/src/devtools/materials/MaterialValidation.ts` is a source
    reference for values, not an import.
 
 Step 2, a licensed local file (Poly Haven or another CC0 / CC-BY source you
