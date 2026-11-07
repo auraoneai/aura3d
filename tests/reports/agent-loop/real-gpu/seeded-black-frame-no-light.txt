@@ -1,0 +1,19 @@
+(node:13421) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+aura3d verify: FAIL (1 error, 1 warning) in 4.1s
+  skipped typecheck  (skipped by option)
+  pass    assets  (no aura.assets.json)
+  pass    lint  (0 finding(s))
+  skipped build  (skipped by option)
+  pass    serve  (http://127.0.0.1:50394)
+  pass    render  (chrome-cdp, ready=true)
+  fail    inspect  (black frame (p99 luma 0); flat frame (1 distinct colours); no scene texture (0.0% textured blocks))
+WARNING RUNTIME_NO_LIGHTS
+        Scene has no lights. Suggested fix: add lights.studio() or lights.ambient().
+        fix: Add `lights.studio()`, `lights.directional(...)` or `lights.ambient()`, or a `looks.preset(...)` / `environments.*`.
+INFO    RUNTIME_NO_INTERACTIONS
+        Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.
+        fix: Add `interactions.orbit()` if a viewer should be able to move the camera.
+ERROR   FRAME_BLACK
+        The frame is black (p99 luma 0).
+        fix: Add `lights.directional(...)` or a `looks.preset(...)`, check the camera target, and read the other findings first (RENDERER_MOUNT_FAILED, RUNTIME_DIAGNOSTIC_ERROR).

@@ -67,7 +67,7 @@ test.describe("number-surge", () => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
-    await page.setViewportSize({ width: 800, height: 450 });
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(`${server.origin}${ROUTE}?manual=1`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => (window as unknown as Win).__AURA_NUMBER_SURGE__?.ready() === true || Boolean((window as unknown as Win).__AURA_NUMBER_SURGE_ERROR__),
@@ -77,6 +77,15 @@ test.describe("number-surge", () => {
     const bootError = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE_ERROR__ ?? null);
     expect(bootError, "boot error").toBeNull();
 
+    const CHUNK = 16000;
+    const shootScreen = async (shot: string): Promise<void> => {
+      const jpg = await page.screenshot({ type: "jpeg", quality: 86 });
+      const b64 = jpg.toString("base64");
+      const n = Math.ceil(b64.length / CHUNK);
+      for (let i = 0; i < n; i++) {
+        process.stdout.write(`GL_JPG number-surge ${shot} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}\n`);
+      }
+    };
     const save = async (name: string): Promise<void> => {
       const jpeg = await page.evaluate((n) => (window as unknown as Win).__AURA_NUMBER_SURGE__.frame(480, 270, 0.7).then((d) => ({ n, d })), name);
       writeFileSync(resolve(REPORT_ROOT, `${name}.jpg`), Buffer.from(jpeg.d.split(",")[1] as string, "base64"));
@@ -101,16 +110,20 @@ test.describe("number-surge", () => {
     /* splash: indigo-to-violet dusk sky in the top band */
     await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.stepFrames(30));
     await save("01-splash");
+    await shootScreen("title-1280");
     const splash = await stats();
     expect(splash.top.dusk + splash.top.sat, "indigo dusk sky gradient in the top third").toBeGreaterThan(splash.top.n * 0.2);
 
     /* run: neon gates + cyan ball, autopilot scoring and smashing walls, frame progression */
     await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.reset(20261103));
-    const early = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(240));
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(60));
+    await shootScreen("early-1280");
+    const early = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(180));
     expect(early.phase).toBe("playing");
     expect(early.score).toBeGreaterThan(0);
     expect(early.distance).toBeGreaterThan(50);
     await save("02-run-4s");
+    await shootScreen("action-1280");
     const run1 = await stats();
     expect(run1.low.dusk + run1.mid.dusk, "violet road and dusk lighting").toBeGreaterThan(run1.low.n * 0.1);
     expect(run1.mid.sat + run1.low.sat + run1.mid.neon + run1.low.neon, "neon gates and cyan ball").toBeGreaterThan(30);
@@ -118,6 +131,7 @@ test.describe("number-surge", () => {
     expect(late.score).toBeGreaterThan(early.score);
     expect(late.wallsSmashed).toBeGreaterThanOrEqual(1);
     await save("03-run-wall-smash");
+    await shootScreen("mid-1280");
     const run2 = await stats();
     expect(JSON.stringify(run2)).not.toBe(JSON.stringify(run1));
 
@@ -125,7 +139,42 @@ test.describe("number-surge", () => {
     await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.reset(20261103));
     const dead = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(2000, true));
     expect(["gameOver", "bursting"]).toContain(dead.phase);
+    if (dead.phase === "bursting") {
+      await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.stepFrames(80));
+    }
     await save("04-game-over");
+    await shootScreen("results-1280");
+
+    /* card@2x (1440x900) and phone (390x844) final screen captures */
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.evaluate(() => {
+      const h = (window as unknown as Win).__AURA_NUMBER_SURGE__;
+      h.reset(20261103);
+      h.extras.runAutopilot(240);
+    });
+    await shootScreen("card@2x");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => {
+      const h = (window as unknown as Win).__AURA_NUMBER_SURGE__;
+      h.reset(20261103);
+      h.stepFrames(30);
+    });
+    await shootScreen("title-390");
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(60));
+    await shootScreen("early-390");
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(180));
+    await shootScreen("action-390");
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(1500));
+    await shootScreen("mid-390");
+    await page.evaluate(() => {
+      const h = (window as unknown as Win).__AURA_NUMBER_SURGE__;
+      h.reset(20261103);
+      const s = h.extras.runAutopilot(2000, true);
+      if (s.phase === "bursting") h.stepFrames(80);
+    });
+    await shootScreen("results-390");
+    await page.setViewportSize({ width: 1280, height: 720 });
 
     /* restart re-centres steering (C4) and resets the run */
     const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.restart());

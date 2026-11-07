@@ -39,7 +39,7 @@ describe("agent-eval metrics", () => {
 
   it("parses the runner command line", () => {
     expect(parseArgs(["--arm", "aura", "--task", "3", "--runs", "5", "--batch", "x"])).toMatchObject({ arm: "aura", task: "3", runs: 5, batch: "x" });
-    expect(resolveTasks("1,3,9,10")).toEqual([1, 3, 9]);
+    expect(resolveTasks("1,3,100")).toEqual([1, 3]);
     expect(resolveTasks("all")).toHaveLength(7);
     expect(() => parseArgs(["--nope"])).toThrow();
   });

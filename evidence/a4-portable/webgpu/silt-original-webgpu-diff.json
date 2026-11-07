@@ -1,0 +1,79 @@
+{
+  "pilot": "silt-original-webgpu",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-silt-and-signal-port/?manual=1&dpr=1&look=original",
+  "probes": {
+    "glsl": {
+      "hasNavigatorGpu": true,
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "description": ""
+      },
+      "info": "{\"frames\":4,\"nodeCount\":15,\"diagnostics\":{\"backend\":\"webgl2\",\"fps\":60,\"drawCalls\":137,\"renderSize\":[1280,720],\"assets\":[{\"id\":\"tree\",\"type\":\"model\",\"url\":\"/examples/silt-and-signal-port/assets/models/tree.glb\",\"status\":\"ready\",\"provenance\":{\"source\":\"typed-aura-assets-manifest\",\"id\":\"tree\",\"url\":\"/examples/silt-and-signal-port/assets/models/tree.glb\",\"hash\":\"sha256-e14290412ced6fb472f86885ce4158911ba12ec5be15f556a7745a7397b5d31d\",\"bounds\":[0.927,1.684,0.883]},\"hash\":\"sha256-e14290412ced6fb472f86",
+      "backendHits": [
+        "webgl2",
+        "native WebGPU compute",
+        "native WebGPU claim without adapter/render evidence",
+        "ed GLB actors and 31 Aura primitives on webgl2.",
+        "webgl2",
+        "native WebGPU compute",
+        "native WebGPU claim without adapter/render evidence",
+        "ed GLB actors and 31 Aura primitives on webgl2."
+      ],
+      "errors": []
+    },
+    "portable+backend=webgpu": {
+      "hasNavigatorGpu": true,
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "description": ""
+      },
+      "info": "{\"frames\":4,\"nodeCount\":15,\"diagnostics\":{\"backend\":\"webgl2\",\"fps\":0,\"drawCalls\":0,\"renderSize\":[0,0],\"assets\":[{\"id\":\"tree\",\"type\":\"model\",\"url\":\"/examples/silt-and-signal-port/assets/models/tree.glb\",\"status\":\"ready\",\"provenance\":{\"source\":\"typed-aura-assets-manifest\",\"id\":\"tree\",\"url\":\"/examples/silt-and-signal-port/assets/models/tree.glb\",\"hash\":\"sha256-e14290412ced6fb472f86885ce4158911ba12ec5be15f556a7745a7397b5d31d\",\"bounds\":[0.927,1.684,0.883]},\"hash\":\"sha256-e14290412ced6fb472f86885ce415",
+      "backendHits": [
+        "webgl2",
+        "native WebGPU compute",
+        "native WebGPU claim without adapter/render evidence",
+        "ed GLB actors and 31 Aura primitives on webgpu.",
+        "Production runtime feature real-webgl2-context is blocked: backend=webgpu",
+        "osure, dithering) are authored; backend webgpu; effect \\",
+        "webgl2",
+        "native WebGPU compute"
+      ],
+      "errors": [
+        "RenderDeviceError: Portable numeric uniform has the wrong number or kind of components {\"binding\":\"u_instanceMatrices\",\"expected\":1024,\"actual\":704}"
+      ]
+    }
+  },
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {
+    "glsl-vs-portable+backend=webgpu": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 124.0294,
+        "maxDiff255": 231,
+        "changedPct": 99.558,
+        "over4Pct": 99.344,
+        "over16Pct": 98.551
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          470,
+          230
+        ],
+        "pixels": 108100,
+        "meanAbsDiff255": 139.4209,
+        "maxDiff255": 209,
+        "changedPct": 100,
+        "over4Pct": 100,
+        "over16Pct": 99.924
+      }
+    }
+  }
+}

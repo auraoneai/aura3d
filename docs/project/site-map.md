@@ -1,11 +1,11 @@
 # Site Map
 
-Version: 5.0.3
+Version: 5.1.0
 
-Current release: Aura3D 5.0.3.
+Current release: Aura3D 5.1.0.
 
 Date: 2026-10-15
-Status: Aura3D 5.0.3 site map
+Status: Aura3D 5.1.0 site map
 
 ## Public Marketing Pages
 

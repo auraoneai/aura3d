@@ -17,7 +17,7 @@ export interface ExportEntry {
   /** Ordered condition leaves, including null blockers omitted from conditions. */
   conditionOrder?: string[];
 }
-export interface Change { package: string; subpath: string; name: string; kind: ReleaseChange["kind"]; classification: ReturnType<typeof classifyReleaseChange>; condition?: string; before?: string; after?: string }
+export interface Change { package: string; subpath: string; name: string; kind: ReleaseChange["kind"]; classification: ReturnType<typeof classifyReleaseChange>; condition?: string; before?: string; after?: string; widening?: boolean }
 export interface RuntimeCondition {
   package: string;
   subpath: string;
@@ -161,7 +161,36 @@ function candidates(plan: ExactReleasePlan): Map<string, PackedPackage> {
   }
   return result;
 }
-function unpackDeclarations(pkg: PackedPackage, parent: string): string {
+/** Module (relative to the comparison root) that declares the shared unique symbols. */
+export const SHARED_UNIQUE_SYMBOLS_FILE = "aura3d-diff-shared/unique-symbols.d.cts";
+/**
+ * Removes the identity that only exists because the baseline and the candidate are
+ * two physical copies in one comparison program. A consumer only ever has one copy,
+ * so these identities never distinguish the versions for real code:
+ *
+ * - `declare const brand: unique symbol` gets a fresh symbol per copy, so a brand
+ *   keyed property (`[brand]`) never matches across copies. Each such declaration
+ *   is re-pointed at one shared unique symbol keyed by package, file path and name;
+ *   a renamed or moved brand still gets a different key and stays a change.
+ * - private and `#private` members make a class nominal per declaration. They are
+ *   not part of the public surface, so they are dropped; protected members, which
+ *   subclasses do see, are compared as ordinary members. Constructors keep their
+ *   modifiers.
+ *
+ * The rewrite is applied identically to both sides and only to the comparison's
+ * temporary copies; the packed archives are not modified.
+ */
+export function neutralizeCopyIdentity(source: string, identity: string, sharedSpecifier: string, register: (key: string) => void): string {
+  return source
+    .replace(/^([ \t]*(?:export[ \t]+)?declare[ \t]+const[ \t]+)([A-Za-z_$][\w$]*)([ \t]*:[ \t]*)unique symbol([ \t]*;)/gm, (_match, head: string, name: string, colon: string, tail: string) => {
+      const key = `u_${createHash("sha256").update(`${identity}\0${name}`).digest("hex").slice(0, 24)}`;
+      register(key);
+      return `${head}${name}${colon}typeof import(${JSON.stringify(sharedSpecifier)}).${key}${tail}`;
+    })
+    .replace(/^[ \t]*(?:private[ \t]+(?!constructor\b)[^\n;{}]*;|#private;)[ \t]*$\n?/gm, "")
+    .replace(/^([ \t]*)protected[ \t]+(?!constructor\b)/gm, "$1");
+}
+function unpackDeclarations(pkg: PackedPackage, parent: string, root: string, sharedKeys: Set<string>): string {
   const dir = join(parent, "node_modules", ...pkg.manifest.name.split("/"));
   for (const [path, bytes] of pkg.files) {
     // Runtime source remains archive data: only declarations and package scopes
@@ -169,7 +198,10 @@ function unpackDeclarations(pkg: PackedPackage, parent: string): string {
     if (path !== "package.json" && !path.endsWith("/package.json") && !/\.d\.(?:m|c)?ts$/i.test(path)) continue;
     const target = join(dir, path);
     mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, bytes);
+    if (path.endsWith("package.json")) { writeFileSync(target, bytes); continue; }
+    let specifier = relative(dirname(target), join(root, SHARED_UNIQUE_SYMBOLS_FILE.replace(/\.d\.cts$/, ".cjs"))).split(sep).join("/");
+    if (!specifier.startsWith(".")) specifier = `./${specifier}`;
+    writeFileSync(target, neutralizeCopyIdentity(bytes.toString("utf8"), `${pkg.manifest.name}\0${path}`, specifier, (key) => sharedKeys.add(key)));
   }
   return dir;
 }
@@ -413,6 +445,131 @@ function computeDeclarationClosure(checker: ts.TypeChecker, root: ts.Symbol, bud
   for (const text of contents.sort()) hash.update(text).update("\0");
   return hash.digest("hex");
 }
+/** One side's top-level declarations reachable from a symbol, keyed by their
+ * location inside the compared package (side prefix removed), with their text. */
+interface ClosureDeclaration { readonly symbol: ts.Symbol; readonly texts: string[] }
+export type ClosureDeclarations = Map<string, ClosureDeclaration>;
+/** Top-level declarations (module, namespace or variable statement level) of the
+ * compared packages reached from `root`. Compiler libraries and other files outside
+ * the comparison's `before`/`after` trees are identical on both sides and skipped. */
+export function closureDeclarations(checker: ts.TypeChecker, root: ts.Symbol, temp: string, budget: DeclarationClosureBudget, label: string): ClosureDeclarations {
+  const resolveAlias = (input: ts.Symbol): ts.Symbol => input.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(input) : input;
+  const result: ClosureDeclarations = new Map();
+  const visited = new Set<ts.Symbol>(), pending: ts.Symbol[] = [root];
+  while (pending.length) {
+    const symbol = resolveAlias(pending.pop()!);
+    if (visited.has(symbol)) continue;
+    visited.add(symbol);
+    budget.spent += 1;
+    if (visited.size > budget.perEntrypoint) throw new Error(`Declaration dependency closure exceeds limit: ${label} reaches more than ${budget.perEntrypoint} symbols`);
+    if (budget.spent > budget.global) throw new Error(`Declaration dependency closures exceed the global limit of ${budget.global} symbols at ${label}`);
+    for (const node of symbol.getDeclarations() ?? []) {
+      const parts = relative(temp, node.getSourceFile().fileName).split(sep);
+      if (parts[0] === "before" || parts[0] === "after") {
+        const owner = node.parent;
+        if (owner && (ts.isSourceFile(owner) || ts.isModuleBlock(owner) || ts.isVariableDeclarationList(owner))) {
+          const scopes: string[] = [];
+          for (let up: ts.Node | undefined = owner; up; up = up.parent) if (ts.isModuleDeclaration(up)) scopes.unshift(up.name.getText());
+          const key = `${parts.slice(1).join("/")}#${[...scopes, symbol.name].join(".")}#${ts.SyntaxKind[node.kind]}`;
+          const entry = result.get(key) ?? { symbol, texts: [] };
+          entry.texts.push(node.getText().replace(/\s+/g, " ").trim());
+          result.set(key, entry);
+        }
+      }
+      const visitNode = (child: ts.Node): void => {
+        if (ts.isIdentifier(child)) {
+          const dependency = checker.getSymbolAtLocation(child);
+          if (dependency) pending.push(dependency);
+        }
+        ts.forEachChild(child, visitNode);
+      };
+      ts.forEachChild(node, visitNode);
+    }
+  }
+  return result;
+}
+/** Old assignable to new, and no property of the old type, or of an anonymous
+ * object type nested in it, was removed (removing a property keeps old values
+ * assignable but breaks code that reads it). Named types reached from here are
+ * judged as their own declarations by `attributedWidening`. */
+export function typeWidens(checker: ts.TypeChecker, before: ts.Type, after: ts.Type): boolean {
+  if (!checker.isTypeAssignableTo(before, after)) return false;
+  const seen = new Set<ts.Type>();
+  const keepsMembers = (oldType: ts.Type, newType: ts.Type, nested: boolean): boolean => {
+    if (seen.has(oldType)) return true;
+    seen.add(oldType);
+    if (nested && !(oldType.flags & ts.TypeFlags.Object && (oldType as ts.ObjectType).objectFlags & ts.ObjectFlags.Anonymous)) return true;
+    if (!(oldType.flags & ts.TypeFlags.Object) || !(newType.flags & ts.TypeFlags.Object)) return true;
+    for (const member of checker.getPropertiesOfType(oldType)) {
+      const replacement = checker.getPropertyOfType(newType, member.name);
+      if (!replacement) return false;
+      if (!keepsMembers(checker.getTypeOfSymbol(member), checker.getTypeOfSymbol(replacement), true)) return false;
+    }
+    return true;
+  };
+  return keepsMembers(before, after, false);
+}
+/**
+ * Whether one changed declaration is, on its own, a widening a minor release may
+ * ship. Types and interfaces: every old value satisfies the new type (old
+ * assignable to new) and no member was removed (`typeWidens`); generic ones fail closed because their separately declared
+ * type parameters cannot be related here. Functions, classes and other values with
+ * call or construct signatures: the new value works for every existing caller (new
+ * assignable to old) and a class instance does not widen. Plain value objects and
+ * namespaces: every old member is still present, and a member whose declaration
+ * text changed is itself caller-compatible; added members are additions.
+ */
+export function declarationSelfWidens(checker: ts.TypeChecker, before: ts.Symbol, after: ts.Symbol): boolean {
+  const assignable = (source: ts.Type, target: ts.Type) => checker.isTypeAssignableTo(source, target);
+  const isClass = !!(before.flags & ts.SymbolFlags.Class) && !!(after.flags & ts.SymbolFlags.Class);
+  const generic = (symbol: ts.Symbol) => (symbol.getDeclarations() ?? []).some((node) => {
+    const parameters = (node as ts.Node & { typeParameters?: ts.NodeArray<ts.TypeParameterDeclaration> }).typeParameters;
+    return !!parameters && parameters.length > 0;
+  });
+  if ((before.flags & ts.SymbolFlags.Type) !== (after.flags & ts.SymbolFlags.Type) || (before.flags & ts.SymbolFlags.Value) !== (after.flags & ts.SymbolFlags.Value)) return false;
+  if (before.flags & ts.SymbolFlags.Type) {
+    const oldType = checker.getDeclaredTypeOfSymbol(before), newType = checker.getDeclaredTypeOfSymbol(after);
+    if (isClass ? !assignable(newType, oldType) : (generic(before) || generic(after) || !typeWidens(checker, oldType, newType))) return false;
+  }
+  if (!(before.flags & ts.SymbolFlags.Value) || before.flags & ts.SymbolFlags.Enum) return true;
+  const location = (symbol: ts.Symbol) => symbol.valueDeclaration ?? symbol.getDeclarations()?.[0];
+  const oldLocation = location(before), newLocation = location(after);
+  if (!oldLocation || !newLocation) return false;
+  const oldValue = checker.getTypeOfSymbolAtLocation(before, oldLocation), newValue = checker.getTypeOfSymbolAtLocation(after, newLocation);
+  if (assignable(newValue, oldValue)) return true;
+  if (isClass || oldValue.getCallSignatures().length || oldValue.getConstructSignatures().length || checker.getIndexInfosOfType(oldValue).length
+    || newValue.getCallSignatures().length || newValue.getConstructSignatures().length) return false;
+  const text = (symbol: ts.Symbol) => (symbol.getDeclarations() ?? []).map((node) => node.getText().replace(/\s+/g, " ").trim().replace(/[;,]$/, "")).join(" | ");
+  for (const member of checker.getPropertiesOfType(oldValue)) {
+    const replacement = checker.getPropertyOfType(newValue, member.name);
+    if (!replacement) return false;
+    if (!!(member.flags & ts.SymbolFlags.Optional) !== !!(replacement.flags & ts.SymbolFlags.Optional)) return false;
+    if (text(member) === text(replacement)) continue;
+    if (!assignable(checker.getTypeOfSymbol(replacement), checker.getTypeOfSymbol(member))) return false;
+  }
+  return true;
+}
+/**
+ * Attributes a failed comparison of an exported symbol to the declarations that
+ * actually changed in its dependency closure. When every top-level declaration the
+ * old symbol reached is still reached, and each one whose text changed is itself a
+ * widening (`declarationSelfWidens`), the exported symbol only differs because a
+ * named type it mentions was widened. A minor release accepts that widening at the
+ * type, so it is not re-reported as a break of every value whose (unchanged)
+ * declaration mentions it. Nothing changed at all fails closed: the comparison
+ * failed for a reason this attribution cannot see.
+ */
+export function attributedWidening(checker: ts.TypeChecker, before: ClosureDeclarations, after: ClosureDeclarations): boolean {
+  let changed = 0;
+  for (const [key, old] of before) {
+    const next = after.get(key);
+    if (!next) return false;
+    if (old.texts.join("\0") === next.texts.join("\0")) continue;
+    changed += 1;
+    if (!declarationSelfWidens(checker, old.symbol, next.symbol)) return false;
+  }
+  return changed > 0;
+}
 /** A retarget is conservatively treated as a break: matching declarations do
  * not establish the actual exports of the newly targeted runtime file. */
 export function compareEntryConditions(name: string, before: ExportEntry, after: ExportEntry | undefined, release: ReleaseKind, version: string): Change[] {
@@ -482,9 +639,11 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
   mkdirSync(resolve("tests/reports"), { recursive: true });
   const temp = mkdtempSync(resolve("tests/reports/aura3d-api-diff-"));
   try {
-    const oldDirs = new Map<string, string>(), newDirs = new Map<string, string>();
-    for (const [name, pkg] of baseline) oldDirs.set(name, unpackDeclarations(pkg, join(temp, "before")));
-    for (const [name, pkg] of candidate) newDirs.set(name, unpackDeclarations(pkg, join(temp, "after")));
+    const oldDirs = new Map<string, string>(), newDirs = new Map<string, string>(), sharedKeys = new Set<string>();
+    for (const [name, pkg] of baseline) oldDirs.set(name, unpackDeclarations(pkg, join(temp, "before"), temp, sharedKeys));
+    for (const [name, pkg] of candidate) newDirs.set(name, unpackDeclarations(pkg, join(temp, "after"), temp, sharedKeys));
+    mkdirSync(dirname(join(temp, SHARED_UNIQUE_SYMBOLS_FILE)), { recursive: true });
+    writeFileSync(join(temp, SHARED_UNIQUE_SYMBOLS_FILE), `${[...sharedKeys].sort().map((key) => `export declare const ${key}: unique symbol;`).join("\n")}\nexport {};\n`);
     const oldEntriesByPackage = new Map([...baseline].map(([name, pkg]) => [name, expandExports(pkg)]));
     const newEntriesByPackage = new Map([...candidate].map(([name, pkg]) => [name, expandExports(pkg)]));
     const oldAnalyzers = new Map([...baseline].map(([name, pkg]) => [name, createRuntimeExportAnalyzer(pkg)]));
@@ -604,6 +763,7 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
       return result;
     };
     const closureBudget = createDeclarationClosureBudget(pairs.length), closureCache = createDeclarationClosureCache();
+    const attributionCache = new Map<ts.Symbol, ClosureDeclarations>();
     // Byte-identical declaration files on every package cannot hold a declaration change; the cross-program symbol
     // comparison is nominal for classes with private members and can report a false change for large namespace re-exports.
     const declarationsIdentical = allDeclarationsIdentical(oldDirs, newDirs);
@@ -623,21 +783,42 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
       }
       for (const symbol of before.values()) {
         const next = after.get(symbol.name);
-        const report = (kind: ReleaseChange["kind"], beforeText?: string, afterText?: string) => changes.push({ package: pair.name, subpath: pair.entry.subpath, name: symbol.name, kind, before: beforeText, after: afterText, classification: classifyReleaseChange({ kind, before: beforeText, after: afterText, removalVersion: symbol.removalVersion }, release, version) });
+        const report = (kind: ReleaseChange["kind"], beforeText?: string, afterText?: string, widening?: boolean) => changes.push({ package: pair.name, subpath: pair.entry.subpath, name: symbol.name, kind, before: beforeText, after: afterText, ...(widening ? { widening } : {}), classification: classifyReleaseChange({ kind, before: beforeText, after: afterText, removalVersion: symbol.removalVersion, ...(widening ? { widening } : {}) }, release, version) });
         if (symbol.value && !next?.value) report("value-removal");
         if (symbol.type && !next?.type) report("type-removal");
         if (!next) continue;
         let compatible = true;
+        // One-way compatibility for a minor release (see ReleaseChange.widening).
+        // Values keep the caller direction already required here: the new value
+        // must be usable wherever the old one was. A class's instance type is
+        // produced by its constructor, so it must not widen either. Interfaces and
+        // type aliases may widen, but that is only decided declaration by
+        // declaration through `attributedWidening` below, because a direct
+        // old-to-new check would also accept a member removed from a type they
+        // reference.
+        let widening = true;
         if (symbol.value && next.value) compatible &&= checker.isTypeAssignableTo(checker.getTypeOfSymbolAtLocation(next.symbol, next.location), checker.getTypeOfSymbolAtLocation(symbol.symbol, symbol.location));
+        widening &&= compatible;
         if (symbol.type && next.type) {
           const oldType = checker.getDeclaredTypeOfSymbol(symbol.symbol), newType = checker.getDeclaredTypeOfSymbol(next.symbol);
-          compatible &&= checker.isTypeAssignableTo(oldType, newType) && checker.isTypeAssignableTo(newType, oldType);
+          const newToOld = checker.isTypeAssignableTo(newType, oldType);
+          compatible &&= checker.isTypeAssignableTo(oldType, newType) && newToOld;
+          const isClass = !!(symbol.symbol.flags & ts.SymbolFlags.Class) && !!(next.symbol.flags & ts.SymbolFlags.Class);
+          widening &&= isClass && newToOld;
         }
+        const label = `${pair.name}${pair.entry.subpath === "." ? "" : pair.entry.subpath.slice(1)}#${symbol.name}`;
         if (!compatible && symbol.signature === next.signature) {
-          const label = `${pair.name}${pair.entry.subpath === "." ? "" : pair.entry.subpath.slice(1)}#${symbol.name}`;
           if (declarationClosure(checker, symbol.symbol, closureBudget, label, closureCache) === declarationClosure(checker, next.symbol, closureBudget, label, closureCache)) compatible = true;
         }
-        if (!compatible || diagnostics.length > 0) report("declaration-change", symbol.signature, next.signature);
+        if (!compatible && !widening && release === "minor") {
+          const closures = (root: ts.Symbol) => {
+            let cached = attributionCache.get(root);
+            if (!cached) attributionCache.set(root, cached = closureDeclarations(checker, root, temp, closureBudget, label));
+            return cached;
+          };
+          widening = attributedWidening(checker, closures(symbol.symbol), closures(next.symbol));
+        }
+        if (!compatible || diagnostics.length > 0) report("declaration-change", symbol.signature, next.signature, !compatible && widening);
       }
     }
     const runtimeDiagnostics: string[] = [], inheritedRuntimeDiagnostics: string[] = [];

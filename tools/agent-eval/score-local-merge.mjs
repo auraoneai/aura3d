@@ -9,7 +9,7 @@ import { join, resolve } from "node:path";
 const REPO = resolve(import.meta.dirname, "..", "..");
 const [batch, statsFile] = process.argv.slice(2);
 const WORK = process.env.AGENT_EVAL_WORK ?? "/tmp/agent-eval-runs";
-const batchDir = join(REPO, "evidence/agent-eval", batch);
+const batchDir = join(REPO, (process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval"), batch);
 const builds = JSON.parse(readFileSync(join(batchDir, "local-build.json"), "utf8"));
 const stats = JSON.parse(readFileSync(statsFile, "utf8"));
 const jsKb = (id) => {

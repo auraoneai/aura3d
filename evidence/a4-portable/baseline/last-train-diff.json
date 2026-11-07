@@ -1,0 +1,36 @@
+{
+  "pilot": "last-train",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-last-train-port/?manual=1&title=0&dpr=1",
+  "probes": {},
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {
+    "glsl-vs-glsl2": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 1.6151,
+        "maxDiff255": 8,
+        "changedPct": 73.214,
+        "over4Pct": 5.944,
+        "over16Pct": 0
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          1280,
+          390
+        ],
+        "pixels": 499200,
+        "meanAbsDiff255": 1.681,
+        "maxDiff255": 8,
+        "changedPct": 72.386,
+        "over4Pct": 7.444,
+        "over16Pct": 0
+      }
+    }
+  }
+}

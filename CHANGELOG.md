@@ -1,8 +1,34 @@
 # Changelog
 
-Version: 5.0.3
+Version: 5.1.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.1.0 (2026-11-07)
+
+A minor release: new additive authoring helpers, an agent verify loop and a colour-parser fix. Nothing in the 5.0.x public API is removed or narrowed.
+
+### Added
+
+- `aura3d verify`: one JSON report from typecheck, assets, lint, build, serve and a Chrome/CDP render-and-inspect pass. A seeded benchmark of 10 broken scenes ships with it; the repair results are n=1 runs and are not a general success-rate claim.
+- First-screen cheat sheet: `llms.txt` now opens with eight type-checked, GPU-rendered general pattern blocks.
+- `@aura3d/engine/procedural` subpath: seeded noise, `path2d`, curves, lathe, sweep, parametric surfaces, heightfield terrain and part composition, each returning a custom geometry spec.
+- `camera.frame`, `camera.frameScene`, `camera.framePose` and `camera.worldBounds` auto-framing helpers.
+- `effects.godRays`, `effects.volumetricBeam`, `material.strata`, `material.caustics` and `material.lightBeam` helpers.
+- A4 portable shader-graph pilots for Last Train (cloud sea) and Silt and Signal (water), behind `?portable=1`, default off.
+- Tools only: the E6 spatial benchmark harness (`tools/spatial-bench`, Aura3D vs three.js viewers) and a diagnosis of streamed points. Aura3D streamed points are JS-bound today (about 10 fps at 100K points); the fix is planned for 5.1.x.
+- `@aura3d/mcp` phase 1 (stdio MCP server: symbols, docs search, recipes, scaffold, asset and deploy wrappers, error explanations). The package is private and not published.
+
+### Fixes and behaviour changes
+
+- Static scenes whose only motion is a time-reading custom shader (`uTime`) or `world.water` now keep drawing; before, they drew one frame and looked frozen.
+- Colours: every CSS colour form (`#rgb`, `#rrggbbaa`, `rgb()`, `hsl()`, `oklch()`, named colours) now parses. Behaviour change: an invalid colour string now throws `COLOR_INVALID` naming the option; before, it silently rendered near-black.
+- Looks: an HDRI that fails to load falls back to a procedural probe and reports `LOOK_HDRI_MISSING` in `app.diagnostics().warnings`; `check-deploy` warns when a look's HDRI file is missing.
+
+### Known limits
+
+- Deferred to 5.1.x: look defaults, typed mutable buffers, picking, React embedding, zero-install physics, materials, contact-shadow visibility and the guessable-API pass.
+- Browser acceptance round 3 and WebGPU evidence have not been run for this release.
 
 ## 5.0.3 (2026-11-07)
 
@@ -14,11 +40,13 @@ Template and game fixes plus a first real-GPU look at every template. The public
 - `?backend=auto` on a scene whose post-processing needs depth textures falls back to WebGL2 before a WebGPU device is created (Cross Hop mounted with `RENDERER_MOUNT_FAILED` before).
 - Templates: all 20 rendered in a real browser for the first time. Fixed scale/camera/fog defects in `architecture-interior`, `cinematic-scene`, `custom-scene`, `large-scene`, `mini-game`, `racing-starter`, `product-viewer` and `postprocess-scene`.
 - Games: 20 of the 25 games show a determinate loading progress bar instead of a black canvas or plain text while they load; Slingshot Siege's projectile parking workaround is removed (the 5.0.2 engine draws hidden-created models).
+- The Bellkeeper's Walk: the hero gets stride bob, lean and roll, footfall dust, grass that lies down near the hero and a wider see-through fade.
+- Docs: `uTime` in custom shaders only advances while the app redraws every frame (give the node `.runtime({ id, mutable: true })` or register `app.onFrame`); 5.1 removes that precondition (uTime redraw fix).
 - Acceptance harness specs for pointer coordinates and transparency reworked (not yet run through browser acceptance).
 
 ### Not fixed / unconfirmed
 
-- The Bellkeeper's Walk hero "slides instead of showing leg movement" report did not reproduce on a real GPU at 60 Hz; a 120 to 165 Hz display could not be emulated.
+- The Bellkeeper's Walk "hero slides" report: the walk animation was verified correct at 30 to 240 Hz on a virtual clock and the legs were hidden by foliage; not confirmed on the reporter's display.
 - `character-viewer` fails the render gate's texture heuristic although its frame is fine.
 - Browser acceptance round 3, WebGPU evidence and a device-lost/restored browser run have not been run.
 

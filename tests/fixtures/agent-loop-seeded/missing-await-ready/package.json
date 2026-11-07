@@ -1,0 +1,9 @@
+{
+  "name": "agent-loop-seeded-missing-await-ready",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}

@@ -68,6 +68,7 @@ import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginP
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
   type Prd07RendererOperation } from "@aura3d/rendering";
 import type { AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere.js";
+import { reportLookHdriMissing } from "./environmentFallback.js";
 
 /** Models that need a loaded actor at mount (hidden-at-mount models with a runtime handle can be shown later); module-private,
  * identical to the predicate in observations.ts. */
@@ -620,7 +621,7 @@ export async function createProductionRuntimeSceneRenderer(
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     // Direct path: nothing tone-maps the clear (the canvas is written as-is), so the authored display colour is the clear.
-    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas) ? colorToClearColor(snapshot.background) : colorToAcesInputClearColor(snapshot.background)),
+    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas) ? colorToClearColor(snapshot.background ?? "#070b12") : colorToAcesInputClearColor(snapshot.background ?? "#070b12")),
     // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
     // background; alpha carries `background(c, { toneMapped })` coverage.
     outputClearColor: withPrd01ColorParsing(runtimeOwner, () => outputClearColor(snapshot)),
@@ -1005,6 +1006,7 @@ export async function createProductionRuntimeSceneRenderer(
           if (mountAbort.signal.aborted || disposed) return;
           hdriState.status = "fallback";
           hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
+          hdriWarnings.add(reportLookHdriMissing(hdriUrl, error instanceof Error ? error.message : String(error)).message);
         });
     }
     // GU47 E-B handoff: an explicit app quality tier caps the local shadow
@@ -1954,7 +1956,8 @@ export function explicitMountQualityTier(rendererOptions?: AuraCreateAppRenderer
  * passed through untouched (three r185's raw clear).
  */
 export function outputClearColor(snapshot: Pick<AuraSceneSnapshot, "background" | "backgroundToneMapped">): readonly [number, number, number, number] {
-  const [red, green, blue] = colorToLinearRgba(snapshot.background);
+  // Absent background (hand-built snapshot) is not an invalid colour: scene()'s default #070b12, as the clear colour uses.
+  const [red, green, blue] = colorToLinearRgba(snapshot.background ?? "#070b12");
   return [red, green, blue, snapshot.backgroundToneMapped === false ? 0 : 1];
 }
 

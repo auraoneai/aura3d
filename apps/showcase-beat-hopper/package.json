@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-beat-hopper",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "private": true,
   "type": "module",
   "description": "Aura3D Beat Hopper showcase: a one-button rhythm platformer. Tap to hop, hold to duck, ride a 132 BPM obstacle grid and chain PERFECT timing into combo multipliers.",

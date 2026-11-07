@@ -18,5 +18,6 @@ import "./prd14/index.js";
 import "./prd15/index.js";
 import "./assets/index.js";
 import "./evidence/index.js";
+import "./verify/index.js";
 
 export {};

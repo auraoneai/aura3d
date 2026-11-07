@@ -13,6 +13,7 @@ import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, reso
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
+import { sceneConsumesClock } from "./timeConsumers.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
@@ -870,10 +871,13 @@ export function createFrameRateMeter(windowMs = 1000): FrameRateMeter {
  * clean-room project where every crate should have been falling. Callers therefore combine
  * this with their own `requiresFrames()`.
  */
-function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
+export function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
   if (snapshot.timeline?.mode === "loop") return true;
   if (snapshot.camera.mode === "orbit" && snapshot.camera.autoRotate && snapshot.camera.captureTime === undefined) return true;
   if (snapshot.camera.mode === "dolly" || snapshot.camera.mode === "follow" || snapshot.camera.mode === "path" || snapshot.camera.mode === "flythrough") return true;
+  // Declared clock consumers (custom shader reading uTime, world.water, drifting sky clouds): the scene
+  // looks frozen after one frame otherwise. A pinned capture time (`camera.captureTime`) keeps it idle.
+  if (snapshot.camera.captureTime === undefined && sceneConsumesClock(snapshot.nodes)) return true;
   return snapshot.nodes.some((node) => {
     if ("runtime" in node && node.runtime?.mutable !== false) return true;
     if ((node.kind === "model" || node.kind === "primitive") && node.animation) return true;

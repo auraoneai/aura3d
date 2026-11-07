@@ -1,0 +1,129 @@
+{
+  "runId": "m513-M-t9-aura-r1",
+  "batch": "m513-M",
+  "arm": "aura",
+  "task": 9,
+  "idx": 1,
+  "order": 10,
+  "seed": 20261106010,
+  "model": "claude-sonnet-5.5",
+  "condition": "M",
+  "startedAt": "2026-11-07T03:41:21.636Z",
+  "docsCommit": "cd56b9d54c3ebaeea2b5954253a6e7d619c99ea9",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 24412,
+  "usage": {
+    "input": 46139,
+    "uncachedInput": 46139,
+    "output": 2374,
+    "turns": 5,
+    "perTurnInput": [
+      4467,
+      5115,
+      8869,
+      13539,
+      14149
+    ],
+    "perTurnOutput": [
+      6,
+      35,
+      62,
+      2109,
+      162
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 827,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 2888,
+      "type": "mcp",
+      "tool": "get_recipe",
+      "chars": 7103,
+      "isError": false
+    },
+    {
+      "i": 2,
+      "t": 2888,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 5283,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 19
+    },
+    {
+      "i": 4,
+      "t": 5284,
+      "type": "mcp",
+      "tool": "search_docs",
+      "chars": 2787,
+      "isError": false
+    },
+    {
+      "i": 5,
+      "t": 20891,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 4865
+    },
+    {
+      "i": 6,
+      "t": 20893,
+      "type": "mcp",
+      "tool": "get_symbol",
+      "chars": 428,
+      "isError": false
+    },
+    {
+      "i": 7,
+      "t": 21453,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 24412,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "docs/agents/recipes-src/procedural-humanoid/main.ts"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts, which builds a procedural robot from capsule, sphere, box and cylinder primitives. The joints are hips, chest, neck/head, two shoulders, two elbows, two hip joints and two knees. The code drives them every frame, so the robot breathes, shifts its weight and moves its head and arms gently. The scene has a dark background, a strong warm key light that casts shadows on the floor, and blue and magenta rim lights. A fixed perspective camera frames the whole robot, centred. The code sets `window.__EVAL_READY__` once `app.ready()` resolves. `typecheck` passes. I did not run `vite build` or render the scene in a browser, so the framing and lighting look are untested.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

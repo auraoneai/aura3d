@@ -206,3 +206,9 @@ export type { AuraXRButtonHandle, AuraXRButtonOptions, AuraXRDeviceBridge, AuraX
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "../agent-api/index.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "../agent-api/nodes/types/runtime.js";
 export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDistanceMaterialOptions, AuraShadowMaterialOptions } from "../agent-api/index.js";
+// camera.frame geometry (docs/agents/api-signatures.md): pure bounds + lens + aspect + fill -> pose.
+export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubject.js";
+export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "../agent-api/camera/frameSubject.js";
+export type { AuraCameraFrameOptions, AuraFrameSubject } from "../agent-api/camera/frameNodes.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "../agent-api/nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "../agent-api/nodes/material.visual.js";

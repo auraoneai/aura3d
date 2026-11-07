@@ -141,6 +141,8 @@ export interface GodRayOptions {
   readonly lightDirection?: readonly [number, number, number];
   /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
   readonly density?: number;
+  /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+  readonly frameAnchored?: boolean;
   /**
    * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
    * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.

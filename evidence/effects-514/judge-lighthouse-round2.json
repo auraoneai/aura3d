@@ -1,0 +1,57 @@
+{
+  "model": "claude-sonnet-5.5",
+  "pairs": [
+    {
+      "name": "lighthouse: new beam vs existing lightCone (no three frames exist)",
+      "other": "before",
+      "judges": [
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 14,
+            "subject": 15
+          },
+          "winner": "subject",
+          "why": "The scene is otherwise identical in both candidates, but B's soft, textured light beams look more luminous and polished than A's flat translucent cones."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 14,
+            "subject": 15
+          },
+          "winner": "subject",
+          "why": "The scene is the same in both, but B's soft, textured light beams look like glowing light, while A's are flat translucent wedges."
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 14,
+            "other": 13
+          },
+          "winner": "subject",
+          "why": "The scene is nearly identical in both, but A's soft, noisy volumetric beam looks more natural and gives better atmosphere and depth than B's flat, hard-edged translucent cones."
+        }
+      ],
+      "votes": {
+        "subject": 3,
+        "other": 0,
+        "tie": 0
+      },
+      "majority": "subject",
+      "meanTotal": {
+        "subject": 14.67,
+        "other": 13.67
+      }
+    }
+  ]
+}

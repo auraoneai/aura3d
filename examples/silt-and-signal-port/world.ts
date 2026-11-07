@@ -17,6 +17,8 @@ import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
 import { waterGraphMaterial } from "./water-graph";
+import { portableWaterMaterial } from "./portable-water";
+import { readPortableFlag } from "../shared/portable-flag";
 import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
@@ -557,7 +559,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       material: pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
     }).runtime({ id: "bank" }));
   }
-  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", material: waterMaterial(chapter, inked ? "inked" : "original", buildOptions.water) }).runtime({ id: "canal" }));
+  // A4 pilot (?portable=1, default off): a transparent graph material with the node-default castShadow casts a real opaque shadow,
+  // which relights the whole inked scene; the portable water therefore does not cast. Default stays the 5.0.3 water material.
+  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", ...(readPortableFlag() ? { castShadow: false } : {}), material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : waterMaterial(chapter, inked ? "inked" : "original", buildOptions.water) }).runtime({ id: "canal" }));
   const deck = terrain.deckMesh();
   if (deck.indices.length) {
     builder.add(geometry.custom(dynamicFrom(deck), {

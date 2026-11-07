@@ -1,6 +1,6 @@
-import { TOOL_DEFINITIONS } from "./tools.mjs";
+import { toolDefinitions } from "./tools.mjs";
 
-export function systemPrompt(arm) {
+export function systemPrompt(arm, condition = {}) {
   const common = [
     "You are an autonomous coding agent working alone in a sandboxed project. There is no internet access and no shell; use only the provided tools.",
     "The project is a Vite + TypeScript browser app. `index.html` already loads `/src/main.ts`; you write `src/main.ts` (and any other files under src/).",
@@ -16,10 +16,18 @@ export function systemPrompt(arm) {
       : [
           "The library is three.js 0.185.1 (`three` and `@types/three`), already installed in node_modules. Examples and addons are under `node_modules/three/examples/jsm`."
         ];
-  return [...common, ...specific].join("\n");
+  const extra = [];
+  if (arm === "aura" && condition.lookup) {
+    extra.push(
+      "You also have `aura_lookup(query)`: one call returns the best-matching working recipe source, exact signatures and gotchas for a keyword query (for example `camera orbit autoRotate` or `custom shader water uniform`). Use it instead of reading or searching doc files one by one."
+    );
+  }
+  return [...common, ...specific, ...extra].join("\n");
 }
 
 export const FIRST_USER_MESSAGE = "Start by reading TASK.md, then complete the assignment.";
+export const BATCH_HINT =
+  " Efficiency matters: you are measured on the number of turns. Put every independent read_file, search and list_dir call in the same turn as parallel tool calls, and write the complete solution before looking anything else up.";
 
 const usageOf = (response) => {
   const u = response?.usage ?? {};
@@ -31,15 +39,18 @@ const usageOf = (response) => {
 };
 
 /** Drive one agent to completion. Returns the transcript, usage and end reason; the toolbox owns events and snapshots. */
-export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, maxOutputTokens = 8192, session, now = () => Date.now() }) {
+export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, maxOutputTokens = 8192, session, condition = {}, now = () => Date.now() }) {
   const started = now();
-  const messages = [{ role: "user", content: FIRST_USER_MESSAGE }];
-  const transcript = [{ role: "user", content: FIRST_USER_MESSAGE }];
-  const usage = { input: 0, uncachedInput: 0, output: 0, turns: 0 };
+  const first = condition.batchHint ? FIRST_USER_MESSAGE + BATCH_HINT : FIRST_USER_MESSAGE;
+  const messages = [{ role: "user", content: first }];
+  const transcript = [{ role: "user", content: first }];
+  const tools = toolDefinitions({ lookup: Boolean(condition.lookup) && arm === "aura" });
+  const system = systemPrompt(arm, condition);
+  const usage = { input: 0, uncachedInput: 0, output: 0, turns: 0, perTurnInput: [], perTurnOutput: [] };
   let endReason = "max_turns";
   for (let turn = 1; turn <= maxTurns; turn += 1) {
     const response = await client.messages(
-      { model, max_tokens: maxOutputTokens, system: systemPrompt(arm), messages, tools: TOOL_DEFINITIONS },
+      { model, max_tokens: maxOutputTokens, system, messages, tools },
       { session }
     );
     const u = usageOf(response);
@@ -47,6 +58,8 @@ export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, max
     usage.uncachedInput += u.uncachedInput;
     usage.output += u.output;
     usage.turns = turn;
+    usage.perTurnInput.push(u.input);
+    usage.perTurnOutput.push(u.output);
     const content = Array.isArray(response.content) ? response.content : [];
     messages.push({ role: "assistant", content });
     transcript.push({ role: "assistant", turn, content });

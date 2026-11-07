@@ -1,0 +1,15 @@
+{
+  "name": "@aura3d/engine",
+  "version": "9.9.9-fixture",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/engine/index.d.ts",
+      "import": "./dist/engine/index.js"
+    },
+    "./math": {
+      "types": "./dist/engine/math.d.ts",
+      "import": "./dist/engine/math.js"
+    }
+  }
+}

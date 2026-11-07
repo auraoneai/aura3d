@@ -1,0 +1,38 @@
+{
+  "id": "missing-await-ready",
+  "run": 1,
+  "expected": [
+    "LINT_READY_NOT_AWAITED"
+  ],
+  "repaired": true,
+  "repairedAtTurn": 1,
+  "turns": 1,
+  "apiCalls": 2,
+  "initialCodes": [
+    "LINT_READY_NOT_AWAITED"
+  ],
+  "finalCodes": [],
+  "transcript": [
+    {
+      "turn": 1,
+      "tools": [
+        "list_files",
+        "read_file"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "write_file",
+        "done"
+      ]
+    },
+    {
+      "turn": 1,
+      "verifyCodes": [],
+      "ok": true
+    }
+  ],
+  "seconds": 74,
+  "finalSource": "import { camera, createAuraApp, lights, material, primitives, scene } from \"@aura3d/engine\";\n\nasync function main(): Promise<void> {\n  const app = createAuraApp(\"#app\", {\n    scene: scene({ background: \"#1b2230\" })\n      .add(lights.directional({ position: [4, 6, 3], intensity: 2.5 }))\n      .add(primitives.plane({ name: \"floor\", size: [14, 1, 14], material: material.pbr({ color: \"#7b8494\", roughness: 0.8 }), receiveShadow: true }))\n      .add(primitives.sphere({ name: \"ball\", material: material.pbr({ color: \"#e5484d\" }) }).position(0, 0.8, 0))\n      .camera(camera.orbit({ target: [0, 0.5, 0], distance: 8, fov: 40 }))\n  });\n  await app.ready();\n}\nvoid main();\n"
+}

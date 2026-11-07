@@ -1,0 +1,130 @@
+{
+  "pilot": "silt-original",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-silt-and-signal-port/?manual=1&dpr=1&look=original",
+  "probes": {
+    "glsl": {
+      "keys": [
+        "status",
+        "diagnostics",
+        "scene",
+        "parityIds"
+      ],
+      "len": 45213281,
+      "hits": [
+        "canal",
+        "canal",
+        "runtime:canal",
+        "postprocess is requested in the scene graph but no runtime composer has mounted yet",
+        "SDF text requested in the scene graph but no runtime has mounted yet",
+        "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postproce",
+        "canal",
+        "canal",
+        "C-01:frame-graph",
+        "canal",
+        ".0; }\\n\\nvoid main() {\\n  float d = abs(vWorld.x - (roadX(vWorld.z) - canalShift));\\n  vec2 flow = vec2(vWorld.x * 0.12, vWorld.z * 0.05 + siltTi",
+        " c += vec3(1.0, 0.92, 0.78) * glint * 0.5;\\n  float foam = smoothstep(canalHalf - 4.5, canalHalf - 1.2, d) * (0.45 + 0.55 * vnoise(flow * 15.0));"
+      ]
+    },
+    "glsl2": {
+      "keys": [
+        "status",
+        "diagnostics",
+        "scene",
+        "parityIds"
+      ],
+      "len": 45213281,
+      "hits": [
+        "canal",
+        "canal",
+        "runtime:canal",
+        "postprocess is requested in the scene graph but no runtime composer has mounted yet",
+        "SDF text requested in the scene graph but no runtime has mounted yet",
+        "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postproce",
+        "canal",
+        "canal",
+        "C-01:frame-graph",
+        "canal",
+        ".0; }\\n\\nvoid main() {\\n  float d = abs(vWorld.x - (roadX(vWorld.z) - canalShift));\\n  vec2 flow = vec2(vWorld.x * 0.12, vWorld.z * 0.05 + siltTi",
+        " c += vec3(1.0, 0.92, 0.78) * glint * 0.5;\\n  float foam = smoothstep(canalHalf - 4.5, canalHalf - 1.2, d) * (0.45 + 0.55 * vnoise(flow * 15.0));"
+      ]
+    },
+    "portable": {
+      "keys": [
+        "status",
+        "diagnostics",
+        "scene",
+        "parityIds"
+      ],
+      "len": 47086369,
+      "hits": [
+        "canal",
+        "canal",
+        "runtime:canal",
+        "postprocess is requested in the scene graph but no runtime composer has mounted yet",
+        "SDF text requested in the scene graph but no runtime has mounted yet",
+        "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postproce",
+        "canal",
+        "canal",
+        "C-01:frame-graph",
+        "canal",
+        "// @aura3d-graph-attributes:a_position\\nfloat auraGraph_fn_vhash21(vec2 auraGraph_param_vp) { return fract((((fract((auraGrap",
+        "h_param_vp * vec2(123.34, 456.21))) + vec2(dot(fract((auraGraph_param_vp * vec2(123.34, 456.21))), (fract((auraGraph_param_vp * vec2("
+      ]
+    }
+  },
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {
+    "glsl-vs-glsl2": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 0,
+        "maxDiff255": 0,
+        "changedPct": 0,
+        "over4Pct": 0,
+        "over16Pct": 0
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          470,
+          230
+        ],
+        "pixels": 108100,
+        "meanAbsDiff255": 0,
+        "maxDiff255": 0,
+        "changedPct": 0,
+        "over4Pct": 0,
+        "over16Pct": 0
+      }
+    },
+    "glsl-vs-portable": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 0.0205,
+        "maxDiff255": 55,
+        "changedPct": 2.671,
+        "over4Pct": 0.033,
+        "over16Pct": 0.025
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          470,
+          230
+        ],
+        "pixels": 108100,
+        "meanAbsDiff255": 0.0745,
+        "maxDiff255": 55,
+        "changedPct": 3.624,
+        "over4Pct": 0.172,
+        "over16Pct": 0.169
+      }
+    }
+  }
+}

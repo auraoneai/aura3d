@@ -1,0 +1,107 @@
+{
+  "schema": "aura3d.verify/1",
+  "ok": true,
+  "project": "_staged-vite-vanilla",
+  "startedAt": "2026-11-07T02:34:57.625Z",
+  "durationMs": 18089,
+  "steps": [
+    {
+      "id": "typecheck",
+      "status": "pass",
+      "durationMs": 11550,
+      "detail": "0 error(s)"
+    },
+    {
+      "id": "assets",
+      "status": "pass",
+      "durationMs": 7,
+      "detail": "no aura.assets.json"
+    },
+    {
+      "id": "lint",
+      "status": "pass",
+      "durationMs": 3,
+      "detail": "0 finding(s)"
+    },
+    {
+      "id": "build",
+      "status": "skipped",
+      "durationMs": 0,
+      "detail": "skipped by option"
+    },
+    {
+      "id": "serve",
+      "status": "pass",
+      "durationMs": 2,
+      "detail": "http://127.0.0.1:50525"
+    },
+    {
+      "id": "render",
+      "status": "pass",
+      "durationMs": 6316,
+      "detail": "chrome-cdp, ready=true"
+    },
+    {
+      "id": "inspect",
+      "status": "pass",
+      "durationMs": 34,
+      "detail": "frame drawn"
+    }
+  ],
+  "findings": [
+    {
+      "code": "MOTION_NONE",
+      "severity": "warning",
+      "step": "inspect",
+      "message": "Two frames 1000 ms apart are identical (0.000% of pixels changed).",
+      "cause": "Two frames captured about a second apart are pixel-identical. Fine for a static product shot; a bug for water, particles or a game.",
+      "fix": "If the scene should animate, drive time yourself (`setUniform` in `app.onFrame` on a `.runtime({ mutable: true })` node) and check LINT_UTIME_NOT_ANIMATED.",
+      "evidence": {
+        "meanAbsDiff": 0,
+        "changedPixelFraction": 0,
+        "moved": false
+      }
+    }
+  ],
+  "counts": {
+    "error": 0,
+    "warning": 1,
+    "info": 0
+  },
+  "render": {
+    "driver": "chrome-cdp",
+    "viewport": {
+      "width": 960,
+      "height": 540
+    },
+    "backend": "webgl2",
+    "drawCalls": 5,
+    "degradeCodes": [],
+    "frame": {
+      "width": 960,
+      "height": 540,
+      "meanLuma": 158.3,
+      "lumaStddev": 54.68,
+      "p1Luma": 97,
+      "p99Luma": 244,
+      "gain": 1,
+      "distinctColors": 93,
+      "texturedBlockFraction": 0.1253,
+      "drawn": true,
+      "reasons": [],
+      "black": false,
+      "flat": false,
+      "empty": false,
+      "dim": false
+    },
+    "motion": {
+      "meanAbsDiff": 0,
+      "changedPixelFraction": 0,
+      "moved": false
+    },
+    "frames": [
+      "_staged-vite-vanilla-frame1.png",
+      "_staged-vite-vanilla-frame2.png"
+    ]
+  }
+}

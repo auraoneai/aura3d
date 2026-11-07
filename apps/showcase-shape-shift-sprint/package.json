@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-shape-shift-sprint",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "private": true,
   "type": "module",
   "description": "Aura3D Shape Shift Sprint showcase, an endless shape-matching runner: steer through the hole that fits your shape, grab morph tokens to swap shapes, and chain perfect fits for combo multipliers.",

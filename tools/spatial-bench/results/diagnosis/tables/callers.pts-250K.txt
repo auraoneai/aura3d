@@ -1,0 +1,8 @@
+## snapshot (pts-250K profile)
+1873 ms  snapshot <- assertFramePivotSupported <- createProductionRuntimeRendererInputOwned <- (anon)
+939 ms  snapshot <- resolveProductionPrimitiveRuntimeState <- createProductionRuntimeRendererInputOwned <- (anon)
+2 ms  snapshot <- finishFrameInspection <- (anon) <- withRendererFrameCleanup
+## refreshBounds (pts-250K profile)
+3696 ms  refreshBounds <- syncRuntimePrimitiveGeometry <- selectProductionPrimitiveResource <- createProductionRuntimeRendererInputOwned
+## updatedQueryGeometry (pts-250K profile)
+1756 ms  updatedQueryGeometry <- updateAttribute <- applyTick <- frameBody

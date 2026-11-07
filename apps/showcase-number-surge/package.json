@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-number-surge",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "private": true,
   "type": "module",
   "description": "Aura3D Number Surge showcase: a neon-arcade number runner. Drag to steer, pick the better gate, grow your number and smash the boss wall.",

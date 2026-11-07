@@ -314,6 +314,7 @@ ${guideBodyTrimmed}
 
 const gameInventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows", "game-inventory.json"), "utf8"));
 const llms = readFileSync(join(marketingDir, "content", "llms-core.txt"), "utf8")
+  .replaceAll("{{FIRST_SCREEN}}", readFileSync(join(repoRoot, "docs", "agents", "first-screen.md"), "utf8").trimEnd())
   .replaceAll("{{VERSION}}", version)
   .replaceAll("{{GAME_COUNT}}", String(gameInventory.liveGameCount))
   .replaceAll("{{ORIGIN}}", ORIGIN)

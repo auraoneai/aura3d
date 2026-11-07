@@ -1,0 +1,16 @@
+{
+  "name": "@aura3d/spatial-bench",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "E6-01 baseline: Aura3D vs three.js on high-frequency spatial-data workloads (measurement only). Standalone: not a pnpm workspace member, so the root lockfile is untouched.",
+  "scripts": {
+    "install:three": "npm install --no-audit --no-fund",
+    "build": "node ../../node_modules/vite/bin/vite.js build --config vite.config.ts",
+    "bench": "node run.mjs",
+    "report": "node report.mjs"
+  },
+  "devDependencies": {
+    "three": "0.185.1"
+  }
+}

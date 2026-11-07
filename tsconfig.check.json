@@ -47,6 +47,9 @@
     // that only Vite resolves, or (prd07/browser) declare per-spec Window
     // globals that collide with their harness declarations in one program.
     // harness/prd04-capture.ts also imports the external comparison scenes.
+    // E6 spatial benchmark: standalone package (own package.json/lockfile) that
+    // imports three and patched engine copies under experiments/; not engine source.
+    "tools/spatial-bench",
     "tests/qr/prd04/browser",
     "tests/qr/prd04/harness",
     "tests/qr/prd07/browser",

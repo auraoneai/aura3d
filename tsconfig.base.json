@@ -10,6 +10,9 @@
       "@aura3d/rendering/volumetrics": [
         "packages/rendering/src/volumetrics.ts"
       ],
+      "@aura3d/engine/procedural": [
+        "packages/engine/src/public/procedural.ts"
+      ],
       "@aura3d/engine/geometry-tools": [
         "packages/engine/src/public/geometry-tools.ts"
       ],
@@ -288,6 +291,9 @@
       ],
       "@aura3d/game": [
         "packages/game/src/index.ts"
+      ],
+      "@aura3d/mcp": [
+        "packages/aura3d-mcp/src/index.ts"
       ],
       "create-aura3d": [
         "packages/create-aura3d/src/index.ts"

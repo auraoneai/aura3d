@@ -2,25 +2,15 @@
  * PRD-01 §15 Phase 1 (C-06, 01-S5) compiler color bridge. Lane-01 file per
  * PRD-01 §25 / Q-15-7.
  *
- * Under `A3D_QR_CORE` the six `agent-api/colorUtils.ts` helpers
- * (`colorToRgba`, `colorToClearColor`, `colorToLinearClearColor`,
- * `colorToLinearRgba`, `colorToLinearRgb`, and `colorToRgb` via
- * `colorToClearColor`) delegate to the single C-06 parser, keeping their
- * output space: sRGB helpers -> `parseAuraColorSrgb`, linear helpers ->
- * `parseAuraColor`. Every CSS form parses (`"orange"`, `"#f80"`,
- * `"rgb(…)"`, `"hsl(…)"`, …) instead of falling back to the silent navy.
- *
- * Invalid input: under `A3D_QR_STRICT` it throws `AuraColorParseError`;
- * otherwise it warns `COLOR_PARSE_FAILED` (C-36 `option-ignored`, once per
- * input) and the helper keeps its legacy fallback.
- *
- * Flag off (no mode installed): every probe returns `null` and the helpers run
- * their verbatim legacy bodies.
+ * The `agent-api/colorUtils.ts` helpers always delegate to the single C-06 parser (no flag gate): every CSS form
+ * parses (`"orange"`, `"#f80"`, `"rgb(…)"`, `"hsl(…)"`, `oklch(…)`, …). Invalid input throws `AuraColorParseError`
+ * with `code: "COLOR_INVALID"` in strict and default paths; it is never replaced by a near-black fallback. The
+ * owner policy setters below are kept for API compatibility; `warn` is no longer used.
  */
 
-import { AuraColorParseError, parseAuraColor, parseAuraColorSrgb } from "../color.js";
+import { AuraColorParseError, COLOR_INVALID, parseAuraColor, parseAuraColorSrgb } from "../color.js";
 
-export { AuraColorParseError };
+export { AuraColorParseError, COLOR_INVALID };
 
 export const COLOR_PARSE_FAILED = "COLOR_PARSE_FAILED";
 
@@ -47,9 +37,6 @@ interface InstalledMode {
   readonly warn: (warning: Prd01ColorParseWarning) => void;
   readonly warned: Set<string>;
 }
-
-/** Bound on distinct inputs remembered for warn-once (a runaway generator must not grow it forever). */
-const MAX_WARNED_INPUTS = 256;
 
 // The legacy setter remains available for standalone compiler consumers. App
 // execution uses an explicitly owned policy instead: creating one app must not
@@ -101,13 +88,13 @@ export function prd01ColorParsingEnabled(): boolean {
   return (activeMode === undefined ? installed : activeMode) !== null;
 }
 
-function fail(mode: InstalledMode, color: unknown): null {
+function describe(color: unknown): string {
   let display: string;
   try { display = typeof color === "string" ? color : String(color); } catch { display = "[unprintable]"; }
   // Invalid color input is untrusted and may actually be a URL or header.
   // Do not copy credentials, query parameters or arbitrary object state into
   // diagnostics. Ordinary color strings remain actionable.
-  display = display
+  return display
     .replace(/https?:\/\/[^\s"'<>]+/gi, (url) => {
       try {
         const parsed = new URL(url);
@@ -120,46 +107,30 @@ function fail(mode: InstalledMode, color: unknown): null {
     })
     .replace(/\b(authorization|proxy-authorization|cookie|set-cookie|password|secret|token|api[-_]?key)\s*[:=]\s*[^\s,;]+/gi, "$1=[redacted]")
     .slice(0, 128);
-  if (mode.strict) throw new AuraColorParseError(display);
-  const key = `${typeof color}:${display}`;
-  if (!mode.warned.has(key)) {
-    if (mode.warned.size >= MAX_WARNED_INPUTS) mode.warned.clear();
-    mode.warned.add(key);
-    mode.warn({
-      code: COLOR_PARSE_FAILED,
-      kind: "option-ignored",
-      input: typeof color === "number" && Number.isFinite(color) ? color : display,
-      message: `Could not parse color ${JSON.stringify(display)}; using the legacy fallback.`,
-      ownerPrd: 1
-    });
-  }
-  return null;
 }
 
 /**
- * sRGB-encoded RGBA for the sRGB helpers. `null` = flag off, or parse failed
- * (already warned) -> the caller runs its legacy body.
+ * An unparseable colour is never replaced by a fallback: it throws `AuraColorParseError`
+ * (`code: "COLOR_INVALID"`, naming the value and, when known, where it was used) in strict and default paths alike.
  */
-export function prd01ColorSrgb(color: unknown): Prd01Rgba | null {
-  const mode = activeMode === undefined ? installed : activeMode;
-  if (mode === null) return null;
+function fail(color: unknown): never {
+  throw new AuraColorParseError(describe(color));
+}
+
+/** sRGB-encoded RGBA for the sRGB helpers. Always parses (no flag gate); invalid input throws `COLOR_INVALID`. */
+export function prd01ColorSrgb(color: unknown): Prd01Rgba {
   try {
     return parseAuraColorSrgb(color as string | number);
   } catch {
-    return fail(mode, color);
+    return fail(color);
   }
 }
 
-/**
- * Linear-light RGBA for the linear helpers. `null` = flag off, or parse failed
- * (already warned) -> the caller runs its legacy body.
- */
-export function prd01ColorLinear(color: unknown): Prd01Rgba | null {
-  const mode = activeMode === undefined ? installed : activeMode;
-  if (mode === null) return null;
+/** Linear-light RGBA for the linear helpers. Always parses; invalid input throws `COLOR_INVALID`. */
+export function prd01ColorLinear(color: unknown): Prd01Rgba {
   try {
     return parseAuraColor(color as string | number);
   } catch {
-    return fail(mode, color);
+    return fail(color);
   }
 }

@@ -174,7 +174,8 @@ describe("runtime-owned render input", () => {
     const bItem = item(b, "b");
     expect(bItem.modelMatrix![0]).toBeCloseTo(1);
     expect(bItem.modelMatrix![2]).toBeCloseTo(0);
-    expect(bItem.instanceColors![0]).toBeLessThan(0.01);
+    // A policy-less/legacy app parses CSS names too (was the near-black fallback).
+    expect(bItem.instanceColors![0]).toBeCloseTo(1);
     expect(item(a, "a")).toBe(aItem);
 
     const aHandle = a.nodes.require("a");
@@ -193,8 +194,8 @@ describe("runtime-owned render input", () => {
     strict.nodes.require("strict").setInstances([{}], ["not-a-valid-color"]);
     disabled.nodes.require("disabled").setInstances([{}], ["not-a-valid-color"]);
     expect(() => strict.step(0.016)).toThrow(/color/i);
-    expect(() => disabled.step(0.016)).not.toThrow();
-    expect(item(disabled, "disabled").instanceColors![0]).toBeLessThan(0.01);
+    // No policy never means a silent near-black: invalid colours throw COLOR_INVALID everywhere.
+    expect(() => disabled.step(0.016)).toThrow(/COLOR_INVALID/);
   });
 
   it.each([false, true])("uses core pivot preflight and preserves ownership through remount (compiler=%s)", async (compiler) => {
@@ -219,7 +220,7 @@ describe("runtime-owned render input", () => {
     await next.ready();
     next.step(0.016);
     expect(item(next, "next").modelMatrix![0]).toBeCloseTo(1);
-    expect(item(next, "next").instanceColors![0]).toBeLessThan(0.01);
+    expect(item(next, "next").instanceColors![0]).toBeCloseTo(1);
   });
 
   it.each([false, true])("retains legacy pivot rejection when core is disabled (compiler=%s)", async (compiler) => {

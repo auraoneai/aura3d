@@ -15,10 +15,38 @@ import { hslToRgb as hslToRgbMath } from "@aura3d/math";
 
 export type AuraColorInput = string | number;
 
+export const COLOR_INVALID = "COLOR_INVALID";
+
+let currentColorUse: string | undefined;
+
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export function withColorUse<T>(where: string, work: () => T): T {
+  const previous = currentColorUse;
+  currentColorUse = where;
+  try { return work(); } finally { currentColorUse = previous; }
+}
+
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
 export class AuraColorParseError extends Error {
-  constructor(public readonly input: unknown) {
-    super(`AuraColorParseError:${String(input)}`);
+  readonly code = COLOR_INVALID;
+  readonly where: string | undefined;
+  constructor(public readonly input: unknown, where?: string) {
+    const place = where ?? currentColorUse;
+    super(`AuraColorParseError:${String(input)}${place ? ` (used in ${place})` : ""}; COLOR_INVALID: use #rgb, #rrggbb, #rrggbbaa, rgb(), hsl(), oklch(), a CSS colour name, or a 0xRRGGBB number`);
     this.name = "AuraColorParseError";
+    this.where = place;
+  }
+}
+
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export function assertAuraColorOption(value: unknown, where: string): void {
+  if (value === undefined || (typeof value !== "string" && typeof value !== "number")) return;
+  try { parseAuraColorSrgb(value); } catch (error) {
+    if (error instanceof AuraColorParseError) throw new AuraColorParseError(error.input, where);
+    throw error;
   }
 }
 
@@ -105,6 +133,7 @@ function parseFunctionColor(name: string, body: string): readonly [number, numbe
     if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
     return [parseChannel(args[0]), parseChannel(args[1]), parseChannel(args[2]), parseAlpha(args[3])];
   }
+  if (name === "oklch") return parseOklch(name, body);
   if (name === "hsl" || name === "hsla") {
     if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
     const hRaw = args[0].trim();
@@ -122,6 +151,37 @@ function parseFunctionColor(name: string, body: string): readonly [number, numbe
 function hslToRgb(hDeg: number, s: number, l: number, a: number): readonly [number, number, number, number] {
   const [r, g, b] = hslToRgbMath(hDeg, s, l);
   return [r, g, b, a];
+}
+
+function oklchToSrgb(l: number, c: number, hDeg: number, a: number): readonly [number, number, number, number] {
+  const h = (hDeg * Math.PI) / 180;
+  const A = c * Math.cos(h), B = c * Math.sin(h);
+  const l_ = (l + 0.3963377774 * A + 0.2158037573 * B) ** 3;
+  const m_ = (l - 0.1055613458 * A - 0.0638541728 * B) ** 3;
+  const s_ = (l - 0.0894841775 * A - 1.291485548 * B) ** 3;
+  const lin = [
+    4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+    -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+    -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_
+  ].map((v) => {
+    const x = Math.max(0, Math.min(1, v));
+    return x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
+  });
+  return [lin[0]!, lin[1]!, lin[2]!, a];
+}
+
+function parseOklch(name: string, body: string): readonly [number, number, number, number] {
+  const args = splitFunctionArgs(body);
+  if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
+  const num = (t: string, pctScale: number): number => {
+    const v = t.trim();
+    return v.endsWith("%") ? (Number(v.slice(0, -1)) / 100) * pctScale : Number(v);
+  };
+  const hRaw = args[2]!.trim();
+  const hue = hRaw.endsWith("deg") ? Number(hRaw.slice(0, -3)) : hRaw.endsWith("turn") ? Number(hRaw.slice(0, -4)) * 360 : Number(hRaw);
+  const l = num(args[0]!, 1), c = num(args[1]!, 0.4);
+  if (!Number.isFinite(l) || !Number.isFinite(c) || !Number.isFinite(hue)) throw new AuraColorParseError(`${name}(${body})`);
+  return oklchToSrgb(Math.max(0, Math.min(1, l)), Math.max(0, c), hue, parseAlpha(args[3]));
 }
 
 function parseHex(body: string): readonly [number, number, number, number] {
@@ -169,8 +229,9 @@ export function parseAuraColorSrgb(color: AuraColorInput): readonly [number, num
   const input = color.trim();
   const hexMatch = /^#([0-9a-f]+)$/i.exec(input);
   if (hexMatch) return parseHex(hexMatch[1]);
-  const fnMatch = /^(rgb|rgba|hsl|hsla)\((.+)\)$/i.exec(input);
+  const fnMatch = /^(rgb|rgba|hsl|hsla|oklch)\((.+)\)$/i.exec(input);
   if (fnMatch) return parseFunctionColor(fnMatch[1].toLowerCase(), fnMatch[2]);
+  if (input.toLowerCase() === "transparent") return [0, 0, 0, 0];
   const named = NAMED_COLORS[input.toLowerCase()];
   if (named !== undefined) {
     return [((named >> 16) & 0xff) / 255, ((named >> 8) & 0xff) / 255, (named & 0xff) / 255, 1];

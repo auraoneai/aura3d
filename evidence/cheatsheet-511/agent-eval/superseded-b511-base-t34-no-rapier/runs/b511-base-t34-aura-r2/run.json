@@ -1,0 +1,583 @@
+{
+  "runId": "b511-base-t34-aura-r2",
+  "batch": "b511-base",
+  "arm": "aura",
+  "task": 34,
+  "idx": 2,
+  "order": 17,
+  "seed": 20261107017,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T01:55:00.241Z",
+  "docsCommit": "origin/main",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 168564,
+  "usage": {
+    "input": 2917569,
+    "uncachedInput": 2917569,
+    "output": 3435,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      13685,
+      14286,
+      22852,
+      29771,
+      32707,
+      34598,
+      34988,
+      36557,
+      43660,
+      44283,
+      46930,
+      50634,
+      57168,
+      57380,
+      63323,
+      66308,
+      66741,
+      71026,
+      71441,
+      76024,
+      76557,
+      76857,
+      81751,
+      86211,
+      95723,
+      96377,
+      101196,
+      101361,
+      103127,
+      103602,
+      107234,
+      110975,
+      114330,
+      117821,
+      119299,
+      121272,
+      121902,
+      122043,
+      122235
+    ],
+    "perTurnOutput": [
+      20,
+      39,
+      31,
+      35,
+      60,
+      39,
+      18,
+      46,
+      53,
+      84,
+      64,
+      102,
+      91,
+      68,
+      21,
+      73,
+      80,
+      30,
+      95,
+      62,
+      102,
+      118,
+      61,
+      68,
+      95,
+      100,
+      48,
+      282,
+      28,
+      112,
+      50,
+      170,
+      236,
+      112,
+      467,
+      62,
+      43,
+      102,
+      41,
+      27
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1645,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 1645,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1645,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4511,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4511,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6170,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 6179,
+      "type": "search",
+      "pattern": "(?i)physics|rigid"
+    },
+    {
+      "i": 7,
+      "t": 6179,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 8133,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 100
+    },
+    {
+      "i": 9,
+      "t": 8139,
+      "type": "search",
+      "pattern": "## Physics"
+    },
+    {
+      "i": 10,
+      "t": 10685,
+      "type": "read",
+      "path": "docs/agents/api-surface.md",
+      "lines": 20
+    },
+    {
+      "i": 11,
+      "t": 10685,
+      "type": "read",
+      "path": "docs/agents/native-capability-recipes.md",
+      "lines": 25
+    },
+    {
+      "i": 12,
+      "t": 10690,
+      "type": "search",
+      "pattern": "physics\\.|## `physics"
+    },
+    {
+      "i": 13,
+      "t": 12496,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 30
+    },
+    {
+      "i": 14,
+      "t": 12503,
+      "type": "search",
+      "pattern": "physics"
+    },
+    {
+      "i": 15,
+      "t": 17152,
+      "type": "search",
+      "pattern": "\\.physics\\("
+    },
+    {
+      "i": 16,
+      "t": 17153,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 17,
+      "t": 19626,
+      "type": "search",
+      "pattern": "AuraNodePhysicsSpec\\b"
+    },
+    {
+      "i": 18,
+      "t": 19626,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 19,
+      "t": 21419,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 20,
+      "t": 21419,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.d.ts",
+      "lines": 158
+    },
+    {
+      "i": 21,
+      "t": 24599,
+      "type": "search",
+      "pattern": "AuraPhysicsWorldController"
+    },
+    {
+      "i": 22,
+      "t": 24611,
+      "type": "search",
+      "pattern": "physics\\.|\\.physics\\(\\{"
+    },
+    {
+      "i": 23,
+      "t": 26700,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 24,
+      "t": 26748,
+      "type": "search",
+      "pattern": "class PhysicsWorld |interface RigidBody\\b|interface RigidBodyDescriptor|type Rig"
+    },
+    {
+      "i": 25,
+      "t": 30768,
+      "type": "search",
+      "pattern": "worldFromScene|app\\.physics|\\.physics\\?:"
+    },
+    {
+      "i": 26,
+      "t": 30768,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/physics/RigidBody.d.ts",
+      "lines": 102
+    },
+    {
+      "i": 27,
+      "t": 34201,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 130
+    },
+    {
+      "i": 28,
+      "t": 34202,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 150
+    },
+    {
+      "i": 29,
+      "t": 37501,
+      "type": "search",
+      "pattern": "interface AuraPhysicsRuntime|interface AuraPhysicsBodyRegistry|interface AuraPhy"
+    },
+    {
+      "i": 30,
+      "t": 38920,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/PhysicsRuntime.d.ts",
+      "lines": 263
+    },
+    {
+      "i": 31,
+      "t": 42610,
+      "type": "search",
+      "pattern": "physics"
+    },
+    {
+      "i": 32,
+      "t": 49188,
+      "type": "search",
+      "pattern": "scenePhysics|physicsRuntime|createRuntimeScenePhysics|bindNodes|physicsWorld"
+    },
+    {
+      "i": 33,
+      "t": 50743,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraAppCore.js",
+      "lines": 180
+    },
+    {
+      "i": 34,
+      "t": 55135,
+      "type": "search",
+      "pattern": "appPhysicsInstance|\\.step\\(|syncBoundNodes|autoStep"
+    },
+    {
+      "i": 35,
+      "t": 57440,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraAppCore.js",
+      "lines": 90
+    },
+    {
+      "i": 36,
+      "t": 57441,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraAppCore.js",
+      "lines": 80
+    },
+    {
+      "i": 37,
+      "t": 62372,
+      "type": "search",
+      "pattern": "canvasRuntimePhysics|initialRuntimePhysics|stepCanvasPhysics"
+    },
+    {
+      "i": 38,
+      "t": 67907,
+      "type": "search",
+      "pattern": "export function resolveNodePhysicsShape|function resolveAgentPhysicsShape|functi"
+    },
+    {
+      "i": 39,
+      "t": 70072,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+      "lines": 118
+    },
+    {
+      "i": 40,
+      "t": 70073,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+      "lines": 50
+    },
+    {
+      "i": 41,
+      "t": 73998,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 121
+    },
+    {
+      "i": 42,
+      "t": 78235,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 100
+    },
+    {
+      "i": 43,
+      "t": 78236,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 35
+    },
+    {
+      "i": 44,
+      "t": 81497,
+      "type": "search",
+      "pattern": "runtime\\(|camera\\.|lights\\.directional|setPosition|onFrame"
+    },
+    {
+      "i": 45,
+      "t": 81507,
+      "type": "search",
+      "pattern": "setPosition|setRotation|interface AuraRuntimeNodeHandle|interface AuraRuntimeNod"
+    },
+    {
+      "i": 46,
+      "t": 83638,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 40
+    },
+    {
+      "i": 47,
+      "t": 83638,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 48,
+      "t": 98546,
+      "type": "search",
+      "pattern": "teleport|setRotation|rotation"
+    },
+    {
+      "i": 49,
+      "t": 100243,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/PhysicsRuntime.js",
+      "lines": 60
+    },
+    {
+      "i": 50,
+      "t": 105554,
+      "type": "search",
+      "pattern": "ScenePhysicsNode =|interface ScenePhysicsNode"
+    },
+    {
+      "i": 51,
+      "t": 105593,
+      "type": "search",
+      "pattern": "bindNode|beforeSimulation"
+    },
+    {
+      "i": 52,
+      "t": 107833,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/physics/ScenePhysicsBridge.d.ts",
+      "lines": 57
+    },
+    {
+      "i": 53,
+      "t": 107833,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+      "lines": 80
+    },
+    {
+      "i": 54,
+      "t": 115960,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+      "lines": 110
+    },
+    {
+      "i": 55,
+      "t": 128526,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+      "lines": 150
+    },
+    {
+      "i": 56,
+      "t": 133855,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+      "lines": 80
+    },
+    {
+      "i": 57,
+      "t": 133863,
+      "type": "search",
+      "pattern": "function toRigidBodyDescriptor"
+    },
+    {
+      "i": 58,
+      "t": 154125,
+      "type": "search",
+      "pattern": "\"outdoor-day\""
+    },
+    {
+      "i": 59,
+      "t": 156511,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+      "lines": 50
+    },
+    {
+      "i": 60,
+      "t": 156511,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+      "lines": 30
+    },
+    {
+      "i": 61,
+      "t": 160166,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 62,
+      "t": 160166,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 63,
+      "t": 165035,
+      "type": "search",
+      "pattern": "interface AuraDirectionalShadow\\w*|type AuraDirectionalShadow\\w*"
+    },
+    {
+      "i": 64,
+      "t": 166918,
+      "type": "search",
+      "pattern": "AuraDirectionalShadow\\w* =|interface AuraDirectionalShadow\\w*|interface AuraLigh"
+    },
+    {
+      "i": 65,
+      "t": 168564,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts",
+      "lines": 80
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/api-surface.md",
+    "docs/agents/native-capability-recipes.md",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/PhysicsRuntime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/PhysicsRuntime.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraAppCore.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/physics-core.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts",
+    "node_modules/@aura3d/engine/dist/physics/RigidBody.d.ts",
+    "node_modules/@aura3d/engine/dist/physics/ScenePhysicsBridge.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/agent-eval-runs-511/b511-base/b511-base-t34-aura-r2/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

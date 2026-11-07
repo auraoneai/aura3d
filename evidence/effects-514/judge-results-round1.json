@@ -1,0 +1,369 @@
+{
+  "model": "claude-sonnet-5.5",
+  "pairs": [
+    {
+      "name": "canyon: new helpers vs three",
+      "other": "three",
+      "judges": [
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 20,
+            "subject": 13
+          },
+          "winner": "other",
+          "why": "A has a dusk-lit canyon with a warm sun-lit rim against a violet sky, layered haze, eroded walls and dead shrubs in the foreground, while B has flat purple sky, little haze, nearly identical frames, little directional shadow and only a few smooth bou"
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 21,
+            "subject": 13
+          },
+          "winner": "other",
+          "why": "Candidate A has a convincing dusk palette with a gradient sky, hazy distant walls, a rim-lit cliff and foreground shrubs and boulders, while Candidate B has a flat purple sky, little haze, no sense of directional light, and its two frames look nearly"
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 12,
+            "other": 20
+          },
+          "winner": "other",
+          "why": "B reads as a canyon at dusk, with a blue-violet sky gradient, a lit sunset rim, hazy distant walls, shrubs and boulders, and two frames that show camera movement. A has a flat purple sky, a pale smooth floor, weak haze, no shrubs, and two frames that"
+        }
+      ],
+      "votes": {
+        "subject": 0,
+        "other": 3,
+        "tie": 0
+      },
+      "majority": "other",
+      "meanTotal": {
+        "subject": 12.67,
+        "other": 20.33
+      }
+    },
+    {
+      "name": "canyon: benchmark aura r2 vs three (baseline)",
+      "other": "three",
+      "judges": [
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 20,
+            "subject": 14
+          },
+          "winner": "other",
+          "why": "A reads clearly as a canyon at dusk, with a blue-violet sky, sun-lit orange rim, stratified eroded walls, and foreground shrubs and boulders leading down the riverbed, while B has a flat pink sky, smooth low-poly walls, a dark empty blue floor and we"
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 13,
+            "other": 20
+          },
+          "winner": "other",
+          "why": "B reads clearly as a dusk canyon, with a blue-violet sky against sunlit orange walls, visible strata, hazy distant walls and foreground shrubs and boulders. A is a flat pink-purple wash with smooth, low-detail walls, no visible blue sky, and a mostly"
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 13,
+            "other": 20
+          },
+          "winner": "other",
+          "why": "B has a blue-violet sky against warm orange-lit sandstone, visible strata, erosion streaks, directional rim light, and walls that lead the eye down the canyon. A is a washed-out pink and purple scene with smooth, low-detail walls, a flat dark floor, "
+        }
+      ],
+      "votes": {
+        "subject": 0,
+        "other": 3,
+        "tie": 0
+      },
+      "majority": "other",
+      "meanTotal": {
+        "subject": 13.33,
+        "other": 20
+      }
+    },
+    {
+      "name": "reef: new helpers vs three",
+      "other": "three",
+      "judges": [
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 20,
+            "subject": 13
+          },
+          "winner": "other",
+          "why": "A shows varied organic corals, swaying seaweed, a coherent school, and layered depth, while B has strong caustics and a sun but only cone shapes and rocks, a flat sparse layout, and a barely changing fish school."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 20,
+            "subject": 13
+          },
+          "winner": "other",
+          "why": "A shows varied organic coral, swaying seaweed, a coherent fish school with individuals, and layered depth, while B has strong caustics and a sun but only cone shapes and blobs, a flat composition, and nearly static frames."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 20,
+            "subject": 13
+          },
+          "winner": "other",
+          "why": "A shows varied organic corals, swaying seaweed, a coherent fish school with distinct individuals and layered depth, while B has only cones and blobs, a nearly static camera and school, and a flat, sparse composition, though its sand caustics are stro"
+        }
+      ],
+      "votes": {
+        "subject": 0,
+        "other": 3,
+        "tie": 0
+      },
+      "majority": "other",
+      "meanTotal": {
+        "subject": 13,
+        "other": 20
+      }
+    },
+    {
+      "name": "reef: benchmark aura r2 vs three (baseline)",
+      "other": "three",
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 16,
+            "other": 19
+          },
+          "winner": "other",
+          "why": "B has a better blue-green depth fade, more varied and organic coral and seaweed, and a school that reads as a coherent group with distinct individuals and layered depth, whereas A has flat, uniform water, a clumped blocky school and a sparse composit"
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 16,
+            "other": 19
+          },
+          "winner": "other",
+          "why": "B has a more convincing blue-green tint with depth fade, denser and more varied vegetation and corals, a coherent school with distinct individuals, and layered foreground, mid and far depth, while A looks flat with a plain dark blue backdrop, a unifo"
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 17,
+            "other": 19
+          },
+          "winner": "other",
+          "why": "B has a stronger blue-green depth fade and denser, more varied flora with foreground, mid and far layers, while A's flat dark-blue backdrop, hard horizon and blocky fish make it less atmospheric, even though its caustics on the sand are clearer."
+        }
+      ],
+      "votes": {
+        "subject": 0,
+        "other": 3,
+        "tie": 0
+      },
+      "majority": "other",
+      "meanTotal": {
+        "subject": 16.33,
+        "other": 19
+      }
+    },
+    {
+      "name": "canyon: new helpers vs same scene with plain material",
+      "other": "before",
+      "judges": [
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 9,
+            "subject": 17
+          },
+          "winner": "subject",
+          "why": "B reads as a canyon with banded orange sandstone strata, warm palette and a clear path down the riverbed, while A is washed out to near-white with no visible strata or directional lighting."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 8,
+            "subject": 17
+          },
+          "winner": "subject",
+          "why": "Candidate A is washed out to white with a flat purple sky and no readable rock colour, while B shows banded orange sandstone walls, a clear canyon read and some haze toward the end, though its sky is flat and it has no visible sun or long shadows."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 8,
+            "subject": 17
+          },
+          "winner": "subject",
+          "why": "Candidate A is washed out to white with no sandstone colour or strata and no sign of camera motion, while Candidate B shows banded orange and magenta walls, a visible haze falloff and a riverbed that leads the eye down the canyon, though its sky is a"
+        }
+      ],
+      "votes": {
+        "subject": 3,
+        "other": 0,
+        "tie": 0
+      },
+      "majority": "subject",
+      "meanTotal": {
+        "subject": 17,
+        "other": 8.33
+      }
+    },
+    {
+      "name": "reef: new helpers vs same scene without them",
+      "other": "before",
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 14,
+            "other": 11
+          },
+          "winner": "subject",
+          "why": "Candidate A has a lighter blue-green water gradient, visible sunbeams and animated caustics on the sand, while B has a flat dark-teal background, no visible caustics and an empty sky; both show the same sparse coral and floating fish."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 9,
+            "subject": 15
+          },
+          "winner": "subject",
+          "why": "Both show the same sparse cone and blob corals with a static-looking fish group, but B adds a blue-green gradient, sun rays, and visible caustics on the sand, while A has a flat teal backdrop and plain sand."
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 14,
+            "other": 11
+          },
+          "winner": "subject",
+          "why": "A has a lighter blue-green water gradient with god rays and moving caustics on the sand, while B has a flat dark-teal background and no visible caustics, though both share the same sparse corals, fish and composition."
+        }
+      ],
+      "votes": {
+        "subject": 3,
+        "other": 0,
+        "tie": 0
+      },
+      "majority": "subject",
+      "meanTotal": {
+        "subject": 14.33,
+        "other": 10.33
+      }
+    },
+    {
+      "name": "lighthouse: new beam vs existing lightCone (no three frames exist)",
+      "other": "before",
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 14,
+            "other": 16
+          },
+          "winner": "other",
+          "why": "The two scenes are nearly identical, but A's bright, noisy light beam is close to blown out and covers much of the sky, while B's subtler translucent beam keeps the sky and silhouette cleaner."
+        },
+        {
+          "order": [
+            "subject",
+            "other"
+          ],
+          "totals": {
+            "subject": 12,
+            "other": 14
+          },
+          "winner": "other",
+          "why": "The scene is the same in both, but A's beams are bright and blown out and swamp the sky, while B's softer beams keep the lighthouse readable and the lighting more balanced."
+        },
+        {
+          "order": [
+            "other",
+            "subject"
+          ],
+          "totals": {
+            "other": 14,
+            "subject": 15
+          },
+          "winner": "subject",
+          "why": "The scene geometry is the same in both, but B's brighter, textured light beam makes the lamp glow read better than A's flat, dim translucent beam."
+        }
+      ],
+      "votes": {
+        "subject": 1,
+        "other": 2,
+        "tie": 0
+      },
+      "majority": "other",
+      "meanTotal": {
+        "subject": 13.67,
+        "other": 14.67
+      }
+    }
+  ]
+}

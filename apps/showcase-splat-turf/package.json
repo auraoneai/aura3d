@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-splat-turf",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "private": true,
   "type": "module",
   "description": "Aura3D Splat Turf showcase, a finite 1200 m paint-the-road arcade runner with a six-column paint grid, tank management, solvent strips, eraser bots, and coverage-graded results.",

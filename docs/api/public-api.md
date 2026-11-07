@@ -16,132 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.0.3` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.0.3` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.0.3` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.0.3` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.0.3` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.0.3` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.0.3` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.0.3` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.0.3` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.0.3` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.0.3` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.0.3` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.0.3` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.0.3` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.0.3` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.0.3` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.0.3` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.0.3` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.0.3` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.0.3` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.0.3` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.0.3` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.0.3` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.0.3` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.0.3` | `./dist/vite/auraDecoders.d.ts` | 7 |
-| `@aura3d/assets/vite-client` | `5.0.3` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.0.3` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.0.3` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.0.3` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.0.3` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.0.3` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.0.3` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.0.3` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.0.3` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.0.3` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.0.3` | `./dist/engine/public/index.d.ts` | 10927 |
-| `@aura3d/engine/animation` | `5.0.3` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.0.3` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.0.3` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.0.3` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.0.3` | `./dist/engine/public/devtools.d.ts` | 10640 |
-| `@aura3d/engine/ecs` | `5.0.3` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.0.3` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.0.3` | `./dist/game/index.d.ts` | 11391 |
-| `@aura3d/engine/game/art` | `5.0.3` | `./dist/game/art/index.d.ts` | 323 |
-| `@aura3d/engine/game/capture` | `5.0.3` | `./dist/game/capture/index.d.ts` | 10921 |
-| `@aura3d/engine/game/styles.css` | `5.0.3` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.0.3` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.0.3` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.0.3` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.0.3` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.0.3` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.0.3` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.0.3` | `./dist/physics/index.d.ts` | 279 |
-| `@aura3d/engine/physics/solverless` | `5.0.3` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.0.3` | `./dist/physics/world.d.ts` | 15 |
-| `@aura3d/engine/renderer` | `5.0.3` | `./dist/engine/public/renderer.d.ts` | 10899 |
-| `@aura3d/engine/scatter` | `5.0.3` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.0.3` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.0.3` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.0.3` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.0.3` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
-| `@aura3d/engine/v5` | `5.0.3` | `./dist/engine/public/v5.d.ts` | 8376 |
-| `@aura3d/engine/v5/context` | `5.0.3` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.0.3` | `./dist/game/v5.d.ts` | 11387 |
-| `@aura3d/engine/v5/internal` | `5.0.3` | `./dist/engine/public/v5-internal.d.ts` | 431 |
-| `@aura3d/engine/v5/math/hull` | `5.0.3` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.0.3` | `./dist/engine/public/worker.d.ts` | 59 |
-| `@aura3d/engine/workflows` | `5.0.3` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.0.3` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.0.3` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.0.3` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.0.3` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.0.3` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.0.3` | `./dist/index.d.ts` | 29 |
-| `@aura3d/physics/solverless` | `5.0.3` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.0.3` | `./dist/world.d.ts` | 15 |
-| `@aura3d/product-studio` | `5.0.3` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.0.3` | `./dist/index.d.ts` | 45 |
-| `@aura3d/rendering` | `5.0.3` | `./dist/index.d.ts` | 4284 |
-| `@aura3d/rendering/contracts` | `5.0.3` | `./dist/contracts/index.d.ts` | 222 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.0.3` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.0.3` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.0.3` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.0.3` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.0.3` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.0.3` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.0.3` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.0.3` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.0.3` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.0.3` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.0.3` | `./dist/contracts/index.d.ts` | 222 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.0.3` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.0.3` | `./dist/contracts/output.d.ts` | 8 |
-| `@aura3d/rendering/contracts/particles` | `5.0.3` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.0.3` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.0.3` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.0.3` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.0.3` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.0.3` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.0.3` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.0.3` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.0.3` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.0.3` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.0.3` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.0.3` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.0.3` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.0.3` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.0.3` | `./dist/lanes/index.d.ts` | 1014 |
-| `@aura3d/rendering/lighting` | `5.0.3` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.0.3` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.0.3` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.0.3` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.0.3` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.0.3` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.0.3` | `./dist/webgpu.d.ts` | 203 |
-| `@aura3d/rendering/world` | `5.0.3` | `./dist/world/index.d.ts` | 172 |
-| `@aura3d/scene` | `5.0.3` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.0.3` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.0.3` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.0.3` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.1.0` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.1.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.1.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.1.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.1.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.1.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.1.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.1.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.1.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.1.0` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.1.0` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.1.0` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.1.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.1.0` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.1.0` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.1.0` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.1.0` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.1.0` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.1.0` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.1.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.1.0` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.1.0` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.1.0` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.1.0` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.1.0` | `./dist/vite/auraDecoders.d.ts` | 7 |
+| `@aura3d/assets/vite-client` | `5.1.0` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.1.0` | `./dist/index.d.ts` | 309 |
+| `@aura3d/cli` | `5.1.0` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.1.0` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.1.0` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.1.0` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.1.0` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.1.0` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.1.0` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.1.0` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.1.0` | `./dist/engine/public/index.d.ts` | 10963 |
+| `@aura3d/engine/animation` | `5.1.0` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.1.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.1.0` | `./dist/audio/index.d.ts` | 309 |
+| `@aura3d/engine/controls` | `5.1.0` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.1.0` | `./dist/engine/public/devtools.d.ts` | 10648 |
+| `@aura3d/engine/ecs` | `5.1.0` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.1.0` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.1.0` | `./dist/game/index.d.ts` | 11399 |
+| `@aura3d/engine/game/art` | `5.1.0` | `./dist/game/art/index.d.ts` | 330 |
+| `@aura3d/engine/game/capture` | `5.1.0` | `./dist/game/capture/index.d.ts` | 10929 |
+| `@aura3d/engine/game/styles.css` | `5.1.0` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.1.0` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.1.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.1.0` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.1.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.1.0` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.1.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.1.0` | `./dist/physics/index.d.ts` | 279 |
+| `@aura3d/engine/physics/solverless` | `5.1.0` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.1.0` | `./dist/physics/world.d.ts` | 15 |
+| `@aura3d/engine/procedural` | `5.1.0` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.1.0` | `./dist/engine/public/renderer.d.ts` | 10907 |
+| `@aura3d/engine/scatter` | `5.1.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.1.0` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.1.0` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.1.0` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.1.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
+| `@aura3d/engine/v5` | `5.1.0` | `./dist/engine/public/v5.d.ts` | 8411 |
+| `@aura3d/engine/v5/context` | `5.1.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.1.0` | `./dist/game/v5.d.ts` | 11395 |
+| `@aura3d/engine/v5/internal` | `5.1.0` | `./dist/engine/public/v5-internal.d.ts` | 431 |
+| `@aura3d/engine/v5/math/hull` | `5.1.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.1.0` | `./dist/engine/public/worker.d.ts` | 59 |
+| `@aura3d/engine/workflows` | `5.1.0` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.1.0` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.1.0` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.1.0` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.1.0` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.1.0` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.1.0` | `./dist/index.d.ts` | 29 |
+| `@aura3d/physics/solverless` | `5.1.0` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.1.0` | `./dist/world.d.ts` | 15 |
+| `@aura3d/product-studio` | `5.1.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.1.0` | `./dist/index.d.ts` | 45 |
+| `@aura3d/rendering` | `5.1.0` | `./dist/index.d.ts` | 4284 |
+| `@aura3d/rendering/contracts` | `5.1.0` | `./dist/contracts/index.d.ts` | 222 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.1.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.1.0` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.1.0` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.1.0` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.1.0` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.1.0` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.1.0` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.1.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.1.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.1.0` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.1.0` | `./dist/contracts/index.d.ts` | 222 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.1.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.1.0` | `./dist/contracts/output.d.ts` | 8 |
+| `@aura3d/rendering/contracts/particles` | `5.1.0` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.1.0` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.1.0` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.1.0` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.1.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.1.0` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.1.0` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.1.0` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.1.0` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.1.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.1.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.1.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.1.0` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.1.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.1.0` | `./dist/lanes/index.d.ts` | 1014 |
+| `@aura3d/rendering/lighting` | `5.1.0` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.1.0` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.1.0` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.1.0` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.1.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.1.0` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.1.0` | `./dist/webgpu.d.ts` | 203 |
+| `@aura3d/rendering/world` | `5.1.0` | `./dist/world/index.d.ts` | 172 |
+| `@aura3d/scene` | `5.1.0` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.1.0` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.1.0` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.1.0` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1270,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1347,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1422,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1545,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1662,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1759,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -1926,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -2019,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -2134,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -2238,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -2339,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -2403,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/addons@5.0.3#sha256=496f48f6570aaa3ba4ee70899e840245f1c2a56f1961287cc7cf209f46e818e5`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
 
 ### Export conditions
 
@@ -2513,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/animation@5.0.3#sha256=a79fcccc6127fa6ad04a4d276ffe0b3f8570529beb61da4c988aa344b30a0dc8`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
 
 ### Export conditions
 
@@ -5385,8 +5386,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/animation@5.0.3#sha256=a79fcccc6127fa6ad04a4d276ffe0b3f8570529beb61da4c988aa344b30a0dc8`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
 
 ### Export conditions
 
@@ -5432,8 +5433,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/animation@5.0.3#sha256=a79fcccc6127fa6ad04a4d276ffe0b3f8570529beb61da4c988aa344b30a0dc8`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
 
 ### Export conditions
 
@@ -7206,8 +7207,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/animation@5.0.3#sha256=a79fcccc6127fa6ad04a4d276ffe0b3f8570529beb61da4c988aa344b30a0dc8`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
 
 ### Export conditions
 
@@ -7246,8 +7247,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/apps@5.0.3#sha256=aaea3e9ac695cbf07262d782783f39ccdb82dc854258a53395d371a41a7366b7`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/apps@5.1.0#sha256=cd3a2416fa6adde3492554fcc698f6a96c697d1e72b2677afe00d30147e55fa8`
 
 ### Export conditions
 
@@ -7311,8 +7312,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/asset-index@5.0.3#sha256=77053c9e6716c25ac817f59a90de5268ffde0650bcaa5a3fc2f499a0006d2957`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/asset-index@5.1.0#sha256=cc3a835cf736f1925ddafeae8a5153706b72fd5ddefa024ed385f128aba5a403`
 
 ### Export conditions
 
@@ -8049,8 +8050,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -13774,8 +13775,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -18477,8 +18478,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -19386,8 +19387,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -21821,8 +21822,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -23581,8 +23582,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -23678,8 +23679,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/assets@5.0.3#sha256=64d0ab4b0fbddf5d8663a211c9f21e3e5284d89d268ee26da6ab4b2be740debd`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
 
 ### Export conditions
 
@@ -23698,8 +23699,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/audio@5.0.3#sha256=8833c664998f4e0a253f2f46626d2f1047b37b92a33af9f46fe1b111669e6d14`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/audio@5.1.0#sha256=12a75c2bbad0e35af3c704024cadc64695544647cad027acf9d2fb2c800f554a`
 
 ### Export conditions
 
@@ -26324,8 +26325,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/cli@5.0.3#sha256=c22025ffdd361924788bd496b24ad87ae09687a6552c498d784bf8644576e996`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/cli@5.1.0#sha256=94385c282b6bf4ab13fb5af88cdc5d43eafa1046714a626575e9d7ff79678590`
 
 ### Export conditions
 
@@ -28495,8 +28496,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/controls@5.0.3#sha256=c2a52ee148f0c7e394d092e2cf1d24391dcf394ac72d72ebd7c87d300c71378a`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/controls@5.1.0#sha256=b1a122901b3f38298afc0e6cd8f713e8956b595fd5d7a91b46795814eacdfa2f`
 
 ### Export conditions
 
@@ -30298,8 +30299,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/core@5.0.3#sha256=acf3973fb3a5b97dd6d278377e104697f5d7ccdfc6b04be8944ccc0c2983ded0`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/core@5.1.0#sha256=4361008f95255f1474befe688e24b3b870b2d7b82fc02a219a195b5040d01bc2`
 
 ### Export conditions
 
@@ -30813,8 +30814,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.0.3`
-- Packed identity: `archive:create-aura3d@5.0.3#sha256=3ed271e531dd6e4a8e12952ec0475df26a9d4c6959eb71c8ec033ba735ef7d5c`
+- Version: `5.1.0`
+- Packed identity: `archive:create-aura3d@5.1.0#sha256=a85001914719d8346302eea984ee95838294bf20cd0f6b608c017956f2cb7b3f`
 
 ### Export conditions
 
@@ -31583,8 +31584,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/debug@5.0.3#sha256=464459263f54c3e6abf988886a88f1c22dc31b2f4501b5b6032e22b63de8adcc`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/debug@5.1.0#sha256=f8ebb3d99f0773e8a8b831b56e326a6c6d525831a55b2d9aea49e69713c2559d`
 
 ### Export conditions
 
@@ -32963,8 +32964,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/debug@5.0.3#sha256=464459263f54c3e6abf988886a88f1c22dc31b2f4501b5b6032e22b63de8adcc`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/debug@5.1.0#sha256=f8ebb3d99f0773e8a8b831b56e326a6c6d525831a55b2d9aea49e69713c2559d`
 
 ### Export conditions
 
@@ -33171,8 +33172,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/ecs@5.0.3#sha256=7b669ca6c06d743413b99fc0d0497366c9be971d97be06413ed8dd73f308eb00`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/ecs@5.1.0#sha256=5622339869609e9332b5e59f50a713138865a0e73f0d67d4853107dac782af4d`
 
 ### Export conditions
 
@@ -33839,8 +33840,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/editor-runtime@5.0.3#sha256=89d1860ef2340050a04b6cdca0493bd11d5d15e7b6b47850f075f9b24796ad08`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.1.0#sha256=5d68065aac1a5aab5dac385f00b8b023ad6fa02a26a9ec1c31a13e381aa471a0`
 
 ### Export conditions
 
@@ -36422,8 +36423,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -36539,6 +36540,11 @@ export type { AuraXRButtonHandle, AuraXRButtonOptions, AuraXRDeviceBridge, AuraX
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "../agent-api/index.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "../agent-api/nodes/types/runtime.js";
 export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDistanceMaterialOptions, AuraShadowMaterialOptions } from "../agent-api/index.js";
+export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubject.js";
+export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "../agent-api/camera/frameSubject.js";
+export type { AuraCameraFrameOptions, AuraFrameSubject } from "../agent-api/camera/frameNodes.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "../agent-api/nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "../agent-api/nodes/material.visual.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -41375,6 +41381,21 @@ export interface FrameRateMeter {
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export declare function createFrameRateMeter(windowMs?: number): FrameRateMeter;
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
+export declare function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean;
 //# sourceMappingURL=frameLoop.d.ts.map
 ```
 
@@ -50604,6 +50625,8 @@ export declare function defineAuraAssets<const T extends Record<string, AuraAsse
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -51631,7 +51654,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -51738,6 +51761,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -80811,6 +80836,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -91313,15 +91340,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/time.d.ts`
@@ -98729,6 +98790,7 @@ import type { RenderDevice } from "../../../rendering/index.js";
 import { EnvironmentCache } from "../../../rendering/index.js";
 import { type AssetRequestOptions } from "../../../assets/browser-index.js";
 import type { EnvironmentCaptureRequest } from "../../../rendering/contracts/index.js";
+import { type ProceduralEnvironmentKind } from "./environmentFallback.js";
 export interface Prd02EnvironmentBindOptions {
     readonly device: RenderDevice;
     readonly tier: AuraQualityTier;
@@ -98752,6 +98814,15 @@ export interface Prd02EnvironmentBindOptions {
      * bind again on a later frame once the provider lands.
      */
     readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+    /**
+     * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+     * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+     */
+    readonly onHdriMissing?: (info: {
+        readonly url: string;
+        readonly message: string;
+        readonly fallback: ProceduralEnvironmentKind;
+    }) => void;
 }
 /** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
 export declare function isEnvironmentProbePendingError(error: unknown): boolean;
@@ -115847,6 +115918,8 @@ export declare const CSS2D_OUT_OF_SCOPE: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -115899,6 +115972,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -118159,6 +118258,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -118248,6 +118348,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -120705,10 +120811,278 @@ export declare function estimateGlbResourceBytes(sizeBytes: number | undefined, 
 //# sourceMappingURL=GlbResourceCache.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/frameSubject.d.ts`
+
+```ts
+/**
+ * `camera.frame` geometry: a pure, dependency-free mapping from world bounds +
+ * lens + aspect + fill to a camera pose, so the maths is unit-testable without a
+ * scene, a DOM or a GPU.
+ *
+ * Definition of fill: the larger of the subject's projected height (as a fraction
+ * of the frame height) and projected width (as a fraction of the frame width).
+ * With `fill: 0.6` a landscape frame shows the subject 60% of the frame tall; a
+ * portrait frame shows it 60% of the frame wide when width is the tighter axis.
+ * The projection is exact for perspective (all eight bounds corners are
+ * projected, not a bounding sphere), and the aim is re-centred so the projected
+ * box sits in the middle of the frame.
+ */
+import type { AuraVec3 } from "../nodes/types.js";
+/** Named camera angles; azimuth 0 looks from +Z toward -Z, positive azimuth swings toward +X. */
+export type AuraFrameAngle = "three-quarter" | "front" | "top" | "side";
+export interface AuraFrameBounds {
+    readonly min: AuraVec3;
+    readonly max: AuraVec3;
+}
+export interface AuraFramePoseOptions {
+    /** Fraction (0.05..1) of the limiting frame axis the subject occupies. Default 0.6. */
+    readonly fill?: number;
+    /** A named angle, or pass `azimuth`/`elevation` (radians) which win over it. Default `"three-quarter"`. */
+    readonly angle?: AuraFrameAngle;
+    /** Radians around +Y from +Z. */
+    readonly azimuth?: number;
+    /** Radians above the horizon. */
+    readonly elevation?: number;
+    /** Extra margin as a fraction of the subject size (0.1 = 10% breathing room). Shrinks the effective fill by 1 / (1 + padding). Default 0. */
+    readonly padding?: number;
+    /** Vertical field of view in degrees. Default 40. */
+    readonly fov?: number;
+    /** Frame width / height the fit is solved for. Default 16 / 9. */
+    readonly aspect?: number;
+    /** Never place the eye closer than this. Default 0.05. */
+    readonly minDistance?: number;
+}
+export interface AuraFramePose {
+    readonly position: AuraVec3;
+    readonly target: AuraVec3;
+    readonly distance: number;
+    readonly fov: number;
+    readonly azimuth: number;
+    readonly elevation: number;
+    /** Effective fill the solver targeted (`fill / (1 + padding)`). */
+    readonly fill: number;
+    readonly near: number;
+    readonly far: number;
+}
+export declare const FRAME_ANGLES: Readonly<Record<AuraFrameAngle, {
+    readonly azimuth: number;
+    readonly elevation: number;
+}>>;
+/**
+ * The fill (larger of projected height / width fraction of the frame) the given
+ * pose produces for `bounds`. Tests and callers measure with the same definition
+ * the solver uses.
+ */
+export declare function measureFrameFill(bounds: AuraFrameBounds, pose: Pick<AuraFramePose, "position" | "target" | "fov">, aspect?: number): number;
+/**
+ * Camera pose that frames `bounds` so the subject fills `fill` of the frame.
+ *
+ * Pure: same inputs, same pose. Throws `RangeError` on non-finite bounds.
+ */
+export declare function frameCameraPose(bounds: AuraFrameBounds, options?: AuraFramePoseOptions): AuraFramePose;
+//# sourceMappingURL=frameSubject.d.ts.map
+```
+
+### `./dist/engine/agent-api/camera/frameNodes.d.ts`
+
+```ts
+/**
+ * World bounds of scene nodes for `camera.frame`. Uses the same matrix the
+ * renderer composes for every model/primitive (`createModelMatrix`, which owns
+ * `size`, `scale`, `rotation`, `pivot`, `targetHeight` and normalised model fit)
+ * and the same group flattening the camera rigs use, so the framed box is the
+ * box that is drawn.
+ */
+import type { AuraNodeInput, AuraSceneNode } from "../nodes/types.js";
+import type { AuraFrameBounds, AuraFramePoseOptions } from "./frameSubject.js";
+/** Anything `camera.frame` accepts as a subject. */
+export type AuraFrameSubject = AuraNodeInput | {
+    toJSON(): unknown;
+};
+export interface AuraFrameNodeFilter {
+    /** Return true to leave a node out of the framed bounds (e.g. a ground slab). */
+    readonly exclude?: (node: AuraSceneNode) => boolean;
+}
+/** Default scene-wide filter: skips planes and nodes named like ground, which would otherwise dominate the box. */
+export declare function isGroundLikeNode(node: AuraSceneNode): boolean;
+/**
+ * World-space AABB of the given nodes (groups expanded, hidden nodes and
+ * non-spatial nodes skipped, per-instance transforms honoured), or `undefined`
+ * when nothing occupies space.
+ */
+export declare function worldBoundsOfNodes(subjects: AuraFrameSubject | readonly AuraFrameSubject[], filter?: AuraFrameNodeFilter): AuraFrameBounds | undefined;
+export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameNodeFilter {
+}
+//# sourceMappingURL=frameNodes.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraEffectNode, AuraVec3 } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+/** A light-like source: anything with a world `position` (point or spot light, a mesh) or a travel `direction` (a directional light). */
+export interface AuraGodRaysLightSource {
+    readonly position?: AuraVec3;
+    /** Direction the light travels (a directional light's `direction`); the shafts point back toward the light. */
+    readonly direction?: AuraVec3;
+}
+export interface AuraGodRaysOptions {
+    readonly name?: string;
+    /**
+     * Where the shafts radiate from: `"sun"` (default) is the strongest directional light in the scene; a `[x, y, z]` world
+     * point, a light-like `{ position }` or `{ direction }` object pins it.
+     */
+    readonly source?: "sun" | AuraVec3 | AuraGodRaysLightSource;
+    /** Shaft gain (default 0.7). */
+    readonly intensity?: number;
+    /** Per-step falloff along each shaft, 0.8 to 0.99 (default 0.94); higher gives longer shafts. */
+    readonly decay?: number;
+    /** March samples: 32, 48 or 64 (default 48). A quality tier can only lower this. */
+    readonly samples?: 32 | 48 | 64;
+    /** Shaft colour (default warm white). */
+    readonly color?: AuraColor;
+    /** March density in (0, 1]: the fraction of the screen distance toward the light that is sampled (default 1). */
+    readonly density?: number;
+    /** Scattering medium per metre: shafts build with distance as `1 - exp(-medium * depth)` (default 0.18). */
+    readonly medium?: number;
+}
+export interface AuraVolumetricBeamOptions {
+    readonly name?: string;
+    /** World position of the beam's source (the apex). Default `[0, 0, 0]`. */
+    readonly position?: AuraVec3;
+    /** Direction the beam travels from the source (default `[0, -1, 0]`). Need not be normalised. */
+    readonly direction?: AuraVec3;
+    /** Beam length in world units (default 20). */
+    readonly length?: number;
+    /** Radius of the beam where it ends (default `length * 0.12`). */
+    readonly endRadius?: number;
+    readonly color?: AuraColor;
+    readonly intensity?: number;
+    readonly falloff?: number;
+    readonly edgeSoftness?: number;
+    readonly noise?: number;
+    readonly noiseScale?: number;
+    readonly noiseSpeed?: number;
+    /** Cone sides (default 48). */
+    readonly radialSegments?: number;
+}
+export declare const visualEffectBuilders: {
+    /**
+     * Screen-space god rays: radial shafts march from the light toward each pixel through the scene depth and add onto the
+     * HDR frame (the S4 stage, WebGL2 v2 post chain). Unlike `effects.volumetricFog` it adds no forward fog. It needs
+     * the depth-aware post chain: where the renderer cannot sample depth, the stage is skipped and
+     * `app.diagnostics` carries the degradation instead of failing the frame. Tier `Low` turns the stage off.
+     */
+    readonly godRays: (options?: AuraGodRaysOptions) => AuraNodeBuilder<AuraEffectNode>;
+    /**
+     * Soft light shaft (lighthouse beam, searchlight, window light through haze): an open cone whose silhouette dissolves
+     * and whose dust noise drifts with the clock. Returns a primitive node; add it like any other node.
+     */
+    readonly volumetricBeam: (options?: AuraVolumetricBeamOptions) => AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
+};
+//# sourceMappingURL=effects.visual.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/material.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraMaterialSpec } from "./types.js";
+export interface AuraStrataSlopeOptions {
+    /** Surfaces flatter than this angle from horizontal (degrees) take `flatColor`; steeper ones show the bands. Default 38. */
+    readonly angle?: number;
+    /** Blend width in degrees around `angle`. Default 12. */
+    readonly blend?: number;
+    /** Colour of flat ground (talus, sand, grass) between cliffs. Default: the first palette colour, lightened. */
+    readonly flatColor?: AuraColor;
+}
+export interface AuraStrataMaterialOptions {
+    /** Number of layers across the height range (default 12). */
+    readonly bands?: number;
+    /** Palette cycled through the layers (default: five warm sandstone tones). One to eight colours. */
+    readonly colors?: readonly AuraColor[];
+    /** World-space height range the bands span `[bottom, top]` (default `[0, 10]`). Bands repeat outside it. */
+    readonly heightRange?: readonly [number, number];
+    /** Layer-edge waviness and grain, 0 to 1 (default 0.35). 0 gives ruler-straight layers. */
+    readonly noise?: number;
+    /** World-unit size of the noise features (default 3). */
+    readonly noiseScale?: number;
+    /** Thin dark seam between layers, 0 to 1 (default 0.25). */
+    readonly seam?: number;
+    /** Per-layer brightness variation, 0 to 1 (default 0.18). */
+    readonly variation?: number;
+    /** Colour flat ground separately from steep cliffs. Omit to band every surface. */
+    readonly slope?: AuraStrataSlopeOptions;
+    /** Surface roughness for the specular term (default 0.9). */
+    readonly roughness?: number;
+    /** Seed that shifts the noise (default 0). */
+    readonly seed?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.strata(options)`: sedimentary layers by world height with noisy layer edges, thin seams and per-layer
+ * brightness, lit by every scene light and the scene environment. With `slope`, flat ground reads `flatColor` and only
+ * steep faces show the bands, which is how a canyon wall or heightfield cliff separates from its floor and rim.
+ * Apply it to any mesh, including a `procedural.heightfield` surface.
+ */
+export declare function strataMaterial(options?: AuraStrataMaterialOptions): AuraMaterialSpec;
+export interface AuraCausticsMaterialOptions {
+    /** Colour of the floor under the light (default sand). */
+    readonly color?: AuraColor;
+    /** Colour of the caustic light (default warm white). */
+    readonly causticColor?: AuraColor;
+    /** Caustic brightness (default 1.2). */
+    readonly strength?: number;
+    /** World size of one caustic tile along X and Z (default 6). */
+    readonly scale?: number;
+    /** Animation speed multiplier (default 1). */
+    readonly speed?: number;
+    /** World height of the water surface. With `depthFade` the pattern dims the deeper a point lies below it (default none). */
+    readonly surfaceY?: number;
+    /** Extinction per metre below `surfaceY` (default 0.12; ignored without `surfaceY`). */
+    readonly depthFade?: number;
+    /** Roughness of the floor (default 0.95). */
+    readonly roughness?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.caustics(options)`: a lit floor whose surface carries moving water-caustic light, projected straight down in
+ * world X/Z so every receiver (sand, rock, ruins) shows the same shimmering net. It reads `uTime`, so it animates as long
+ * as the app draws frames (a scene with a `uTime` custom shader is a declared time consumer on builds that include
+ * `timeConsumers`; otherwise add an `app.onFrame` hook or a looping timeline).
+ */
+export declare function causticsMaterial(options?: AuraCausticsMaterialOptions): AuraMaterialSpec;
+export interface AuraLightBeamMaterialOptions {
+    /** Beam colour (default warm white). */
+    readonly color?: AuraColor;
+    /** Brightness multiplier (default 1). */
+    readonly intensity?: number;
+    /** Length of the cone along its axis, in object units: must match the cone's height (default 20). */
+    readonly length?: number;
+    /** How fast the beam fades from source to end (exponent, default 1). */
+    readonly falloff?: number;
+    /** Edge softness exponent: higher gives a brighter core and softer silhouette (default 1.3). */
+    readonly edgeSoftness?: number;
+    /** Dust noise strength, 0 to 1 (default 0.35). */
+    readonly noise?: number;
+    /** World-unit size of the dust features (default 2.5). */
+    readonly noiseScale?: number;
+    /** Noise drift speed (default 0.25). */
+    readonly noiseSpeed?: number;
+}
+/**
+ * `material.lightBeam(options)`: additive soft beam for an open cone or cylinder whose axis is the mesh's local Y with the
+ * source at +Y (`effects.volumetricBeam` builds that mesh for you). Brightness is strongest where the surface faces the
+ * camera, so the silhouette dissolves instead of showing a hard cone edge; a drifting dust noise breaks up the shaft.
+ */
+export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions): AuraMaterialSpec;
+//# sourceMappingURL=material.visual.d.ts.map
+```
+
 ## @aura3d/engine/animation
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -123578,8 +123952,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -129304,8 +129678,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -131929,8 +132303,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -133731,8 +134105,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -138637,6 +139011,21 @@ export interface FrameRateMeter {
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export declare function createFrameRateMeter(windowMs?: number): FrameRateMeter;
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
+export declare function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean;
 //# sourceMappingURL=frameLoop.d.ts.map
 ```
 
@@ -147866,6 +148255,8 @@ export declare function defineAuraAssets<const T extends Record<string, AuraAsse
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -148893,7 +149284,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -149000,6 +149391,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -178073,6 +178466,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -188575,15 +188970,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/time.d.ts`
@@ -195948,6 +196377,7 @@ import type { RenderDevice } from "../../../rendering/index.js";
 import { EnvironmentCache } from "../../../rendering/index.js";
 import { type AssetRequestOptions } from "../../../assets/browser-index.js";
 import type { EnvironmentCaptureRequest } from "../../../rendering/contracts/index.js";
+import { type ProceduralEnvironmentKind } from "./environmentFallback.js";
 export interface Prd02EnvironmentBindOptions {
     readonly device: RenderDevice;
     readonly tier: AuraQualityTier;
@@ -195971,6 +196401,15 @@ export interface Prd02EnvironmentBindOptions {
      * bind again on a later frame once the provider lands.
      */
     readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+    /**
+     * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+     * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+     */
+    readonly onHdriMissing?: (info: {
+        readonly url: string;
+        readonly message: string;
+        readonly fallback: ProceduralEnvironmentKind;
+    }) => void;
 }
 /** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
 export declare function isEnvironmentProbePendingError(error: unknown): boolean;
@@ -213066,6 +213505,8 @@ export declare const CSS2D_OUT_OF_SCOPE: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -213118,6 +213559,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -215378,6 +215845,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -215467,6 +215935,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -215825,8 +216299,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -216492,8 +216966,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -219074,8 +219548,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -245565,6 +246039,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -263027,6 +263503,21 @@ export interface FrameRateMeter {
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export declare function createFrameRateMeter(windowMs?: number): FrameRateMeter;
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
+export declare function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean;
 //# sourceMappingURL=frameLoop.d.ts.map
 ```
 
@@ -272256,6 +272747,8 @@ export declare function defineAuraAssets<const T extends Record<string, AuraAsse
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -273283,7 +273776,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -273390,6 +273883,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -281368,15 +281863,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/time.d.ts`
@@ -283215,6 +283744,7 @@ import type { RenderDevice } from "../../../rendering/index.js";
 import { EnvironmentCache } from "../../../rendering/index.js";
 import { type AssetRequestOptions } from "../../../assets/browser-index.js";
 import type { EnvironmentCaptureRequest } from "../../../rendering/contracts/index.js";
+import { type ProceduralEnvironmentKind } from "./environmentFallback.js";
 export interface Prd02EnvironmentBindOptions {
     readonly device: RenderDevice;
     readonly tier: AuraQualityTier;
@@ -283238,6 +283768,15 @@ export interface Prd02EnvironmentBindOptions {
      * bind again on a later frame once the provider lands.
      */
     readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+    /**
+     * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+     * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+     */
+    readonly onHdriMissing?: (info: {
+        readonly url: string;
+        readonly message: string;
+        readonly fallback: ProceduralEnvironmentKind;
+    }) => void;
 }
 /** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
 export declare function isEnvironmentProbePendingError(error: unknown): boolean;
@@ -299828,6 +300367,8 @@ export declare const CSS2D_OUT_OF_SCOPE: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -299880,6 +300421,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -302140,6 +302707,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -302229,6 +302797,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -305982,8 +306556,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -306176,15 +306750,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/environment.d.ts`
@@ -309076,8 +309684,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -335361,6 +335969,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -352823,6 +353433,21 @@ export interface FrameRateMeter {
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export declare function createFrameRateMeter(windowMs?: number): FrameRateMeter;
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
+export declare function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean;
 //# sourceMappingURL=frameLoop.d.ts.map
 ```
 
@@ -362052,6 +362677,8 @@ export declare function defineAuraAssets<const T extends Record<string, AuraAsse
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -363079,7 +363706,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -363186,6 +363813,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -371164,15 +371793,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/time.d.ts`
@@ -373011,6 +373674,7 @@ import type { RenderDevice } from "../../../rendering/index.js";
 import { EnvironmentCache } from "../../../rendering/index.js";
 import { type AssetRequestOptions } from "../../../assets/browser-index.js";
 import type { EnvironmentCaptureRequest } from "../../../rendering/contracts/index.js";
+import { type ProceduralEnvironmentKind } from "./environmentFallback.js";
 export interface Prd02EnvironmentBindOptions {
     readonly device: RenderDevice;
     readonly tier: AuraQualityTier;
@@ -373034,6 +373698,15 @@ export interface Prd02EnvironmentBindOptions {
      * bind again on a later frame once the provider lands.
      */
     readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+    /**
+     * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+     * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+     */
+    readonly onHdriMissing?: (info: {
+        readonly url: string;
+        readonly message: string;
+        readonly fallback: ProceduralEnvironmentKind;
+    }) => void;
 }
 /** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
 export declare function isEnvironmentProbePendingError(error: unknown): boolean;
@@ -389624,6 +390297,8 @@ export declare const CSS2D_OUT_OF_SCOPE: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -389676,6 +390351,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -391936,6 +392637,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -392025,6 +392727,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -392628,8 +393336,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -392639,8 +393347,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -392665,8 +393373,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -393392,8 +394100,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -394633,8 +395341,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -395272,8 +395980,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -397262,8 +397970,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -397887,8 +398595,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -400525,8 +401233,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -401777,8 +402485,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -402036,10 +402744,307 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 //# sourceMappingURL=ensureOpaque.d.ts.map
 ```
 
+## @aura3d/engine/procedural
+
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
+
+### Export conditions
+
+- `types`: `./dist/engine/public/procedural.d.ts`
+- `browser`: `./dist/engine/public/procedural.js`
+- `import`: `./dist/engine/public/procedural.js`
+- `default`: `./dist/engine/public/procedural.js`
+
+### `./dist/engine/public/procedural.d.ts`
+
+```ts
+export * from "../agent-api/procedural/index.js";
+//# sourceMappingURL=procedural.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/index.d.ts`
+
+```ts
+export { seededRandom } from "./random.js";
+export { createSimplexNoise2D, createSimplexNoise3D, createFbm2D, createFbm3D } from "./noise.js";
+export type { Noise2D, Noise3D, FbmOptions } from "./noise.js";
+export { Path2D, path2d } from "./path2d.js";
+export type { Path2DPointsOptions } from "./path2d.js";
+export { polylineCurve, catmullRomCurve, cubicBezierCurve, sampleCurve } from "./curves.js";
+export type { ProceduralCurve3, CurveSamples } from "./curves.js";
+export { latheGeometry } from "./lathe.js";
+export type { LatheOptions } from "./lathe.js";
+export { sweepGeometry } from "./sweep.js";
+export type { SweepOptions } from "./sweep.js";
+export { parametricSurface, heightfieldGeometry } from "./surfaces.js";
+export type { ParametricSurfaceOptions, HeightfieldOptions } from "./surfaces.js";
+export { composeGeometry } from "./compose.js";
+export type { ComposePart } from "./compose.js";
+export type { ProceduralVec2, ProceduralVec3, ProceduralColor, ProceduralGeometry } from "./types.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/random.d.ts`
+
+```ts
+/** Deterministic PRNG (mulberry32). Same seed, same sequence, on every machine. */
+export declare function seededRandom(seed: number): () => number;
+//# sourceMappingURL=random.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/noise.d.ts`
+
+```ts
+export type Noise2D = (x: number, y: number) => number;
+export type Noise3D = (x: number, y: number, z: number) => number;
+export interface FbmOptions {
+    /** Number of summed layers. Default 5. */
+    readonly octaves?: number;
+    /** Frequency multiplier per octave. Default 2. */
+    readonly lacunarity?: number;
+    /** Amplitude multiplier per octave. Default 0.5. */
+    readonly gain?: number;
+    /** Base frequency. Default 1. */
+    readonly frequency?: number;
+    /** Ridged multifractal: (1 - |n|)^2 remapped to [-1, 1]; sharp crests. Default false. */
+    readonly ridged?: boolean;
+}
+/** Seeded 2D simplex noise in [-1, 1]. Deterministic per seed, no Math.random. */
+export declare function createSimplexNoise2D(seed?: number): Noise2D;
+/** Seeded 3D simplex noise in [-1, 1]. */
+export declare function createSimplexNoise3D(seed?: number): Noise3D;
+/** Fractal Brownian motion over seeded simplex noise, normalised so the result stays in [-1, 1]. */
+export declare function createFbm2D(seed?: number, options?: FbmOptions): Noise2D;
+/** 3D variant of {@link createFbm2D}. */
+export declare function createFbm3D(seed?: number, options?: FbmOptions): Noise3D;
+//# sourceMappingURL=noise.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/path2d.d.ts`
+
+```ts
+import type { ProceduralVec2 } from "./types.js";
+export interface Path2DPointsOptions {
+    /** Samples per curved segment (quad, cubic or arc). Default 12. */
+    readonly curveSegments?: number;
+}
+/**
+ * Chainable 2D path: lines, quadratic and cubic Bezier curves and arcs, sampled into a point list that
+ * feeds `latheGeometry({ profile })` or `sweepGeometry({ profile })`. Pure data, deterministic.
+ */
+export declare class Path2D {
+    private start;
+    private cursor;
+    private readonly commands;
+    private isClosed;
+    moveTo(x: number, y: number): this;
+    lineTo(x: number, y: number): this;
+    quadTo(cx: number, cy: number, x: number, y: number): this;
+    cubicTo(c1x: number, c1y: number, c2x: number, c2y: number, x: number, y: number): this;
+    /** Circular arc around (cx, cy) from angle `from` to `to` (radians, counter-clockwise when to > from). Starts at the arc start point. */
+    arc(cx: number, cy: number, radius: number, from: number, to: number): this;
+    /** Mark the path as a closed polygon (the last point connects back to the first). */
+    close(): this;
+    get closed(): boolean;
+    /** Sample the path. A closed path does not repeat its first point at the end. */
+    points(options?: Path2DPointsOptions): ProceduralVec2[];
+}
+/** Start a 2D path at (0, 0), or call `.moveTo(x, y)` first. */
+export declare function path2d(): Path2D;
+//# sourceMappingURL=path2d.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/curves.d.ts`
+
+```ts
+import type { ProceduralVec3 } from "./types.js";
+/** A parametric 3D curve; `point(t)` is defined for t in [0, 1] (closed curves: point(1) equals point(0)). */
+export interface ProceduralCurve3 {
+    readonly closed: boolean;
+    point(t: number): ProceduralVec3;
+}
+/** Straight segments through the points (sharp corners). */
+export declare function polylineCurve(points: readonly ProceduralVec3[], options?: {
+    readonly closed?: boolean;
+}): ProceduralCurve3;
+/**
+ * Catmull-Rom spline through the points. Default `alpha` 0.5 is the centripetal form, which does not loop or
+ * overshoot on uneven spacing (0 = uniform, 1 = chordal).
+ */
+export declare function catmullRomCurve(points: readonly ProceduralVec3[], options?: {
+    readonly closed?: boolean;
+    readonly alpha?: number;
+}): ProceduralCurve3;
+/**
+ * Chain of cubic Bezier segments. Pass 3n+1 points: [p0, c1, c2, p1, c3, c4, p2, ...]. The chain is C0 unless the
+ * control points are mirrored by the author.
+ */
+export declare function cubicBezierCurve(points: readonly ProceduralVec3[]): ProceduralCurve3;
+export interface CurveSamples {
+    readonly points: ProceduralVec3[];
+    readonly tangents: ProceduralVec3[];
+    /** Cumulative arc length at each sample. */
+    readonly lengths: number[];
+    readonly totalLength: number;
+}
+/** Resample a curve at `steps + 1` points spaced evenly by arc length, with unit tangents. */
+export declare function sampleCurve(curve: ProceduralCurve3, steps: number): CurveSamples;
+//# sourceMappingURL=curves.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/lathe.d.ts`
+
+```ts
+import { type ProceduralGeometry, type ProceduralVec2 } from "./types.js";
+export interface LatheOptions {
+    /** Profile polyline as [radius, y] pairs, ordered bottom to top for outward-facing normals. Radius 0 sits on the axis. */
+    readonly profile: readonly ProceduralVec2[];
+    /** Segments around the axis. Default 32. */
+    readonly segments?: number;
+    /** Start angle in radians. Default 0. */
+    readonly phiStart?: number;
+    /** Sweep angle in radians. Default 2 PI (full revolution). */
+    readonly phiLength?: number;
+    /** Turns sharper than this (radians) between profile edges stay hard edges. Default 0.9 (about 52 degrees). */
+    readonly creaseAngle?: number;
+    /** Reverse the profile order first; use when the profile is given top to bottom. */
+    readonly flip?: boolean;
+}
+/**
+ * Surface of revolution (three.js LatheGeometry equivalent) with analytic normals: smooth across gentle profile
+ * turns, hard across sharp ones, correct poles on the axis, and UVs (u around, v along the profile length).
+ * A profile that starts and ends on the axis (radius 0) produces a watertight solid.
+ */
+export declare function latheGeometry(options: LatheOptions): ProceduralGeometry;
+//# sourceMappingURL=lathe.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/sweep.d.ts`
+
+```ts
+import { type ProceduralCurve3 } from "./curves.js";
+import { type ProceduralGeometry, type ProceduralVec2, type ProceduralVec3 } from "./types.js";
+export interface SweepOptions {
+    /** A curve, or control points (threaded by a centripetal Catmull-Rom spline). */
+    readonly path: ProceduralCurve3 | readonly ProceduralVec3[];
+    /** Rings along the path (arc-length spaced). Default 64. Use 1 for a straight two-point path. */
+    readonly steps?: number;
+    /** Profile scale, constant or a function of path fraction t in [0, 1]. Default 1. */
+    readonly radius?: number | ((t: number) => number);
+    /** Counter-clockwise closed polygon in the (normal, binormal) plane, unit scale. Default: a circle of `radialSegments`. */
+    readonly profile?: readonly ProceduralVec2[];
+    /** Points of the default circular profile. Default 12. */
+    readonly radialSegments?: number;
+    /** Turns sharper than this (radians) between profile edges stay hard edges. Default 0.9. */
+    readonly creaseAngle?: number;
+    /** Close open paths with flat caps (fan from the profile centre; star-shaped profiles only). Default true. */
+    readonly caps?: boolean;
+    /** Extra twist of the profile about the path, total radians. Default 0. */
+    readonly twist?: number;
+}
+/**
+ * Sweep a profile along a spline with rotation-minimising frames (no flipping, optional twist), variable radius,
+ * smooth/hard profile normals, UVs (u around the profile, v along the path) and optional flat end caps.
+ * Closed curves wrap the frames so the seam matches. Use it for pipes, ropes, rails, planks, roots and rings.
+ */
+export declare function sweepGeometry(options: SweepOptions): ProceduralGeometry;
+//# sourceMappingURL=sweep.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/surfaces.d.ts`
+
+```ts
+import { type ProceduralColor, type ProceduralGeometry, type ProceduralVec3 } from "./types.js";
+export interface ParametricSurfaceOptions {
+    /** Maps (u, v), both in [0, 1], to a point. Must be deterministic. */
+    readonly fn: (u: number, v: number) => ProceduralVec3;
+    readonly uSegments?: number;
+    readonly vSegments?: number;
+    /** u = 0 and u = 1 are the same curve (tubes, spheres). Normals are continuous across the seam. */
+    readonly wrapU?: boolean;
+    /** v = 0 and v = 1 are the same curve (tori). */
+    readonly wrapV?: boolean;
+    /** Reverse the facing. The default faces along du x dv. */
+    readonly flip?: boolean;
+}
+/**
+ * Parametric surface (three.js ParametricGeometry equivalent): a (u, v) grid with analytic-quality normals from
+ * central differences of `fn`, pole-safe, with grid UVs. Combine with seeded noise for rocks, blobs and organic shells.
+ */
+export declare function parametricSurface(options: ParametricSurfaceOptions): ProceduralGeometry;
+export interface HeightfieldOptions {
+    /** Height in world units at world (x, z). Called for every vertex and for the normal stencil. Must be deterministic. */
+    readonly heightAt: (x: number, z: number) => number;
+    /** Extent in x and z (centred on the origin). A number means a square. Default 32. */
+    readonly size?: number | readonly [number, number];
+    /** Quads along x and z. A number means square. Default 96. */
+    readonly segments?: number | readonly [number, number];
+    /** Per-vertex RGBA from position, height and slope (0 flat, 1 vertical). Adds a colors attribute. */
+    readonly colorAt?: (x: number, z: number, height: number, slope: number) => ProceduralColor;
+    /** Close the terrain into a watertight solid slab: skirt walls down to this y plus a bottom face. Must be below every height. */
+    readonly base?: number;
+    /** RGBA of the skirt walls and bottom when `base` and `colorAt` are set. Default a dark earth tone. */
+    readonly skirtColor?: ProceduralColor;
+    /** UV repeats across the whole terrain. Default 1. */
+    readonly uvRepeat?: number;
+}
+/**
+ * Heightfield mesh from a height function: shared vertices, slope-aware normals from central differences of
+ * `heightAt` (seamless across tiles), optional per-vertex colour by height/slope and an optional solid slab skirt.
+ * Pair `heightAt` with `createFbm2D(seed)` for deterministic terrain.
+ */
+export declare function heightfieldGeometry(options: HeightfieldOptions): ProceduralGeometry;
+//# sourceMappingURL=surfaces.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/compose.d.ts`
+
+```ts
+import { type ProceduralColor, type ProceduralGeometry, type ProceduralVec3 } from "./types.js";
+export interface ComposePart {
+    readonly geometry: ProceduralGeometry;
+    readonly position?: ProceduralVec3;
+    /** Euler angles in radians, applied in three.js "XYZ" order. */
+    readonly rotation?: ProceduralVec3;
+    readonly scale?: number | ProceduralVec3;
+    /** Flat RGBA written to every vertex of this part. Default: the part's own vertex colours (for example a nested composeGeometry), else white. */
+    readonly color?: ProceduralColor;
+}
+/**
+ * Merge several procedural parts into ONE geometry (one draw call) with a transform and a vertex colour per part.
+ * Normals use the inverse-transpose, mirrored parts keep outward winding. Pair with a white `material.pbr` so the
+ * vertex colours show. The result is a plain custom geometry spec.
+ */
+export declare function composeGeometry(parts: readonly ComposePart[]): ProceduralGeometry;
+//# sourceMappingURL=compose.d.ts.map
+```
+
+### `./dist/engine/agent-api/procedural/types.d.ts`
+
+```ts
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
+export type ProceduralVec2 = readonly [number, number];
+export type ProceduralVec3 = readonly [number, number, number];
+export type ProceduralColor = readonly [number, number, number, number];
+export type ProceduralGeometry = AuraCustomGeometrySpec;
+/** Plain-array buffers every helper fills before they are wrapped into a custom geometry spec. */
+export interface GeometryBuffers {
+    positions: number[];
+    normals: number[];
+    uvs: number[];
+    indices: number[];
+}
+export declare function newBuffers(): GeometryBuffers;
+export declare function assertFinite(value: number, name: string): void;
+export declare function assertInt(value: number, name: string, min: number): void;
+//# sourceMappingURL=types.d.ts.map
+```
+
 ## @aura3d/engine/renderer
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -427700,6 +428705,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -439649,6 +440656,21 @@ export interface FrameRateMeter {
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export declare function createFrameRateMeter(windowMs?: number): FrameRateMeter;
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
+export declare function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean;
 //# sourceMappingURL=frameLoop.d.ts.map
 ```
 
@@ -448878,6 +449900,8 @@ export declare function defineAuraAssets<const T extends Record<string, AuraAsse
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -449905,7 +450929,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -450012,6 +451036,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -458021,15 +459047,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/time.d.ts`
@@ -465437,6 +466497,7 @@ import type { RenderDevice } from "../../../rendering/index.js";
 import { EnvironmentCache } from "../../../rendering/index.js";
 import { type AssetRequestOptions } from "../../../assets/browser-index.js";
 import type { EnvironmentCaptureRequest } from "../../../rendering/contracts/index.js";
+import { type ProceduralEnvironmentKind } from "./environmentFallback.js";
 export interface Prd02EnvironmentBindOptions {
     readonly device: RenderDevice;
     readonly tier: AuraQualityTier;
@@ -465460,6 +466521,15 @@ export interface Prd02EnvironmentBindOptions {
      * bind again on a later frame once the provider lands.
      */
     readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+    /**
+     * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+     * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+     */
+    readonly onHdriMissing?: (info: {
+        readonly url: string;
+        readonly message: string;
+        readonly fallback: ProceduralEnvironmentKind;
+    }) => void;
 }
 /** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
 export declare function isEnvironmentProbePendingError(error: unknown): boolean;
@@ -482555,6 +483625,8 @@ export declare const CSS2D_OUT_OF_SCOPE: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -482607,6 +483679,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -484867,6 +485965,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -484956,6 +486055,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -486060,8 +487165,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -486193,8 +487298,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -487318,8 +488423,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -487402,8 +488507,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -488582,8 +489687,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -489568,7 +490673,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -489675,6 +490780,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -492781,8 +493888,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -493097,6 +494204,11 @@ export type { TslInput, TslType } from "./nodes/tsl/ir.js";
 export type { AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraToneMappingOperator } from "../contracts/output.js";
 export type { AuraRuntimeNodeHandleParts, TypedGLBActor, TypedGLBActorCrossFadeOptions } from "../production-runtime/TypedGLBActor.js";
 export type { AuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay.js";
+export { frameCameraPose, measureFrameFill } from "./camera/frameSubject.js";
+export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
+export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";
 //# sourceMappingURL=isolated-index.d.ts.map
 ```
 
@@ -493612,6 +494724,8 @@ export declare const lights: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -493664,6 +494778,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -493741,6 +494881,8 @@ export declare function bindOrbitPointer(element: {
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -494184,6 +495326,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -494273,6 +495416,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -520890,6 +522039,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -546824,15 +547975,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/materials.d.ts`
@@ -554947,7 +556132,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -555054,6 +556239,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -559350,6 +560537,274 @@ export declare function createAuraDiagnosticsOverlay(app: AuraApp, host?: HTMLEl
 //# sourceMappingURL=AuraDiagnosticsOverlay.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/frameSubject.d.ts`
+
+```ts
+/**
+ * `camera.frame` geometry: a pure, dependency-free mapping from world bounds +
+ * lens + aspect + fill to a camera pose, so the maths is unit-testable without a
+ * scene, a DOM or a GPU.
+ *
+ * Definition of fill: the larger of the subject's projected height (as a fraction
+ * of the frame height) and projected width (as a fraction of the frame width).
+ * With `fill: 0.6` a landscape frame shows the subject 60% of the frame tall; a
+ * portrait frame shows it 60% of the frame wide when width is the tighter axis.
+ * The projection is exact for perspective (all eight bounds corners are
+ * projected, not a bounding sphere), and the aim is re-centred so the projected
+ * box sits in the middle of the frame.
+ */
+import type { AuraVec3 } from "../nodes/types.js";
+/** Named camera angles; azimuth 0 looks from +Z toward -Z, positive azimuth swings toward +X. */
+export type AuraFrameAngle = "three-quarter" | "front" | "top" | "side";
+export interface AuraFrameBounds {
+    readonly min: AuraVec3;
+    readonly max: AuraVec3;
+}
+export interface AuraFramePoseOptions {
+    /** Fraction (0.05..1) of the limiting frame axis the subject occupies. Default 0.6. */
+    readonly fill?: number;
+    /** A named angle, or pass `azimuth`/`elevation` (radians) which win over it. Default `"three-quarter"`. */
+    readonly angle?: AuraFrameAngle;
+    /** Radians around +Y from +Z. */
+    readonly azimuth?: number;
+    /** Radians above the horizon. */
+    readonly elevation?: number;
+    /** Extra margin as a fraction of the subject size (0.1 = 10% breathing room). Shrinks the effective fill by 1 / (1 + padding). Default 0. */
+    readonly padding?: number;
+    /** Vertical field of view in degrees. Default 40. */
+    readonly fov?: number;
+    /** Frame width / height the fit is solved for. Default 16 / 9. */
+    readonly aspect?: number;
+    /** Never place the eye closer than this. Default 0.05. */
+    readonly minDistance?: number;
+}
+export interface AuraFramePose {
+    readonly position: AuraVec3;
+    readonly target: AuraVec3;
+    readonly distance: number;
+    readonly fov: number;
+    readonly azimuth: number;
+    readonly elevation: number;
+    /** Effective fill the solver targeted (`fill / (1 + padding)`). */
+    readonly fill: number;
+    readonly near: number;
+    readonly far: number;
+}
+export declare const FRAME_ANGLES: Readonly<Record<AuraFrameAngle, {
+    readonly azimuth: number;
+    readonly elevation: number;
+}>>;
+/**
+ * The fill (larger of projected height / width fraction of the frame) the given
+ * pose produces for `bounds`. Tests and callers measure with the same definition
+ * the solver uses.
+ */
+export declare function measureFrameFill(bounds: AuraFrameBounds, pose: Pick<AuraFramePose, "position" | "target" | "fov">, aspect?: number): number;
+/**
+ * Camera pose that frames `bounds` so the subject fills `fill` of the frame.
+ *
+ * Pure: same inputs, same pose. Throws `RangeError` on non-finite bounds.
+ */
+export declare function frameCameraPose(bounds: AuraFrameBounds, options?: AuraFramePoseOptions): AuraFramePose;
+//# sourceMappingURL=frameSubject.d.ts.map
+```
+
+### `./dist/engine/agent-api/camera/frameNodes.d.ts`
+
+```ts
+/**
+ * World bounds of scene nodes for `camera.frame`. Uses the same matrix the
+ * renderer composes for every model/primitive (`createModelMatrix`, which owns
+ * `size`, `scale`, `rotation`, `pivot`, `targetHeight` and normalised model fit)
+ * and the same group flattening the camera rigs use, so the framed box is the
+ * box that is drawn.
+ */
+import type { AuraNodeInput, AuraSceneNode } from "../nodes/types.js";
+import type { AuraFrameBounds, AuraFramePoseOptions } from "./frameSubject.js";
+/** Anything `camera.frame` accepts as a subject. */
+export type AuraFrameSubject = AuraNodeInput | {
+    toJSON(): unknown;
+};
+export interface AuraFrameNodeFilter {
+    /** Return true to leave a node out of the framed bounds (e.g. a ground slab). */
+    readonly exclude?: (node: AuraSceneNode) => boolean;
+}
+/** Default scene-wide filter: skips planes and nodes named like ground, which would otherwise dominate the box. */
+export declare function isGroundLikeNode(node: AuraSceneNode): boolean;
+/**
+ * World-space AABB of the given nodes (groups expanded, hidden nodes and
+ * non-spatial nodes skipped, per-instance transforms honoured), or `undefined`
+ * when nothing occupies space.
+ */
+export declare function worldBoundsOfNodes(subjects: AuraFrameSubject | readonly AuraFrameSubject[], filter?: AuraFrameNodeFilter): AuraFrameBounds | undefined;
+export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameNodeFilter {
+}
+//# sourceMappingURL=frameNodes.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraEffectNode, AuraVec3 } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+/** A light-like source: anything with a world `position` (point or spot light, a mesh) or a travel `direction` (a directional light). */
+export interface AuraGodRaysLightSource {
+    readonly position?: AuraVec3;
+    /** Direction the light travels (a directional light's `direction`); the shafts point back toward the light. */
+    readonly direction?: AuraVec3;
+}
+export interface AuraGodRaysOptions {
+    readonly name?: string;
+    /**
+     * Where the shafts radiate from: `"sun"` (default) is the strongest directional light in the scene; a `[x, y, z]` world
+     * point, a light-like `{ position }` or `{ direction }` object pins it.
+     */
+    readonly source?: "sun" | AuraVec3 | AuraGodRaysLightSource;
+    /** Shaft gain (default 0.7). */
+    readonly intensity?: number;
+    /** Per-step falloff along each shaft, 0.8 to 0.99 (default 0.94); higher gives longer shafts. */
+    readonly decay?: number;
+    /** March samples: 32, 48 or 64 (default 48). A quality tier can only lower this. */
+    readonly samples?: 32 | 48 | 64;
+    /** Shaft colour (default warm white). */
+    readonly color?: AuraColor;
+    /** March density in (0, 1]: the fraction of the screen distance toward the light that is sampled (default 1). */
+    readonly density?: number;
+    /** Scattering medium per metre: shafts build with distance as `1 - exp(-medium * depth)` (default 0.18). */
+    readonly medium?: number;
+}
+export interface AuraVolumetricBeamOptions {
+    readonly name?: string;
+    /** World position of the beam's source (the apex). Default `[0, 0, 0]`. */
+    readonly position?: AuraVec3;
+    /** Direction the beam travels from the source (default `[0, -1, 0]`). Need not be normalised. */
+    readonly direction?: AuraVec3;
+    /** Beam length in world units (default 20). */
+    readonly length?: number;
+    /** Radius of the beam where it ends (default `length * 0.12`). */
+    readonly endRadius?: number;
+    readonly color?: AuraColor;
+    readonly intensity?: number;
+    readonly falloff?: number;
+    readonly edgeSoftness?: number;
+    readonly noise?: number;
+    readonly noiseScale?: number;
+    readonly noiseSpeed?: number;
+    /** Cone sides (default 48). */
+    readonly radialSegments?: number;
+}
+export declare const visualEffectBuilders: {
+    /**
+     * Screen-space god rays: radial shafts march from the light toward each pixel through the scene depth and add onto the
+     * HDR frame (the S4 stage, WebGL2 v2 post chain). Unlike `effects.volumetricFog` it adds no forward fog. It needs
+     * the depth-aware post chain: where the renderer cannot sample depth, the stage is skipped and
+     * `app.diagnostics` carries the degradation instead of failing the frame. Tier `Low` turns the stage off.
+     */
+    readonly godRays: (options?: AuraGodRaysOptions) => AuraNodeBuilder<AuraEffectNode>;
+    /**
+     * Soft light shaft (lighthouse beam, searchlight, window light through haze): an open cone whose silhouette dissolves
+     * and whose dust noise drifts with the clock. Returns a primitive node; add it like any other node.
+     */
+    readonly volumetricBeam: (options?: AuraVolumetricBeamOptions) => AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
+};
+//# sourceMappingURL=effects.visual.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/material.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraMaterialSpec } from "./types.js";
+export interface AuraStrataSlopeOptions {
+    /** Surfaces flatter than this angle from horizontal (degrees) take `flatColor`; steeper ones show the bands. Default 38. */
+    readonly angle?: number;
+    /** Blend width in degrees around `angle`. Default 12. */
+    readonly blend?: number;
+    /** Colour of flat ground (talus, sand, grass) between cliffs. Default: the first palette colour, lightened. */
+    readonly flatColor?: AuraColor;
+}
+export interface AuraStrataMaterialOptions {
+    /** Number of layers across the height range (default 12). */
+    readonly bands?: number;
+    /** Palette cycled through the layers (default: five warm sandstone tones). One to eight colours. */
+    readonly colors?: readonly AuraColor[];
+    /** World-space height range the bands span `[bottom, top]` (default `[0, 10]`). Bands repeat outside it. */
+    readonly heightRange?: readonly [number, number];
+    /** Layer-edge waviness and grain, 0 to 1 (default 0.35). 0 gives ruler-straight layers. */
+    readonly noise?: number;
+    /** World-unit size of the noise features (default 3). */
+    readonly noiseScale?: number;
+    /** Thin dark seam between layers, 0 to 1 (default 0.25). */
+    readonly seam?: number;
+    /** Per-layer brightness variation, 0 to 1 (default 0.18). */
+    readonly variation?: number;
+    /** Colour flat ground separately from steep cliffs. Omit to band every surface. */
+    readonly slope?: AuraStrataSlopeOptions;
+    /** Surface roughness for the specular term (default 0.9). */
+    readonly roughness?: number;
+    /** Seed that shifts the noise (default 0). */
+    readonly seed?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.strata(options)`: sedimentary layers by world height with noisy layer edges, thin seams and per-layer
+ * brightness, lit by every scene light and the scene environment. With `slope`, flat ground reads `flatColor` and only
+ * steep faces show the bands, which is how a canyon wall or heightfield cliff separates from its floor and rim.
+ * Apply it to any mesh, including a `procedural.heightfield` surface.
+ */
+export declare function strataMaterial(options?: AuraStrataMaterialOptions): AuraMaterialSpec;
+export interface AuraCausticsMaterialOptions {
+    /** Colour of the floor under the light (default sand). */
+    readonly color?: AuraColor;
+    /** Colour of the caustic light (default warm white). */
+    readonly causticColor?: AuraColor;
+    /** Caustic brightness (default 1.2). */
+    readonly strength?: number;
+    /** World size of one caustic tile along X and Z (default 6). */
+    readonly scale?: number;
+    /** Animation speed multiplier (default 1). */
+    readonly speed?: number;
+    /** World height of the water surface. With `depthFade` the pattern dims the deeper a point lies below it (default none). */
+    readonly surfaceY?: number;
+    /** Extinction per metre below `surfaceY` (default 0.12; ignored without `surfaceY`). */
+    readonly depthFade?: number;
+    /** Roughness of the floor (default 0.95). */
+    readonly roughness?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.caustics(options)`: a lit floor whose surface carries moving water-caustic light, projected straight down in
+ * world X/Z so every receiver (sand, rock, ruins) shows the same shimmering net. It reads `uTime`, so it animates as long
+ * as the app draws frames (a scene with a `uTime` custom shader is a declared time consumer on builds that include
+ * `timeConsumers`; otherwise add an `app.onFrame` hook or a looping timeline).
+ */
+export declare function causticsMaterial(options?: AuraCausticsMaterialOptions): AuraMaterialSpec;
+export interface AuraLightBeamMaterialOptions {
+    /** Beam colour (default warm white). */
+    readonly color?: AuraColor;
+    /** Brightness multiplier (default 1). */
+    readonly intensity?: number;
+    /** Length of the cone along its axis, in object units: must match the cone's height (default 20). */
+    readonly length?: number;
+    /** How fast the beam fades from source to end (exponent, default 1). */
+    readonly falloff?: number;
+    /** Edge softness exponent: higher gives a brighter core and softer silhouette (default 1.3). */
+    readonly edgeSoftness?: number;
+    /** Dust noise strength, 0 to 1 (default 0.35). */
+    readonly noise?: number;
+    /** World-unit size of the dust features (default 2.5). */
+    readonly noiseScale?: number;
+    /** Noise drift speed (default 0.25). */
+    readonly noiseSpeed?: number;
+}
+/**
+ * `material.lightBeam(options)`: additive soft beam for an open cone or cylinder whose axis is the mesh's local Y with the
+ * source at +Y (`effects.volumetricBeam` builds that mesh for you). Brightness is strongest where the surface faces the
+ * camera, so the silhouette dissolves instead of showing a hard cone edge; a drifting dust noise breaks up the shaft.
+ */
+export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions): AuraMaterialSpec;
+//# sourceMappingURL=material.visual.d.ts.map
+```
+
 ### `./dist/engine/public/v5-context.d.ts`
 
 ```ts
@@ -559663,8 +561118,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -559909,8 +561364,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -586279,6 +587734,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -603741,6 +605198,21 @@ export interface FrameRateMeter {
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export declare function createFrameRateMeter(windowMs?: number): FrameRateMeter;
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
+export declare function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean;
 //# sourceMappingURL=frameLoop.d.ts.map
 ```
 
@@ -612970,6 +614442,8 @@ export declare function defineAuraAssets<const T extends Record<string, AuraAsse
 
 ```ts
 export declare const effects: {
+    readonly godRays: (options?: import("./effects.visual.js").AuraGodRaysOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
+    readonly volumetricBeam: (options?: import("./effects.visual.js").AuraVolumetricBeamOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
     readonly contactShadows: (options?: import("./effects.lighting.js").AuraContactShadowOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly toon: (options?: import("./effects.toon.js").AuraToonOptions) => import("../publishedUnion.js").AuraCustomPostPass;
     readonly pixelation: (options?: import("./effects.post.js").AuraPixelationOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -613997,7 +615471,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -614104,6 +615578,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -622082,15 +623558,49 @@ export declare function composeWorldMatrix(parent: Float32Array, local: AuraPivo
 export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
-export declare class AuraColorParseError extends Error {
-    readonly input: unknown;
-    constructor(input: unknown);
-}
+export { AuraColorParseError } from "../agent-api/color.js";
 /** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
 //# sourceMappingURL=sceneGraph.d.ts.map
+```
+
+### `./dist/engine/agent-api/color.d.ts`
+
+```ts
+/**
+ * C-06 color parsing (PRD-01) — the single parser. Grammar per PRD-01 §15
+ * Phase 1 "Color parser": `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`,
+ * `rgb()/rgba()` (comma and space syntax), `hsl()/hsla()`, the 148 CSS named
+ * colors, and numbers `0xRRGGBB` / `0xRRGGBBAA`. `parseAuraColor` returns
+ * linear-light RGBA (exact piecewise sRGB transfer via
+ * `@aura3d/rendering` ColorManagement); `parseAuraColorSrgb` returns the
+ * sRGB-encoded RGBA. Invalid input throws `AuraColorParseError` carrying the
+ * input — callers decide fallback policy (C-36 `COLOR_PARSE_FAILED` wiring is
+ * the compiler file's job after the Q-15-7 move).
+ */
+export type AuraColorInput = string | number;
+export declare const COLOR_INVALID = "COLOR_INVALID";
+/** Run `work` while naming the option/node being parsed, so a `COLOR_INVALID` error says where the value was used. */
+export declare function withColorUse<T>(where: string, work: () => T): T;
+/**
+ * Typed error for a colour value no CSS form matches. `code` is `COLOR_INVALID`; `input` is the offending value;
+ * `where` names the option or node (when the call site knows it). Never silently replaced by a fallback colour.
+ */
+export declare class AuraColorParseError extends Error {
+    readonly input: unknown;
+    readonly code = "COLOR_INVALID";
+    readonly where: string | undefined;
+    constructor(input: unknown, where?: string);
+}
+/** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
+export declare function assertAuraColorOption(value: unknown, where: string): void;
+/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
+//# sourceMappingURL=color.d.ts.map
 ```
 
 ### `./dist/engine/contracts/time.d.ts`
@@ -623929,6 +625439,7 @@ import type { RenderDevice } from "../../../rendering/index.js";
 import { EnvironmentCache } from "../../../rendering/index.js";
 import { type AssetRequestOptions } from "../../../assets/browser-index.js";
 import type { EnvironmentCaptureRequest } from "../../../rendering/contracts/index.js";
+import { type ProceduralEnvironmentKind } from "./environmentFallback.js";
 export interface Prd02EnvironmentBindOptions {
     readonly device: RenderDevice;
     readonly tier: AuraQualityTier;
@@ -623952,6 +625463,15 @@ export interface Prd02EnvironmentBindOptions {
      * bind again on a later frame once the provider lands.
      */
     readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+    /**
+     * Called once when a requested HDRI could not load and a procedural probe replaced the neutral floor
+     * (`LOOK_HDRI_MISSING`). `message` is the full actionable text (also logged once via `console.error`).
+     */
+    readonly onHdriMissing?: (info: {
+        readonly url: string;
+        readonly message: string;
+        readonly fallback: ProceduralEnvironmentKind;
+    }) => void;
 }
 /** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
 export declare function isEnvironmentProbePendingError(error: unknown): boolean;
@@ -640542,6 +642062,8 @@ export declare const CSS2D_OUT_OF_SCOPE: {
 ```ts
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
+import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -640594,6 +642116,32 @@ export declare const camera: {
         readonly padding?: number;
         readonly fov?: number;
     }) => AuraCameraSpec;
+    /**
+     * Frame a subject: a node, an array of nodes, a group, or a world-bounds box.
+     * Returns an orbit camera (perspective, `target` + `distance` set, so orbit
+     * controls start framed) whose eye is placed so the subject occupies
+     * `fill` (default 0.6) of the limiting frame axis. Exact perspective fit over
+     * the node's real world bounds (size, scale, rotation, model fit), centred.
+     *
+     * The returned spec is static: it is solved for `options.aspect` (default 16/9).
+     * For a different or changing canvas, pass the aspect you render at, or call
+     * `camera.framePose(subject, { aspect })` in a resize handler and apply it with
+     * `app.camera.setPose`.
+     */
+    readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame everything in a scene (a `scene()` builder or node array). Ground
+     * planes and nodes named like ground/floor/terrain are left out of the box
+     * unless you pass your own `exclude`.
+     */
+    readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+    /**
+     * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+     * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+     */
+    readonly worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraFrameBounds;
+    readonly framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraFramePose;
     readonly frameAsset: (asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions) => AuraCameraSpec;
     readonly physics: () => AuraCameraSpec;
     readonly charts: () => AuraCameraSpec;
@@ -642854,6 +644402,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -642943,6 +644492,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -646789,8 +648344,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -647291,6 +648846,7 @@ import type { AuraAssetRef, AuraColor, AuraCustomMaterialSpec, AuraEditableMater
 import type { TslMaterialNodeOptions } from "./tsl/emit.js";
 import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -647380,6 +648936,12 @@ export declare const material: {
      * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
      */
     readonly toon: (options?: AuraToonMaterialOptions) => AuraMaterialSpec;
+    /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+    readonly strata: typeof strataMaterial;
+    /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+    readonly caustics: typeof causticsMaterial;
+    /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+    readonly lightBeam: typeof lightBeamMaterial;
     readonly matcap: typeof matcapMaterial;
     /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
     readonly depth: typeof depthPreviewMaterial;
@@ -649880,7 +651442,7 @@ export interface AuraLightNode extends AuraTransformSpec {
     /** C-10 (PR 0a): shadow options; boolean stays accepted. */
     readonly shadow?: boolean | import("../../contracts/lighting.js").AuraLocalShadowOptions | import("../../contracts/lighting.js").AuraDirectionalShadowOptions;
 }
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion" | "color-grade" | "anti-alias" | "outline" | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow" | "flipbook-sprite" | "light-beam" | "fogVolume" | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 export interface AuraEffectNode extends AuraTransformSpec {
     readonly kind: "effect";
@@ -649987,6 +651549,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
     readonly heightFalloff?: number;
     /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
     readonly heightReference?: number;
+    /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+    readonly godRayDirection?: AuraVec3;
     readonly emissionRate?: number;
     readonly gravity?: number;
     readonly groundCollision?: boolean;
@@ -651976,8 +653540,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -652164,8 +653728,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -652664,8 +654228,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/engine@5.0.3#sha256=4d1114623a77fb1b3bc6da927787fc5bf29b1ef3b913c9e28aa61e81e8efaa38`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -653122,8 +654686,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/input@5.0.3#sha256=ba3444d3b75e424c85bfa1ab23408624b8252e05edcd155d2d7ae72fecd9f3f8`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/input@5.1.0#sha256=5880b1dff81d4feb180e29b4fe53c1e52de18f555ac94f6a4330ea4af761c0c2`
 
 ### Export conditions
 
@@ -654364,8 +655928,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/math@5.0.3#sha256=bc2435439c591673fd95a98826820f886e68511fe41b8739d739088fc59ac252`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/math@5.1.0#sha256=e81ad21a5f2573e6eb9d332958d2570568f5736aa1b91651a3ca37a532dda0c0`
 
 ### Export conditions
 
@@ -656351,8 +657915,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/math@5.0.3#sha256=bc2435439c591673fd95a98826820f886e68511fe41b8739d739088fc59ac252`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/math@5.1.0#sha256=e81ad21a5f2573e6eb9d332958d2570568f5736aa1b91651a3ca37a532dda0c0`
 
 ### Export conditions
 
@@ -657599,8 +659163,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/navigation-recast@5.0.3#sha256=4cbcb780fb729c8688b1f0b35f373cae44835dfbdaa85951bb578c7ac6b8bcea`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.1.0#sha256=93065f594990dd00bf869b7fa5804b78982480f1aabe2a9e7ddd5434e00f23d2`
 
 ### Export conditions
 
@@ -657730,8 +659294,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/physics@5.0.3#sha256=be70aac3b1320fae05bb50e01c065092a4bb7dfde145a7d0a0ffc588eb724f11`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/physics@5.1.0#sha256=edb6dede7440c018a295e077e143d81172ccd9935f5d12729334275c8dd124a4`
 
 ### Export conditions
 
@@ -659954,8 +661518,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/physics-rapier@5.0.3#sha256=43f1a48c871e6777f1070a90d2084ff8109dbebfc2af54c428cd9e65181f32ba`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.1.0#sha256=efee9e059f5606d42be6207665f4f979d146f1800a9bad4b50ef95317e789c0a`
 
 ### Export conditions
 
@@ -660379,8 +661943,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/physics@5.0.3#sha256=be70aac3b1320fae05bb50e01c065092a4bb7dfde145a7d0a0ffc588eb724f11`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/physics@5.1.0#sha256=edb6dede7440c018a295e077e143d81172ccd9935f5d12729334275c8dd124a4`
 
 ### Export conditions
 
@@ -661632,8 +663196,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/physics@5.0.3#sha256=be70aac3b1320fae05bb50e01c065092a4bb7dfde145a7d0a0ffc588eb724f11`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/physics@5.1.0#sha256=edb6dede7440c018a295e077e143d81172ccd9935f5d12729334275c8dd124a4`
 
 ### Export conditions
 
@@ -661894,8 +663458,8 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 
 ## @aura3d/product-studio
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/product-studio@5.0.3#sha256=d9668821490c0d305b0cc4ab943e37a47363e77ab86e4bbfa64f61a615e443a0`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/product-studio@5.1.0#sha256=4ec6481f02a4688e8c35a1406c94a6e043293f84e0dcd2f93077eb6b780a855b`
 
 ### Export conditions
 
@@ -662176,8 +663740,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/react@5.0.3#sha256=589ddd69901c41658180abd2bc401fa7a560db246f08ae4308865717632e7282`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/react@5.1.0#sha256=a69b690cae45c44774562dd4fa06762b8f0183020877531b18c7d272baee8aff`
 
 ### Export conditions
 
@@ -662483,8 +664047,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -688105,6 +689669,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -694059,8 +695625,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -695648,8 +697214,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -695693,8 +697259,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -695738,8 +697304,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -695808,8 +697374,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -695861,8 +697427,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -695947,8 +697513,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -696017,8 +697583,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -696047,8 +697613,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -696191,8 +697757,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -696249,8 +697815,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -696297,8 +697863,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -697886,8 +699452,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -697946,8 +699512,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698018,8 +699584,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698075,8 +699641,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698183,8 +699749,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698389,8 +699955,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698518,8 +700084,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698578,8 +700144,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698696,8 +700262,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698792,8 +700358,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698853,8 +700419,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698929,8 +700495,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -698967,8 +700533,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -699000,8 +700566,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -699033,8 +700599,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -699105,8 +700671,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -699146,8 +700712,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -701686,6 +703252,8 @@ export interface GodRayOptions {
     readonly lightDirection?: readonly [number, number, number];
     /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
     readonly density?: number;
+    /** Lane 514 (`effects.godRays`): map the half-res pass to the full frame so the light lands where it projects. Omitted keeps the legacy mapping. */
+    readonly frameAnchored?: boolean;
     /**
      * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
      * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
@@ -705998,8 +707566,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -706637,8 +708205,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -710129,8 +711697,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -710862,8 +712430,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -710997,8 +712565,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -711240,8 +712808,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -711796,8 +713364,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -714486,8 +716054,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/rendering@5.0.3#sha256=16b596b409f9432afe4b293b3d2eb5bc62b6d180b8a383b01a0e487797dcecbf`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
 
 ### Export conditions
 
@@ -715585,8 +717153,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/scene@5.0.3#sha256=887587a81ca32822022cf172bf12044b0c65523f9f2c595b62882bb8f197377c`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/scene@5.1.0#sha256=628cbaa6f2f6847700a512f0fc941c1580d968cd511e79acfc830df97d58acfa`
 
 ### Export conditions
 
@@ -716711,8 +718279,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/scene@5.0.3#sha256=887587a81ca32822022cf172bf12044b0c65523f9f2c595b62882bb8f197377c`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/scene@5.1.0#sha256=628cbaa6f2f6847700a512f0fc941c1580d968cd511e79acfc830df97d58acfa`
 
 ### Export conditions
 
@@ -716796,8 +718364,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/scripting@5.0.3#sha256=c5e05c1b0d8923a55e4de86f45ca20ac028fa31099d5e3c4599a605744056ba1`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/scripting@5.1.0#sha256=fb3dfa3b29604d6d9742cebdd7eac1cd04cec321095f596ed4042d9fae77c28a`
 
 ### Export conditions
 
@@ -717977,8 +719545,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.0.3`
-- Packed identity: `archive:@aura3d/workflows@5.0.3#sha256=0146952306bbafd0911491931d025634b2c16470d04afd006a2f7c4fc80a6e91`
+- Version: `5.1.0`
+- Packed identity: `archive:@aura3d/workflows@5.1.0#sha256=189611d74f71525e69a72e7f1fad17a65518ad4ce5df9a73003cc1e7eeefffb6`
 
 ### Export conditions
 

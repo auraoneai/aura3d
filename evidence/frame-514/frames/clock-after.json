@@ -1,0 +1,41 @@
+{
+  "id": "clock-after",
+  "viewport": "640x360@2x",
+  "virtualFramesStepped": 120,
+  "virtualNowMs": 3083.3333333333285,
+  "title": "frame-514 eval app",
+  "canvasPresent": true,
+  "subjectFill": 0.6,
+  "subjectFillRun2": 0.6,
+  "bounds": {
+    "min": [
+      -0.33000001311302185,
+      0,
+      -0.23000000417232513
+    ],
+    "max": [
+      0.33000001311302185,
+      2.1199999134987593,
+      0.23000000417232513
+    ]
+  },
+  "pose": {
+    "position": [
+      0,
+      1.6643929424600516,
+      5.011000382522157
+    ],
+    "target": [
+      0,
+      1.0601674030057573,
+      -0.00002019055861254579
+    ],
+    "fov": 40
+  },
+  "sameBuildNoiseMeanAbsDiff": 0,
+  "meanLuma": 102.95894780641433,
+  "nearBlackFraction": 0,
+  "distinctColours16": 238,
+  "realGameFrame": true,
+  "consoleErrors": []
+}

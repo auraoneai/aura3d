@@ -74,7 +74,7 @@ test.describe("beat-hopper", () => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
-    await page.setViewportSize({ width: 800, height: 450 });
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(`${server.origin}${ROUTE}?manual=1`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => (window as unknown as Win).__AURA_BEAT_HOPPER__?.ready() === true || Boolean((window as unknown as Win).__AURA_BEAT_HOPPER_ERROR__),
@@ -84,6 +84,15 @@ test.describe("beat-hopper", () => {
     const bootError = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER_ERROR__ ?? null);
     expect(bootError, "boot error").toBeNull();
 
+    const CHUNK = 16000;
+    const shootScreen = async (shot: string): Promise<void> => {
+      const jpg = await page.screenshot({ type: "jpeg", quality: 86 });
+      const b64 = jpg.toString("base64");
+      const n = Math.ceil(b64.length / CHUNK);
+      for (let i = 0; i < n; i++) {
+        process.stdout.write(`GL_JPG beat-hopper ${shot} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}\n`);
+      }
+    };
     const save = async (name: string): Promise<void> => {
       const jpeg = await page.evaluate((n) => (window as unknown as Win).__AURA_BEAT_HOPPER__.frame(480, 270, 0.7).then((d) => ({ n, d })), name);
       writeFileSync(resolve(REPORT_ROOT, `${name}.jpg`), Buffer.from(jpeg.d.split(",")[1] as string, "base64"));
@@ -108,17 +117,21 @@ test.describe("beat-hopper", () => {
     /* splash: night violet-to-magenta sky gradient in the top band */
     await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.stepFrames(30));
     await save("01-splash");
+    await shootScreen("title-1280");
     const splash = await stats();
     expect(splash.top.night + splash.top.sat, "night neon sky gradient in the top third").toBeGreaterThan(splash.top.n * 0.2);
 
     /* run: indigo road deck, neon cyan hopper + stripes + magenta rails, autopilot scoring, frame progression */
     await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.reset(20261101));
-    const early = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(300));
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(60));
+    await shootScreen("early-1280");
+    const early = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(240));
     expect(early.phase).toBe("playing");
     expect(early.score).toBeGreaterThan(0);
     expect(early.dist).toBeGreaterThan(50);
     expect(early.perfect + early.good).toBeGreaterThanOrEqual(3);
     await save("02-run-5s");
+    await shootScreen("action-1280");
     const run1 = await stats();
     expect(run1.low.night + run1.mid.night, "indigo road deck and equalizer skyline").toBeGreaterThan(run1.low.n * 0.05);
     expect(run1.mid.sat + run1.low.sat + run1.mid.neon + run1.low.neon, "neon cyan hopper, beat stripes, and rails").toBeGreaterThan(30);
@@ -126,6 +139,7 @@ test.describe("beat-hopper", () => {
     expect(late.score).toBeGreaterThan(early.score);
     expect(late.perfect + late.good).toBeGreaterThan(early.perfect + early.good);
     await save("03-run-15s");
+    await shootScreen("mid-1280");
     const run2 = await stats();
     expect(JSON.stringify(run2)).not.toBe(JSON.stringify(run1));
 
@@ -135,7 +149,42 @@ test.describe("beat-hopper", () => {
     expect(["gameOver", "bursting"]).toContain(dead.phase);
     expect(dead.lives).toBe(0);
     expect(dead.miss).toBeGreaterThanOrEqual(3);
+    if (dead.phase === "bursting") {
+      await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.stepFrames(80));
+    }
     await save("04-game-over");
+    await shootScreen("results-1280");
+
+    /* card@2x (1440x900) and phone (390x844) final screen captures */
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.evaluate(() => {
+      const h = (window as unknown as Win).__AURA_BEAT_HOPPER__;
+      h.reset(20261101);
+      h.extras.runAutopilot(300);
+    });
+    await shootScreen("card@2x");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => {
+      const h = (window as unknown as Win).__AURA_BEAT_HOPPER__;
+      h.reset(20261101);
+      h.stepFrames(30);
+    });
+    await shootScreen("title-390");
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(60));
+    await shootScreen("early-390");
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(240));
+    await shootScreen("action-390");
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(600));
+    await shootScreen("mid-390");
+    await page.evaluate(() => {
+      const h = (window as unknown as Win).__AURA_BEAT_HOPPER__;
+      h.reset(20261101);
+      const s = h.extras.runAutopilot(900, [0, 1, 2, 3, 4]);
+      if (s.phase === "bursting") h.stepFrames(80);
+    });
+    await shootScreen("results-390");
+    await page.setViewportSize({ width: 1280, height: 720 });
 
     /* restart re-centres hold/pose state (C4) and resets the run */
     const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.restart());

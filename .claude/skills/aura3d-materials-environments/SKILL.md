@@ -57,7 +57,7 @@ Step 1, presets (always try first):
    `dayFactor`; `weather.precipitation({ type: "rain" | "snow" })` and
    `weather.wetGround(...)`; `water.surface({ preset: "calm" | "moderate" |
    "rough" | "storm" })`. Add their `nodes` with `scene().addMany(...)` and use
-   the returned `background`.
+   the returned `background`. Strata, caustics, god rays, beams: [visual helpers](references/visual-helpers.md).
 4. Choosing values: start from `material.presets()` and the named builders
    above (car paint is `material.clearcoatPaint`, thin glass is
    `material.glass`, brushed metal is `material.brushedMetal`); the in-repo

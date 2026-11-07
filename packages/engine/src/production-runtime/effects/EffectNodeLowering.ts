@@ -13,6 +13,7 @@ import { VFX_SPRITE_LAYOUT, isVfxBuiltinSprite } from "./FlipbookAtlas";
 import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
 import type { AuraTransformSpec } from "../../agent-api/nodes/types.js";
 import { assertWeatherTransformFields } from "./WeatherTransform.js";
+import { parseAuraColor } from "../../agent-api/color.js";
 
 export interface EffectNodeLike extends AuraTransformSpec {
   readonly kind: string;
@@ -240,6 +241,10 @@ function nodeColor(node: EffectNodeLike): readonly [number, number, number] {
       srgbChannelToLinear(parseInt(c.slice(3, 5), 16) / 255),
       srgbChannelToLinear(parseInt(c.slice(5, 7), 16) / 255)
     ];
+  }
+  if (typeof c === "string" && c !== "") {
+    const [r, g, b] = parseAuraColor(c);
+    return [r, g, b];
   }
   return COLOR_TABLE[node.materialMode ?? "soft-alpha"] ?? [1, 1, 1];
 }
@@ -559,6 +564,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     case "vignette":
     case "film-grain":
     case "chromatic-aberration":
+    case "god-rays":
       return { type: "other", nodeId, effect, consumer: "post", sim: "none" };
     default:
       return { type: "other", nodeId, effect, consumer: "none", sim: "none" };

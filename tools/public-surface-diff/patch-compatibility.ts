@@ -84,11 +84,23 @@ export interface ReleaseChange {
   after?: string;
   /** Earliest version expressly promised for removal, when present. */
   removalVersion?: string;
+  /**
+   * Set by the declaration diff when TypeScript proved the change one-way
+   * compatible for existing consumers. A value or class is caller-compatible
+   * (new assignable to old: parameters may widen, results and class instances
+   * may not). Otherwise every declaration whose text changed in the symbol's
+   * dependency closure is itself such a widening: an interface or type alias that
+   * every old value still satisfies with no member removed (old assignable to
+   * new), a caller-compatible value, or a value object that only gained members.
+   * The release then accepts a widened named type once, at that type, instead of
+   * on every exported value whose unchanged declaration mentions it.
+   */
+  widening?: boolean;
 }
 export interface ReleaseChangeClassification {
   compatible: boolean;
   breaking: boolean;
-  disposition: "compatible" | "major-break" | "breaking" | "deprecation-window";
+  disposition: "compatible" | "compatible-widening" | "major-break" | "breaking" | "deprecation-window";
 }
 function compareVersions(a: string, b: string): number {
   if (!/^\d+\.\d+\.\d+$/.test(a) || !/^\d+\.\d+\.\d+$/.test(b)) throw new Error("Versions must be stable semver triples");
@@ -99,11 +111,19 @@ function compareVersions(a: string, b: string): number {
  * Report breaks at every release level. Patch/minor cannot contain them; a major
  * may, except before a previously announced earliest removal version. A
  * declaration edit without proof of compatibility is treated as breaking.
+ *
+ * A minor release may widen: a declaration change that the checker proved
+ * one-way compatible (see `ReleaseChange.widening`) is non-breaking there, even
+ * on a deprecated export, because nothing was removed or narrowed. A patch still
+ * requires exact equality and a major is unchanged.
  */
 export function classifyReleaseChange(change: ReleaseChange, release: ReleaseKind, candidateVersion: string): ReleaseChangeClassification {
   if (!(["patch", "minor", "major"] as const).includes(release)) throw new Error(`Unknown release kind: ${release}`);
   if (change.kind === "addition") {
     return { compatible: true, breaking: false, disposition: "compatible" };
+  }
+  if (release === "minor" && change.kind === "declaration-change" && change.widening === true) {
+    return { compatible: true, breaking: false, disposition: "compatible-widening" };
   }
   // The old token subsequence test is retained for its existing patch report;
   // it cannot prove variance or exhaustiveness, so a new diff fails closed on

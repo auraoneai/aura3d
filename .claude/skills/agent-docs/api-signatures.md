@@ -58,9 +58,27 @@ const stage = scene({ background: "#101418" }).add(primitives.box({ name: "crate
 | `scene().physics(next: AuraPhysicsWorldController)` | `AuraSceneBuilder` |  |
 | `scene().diagnostics(enabled?: boolean)` | `AuraSceneBuilder` |  |
 
+## `camera`
+
+`camera.frame(subject | subjects | bounds, { fill, angle, azimuth, elevation, padding, fov, aspect })` returns an orbit camera spec placed so the subject fills `fill` (default 0.6) of the limiting frame axis; `camera.frameScene(scene)` frames a whole scene (ground planes ignored); `camera.framePose(...)` returns the pose for `app.camera.setPose` on resize; `camera.worldBounds(subject)` returns the `{ min, max }` box it frames. Solved for `aspect` (default 16/9).
+
+```ts
+void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 });
+```
+
+| Call | Returns | Options |
+|---|---|---|
+| `camera.perspective(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | options: position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; up?: AuraVec3 \| undefined; roll?: number \| undefined; offset?: AuraVec3 \| undefined; targetOffset?: AuraVec3 \| undefined; offsetMode?: "scene" \| "target-yaw" \| …; fov?: number \| undefined; focalLength?: number \| undefined; filmGauge?: number \| undefined; filmOffset?: number \| undefined; viewOffset?: { readonly fullWidth: num…; depth?: { readonly mode?: "standa…; near?: number \| undefined; far?: number \| undefined; layers?: number \| undefined; distance… |
+| `camera.orbit(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | same as `camera.perspective` |
+| `camera.frame(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | options: fill?: number \| undefined; angle?: AuraFrameAngle \| undefined; azimuth?: number \| undefined; elevation?: number \| undefined; padding?: number \| undefined; fov?: number \| undefined; aspect?: number \| undefined; minDistance?: number \| undefined; exclude?: ((node: AuraSceneNode) =>… |
+| `camera.frameScene(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | same as `camera.frame` |
+| `camera.worldBounds(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFrameBounds` | same as `camera.frame` |
+| `camera.framePose(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFramePose` | same as `camera.frame` |
+| `camera.frameAsset(asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions)` | `AuraCameraSpec` | asset: type: "model"; format: string; formatMetadata?: FormatMetadata \| undefined; url: string; hash?: string \| undefined; sha256?: string \| undefined; integrity?: AssetIntegrity \| undefined; request?: AssetRequestOptions \| und…; bounds?: AuraVec3 \| undefined; sizeBytes?: number \| undefined; optional?: boolean \| undefined; metadata?: AuraAssetMetadata \| undef…; variants?: AuraAssetVariants \| undef…; requiredDecoders?: readonly AuraAssetRequire…; lods?: readonly AuraAssetLodLeve…; colliderUrl?: string \| undefined; budget?… |
+
 ## `looks`
 
-Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options.
+Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options. HDRI-backed presets load `/hdri/<file>.hdr` from `public/hdri/`; a missing file degrades to a procedural probe, logs one `LOOK_HDRI_MISSING` console error and lists it in `app.diagnostics().warnings`.
 
 ```ts
 void looks.preset("product-studio");
@@ -77,7 +95,7 @@ void looks.preset("product-studio");
 
 ## `material`
 
-Colours are CSS strings. Metals need an environment.
+Colours are CSS strings (`#rgb`, `#rrggbbaa`, `rgb()`, `hsl()`, `oklch()`, names); an invalid value throws `COLOR_INVALID` naming the option. Metals need an environment.
 
 ```ts
 void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
@@ -87,6 +105,9 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 |---|---|---|
 | `material.custom(spec: AuraCustomMaterialSpec)` | `AuraMaterialSpec` | spec: glsl: { readonly vertex?: strin…; wgsl?: { readonly vertex?: strin…; uniforms?: Readonly<Record<string, A…; uniformAliases?: Readonly<Record<string, s…; defines?: Readonly<Record<string, s…; transparent?: boolean \| undefined; depthWrite?: boolean \| undefined; depthTest?: boolean \| undefined; side?: "front" \| "back" \| "doubl…; blending?: "custom" \| "normal" \| "ad…; fog?: boolean \| undefined; patch?: Readonly<Record<string, s…; receiveShadow?: boolean \| undefined; castShadow?: boolean \| undefined |
 | `material.toon(options?: AuraToonMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \| undefined; steps?: number \| undefined; ramp?: AuraAssetRef<"texture", s…; shadowColor?: string \| undefined; rim?: AuraMaterialRimSpec \| und… |
+| `material.strata(options?: AuraStrataMaterialOptions)` | `AuraMaterialSpec` | options: bands?: number \| undefined; colors?: readonly string[] \| undef…; heightRange?: readonly [number, number]…; noise?: number \| undefined; noiseScale?: number \| undefined; seam?: number \| undefined; variation?: number \| undefined; slope?: AuraStrataSlopeOptions \| …; roughness?: number \| undefined; seed?: number \| undefined; side?: "front" \| "back" \| "doubl… |
+| `material.caustics(options?: AuraCausticsMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \| undefined; causticColor?: string \| undefined; strength?: number \| undefined; scale?: number \| undefined; speed?: number \| undefined; surfaceY?: number \| undefined; depthFade?: number \| undefined; roughness?: number \| undefined; side?: "front" \| "back" \| "doubl… |
+| `material.lightBeam(options?: AuraLightBeamMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \| undefined; intensity?: number \| undefined; length?: number \| undefined; falloff?: number \| undefined; edgeSoftness?: number \| undefined; noise?: number \| undefined; noiseScale?: number \| undefined; noiseSpeed?: number \| undefined |
 | `material.matcap(options: AuraMatcapMaterialOptions)` | `AuraMaterialSpec` | options: map: AuraAssetRef<"texture"> \|…; color?: string \| undefined; opacity?: number \| undefined; transparent?: boolean \| undefined; side?: "front" \| "back" \| "doubl… |
 | `material.depth(options?: AuraDepthPreviewMaterialOptions)` | `AuraMaterialSpec` | options: near?: number \| undefined; far?: number \| undefined; side?: "front" \| "back" \| "doubl… |
 | `material.normal(options?: AuraNormalMaterialOptions)` | `AuraMaterialSpec` | options: side?: "front" \| "back" \| "doubl… |
@@ -181,7 +202,7 @@ void environments.neutral({ intensity: 0.8, background: false });
 | `environments.metalStudio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.glassStudio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.presets()` | `readonly AuraEnvironmentMapPreset[]` |  |
-| `environments.forMaterial(materialClass: "metal" \| "glass" \| "studio" \| "product")` | `AuraNodeBuilder<AuraEnvironmentNode>` |  |
+| `environments.forMaterial(materialClass: "product" \| "metal" \| "glass" \| "studio")` | `AuraNodeBuilder<AuraEnvironmentNode>` |  |
 
 ## `sky`
 
@@ -235,6 +256,8 @@ void effects.bloom({ intensity: 0.7, threshold: 0.75, radius: 0.55 });
 
 | Call | Returns | Options |
 |---|---|---|
+| `effects.godRays(options?: AuraGodRaysOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: name?: string \| undefined; source?: AuraVec3 \| "sun" \| AuraGo…; intensity?: number \| undefined; decay?: number \| undefined; samples?: 64 \| 32 \| 48 \| undefined; color?: string \| undefined; density?: number \| undefined; medium?: number \| undefined |
+| `effects.volumetricBeam(options?: AuraVolumetricBeamOptions)` | `AuraNodeBuilder<AuraPrimitiveNode>` | options: name?: string \| undefined; position?: AuraVec3 \| undefined; direction?: AuraVec3 \| undefined; length?: number \| undefined; endRadius?: number \| undefined; color?: string \| undefined; intensity?: number \| undefined; falloff?: number \| undefined; edgeSoftness?: number \| undefined; noise?: number \| undefined; noiseScale?: number \| undefined; noiseSpeed?: number \| undefined; radialSegments?: number \| undefined |
 | `effects.contactShadows(options?: AuraContactShadowOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: length?: number \| undefined; thickness?: number \| undefined; steps?: 8 \| 12 \| 16 \| undefined; intensity?: number \| undefined; lights?: "sun" \| "shadowed" \| unde… |
 | `effects.toon(options?: AuraToonOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; bands?: number \| undefined; bandMix?: number \| undefined; outline?: number \| undefined; ink?: readonly [number, number,…; edgeStart?: number \| undefined; edgeEnd?: number \| undefined; size?: readonly [number, number]…; order?: AuraPostPassOrder \| undef…; inkSource?: AuraToonInkSource \| undef…; fadeDistance?: number \| undefined; inkColor?: string \| undefined |
 | `effects.pixelation(options?: AuraPixelationOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: size?: number \| undefined; name?: string \| undefined |
@@ -255,7 +278,7 @@ void effects.bloom({ intensity: 0.7, threshold: 0.75, radius: 0.55 });
 | `effects.vignette(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.filmGrain(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.chromaticAberration(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
-| `effects.shaderPass(options: AuraShaderPassOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; glsl?: string \| undefined; wgsl?: string \| undefined; fragment?: { readonly glsl?: string;…; uniforms?: Readonly<Record<string, n…; inputs?: readonly ("normal" \| "col…; insertAt?: PostInsertAt \| undefined; order?: AuraPostPassOrder \| undef…; enabled?: boolean \| undefined |
+| `effects.shaderPass(options: AuraShaderPassOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; glsl?: string \| undefined; wgsl?: string \| undefined; fragment?: { readonly glsl?: string;…; uniforms?: Readonly<Record<string, n…; inputs?: readonly ("depth" \| "norm…; insertAt?: PostInsertAt \| undefined; order?: AuraPostPassOrder \| undef…; enabled?: boolean \| undefined |
 | `effects.fog(options?: FogNodeOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.cinematicBloom(options?: Omit<AuraEffectNode, "kind" \| "effect">)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.volumetricFog(options?: AuraVolumetricFogOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |

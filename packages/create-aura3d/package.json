@@ -1,6 +1,6 @@
 {
   "name": "create-aura3d",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "type": "module",
   "bin": {
     "create-aura3d": "dist/cli.js"

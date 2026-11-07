@@ -1,0 +1,16 @@
+(node:13958) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+aura3d verify: FAIL (1 error, 0 warning) in 3.9s
+  skipped typecheck  (skipped by option)
+  pass    assets  (no aura.assets.json)
+  pass    lint  (0 finding(s))
+  skipped build  (skipped by option)
+  pass    serve  (http://127.0.0.1:50447)
+  pass    render  (chrome-cdp, ready=true)
+  fail    inspect  (flat frame (2 distinct colours); no scene texture (1.5% textured blocks))
+INFO    RUNTIME_NO_INTERACTIONS
+        Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.
+        fix: Add `interactions.orbit()` if a viewer should be able to move the camera.
+ERROR   FRAME_FLAT
+        The frame is one flat colour (2 distinct colours).
+        fix: Lower fog density or move `near`/`far`, check the camera position against object sizes and scales, and check LINT_* findings.

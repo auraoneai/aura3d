@@ -1,0 +1,41 @@
+{
+  "id": "brick-before",
+  "viewport": "640x360@2x",
+  "virtualFramesStepped": 120,
+  "virtualNowMs": 3083.3333333333285,
+  "title": "frame-514 eval app",
+  "canvasPresent": true,
+  "subjectFill": 0.7420561830266488,
+  "subjectFillRun2": 0.7420561830266488,
+  "bounds": {
+    "min": [
+      -6.300000190734863,
+      -0.15000009536743164,
+      -0.4000000059604645
+    ],
+    "max": [
+      6.300000190734863,
+      10.299999624490738,
+      0.4000000059604645
+    ]
+  },
+  "pose": {
+    "position": [
+      0,
+      5,
+      15.5
+    ],
+    "target": [
+      0,
+      5,
+      0
+    ],
+    "fov": 50
+  },
+  "sameBuildNoiseMeanAbsDiff": 0,
+  "meanLuma": 6.488268709709084,
+  "nearBlackFraction": 0.8626432291666667,
+  "distinctColours16": 276,
+  "realGameFrame": true,
+  "consoleErrors": []
+}

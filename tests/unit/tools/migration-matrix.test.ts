@@ -84,8 +84,9 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
       .filter(({ manifest }) => manifest.private !== true);
     expect(released.length).toBe(25);
     // 5.0 decision record (docs/prds/aura3d-native-code-complete.md, item 4 release prep): every manifest
-    // is bumped with `tools/release/prepare-version.mjs 5.0.0` (earlier trains: 2.0 -> 3.0 -> 4.x).
-    expect(coordinatedVersion).toMatch(/^5\.0\.\d+$/);
+    // is bumped with `tools/release/prepare-version.mjs 5.0.0` (earlier trains: 2.0 -> 3.0 -> 4.x); 5.1 is a coordinated minor
+    // on the same major, so the pin is the 5.x major.
+    expect(coordinatedVersion).toMatch(/^5\.\d+\.\d+$/);
     expect(released.every(({ manifest }) => manifest.version === coordinatedVersion)).toBe(true);
   });
 

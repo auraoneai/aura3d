@@ -286,3 +286,8 @@ export type { TslInput, TslType } from "./nodes/tsl/ir.js";
 export type { AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraToneMappingOperator } from "../contracts/output.js";
 export type { AuraRuntimeNodeHandleParts, TypedGLBActor, TypedGLBActorCrossFadeOptions } from "../production-runtime/TypedGLBActor.js";
 export type { AuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay.js";
+export { frameCameraPose, measureFrameFill } from "./camera/frameSubject.js";
+export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
+export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";

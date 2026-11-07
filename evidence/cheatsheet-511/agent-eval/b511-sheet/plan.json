@@ -1,0 +1,175 @@
+{
+  "args": {
+    "arm": "aura",
+    "task": "31,32,33,34,35,36",
+    "runs": 3,
+    "seed": 20261107,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "base",
+    "batch": "b511-sheet",
+    "docsRef": "907a25413",
+    "docsRoot": "/tmp/agent-eval-runs-511/b511-sheet/docs"
+  },
+  "plan": [
+    {
+      "task": 32,
+      "arm": "aura",
+      "idx": 3,
+      "order": 0,
+      "runId": "b511-sheet-t32-aura-r3",
+      "seed": 20261107000
+    },
+    {
+      "task": 33,
+      "arm": "aura",
+      "idx": 3,
+      "order": 1,
+      "runId": "b511-sheet-t33-aura-r3",
+      "seed": 20261107001
+    },
+    {
+      "task": 35,
+      "arm": "aura",
+      "idx": 3,
+      "order": 2,
+      "runId": "b511-sheet-t35-aura-r3",
+      "seed": 20261107002
+    },
+    {
+      "task": 31,
+      "arm": "aura",
+      "idx": 1,
+      "order": 3,
+      "runId": "b511-sheet-t31-aura-r1",
+      "seed": 20261107003
+    },
+    {
+      "task": 32,
+      "arm": "aura",
+      "idx": 2,
+      "order": 4,
+      "runId": "b511-sheet-t32-aura-r2",
+      "seed": 20261107004
+    },
+    {
+      "task": 35,
+      "arm": "aura",
+      "idx": 1,
+      "order": 5,
+      "runId": "b511-sheet-t35-aura-r1",
+      "seed": 20261107005
+    },
+    {
+      "task": 31,
+      "arm": "aura",
+      "idx": 3,
+      "order": 6,
+      "runId": "b511-sheet-t31-aura-r3",
+      "seed": 20261107006
+    },
+    {
+      "task": 36,
+      "arm": "aura",
+      "idx": 1,
+      "order": 7,
+      "runId": "b511-sheet-t36-aura-r1",
+      "seed": 20261107007
+    },
+    {
+      "task": 33,
+      "arm": "aura",
+      "idx": 1,
+      "order": 8,
+      "runId": "b511-sheet-t33-aura-r1",
+      "seed": 20261107008
+    },
+    {
+      "task": 32,
+      "arm": "aura",
+      "idx": 1,
+      "order": 9,
+      "runId": "b511-sheet-t32-aura-r1",
+      "seed": 20261107009
+    },
+    {
+      "task": 31,
+      "arm": "aura",
+      "idx": 2,
+      "order": 10,
+      "runId": "b511-sheet-t31-aura-r2",
+      "seed": 20261107010
+    },
+    {
+      "task": 35,
+      "arm": "aura",
+      "idx": 2,
+      "order": 11,
+      "runId": "b511-sheet-t35-aura-r2",
+      "seed": 20261107011
+    },
+    {
+      "task": 34,
+      "arm": "aura",
+      "idx": 1,
+      "order": 12,
+      "runId": "b511-sheet-t34-aura-r1",
+      "seed": 20261107012
+    },
+    {
+      "task": 33,
+      "arm": "aura",
+      "idx": 2,
+      "order": 13,
+      "runId": "b511-sheet-t33-aura-r2",
+      "seed": 20261107013
+    },
+    {
+      "task": 36,
+      "arm": "aura",
+      "idx": 3,
+      "order": 14,
+      "runId": "b511-sheet-t36-aura-r3",
+      "seed": 20261107014
+    },
+    {
+      "task": 34,
+      "arm": "aura",
+      "idx": 3,
+      "order": 15,
+      "runId": "b511-sheet-t34-aura-r3",
+      "seed": 20261107015
+    },
+    {
+      "task": 36,
+      "arm": "aura",
+      "idx": 2,
+      "order": 16,
+      "runId": "b511-sheet-t36-aura-r2",
+      "seed": 20261107016
+    },
+    {
+      "task": 34,
+      "arm": "aura",
+      "idx": 2,
+      "order": 17,
+      "runId": "b511-sheet-t34-aura-r2",
+      "seed": 20261107017
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/sheet-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.0.2",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

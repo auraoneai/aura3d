@@ -8,6 +8,7 @@
  */
 
 import { AuraRuntimeError } from "../../../contracts/runtimeError.js";
+import { parseAuraColorSrgb } from "../../color.js";
 
 export type TslType = "float" | "int" | "bool" | "vec2" | "vec3" | "vec4" | "sampler2D";
 export type TslBuiltinName = "positionLocal" | "positionWorld" | "normalLocal" | "normalWorld" | "uv" | "time" | "cameraPosition";
@@ -253,7 +254,10 @@ export function constNode(type: TslType, value: readonly number[]): TslNode {
 
 export function parseHexColor(value: string): readonly [number, number, number] {
   const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim());
-  if (!match) tslError("invalid-tsl-graph", `unsupported color "${value}" (use "#rgb" or "#rrggbb")`);
+  if (!match) {
+    try { const [r, g, b] = parseAuraColorSrgb(value); return [r, g, b]; } catch { /* reported below */ }
+    tslError("invalid-tsl-graph", `COLOR_INVALID: unsupported color "${value}" (use any CSS colour: "#rgb", "#rrggbb", rgb(), hsl(), a name)`);
+  }
   let hex = match[1]!;
   if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
   return [parseInt(hex.slice(0, 2), 16) / 255, parseInt(hex.slice(2, 4), 16) / 255, parseInt(hex.slice(4, 6), 16) / 255];

@@ -1,0 +1,41 @@
+{
+  "id": "bird-before",
+  "viewport": "640x360@2x",
+  "virtualFramesStepped": 120,
+  "virtualNowMs": 3066.666666666662,
+  "title": "frame-514 eval app",
+  "canvasPresent": true,
+  "subjectFill": 0.3991225008988467,
+  "subjectFillRun2": 0.3991225008988467,
+  "bounds": {
+    "min": [
+      -2.087061667197448,
+      3.2499999910593034,
+      4.067943972503109
+    ],
+    "max": [
+      1.7729382875030222,
+      4.150000011920929,
+      7.927943927203579
+    ]
+  },
+  "pose": {
+    "position": [
+      6.502491147445376,
+      5.6,
+      11.256891617022637
+    ],
+    "target": [
+      -0.1570616898472128,
+      3.6,
+      5.997943949853344
+    ],
+    "fov": 48
+  },
+  "sameBuildNoiseMeanAbsDiff": 0,
+  "meanLuma": 216.76637424494524,
+  "nearBlackFraction": 0,
+  "distinctColours16": 265,
+  "realGameFrame": true,
+  "consoleErrors": []
+}

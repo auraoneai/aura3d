@@ -14,6 +14,7 @@ import { dropShadowedLookFill } from "../looks/lookFill.js";
 import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { validateClippingGroup } from "@aura3d/rendering";
 import { AuraClipGroup, type AuraClipGroupSnapshot, type AuraClipScope } from "./clipping.js";
+import { assertAuraColorOption } from "../color.js";
 
 const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
 
@@ -202,6 +203,7 @@ export class AuraSceneBuilder {
       this.backgroundToneMapped = options.toneMapped !== false;
       return this;
     }
+    assertAuraColorOption(color, "scene().background(color)");
     this.backgroundColor = color as AuraColor;
     this.backgroundImageSpec = undefined;
     this.backgroundExplicit = true;

@@ -17,6 +17,8 @@ import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainGraphSpec, rainSpec, skySpec } from "./materials";
+import { portableCloudMaterial } from "./portable";
+import { readPortableFlag } from "../shared/portable-flag";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
@@ -369,7 +371,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
     uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]),
     indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
-  }), { name: "cloud-sea", material: material.custom(cloudSpec()) }).runtime({ id: "cloud-sea" }));
+  }), { name: "cloud-sea", material: readPortableFlag() ? portableCloudMaterial() : material.custom(cloudSpec()) }).runtime({ id: "cloud-sea" }));
 
   /* ---- track: ballast bed, rails, instanced sleepers, trestle pylons, catenary masts ---- */
   const mergeRibbons = (rs: Ribbon[]): Ribbon => {

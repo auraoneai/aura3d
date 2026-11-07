@@ -1,0 +1,128 @@
+diff --git a/tools/agent-eval/lib/loop.mjs b/tools/agent-eval/lib/loop.mjs
+index c0457696b..6d9ca931e 100644
+--- a/tools/agent-eval/lib/loop.mjs
++++ b/tools/agent-eval/lib/loop.mjs
+@@ -22,6 +22,11 @@ export function systemPrompt(arm, condition = {}) {
+       "You also have `aura_lookup(query)`: one call returns the best-matching working recipe source, exact signatures and gotchas for a keyword query (for example `camera orbit autoRotate` or `custom shader water uniform`). Use it instead of reading or searching doc files one by one."
+     );
+   }
++  if (arm === "aura" && condition.mcp) {
++    extra.push(
++      "You also have the Aura3D MCP tools: `get_symbol(name)` (exact signature, doc, defaults and an example from the installed package types), `search_docs(query)` (ranked passages from the Aura3D docs), `get_recipe(task)` (best working scene source plus signatures) and `explain_error(code)`. Use them instead of reading or searching doc files one by one."
++    );
++  }
+   return [...common, ...specific, ...extra].join("\n");
+ }
+ 
+@@ -44,7 +49,7 @@ export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, max
+   const first = condition.batchHint ? FIRST_USER_MESSAGE + BATCH_HINT : FIRST_USER_MESSAGE;
+   const messages = [{ role: "user", content: first }];
+   const transcript = [{ role: "user", content: first }];
+-  const tools = toolDefinitions({ lookup: Boolean(condition.lookup) && arm === "aura" });
++  const tools = toolDefinitions({ lookup: Boolean(condition.lookup) && arm === "aura", mcpTools: arm === "aura" && condition.mcp ? toolbox.mcpTools ?? [] : [] });
+   const system = systemPrompt(arm, condition);
+   const usage = { input: 0, uncachedInput: 0, output: 0, turns: 0, perTurnInput: [], perTurnOutput: [] };
+   let endReason = "max_turns";
+@@ -70,7 +75,7 @@ export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, max
+     }
+     const results = [];
+     for (const use of toolUses) {
+-      const { content: text, isError } = toolbox.exec(use.name, use.input);
++      const { content: text, isError } = await toolbox.exec(use.name, use.input);
+       results.push({ type: "tool_result", tool_use_id: use.id, content: text, ...(isError ? { is_error: true } : {}) });
+       if (toolbox.state.finished) break;
+     }
+diff --git a/tools/agent-eval/lib/tools.mjs b/tools/agent-eval/lib/tools.mjs
+index f5e673e1a..312d4ad28 100644
+--- a/tools/agent-eval/lib/tools.mjs
++++ b/tools/agent-eval/lib/tools.mjs
+@@ -58,7 +58,7 @@ export const LOOKUP_TOOL = {
+   input_schema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
+ };
+ 
+-export const toolDefinitions = ({ lookup = false } = {}) => (lookup ? [...TOOL_DEFINITIONS, LOOKUP_TOOL] : TOOL_DEFINITIONS);
++export const toolDefinitions = ({ lookup = false, mcpTools = [] } = {}) => [...TOOL_DEFINITIONS, ...(lookup ? [LOOKUP_TOOL] : []), ...mcpTools];
+ 
+ const WRITABLE = [/^src\//, /^index\.html$/, /^vite\.config\.ts$/];
+ const READABLE_NODE_MODULES = ["node_modules/@aura3d", "node_modules/three", "node_modules/@types/three"];
+@@ -67,7 +67,7 @@ const MAX_READ_CHARS = 14000;
+ 
+ const norm = (p) => p.replaceAll("\\", "/").replace(/^\.\//, "");
+ 
+-export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTsc, lookup = false }) {
++export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTsc, lookup = false, mcp = null }) {
+   const lookupFn = lookup ? createLookup(dir) : null;
+   const started = now();
+   const events = [];
+@@ -204,7 +204,17 @@ export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTs
+     }
+   };
+ 
+-  function exec(name, input) {
++  async function exec(name, input) {
++    if (mcp?.names.has(name)) {
++      try {
++        const out = await mcp.call(name, input ?? {});
++        record({ type: "mcp", tool: name, chars: out.text.length, isError: out.isError });
++        return { content: out.text, isError: out.isError };
++      } catch (error) {
++        record({ type: "error", tool: name });
++        return { content: String(error.message ?? error), isError: true };
++      }
++    }
+     const handler = handlers[name];
+     if (!handler) return { content: `unknown tool ${name}`, isError: true };
+     try {
+@@ -225,5 +235,5 @@ export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTs
+     return authored;
+   }
+ 
+-  return { exec, finalize, events, docsOpened, typesOpened, state, started, tsc };
++  return { exec, finalize, close: () => mcp?.close(), events, docsOpened, typesOpened, state, started, tsc };
+ }
+diff --git a/tools/agent-eval/run.mjs b/tools/agent-eval/run.mjs
+index 2c671700d..31abb4933 100755
+--- a/tools/agent-eval/run.mjs
++++ b/tools/agent-eval/run.mjs
+@@ -10,6 +10,7 @@ import { runAgent } from "./lib/loop.mjs";
+ import { DEFAULT_MODEL, createPrismClient, loadKey } from "./lib/prism.mjs";
+ import { ARMS, assertNoRepoSourceLeak, buildSandbox, docsCommit, exportDocs } from "./lib/sandbox.mjs";
+ import { createToolbox } from "./lib/tools.mjs";
++import { startMcp } from "./lib/mcp.mjs";
+ 
+ const REPO_ROOT = resolve(import.meta.dirname, "..", "..");
+ const WORK_ROOT = process.env.AGENT_EVAL_WORK ?? "/tmp/agent-eval-runs";
+@@ -21,7 +22,10 @@ export const CONDITIONS = {
+   B: { lookup: true },
+   C: { cheatsheet: true, lookup: true },
+   D: { batchHint: true },
+-  E: { cheatsheet: true, lookup: true, batchHint: true }
++  E: { cheatsheet: true, lookup: true, batchHint: true },
++  // lane 511: the @aura3d/mcp knowledge tools replace (M) or supplement the cheat sheet (N) instead of aura_lookup.
++  M: { mcp: true },
++  N: { cheatsheet: true, mcp: true }
+ };
+ 
+ export function parseArgs(argv) {
+@@ -117,7 +121,12 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
+   if (args.dryRun) return { ...record, dryRun: true };
+ 
+   const snapshotRoot = join(runDir, "snapshots");
+-  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(CONDITIONS[args.condition]?.lookup) });
++  const cond = CONDITIONS[args.condition] ?? {};
++  const mcp = item.arm === "aura" && cond.mcp
++    ? await startMcp({ projectDir: sandboxDir, serverCmd: process.execPath, serverArgs: JSON.parse(process.env.AGENT_EVAL_MCP_ARGS), bundlePath: process.env[cond.cheatsheet ? "AGENT_EVAL_MCP_BUNDLE_SHEET" : "AGENT_EVAL_MCP_BUNDLE"] })
++    : null;
++  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(cond.lookup), mcp });
++  toolbox.mcpTools = mcp?.tools ?? [];
+   let outcome;
+   try {
+     outcome = await runAgent({ client, model: args.model, arm: item.arm, toolbox, maxTurns: args.maxTurns, session: item.runId, condition: CONDITIONS[args.condition] ?? {} });
+@@ -127,6 +136,7 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
+     record.invalid = true;
+     record.invalidReason = String(error.message).slice(0, 300);
+   }
++  toolbox.close();
+   const authored = toolbox.finalize();
+   const finalTsc = toolbox.tsc();
+   const firstCheck = toolbox.events.find((e) => e.type === "typecheck");
