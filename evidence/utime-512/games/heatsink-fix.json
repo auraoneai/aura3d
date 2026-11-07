@@ -1,0 +1,36 @@
+{
+  "page": "index.html",
+  "size": [
+    960,
+    540
+  ],
+  "settleMs": 10000,
+  "intervalMs": 3000,
+  "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "aura3dReady": "true",
+  "diff": 0.161,
+  "moving": false,
+  "console": [
+    "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the surface behind them.",
+    "warning: [prd02.contactShadows] effects.contactShadows() has no visible effect: no drawn program samples the mask. The mask darkens the shadow-casting sun's light on materials that receive shadows; textured-PBR materials with glTF extension textures (clearcoat, transmission and similar) do not sample it."
+  ],
+  "log": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "netFailures": [
+    "404 http://127.0.0.1:64202/fonts/aura-fonts.css",
+    "net::ERR_ABORTED",
+    "404 http://127.0.0.1:64202/favicon.ico"
+  ],
+  "exceptions": [],
+  "idle": {
+    "windowSeconds": 3.88,
+    "rafPerSecond": 2.84,
+    "drawCallsPerSecond": 2971.1,
+    "pageCpuMsPerSecond": 938.38,
+    "pageScriptMsPerSecond": 937.39,
+    "gpuProcessCpuMsPerSecond": 170.1,
+    "note": "rAF/draw counters are wrapped from page start; page CPU = CDP Performance TaskDuration; GPU = CPU time of the GPU process via ps (1 s resolution), not GPU shader time."
+  }
+}

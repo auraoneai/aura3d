@@ -10,8 +10,11 @@
  * - `material.custom` GLSL: `uTime` / `u_time` is bound per draw from the renderer clock (customMaterial.ts prelude).
  * - `world.water` (`kind: "water"`): Gerstner waves and detail normals are evaluated with `timeSeconds` (WaterRuntime.ts), always.
  * - `sky` clouds: `cloudUV += u_time * u_cloudScaleSpeed.y` (sky.glsl.ts); drift multiplier `speed` defaults to 1, `0` is still.
- * - NOT listed: `effects.volumetricFog` (its noise scroll is driven by `noiseSpeed`/`noiseStrength`, which the effect node
- *   cannot set and which default to 0, so the fog is time-invariant), stars (no time term), `effects.snow` (already animates).
+ * - NOT listed: `effects.volumetricFog`: measured on a real GPU with the loop forced on, two frames 3 s apart differ by 0.000 while
+ *   the fog is drawn (docs/workflows/render-gate-motion.md, "utime-512 findings"); the effect node cannot set `noiseSpeed` /
+ *   `noiseStrength` (default 0), so the fog is time-invariant. Stars (no time term) and `effects.snow` (already animates) are not listed either.
+ * - Sky clouds: the production effect system already requests frames for `coverage > 0 && speed > 0`, so the `sky` case here is a
+ *   second path to the same decision, not the only one (measured: base loops for such a scene).
  */
 
 interface GlslStages { readonly vertex?: string; readonly fragment?: string }

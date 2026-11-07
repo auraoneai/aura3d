@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-render-gate-motion/1",
-  "note": "Entries the motion check expects to MOVE. verified: 'real-gpu-2026-11' = frame difference measured above 0.2 on a real GPU in the 5.0.2 utime investigation (tests/reports/utime-investigation/findings.md); 'source-read' = flagged from reading the source, not yet measured by this gate. animated:false rows are measured and recorded but never fail. Only 5 of the 8 recipes animate; the other 3 are static by design and listed as informational rows.",
+  "note": "Entries the motion check expects to MOVE. verified: 'real-gpu-2026-11' = frame difference measured above 0.2 on a real GPU in the 5.0.2 utime investigation (docs/workflows/render-gate-motion.md, section utime-512 findings); 'source-read' = flagged from reading the source, not yet measured by this gate. animated:false rows are measured and recorded but never fail. Only 5 of the 8 recipes animate; the other 3 are static by design and listed as informational rows.",
   "threshold": 0.2,
   "settleMs": 4000,
   "intervalMs": 1500,
