@@ -33,11 +33,30 @@ const NEUTRAL_ENVIRONMENT: EnvironmentSpec = {
   }
 };
 
+// A 6 x 6 chequer of low floor tiles around the stage mark (pure set dressing).
+const FLOOR_TILES: SetSpec["pieces"] = Array.from({ length: 36 }, (_, i) => {
+  const x = (i % 6) - 2.5;
+  const z = Math.floor(i / 6) - 2.5;
+  const light = (i + Math.floor(i / 6)) % 2 === 0;
+  const tone = light ? 0.3 : 0.12;
+  return {
+    id: `studio-tile-${i}`,
+    geometry: "cube" as const,
+    position: [x * 1.2, 0.005, z * 1.2 - 1] as const,
+    scale: [1.16, 0.01, 1.16] as const,
+    baseColor: [tone, tone + 0.01, tone + 0.03, 1] as const,
+    metallic: 0,
+    roughness: 0.85,
+    includeInAutoFrame: false
+  };
+});
+
 const NEUTRAL_SET: SetSpec = {
   clearColor: [0.06, 0.07, 0.09, 1],
   studioLightingScale: 0.5,
   environment: NEUTRAL_ENVIRONMENT,
   pieces: [
+    ...FLOOR_TILES,
     {
       id: "void-floor",
       geometry: "cube",

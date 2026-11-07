@@ -1483,7 +1483,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/procedural-scene/src/main.ts",
-        "sha256": "3f8c14a3006a5749b49925b0d90b556fd06d59155a5d6ec3c84af43efb7709e4"
+        "sha256": "0d11664f1c670658c85bc46cecc1ecca85f39d051100a10e1970470c282465b9"
       },
       "sourceDependencies": [
         {
@@ -1883,7 +1883,7 @@
       "sourceDependencies": [
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/empty-document.ts",
-          "sha256": "04728c44808260c8a0da2f6f65b45111787f559125172055143d9d962be01196"
+          "sha256": "6e042fe15de115af3ae7340db5d8688ac5b75b392bdf4cc701d65cd9173a2888"
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",

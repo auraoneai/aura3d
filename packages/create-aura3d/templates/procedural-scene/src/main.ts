@@ -54,10 +54,18 @@ const robot = group("robot", [
   ], { position: [0, 1.0, 0] }).runtime({ id: "hips", mutable: true })
 ]);
 
+// A chequered floor of thin tiles on the base plane: it gives the metal something to reflect and the frame some texture.
+const tiles = Array.from({ length: 64 }, (_, i) => {
+  const x = (i % 8) - 3.5;
+  const z = Math.floor(i / 8) - 3.5;
+  return primitives.box({ name: `tile ${i}`, size: [0.98, 0.02, 0.98], position: [x, 0.011, z], material: material.pbr({ color: (i + Math.floor(i / 8)) % 2 ? "#3c4558" : "#1d222d", roughness: 0.7 }), receiveShadow: true });
+});
+
 const app = createAuraApp("#app", {
   scene: scene()
     .add(looks.preset(LOOK_ID, { fogDensityScale: 0.2, exposureEv: -0.5, background: "#1f2635" })) // environment light, key shadow, fog, background and grade as one unit; a dark backdrop, light fog and trimmed exposure keep the metal readable
     .add(primitives.plane({ name: "floor", size: [14, 1, 14], material: material.pbr({ color: "#262a33", roughness: 0.85 }), receiveShadow: true }))
+    .addMany(tiles)
     .add(robot)
     .add(interactions.orbit({ target: "floor" }))
     .camera(camera.orbit({ position: [3, 1.5, 4.2], target: [0, 1.0, 0], fov: 36 })),
