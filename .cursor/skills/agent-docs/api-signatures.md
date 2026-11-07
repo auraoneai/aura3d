@@ -24,7 +24,7 @@ const app = createAuraApp("#app", { scene: scene({ background: "#101418" }) });
 
 | Call | Returns | Options |
 |---|---|---|
-| `createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions)` | `AuraApp` | options: frameMode?: "sync" \| "async" \| undefi…; scene: AuraSceneBuilder \| AuraSc…; worker?: { readonly createWorker: …; physics?: { readonly layers?: AuraC…; diagnostics?: boolean \| AuraDiagnostics…; renderer?: AuraCreateAppRendererOpti…; performanceQuality?: AuraPerformanceQuality \| …; quality?: AuraQualityMode \| undefin…; preserveDrawingBuffer?: boolean \| undefined; autoStart?: boolean \| undefined; resize?: boolean \| undefined; pixelRatio?: number \| { readonly max?:…; qualityRebuild?: { readonly flags?: import…; lightin… |
+| `createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions)` | `AuraApp` | options: frameMode?: "sync" \| "async" \| undefi…; scene: AuraSceneBuilder \| AuraSc…; worker?: { readonly createWorker: …; physics?: { readonly layers?: AuraC…; diagnostics?: boolean \| AuraDiagnostics…; renderer?: AuraCreateAppRendererOpti…; performanceQuality?: AuraPerformanceQuality \| …; quality?: AuraQualityMode \| undefin…; preserveDrawingBuffer?: boolean \| undefined; autoStart?: boolean \| undefined; resize?: boolean \| undefined; routeState?: boolean \| undefined; pixelRatio?: number \| { readonly max?:…; qualityRebuild?: {… |
 | `app.onFrame(callback: AuraFrameCallback)` | `() => void` |  |
 | `app.ready()` | `Promise<void>` |  |
 | `app.nodes` | `AuraRuntimeNodeRegistry` |  |
