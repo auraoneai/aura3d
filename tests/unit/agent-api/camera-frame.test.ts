@@ -96,7 +96,7 @@ describe("worldBoundsOfNodes", () => {
 describe("camera.frame integration", () => {
   const body = primitives.box({ name: "body", size: [1, 2, 1], material: material.pbr({ color: "#aaaaaa" }) }).position(0, 1, 0);
   const wing = primitives.box({ name: "wing", size: [4, 0.2, 1], material: material.pbr({ color: "#aaaaaa" }) }).position(0, 1.5, 0);
-  const ground = primitives.plane({ name: "ground", size: [200, 200] });
+  const ground = primitives.plane({ name: "ground", size: [200, 1, 200] });
 
   test("returns an orbit perspective spec with target, distance and position", () => {
     const spec = camera.frame([body, wing], { fill: 0.6 });

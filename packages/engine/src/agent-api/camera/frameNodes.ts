@@ -10,7 +10,7 @@ import { toSceneNode } from "../nodes/builder.js";
 import { createModelMatrix, shouldNormalizeModelNode } from "../sceneMath.js";
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { flattenSceneNodes } from "./sceneNodes.js";
-import type { AuraFrameBounds } from "./frameSubject.js";
+import type { AuraFrameBounds, AuraFramePoseOptions } from "./frameSubject.js";
 
 /** Anything `camera.frame` accepts as a subject. */
 export type AuraFrameSubject = AuraNodeInput | { toJSON(): unknown };
@@ -110,4 +110,4 @@ export function worldBoundsOfNodes(
   return { min, max };
 }
 
-export interface AuraCameraFrameOptions extends import("./frameSubject.js").AuraFramePoseOptions, AuraFrameNodeFilter {}
+export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameNodeFilter {}
