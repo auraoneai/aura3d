@@ -1,4 +1,4 @@
-// usage: node pixdiff.mjs <framesDir> <out.json> <game>...
+// usage: node pixdiff.mjs <framesDir> <out.json> <game>...  (frames named <base|branch>-<game>-<a|b>.png)
 // For each game compares base-a vs base-b (noise) and base-a vs branch-a (change): mean abs RGB diff (0-255), share of pixels with
 // any channel differing, share differing by > 8, and the bounding box of differing pixels.
 import fs from "node:fs";
@@ -25,6 +25,7 @@ const result = {};
 for (const g of games) {
   const f = (v, s) => path.join(dir, `${v}-${g}-${s}.png`);
   result[g] = { noise_baseA_vs_baseB: await cmp(f("base", "a"), f("base", "b")), change_baseA_vs_branchA: await cmp(f("base", "a"), f("branch", "a")), change_baseB_vs_branchA: await cmp(f("base", "b"), f("branch", "a")) };
+  if (fs.existsSync(f("branch", "b"))) Object.assign(result[g], { noise_branchA_vs_branchB: await cmp(f("branch", "a"), f("branch", "b")), change_baseA_vs_branchB: await cmp(f("base", "a"), f("branch", "b")), change_baseB_vs_branchB: await cmp(f("base", "b"), f("branch", "b")) });
   console.log(g, JSON.stringify(result[g]));
 }
 fs.writeFileSync(out, JSON.stringify(result, null, 1) + "\n");
