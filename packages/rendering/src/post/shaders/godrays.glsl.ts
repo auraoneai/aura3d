@@ -53,6 +53,7 @@ uniform float u_weight;
 uniform float u_diskOuter;           // r1: disk feather outer radius (uv)
 uniform float u_diskInner;           // r0: disk core radius (uv)
 uniform float u_density;             // GU47: march fraction toward the light, (0, 1]; <= 0 reads as 1
+uniform float u_uvScale;             // Lane 514: frame anchor scale (w / halfW for effects.godRays); 1 keeps the legacy mapping
 uniform float u_medium;              // GU47 phase 2: shaft medium per metre (volumetricFog density); <= 0: no depth scaling
 out vec4 o_color;
 
@@ -65,7 +66,7 @@ out vec4 o_color;
 #endif
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / vec2(textureSize(u_hdr, 0));
+  vec2 uv = gl_FragCoord.xy * (u_uvScale > 0.0 ? u_uvScale : 1.0) / vec2(textureSize(u_hdr, 0));
   vec2 dir = u_lightUv - uv;
   float dist = length(dir);
   float density = u_density > 0.0 ? u_density : 1.0;

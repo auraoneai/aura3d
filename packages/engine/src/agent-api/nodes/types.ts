@@ -1002,7 +1002,7 @@ export interface AuraLightNode extends AuraTransformSpec {
 export type AuraEffectType =
   | "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion"
   | "color-grade" | "anti-alias" | "outline"
-  | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow"
+  | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "god-rays" | "snow"
   | "flipbook-sprite" | "light-beam" | "fogVolume"
   | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 
@@ -1113,6 +1113,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly heightFalloff?: number;
   /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
   readonly heightReference?: number;
+  /** Lane 514 `effects.godRays`: unit direction TOWARD the light for the S4 stage when the source is a directional light. */
+  readonly godRayDirection?: AuraVec3;
   readonly emissionRate?: number;
   readonly gravity?: number;
   readonly groundCollision?: boolean;

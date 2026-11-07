@@ -559,6 +559,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     case "vignette":
     case "film-grain":
     case "chromatic-aberration":
+    case "god-rays":
       return { type: "other", nodeId, effect, consumer: "post", sim: "none" };
     default:
       return { type: "other", nodeId, effect, consumer: "none", sim: "none" };

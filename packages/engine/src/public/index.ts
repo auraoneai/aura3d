@@ -206,3 +206,5 @@ export type { AuraXRButtonHandle, AuraXRButtonOptions, AuraXRDeviceBridge, AuraX
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "../agent-api/index.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "../agent-api/nodes/types/runtime.js";
 export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDistanceMaterialOptions, AuraShadowMaterialOptions } from "../agent-api/index.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "../agent-api/nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "../agent-api/nodes/material.visual.js";
