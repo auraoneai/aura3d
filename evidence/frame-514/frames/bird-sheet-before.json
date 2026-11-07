@@ -1,0 +1,41 @@
+{
+  "id": "bird-sheet-before",
+  "viewport": "640x360@2x",
+  "virtualFramesStepped": 120,
+  "virtualNowMs": 3133.333333333328,
+  "title": "frame-514 eval app",
+  "canvasPresent": true,
+  "subjectFill": 0.37556407317512364,
+  "subjectFillRun2": 0.37556407317512364,
+  "bounds": {
+    "min": [
+      -2.187077423421652,
+      2.8999999165534973,
+      3.9679435076518317
+    ],
+    "max": [
+      1.8729226385671787,
+      3.650000050663948,
+      8.027943569640662
+    ]
+  },
+  "pose": {
+    "position": [
+      6.752556356832395,
+      5.800000000000001,
+      11.68986666509941
+    ],
+    "target": [
+      -0.1570773924272366,
+      3,
+      5.997943538646247
+    ],
+    "fov": 50
+  },
+  "sameBuildNoiseMeanAbsDiff": 0,
+  "meanLuma": 167.8473919205715,
+  "nearBlackFraction": 0,
+  "distinctColours16": 356,
+  "realGameFrame": true,
+  "consoleErrors": []
+}
