@@ -1,0 +1,19 @@
+(node:13029) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+aura3d verify: PASS (0 error, 2 warning) in 4.3s
+  skipped typecheck  (skipped by option)
+  pass    assets  (no aura.assets.json)
+  pass    lint  (1 finding(s))
+  skipped build  (skipped by option)
+  pass    serve  (http://127.0.0.1:50294)
+  pass    render  (chrome-cdp, ready=true)
+  pass    inspect  (frame drawn)
+WARNING LINT_UTIME_NOT_ANIMATED src/main.ts:4:15
+        The shader reads uTime, but the project has no app.onFrame together with a .runtime({ mutable: true }) node, so nothing drives time and uTime stays at its initial value.
+        fix: Declare your own uniform (e.g. `waveClock`), mark the node `.runtime({ id: "water", mutable: true })`, and in `app.onFrame` call `app.nodes.require("water").setUniform?.("waveClock", seconds)`.
+INFO    RUNTIME_NO_INTERACTIONS
+        Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.
+        fix: Add `interactions.orbit()` if a viewer should be able to move the camera.
+WARNING MOTION_NONE
+        Two frames 1000 ms apart are identical (0.000% of pixels changed).
+        fix: If the scene should animate, drive time yourself (`setUniform` in `app.onFrame` on a `.runtime({ mutable: true })` node) and check LINT_UTIME_NOT_ANIMATED.

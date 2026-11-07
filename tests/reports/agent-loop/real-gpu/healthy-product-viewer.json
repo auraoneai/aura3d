@@ -1,0 +1,121 @@
+{
+  "schema": "aura3d.verify/1",
+  "ok": true,
+  "project": "_staged-product-viewer",
+  "startedAt": "2026-11-07T02:35:17.570Z",
+  "durationMs": 15743,
+  "steps": [
+    {
+      "id": "typecheck",
+      "status": "pass",
+      "durationMs": 9377,
+      "detail": "0 error(s)"
+    },
+    {
+      "id": "assets",
+      "status": "pass",
+      "durationMs": 29,
+      "detail": "0 failure(s), 2 warning(s)"
+    },
+    {
+      "id": "lint",
+      "status": "pass",
+      "durationMs": 3,
+      "detail": "0 finding(s)"
+    },
+    {
+      "id": "build",
+      "status": "skipped",
+      "durationMs": 0,
+      "detail": "skipped by option"
+    },
+    {
+      "id": "serve",
+      "status": "pass",
+      "durationMs": 3,
+      "detail": "http://127.0.0.1:50615"
+    },
+    {
+      "id": "render",
+      "status": "pass",
+      "durationMs": 6077,
+      "detail": "chrome-cdp, ready=true"
+    },
+    {
+      "id": "inspect",
+      "status": "pass",
+      "durationMs": 59,
+      "detail": "no scene texture (9.5% textured blocks)"
+    }
+  ],
+  "findings": [
+    {
+      "code": "ASSET_VALIDATION_WARNING",
+      "severity": "warning",
+      "step": "assets",
+      "message": "product: manifest bounds [1.900, 2.900, 1.100] do not match the asset file [1.850, 3.005, 1.720]. Re-add the asset through the CLI to refresh derived metadata.",
+      "cause": "`assets validate` accepted the manifest but flagged something worth fixing.",
+      "fix": "Read the message; fix it before a release gate (`assets validate --release`)."
+    },
+    {
+      "code": "ASSET_VALIDATION_WARNING",
+      "severity": "warning",
+      "step": "assets",
+      "message": "product: manifest is missing the scene hierarchy inspection that the asset file provides.",
+      "cause": "`assets validate` accepted the manifest but flagged something worth fixing.",
+      "fix": "Read the message; fix it before a release gate (`assets validate --release`)."
+    },
+    {
+      "code": "FRAME_EMPTY",
+      "severity": "warning",
+      "step": "inspect",
+      "message": "Only 9.6% of the frame has scene texture.",
+      "cause": "Most of the frame is flat: the scene is missing, tiny, huge or behind the camera. Typical causes: a scale off by 100x, a camera pointed away, a model that failed to load.",
+      "fix": "Check node scale against asset bounds, the camera target and distance, and REQUEST_FAILED / RUNTIME_DIAGNOSTIC_ERROR findings.",
+      "evidence": {
+        "p99Luma": 225,
+        "meanLuma": 143.46,
+        "distinctColors": 96,
+        "texturedBlockFraction": 0.0955
+      }
+    }
+  ],
+  "counts": {
+    "error": 0,
+    "warning": 3,
+    "info": 0
+  },
+  "render": {
+    "driver": "chrome-cdp",
+    "viewport": {
+      "width": 960,
+      "height": 540
+    },
+    "backend": "webgl2",
+    "drawCalls": 14,
+    "degradeCodes": [],
+    "frame": {
+      "width": 960,
+      "height": 540,
+      "meanLuma": 143.46,
+      "lumaStddev": 75.03,
+      "p1Luma": 56,
+      "p99Luma": 225,
+      "gain": 1,
+      "distinctColors": 96,
+      "texturedBlockFraction": 0.0955,
+      "drawn": false,
+      "reasons": [
+        "no scene texture (9.5% textured blocks)"
+      ],
+      "black": false,
+      "flat": false,
+      "empty": true,
+      "dim": false
+    },
+    "frames": [
+      "_staged-product-viewer-frame1.png",
+      "_staged-product-viewer-frame2.png"
+    ]
+  }
+}

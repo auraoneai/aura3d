@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Stages a shipped template as a monorepo-buildable project so `aura3d verify` can run on it without the published packages:
 //   node tools/agent-loop/stage-template.mjs <template> [--out tests/fixtures/agent-loop-seeded/_staged-<template>]
-// Copies index.html, src/, public/ and aura.assets.json, and adds the same shared vite.config.ts / tsconfig.json the seeded scenes use
+// Copies index.html, src/, public/ (plus the HDRI set, as create-aura3d does) and aura.assets.json, and adds the same shared vite.config.ts / tsconfig.json the seeded scenes use
 // (aliases to monorepo source). The template's own package.json scripts are replaced by `vite build` / `tsc --noEmit`; verify runs
 // the typecheck as its own step. The staged folder is git-ignored; nothing in the template is modified.
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -18,6 +18,10 @@ if (!existsSync(from)) { console.error(`no template ${template}`); process.exit(
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 for (const entry of ["index.html", "src", "public", "aura.assets.json"]) if (existsSync(join(from, entry))) cpSync(join(from, entry), join(out, entry), { recursive: true });
+// create-aura3d ships the HDRI catalogue under public/hdri/ for templates that author a look (packages/create-aura3d/src/template-hdri.ts);
+// do the same here, otherwise look presets 404 on /hdri/<file>.hdr and verify would report a staging artefact, not a template defect.
+const hdriFrom = join(repoRoot, "packages/create-aura3d/hdri");
+if (existsSync(hdriFrom) && !existsSync(join(out, "public/hdri"))) cpSync(hdriFrom, join(out, "public/hdri"), { recursive: true });
 const shared = join(repoRoot, "tests/fixtures/agent-loop-seeded/_shared");
 writeFileSync(join(out, "vite.config.ts"), 'export { default } from "../_shared/vite.config";\n');
 cpSync(join(shared, "tsconfig.json"), join(out, "tsconfig.json"));

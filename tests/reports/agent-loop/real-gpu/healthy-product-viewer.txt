@@ -1,0 +1,19 @@
+(node:15227) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+aura3d verify: PASS (0 error, 3 warning) in 15.7s
+  pass    typecheck  (0 error(s))
+  pass    assets  (0 failure(s), 2 warning(s))
+  pass    lint  (0 finding(s))
+  skipped build  (skipped by option)
+  pass    serve  (http://127.0.0.1:50615)
+  pass    render  (chrome-cdp, ready=true)
+  pass    inspect  (no scene texture (9.5% textured blocks))
+WARNING ASSET_VALIDATION_WARNING
+        product: manifest bounds [1.900, 2.900, 1.100] do not match the asset file [1.850, 3.005, 1.720]. Re-add the asset through the CLI to refresh derived metadata.
+        fix: Read the message; fix it before a release gate (`assets validate --release`).
+WARNING ASSET_VALIDATION_WARNING
+        product: manifest is missing the scene hierarchy inspection that the asset file provides.
+        fix: Read the message; fix it before a release gate (`assets validate --release`).
+WARNING FRAME_EMPTY
+        Only 9.6% of the frame has scene texture.
+        fix: Check node scale against asset bounds, the camera target and distance, and REQUEST_FAILED / RUNTIME_DIAGNOSTIC_ERROR findings.

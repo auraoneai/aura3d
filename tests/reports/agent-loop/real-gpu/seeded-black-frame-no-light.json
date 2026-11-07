@@ -1,0 +1,123 @@
+{
+  "schema": "aura3d.verify/1",
+  "ok": false,
+  "project": "black-frame-no-light",
+  "startedAt": "2026-11-07T02:34:45.187Z",
+  "durationMs": 4084,
+  "steps": [
+    {
+      "id": "typecheck",
+      "status": "skipped",
+      "durationMs": 0,
+      "detail": "skipped by option"
+    },
+    {
+      "id": "assets",
+      "status": "pass",
+      "durationMs": 7,
+      "detail": "no aura.assets.json"
+    },
+    {
+      "id": "lint",
+      "status": "pass",
+      "durationMs": 2,
+      "detail": "0 finding(s)"
+    },
+    {
+      "id": "build",
+      "status": "skipped",
+      "durationMs": 0,
+      "detail": "skipped by option"
+    },
+    {
+      "id": "serve",
+      "status": "pass",
+      "durationMs": 3,
+      "detail": "http://127.0.0.1:50394"
+    },
+    {
+      "id": "render",
+      "status": "pass",
+      "durationMs": 3815,
+      "detail": "chrome-cdp, ready=true"
+    },
+    {
+      "id": "inspect",
+      "status": "fail",
+      "durationMs": 35,
+      "detail": "black frame (p99 luma 0); flat frame (1 distinct colours); no scene texture (0.0% textured blocks)"
+    }
+  ],
+  "findings": [
+    {
+      "code": "RUNTIME_NO_LIGHTS",
+      "severity": "warning",
+      "step": "inspect",
+      "message": "Scene has no lights. Suggested fix: add lights.studio() or lights.ambient().",
+      "cause": "The engine warns that the scene has no lights. Lit materials (pbr, metal) render dark or black without a light or environment.",
+      "fix": "Add `lights.studio()`, `lights.directional(...)` or `lights.ambient()`, or a `looks.preset(...)` / `environments.*`."
+    },
+    {
+      "code": "RUNTIME_NO_INTERACTIONS",
+      "severity": "info",
+      "step": "inspect",
+      "message": "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+      "cause": "The engine notes that the scene has no camera interaction. Fine for a fixed shot.",
+      "fix": "Add `interactions.orbit()` if a viewer should be able to move the camera."
+    },
+    {
+      "code": "FRAME_BLACK",
+      "severity": "error",
+      "step": "inspect",
+      "message": "The frame is black (p99 luma 0).",
+      "cause": "The captured frame has no bright pixels. Typical causes: no light, a light pointing away, a camera looking at nothing, a mount failure, an unlit material on a dark background.",
+      "fix": "Add `lights.directional(...)` or a `looks.preset(...)`, check the camera target, and read the other findings first (RENDERER_MOUNT_FAILED, RUNTIME_DIAGNOSTIC_ERROR).",
+      "evidence": {
+        "p99Luma": 0,
+        "meanLuma": 0,
+        "distinctColors": 1,
+        "texturedBlockFraction": 0
+      }
+    }
+  ],
+  "counts": {
+    "error": 1,
+    "warning": 1,
+    "info": 1
+  },
+  "render": {
+    "driver": "chrome-cdp",
+    "viewport": {
+      "width": 960,
+      "height": 540
+    },
+    "backend": "webgl2",
+    "drawCalls": 2,
+    "degradeCodes": [],
+    "frame": {
+      "width": 960,
+      "height": 540,
+      "meanLuma": 0,
+      "lumaStddev": 0,
+      "p1Luma": 0,
+      "p99Luma": 0,
+      "gain": 8,
+      "distinctColors": 1,
+      "texturedBlockFraction": 0,
+      "drawn": false,
+      "reasons": [
+        "black frame (p99 luma 0)",
+        "flat frame (1 distinct colours)",
+        "no scene texture (0.0% textured blocks)"
+      ],
+      "black": true,
+      "flat": true,
+      "empty": true,
+      "dim": false
+    },
+    "frames": [
+      "black-frame-no-light-frame1.png",
+      "black-frame-no-light-frame2.png"
+    ]
+  }
+}
