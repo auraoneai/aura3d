@@ -22,7 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function withLock(name, fn) {
   const lock = `/tmp/${name}.lock`;
   for (;;) {
-    try { mkdirSync(lock); break; } catch { await sleep(5000); }
+    try { mkdirSync(lock); break; } catch { await sleep(20 + Math.random() * 60); }
   }
   try { return await fn(); } finally { rmSync(lock, { recursive: true, force: true }); }
 }

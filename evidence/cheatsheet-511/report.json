@@ -1,0 +1,200 @@
+{
+  "file": "docs/agents/first-screen.md",
+  "engine": "5.0.2",
+  "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "thresholds": {
+    "minLitFraction": 0.05,
+    "minStdLuma": 3,
+    "minAnimatedDiff": 0.2
+  },
+  "frameGapMs": 3000,
+  "blocks": [
+    {
+      "index": 1,
+      "heading": "Scene skeleton: look, subject, camera, per-frame update",
+      "lines": 9,
+      "render_mode": "animated",
+      "sha256": "0a7acb6cc3562ddf72098b8640bb0f5ae6390f53dcd2de1576a2cf3b7a7e343e",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 18.88,
+        "difference": 5.768
+      }
+    },
+    {
+      "index": 2,
+      "heading": "Lights and environment (hand-built look)",
+      "lines": 11,
+      "render_mode": "static",
+      "sha256": "8c62aed6fd11f665f7769623aeec686a9d2e64fab824936f595f94b4cc94631d",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 71.04,
+        "difference": 0
+      }
+    },
+    {
+      "index": 3,
+      "heading": "Materials: metal, glass, emissive, rough",
+      "lines": 8,
+      "render_mode": "static",
+      "sha256": "36a4c55bdedfe28b98ae0d51a285e81e325f2351702a26ed28266c105e91ebba",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 6.7,
+        "difference": 0
+      }
+    },
+    {
+      "index": 4,
+      "heading": "Instancing: many copies, one draw, updated live",
+      "lines": 15,
+      "render_mode": "animated",
+      "sha256": "9342088e427a667514a57f3e7bed4d916a0d7e214a56a031094dd38420bfb484",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 49.34,
+        "difference": 3.733
+      }
+    },
+    {
+      "index": 5,
+      "heading": "Custom shader: your own time uniform",
+      "lines": 17,
+      "render_mode": "animated",
+      "sha256": "49639f3778ddeecf541503fa0254295d9ba89f0471f26c24d62a0fd252227791",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 68.65,
+        "difference": 16.182
+      }
+    },
+    {
+      "index": 6,
+      "heading": "Procedural geometry: revolve a profile",
+      "lines": 14,
+      "render_mode": "static",
+      "sha256": "edd909db0d985fb8faa43ab0770afb999cbb6c327937e4b45b0b445989927ca4",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 31.37,
+        "difference": 0
+      }
+    },
+    {
+      "index": 7,
+      "heading": "Rigged model: clips and crossfade",
+      "lines": 13,
+      "render_mode": "asset:animated",
+      "sha256": "0a0ac3211415a67cba8c71010bbc5df636b81c346cb502fe91e6c31a6b649f3e",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 13.14,
+        "difference": 0.32
+      }
+    },
+    {
+      "index": 8,
+      "heading": "Game loop and input: fixed step, actions",
+      "lines": 15,
+      "render_mode": "animated",
+      "sha256": "48c52d8c8e5a4f6b52aa51a5498866627dcebf92e650becc6b9a02477bcef87c",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 64.69,
+        "difference": 0.721
+      }
+    },
+    {
+      "index": 9,
+      "heading": "Physics: bound bodies stepped in onFrame",
+      "lines": 12,
+      "render_mode": "animated",
+      "sha256": "e112c21be5cd89dabae294a540781eff5dacd3d5b20e11f23b120f159a10504c",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 35.97,
+        "difference": 1.279
+      }
+    },
+    {
+      "index": 10,
+      "heading": "Particles: built-in sprites, no art needed",
+      "lines": 7,
+      "render_mode": "animated",
+      "sha256": "a183864bfd7394b5a54f498edcf86cde02c27a5d6df73e932121cdbd6e1dd125",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 25.76,
+        "difference": 4.733
+      }
+    },
+    {
+      "index": 11,
+      "heading": "Sky, sun and a water plane",
+      "lines": 16,
+      "render_mode": "animated",
+      "sha256": "6809b277d1e2336a1ceda7ab09176f99d87b424185dd65722ba77495f2e12a19",
+      "typecheck": {
+        "pass": true
+      },
+      "render": {
+        "pass": true,
+        "failures": [],
+        "litFraction": 1,
+        "stdLuma": 85.25,
+        "difference": 3.533
+      }
+    }
+  ]
+}
