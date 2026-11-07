@@ -2,7 +2,7 @@
 // scene must come back as the very same snapshot object.
 import { describe, expect, it } from "vitest";
 import { camera, effects, environments, group, lights, looks, material, primitives, scene } from "../../../packages/engine/src/agent-api/index.js";
-import { coldStartLookEnabled, withColdStartLook } from "../../../packages/engine/src/agent-api/looks/coldStartLook.js";
+import { coldStartLookApplies, coldStartLookEnabled, withColdStartLook } from "../../../packages/engine/src/agent-api/looks/coldStartLook.js";
 
 const cube = () => primitives.box({ name: "cube", material: material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 }) });
 const names = (s: ReturnType<typeof withColdStartLook>): string[] => {
@@ -66,5 +66,26 @@ describe("withColdStartLook", () => {
     } finally {
       delete process.env.A3D_COLD_START_LOOK;
     }
+  });
+});
+
+describe("coldStartLookApplies (path gating)", () => {
+  const holder = globalThis as { WebGL2RenderingContext?: unknown };
+  const prior = holder.WebGL2RenderingContext;
+  it("is off without a WebGL2 context class, and for webgpu/auto, deferred, worker and residency apps", () => {
+    try {
+      holder.WebGL2RenderingContext = undefined;
+      expect(coldStartLookApplies({})).toBe(false);
+      holder.WebGL2RenderingContext = class {};
+      expect(coldStartLookApplies({})).toBe(true);
+      expect(coldStartLookApplies({ renderer: { backend: "webgl2" } })).toBe(true);
+      expect(coldStartLookApplies({ renderer: { backend: "webgpu" } })).toBe(false);
+      expect(coldStartLookApplies({ renderer: { backend: "auto" } })).toBe(false);
+      expect(coldStartLookApplies({ renderer: { drawingPath: { mode: "deferred" } } })).toBe(false);
+      expect(coldStartLookApplies({ renderer: { qualityProfile: "experimental-webgpu" } })).toBe(false);
+      expect(coldStartLookApplies({ renderer: { textureResidency: { budgetBytes: 1 } } })).toBe(false);
+      expect(coldStartLookApplies({ worker: { createWorker: () => ({}) } })).toBe(false);
+      expect(coldStartLookApplies({ frameMode: "async" })).toBe(false);
+    } finally { holder.WebGL2RenderingContext = prior; }
   });
 });

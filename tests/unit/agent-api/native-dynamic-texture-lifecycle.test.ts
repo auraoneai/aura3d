@@ -1,5 +1,3 @@
-// These tests count device/texture/fetch calls for the scene they author; the 5.1 cold-start default look (studio IBL fetch) is off here.
-process.env.A3D_COLD_START_LOOK = "0";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createAuraApp, defineAuraAssets, distanceLod, group, material, primitives, scene, texture

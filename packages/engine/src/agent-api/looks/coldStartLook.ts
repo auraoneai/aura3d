@@ -20,6 +20,33 @@ export function coldStartLookEnabled(): boolean {
   return true;
 }
 
+/**
+ * The default only applies to plain WebGL2 forward apps: the hero stage needs fog, a shadowed key and sampled studio IBL, which
+ * the WebGPU, deferred/meshlet/visibility, worker and texture-residency paths do not all render. Any app that selects one of
+ * those paths (or tunes the renderer in a way that implies a specific path) is left untouched.
+ */
+export function coldStartLookApplies(options: { readonly worker?: unknown; readonly frameMode?: unknown; readonly renderer?: unknown }): boolean {
+  if (!coldStartLookEnabled()) return false;
+  // Real browsers only: node, jsdom-less unit tests and benchmark harnesses that inject a renderer have no WebGL2 context class.
+  if (typeof (globalThis as { WebGL2RenderingContext?: unknown }).WebGL2RenderingContext === "undefined") return false;
+  if (options.worker !== undefined || options.frameMode === "async") return false;
+  if (options.renderer === undefined) return true;
+  const r = options.renderer as {
+    readonly backend?: unknown;
+    readonly qualityProfile?: unknown;
+    readonly drawingPath?: unknown;
+    readonly textureResidency?: unknown;
+    readonly mode?: unknown;
+    readonly fallback?: unknown;
+    readonly requiredFeatures?: readonly unknown[];
+  };
+  if (r.backend !== undefined && r.backend !== "webgl2") return false;
+  if (r.qualityProfile === "experimental-webgpu") return false;
+  if (r.drawingPath !== undefined || r.textureResidency !== undefined) return false;
+  if (r.mode === "safe-basic" || r.fallback !== undefined || (r.requiredFeatures?.length ?? 0) > 0) return false;
+  return true;
+}
+
 interface Extent {
   min: [number, number, number];
   max: [number, number, number];
