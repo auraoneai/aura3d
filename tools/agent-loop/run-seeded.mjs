@@ -29,7 +29,7 @@ for (const scene of manifest.scenes) {
   if (only && !only.includes(scene.id)) continue;
   const reportPath = join(outDir, `${scene.id}.json`);
   const cli = ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "packages/aura3d-cli/src/cli.ts", "verify", join(seededDir, scene.id), "--out", reportPath, "--json",
-    ...(skip.length ? ["--skip", skip.join(",")] : []), ...(lock ? ["--browser-lock", lock] : [])];
+    ...(skip.length ? ["--skip", skip.join(",")] : []), ...(noBrowser ? [] : ["--frames-dir", join(outDir, "frames")]), ...(lock ? ["--browser-lock", lock] : [])];
   const run = spawnSync("pnpm", cli, { cwd: repoRoot, encoding: "utf8", maxBuffer: 1 << 26 });
   let report;
   try { report = JSON.parse(readFileSync(reportPath, "utf8")); } catch { report = null; }

@@ -3,7 +3,7 @@
 // a severity, a location (file:line for source findings), a plain-English cause and a fix hint from the explainer table in codes.ts.
 // The browser is a pluggable driver (default: local Chrome over CDP, see cdp.ts); nothing here imports Playwright or the engine.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 import type { Server } from "node:http";
@@ -59,6 +59,8 @@ export interface VerifyReport {
     readonly frame?: FrameAnalysis;
     readonly motion?: MotionAnalysis;
     readonly degradeCodes: readonly string[];
+    /** File names of saved frames (relative to --frames-dir), when requested. */
+    readonly frames?: readonly string[];
   };
 }
 
@@ -79,6 +81,8 @@ export interface VerifyOptions {
   readonly motionGapMs?: number;
   readonly timeoutMs?: number;
   readonly readyTimeoutMs?: number;
+  /** Save the two captured frames as `<project>-frame1.png` / `-frame2.png` in this directory (paths are recorded in `render.frames`). */
+  readonly framesDir?: string;
   /** Directory used as a mutex (mkdir) around the browser steps only, so several verify runs share one GPU/browser without holding it during builds. */
   readonly browserLock?: string;
   /** Test seam: skip real tsc and build processes. */
@@ -273,6 +277,12 @@ export async function runVerify(options: VerifyOptions): Promise<VerifyReport> {
 
       let frame: FrameAnalysis | undefined;
       let motion: MotionAnalysis | undefined;
+      let savedFrames: string[] | undefined;
+      if (options.framesDir) {
+        mkdirSync(resolve(options.framesDir), { recursive: true });
+        savedFrames = capture.frames.map((png, index) => `${basename(projectDir)}-frame${index + 1}.png`);
+        capture.frames.forEach((png, index) => writeFileSync(join(resolve(options.framesDir!), savedFrames![index]!), png));
+      }
       try {
         const first = decodePng(capture.frames[0]!);
         frame = analyzeFrame(first);
@@ -288,7 +298,7 @@ export async function runVerify(options: VerifyOptions): Promise<VerifyReport> {
       } catch (error) {
         findings.push(makeFinding("VERIFY_STEP_CRASHED", `frame analysis: ${String((error as Error).message ?? error)}`));
       }
-      if (render) render = { ...render, ...(frame ? { frame } : {}), ...(motion ? { motion } : {}) };
+      if (render) render = { ...render, ...(frame ? { frame } : {}), ...(motion ? { motion } : {}), ...(savedFrames ? { frames: savedFrames } : {}) };
       return frame ? (frame.drawn ? "frame drawn" : frame.reasons.join("; ")) : "no frame";
     });
   } finally {

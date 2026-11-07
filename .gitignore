@@ -531,3 +531,4 @@ evidence/look-reference-frames/
 !/fixtures/environment-corpus/hdri/
 !/fixtures/environment-corpus/hdri/*.hdr
 tests/fixtures/agent-loop-seeded/_work-*/
+tests/fixtures/agent-loop-seeded/_staged-*/

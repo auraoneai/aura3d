@@ -6,7 +6,7 @@ import { VERIFY_STEP_ORDER, runVerify, type VerifyReport, type VerifyStep } from
 import type { VerifyBrowserDriver } from "./cdp.js";
 
 export const VERIFY_USAGE =
-  "aura3d verify [projectDir] [--json] [--out report.json] [--skip typecheck,build,...] [--only a,b] [--route /path] [--dist dist] [--chrome <path>] [--software-gl] [--browser-lock <dir>] [--width N --height N --settle-ms N --motion-gap-ms N --timeout-ms N --ready-timeout-ms N]\n" +
+  "aura3d verify [projectDir] [--json] [--out report.json] [--skip typecheck,build,...] [--only a,b] [--route /path] [--dist dist] [--chrome <path>] [--software-gl] [--browser-lock <dir>] [--frames-dir <dir>] [--width N --height N --settle-ms N --motion-gap-ms N --timeout-ms N --ready-timeout-ms N]\n" +
   "aura3d verify --explain <CODE>      explain one finding code (cause and fix)\n" +
   "aura3d verify --list-codes          print the whole code table as JSON";
 
@@ -53,7 +53,7 @@ export async function verifyCommand(argv: readonly string[], io: { readonly cwd:
     const only = stepList(valueOf(argv, "--only"));
     skip = only.length ? VERIFY_STEP_ORDER.filter((s) => !only.includes(s)) : stepList(valueOf(argv, "--skip"));
   } catch (error) { io.stderr(String((error as Error).message)); return 2; }
-  const valueFlags = new Set(["--out", "--skip", "--only", "--route", "--dist", "--chrome", "--browser-lock", "--width", "--height", "--settle-ms", "--motion-gap-ms", "--timeout-ms", "--ready-timeout-ms"]);
+  const valueFlags = new Set(["--out", "--skip", "--only", "--route", "--dist", "--chrome", "--browser-lock", "--frames-dir", "--width", "--height", "--settle-ms", "--motion-gap-ms", "--timeout-ms", "--ready-timeout-ms"]);
   const positional = argv.find((arg, i) => !arg.startsWith("--") && !valueFlags.has(argv[i - 1] ?? ""));
   let report: VerifyReport;
   try {
@@ -63,6 +63,7 @@ export async function verifyCommand(argv: readonly string[], io: { readonly cwd:
       ...(valueOf(argv, "--dist") ? { distDir: valueOf(argv, "--dist")! } : {}),
       ...(valueOf(argv, "--route") ? { route: valueOf(argv, "--route")! } : {}),
       ...(valueOf(argv, "--chrome") ? { chromePath: valueOf(argv, "--chrome")! } : {}),
+      ...(valueOf(argv, "--frames-dir") ? { framesDir: resolve(io.cwd, valueOf(argv, "--frames-dir")!) } : {}),
       ...(valueOf(argv, "--browser-lock") ? { browserLock: valueOf(argv, "--browser-lock")! } : {}),
       ...(argv.includes("--software-gl") ? { softwareGl: true } : {}),
       ...(numberOf(argv, "--width") !== undefined ? { width: numberOf(argv, "--width")! } : {}),
