@@ -1,0 +1,57 @@
+{
+ "early": {
+  "analysis": {
+   "width": 960,
+   "height": 540,
+   "meanLuma": 157.65,
+   "lumaStddev": 31.56,
+   "p1Luma": 15,
+   "p99Luma": 175,
+   "gain": 1,
+   "distinctColors": 143,
+   "texturedBlockFraction": 0.1298,
+   "drawn": true,
+   "reasons": []
+  },
+  "errorEvents": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "late": {
+  "analysis": {
+   "width": 960,
+   "height": 540,
+   "meanLuma": 157.41,
+   "lumaStddev": 31.82,
+   "p1Luma": 15,
+   "p99Luma": 175,
+   "gain": 1,
+   "distinctColors": 197,
+   "texturedBlockFraction": 0.1374,
+   "drawn": true,
+   "reasons": []
+  },
+  "errorEvents": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "steps140": {
+  "analysis": {
+   "width": 960,
+   "height": 540,
+   "meanLuma": 157.61,
+   "lumaStddev": 31.65,
+   "p1Luma": 15,
+   "p99Luma": 175,
+   "gain": 1,
+   "distinctColors": 165,
+   "texturedBlockFraction": 0.1354,
+   "drawn": true,
+   "reasons": []
+  },
+  "errorEvents": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "meanAbsDiff_first_vs_second": 1.272147633744856
+}

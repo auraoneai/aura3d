@@ -351,7 +351,7 @@ void interactions.orbit({ target: "crate" });
 
 ## `physics`
 
-Rapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use.
+Rapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use. Needs `npm install @dimforge/rapier3d-compat@0.20.0` (optional peer): without it you get the typed `PHYSICS_BACKEND_MISSING` error (`error.code`, `error.installCommand`) in `diagnostics().errors`, on the canvas, from `app.physics`, from `preloadPhysics()`, and from `aura3d doctor`. Working example: recipe 16 (`recipes-src/physics-basics`).
 
 ```ts
 void physics.box;

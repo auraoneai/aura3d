@@ -6,6 +6,10 @@ import type { LegacyPhysicsWorldAccess, PhysicsWorldConstructor, PhysicsWorldPro
 
 export type { LegacyPhysicsWorldAccess, PhysicsWorldAccess, PhysicsWorldConstructor, PhysicsWorldProvider } from "./PhysicsWorldAccess.js";
 
+import { isPhysicsBackendMissing, physicsBackendMissingError } from "./backendMissing.js";
+
+export { isPhysicsBackendMissing } from "./backendMissing.js";
+
 export type PhysicsWorldModule = Pick<typeof import("@aura3d/physics/world"), "PhysicsWorld" | "ensurePhysics">;
 export type PhysicsWorldLoader = () => Promise<PhysicsWorldModule>;
 
@@ -37,6 +41,7 @@ export function createPhysicsWorldProvider(
       if (ready) return Promise.resolve();
       if (pending) return pending;
       lastFailure = undefined;
+      let backendAbsent = false;
 
       // Start the loader on a microtask so `pending` is visible even if an
       // injected loader calls preload reentrantly before returning.
@@ -47,6 +52,7 @@ export function createPhysicsWorldProvider(
         const constructor = module.PhysicsWorld;
         requireConstructor(constructor, "The physics world module's PhysicsWorld");
         const backend = await module.ensurePhysics();
+        if (backend == null) backendAbsent = true;
         if (backend == null) throw new Error("The optional @dimforge/rapier3d-compat backend is unavailable.");
         if (typeof backend !== "object" && typeof backend !== "function") throw new TypeError("The initialized physics backend is not a module.");
         if (typeof backend.init !== "function") throw new TypeError("The initialized Rapier backend has no init function.");
@@ -55,7 +61,10 @@ export function createPhysicsWorldProvider(
         // allocate a native world merely to check preload readiness.
         ready = constructor;
       }).catch((cause: unknown) => {
-        const failure = new Error("Could not preload physics. Check the optional Rapier backend before trying again.", { cause });
+        const missing = backendAbsent || isPhysicsBackendMissing(cause);
+        const failure = missing
+          ? physicsBackendMissingError(cause)
+          : new Error("Could not preload physics. Check the optional Rapier backend before trying again.", { cause });
         lastFailure = failure;
         throw failure;
       });
@@ -74,6 +83,7 @@ export function createPhysicsWorldProvider(
       const message = pending
         ? "Physics is still loading. Await preloadPhysics() before constructing a physics world."
         : "Physics is not preloaded. Await preloadPhysics() before constructing a physics world.";
+      if (lastFailure && isPhysicsBackendMissing(lastFailure)) throw lastFailure;
       throw lastFailure ? new Error(message, { cause: lastFailure }) : new Error(message);
     }
   };

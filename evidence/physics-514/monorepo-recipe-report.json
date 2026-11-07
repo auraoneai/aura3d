@@ -1,0 +1,35 @@
+{
+ "early": {
+  "analysis": {
+   "width": 960,
+   "height": 540,
+   "meanLuma": 157.61,
+   "lumaStddev": 31.49,
+   "p1Luma": 15,
+   "p99Luma": 175,
+   "gain": 1,
+   "distinctColors": 158,
+   "texturedBlockFraction": 0.1318,
+   "drawn": true,
+   "reasons": []
+  },
+  "errorEvents": []
+ },
+ "late": {
+  "analysis": {
+   "width": 960,
+   "height": 540,
+   "meanLuma": 157.42,
+   "lumaStddev": 31.81,
+   "p1Luma": 15,
+   "p99Luma": 175,
+   "gain": 1,
+   "distinctColors": 198,
+   "texturedBlockFraction": 0.1374,
+   "drawn": true,
+   "reasons": []
+  },
+  "errorEvents": []
+ },
+ "meanAbsDiff_first_vs_second": 1.3481976594650207
+}

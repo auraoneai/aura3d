@@ -1,0 +1,10 @@
+{
+ "noPhysicsApp_jsBytes": {
+  "5.0.2_npm_rapier_absent": 6611031,
+  "branch_tarball_rapier_absent": 6548779,
+  "branch_tarball_rapier_installed": 9402388
+ },
+ "rapierChunk_kB": 2853.74,
+ "rapierChunk_gzip_kB": 1094.44,
+ "note": "Installing rapier adds an eagerly loaded chunk (top-level await in the world module) to every app importing the root, even without physics; hence rapier stays an optional peer."
+}

@@ -1,4 +1,5 @@
 import { closeSync, copyFileSync, existsSync, fstatSync, linkSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, realpathSync, renameSync, rmSync, rmdirSync, statSync, writeFileSync, type Stats } from "node:fs";
+import { physicsBackendFailures } from "./physics-backend-check.js";
 import { readSkinAllowlist, skinReleaseFailures } from "./skin/command.js";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -1560,6 +1561,7 @@ export function doctor(options: { readonly projectDir?: string } = {}): AssetVal
   const packagePath = resolve(options.projectDir ?? process.cwd(), "package.json");
   const failures = [...validation.failures];
   if (!existsSync(packagePath)) failures.push("Missing package.json.");
+  else failures.push(...physicsBackendFailures(options.projectDir ?? process.cwd()));
   return {
     ...validation,
     ok: failures.length === 0,

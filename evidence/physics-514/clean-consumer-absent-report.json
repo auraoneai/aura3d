@@ -1,0 +1,29 @@
+{
+ "absent": {
+  "analysis": {
+   "width": 960,
+   "height": 540,
+   "meanLuma": 64.31,
+   "lumaStddev": 48.41,
+   "p1Luma": 50,
+   "p99Luma": 255,
+   "gain": 1,
+   "distinctColors": 22,
+   "texturedBlockFraction": 0.4995,
+   "drawn": true,
+   "reasons": []
+  },
+  "errorEvents": [
+   "PhysicsBackendMissingError: PHYSICS_BACKEND_MISSING: Aura3D physics needs the Rapier backend @dimforge/rapier3d-compat, which is not installed. Install it with: npm install @dimforge/rapier3d-compat@0.20.0 (pnpm add @dimforge/rapier3d-compat@0.20.0, yarn add @dimforge/rapier3d-compat@0.20.0). Scaffolds from create-aura3d with physics already declare it.",
+   "PhysicsBackendMissingError: PHYSICS_BACKEND_MISSING: Aura3D physics needs the Rapier backend @dimforge/rapier3d-compat, which is not installed. Install it with: npm install @dimforge/rapier3d-compat@0.20.0 (pnpm add @dimforge/rapier3d-compat@0.20.0, yarn add @dimforge/rapier3d-compat@0.20.0). Scaffolds from create-aura3d with physics already declare it.",
+   {
+    "sequence": 3,
+    "step_index": 1,
+    "kind": "page-error",
+    "message": "PHYSICS_BACKEND_MISSING: Aura3D physics needs the Rapier backend @dimforge/rapier3d-compat, which is not installed. Install it with: npm install @dimforge/rapier3d-compat@0.20.0 (pnpm add @dimforge/rapier3d-compat@0.20.0, yarn add @dimforge/rapier3d-compat@0.20.0). Scaffolds from create-aura3d with physics already declare it.",
+    "stack": "PhysicsBackendMissingError: PHYSICS_BACKEND_MISSING: Aura3D physics needs the Rapier backend @dimforge/rapier3d-compat, which is not installed. Install it with: npm install @dimforge/rapier3d-compat@0.20.0 (pnpm add @dimforge/rapier3d-compat@0.20.0, yarn add @dimforge/rapier3d-compat@0.20.0). Scaffolds from create-aura3d with physics already declare it.\n    at be (http://127.0.0.1:57806/assets/world-gYVIWC3V.js:1:18222)\n    at ke (http://127.0.0.1:57806/assets/world-gYVIWC3V.js:1:45434)\n    at new qe (http://127.0.0.1:57806/assets/world-gYVIWC3V.js:1:52144)\n    at A (http://127.0.0.1:57806/assets/index-BMBIqHse.js:3006:51771)\n    at Tt (http://127.0.0.1:57806/assets/index-BMBIqHse.js:3006:68162)\n    at get physics (http://127.0.0.1:57806/assets/index-BMBIqHse.js:3006:78572)\n    at http://127.0.0.1:57806/assets/index-BMBIqHse.js:3006:89437"
+   },
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ }
+}

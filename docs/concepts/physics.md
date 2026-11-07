@@ -15,6 +15,25 @@ let you declare a body and watch it fall; there was no handle to push it, no col
 and no query. Declaring a simulation you cannot interact with is not a physics API, and it is why
 the library had four hardcoded genre kits and no path to a fifth.
 
+## Install the Rapier backend
+
+Physics runs on `@dimforge/rapier3d-compat`, an optional peer of `@aura3d/engine`: apps that never call physics must not fetch its
+WASM chunk (about 1.1 MB gzip), so it is not installed with the engine. Install it once in any project that calls `.physics({...})`,
+`app.physics`, `preloadPhysics()` or `new PhysicsWorld()`:
+
+```bash
+npm install @dimforge/rapier3d-compat@0.20.0
+```
+
+If it is missing, the failure is typed and immediate rather than an anonymous string:
+
+- `error.code === "PHYSICS_BACKEND_MISSING"` and `error.installCommand` holds the command above (thrown by `app.physics`,
+  `new PhysicsWorld()`, `createRapierPhysics()`; `preloadPhysics()` rejects with it).
+- `createAuraApp` keeps the app alive: `app.diagnostics().errors` contains the message, the canvas shows the error overlay, and the console logs it. Declared bodies stay unsimulated.
+- `aura3d doctor` fails a project whose `src/` uses physics while the backend cannot be resolved, and prints the same command.
+
+A complete example is recipe 16 in `docs/agents/recipes.md` (`docs/agents/recipes-src/physics-basics`).
+
 ## Push a crate
 
 Every snippet below uses `@aura3d/engine` only.
