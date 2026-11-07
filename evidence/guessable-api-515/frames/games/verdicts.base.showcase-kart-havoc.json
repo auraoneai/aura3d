@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-kart-havoc",
+  "tag": "base",
+  "url": "http://127.0.0.1:8516/apps/showcase-kart-havoc/index.html?start=1",
+  "readyDetected": false,
+  "title": "Kart Havoc — Desert Canyon Item Racing",
+  "href": "http://127.0.0.1:8516/apps/showcase-kart-havoc/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 3.34,
+  "sd": 12.85,
+  "colours": 167,
+  "bodyText": "Kart Havoc\nCanyon GP\npos\n4th/4\nlap\n1/3\ngates\n0/6\nspeed\n0 km/h\nItem slot\nEmpty — "
+ }
+]

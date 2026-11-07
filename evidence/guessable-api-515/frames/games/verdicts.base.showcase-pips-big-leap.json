@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-pips-big-leap",
+  "tag": "base",
+  "url": "http://127.0.0.1:8516/apps/showcase-pips-big-leap/index.html?start=1",
+  "readyDetected": true,
+  "title": "PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase",
+  "href": "http://127.0.0.1:8516/apps/showcase-pips-big-leap/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 10.95,
+  "sd": 41.24,
+  "colours": 264,
+  "bodyText": "Quick Play\nJump Academy\nVale Atlas\nPlayer Studio\nTime Trial\nForest\nWharf\nClouds\n"
+ }
+]

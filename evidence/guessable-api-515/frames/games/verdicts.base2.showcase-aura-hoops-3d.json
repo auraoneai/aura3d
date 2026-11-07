@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-aura-hoops-3d",
+  "tag": "base2",
+  "url": "http://127.0.0.1:8516/apps/showcase-aura-hoops-3d/index.html?start=1",
+  "readyDetected": true,
+  "title": "Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase",
+  "href": "http://127.0.0.1:8516/apps/showcase-aura-hoops-3d/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 7.97,
+  "sd": 19.91,
+  "colours": 320,
+  "bodyText": "MODE\nQUICK PLAY\nDUNK LAB\nAUTO\nMODES & TOUR\nSOUND: ON\nCOURT\nRUCKER\nVENICE\nATHENS\n"
+ }
+]

@@ -1,0 +1,47 @@
+[
+ {
+  "name": "forest",
+  "tag": "canonical",
+  "url": "http://127.0.0.1:8527/evidence/guessable-api-515/proof/forest/",
+  "readyDetected": true,
+  "diag": "{\"backend\":\"webgl2\",\"errors\":[],\"drawCalls\":5,\"warnings\":[\"Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.\"]}",
+  "title": "E3-06 alias proof",
+  "href": "http://127.0.0.1:8527/evidence/guessable-api-515/proof/forest/",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 160.82,
+  "sd": 62.69,
+  "colours": 281,
+  "bodyText": ""
+ },
+ {
+  "name": "arm",
+  "tag": "canonical",
+  "url": "http://127.0.0.1:8527/evidence/guessable-api-515/proof/arm/",
+  "readyDetected": true,
+  "diag": "{\"backend\":\"webgl2\",\"errors\":[],\"drawCalls\":5,\"warnings\":[\"Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.\"]}",
+  "title": "E3-06 alias proof",
+  "href": "http://127.0.0.1:8527/evidence/guessable-api-515/proof/arm/",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 77.83,
+  "sd": 66.01,
+  "colours": 122,
+  "bodyText": ""
+ },
+ {
+  "name": "glass-hall",
+  "tag": "canonical",
+  "url": "http://127.0.0.1:8527/evidence/guessable-api-515/proof/glass-hall/",
+  "readyDetected": true,
+  "diag": "{\"backend\":\"webgl2\",\"errors\":[],\"drawCalls\":7,\"warnings\":[\"Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.\"]}",
+  "title": "E3-06 alias proof",
+  "href": "http://127.0.0.1:8527/evidence/guessable-api-515/proof/glass-hall/",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 96.38,
+  "sd": 83,
+  "colours": 360,
+  "bodyText": ""
+ }
+]

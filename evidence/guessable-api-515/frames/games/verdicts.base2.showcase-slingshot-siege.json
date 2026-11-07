@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-slingshot-siege",
+  "tag": "base2",
+  "url": "http://127.0.0.1:8516/apps/showcase-slingshot-siege/index.html?start=1",
+  "readyDetected": true,
+  "title": "Aura3D - Slingshot Siege",
+  "href": "http://127.0.0.1:8516/apps/showcase-slingshot-siege/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 86.3,
+  "sd": 54.11,
+  "colours": 1791,
+  "bodyText": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n S"
+ }
+]

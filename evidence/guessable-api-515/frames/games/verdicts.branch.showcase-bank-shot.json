@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-bank-shot",
+  "tag": "branch",
+  "url": "http://127.0.0.1:8527/apps/showcase-bank-shot/index.html?start=1",
+  "readyDetected": true,
+  "title": "Aura3D - Bank Shot",
+  "href": "http://127.0.0.1:8527/apps/showcase-bank-shot/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 47.81,
+  "sd": 46.59,
+  "colours": 3492,
+  "bodyText": "OPEN TABLE - AIM WITH A/D, HOLD SPACE TO CHARGE\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nAr"
+ }
+]

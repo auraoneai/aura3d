@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-aura-links-3d",
+  "tag": "branch",
+  "url": "http://127.0.0.1:8527/apps/showcase-aura-links-3d/index.html?start=1",
+  "readyDetected": false,
+  "title": "Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase",
+  "href": "http://127.0.0.1:8527/apps/showcase-aura-links-3d/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 4.7,
+  "sd": 19.08,
+  "colours": 220,
+  "bodyText": "MODE\nQUICK PLAY\nRANGE LAB\nMODES & TOUR\nCOURSE\nST AURORAS\nMAPLE\nCINDER\nCLOUD\nNEON"
+ }
+]
