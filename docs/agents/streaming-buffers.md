@@ -63,11 +63,23 @@ Errors are coded: `POINT_STREAM_CAPACITY_EXCEEDED`, `POINT_STREAM_RANGE`, `POINT
 
 ## Point size and dpr (P-05)
 
-Default (attenuated) points use `size * 0.5 * deviceHeight / viewDepth`, which already carries dpr through the device-pixel height; fixed-size points multiply by dpr in the node handler. The register's "1/dpr" suspicion was checked on a real GPU at dpr 1 and 2; see the result in `evidence/buffers-515/README.md`. Hardware clamps still apply (`ALIASED_POINT_SIZE_RANGE`; the default shader caps at 256 px and attenuated points at 12% of the render-target height).
+Default (attenuated) points use `size * 0.5 * deviceHeight / viewDepth`, which already carries dpr through the device-pixel height; fixed-size points multiply by dpr in the node handler. The register's "1/dpr" suspicion (P-05) was checked on a real GPU (Apple M4 Max, ANGLE/Metal, WebGL2) with the same 640x360 CSS canvas at dpr 1 and dpr 2: the lit footprint in CSS pixels at dpr 2 relative to dpr 1 was 0.885 (default attenuated points), 0.955 (fixed size) and 0.955 (`points.stream`), where a 1/dpr defect would give 0.25. So the suspected defect is not present on WebGL2 and no shader or handler change was made; the residual 5-12% is small-point rasterization at the lit-pixel threshold. Probe, frames and numbers: `evidence/buffers-515/dpr/` (`tools/dpr-probe.mjs`). WebGPU was not probed. Hardware clamps still apply (`ALIASED_POINT_SIZE_RANGE`; the default shader caps at 256 px and attenuated points at 12% of the render-target height).
 
 ## Measuring it
 
 `tools/spatial-bench` (merged from `lane/510-e6-baseline`) has `-typed` variants of every points config (`pts-<n>-<hz>hz-<fps>fps-typed`, `ctl-static-pts-<n>-typed`, `mixed-...-typed`), Aura3D only. Numbers and the comparison with the baseline are in `tools/spatial-bench/results/2026-11-06-515/REPORT.md`; do not quote them without the labels in `claims-and-boundaries.md`.
+
+### Measured on one machine, 20 Hz stream at a 60 fps target (medians of 3 runs)
+
+Apple M4 Max, Chrome 156 headless, ANGLE/Metal WebGL2, 1280x720 at DPR 1, shared with other agent lanes. Baseline = `results/2026-11-06` (legacy `geometry.dynamic` + `updateAttribute`, and three.js r185 with a direct array write); typed = `results/2026-11-06-515`. The typed run happened under a higher machine load (median 1-minute load 21-51 at run start versus 9-15 for the baseline), so its numbers are if anything pessimistic.
+
+| points | Aura3D legacy frame p50 / cpu per frame / tick | three.js frame p50 / cpu / tick | Aura3D typed frame p50 / cpu / tick | typed upload per rendered frame |
+|---|---|---|---|---|
+| 100K | 83.3 ms / 85.6 ms / 25.5 ms | 16.7 ms / 0.1 ms / 0.1 ms | 16.7 ms / 2.1 ms / 0.8 ms | 535 KB (three.js 534 KB) |
+| 250K | 233.3 ms / 231.2 ms / 70.5 ms | 16.7 ms / 0.1 ms / 0.1 ms | 16.7 ms / 3.3 ms / 2.6 ms | 1.34 MB (three.js 1.34 MB) |
+| 1M | 616.6 ms / 607.9 ms / 185.8 ms | 16.7 ms / 0.4 ms / 0.4 ms | 16.7 ms / 5.7 ms / 10.1 ms | 5.34 MB (three.js 5.33 MB) |
+
+Read as: the typed path removes the CPU cost that made the legacy path miss every frame, and uploads the same bytes as three.js (one dirty range per tick). It is not equal to three.js CPU time (per-tick strided copy and heap are higher), and the JS heap of the typed 1M run is 148 MB versus 80 MB for three.js (CPU mirror plus the benchmark's own sensor ring). The mixed scene (250K points + 1K instances + 20K trail segments + 50 labels) improved from 200 ms to 16.7 ms p50 but kept a 33.3 ms p95 (18.5 ms mean CPU); the remaining cost there is the line-trail and label paths, which this change does not touch. Static `points()` mount for 1M points: 843 ms legacy to 153 ms typed; the 1.4-2.0 ms of per-frame CPU for a static cloud is the frame loop (U-03), unchanged. Full tables: `tools/spatial-bench/results/2026-11-06-515/REPORT.md` and `COMPARISON.md`. These are measurements on one machine, not a performance claim.
 
 ## Tests
 

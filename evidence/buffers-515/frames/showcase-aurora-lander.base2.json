@@ -1,0 +1,24 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-aurora-lander/",
+ "title": "Aura3D - Aurora Lander",
+ "canvases": [
+  [
+   1028,
+   720
+  ]
+ ],
+ "mean": 38.88850074489485,
+ "sd": 33.478769909771025,
+ "centerMean": 59.32030740288061,
+ "centerSd": 43.89881588601212,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-aurora-lander",
+ "label": "base2",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "warning: [aura3d] camera spec 'smoothing' is deprecated under A3D_QR_CAMERA; it maps to a half-life of 0.000s (use rig halflife options on app.camera rigs instead).",
+  "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-61:sdf-text:custom\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster."
+ ],
+ "real": true
+}

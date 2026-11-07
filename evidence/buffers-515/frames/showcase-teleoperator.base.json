@@ -1,0 +1,22 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-teleoperator/",
+ "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ],
+  [
+   168,
+   168
+  ]
+ ],
+ "mean": 8.77308934981979,
+ "sd": 29.169570840744804,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-teleoperator",
+ "label": "base",
+ "frames": 240,
+ "hz": 60,
+ "real": true
+}

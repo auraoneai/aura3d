@@ -40,3 +40,7 @@ Display target: 60 FPS renders every rAF, 30 FPS renders every second rAF (the d
 ## Limits
 
 Not type-checked by the repo tsconfig (vite/esbuild only). Single machine, shared with other agent lanes (load average recorded per run). WebGL2 only. No GC pause data. Numbers say nothing about other hardware, and no comparison claim may be published from `REPORT.md` without the labels in `docs/agents/claims-and-boundaries.md`.
+
+## Typed-path variants (lane 515)
+
+Configs ending in `-typed` (`pts-<n>-<hz>hz-<fps>fps-typed`, `ctl-static-pts-<n>-typed`, `mixed-<hz>hz-<fps>fps-typed`) are Aura3D-only and use the typed mutable-buffer path (`points.stream` + `handle.write` with packed u8 colors; typed static `points()`), see `docs/agents/streaming-buffers.md`. Run them with `node run.mjs --reps 3 --viewers aura --only typed --out results/<dir>`, aggregate with `node report.mjs results/<dir>`, and compare with a baseline directory using `node compare.mjs results/2026-11-06 results/<dir> > results/<dir>/COMPARISON.md`.

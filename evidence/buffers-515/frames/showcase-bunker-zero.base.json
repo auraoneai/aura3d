@@ -1,0 +1,22 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-bunker-zero/",
+ "title": "Bunker Zero — Retro Corridor FPS on Aura3D",
+ "canvases": [
+  [
+   1280,
+   720
+  ],
+  [
+   0,
+   0
+  ]
+ ],
+ "mean": 12.131458868604534,
+ "sd": 15.52093518969394,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-bunker-zero",
+ "label": "base",
+ "frames": 240,
+ "hz": 60,
+ "real": true
+}

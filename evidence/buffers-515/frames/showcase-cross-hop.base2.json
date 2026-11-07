@@ -1,0 +1,24 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-cross-hop/",
+ "title": "Cross Hop — Aura3D Endless Lane Hopper",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 4.64383329296141,
+ "sd": 23.406519237230466,
+ "centerMean": 0.6888994032116368,
+ "centerSd": 3.82618195533103,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-cross-hop",
+ "label": "base2",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject.",
+  "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 200\n    at readinessError (http://127.0.0.1:8601/packages/game/src/session/presented.ts:22:17)\n    at terminalError (http://127.0.0.1:8601/packages/game/src/session/presented.ts:27:40)\n    at handleTermination (http://127.0.0.1:8601/packages/game/src/session/presented.ts:75:13)\n    at awaitGamePresentedDraw (http://127.0.0.1:8601/packages/game/src/session/presented.ts:101:9)\n    at async http://127.0.0.1:8601/packages/game/src/"
+ ],
+ "real": false
+}

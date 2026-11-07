@@ -1,0 +1,18 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-aura-diamond-3d/",
+ "title": "Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 4.089870001957024,
+ "sd": 20.193735515028255,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-aura-diamond-3d",
+ "label": "base2",
+ "frames": 240,
+ "hz": 60,
+ "real": true
+}
