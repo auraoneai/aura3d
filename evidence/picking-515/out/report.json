@@ -1,0 +1,2611 @@
+{
+  "page": "evidence/picking-515",
+  "counts": {
+    "points": 100000,
+    "instances": 5000,
+    "w": 960,
+    "h": 540
+  },
+  "handles": 2,
+  "passA": {
+    "handles/points": [
+      {
+        "meanMs": 0.019799999982118607,
+        "n": 1000,
+        "firstPickMs": 6.799999982118607,
+        "hits": 176,
+        "mode": "handles"
+      },
+      {
+        "meanMs": 0.01769999998807907,
+        "n": 1000,
+        "firstPickMs": 1.2000000178813934,
+        "hits": 176,
+        "mode": "handles"
+      },
+      {
+        "meanMs": 0.01660000002384186,
+        "n": 1000,
+        "firstPickMs": 1.0999999940395355,
+        "hits": 176,
+        "mode": "handles"
+      }
+    ],
+    "handles/instances": [
+      {
+        "meanMs": 0.006,
+        "n": 1000,
+        "firstPickMs": 1,
+        "hits": 211,
+        "mode": "handles"
+      },
+      {
+        "meanMs": 0.004700000017881394,
+        "n": 1000,
+        "firstPickMs": 0.5999999940395355,
+        "hits": 211,
+        "mode": "handles"
+      },
+      {
+        "meanMs": 0.004599999994039535,
+        "n": 1000,
+        "firstPickMs": 0.30000001192092896,
+        "hits": 211,
+        "mode": "handles"
+      }
+    ],
+    "handles/all": [
+      {
+        "meanMs": 0.019,
+        "n": 1000,
+        "firstPickMs": 1.300000011920929,
+        "hits": 366,
+        "mode": "handles"
+      },
+      {
+        "meanMs": 0.018900000005960465,
+        "n": 1000,
+        "firstPickMs": 1.199999988079071,
+        "hits": 366,
+        "mode": "handles"
+      },
+      {
+        "meanMs": 0.019300000011920927,
+        "n": 1000,
+        "firstPickMs": 1.7999999821186066,
+        "hits": 366,
+        "mode": "handles"
+      }
+    ],
+    "nodes/points": [
+      {
+        "meanMs": 0.015699999988079073,
+        "n": 1000,
+        "firstPickMs": 1.2999999821186066,
+        "hits": 176,
+        "mode": "nodes"
+      },
+      {
+        "meanMs": 0.015299999982118607,
+        "n": 1000,
+        "firstPickMs": 1,
+        "hits": 176,
+        "mode": "nodes"
+      },
+      {
+        "meanMs": 0.016299999982118608,
+        "n": 1000,
+        "firstPickMs": 1.300000011920929,
+        "hits": 176,
+        "mode": "nodes"
+      }
+    ],
+    "nodes/instances": [
+      {
+        "meanMs": 0.0037000000178813936,
+        "n": 1000,
+        "firstPickMs": 0.29999998211860657,
+        "hits": 211,
+        "mode": "nodes"
+      },
+      {
+        "meanMs": 0.0039000000059604646,
+        "n": 1000,
+        "firstPickMs": 0.29999998211860657,
+        "hits": 211,
+        "mode": "nodes"
+      },
+      {
+        "meanMs": 0.0035999999940395356,
+        "n": 1000,
+        "firstPickMs": 0.19999998807907104,
+        "hits": 211,
+        "mode": "nodes"
+      }
+    ],
+    "nodes/all": [
+      {
+        "meanMs": 0.018,
+        "n": 1000,
+        "firstPickMs": 1.4000000059604645,
+        "hits": 366,
+        "mode": "nodes"
+      },
+      {
+        "meanMs": 0.018099999994039537,
+        "n": 1000,
+        "firstPickMs": 1.4000000059604645,
+        "hits": 366,
+        "mode": "nodes"
+      },
+      {
+        "meanMs": 0.018400000005960464,
+        "n": 1000,
+        "firstPickMs": 1.5,
+        "hits": 366,
+        "mode": "nodes"
+      }
+    ]
+  },
+  "idle": {
+    "litFraction": 0.26373070987654323,
+    "meanLuma": 54.313191189307915
+  },
+  "accuracy": {
+    "points": {
+      "tried": 40,
+      "hit": 40
+    },
+    "instances": {
+      "tried": 39,
+      "hit": 7,
+      "directPicks": 39,
+      "directMatchesBruteForce": 28,
+      "otherInstance": 23,
+      "matchesBruteForce": 22,
+      "mismatch": [
+        {
+          "target": 790,
+          "truth": 2790,
+          "direct": {
+            "id": 790,
+            "distance": 27.176776994595485
+          },
+          "event": {
+            "type": "enter",
+            "kind": "point",
+            "id": 16353,
+            "node": "cloud"
+          }
+        },
+        {
+          "target": 4370,
+          "truth": 3365,
+          "direct": {
+            "id": 365,
+            "distance": 15.622002829393129
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 365,
+            "node": "crates"
+          }
+        },
+        {
+          "target": 3127,
+          "truth": 4132,
+          "direct": {
+            "id": 1132,
+            "distance": 15.478567526248902
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 1132,
+            "node": "crates"
+          }
+        },
+        {
+          "target": 890,
+          "truth": 2890,
+          "direct": {
+            "id": 890,
+            "distance": 25.26383065973743
+          },
+          "event": {
+            "type": "enter",
+            "kind": "point",
+            "id": 9369,
+            "node": "cloud"
+          }
+        },
+        {
+          "target": 2715,
+          "truth": 2715,
+          "direct": {
+            "id": 4715,
+            "distance": 27.215664122169436
+          },
+          "event": {
+            "type": "enter",
+            "kind": "point",
+            "id": 78246,
+            "node": "cloud"
+          }
+        },
+        {
+          "target": 3709,
+          "truth": 3709,
+          "direct": {
+            "id": 709,
+            "distance": 28.902314372007307
+          },
+          "event": {
+            "type": "enter",
+            "kind": "point",
+            "id": 17933,
+            "node": "cloud"
+          }
+        },
+        {
+          "target": 4414,
+          "truth": 3404,
+          "direct": {
+            "id": 404,
+            "distance": 17.035394293737742
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 404,
+            "node": "crates"
+          }
+        },
+        {
+          "target": 2033,
+          "truth": 3038,
+          "direct": {
+            "id": 38,
+            "distance": 20.210080687264004
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 38,
+            "node": "crates"
+          }
+        },
+        {
+          "target": 2518,
+          "truth": 4518,
+          "direct": {
+            "id": 2518,
+            "distance": 22.808096938806678
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 2518,
+            "node": "crates"
+          }
+        },
+        {
+          "target": 1622,
+          "truth": 4622,
+          "direct": {
+            "id": 1622,
+            "distance": 26.332855474349852
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 1622,
+            "node": "crates"
+          }
+        },
+        {
+          "target": 3574,
+          "truth": 3574,
+          "direct": {
+            "id": 574,
+            "distance": 25.528588380105706
+          },
+          "event": {
+            "type": "enter",
+            "kind": "instance",
+            "id": 574,
+            "node": "crates"
+          }
+        }
+      ]
+    }
+  },
+  "hoverPoint": {
+    "index": 4000,
+    "shot": {
+      "litFraction": 0.26373070987654323,
+      "meanLuma": 54.313191189307915
+    },
+    "state": {
+      "events": [
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 23878,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 91349,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 61249,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 92698,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 4934,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 85578,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 36098,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 5310,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 6878,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 98393,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 97280,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 53125,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45185,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 54783,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 60503,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77741,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77981,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 41807,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 47410,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 85214,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 36246,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 48150,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 9194,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 74913,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 83420,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 35811,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 17884,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 98176,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 12206,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45477,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45632,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 10800,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 11402,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 62159,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77282,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 8454,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 60556,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 92634,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 26572,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 59051,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 75719,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2557,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 4562,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 558,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1548,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 16353,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 365,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1132,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1905,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 995,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2417,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 9369,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1603,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2939,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2458,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 874,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2169,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 896,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2015,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 453,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 47880,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 69791,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 78246,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 17933,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 404,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1856,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 38,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 191,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 148,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2518,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1394,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 928,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 81012,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1622,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 4419,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 40,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 376,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 76682,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 574,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        }
+      ],
+      "picks": [],
+      "pickCount": 160,
+      "shown": 0,
+      "readout": "hover: point cloud index 4000 d=21.48 | clicks: none",
+      "markerVisible": false,
+      "handles": 2
+    }
+  },
+  "clickPoint": {
+    "shot": {
+      "litFraction": 0.26415123456790124,
+      "meanLuma": 53.91015166152677
+    },
+    "state": {
+      "events": [
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 23878,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 91349,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 61249,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 92698,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 4934,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 85578,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 36098,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 5310,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 6878,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 98393,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 97280,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 53125,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45185,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 54783,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 60503,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77741,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77981,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 41807,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 47410,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 85214,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 36246,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 48150,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 9194,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 74913,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 83420,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 35811,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 17884,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 98176,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 12206,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45477,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45632,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 10800,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 11402,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 62159,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77282,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 8454,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 60556,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 92634,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 26572,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 59051,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 75719,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2557,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 4562,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 558,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1548,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 16353,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 365,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1132,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1905,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 995,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2417,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 9369,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1603,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2939,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2458,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 874,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2169,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 896,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2015,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 453,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 47880,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 69791,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 78246,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 17933,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 404,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1856,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 38,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 191,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 148,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2518,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1394,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 928,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 81012,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1622,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 4419,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 40,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 376,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 76682,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 574,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        },
+        {
+          "type": "click",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        },
+        {
+          "type": "move",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        }
+      ],
+      "picks": [
+        {
+          "kind": "point",
+          "node": "cloud",
+          "id": 4000,
+          "point": [
+            -0.013421603478491306,
+            0.11399871110916138,
+            -2.6132822036743164
+          ]
+        }
+      ],
+      "pickCount": 162,
+      "shown": 1,
+      "readout": "hover: point cloud index 4000 d=21.48 | clicks: point cloud index 4000 d=21.48",
+      "markerVisible": true,
+      "handles": 2
+    }
+  },
+  "hoverInstance": {
+    "index": 100,
+    "shot": {
+      "litFraction": 0.26415123456790124,
+      "meanLuma": 53.91015166152677
+    }
+  },
+  "clickInstance": {
+    "shot": {
+      "litFraction": 0.2652970679012346,
+      "meanLuma": 53.909710162295
+    },
+    "state": {
+      "events": [
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 23878,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 91349,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 61249,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 92698,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 4934,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 85578,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 36098,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 5310,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 6878,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 98393,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 97280,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 53125,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45185,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 54783,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 60503,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77741,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77981,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 41807,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 47410,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 85214,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 36246,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 48150,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 9194,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 74913,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 83420,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 35811,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 17884,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 98176,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 12206,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45477,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 45632,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 10800,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 11402,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 62159,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 77282,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 8454,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 60556,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 92634,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 26572,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 59051,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 75719,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2557,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 4562,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 558,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1548,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 16353,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 365,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1132,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1905,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 995,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2417,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 9369,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1603,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2939,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2458,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 874,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2169,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 896,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2015,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 453,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 47880,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 69791,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 78246,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 17933,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 404,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1856,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 38,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 191,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 148,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 2518,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1394,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 928,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 81012,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 1622,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 4419,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 40,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 376,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 76682,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 574,
+          "node": "crates"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        },
+        {
+          "type": "click",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        },
+        {
+          "type": "move",
+          "kind": "point",
+          "id": 4000,
+          "node": "cloud"
+        },
+        {
+          "type": "leave"
+        },
+        {
+          "type": "enter",
+          "kind": "instance",
+          "id": 3110,
+          "node": "crates"
+        },
+        {
+          "type": "click",
+          "kind": "instance",
+          "id": 3110,
+          "node": "crates"
+        },
+        {
+          "type": "move",
+          "kind": "instance",
+          "id": 3110,
+          "node": "crates"
+        }
+      ],
+      "picks": [
+        {
+          "kind": "point",
+          "node": "cloud",
+          "id": 4000,
+          "point": [
+            -0.013421603478491306,
+            0.11399871110916138,
+            -2.6132822036743164
+          ]
+        },
+        {
+          "kind": "instance",
+          "node": "crates",
+          "id": 3110,
+          "point": [
+            6.5833555138321636,
+            -0.7745475558337116,
+            5.50810369849205
+          ]
+        }
+      ],
+      "pickCount": 165,
+      "shown": 3,
+      "readout": "hover: instance crates instance 3110 d=16.40 | clicks: point cloud index 4000 d=21.48 ; instance crates instance 3110 d=16.40 | distance 10.501",
+      "markerVisible": true,
+      "handles": 2
+    }
+  },
+  "coalescing": {
+    "pickCount": 165
+  }
+}

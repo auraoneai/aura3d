@@ -958,7 +958,7 @@ function intersectReadableGeometry(geometry: Geometry, matrix: Float32Array, ori
  * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
  * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
  */
-function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined {
+export function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined {
   const vp = toFloat32Array(camera.viewProjectionMatrix)
     ?? multiplyMat4(
       toFloat32Array(camera.projectionMatrix),

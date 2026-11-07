@@ -69,5 +69,21 @@
   "checkSpatialInvariants": "Verify that helper geometry is anchored to its subject.",
   "renderer": "Renderer presets and diagnostics: exposure, color management, quality presets and profiles.",
   "createAuraRouteHealthSnapshot": "Snapshot route health for a running app.",
-  "AuraAdvancedLightingUnavailableError": "Error thrown by `app.lighting.attachIndirect` / `attachLightmap` when the app has no ready renderer with a compatible advanced-lighting consumer (`code: \"ADVANCED_LIGHTING_RENDER_PATH_UNAVAILABLE\"`)."
+  "AuraAdvancedLightingUnavailableError": "Error thrown by `app.lighting.attachIndirect` / `attachLightmap` when the app has no ready renderer with a compatible advanced-lighting consumer (`code: \"ADVANCED_LIGHTING_RENDER_PATH_UNAVAILABLE\"`).",
+  "PointCloudIndex": "Lazy uniform-grid index over a flat xyz array: `pick(ray, { radius, slope })` returns the point nearest the ray. Call `invalidate()` after writing the buffer.",
+  "InstanceIndex": "Lazy grid index over column-major instance matrices: `pick(ray)` returns the nearest hit instance with point and normal. Call `invalidate()` after writing matrices.",
+  "pixelTolerance": "Convert a pixel pick radius into a world `{ radius, slope }` tolerance from two camera rays one pixel apart.",
+  "createSpatialPicker": "Pick points and instances in a scene: `picker.pick({ camera, ndc }, { viewport, pixelRadius })` over `app.nodes.all()` or `app.scene.nodes` returns `{ kind, nodeId, index | instanceId, point, distance }`.",
+  "bindSpatialPicking": "Hover (enter, leave, move) and click events for points and instances on a canvas, one coalesced pick per frame. Returns `{ pickCount, flush, dispose }`.",
+  "worldToCss": "Project a world point to CSS pixels with a view-projection matrix; reports behind-camera and off-screen as not visible.",
+  "cssToNdc": "Convert CSS pixels in a viewport to NDC for `raycast` and the pickers.",
+  "planLabelOverlay": "Cull labels behind the camera or off screen, rank by priority then nearness, cap at `maxLabels` (pure).",
+  "createLabelOverlay": "DOM label overlay for N world-anchored labels per frame with pooling, culling, a cap and no writes for unchanged labels.",
+  "measureDistance": "Straight-line distance and delta between two world points.",
+  "measurePointFromHit": "Normalize a pick hit to a serializable measurement point.",
+  "createDistanceAnnotation": "Build a serializable two-point distance `AnnotationRecord` from two picks.",
+  "createPointAnnotation": "Build a serializable single-point `AnnotationRecord` from a pick.",
+  "annotationOverlayLabel": "The overlay label for an annotation (midpoint for distances).",
+  "serializeAnnotation": "Lossless JSON for an `AnnotationRecord`.",
+  "parseAnnotation": "Parse and validate `serializeAnnotation` output; throws `ANNOTATION_INVALID`."
 }

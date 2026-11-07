@@ -451,6 +451,18 @@ void AnimationController;
 | `AnimationController#listClips()` | `readonly AuraRegisteredAnimationClip<TClipId, TEvent>[]` |  |
 | `AnimationController#dispose()` | `void` |  |
 
+## `createSpatialPicker`
+
+CPU picking for `points` (nearest to the ray within a pixel or world tolerance) and instanced nodes (per-instance box or sphere). `picker.pick({ camera, ndc }, { viewport, pixelRadius })`; `picker.invalidate(name)` after writing a position or matrix buffer in place. `bindSpatialPicking` adds hover and click.
+
+```ts
+const picker = createSpatialPicker({ nodes: [] });
+```
+
+| Call | Returns | Options |
+|---|---|---|
+| `createSpatialPicker(sourcesOf: SpatialPickerSources \| (() => SpatialPickerSources))` | `SpatialPicker` |  |
+
 ## `createFixedStepLoop`
 
 Deterministic simulation loop for games.

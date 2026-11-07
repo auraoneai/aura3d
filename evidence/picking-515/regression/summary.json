@@ -1,0 +1,62 @@
+{
+  "method": "evidence/picking-515/tools/regress.mjs: headless Chrome real GPU (ANGLE/Metal), loopback CDP, virtual-clock shim (byte-identical to origin/lane/504-bellkeeper evidence/bellkeeper-504/tools/shim.js), 1280x720, >=16 s / 600 shim frames then +240 frames, base = origin/main e5387f3b0 build captured twice (noise floor), branch = lane/515 build",
+  "distIdentity": "diff -rq of each game dist (origin/main build vs branch build): 0 differing files for all 5 games; the picking code is tree-shaken out of game bundles",
+  "visualCheck": "all 5 branch frames inspected: real game frames (HUD + 3D scene), not the marketing page, not black",
+  "games": [
+    {
+      "game": "showcase-bank-shot",
+      "title": "Aura3D - Bank Shot",
+      "canvases": 1,
+      "meanLuma": 47.71,
+      "lumaStd": 47.77,
+      "quantizedColors": 1811,
+      "madBaseVsBase": 0.0007,
+      "madBaseVsBranch": 0,
+      "realFrame": true
+    },
+    {
+      "game": "showcase-cross-hop",
+      "title": "Cross Hop — Aura3D Endless Lane Hopper",
+      "canvases": 1,
+      "meanLuma": 41.86,
+      "lumaStd": 27.21,
+      "quantizedColors": 220,
+      "madBaseVsBase": 1.9702,
+      "madBaseVsBranch": 2.6909,
+      "realFrame": true
+    },
+    {
+      "game": "showcase-dot-dash-3d",
+      "title": "Glint Courier — circuit-board chase",
+      "canvases": 1,
+      "meanLuma": 63.69,
+      "lumaStd": 37.99,
+      "quantizedColors": 700,
+      "madBaseVsBase": 2.2475,
+      "madBaseVsBranch": 2.2478,
+      "realFrame": true
+    },
+    {
+      "game": "showcase-blockfall-reactor",
+      "title": "Aura3D Showcase - Blockfall Reactor",
+      "canvases": 1,
+      "meanLuma": 31.89,
+      "lumaStd": 46.3,
+      "quantizedColors": 1416,
+      "madBaseVsBase": 9.0732,
+      "madBaseVsBranch": 6.6611,
+      "realFrame": true
+    },
+    {
+      "game": "showcase-aurora-lander",
+      "title": "Aura3D - Aurora Lander",
+      "canvases": 1,
+      "meanLuma": 38.89,
+      "lumaStd": 33.48,
+      "quantizedColors": 1006,
+      "madBaseVsBase": 0,
+      "madBaseVsBranch": 0,
+      "realFrame": true
+    }
+  ]
+}

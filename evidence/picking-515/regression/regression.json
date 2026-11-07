@@ -1,0 +1,78 @@
+[
+  {
+    "game": "showcase-blockfall-reactor",
+    "infoBase1": {
+      "title": "Aura3D Showcase - Blockfall Reactor",
+      "canvases": 1,
+      "canvasW": 1280,
+      "canvasH": 720,
+      "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH"
+    },
+    "infoBase2": {
+      "title": "Aura3D Showcase - Blockfall Reactor",
+      "canvases": 1,
+      "canvasW": 1280,
+      "canvasH": 720,
+      "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH"
+    },
+    "infoBranch": {
+      "title": "Aura3D Showcase - Blockfall Reactor",
+      "canvases": 1,
+      "canvasW": 1280,
+      "canvasH": 720,
+      "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH"
+    },
+    "statsBase1": {
+      "meanLuma": 31.79,
+      "lumaStd": 46.15,
+      "quantizedColors": 1442
+    },
+    "statsBranch": {
+      "meanLuma": 31.89,
+      "lumaStd": 46.3,
+      "quantizedColors": 1416
+    },
+    "madBaseVsBase": 9.0732,
+    "madBaseVsBranch": 6.6611,
+    "madBase2VsBranch": 9.2662,
+    "realFrame": true
+  },
+  {
+    "game": "showcase-aurora-lander",
+    "infoBase1": {
+      "title": "Aura3D - Aurora Lander",
+      "canvases": 1,
+      "canvasW": 1028,
+      "canvasH": 720,
+      "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT0.4 m\nV/S-6.5\nH/S0.4\nATT0°\nFUEL 100%\nHULL0%\nCRASH — impact too hard. Press R to res"
+    },
+    "infoBase2": {
+      "title": "Aura3D - Aurora Lander",
+      "canvases": 1,
+      "canvasW": 1028,
+      "canvasH": 720,
+      "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT0.4 m\nV/S-6.5\nH/S0.4\nATT0°\nFUEL 100%\nHULL0%\nCRASH — impact too hard. Press R to res"
+    },
+    "infoBranch": {
+      "title": "Aura3D - Aurora Lander",
+      "canvases": 1,
+      "canvasW": 1028,
+      "canvasH": 720,
+      "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT0.4 m\nV/S-6.5\nH/S0.4\nATT0°\nFUEL 100%\nHULL0%\nCRASH — impact too hard. Press R to res"
+    },
+    "statsBase1": {
+      "meanLuma": 38.89,
+      "lumaStd": 33.48,
+      "quantizedColors": 1006
+    },
+    "statsBranch": {
+      "meanLuma": 38.89,
+      "lumaStd": 33.48,
+      "quantizedColors": 1006
+    },
+    "madBaseVsBase": 0,
+    "madBaseVsBranch": 0,
+    "madBase2VsBranch": 0,
+    "realFrame": true
+  }
+]
