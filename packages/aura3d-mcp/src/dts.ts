@@ -184,6 +184,8 @@ export interface SymbolLookupOptions {
   readonly pkg?: string;
   /** Example finder supplied by the docs layer when the declaration has no @example. */
   readonly exampleFor?: (name: string) => string | undefined;
+  /** Defaults the types do not carry (the api-signatures defaults table), supplied by the docs layer. */
+  readonly defaultsFor?: (name: string) => string | undefined;
 }
 
 export function getSymbol(options: SymbolLookupOptions): SymbolAnswer {
@@ -230,7 +232,7 @@ export function getSymbol(options: SymbolLookupOptions): SymbolAnswer {
     kind: kindOf(symbol),
     declaration: clipDeclaration(declarationText(symbol), options.name),
     doc: doc || undefined,
-    defaults: defaultsOf(symbol, checker, doc),
+    defaults: [...defaultsOf(symbol, checker, doc), ...(options.defaultsFor?.(options.name) ? [options.defaultsFor(options.name)!] : [])],
     example
   };
 }

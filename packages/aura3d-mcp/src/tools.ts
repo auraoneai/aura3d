@@ -58,24 +58,36 @@ function oneLine(declaration: string, max = 220): string {
 
 /** First fenced code block (or recipe-source window) that calls `name`, for symbols with no @example. */
 function exampleFinder(ctx: ToolContext): (name: string) => string | undefined {
+  const esc = (s: string): string => s.replace(/[^A-Za-z0-9_.]/g, "").replace(/\./g, "\\.");
   return (name) => {
-    const head = name.split(".")[0]!;
-    const needle = new RegExp(`\\b${head.replace(/[^A-Za-z0-9_]/g, "")}\\b`);
-    for (const file of ctx.knowledge.bundle.files) {
-      if (file.kind === "recipe-source") {
+    // Prefer the exact dotted call (lights.directional(), app.onFrame(...)), then the head symbol.
+    const needles = [...new Set([name, name.split(".")[0]!])].map((n) => new RegExp(`\\b${esc(n)}\\s*[(.<]`));
+    const docs = ["api-signatures", "recipes", "agent-quickstart"].flatMap((stem) => ctx.knowledge.bundle.files.filter((f) => f.kind === "doc" && f.path.includes(stem)));
+    for (const needle of needles) {
+      for (const file of docs) {
+        for (const block of file.text.matchAll(/```ts\n([\s\S]*?)```/g)) {
+          const body = block[1]!.trim();
+          if (needle.test(body) && body.length < 900) return body;
+        }
+      }
+      for (const file of ctx.knowledge.bundle.files) {
+        if (file.kind !== "recipe-source") continue;
         const lines = file.text.split("\n");
         const at = lines.findIndex((l) => needle.test(l) && !/^import /.test(l));
-        if (at >= 0) return lines.slice(Math.max(0, at - 1), at + 7).join("\n");
-      }
-    }
-    for (const file of ctx.knowledge.bundle.files) {
-      if (file.kind !== "doc" || !/api-signatures|recipes|agent-quickstart/.test(file.path)) continue;
-      for (const block of file.text.matchAll(/```ts\n([\s\S]*?)```/g)) {
-        const body = block[1]!;
-        if (needle.test(body) && body.length < 1400) return body.trim();
+        if (at >= 0) return lines.slice(at, at + 5).join("\n").trim();
       }
     }
     return undefined;
+  };
+}
+
+/** Row of the "Defaults the types do not carry" table in api-signatures.md, e.g. | `lights.point` | intensity 8 |. */
+function defaultsFinder(ctx: ToolContext): (name: string) => string | undefined {
+  return (name) => {
+    const text = ctx.knowledge.file("docs/agents/api-signatures.md");
+    if (!text) return undefined;
+    const row = text.split("\n").find((l) => l.startsWith(`| \`${name}\` |`) && l.split("|").length === 4);
+    return row ? row.split("|")[2]!.trim() : undefined;
   };
 }
 
@@ -111,7 +123,7 @@ const getSymbolTool: ToolDef = {
     const name = str(args, "name");
     if (!name) return { text: "get_symbol needs a name, e.g. createAuraApp.", isError: true };
     const projectDir = projectDirOf(args, ctx);
-    const answer = getSymbol({ projectDir, name, subpath: str(args, "subpath"), pkg: str(args, "package"), exampleFor: exampleFinder(ctx) });
+    const answer = getSymbol({ projectDir, name, subpath: str(args, "subpath"), pkg: str(args, "package"), exampleFor: exampleFinder(ctx), defaultsFor: defaultsFinder(ctx) });
     return { text: clip(formatSymbol(answer, ctx, projectDir)), isError: !answer.ok };
   }
 };
