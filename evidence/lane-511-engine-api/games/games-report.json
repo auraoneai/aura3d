@@ -1,4 +1,5 @@
 {
+ "supersededBy": "evidence/lane-511-engine-api/games-r2/decisions.json (re-review 2026-11-07: this toggle-based pair is not timing-pinned; the slingshot pair used still=1, which drops the dust motes)",
  "meanAbsDiff": {
   "cross-hop-t0": {
    "meanAbsDiff": 0.3358,

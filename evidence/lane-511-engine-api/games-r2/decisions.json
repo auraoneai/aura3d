@@ -1,0 +1,33 @@
+{
+  "schema": "lane-511.games-r2/1",
+  "captured": "2026-11-07, headless Chrome ANGLE Metal (Apple M4 Max), 1280x720 DPR 1",
+  "method": "Two dev servers: origin/main (git archive, 5.0.2 particle lowering, no lowerEmitterExtras) on :5212 and the lane branch on :5211. Virtual clock (games/shim.js from lane/504-bellkeeper) + seeded Math.random; boot steps one vt frame per 250 ms until the route is ready, then 3 s real-time settle and a fixed number of vt frames (Hoops 240, Cross Hop / Slingshot 300). Boot frames still vary by a few frames between runs (load timing), so vnow is recorded per frame (capture-log-*.txt) and the decisive comparison is the pair captured at the SAME vnow. Diffs: mad3.py (diff-hoops.json, diff-games.json). Every frame was viewed and is the intended game page.",
+  "games": {
+    "hoops-manila-rain-curtains": {
+      "views": "qaCam=wide (both open sides), qaCamEye=8,5.2,3 -> 19,4,3 fov 30 (from the court onto the east emitter), qaCamEye=26,9,3 -> 19,3.5,3 fov 30 (above, outside)",
+      "variants": "main (5.0.2), branch (fixed authoring: 5.0.2 option set), branchhead (lane HEAD authoring: box 3x9x30, velocity stretch, alphaOverLife curve), *norain (?qaNoRain=1 drops the rain nodes)",
+      "result": "All of main-vs-branch, main-vs-branchhead and every with-vs-without-rain pair are at the noise floor (mean abs diff <= 0.016 of 255, <= 0.017% pixels over 8; noise main-vs-main2 up to 0.012). The x10 amplified with-minus-without image shows only the diag frame counter and a few motes. The curtains draw no visible pixels from these views in 5.0.2, in the fixed branch, or with the HEAD authoring.",
+      "caveat": "Because no variant shows curtain pixels, the frames cannot by themselves show that ?qaNoRain removed a visible emitter; the equality to 5.0.2 is carried by the frames (no visible change) plus the unit test that the lowered curtain emitter has none of the 5.1 extras (tests/unit/aura-hoops/gu47-look.test.ts).",
+      "decision": "Keep the curtains on the 5.0.2 option set (game-only edit, committed). Renders as 5.0.2."
+    },
+    "cross-hop": {
+      "shots": "theme=3 (embers, box ambient emitter) and theme=0 (control), seed=7",
+      "sameVnowPairs": {
+        "cross-hop-t3 main2 vs branch2 @ vnow 6083.435": "mean abs diff 0.000004, 10 pixels differ at all",
+        "cross-hop-t0 main vs branch2 @ vnow 6116.769": "pixel-identical",
+        "cross-hop-t0 main2 vs branch2 @ vnow 6116.769": "pixel-identical"
+      },
+      "result": "At equal virtual time main and branch are pixel-identical (t0) or 10 pixels apart (t3). Different-vnow pairs differ by 0.05-0.09 (traffic moved one frame). The earlier 3.28 for theme 3 was a timing artifact of the toggle run, not the particle options.",
+      "decision": "No change from 5.0.2; no game edit."
+    },
+    "slingshot-siege-ch1": {
+      "shot": "level=5 (Quarry Rise, chapter dust motes), intro=0, seed=7, WITHOUT still=1 (still=1 sets reduced motion and drops the motes, the only 5.1-option emitter here; the earlier pair used it)",
+      "sameVnowPairs": {
+        "main vs branch @ vnow 6066.768": "mean abs diff 0.493, 0.36% pixels over 8"
+      },
+      "noise": "main-vs-main2 (one frame apart) 0.0045 / 0.012%",
+      "result": "The only difference is the dust motes (slingshot-ch1-main-vs-branch-absdiff-x4.png, slingshot-ch1-main-vs-branch-mote-crop.png): 5.0.2 ignores shape box 22x2.4x16 and wind and spawns all 120 motes at one point, a visible clump of dots between the arch and the windmill; the branch spreads them through the authored volume as sparse drifting motes. Camera, state (aiming) and HUD are identical.",
+      "decision": "Keep the 5.1 behaviour: it is the authored intent (SS47-E4 'drifting dust motes (ch1)') and removes the 5.0.2 clump artefact. Visible change vs 5.0.2, confined to mote pixels; call it out in release notes."
+    }
+  }
+}

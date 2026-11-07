@@ -26,12 +26,14 @@ const VARIANTS = (process.env.VARIANTS ?? "main,branch,main2,branch2").split(","
 const portOf = (v) => (v.startsWith("main") ? mainPort : branchPort);
 const port = 9600 + Math.floor(Math.random() * 100);
 const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/fx516-engineapi-chrome-${port}`, "--window-size=1280,720", "--use-angle=metal", "--enable-gpu-rasterization", "--ignore-gpu-blocklist", "about:blank"], { stdio: "ignore" });
+process.on("SIGTERM", () => { chrome.kill(); process.exit(143); });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let targets; for (let i = 0; i < 50; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (targets.find((t) => t.type === "page")) break; } catch {} await sleep(300); }
 const ws = new WebSocket(targets.find((t) => t.type === "page").webSocketDebuggerUrl); await new Promise((r) => (ws.onopen = r));
 let n = 0; const pend = new Map(); const logs = [];
-ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.method === "Runtime.exceptionThrown" || (d.method === "Runtime.consoleAPICalled" && d.params.type === "error")) logs.push(JSON.stringify(d.params).slice(0, 300)); if (d.id && pend.has(d.id)) { pend.get(d.id)(d); pend.delete(d.id); } };
-const send = (method, params = {}) => new Promise((r) => { const id = ++n; pend.set(id, r); ws.send(JSON.stringify({ id, method, params })); });
+ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.method === "Page.javascriptDialogOpening") ws.send(JSON.stringify({ id: 1e9 + (++n), method: "Page.handleJavaScriptDialog", params: { accept: true } })); if (d.method === "Runtime.exceptionThrown" || (d.method === "Runtime.consoleAPICalled" && d.params.type === "error")) logs.push(JSON.stringify(d.params).slice(0, 300)); if (d.id && pend.has(d.id)) { pend.get(d.id)(d); pend.delete(d.id); } };
+// 60 s per CDP call: a hung evaluate (page stuck mid-navigation) fails the run instead of holding the capture lock.
+const send = (method, params = {}) => new Promise((r, j) => { const id = ++n; const t = setTimeout(() => { pend.delete(id); j(new Error(`CDP timeout ${method}`)); }, 60000); pend.set(id, (d) => { clearTimeout(t); r(d); }); ws.send(JSON.stringify({ id, method, params })); });
 const ev = async (e) => (await send("Runtime.evaluate", { expression: e, returnByValue: true, awaitPromise: true })).result?.result?.value;
 await send("Page.enable"); await send("Runtime.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });

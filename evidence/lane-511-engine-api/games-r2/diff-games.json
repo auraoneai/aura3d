@@ -1,0 +1,56 @@
+{
+ "cross-hop-t3": {
+  "main-vs-branch": {
+   "meanAbsDiff": 0.0544,
+   "pctPixelsOver8": 0.207
+  },
+  "main-vs-main2": {
+   "meanAbsDiff": 0.0898,
+   "pctPixelsOver8": 0.305
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0516,
+   "pctPixelsOver8": 0.201
+  },
+  "main2-vs-branch2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-t0": {
+  "main-vs-branch": {
+   "meanAbsDiff": 0.0618,
+   "pctPixelsOver8": 0.229
+  },
+  "main-vs-main2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0618,
+   "pctPixelsOver8": 0.229
+  },
+  "main2-vs-branch2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "slingshot-ch1": {
+  "main-vs-branch": {
+   "meanAbsDiff": 0.4934,
+   "pctPixelsOver8": 0.36
+  },
+  "main-vs-main2": {
+   "meanAbsDiff": 0.0045,
+   "pctPixelsOver8": 0.012
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.4521,
+   "pctPixelsOver8": 0.259
+  },
+  "main2-vs-branch2": {
+   "meanAbsDiff": 0.0549,
+   "pctPixelsOver8": 0.142
+  }
+ }
+}
