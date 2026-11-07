@@ -53,6 +53,9 @@ describe("lane 514 effects.godRays", () => {
     if (tierSamples !== undefined) expect(tierSamples).toBeLessThanOrEqual(64);
     const fog = pipelineFor(effects.volumetricFog({ intensity: 0.5 }));
     expect((fog.options.godRays as { decay: number }).decay).toBe(0.94);
+    // the legacy S4 mapping is untouched for volumetricFog; only effects.godRays opts into the frame anchor
+    expect(fog.options.godRays).not.toHaveProperty("frameAnchored");
+    expect((pipelineFor(effects.godRays()).options.godRays as { frameAnchored?: boolean }).frameAnchored).toBe(true);
   });
 
   test("rejects out-of-range options", () => {

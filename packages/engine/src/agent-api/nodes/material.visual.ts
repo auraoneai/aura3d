@@ -250,7 +250,7 @@ export function causticsMaterial(options: AuraCausticsMaterialOptions = {}): Aur
 export interface AuraLightBeamMaterialOptions {
   /** Beam colour (default warm white). */
   readonly color?: AuraColor;
-  /** Brightness multiplier (default 1.4). */
+  /** Brightness multiplier (default 1). */
   readonly intensity?: number;
   /** Length of the cone along its axis, in object units: must match the cone's height (default 20). */
   readonly length?: number;
@@ -306,7 +306,7 @@ export function lightBeamMaterial(options: AuraLightBeamMaterialOptions = {}): A
     glsl: { vertex: LIGHT_BEAM_VERTEX_GLSL, fragment: LIGHT_BEAM_FRAGMENT_GLSL },
     uniforms: {
       beamColor: { type: "vec3", value: [...rgb(options.color ?? "#fff1c9")] },
-      beamIntensity: { type: "f32", value: num(options.intensity, 1.4, 0, 32, owner, "intensity") },
+      beamIntensity: { type: "f32", value: num(options.intensity, 1, 0, 32, owner, "intensity") },
       beamLength: { type: "f32", value: num(options.length, 20, 0.01, 1e5, owner, "length") },
       beamShape: { type: "vec2", value: [num(options.falloff, 1.0, 0.05, 16, owner, "falloff"), num(options.edgeSoftness, 1.3, 0.1, 16, owner, "edgeSoftness")] },
       beamNoise: { type: "vec3", value: [num(options.noise, 0.35, 0, 1, owner, "noise"), num(options.noiseScale, 2.5, 0.01, 1000, owner, "noiseScale"), num(options.noiseSpeed, 0.25, 0, 20, owner, "noiseSpeed")] }

@@ -1,0 +1,192 @@
+{
+  "top-tennis": [
+    {
+      "frame": 1,
+      "base_vs_base": 0.3036,
+      "base_vs_branch": 0.3135,
+      "base2_vs_branch": 0.0148,
+      "branch_stats": {
+        "mean": [
+          58.8,
+          84.8,
+          96.4
+        ],
+        "stddev": 49.0,
+        "size": [
+          960,
+          540
+        ]
+      }
+    },
+    {
+      "frame": 2,
+      "base_vs_base": 0.3055,
+      "base_vs_branch": 0.3158,
+      "base2_vs_branch": 0.0147,
+      "branch_stats": {
+        "mean": [
+          58.8,
+          84.8,
+          96.4
+        ],
+        "stddev": 49.0,
+        "size": [
+          960,
+          540
+        ]
+      }
+    }
+  ],
+  "heatsink": [
+    {
+      "frame": 1,
+      "base_vs_base": 1.3931,
+      "base_vs_branch": 1.4517,
+      "base2_vs_branch": 1.4472,
+      "branch_stats": {
+        "mean": [
+          89.0,
+          86.8,
+          83.5
+        ],
+        "stddev": 55.6,
+        "size": [
+          960,
+          540
+        ]
+      }
+    },
+    {
+      "frame": 2,
+      "base_vs_base": 1.399,
+      "base_vs_branch": 1.4576,
+      "base2_vs_branch": 1.4602,
+      "branch_stats": {
+        "mean": [
+          88.9,
+          86.7,
+          83.5
+        ],
+        "stddev": 55.6,
+        "size": [
+          960,
+          540
+        ]
+      }
+    }
+  ],
+  "roadster-rush": [
+    {
+      "frame": 1,
+      "base_vs_base": 8.0075,
+      "base_vs_branch": 9.3686,
+      "base2_vs_branch": 7.7276,
+      "branch_stats": {
+        "mean": [
+          83.4,
+          65.0,
+          64.9
+        ],
+        "stddev": 48.3,
+        "size": [
+          960,
+          540
+        ]
+      }
+    },
+    {
+      "frame": 2,
+      "base_vs_base": 9.1193,
+      "base_vs_branch": 16.5574,
+      "base2_vs_branch": 15.3683,
+      "branch_stats": {
+        "mean": [
+          69.5,
+          56.2,
+          59.2
+        ],
+        "stddev": 48.4,
+        "size": [
+          960,
+          540
+        ]
+      }
+    }
+  ],
+  "aura-diamond-3d": [
+    {
+      "frame": 1,
+      "base_vs_base": 1.7396,
+      "base_vs_branch": 1.7395,
+      "base2_vs_branch": 0.005,
+      "branch_stats": {
+        "mean": [
+          47.0,
+          36.8,
+          32.7
+        ],
+        "stddev": 42.9,
+        "size": [
+          960,
+          540
+        ]
+      }
+    },
+    {
+      "frame": 2,
+      "base_vs_base": 2.3015,
+      "base_vs_branch": 2.3012,
+      "base2_vs_branch": 0.0072,
+      "branch_stats": {
+        "mean": [
+          47.0,
+          36.9,
+          32.9
+        ],
+        "stddev": 42.5,
+        "size": [
+          960,
+          540
+        ]
+      }
+    }
+  ],
+  "aura-links-3d": [
+    {
+      "frame": 1,
+      "base_vs_base": 0.3724,
+      "base_vs_branch": 0.3648,
+      "base2_vs_branch": 0.36,
+      "branch_stats": {
+        "mean": [
+          63.3,
+          89.9,
+          81.7
+        ],
+        "stddev": 51.7,
+        "size": [
+          960,
+          540
+        ]
+      }
+    },
+    {
+      "frame": 2,
+      "base_vs_base": 0.3769,
+      "base_vs_branch": 0.3594,
+      "base2_vs_branch": 0.3584,
+      "branch_stats": {
+        "mean": [
+          63.3,
+          89.9,
+          81.7
+        ],
+        "stddev": 51.7,
+        "size": [
+          960,
+          540
+        ]
+      }
+    }
+  ]
+}
