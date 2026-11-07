@@ -1,0 +1,36 @@
+{
+  "pilot": "silt-exp",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-silt-and-signal-port/?manual=1&dpr=1&cs=0",
+  "probes": {},
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {
+    "glsl-vs-portable": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 1.4544,
+        "maxDiff255": 195,
+        "changedPct": 10.235,
+        "over4Pct": 2.982,
+        "over16Pct": 2.161
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          470,
+          230
+        ],
+        "pixels": 108100,
+        "meanAbsDiff255": 0.0029,
+        "maxDiff255": 34,
+        "changedPct": 0.414,
+        "over4Pct": 0.003,
+        "over16Pct": 0.003
+      }
+    }
+  }
+}

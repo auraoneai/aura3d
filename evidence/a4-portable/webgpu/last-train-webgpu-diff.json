@@ -1,0 +1,111 @@
+{
+  "pilot": "last-train-webgpu",
+  "baseUrl": "http://127.0.0.1:8511/apps/showcase-last-train-port/?manual=1&title=0&dpr=1",
+  "probes": {
+    "glsl": {
+      "hasNavigatorGpu": true,
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "description": ""
+      },
+      "info": "{\"render\":{\"calls\":414,\"triangles\":6866002,\"points\":1560,\"lines\":0,\"frame\":32},\"memory\":{\"geometries\":288,\"textures\":234,\"renderTargets\":18,\"programs\":469},\"approximateGpuMemoryBytes\":428022378}",
+      "backendHits": [
+        "webgl2",
+        "native WebGPU compute",
+        "ed GLB actors and 54 Aura primitives on webgl2."
+      ],
+      "errors": []
+    },
+    "portable": {
+      "hasNavigatorGpu": true,
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "description": ""
+      },
+      "info": "{\"render\":{\"calls\":414,\"triangles\":6866002,\"points\":1560,\"lines\":0,\"frame\":202},\"memory\":{\"geometries\":288,\"textures\":234,\"renderTargets\":18,\"programs\":2679},\"approximateGpuMemoryBytes\":428022378}",
+      "backendHits": [
+        "webgl2",
+        "native WebGPU compute",
+        "ed GLB actors and 54 Aura primitives on webgl2."
+      ],
+      "errors": []
+    },
+    "portable+backend=webgpu": {
+      "hasNavigatorGpu": true,
+      "adapter": {
+        "vendor": "apple",
+        "architecture": "metal-3",
+        "description": ""
+      },
+      "info": "null",
+      "backendHits": [
+        "webgl2",
+        "native WebGPU compute",
+        "ed GLB actors and 54 Aura primitives on webgpu.",
+        "Production runtime feature real-webgl2-context is blocked: backend=webgpu",
+        "osure, dithering) are authored; backend webgpu; hdri environment; probe node; effect \\",
+        "Error: WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED: configure"
+      ],
+      "errors": [
+        "Error: WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED: configure frameMode as async for probe capture"
+      ]
+    }
+  },
+  "size": [
+    1280,
+    720
+  ],
+  "clock": "virtual 16.667 ms frames",
+  "compare": {
+    "glsl-vs-portable": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 1.6152,
+        "maxDiff255": 8,
+        "changedPct": 73.298,
+        "over4Pct": 5.983,
+        "over16Pct": 0
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          1280,
+          390
+        ],
+        "pixels": 499200,
+        "meanAbsDiff255": 1.6851,
+        "maxDiff255": 8,
+        "changedPct": 72.594,
+        "over4Pct": 7.526,
+        "over16Pct": 0
+      }
+    },
+    "glsl-vs-portable+backend=webgpu": {
+      "full": {
+        "pixels": 921600,
+        "meanAbsDiff255": 60.0735,
+        "maxDiff255": 236,
+        "changedPct": 96.444,
+        "over4Pct": 88.944,
+        "over16Pct": 82.908
+      },
+      "region": {
+        "rect": [
+          0,
+          330,
+          1280,
+          390
+        ],
+        "pixels": 499200,
+        "meanAbsDiff255": 45.702,
+        "maxDiff255": 236,
+        "changedPct": 95.72,
+        "over4Pct": 86.129,
+        "over16Pct": 78.654
+      }
+    }
+  }
+}

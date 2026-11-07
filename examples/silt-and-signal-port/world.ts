@@ -522,7 +522,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       material: pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
     }).runtime({ id: "bank" }));
   }
-  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : material.custom(waterSpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "canal" }));
+  // A4 pilot: a transparent graph material with the node-default castShadow casts a real opaque shadow (the GLSL custom material's
+  // caster is not visible in the frame), which relights the whole inked scene; the portable water therefore does not cast.
+  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", ...(readPortableFlag() ? { castShadow: false } : {}), material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : material.custom(waterSpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "canal" }));
   const deck = terrain.deckMesh();
   if (deck.indices.length) {
     builder.add(geometry.custom(dynamicFrom(deck), {

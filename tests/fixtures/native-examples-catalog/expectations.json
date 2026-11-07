@@ -6013,7 +6013,7 @@
       "sourceDependencies": [
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "12cd34afbc4801a252bd76b5e9c9d2a764bf7f7b8c9c1a498c5af30ed1cc5356"
+          "sha256": "890ecd3cb18066d4236d3f24fdd9f293f0cb547316c1a7e6c318ece33f6ece6b"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6120,7 +6120,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "12cd34afbc4801a252bd76b5e9c9d2a764bf7f7b8c9c1a498c5af30ed1cc5356"
+          "sha256": "890ecd3cb18066d4236d3f24fdd9f293f0cb547316c1a7e6c318ece33f6ece6b"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
