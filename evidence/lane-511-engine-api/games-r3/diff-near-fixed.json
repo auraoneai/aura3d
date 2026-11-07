@@ -1,0 +1,56 @@
+{
+ "cross-hop-diorama-t0-pollen-near": {
+  "base-vs-branchfixed": {
+   "meanAbsDiff": 0.0012,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0077,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchfixed": {
+   "meanAbsDiff": 0.0213,
+   "pctPixelsOver8": 0.087
+  },
+  "branchfixed-vs-branchnoamb": {
+   "meanAbsDiff": 0.0189,
+   "pctPixelsOver8": 0.077
+  }
+ },
+ "cross-hop-diorama-t2-fireflies-near": {
+  "base-vs-branchfixed": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0004,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchfixed": {
+   "meanAbsDiff": 0.5642,
+   "pctPixelsOver8": 0.404
+  },
+  "branchfixed-vs-branchnoamb": {
+   "meanAbsDiff": 0.0045,
+   "pctPixelsOver8": 0.028
+  }
+ },
+ "cross-hop-diorama-t5-confetti-near": {
+  "base-vs-branchfixed": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0019,
+   "pctPixelsOver8": 0.001
+  },
+  "branch-vs-branchfixed": {
+   "meanAbsDiff": 0.0076,
+   "pctPixelsOver8": 0.036
+  },
+  "branchfixed-vs-branchnoamb": {
+   "meanAbsDiff": 0.0067,
+   "pctPixelsOver8": 0.032
+  }
+ }
+}

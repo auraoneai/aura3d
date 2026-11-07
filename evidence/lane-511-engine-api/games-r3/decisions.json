@@ -1,0 +1,25 @@
+{
+  "schema": "lane-511.games-r3/1",
+  "captured": "2026-11-07, headless Chrome ANGLE Metal (Apple M4 Max), 1280x720 DPR 1, loopback CDP, Chrome-chosen debugging port, frame refused unless the page URL is the requested route on the requested server",
+  "why": "Reviewer blocker: every Cross Hop theme ambient emitter (pollen, fireflies, embers, rain, confetti) is authored with shape 'box' + shapeSize; 5.0.2 ignored both (point spawn, spawnRadius 1.15 m) and the lane lowers a 34 x 3 x 20.7 m box (rain 34 x 0.5 x 20.7). The r2 frames showed no difference because they used the default vivid look, which has no ambient emitter: ambientNode is mounted only by buildDioramaScene / swapDioramaLook (?look=diorama).",
+  "method": {
+    "servers": "base = lane merge-base e5387f3b0 (origin/main before the 5.0.3 merges; 5.0.2 particle lowering) via git archive with the worktree's unchanged dirs and LFS-smudged public/ linked in; branch = lane worktree. Both run the root vite dev server behind tools/route-public-proxy.mjs (from lane/514-materials-env) and the same core.ts diag switches. Current origin/main is 89 commits ahead with 5.0.3 engine changes, so the merge-base isolates the lane change (the fixture-based unit tests below pin the lowering to current origin/main). A first attempt served an archived public/ whose GLBs differ from the LFS-smudged worktree copies; those frames were discarded.",
+    "clock": "games/shim.js virtual clock (lane/504-bellkeeper) + seeded Math.random; 300 virtual frames after ready; vnow per frame in capture-log*.txt",
+    "variants": "base, base2 (noise), basenoamb (?diag=1&qaNoAmbient=1), branch (lane authoring: box volume), branch2 (noise), branchnoamb, branchpoint (lane engine, shape/shapeSize dropped: same descriptor as base; was a temporary diag switch), branchfixed (lane HEAD after the fix: same authoring as branchpoint)",
+    "views": "gameplay diorama camera (frames/*-<variant>.png) and a free diag camera 7 m in front of each emitter origin (?qaCamEye/qaCamAt, frames/*-near-<variant>.png)",
+    "diffs": "mad-ambient.py (diff-gameplay-camera.json, diff-near-camera.json), mad-fixed.py (diff-near-fixed.json); absdiff-near-*-x8.png = with minus without emitter, x8; crop-near-*.png side-by-side crops"
+  },
+  "findings": {
+    "gameplay camera": "Ambient particles are close to invisible in both 5.0.2 and the box volume (with-vs-without <= 0.06/255 mean, <= 0.2 % px over 8). 5.0.2 draws a faint cluster near the backdrop; the box draws a few scattered single dots.",
+    "pollen (t0)": "Near view: 5.0.2 is a visible cluster of soft yellow dots at the emitter origin; the box volume leaves no visible pollen in view (crop-near-pollen.png).",
+    "fireflies (t2)": "Near view: 5.0.2 is a visible cluster of glowing dots; the box volume shows 1-2 faint dots (crop-near-fireflies.png, crop-near-fixed-fireflies.png).",
+    "embers (t3)": "Very faint in both (lifetime 1.5-3 s, gravity pulls them out of the origin); a few dim red sparks in 5.0.2, one in the box (crop-near-embers.png).",
+    "rain (t4)": "No rain pixels in either version from either view (speed lowers to ~50 m/s upward with gravity -9, so streaks leave the frame within a frame; the hawk also covers the near view). The descriptor still changes; pixels do not.",
+    "confetti (t5)": "Near view: 5.0.2 is a visible cluster of pink dots; the box shows one dot (crop-near-confetti.png)."
+  },
+  "decision": {
+    "all themes": "Keep the 5.0.2 look. The box volume is not clearly better: it spreads a few hundred 3-9 cm particles through ~2,100 m3 and makes the ambient effect effectively disappear. Game-only edit: ambientNode no longer authors shape/shapeSize (AmbientEmitter.shapeSize stays as data), so every theme's emitter lowers exactly as on origin/main.",
+    "verification": "tests/unit/cross-hop/ambient-emitter-5-0-2.test.ts compares the lowered emitter of all five themes with the origin/main lowering (tests/fixtures/cross-hop/ambient-lowered-origin-main.json). Frames: base vs branchfixed near view = 0.0012 / 0.000 % (pollen), 0.0 / 0.0 (fireflies), 0.0 / 0.0 (confetti), at or below the base-vs-base2 noise (diff-near-fixed.json).",
+    "notes": "No CHANGELOG visible-change note for Cross Hop (renders as 5.0.2). Diag-only hooks kept (measurement only, ?diag=1): qaNoAmbient, qaCamEye/qaCamAt/qaCamFov."
+  }
+}

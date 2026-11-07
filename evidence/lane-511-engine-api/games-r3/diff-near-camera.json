@@ -1,0 +1,172 @@
+{
+ "cross-hop-diorama-t0-pollen-near": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0077,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0212,
+   "pctPixelsOver8": 0.087
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0089,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0136,
+   "pctPixelsOver8": 0.086
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0188,
+   "pctPixelsOver8": 0.077
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0025,
+   "pctPixelsOver8": 0.01
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0111,
+   "pctPixelsOver8": 0.076
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-diorama-t2-fireflies-near": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0004,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.5642,
+   "pctPixelsOver8": 0.404
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0008,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.5642,
+   "pctPixelsOver8": 0.404
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0045,
+   "pctPixelsOver8": 0.028
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.5602,
+   "pctPixelsOver8": 0.376
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0046,
+   "pctPixelsOver8": 0.028
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-diorama-t3-embers-near": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0025,
+   "pctPixelsOver8": 0.016
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0017,
+   "pctPixelsOver8": 0.011
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.002,
+   "pctPixelsOver8": 0.011
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0015,
+   "pctPixelsOver8": 0.009
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0012,
+   "pctPixelsOver8": 0.007
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0004,
+   "pctPixelsOver8": 0.003
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0011,
+   "pctPixelsOver8": 0.006
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-diorama-t4-rain-near": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-diorama-t5-confetti-near": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0019,
+   "pctPixelsOver8": 0.001
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0076,
+   "pctPixelsOver8": 0.036
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0076,
+   "pctPixelsOver8": 0.036
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0067,
+   "pctPixelsOver8": 0.032
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0011,
+   "pctPixelsOver8": 0.005
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0067,
+   "pctPixelsOver8": 0.032
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ }
+}
