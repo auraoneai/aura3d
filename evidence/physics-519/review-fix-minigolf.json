@@ -1,0 +1,68 @@
+{
+  "engineTarball": "/tmp/phys519/tgz/aura3d-engine-5.0.2.tgz (lane 519 branch engine, sha1 aa8c23f5cabbac05ba1c6ec6876c385fd33b29ef; engine unchanged by this fix)",
+  "plugin": "aura3d() from packages/assets/src/vite/auraDecoders.ts compiled with tsc; -old = same files at 8ee47fa8a",
+  "builds": {
+    "nophys-aura3d": {
+      "jsBytes": 6551866,
+      "jsGzip9": 1927837,
+      "jsFiles": 79,
+      "rapierChunk": [],
+      "decision": "[aura3d] physics stripped: no physics usage in 2 application module(s); Rapier is not bundled. Set aura3d({ physics: true }) to keep it."
+    },
+    "golf-aura3d": {
+      "jsBytes": 9405562,
+      "jsGzip9": 3010672,
+      "jsFiles": 81,
+      "rapierChunk": [
+        {
+          "file": "assets/rapier-B9LFmugn.js",
+          "bytes": 2853747
+        }
+      ],
+      "decision": "[aura3d] physics kept (\"miniGolfHole\" in /private/tmp/fx522-consumer/golf/main.ts)"
+    },
+    "golf-none": {
+      "jsBytes": 9405562,
+      "jsGzip9": 3010672,
+      "jsFiles": 81,
+      "rapierChunk": [
+        {
+          "file": "assets/rapier-B9LFmugn.js",
+          "bytes": 2853747
+        }
+      ],
+      "decision": null
+    },
+    "golf-aura3d-old": {
+      "jsBytes": 6551860,
+      "jsGzip9": 1927920,
+      "jsFiles": 79,
+      "rapierChunk": [],
+      "decision": "[aura3d] physics stripped: no physics usage in 2 application module(s); Rapier is not bundled. Set aura3d({ physics: true }) to keep it."
+    },
+    "golfKeptVsNoPlugin": {
+      "jsAndHtmlFiles": 82,
+      "identical": true,
+      "differing": []
+    }
+  },
+  "miniGolfHeadlessNode": {
+    "declaredBodies": 9,
+    "registryIds": [
+      1
+    ],
+    "ground": {
+      "type": "static",
+      "position": [
+        0,
+        -0.029999999329447746,
+        -0.41999998688697815
+      ]
+    },
+    "steps": 240,
+    "collisionEvents": 0,
+    "rayDownAtCup": "designed mini golf felt base course boundaries",
+    "backend": "headless",
+    "errors": []
+  }
+}

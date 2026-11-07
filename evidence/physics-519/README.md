@@ -79,3 +79,24 @@ See `neutrality/README.md`.
 
 `tools/`: every script used here (`consumer519.sh`, `measure519.mjs`, `ccap519.mjs`, `capture519.sh`, `stripped-misuse.sh`,
 `compose519.mjs`, `games-*.sh`, `pixdiff.mjs`, `neutral519.mjs`); `consumer-apps/`: the two lazy consumer apps.
+
+## Review fix: engine APIs that declare bodies internally (`review-fix-minigolf.json`)
+
+The pre-fix scan stripped Rapier from an app whose only physics came from `prefabs.miniGolfHole()` (nine `.physics({...})` bodies
+inside the engine, no physics keyword in the app). The scan now also matches every public engine entry whose implementation
+declares bodies or uses the physics world, generated from the engine sources by `packages/assets/scripts/gen-physics-entry-points.mjs`
+into `packages/assets/src/vite/physicsEntryPoints.generated.ts` (checked by `tests/unit/assets/physics-entry-points.test.ts`),
+and keeps physics on uses it cannot resolve (`prefabs[name]`, `import * as engine` indexed, `import("@aura3d/engine")`).
+Same clean consumer and branch engine tarball as above, `aura3d()` from `@aura3d/assets/vite`:
+
+| App | Build | JS (assets) | gzip -9 | Rapier chunk | Decision |
+| --- | --- | --- | --- | --- | --- |
+| no physics (one lit box) | `aura3d()` | 6,551,866 B | 1,927,837 B | none | stripped |
+| `prefabs.miniGolfHole()` | pre-fix `aura3d()` | 6,551,860 B | 1,927,920 B | none (the bug) | stripped |
+| `prefabs.miniGolfHole()` | `aura3d()` | 9,405,562 B | 3,010,672 B | 2,853,747 B | kept (`"miniGolfHole" in golf/main.ts`) |
+| `prefabs.miniGolfHole()` | no plugin | 9,405,562 B | 3,010,672 B | 2,853,747 B | n/a |
+
+The kept build's JS and HTML are byte-identical to the no-plugin build (82 files; `aura-decoders/` copies made by the decoder half of
+`aura3d()` excluded). Headless in Node with Rapier, the mini-golf scene mounts with no errors, steps 240 times, and a ray cast down at the
+cup hits the declared static felt plane. That headless app registers 1 of the 9 declared bodies in `app.physics.bodies`; the published
+5.0.2 engine does the same (a pre-existing headless behaviour that this lane does not change).

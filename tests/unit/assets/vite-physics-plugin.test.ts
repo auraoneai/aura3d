@@ -46,6 +46,38 @@ describe("physics usage scanner", () => {
     expect(findPhysicsUsage(code)).toBeUndefined();
   });
 
+  // Review blocker: prefabs.miniGolfHole() declares nine `.physics({...})` bodies inside the engine, and its source
+  // has no physics keyword. Stripping Rapier there threw PHYSICS_BACKEND_MISSING at mount.
+  it.each([
+    ["prefabs.miniGolfHole()", `import { createAuraApp, scene, prefabs } from "@aura3d/engine";\ncreateAuraApp("#stage", { scene: scene().add(...prefabs.miniGolfHole()) });`],
+    ["prefabs.miniGolfCourse()", `import { createAuraApp, scene, prefabs } from "@aura3d/engine";\ncreateAuraApp("#stage", { scene: scene().add(...prefabs.miniGolfCourse()) });`],
+    ["a destructured miniGolfHole", `const { miniGolfHole } = prefabs; scene().add(...miniGolfHole({ shots: 2 }));`],
+    ["a string-keyed miniGolfCourse", `scene().add(...prefabs["miniGolfCourse"]());`]
+  ])("keeps physics for %s", (_label, code) => {
+    expect(findPhysicsUsage(code)).toBeDefined();
+  });
+
+  it.each([
+    ["computed prefab access", `import { prefabs } from "@aura3d/engine";\nconst name = pick(); scene().add(...prefabs[name]());`],
+    ["optional computed prefab access", `scene().add(...prefabs?.[name]?.());`],
+    ["the prefabs object passed along", `import { prefabs } from "@aura3d/engine";\nbuildMenu(prefabs);`],
+    ["Object.values(prefabs)", `for (const make of Object.values(prefabs)) scene().add(...make());`],
+    ["an aliased prefabs import indexed", `import { prefabs as kit } from "@aura3d/engine";\nscene().add(...kit[name]());`],
+    ["an engine namespace import indexed", `import * as A3D from "@aura3d/engine";\nconst make = A3D[kind];`],
+    ["an engine namespace import passed along", `import * as A3D from "@aura3d/engine";\nregister(A3D);`],
+    ["a dynamic engine import", `const engine = await import("@aura3d/engine");\nengine[kind]();`]
+  ])("keeps physics when it cannot resolve %s", (_label, code) => {
+    expect(findPhysicsUsage(code)).toBeDefined();
+  });
+
+  it.each([
+    ["a solar system prefab", `import { createAuraApp, scene, prefabs } from "@aura3d/engine";\ncreateAuraApp("#app", { scene: scene().add(...prefabs.solarSystem()) });`],
+    ["an engine namespace import used by member", `import * as A3D from "@aura3d/engine";\nA3D.createAuraApp("#app", { scene: A3D.scene().add(A3D.primitives.box({})) });`],
+    ["a re-export of prefabs", `export { prefabs, scene } from "@aura3d/engine";`]
+  ])("still strips for %s", (_label, code) => {
+    expect(findPhysicsUsage(code)).toBeUndefined();
+  });
+
   it("does not see through fully computed access (documented: set physics: true)", () => {
     expect(findPhysicsUsage(`const k = ["ph", "ys", "ics"].join(""); app[k].step()`)).toBeUndefined();
   });

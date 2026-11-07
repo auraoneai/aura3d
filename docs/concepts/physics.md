@@ -51,10 +51,18 @@ export default defineConfig({ plugins: [aura3d()] }); // physics: "auto" (defaul
   including dynamically imported modules and shared folders outside the Vite root, plus any third-party dependency that itself
   depends on `@aura3d/*` or Rapier). Any mention of physics keeps Rapier: `.physics(`, `app.physics`, `preloadPhysics`,
   `ensurePhysics`, `PhysicsWorld`, `@aura3d/physics`, `@dimforge/rapier*`, rigid bodies, colliders, character controllers, vehicles,
-  ragdolls, scene kits and every genre kit (`game`, `games`, `createGame*`), case-insensitive, comments and strings included. Only
-  when there is no mention at all is the solver module replaced by a stub without a Rapier import, so no Rapier chunk is emitted.
+  ragdolls, scene kits and every genre kit (`game`, `games`, `createGame*`), case-insensitive, comments and strings included.
+  Engine APIs that declare bodies internally keep it too, even when your code never spells a physics word: the name of every
+  public engine export or namespace member whose implementation declares bodies or colliders or uses the physics world
+  (for example `prefabs.miniGolfHole()` and `prefabs.miniGolfCourse()`, which build static walls and a dynamic ball) is generated
+  from the engine sources into `packages/assets/src/vite/physicsEntryPoints.generated.ts`, and a unit test fails when that list
+  falls behind the engine. When the scan cannot tell which member you use, it keeps Rapier: `prefabs[name]`,
+  `Object.values(prefabs)`, passing `prefabs` along, an `import * as engine from "@aura3d/engine"` used other than as
+  `engine.member`, or `import("@aura3d/engine")`. Only when there is no mention at all is the solver module replaced by a stub
+  without a Rapier import, so no Rapier chunk is emitted.
   The build log says which way it went (`[aura3d] physics kept ("physics" in src/level.ts)` or `[aura3d] physics stripped: ...`).
-  If a stripped app uses physics after all (for example through a property name computed at runtime), `app.physics`,
+  The scan reads text, so it cannot see physics reached only through a name assembled at runtime (`app[["ph", "ysics"].join("")]`):
+  set `aura3d({ physics: true })` for such an app. If a stripped app uses physics after all, `app.physics`,
   `new PhysicsWorld()` and `preloadPhysics()` throw the typed error with `error.code === "PHYSICS_BACKEND_MISSING"` and the message
   `PHYSICS_BACKEND_MISSING: physics was stripped at build time because no physics usage was found; set aura3d({ physics: true }) in vite.config`.
   `vite dev` never strips; neither does an SSR build. `physics: true` never strips, `physics: false` always does.

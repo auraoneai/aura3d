@@ -6,7 +6,10 @@
  * startup, physics or not. This plugin removes that cost without changing any app that uses physics:
  *
  * - `physics: "auto"` (default): on `vite build`, walk the app's own module graph (every module that is not part of an
- *   Aura3D package or an unrelated dependency) and look for any physics mention. Only when there is none is the solver
+ *   Aura3D package or an unrelated dependency) and look for any physics mention: a physics keyword, the name of any
+ *   public engine API that declares bodies internally (generated from the engine sources into
+ *   ./physicsEntryPoints.generated.ts, e.g. `prefabs.miniGolfHole`), or a use of an engine namespace the scan cannot
+ *   resolve (`prefabs[name]`, `import * as engine` used other than `engine.member`). Only when there is none is the solver
  *   initialisation module (`#aura3d/rapier-init`) replaced by a stub without a Rapier import, so no Rapier chunk is
  *   emitted. The stub's entry points throw the typed PHYSICS_BACKEND_MISSING error with {@link PHYSICS_STRIPPED_MESSAGE}.
  *   `vite dev` never strips.
@@ -18,6 +21,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { PHYSICS_ENTRY_TOKENS, PHYSICS_NAMESPACE_OBJECTS } from "./physicsEntryPoints.generated.js";
 
 export type AuraPhysicsBuildMode = "auto" | "lazy" | boolean;
 
@@ -46,9 +50,58 @@ const RAPIER_PACKAGE = /^@dimforge\/rapier3d(?:-compat)?(?:\/|$)/;
 const PHYSICS_RAPIER_DIR = /[\\/]physics-rapier[\\/]/;
 const MAX_SCANNED_MODULES = 20000;
 
-/** The first physics mention in a module's code, or `undefined`. */
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/**
+ * Names of public engine APIs whose implementation declares bodies or uses the physics world (generated, see
+ * ./physicsEntryPoints.generated.ts), matched as whole identifiers: `prefabs.miniGolfHole()`, `{ miniGolfHole }`,
+ * `prefabs["miniGolfHole"]` all keep physics.
+ */
+const PHYSICS_ENTRY_PATTERN = new RegExp(`(?<![\\w$])(?:${PHYSICS_ENTRY_TOKENS.map(escapeRegExp).join("|")})(?![\\w$])`);
+/** Import and re-export statements: their binding lists name namespaces without using them. */
+const IMPORT_EXPORT_FROM = /^[ \t]*(?:import|export)\b[^;'"`]*?\bfrom\s*["'][^"']*["']/gm;
+/** `import * as ns from "@aura3d/..."`: the whole engine surface behind one name. */
+const AURA_NAMESPACE_IMPORT = /\bimport\s*\*\s*as\s+([A-Za-z_$][\w$]*)\s+from\s*["']@aura3d\/[^"']*["']/g;
+/** `import("@aura3d/engine")`: the namespace value can be indexed anywhere, so the scan cannot follow it. */
+const AURA_DYNAMIC_ENGINE_IMPORT = /\bimport\s*\(\s*["']@aura3d\/engine(?:\/[^"']*)?["']\s*\)/;
+
+/**
+ * The first use of `name` that is not a plain `name.member` access, i.e. one the scan cannot resolve to a member
+ * (`name[key]`, `name?.[key]`, `Object.values(name)`, `{ ...name }`, passing it along, destructuring it).
+ */
+function unresolvedNamespaceUse(code: string, name: string): string | undefined {
+  const occurrence = new RegExp(`(?<![\\w$])${escapeRegExp(name)}(?![\\w$])`, "g");
+  for (let match = occurrence.exec(code); match; match = occurrence.exec(code)) {
+    const rest = code.slice(match.index + name.length, match.index + name.length + 64);
+    if (/^\s*(?:\?\.|\.)\s*[A-Za-z_$#]/.test(rest)) continue;
+    return `${name}${rest.trimStart().slice(0, 2)}`.trim();
+  }
+  return undefined;
+}
+
+/**
+ * The first physics mention in a module's code, or `undefined`. Any of: the keyword pattern, a generated engine entry
+ * name, an unresolvable use of a namespace with physics members or of an Aura3D namespace import, or a dynamic import
+ * of the engine. When in doubt this keeps physics: a false "keep" only costs the download every app pays today.
+ */
 export function findPhysicsUsage(code: string): string | undefined {
-  return PHYSICS_USAGE_PATTERN.exec(code)?.[0];
+  const keyword = PHYSICS_USAGE_PATTERN.exec(code)?.[0];
+  if (keyword !== undefined) return keyword;
+  const entry = PHYSICS_ENTRY_PATTERN.exec(code)?.[0];
+  if (entry !== undefined) return entry;
+  const dynamicImport = AURA_DYNAMIC_ENGINE_IMPORT.exec(code)?.[0];
+  if (dynamicImport !== undefined) return dynamicImport;
+  const namespaces = [
+    ...PHYSICS_NAMESPACE_OBJECTS,
+    // `import { prefabs as kit }`: the local name stands for the namespace.
+    ...PHYSICS_NAMESPACE_OBJECTS.flatMap((name) => [...code.matchAll(new RegExp(`(?<![\\w$])${escapeRegExp(name)}\\s+as\\s+([A-Za-z_$][\\w$]*)`, "g"))].map((match) => match[1]!)),
+    ...[...code.matchAll(AURA_NAMESPACE_IMPORT)].map((match) => match[1]!)
+  ];
+  const body = code.replace(IMPORT_EXPORT_FROM, "");
+  for (const name of namespaces) {
+    const use = unresolvedNamespaceUse(body, name);
+    if (use !== undefined) return use;
+  }
+  return undefined;
 }
 
 function cleanId(id: string): string {
