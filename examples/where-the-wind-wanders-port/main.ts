@@ -22,7 +22,7 @@ import { MODEL_ASSETS } from "./model-assets";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { PAPER_PASS_NAME, paperPass, paperScale } from "./paper-pass";
 
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 
 const params = new URLSearchParams(location.search);
 const lab = labAppOptions(readLabFlags());

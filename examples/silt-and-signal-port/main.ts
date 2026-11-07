@@ -21,8 +21,8 @@ import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
 import { FINISH_ORBIT, RAIL_SECONDS, finishOrbitPose, railPose } from "./camera";
 import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
 const params = new URLSearchParams(location.search);

@@ -13,8 +13,8 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import type { GameSessionState } from "@aura3d/engine";
-import { labAppOptions, parseLabFlags } from "../../apps/showcase-port-shared/lab-flags";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, parseLabFlags } from "../shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
 import { createOrbitAudio } from "./audio";
 import { installOrbitUi } from "./ui";
 import { bestKey, browserStorage, ghostAt, readBest, readMuted, recordBest, writeMuted, type GhostSample } from "./progress";

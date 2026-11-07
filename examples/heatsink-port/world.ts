@@ -20,7 +20,7 @@ import type { Race } from "./race";
 import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
 import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
-import { labCameraOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
 import { lookFromSearch, lowTier, SHADER_SUN_DIR, type HeatsinkLookRow } from "./art/look";

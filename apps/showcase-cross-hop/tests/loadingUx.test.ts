@@ -3,8 +3,8 @@ import { modelUrls, modelProgressFraction, modelLabel, MODEL_PROGRESS_CEIL, MODE
 
 describe("loading progress helpers", () => {
   it("lists the distinct GLB urls of the manifest", () => {
-    const urls = modelUrls({ a: { url: "/x/a.1.glb" }, b: { url: "/x/a.1.glb" }, c: { url: "/x/c.2.glb?v=1" }, d: { url: "/x/s.svg" }, e: null });
-    expect(urls).toEqual(["/x/a.1.glb", "/x/c.2.glb?v=1"]);
+    const urls = modelUrls({ a: { url: "x/a.1.glb" }, b: { url: "x/a.1.glb" }, c: { url: "x/c.2.glb?v=1" }, d: { url: "x/s.svg" }, e: null });
+    expect(urls).toEqual(["x/a.1.glb", "x/c.2.glb?v=1"]);
   });
   it("is monotone and stays inside the model range", () => {
     let prev = -1;

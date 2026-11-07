@@ -8,8 +8,8 @@
  * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting).
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";

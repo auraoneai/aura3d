@@ -19,8 +19,8 @@ import {
 import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
 import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 import "./enamel.css";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */

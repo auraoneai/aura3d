@@ -33,7 +33,7 @@ describe("hero secondary motion", () => {
     expect(followDrive(1, 0, 5)).toBeLessThan(1e-6);
   });
   it("registers a small footfall puff preset", () => {
-    const layer = WIND_VFX_PRESETS["wind-footfall"]!.layers[0] as { count: number };
+    const layer = WIND_VFX_PRESETS["wind-footfall"]!.layers[0] as unknown as { count: number };
     expect(layer.count).toBeLessThanOrEqual(8);
   });
 });

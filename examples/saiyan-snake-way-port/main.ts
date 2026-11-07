@@ -20,8 +20,8 @@ import {
 } from "./sim";
 import { DROWSE_ALERT, daysStatusLabel, drowseCue, finalScore, gapAhead, gustCue, onboardingPrompt } from "./hud";
 import { createRunInput } from "./input";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 import { createRenderGuard } from "./renderGuard";
 import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";

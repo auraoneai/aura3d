@@ -16,8 +16,8 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 import { Autopilot } from "./autopilot";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";

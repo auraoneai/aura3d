@@ -1181,8 +1181,8 @@
       "regions": [
         {
           "label": "subject",
-          "x": 590,
-          "y": 438,
+          "x": 600,
+          "y": 380,
           "width": 98,
           "height": 76,
           "minContrast": 8,
@@ -1250,8 +1250,8 @@
       "regions": [
         {
           "label": "subject",
-          "x": 624,
-          "y": 432,
+          "x": 612,
+          "y": 400,
           "width": 66,
           "height": 62,
           "minContrast": 8,
@@ -4640,7 +4640,7 @@
       },
       "source": {
         "path": "examples/heatsink-port/main.ts",
-        "sha256": "649f3f19bc850ddfe14d75618ffa88114394875443e01271b0e2e3378671eebf"
+        "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
       },
       "sourceDependencies": [
         {
@@ -4649,7 +4649,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "a5944e32910d17b7b28e3ce9840744a24dbfa92e3e3c3516dcbd1aff40964a66"
+          "sha256": "1f69923bae53c29d2277dd61aa428ca0632a243973802192477dd84c5758af70"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4752,11 +4752,11 @@
         },
         {
           "path": "examples/heatsink-port/main.ts",
-          "sha256": "649f3f19bc850ddfe14d75618ffa88114394875443e01271b0e2e3378671eebf"
+          "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "a5944e32910d17b7b28e3ce9840744a24dbfa92e3e3c3516dcbd1aff40964a66"
+          "sha256": "1f69923bae53c29d2277dd61aa428ca0632a243973802192477dd84c5758af70"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4851,7 +4851,7 @@
       },
       "source": {
         "path": "examples/drift-and-deliver-port/main.ts",
-        "sha256": "d045477081b194fab05f285cbcef412c6f03cb4059093d2940dff28fe3159be6"
+        "sha256": "bcfe510b1a5debb9d640a34ca3975358f90ed568c5bb44aa707cf67ac7162fa9"
       },
       "sourceDependencies": [
         {
@@ -4956,7 +4956,7 @@
         },
         {
           "path": "examples/drift-and-deliver-port/main.ts",
-          "sha256": "d045477081b194fab05f285cbcef412c6f03cb4059093d2940dff28fe3159be6"
+          "sha256": "bcfe510b1a5debb9d640a34ca3975358f90ed568c5bb44aa707cf67ac7162fa9"
         },
         {
           "path": "examples/drift-and-deliver-port/chase.ts",
@@ -5047,7 +5047,7 @@
       },
       "source": {
         "path": "examples/last-train-port/main.ts",
-        "sha256": "9c75e29349eafcd7580cfeda429b169efbbfb7c35edcf541481110e1ffbd5055"
+        "sha256": "53a923fac6d3c4a22c6291caeba239ab05ae6fecdae95b9d47c945f46a8afbea"
       },
       "sourceDependencies": [
         {
@@ -5156,7 +5156,7 @@
         },
         {
           "path": "examples/last-train-port/main.ts",
-          "sha256": "9c75e29349eafcd7580cfeda429b169efbbfb7c35edcf541481110e1ffbd5055"
+          "sha256": "53a923fac6d3c4a22c6291caeba239ab05ae6fecdae95b9d47c945f46a8afbea"
         },
         {
           "path": "examples/last-train-port/world.ts",
@@ -5251,7 +5251,7 @@
       },
       "source": {
         "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-        "sha256": "f44b129c602e2d64300712064a8d85e766fa1f48c1992fc89add63e90c5de442"
+        "sha256": "54633c9bc3100336b07c2adbd7849553f6d2aa971c1fc3df12965bfb97847677"
       },
       "sourceDependencies": [
         {
@@ -5377,7 +5377,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-          "sha256": "f44b129c602e2d64300712064a8d85e766fa1f48c1992fc89add63e90c5de442"
+          "sha256": "54633c9bc3100336b07c2adbd7849553f6d2aa971c1fc3df12965bfb97847677"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
@@ -5488,7 +5488,7 @@
       },
       "source": {
         "path": "examples/ninja-runner-port/main.ts",
-        "sha256": "1f599d14c5bea3a9abd229094b6466d574f9e5f31bf14485a9ee7c952686368d"
+        "sha256": "241e6c7f3b5348feed7e649038a7e5ca410a29e58e7e01509c9aa69fd29f0418"
       },
       "sourceDependencies": [
         {
@@ -5617,7 +5617,7 @@
         },
         {
           "path": "examples/ninja-runner-port/main.ts",
-          "sha256": "1f599d14c5bea3a9abd229094b6466d574f9e5f31bf14485a9ee7c952686368d"
+          "sha256": "241e6c7f3b5348feed7e649038a7e5ca410a29e58e7e01509c9aa69fd29f0418"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -6008,7 +6008,7 @@
       },
       "source": {
         "path": "examples/silt-and-signal-port/main.ts",
-        "sha256": "4574429fe35e0750a20f41a9e536c729a47279eab69fd39d76117be6d723f8a5"
+        "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
       },
       "sourceDependencies": [
         {
@@ -6112,7 +6112,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/main.ts",
-          "sha256": "4574429fe35e0750a20f41a9e536c729a47279eab69fd39d76117be6d723f8a5"
+          "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -6229,7 +6229,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/main.ts",
-          "sha256": "af9ca950f2f75c896e4548573c1ea3d123ce0971b6d970ce7d70279a7fbb030a"
+          "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
@@ -6323,7 +6323,7 @@
       },
       "source": {
         "path": "examples/splat-rush-port/main.ts",
-        "sha256": "a5d769a81ef50de7e87809afba34422361160fa619173b8232f993c39914f1c7"
+        "sha256": "b413d7c6b7ea41cf8ce76a02a5ff9326ce4d7f481ab5fa49ab932cfc3e1b2c23"
       },
       "sourceDependencies": [
         {
@@ -6419,7 +6419,7 @@
       "sourceDependencies": [
         {
           "path": "examples/splat-rush-port/main.ts",
-          "sha256": "a5d769a81ef50de7e87809afba34422361160fa619173b8232f993c39914f1c7"
+          "sha256": "b413d7c6b7ea41cf8ce76a02a5ff9326ce4d7f481ab5fa49ab932cfc3e1b2c23"
         },
         {
           "path": "examples/splat-rush-port/sim.ts",
@@ -6505,7 +6505,7 @@
       },
       "source": {
         "path": "examples/strange-orbit-port/main.ts",
-        "sha256": "4d9ca7abddf6d47f1f940985fb672f40f7e9f8c9c2c153fec593ea6be7b642d8"
+        "sha256": "d55741b0bb1d19d9e59e0cbf3ec66a374e8a67b004fa6edd4140bcb6e8d8ab43"
       },
       "sourceDependencies": [
         {
@@ -6597,7 +6597,7 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/main.ts",
-          "sha256": "4d9ca7abddf6d47f1f940985fb672f40f7e9f8c9c2c153fec593ea6be7b642d8"
+          "sha256": "d55741b0bb1d19d9e59e0cbf3ec66a374e8a67b004fa6edd4140bcb6e8d8ab43"
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
@@ -6682,7 +6682,7 @@
       },
       "source": {
         "path": "examples/where-the-wind-wanders-port/main.ts",
-        "sha256": "4b47ac2c8ca53c29f66b20b62d5eb670da0905ca41a6abcfacea55f0886d61bf"
+        "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
       },
       "sourceDependencies": [
         {
@@ -6777,7 +6777,7 @@
       "sourceDependencies": [
         {
           "path": "examples/where-the-wind-wanders-port/main.ts",
-          "sha256": "4b47ac2c8ca53c29f66b20b62d5eb670da0905ca41a6abcfacea55f0886d61bf"
+          "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
         },
         {
           "path": "examples/where-the-wind-wanders-port/sim.ts",
@@ -8222,7 +8222,7 @@
       },
       "source": {
         "path": "examples/saiyan-snake-way-port/main.ts",
-        "sha256": "af9ca950f2f75c896e4548573c1ea3d123ce0971b6d970ce7d70279a7fbb030a"
+        "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
       },
       "sourceDependencies": [
         {

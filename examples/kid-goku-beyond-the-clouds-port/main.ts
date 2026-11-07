@@ -16,7 +16,7 @@ import { createGoPresenter, viewOf } from "./presentation";
 import { GameAudio } from "./audio";
 import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "./sim";
 import { Ui } from "./ui";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { createLoadingProgress } from "../shared/loading-progress";
 import { buildWorld, type WorldRuntime } from "./world";
 
 const STEP = 1 / 60;

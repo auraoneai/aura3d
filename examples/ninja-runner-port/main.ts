@@ -10,9 +10,9 @@
  * holds still like `manual=1`, for the district luma targets), `lanterns=1` (opt in to the pooled lantern lights; off since the GU47 phase-2 second pass), `grain=1` (opt in to the film grain), `scarf=0` (no scarf ribbon), `godrays=1` (opt in to the volumetric god rays; off by default since GU47 phase 2: in software WebGL2 the pass
  * washed the whole frame to its fog colour and cost minutes per frame), `cones=0` (no gate light cones).
  */
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
-import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
-import { publishBackendReport } from "../../apps/showcase-port-shared/backend-report";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { createLoadingProgress } from "../shared/loading-progress";
+import { publishBackendReport } from "../shared/backend-report";
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
