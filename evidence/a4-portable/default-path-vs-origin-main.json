@@ -1,0 +1,38 @@
+{
+  "silt-inked: branch flag-off vs origin/main": {
+    "meanAbsDiff255": 1.2433,
+    "maxDiff255": 193,
+    "changedPct": 11.828,
+    "over16Pct": 2.162
+  },
+  "silt-original: branch flag-off vs origin/main": {
+    "meanAbsDiff255": 0.0,
+    "maxDiff255": 0,
+    "changedPct": 0.0,
+    "over16Pct": 0.0
+  },
+  "last-train: branch flag-off vs origin/main": {
+    "meanAbsDiff255": 1.6213,
+    "maxDiff255": 8,
+    "changedPct": 73.47,
+    "over16Pct": 0.0
+  },
+  "last-train: origin/main floor (glsl vs glsl2)": {
+    "meanAbsDiff255": 1.6151,
+    "maxDiff255": 8,
+    "changedPct": 73.214,
+    "over16Pct": 0.0
+  },
+  "last-train: branch floor (glsl vs glsl2)": {
+    "meanAbsDiff255": 1.6548,
+    "maxDiff255": 8,
+    "changedPct": 74.293,
+    "over16Pct": 0.0
+  },
+  "silt-inked: branch floor (glsl vs glsl2)": {
+    "meanAbsDiff255": 1.4622,
+    "maxDiff255": 195,
+    "changedPct": 10.42,
+    "over16Pct": 2.53
+  }
+}
