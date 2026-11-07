@@ -1,0 +1,76 @@
+CHANGED physics-rapier/index.d.ts
+  + /** Stable error code for an absent or unresolvable Rapier backend. */
+  + export declare const PHYSICS_BACKEND_MISSING: "PHYSICS_BACKEND_MISSING";
+  + /** The exact command that installs the pinned Rapier backend with npm. */
+  + export declare const PHYSICS_BACKEND_INSTALL_COMMAND: "npm install @dimforge/rapier3d-compat@0.20.0";
+  + * Thrown (synchronously for `new PhysicsWorld()` / declared `.physics({...})` bodies, asynchronously for
+  + * `createRapierPhysics()` and `preloadPhysics()`) when `@dimforge/rapier3d-compat` cannot be resolved. Carries the
+  + * install command so an agent or a developer can fix the project without reading docs.
+  + export declare class PhysicsBackendMissingError extends Error {
+  + readonly code: "PHYSICS_BACKEND_MISSING";
+  + readonly installCommand: "npm install @dimforge/rapier3d-compat@0.20.0";
+  + constructor(detail?: string, options?: {
+  + readonly cause?: unknown;
+  + });
+  + export type PhysicsBackendStatus = {
+  + readonly state: "ready";
+  + readonly state: "missing";
+  + readonly code: typeof PHYSICS_BACKEND_MISSING;
+  + readonly installCommand: typeof PHYSICS_BACKEND_INSTALL_COMMAND;
+  + readonly state: "failed";
+  + readonly cause: unknown;
+  + /** Observed (not predicted) backend state; `missing` also covers a lazy build that has not finished loading. */
+  + export declare function getPhysicsBackendStatus(): PhysicsBackendStatus;
+ADDED FILE aura3d-cli/physics-backend-check.d.ts
+CHANGED aura3d-cli/animation-asset-profiles.d.ts
+  - import type { AnimationAssetProfile } from "@aura3d/asset-index";
+  + import type { AnimationAssetProfile } from "../asset-index/index";
+CHANGED aura3d-cli/codemods/engine-entry-imports.d.ts
+  - * ledger). For every `import { … } from "@aura3d/engine"` the codemod moves
+  + * ledger). For every `import { … } from "../../engine/index"` the codemod moves
+CHANGED aura3d-cli/codemods/lean-imports.d.ts
+  - *     → import { createAuraApp, scene } from "@aura3d/engine";
+  + *     → import { createAuraApp, scene } from "../../engine/index";
+CHANGED aura3d-cli/commands/assets/optimize.d.ts
+  - type RenderingLanes = typeof import("@aura3d/rendering/lanes");
+  - type HdrImage = import("@aura3d/rendering/lanes").HdrImage;
+  + type RenderingLanes = typeof import("../../../rendering/lanes/index");
+  + type HdrImage = import("../../../rendering/lanes/index").HdrImage;
+CHANGED aura3d-cli/contracts/assetManifest.d.ts
+  - import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+  + import type { AuraQualityTier } from "../../rendering/contracts/index";
+CHANGED aura3d-cli/game-asset-profiles.d.ts
+  - import { type GameAssetProfile } from "@aura3d/asset-index";
+  + import { type GameAssetProfile } from "../asset-index/index";
+CHANGED aura3d-cli/game-asset-validator.d.ts
+  - export { evaluateGameAssetProfile } from "@aura3d/asset-index";
+  - export type { GameAssetProfile, GameAssetProfileEvaluation } from "@aura3d/asset-index";
+  + export { evaluateGameAssetProfile } from "../asset-index/index";
+  + export type { GameAssetProfile, GameAssetProfileEvaluation } from "../asset-index/index";
+CHANGED aura3d-cli/library-manifest.d.ts
+  - import type { AuraLibraryEntryShape, AuraLibraryManifestShape } from "@aura3d/asset-index";
+  + import type { AuraLibraryEntryShape, AuraLibraryManifestShape } from "../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/adapters.d.ts
+  - import type { SourceAdapter } from "@aura3d/asset-index";
+  + import type { SourceAdapter } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/profiles.d.ts
+  - import type { AnimationAssetProfile, AuraCanonicalAsset, ResolveCandidate, ResolveConstraints } from "@aura3d/asset-index";
+  + import type { AnimationAssetProfile, AuraCanonicalAsset, ResolveCandidate, ResolveConstraints } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/provenance.d.ts
+  - import type { AuraAssetIntendedRole, AuraCanonicalAsset, ResolveCandidate } from "@aura3d/asset-index";
+  + import type { AuraAssetIntendedRole, AuraCanonicalAsset, ResolveCandidate } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/pullable.d.ts
+  - import type { ResolveCandidate } from "@aura3d/asset-index";
+  + import type { ResolveCandidate } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/scoring.d.ts
+  - import type { AuraAssetIntendedRole, ResolveCandidate } from "@aura3d/asset-index";
+  + import type { AuraAssetIntendedRole, ResolveCandidate } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/search.d.ts
+  - import type { AuraCanonicalAsset, FederatedResolver as FederatedResolverType, ResolveCandidate, SourceAdapter } from "@aura3d/asset-index";
+  + import type { AuraCanonicalAsset, FederatedResolver as FederatedResolverType, ResolveCandidate, SourceAdapter } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge/types.d.ts
+  - import type { AnimationAssetProfile } from "@aura3d/asset-index";
+  + import type { AnimationAssetProfile } from "../../asset-index/index";
+CHANGED aura3d-cli/pull-bridge.d.ts
+  - import type { FederatedResolver as FederatedResolverType, SourceAdapter } from "@aura3d/asset-index";
+  + import type { FederatedResolver as FederatedResolverType, SourceAdapter } from "../asset-index/index";

@@ -1,0 +1,27 @@
+ADDED FILE engine/agent-api/physics/backendMissing.d.ts
+CHANGED engine/agent-api/physics/PhysicsWorldProvider.d.ts
+  + export { isPhysicsBackendMissing } from "./backendMissing";
+CHANGED physics-rapier/index.d.ts
+  + /** Stable error code for an absent or unresolvable Rapier backend. */
+  + export declare const PHYSICS_BACKEND_MISSING: "PHYSICS_BACKEND_MISSING";
+  + /** The exact command that installs the pinned Rapier backend with npm. */
+  + export declare const PHYSICS_BACKEND_INSTALL_COMMAND: "npm install @dimforge/rapier3d-compat@0.20.0";
+  + * Thrown (synchronously for `new PhysicsWorld()` / declared `.physics({...})` bodies, asynchronously for
+  + * `createRapierPhysics()` and `preloadPhysics()`) when `@dimforge/rapier3d-compat` cannot be resolved. Carries the
+  + * install command so an agent or a developer can fix the project without reading docs.
+  + export declare class PhysicsBackendMissingError extends Error {
+  + readonly code: "PHYSICS_BACKEND_MISSING";
+  + readonly installCommand: "npm install @dimforge/rapier3d-compat@0.20.0";
+  + constructor(detail?: string, options?: {
+  + readonly cause?: unknown;
+  + });
+  + export type PhysicsBackendStatus = {
+  + readonly state: "ready";
+  + readonly state: "missing";
+  + readonly code: typeof PHYSICS_BACKEND_MISSING;
+  + readonly installCommand: typeof PHYSICS_BACKEND_INSTALL_COMMAND;
+  + readonly state: "failed";
+  + readonly cause: unknown;
+  + /** Observed (not predicted) backend state; `missing` also covers a lazy build that has not finished loading. */
+  + export declare function getPhysicsBackendStatus(): PhysicsBackendStatus;
+ADDED FILE aura3d-cli/physics-backend-check.d.ts
