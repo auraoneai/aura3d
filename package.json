@@ -176,6 +176,12 @@
       "import": "./dist/engine/public/geometry-tools.js",
       "default": "./dist/engine/public/geometry-tools.js"
     },
+    "./procedural": {
+      "types": "./dist/engine/public/procedural.d.ts",
+      "browser": "./dist/engine/public/procedural.js",
+      "import": "./dist/engine/public/procedural.js",
+      "default": "./dist/engine/public/procedural.js"
+    },
     "./media-node": "./dist/engine/agent-api/media-node.js"
   },
   "imports": {

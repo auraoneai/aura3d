@@ -38,7 +38,9 @@ export const ALLOWED_ENGINE_SUBPATHS = [
   // "./geometry-tools" is an additive opt-in subpath (§"Other new subpaths") and
   // "./media-node" stays the Node-only media entry (B15) that the browser root
   // cannot carry.
-  "./geometry-tools", "./media-node"
+  "./geometry-tools", "./media-node",
+  // 5.1 (additive): seeded procedural geometry helpers, docs/agents/procedural-helpers.md.
+  "./procedural"
 ] as const;
 
 // The public entries emit deprecated names as `/** @deprecated ... *\/ export { X }` /
