@@ -1,0 +1,506 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KEKEQUxz9LCGy8CHGqsGQn",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Y5H7JZpSTZfpWtMVyxWqWK",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01MGCL5ygLAftTAvEEppv8xH",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KEKEQUxz9LCGy8CHGqsGQn",
+    "content": "1\t# Task 33: hologram shield\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A sphere drawn with a custom GLSL shader (not a stock material): a fresnel rim glow in cyan, horizontal scanlines that scroll upward over time, and an overall translucent look.\n7\t2. A small solid metallic cube sits inside the sphere and rotates.\n8\t3. A dark background with a floor that faintly reflects or shows the glow.\n9\t4. The scanlines move over time, so frames differ. The camera frames the sphere.\n10\t\n11\tThe rendering contract in the next section applies.\n12\t\n13\t## Rendering contract (all tasks)\n14\t\n15\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n16\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n17\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n18\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n19\t- When you are done, call `finish`.\n20\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Y5H7JZpSTZfpWtMVyxWqWK",
+    "content": "1\t# Aura3D\n2\t\n3\t> Aura3D 5.0.2: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai\n4\t\n5\t## Read first\n6\t\n7\t1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked); the full table is in https://aura3d.auraone.ai/llms-full.txt under \"three.js to Aura3D\". Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.\n8\t2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`.\n9\t3. Do not open `node_modules` or `dist` to find an API: signatures are in `docs/agents/api-signatures.md`.\n10\t\n11\t## Pitfalls that cost the most turns (one-line fixes)\n12\t\n13\t- Dark or flat frame: authored lights with no environment get no image-based light. Add `environments.neutral({ intensity })` or a `looks.preset(id)`; metals need it to reflect anything.\n14\t- Colour applied twice: instance `colors` multiply the material colour. Use a `#ffffff` base material when you pass `colors`.\n15\t- Moving a node: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01MGCL5ygLAftTAvEEppv8xH",
+    "content": "1\t<!-- AURAONE-POLICY-POINTER:START -->\n2\t# AuraOne AI Coding Agent Policy (repository pointer)\n3\t\n4\tCanonical machine-wide policy: `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` (already loaded globally by Codex, Claude Code, Qwen, Kiro, Gemini, Grok, and OpenCode; any other agent **MUST** read `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` before starting work).\n5\tDomain reference files in `/Users/gurbakshchahal/.config/agent-policy/reference/` (`INDEX.md`, `cloud-cost-and-ephemeral-lifecycle.md`, `gitlab-ci-cost-and-lifecycle.md`, `remote-execution.md`, `ci-selection.md`, `parallelism.md`, `shared-service-access.md`, `cloud-contexts.md`, `cloudflare.md`, `vercel-neon.md`, `github-npm.md`, `gitlab-mirror.md`, `ui-typography-density.md`, `linkedin-outreach-research-gate.md`, `room-communication-playbook.md`) are mandatory on-demand reading **only** when triggered by §2 of the canonical policy (never load all reference files unconditionally).\n6\tCloud & GitLab CI Cost, Pre-Authorized Cheapest-Denominator Testing & Mandatory Teardown: **Agents are pre-authorized to run CI/CD, builds, E2E/Playwright suites, and infrastructure tests across AWS, Azure, Cloudflare, GCP, and GitLab CI/CD WITHOUT waiting for Gurbaksh's approval**, provided they **(1) use the cheapest denominator option from the 5-tier hierarchy** via `~/.local/bin/auraone-cost-guard` (existing infra → serverless `$0`-idle Azure ACR Tasks / Container Apps Jobs, AWS CodeBuild, Cloudfla"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "The AGENTS.md reference points to local files that aren't relevant here, so I'll move on to the docs.\n\n",
+    "signature": "CAQS0wQKEggTEAEYAjgBQgh0aGlua2luZxIM2UGhirXSokEN0tuvGgymf6XLRxkcCKwy8BYiMFCLOc0YSPJuIE7/oz9hWo1cJsh39aRkIICjh0dAf+t3Xzf7D2y+1TBOYlLTU3APbiruA6I1n68BP35qhiijlt9fwFEDeUXepfiU7kZpi1HOu/N3ipj2nhbuUIYIA6esUq1u0QcSEPyVPt7/j3yj0WzPDnLdWEPrRSMM+3nbRdEGZx7sB3wm7G9MikB2GFH97oiTstqtQHNLdrCYN9s8ZYl2goVJWaZ45MprC3fUDUpIGxengkvN4AOehE3xsxHjVSVkxc8prhREb0tFnwPJM0IDVvIz8ewG8Zu06AAg/361lwigI1LzssQhSoPJIA5jvfkyrQ548U9SZazkwricpSCuF8r5Qohl8NVyYcUBtoxKGLgIdumr5lyPvXsjrSxQiAFLKan9NZdVxzZy5hCpEVxWYD33Y5Al21H0ts0I4nsQU3norL7+S/fGefO9Ud+Y2/z+1xvOPW2LJMPqXQ3ePGG0CRRf5y7j6k6Q3H31Kg5SMhpkTTPs3Qcv8oXaIZbGa/Jky5nMmFLzKcXEEs8pHkxiXOUjaLH0shT+A/TIpb7cXfLiVvYSzBiVNG2yEsLadu+H5N1W5ZONdmPeDi7flD0d5ugUcQv0Uyp8LSQ7VH4mXkvT/Pi2IwRRDsqYa6GOoW5ut1u+Zgn8B4Ft5dylq0jTOtHSr4RMXe7qeXPw5gIdc/wwDOpjU3Gr5ZaRQVzTR2e6xvLVZ5ldbBtH1TrjCHSUGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01SMWhmRGrxXrAfFvcgvgSyc",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TaJSDtddeQAUZ2st1cXepn",
+    "name": "search",
+    "input": {
+     "pattern": "material\\.custom",
+     "path": "docs/agents"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01SMWhmRGrxXrAfFvcgvgSyc",
+    "content": "README.md\nagent-context.md\nagent-quickstart.md\nanti-hallucination-rules.md\napi-signatures.md\napi-surface.md\nart-direction.md\nasset-selection.md\nasset-workflow.md\nbenchmark-recipes.md\nbuild-a-game.md\nbuild-playbook.md\ncinematic-scene-quality.md\nclaims-and-boundaries.md\ncodebase-map.md\ndeployment.md\neffects-and-scene-kits.md\ngame-example-standards.md\ngame-showcase-build.md\ngenre-kits.md\nlessons-learned.md\nnative-capability-recipes.md\nnew-game-checklist.md\nno-hackjob-rules.md\nprompt-to-3d-workflow.md\nrecipes-src/\nrecipes.md\nrendering-proof-required.md\nskills-examples/\ntemplates.md\nthreejs-to-aura3d.md\ntrial-502-protocol.md\ntroubleshooting.md\nverification.md"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TaJSDtddeQAUZ2st1cXepn",
+    "content": "docs/agents/native-capability-recipes.md:96:[Omitted long matching line]\ndocs/agents/lessons-learned.md:19:- **R11 Custom shader declared its own precision.** `precision highp float;` in a `material.custom` fragment failed to compile. The prelude declares it; do not repeat it.\ndocs/agents/troubleshooting.md:51:**`invalid-material-spec`** - `material.custom(spec)` or `setUniform` misuse: malformed spec, WGSL-only input, reserved uniform names, invalid values.\ndocs/agents/troubleshooting.md:64:[Omitted long matching line]\ndocs/agents/trial-502-protocol.md:47:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:13:[Omitted long matching line]\ndocs/agents/README.md:39:| Materials, textures, HDRI, sky, weather, water, `material.custom` | `aura3d-materials-environments` |\ndocs/agents/agent-quickstart.md:88:| `ShaderMaterial` | `material.custom({ glsl: { fragment }, uniforms: { uTime: { type: \"f32\", value: 0 } } })` |\ndocs/agents/api-signatures.md:88:[Omitted long matching line]\ndocs/agents/recipes.md:149:const water = material.custom({\ndocs/agents/recipes.md:179:[Omitted long matching line]\ndocs/agents/recipes.md:511:const water = material.custom({\ndocs/agents/recipes.md:731:[Omitted long matching line]\ndocs/agents/recipes-src/water-custom-shader/main.ts:16:const water = material.custom({\ndocs/agents/recipes-src/translation-table.check.ts:39:const shader = material.custom({ glsl: { fragment: \"out vec4 outColor; void main() { outColor = vec4(1.0); }\" }, uniforms: { uTint: {"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018ogtNiUFUEANuDZZZx3HEM",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "offset": 120,
+     "limit": 90
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013K39Yq85QLsqaw5VHgioX7",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/water-custom-shader/main.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018ogtNiUFUEANuDZZZx3HEM",
+    "content": "120\t  },\n121\t  render: () => { /* copy state into scene nodes / DOM here */ }\n122\t});\n123\tloop.start();\n124\t\n125\twindow.addEventListener(\"keydown\", (event) => {\n126\t  if (event.code === \"KeyR\") { state.x = 0; state.score = 0; state.over = false; loop.resetAccumulator(); } // restart\n127\t});\n128\t```\n129\t\n130\tFor a complete game (HUD, touch, sound, pause, QA hooks, replay), follow [`build-a-game.md`](build-a-game.md) and its sample `docs/agents/samples/coin-dash/`.\n131\t\n132\t## 5. Custom GLSL (animated water on a subdivided grid)\n133\t\n134\t```ts\n135\timport { createAuraApp, geometry, material, scene } from \"@aura3d/engine\";\n136\t\n137\tfunction grid(n: number, size: number) { // subdivided grid: vertex displacement needs vertices\n138\t  const positions = new Float32Array((n + 1) * (n + 1) * 3);\n139\t  const normals = new Float32Array(positions.length);\n140\t  const indices: number[] = [];\n141\t  for (let j = 0; j <= n; j += 1) for (let i = 0; i <= n; i += 1) {\n142\t    const k = (j * (n + 1) + i) * 3;\n143\t    positions[k] = (i / n - 0.5) * size; positions[k + 2] = (j / n - 0.5) * size; normals[k + 1] = 1;\n144\t    if (i < n && j < n) { const a = j * (n + 1) + i; indices.push(a, a + n + 1, a + 1, a + 1, a + n + 1, a + n + 2); }\n145\t  }\n146\t  return geometry.define({ positions, normals, indices, bounds: { min: [-size / 2, -2, -size / 2], max: [size / 2, 2, size / 2] } });\n147\t}\n148\t\n149\tconst water = material.custom({\n150\t  glsl: {\n151\t    vertex: /* glsl */ `\n152\tout vec3 vPos;\n153\tvoid mai"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013K39Yq85QLsqaw5VHgioX7",
+    "content": "1\timport { camera, createAuraApp, effects, geometry, lights, material, primitives, scene } from \"@aura3d/engine\";\n2\t\n3\t// Water with a custom GLSL material: vertex waves, analytic normal, fresnel mix between deep colour and sky, sun glint.\n4\t// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime.\n5\tconst N = 200, SIZE = 80;\n6\tconst positions = new Float32Array((N + 1) ** 2 * 3);\n7\tconst normals = new Float32Array(positions.length);\n8\tconst indices: number[] = [];\n9\tfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n10\t  const v = j * (N + 1) + i;\n11\t  positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n12\t  normals[v * 3 + 1] = 1;\n13\t  if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n14\t}\n15\t\n16\tconst water = material.custom({\n17\t  glsl: {\n18\t    vertex: /* glsl */ `\n19\tout vec3 vPos;\n20\tout vec3 vNormal;\n21\tvec3 wave(vec2 p, float t, out vec2 slope) {\n22\t  float a = sin(dot(p, vec2(0.21, 0.13)) * 3.0 + t * 1.1) * 0.35;\n23\t  float b = sin(dot(p, vec2(-0.17, 0.25)) * 3.0 + t * 1.4) * 0.22;\n24\t  float c = sin(dot(p, vec2(0.4, 0.31)) * 3.0 + t * 2.1) * 0.08;\n25\t  slope = vec2(cos(dot(p, vec2(0.21, 0.13)) * 3.0 + t * 1.1) * 0.35 * 0.63 + cos(dot(p, vec2(-0.17, 0.25)) * 3.0 + t * 1.4) * 0.22 * -0.51 + cos(dot(p, vec2(0.4, 0.31)) * 3.0 + t * 2.1) * 0.08 * 1.2,\n26\t              cos(dot(p, vec2(0"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to enable transparency through material.custom, so I should check the type definitions for how that's structured.\n\n",
+    "signature": "CAQSiQUKEggTEAEYAjgBQgh0aGlua2luZxIMZ8Qs/G5YyPnwxWsOGgzYwmk6AbTjlSur6kYiMI6PrQBaD0h4usswbKE5gedsbXHdQuS2RSJETbCApRdNRTeLQ54a9YyVJb+TbuxT4SqkBCbPjg2/HVEe1QvLakrhDZjVlkNOayFajsefJrjYzcOOglj8a9FNKbAXikNAmcfFcntc5H1ULJh9ATOE5ICFROfssY9Z3n2xTAgtDZeRGYSF8Sycw8U4jlaGWckHEumESyYtaGBEA59xy5C1IsBUN27mGbk8jWMj+/jR+/xSv+hI3D3HCYALc+oOQ5ZXSQNNvgCDFqQDyAenQs2QUOwqJzdoIgEPMfESXt7UFov7Cc3AVconBleI25aBQQnY75dOqPoYvUK9gw3E6rZ8Ukhyg6K2i7lZK6V8/AaQM5j85A+OcwQOnLHPmlwh3hg6dCJ3KqaUgeytq1A8AbDnirmZ9eHmp3ciVKvjlBVmDOSCoB4yZOG4IjQc9q+Hwm761IupRxYMf46uHjvFdud1BfV3q3cMS9Y6TmLvv4tEnC5a2MaSQbkVc+sYdBt+lvrVNTxno1ZZF+Uftu5b7n7or+cFl/IX6XRiW8iiix+PvNOxBXpXrXaT8esAgOs9V3B9hRDHBJmbvNWbHdmQVRN1/paK1mqRC5OmBZc+lVi+tsV9E/KFkccFVNBgUGOEoAUuMkb5UlPg7cazamF5umT5T7ZGvAUs9AzLy60/82ctpbLLz6EaTSxv8TTLURXkp/K9QIMlQUchj+vMlRH+auxn5Lk8OL0HVHn9FOH/qzcVGBI3on5+8C6UHvM0bc2kbnF4PY87AaCpP/Z9PcdToGJfD8gJvRR3wv1HGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QTcoUAq1k1nbGpgtsK8Uyj",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d",
+     "pattern": "interface CustomMaterialSpec|CustomMaterialOptions|transparent\\??:|blend\\??:|depthWrite"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01EDDUsBrxpPQw7TUT7yy5E7",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 80,
+     "limit": 20
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QTcoUAq1k1nbGpgtsK8Uyj",
+    "content": "node_modules/@aura3d/animation/dist/contracts/pose.js:10:        blend: (a, b, alpha) => {\nnode_modules/@aura3d/rendering/dist/CanonicalProductScene.js:19:            blend: true,\nnode_modules/@aura3d/rendering/dist/CanonicalProductScene.js:20:            depthWrite: false,\nnode_modules/@aura3d/rendering/dist/SdfText.js:705:    // Back-to-front composite over transparent: shadow, glow, outline, fill.\nnode_modules/@aura3d/rendering/dist/ScreenSpaceLineMaterial.js:54:                ...(color[3] < 1 ? { blend: true, depthWrite: false } : {}),\nnode_modules/@aura3d/rendering/dist/forward/Transmission.js:161:                renderState: { depthTest: false, depthWrite: false, cullMode: \"none\", blend: false, depthCompare: \"always\" },\nnode_modules/@aura3d/rendering/dist/EnvironmentBackgroundPass.js:18:    depthWrite: false,\nnode_modules/@aura3d/rendering/dist/Material.js:16:    depthWrite: true,\nnode_modules/@aura3d/rendering/dist/Material.js:18:    blend: false,\nnode_modules/@aura3d/rendering/dist/Material.js:47:        // C-04 §6.8: non-opaque blend modes default depthWrite to false.\nnode_modules/@aura3d/rendering/dist/Material.js:48:        if (renderState.blendMode !== undefined && renderState.blendMode !== \"opaque\" && descriptor.renderState?.depthWrite === undefined) {\nnode_modules/@aura3d/rendering/dist/Material.js:49:            renderState.depthWrite = false;\nnode_modules/@aura3d/rendering/dist/Material.js:161:        depthTest: true, depthWrite: true, cullMode: \"none\", blend"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01EDDUsBrxpPQw7TUT7yy5E7",
+    "content": "80\tColours are CSS strings. Metals need an environment.\n81\t\n82\t```ts\n83\tvoid material.pbr({ color: \"#c8ccd4\", metallic: 0.9, roughness: 0.38 });\n84\t```\n85\t\n86\t| Call | Returns | Options |\n87\t|---|---|---|\n88\t| `material.custom(spec: AuraCustomMaterialSpec)` | `AuraMaterialSpec` | spec: glsl: { readonly vertex?: strin…; wgsl?: { readonly vertex?: strin…; uniforms?: Readonly<Record<string, A…; uniformAliases?: Readonly<Record<string, s…; defines?: Readonly<Record<string, s…; transparent?: boolean \\| undefined; depthWrite?: boolean \\| undefined; depthTest?: boolean \\| undefined; side?: \"front\" \\| \"back\" \\| \"doubl…; blending?: \"custom\" \\| \"normal\" \\| \"ad…; fog?: boolean \\| undefined; patch?: Readonly<Record<string, s…; receiveShadow?: boolean \\| undefined; castShadow?: boolean \\| undefined |\n89\t| `material.toon(options?: AuraToonMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \\| undefined; steps?: number \\| undefined; ramp?: AuraAssetRef<\"texture\", s…; shadowColor?: string \\| undefined; rim?: AuraMaterialRimSpec \\| und… |\n90\t| `material.matcap(options: AuraMatcapMaterialOptions)` | `AuraMaterialSpec` | options: map: AuraAssetRef<\"texture\"> \\|…; color?: string \\| undefined; opacity?: number \\| undefined; transparent?: boolean \\| undefined; side?: \"front\" \\| \"back\" \\| \"doubl… |\n91\t| `material.depth(options?: AuraDepthPreviewMaterialOptions)` | `AuraMaterialSpec` | options: near?: number \\| undefined; far?: number \\| undefined; side?: \"front\" \\| \"back\" \\| \"doubl… |\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Properties like transparent, depthWrite, side, and blending look correct—I should check the type definitions for blending values and uniforms to confirm.\n\n",
+    "signature": "CAQS2wUKEggTEAEYAjgBQgh0aGlua2luZxIMw6mTO6E3xv1WBEnXGgyM3aPSRGv2DFSi82wiMGeIOH69RGpIghWjRdJqkNgyAKZJEJJHc6YgyFRYlqnD5ujj9kjT9K0tfbkCehOe8ir2BIcS73xCgXPNQAXzMzH4HGtAytObGgEV9W6p2QNrOyLnCgJFFM/uzJuXk5++CbS1dwy8BXW/WP1692MQq85ouTSpr4Sb1crjwjxrU4t2JH4h24Fp9IClme/a5hNBzM/KONrPNwi+rkBZSI1iw+JrY47tVQgjMRI6X4AUKUc/4tYJQUd4rgtIW6vqPNqcv8oFQN3O6F4zC9nZ/OzeRI7ZgbxX6v/WTAutNX2oN/TrJlLRIN+WZwgLL6HtSUIxMtl2BX1sFk6sWBQifMufkSKYL6Mac38pWwJfyOga+kwo0FBGF/LZ6jptrQKGTc4d8DDowhQBxWF6jfOzQ69pjVeK904hidf6+9qiRke/GLNC4FHCNC0UmLVpvNW+BIFEFu3kPGqNQB8T6MqidINdLVVZq2KFh4snXux4/7Qra79c5P6Iyy7z4NmMJlyaexfUS07ykA9gNMkqbD7BRs1TxI8LNeSlmCSIAQ+ggXwOAaP04vWiNp/4lPZmvBOc9QQhOuIKarbyuC1acdtgTLr8zL3dH/UPE2PRXb/zMMWuKgqiht8oHd4oLGDNbL6GEDY7bmbZIG3KyeCjVyofQJzxksWqpta3qrcpXQR34OIFMvGbzsLLnHIjnA+lKShwg+MBVRLTHmjvy9FzzHKr9LzguFXX1cHMPsVD/VMJX9rnME40Yp9+tWQRQLhdLWlU8UW+fX3r5hX50Ie/yHp8emeY/ck1k2huD/FNk4DsW9XTZpCosZ9OXp7CQe7hi1GxNO3WVuAC9mNguRNnBQ4pHFRal2mznsu/Qwpq95SKHZ+2w5idQm2Hjxd1xAUACCHDLHpfDKAFt85lizHtNhgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QNcS45gs2J7BpEzmr19kLB",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist",
+     "pattern": "interface AuraCustomMaterialSpec"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XfkDta9s8FQNTE6M26ukqy",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "pattern": "primitives\\.|looks\\.|environments\\.|camera\\.perspective|lights\\.|effects\\.(bloom|fog)"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QNcS45gs2J7BpEzmr19kLB",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:2614:export interface AuraCustomMaterialSpec {\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XfkDta9s8FQNTE6M26ukqy",
+    "content": "7:Defaults the types do not carry (read from `agent-api/nodes/lights.ts`):\n11:| `lights.ambient` | intensity 0.28, color #ffffff |\n12:| `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |\n13:| `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |\n14:| `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |\n15:| `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01BeYFxxRCnkPbbenUjrfHdU",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "offset": 2570,
+     "limit": 90
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01CoKtjRGtzZjuxWLw1tFne3",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 1,
+     "limit": 80
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01BeYFxxRCnkPbbenUjrfHdU",
+    "content": "2570\t    readonly height: number;\n2571\t    readonly depth: number;\n2572\t    readonly data: Uint8Array | Float32Array | Uint16Array;\n2573\t}\n2574\texport interface AuraTextureLoadOptions {\n2575\t    readonly colorSpace?: AuraTextureColorSpace;\n2576\t    readonly flipY?: boolean;\n2577\t    readonly anisotropy?: number;\n2578\t    readonly app?: AuraApp;\n2579\t}\n2580\texport type AuraCustomUniformType = \"f32\" | \"i32\" | \"u32\" | \"bool\" | \"vec2\" | \"vec3\" | \"vec4\" | \"color3\" | \"mat3\" | \"mat4\" | \"texture2d\" | \"texture3d\" | \"depth2d\";\n2581\t/** Recursive data requires an explicit schema and initial value; WebGL cannot upload it. */\n2582\texport type AuraCustomUniformSpec = AuraCustomUniformType | {\n2583\t    readonly type: AuraCustomUniformType;\n2584\t    readonly value?: unknown;\n2585\t} | {\n2586\t    readonly type: \"data\";\n2587\t    readonly dataType: ShaderDataType;\n2588\t    readonly value: UniformDataValue;\n2589\t};\n2590\t/** Runtime material uniform write (handle.setUniform). */\n2591\texport type AuraUniformValue = UniformDataValue | AuraVec3 | readonly AuraVec3[] | AuraTextureRef | AuraAssetRef<\"texture\"> | Texture;\n2592\t/**\n2593\t * SH-02 (L1): `material.custom(spec)` payload. GLSL is required —\n2594\t * `createAuraApp` mounts WebGL2 (PRD C2); `wgsl` is optional and runs only on\n2595\t * the WebGPU backend. A WGSL-only spec must fail `validate` (binding rule\n2596\t * 1.4.2). `patch` (SH-09) replaces named shader chunks and salts the cache key.\n2597\t *\n2598\t * Names the generated GLSL prelude provides"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01CoKtjRGtzZjuxWLw1tFne3",
+    "content": "1\t# API signatures (answer-first)\n2\t\n3\tGenerated by `node tools/docs/gen-api-signatures.mjs --write` from the real `@aura3d/engine` root types (`packages/engine/src/public/index.ts`). Do not edit by hand: without `--write` the same command fails when this file is stale. Read this instead of opening `node_modules/@aura3d/engine` type files; every example line is type-checked in [`recipes-src/signature-examples.check.ts`](recipes-src/signature-examples.check.ts). The complete export list is [`docs/api/root-exports.md`](../api/root-exports.md); this page covers the roots agents look up most.\n4\t\n5\tColumns: Call (parameters, `?` = optional), Returns, Options (the keys of the first options object, `?` = optional). Colours are CSS strings, vectors are `[x, y, z]` tuples, angles are radians unless the name says `Deg`.\n6\t\n7\tDefaults the types do not carry (read from `agent-api/nodes/lights.ts`):\n8\t\n9\t| Call | Defaults |\n10\t|---|---|\n11\t| `lights.ambient` | intensity 0.28, color #ffffff |\n12\t| `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |\n13\t| `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |\n14\t| `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |\n15\t| `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |\n16\t\n17\t## `createAuraApp`\n18\t\n19\tMounts the scene, owns renderer, resize, loop and disposal. `await app.ready()` before the first frame is judged.\n20\t\n21\t```ts\n22\tconst app = cre"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since the dark background rules out the standard preset look, I'll build the scene manually using background and lighting settings, a neutral environment, and a floor, so I need to check the primitive and environment function signatures.\n\n",
+    "signature": "CAQS1AYKEggTEAEYAjgBQgh0aGlua2luZxIMGRI7Mm2OOrNf0n+dGgx9KWlCt0y2sNobNnIiMGK0+YSAgPpZUMHtEMci1RVdaXfDRs4Zi03s//V+9f4XE93Rlp9BoCnKx7oqbinLIyrvBduE0LnwyVgk169zikeSoMuMRbUDhLpGdyU+tkjb7nO7skbhTngRPzr3o1Cm0WTQPEnCX0AWqoVlx5oJcWZcKssJ2BQMMTr3pXyJO0wLICbN05A6toEM4oYYD4QTWubEjIahSRqOYK5gdNOhGcyRNVfQhQV6C4TyNKHoywnz7sK5dj+f5fxlXlVJG4DUD2NaZIj5BAlbvp0Z1MhgLwkvnL4AcladmcyFAAwYgdcOwSUby40IWL8AUmz953oOYBGZmGpSNyaSOB4JPKZEw80u/UGJE4yR+VJdkNh3iyegWIDGA6bLI9p7UcFmEZE/06yzOSiIaGLjEbe395SQqyTXlVu4DJ+3bYBV7MGIFLIwKo8BllMrhzrmzsfXUT+qXhC4mu/HhI6pIoHUkTtNm9QiDZLtJlzM5CgplIhcrfbPJ28fEmf0DT80YkF7n6k7Z4nbPwNN2+j9+ohRiRekgvRJlZwNEdsmjlYnpmDBWxPi+uM4CJBbx7y0Mt8Xz4rCf5RBf53LEusitInkbXurwSSWTGjnjYKnY6cjvao0B45XOjrwfas8DWhlnzpogYs7JpMiJW7d0b0ded7i8Ggvx1GSlyrG0X9qhCEyuUWlR8RT7a26KgNb/D5zK3UmUawddOkSZI4K/7DX+Pj5iSXNZB6bymmQ2CxgGPvznbejYO0Fw3MWNJbRBU/OozGrNg7xkgywvwyUJ10aHxXAjHy67vhFRhtOYgKiJB+zOqkC2Bry9fgBATcCcBaMX/nIrcspyntqMyDiZ0rYSr5nIZu6DyxnVl+WiBwfq/UnNX73veDFvIQKZWzuxfsrRrOI82I3ChvJm8+3kfKAQNP7z/hFdbv181CJOQVl0r6iQ+UzjoUY4JWodxmV8YkdKxVt65n2KYNU6FpzzQb0+DLttChOCCO3WAi4BYTOM9MPo8OooIHXgg6hVmfUpLHKhRvQVyo1twzsM18GpTL6Bv9mv/imVuvNIgN+OtE0JgZCRWzskfAYRlwYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FdwXYbBZ2VGTQKFJfQ1gcn",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "pattern": "^\\| `(primitives|environments|camera|lights|effects)\\."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FdwXYbBZ2VGTQKFJfQ1gcn",
+    "content": "11:| `lights.ambient` | intensity 0.28, color #ffffff |\n12:| `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |\n13:| `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |\n14:| `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |\n15:| `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |\n144:[Omitted long matching line]\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01CJDfNuSXXVxLGi77tv9Xsv",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 100,
+     "limit": 80
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01CJDfNuSXXVxLGi77tv9Xsv",
+    "content": "100\t| `material.rubber(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n101\t| `material.glass(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n102\t| `material.clearcoat(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n103\t| `material.neon(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n104\t| `material.reflectiveFloor(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n105\t| `material.solarSun(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n106\t| `material.solarCorona(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n107\t| `material.fabric(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n108\t| `material.chrome(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n109\t| `material.brushedMetal(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n110\t| `material.frostedGlass(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n111\t| `material.clearGlass(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n112\t| `material.blackRubber(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n113\t| `material.matteClay(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n114\t| `material.ceramic(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n115\t| `material.glowingEmissive(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n116\t| `material.clearcoatPaint(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n117\t| `material.sneakerMesh(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n118\t| `material.sneakerRubber(opt"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "For the floor, I want it to subtly catch the glow without faking it with an emissive card -- I'll use a dark, low-roughness surface lit by a cyan point light positioned near the sphere so the reflection feels physically grounded.\n\nNow I should double-check the signatures for the box, sphere, and plane primitives.\n\n",
+    "signature": "CAQSgwoKEggTEAEYAjgBQgh0aGlua2luZxIMT39K2dV9y0Pe5aS8GgxL3u8mC7Kvj6U6KqoiME9lC03vG5UZyfDH0Xq9X8Ed1w9FW41RnR+2iBA3Ovo6L2n3cARKB65Hd6QPIM3OJyqeCex+mag22uKYPx4UuAHwlkWzyXBkC3mnUZ7YXEqosQf3m2JlTTMRU4u38PJ/Ffy5IUsn3fN1MNU6Mfn0mwNiRgAl2nRi6c2+0IBuN08GcAod998xIKfOhJ5RQjtpHrmAoVVF6XraMBtCJdUISpteAVJRv+B2/r6uZfGJd8VqOwKQGxRhWpt3LhJduwwkvnUpAfoz20KkKLr5Csk0AbMlmGwcHqxe+mietjtEXMhP0Ym2L6ywvsmF9M1t8FYE6Fpcq/k+ZCVOgKfJWjV28Kb/41CxSDrUlPK3dGE6Qqzuc/ZgDO3RnmAWApx9YeMtLhbxhlcVuptWlWBrNu3ytcTDKxt9+o3XcDNEU0btRxSvJuJrV9+jNX71N3h2aN/G/N1PCQfBSIEvPxEfSTRArnFRjoVPWqGhcnwcHXawy02WPuBR5ABINLV3sI6VifQuf5hCGPbwUxQuYkGKJpEK214SvQ2QzKxSwIrgR0sGPWObdyYbFK9kboxSJbX4IBuepejyBFKwn09SyhGVCs9yqjwkPOXkltQY5sJ69MAzOjaGD5FkvCjNervo9eAMyUfNXjZs8R51ldY/swFKD2Z+NDjWp8rzGsKsmI2zv5khkwdqa4blur0rRGHCWULKOJareOUcNZ9re0KpWBy0W2RxtU951eQVfIkSSITPAc4g9ZlugpxgIG0vFj9anmA0LwAdFMQAPYpC3Cdb8HQOy5k/ASKz/XVEKxCxy2C5GNJtiHFRqQU/DwOog7Duqa5+sdrUY36ThfT/QRhAmfnyqZ/849UlSqk8ADroenu+hKgkqmQzxGTK6gJLn7LGkf5Xii8luEfs6qbmFxXlrA4P85pqjilLems0jFkw3weBJtuiUPL/hAOCQzjAZ+xAhmdgYMtHElgmaL1h7qhvGrVAa0QgbNG/tAPGnkJQ6qPPqWOb4zfHxPUp9KJGIXVntD8DnXWi5EB/2dqAYwqwHDmnwXCq9lRsiPsbdb/obDXSzlNU8eBy19JXohnvGuBJFZ0677MP9Jigo4ETc4EukLNRytGNX2eXheh55q1DsfJ9ReCNK/SeVU9BdjmcJ3HOkRAGljIBWSqAlS5cqYWFXZgY4BuLEvzwyBFjJOGUVIGogWP68WRhFLJEbfDG9NFqxFQGH4VZSJuRME0weWI8NSXHqu3O/MbdRZ7Ipyc3+UpnZfhwKhEalUyAuqDRZerme7fnUdDNNQfBm0C+87Hy43HjtN0XcUOQpcYpzF+BIM5Zt/UiHJkMTAJ1619IzAp7TWlMIqXuG4fDKNkfqE1QjvNhgyk8EhfxH6J+bPKRAkuwfBV+3HGM5zGvl6fuy9C7UwWqVsGUNClZRNPfSDuWKB3/FxvFT+DJKGEyQSWCLt2ezpxFDyS45hhgLj935Sh56PVxU3a7D7KbZvqDf5EbMYDC2O/UbaKPpG8sb6nng1lha7zPQ8Lk0Tcd79Dv3pIKfe8BXG59uPsNeVf/v5uu7Qj58jnsXT7FIaKy9c5rrAut6dfAQHEiSoF8NYbix1AnJKkLuz131pD+alISGuyLy3HjKVJCBR4+0xWIoVhaQv6iXvrUnha9phgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01W7BPjp4kyte8bXrbDTymm1",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "pattern": "primitives"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Wn8kmQpFsNaegySoY1uWT6",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/recipes-src",
+     "pattern": "primitives\\.(plane|box|sphere)\\("
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01W7BPjp4kyte8bXrbDTymm1",
+    "content": "47:const stage = scene({ background: \"#101418\" }).add(primitives.box({ name: \"crate\" })).camera(camera.perspective({ position: [3, 2, 5], target: [0, 0.5, 0], fov: 45 }));\n201:## `primitives`\n206:void primitives.cylinder({ name: \"plinth\", size: [2, 0.9, 2], material: material.pbr({ color: \"#f7f8fa\" }) });\n211:[Omitted long matching line]\n212:| `primitives.sphere(options: AuraPrimitiveOptions \\| undefined)` | `AuraNodeBuilder<AuraPrimitiveNode>` | same as `primitives.box` |\n213:| `primitives.plane(options: AuraPrimitiveOptions \\| undefined)` | `AuraNodeBuilder<AuraPrimitiveNode>` | same as `primitives.box` |\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Wn8kmQpFsNaegySoY1uWT6",
+    "content": "docs/agents/recipes-src/water-custom-shader/main.ts:60:    .add(primitives.sphere({ name: \"islet\", size: 1, material: material.pbr({ color: \"#7a6a52\", roughness: 1 }) }).position(9, -0.5, -14).scale([9, 3, 6]))\ndocs/agents/recipes-src/night-lights-emissive-bloom/main.ts:24:  .add(primitives.plane({ name: \"street\", size: [24, 1, 60], material: material.pbr({ color: \"#1b1e26\", roughness: 0.35, metallic: 0.2 }) }).position(0, 0, -6))\ndocs/agents/recipes-src/night-lights-emissive-bloom/main.ts:28:  .add(primitives.sphere({ name: \"moon\", size: 3, material: material.emissive({ color: \"#dfe8ff\", emissive: \"#dfe8ff\", emissiveIntensity: 2.5 }) }).position(-16, 26, -42))\ndocs/agents/recipes-src/night-lights-emissive-bloom/main.ts:35:[Omitted long matching line]\ndocs/agents/recipes-src/procedural-humanoid/main.ts:16:    primitives.sphere({ name: `${side}-shoulder-ball`, size: 0.2, material: dark }),\ndocs/agents/recipes-src/procedural-humanoid/main.ts:19:      primitives.sphere({ name: `${side}-elbow-ball`, size: 0.13, material: dark }),\ndocs/agents/recipes-src/procedural-humanoid/main.ts:21:      primitives.sphere({ name: `${side}-hand`, size: 0.12, material: dark }).position(0, -0.37, 0)\ndocs/agents/recipes-src/procedural-humanoid/main.ts:29:      primitives.sphere({ name: `${side}-knee-ball`, size: 0.15, material: dark }),\ndocs/agents/recipes-src/procedural-humanoid/main.ts:31:      primitives.box({ name: `${side}-foot`, size: [0.14, 0.07, 0.26], material: dark }).position(0, -0.48, 0"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 10,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm sizing the plane and sphere dimensions, checking whether primitives support custom materials directly, and looking into how to rotate the cube each frame using the handle API.\n\n",
+    "signature": "CAQSrAcKEggTEAEYAjgBQgh0aGlua2luZxIME27kFiMHOD4LmXUhGgwcRyFqdmnNvOVIi/kiMNc2plUF8gx9oxsPrJ9AcM4BY7b8qDaTU28ivIa1A0kapJ0PSlfzifjxFui06cMA6SrHBpyTlKynnU2YMEOe6HWe+V1NKqDRZHn9uEgGrrCxlcWsjzKR1My0mvB09SjgPjhinvxOnAsC1LNIggbYz6Id5VI8FdHmIxEKZ2E2u4sac8NlfIYDXu/qJEaQqN2KVLfW60NGuJoED1v+tTVZ1XiCjOhBu4ss1n+1mP5xwlSxOV5jg/x4e5pZuLePbTvSp8gBRTyyIfz54heoylOWt5elSA1KijRuSK5sRuBj+eA1aSFDrTKN1BQkJ/qEQiJak2l7Yd7pomQitquEKXHiu0LUWy1NTFF6qhftXqoJg0w9Ixrjywq6jd7xEy/69yrhEES7bM0g1E8bGRhmLnimNKj2H5cGMhIbjZsBXBtr8wWVLzcGxAtTWIl2JLjw3EctxQ2DcD1yPzBHNXZlSxLu/gxHuJWAJtwgS3aC126wRNPqj3KAm5VRDQuLX/Rz1aPYSBIv9Tsus9P49hKPFUzyExl9eZ4VW04TLtaCongSDWtZrW5JiH/gvDVX4uOdSaJgqxNQkePCMfmXijw3o2mkIg0Zi6yrhvFk3xY/Y7N2lhCrq5R27bhc+nqBj2YEGfHRQX6pDnPQV6jfEg53AESUeDqmSMHLHA5dyHYZsbm8tluW1qR0tC7jC/4tevD2w3znLzWmv5qN3xmI9KqXnxolMqx5QzoQmcFlkwNHQyvi6Eb5VVTSPnh2Zh5eoExbpn3ZS9xFtAT6odiIDKJm9YKX52wKjdwhMbjw8NTN1bliOjvwFHYXEMlmB116FhNVXQ93lthLuSN3uiqcUqi2+uQX39izw/IzhuJ87Q7V9qVL1INS238pe+oSrgjvrGwtYtRHWa84aL3AAz3LNx+iVcAcYY0KkWnxYI/8pEo4AZEDMWSWO7huNaiYzlFsaS7KiO+6tyPpRk6E6sU+jzTX7WqaeurH7gl53BfbkeSmgWcms+syVTQPW/j3oZ5TrdBZIPBAW1KCJfYWUPl8Zaalqgk37cyC4XOA8TNYMhgpre8YNhfLRfuX93egN3hfvkWxNECwhZHDWXogctoxUuf0YnvTuiEs3lmOQnFI7eWnlvzlNn9j19sHptSKFm3izEchDj5TyfmlTR6z9eMqnlWJwmCFmZ0auIK44+xnBdQuGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XsAZqtzKpAvpS8c1U3eXvQ",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "^\\s+(setRotation|setUniform|setPosition|setRotationEuler|rotate)\\w*\\("
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XsAZqtzKpAvpS8c1U3eXvQ",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013vkHZ8XhCnnjujR1FAL7iq",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist",
+     "pattern": "setRotation\\w*\\??[:(]"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013vkHZ8XhCnnjujR1FAL7iq",
+    "content": "node_modules/@aura3d/engine/dist/create-aura3d/showcase-spec-platformer-artifacts.js:309:  player.setRotation(0, playerYawForFacing(playerFacing), 0);\nnode_modules/@aura3d/engine/dist/create-aura3d/showcase-spec-racing-artifacts.js:359:    playerCar.setRotation(...resetPose.rotation);\nnode_modules/@aura3d/engine/dist/create-aura3d/showcase-spec-racing-artifacts.js:371:  playerCar.setRotation(...playerPose.rotation);\nnode_modules/@aura3d/engine/dist/create-aura3d/showcase-spec-racing-artifacts.js:375:  ghostCar.setRotation(...ghostPose.rotation);\nnode_modules/@aura3d/engine/dist/editor-runtime/commands/TransformCommand.js:54:            target.transform.setRotation(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w ?? 1);\nnode_modules/@aura3d/engine/dist/animation/SceneAnimationBridge.d.ts:26:    setRotation?: (value: readonly [number, number, number, number]) => void;\nnode_modules/@aura3d/engine/dist/editor-runtime/commands/TransformCommand.d.ts:32:        setRotation(x: number, y: number, z: number, w: number): unknown;\nnode_modules/@aura3d/engine/dist/scene/TransformNode.js:63:    setRotation(x, y, z, w) {\nnode_modules/@aura3d/engine/dist/animation/SceneAnimationBridge.js:231:        node.setRotation(value);\nnode_modules/@aura3d/engine/dist/scene/SceneSerializer.js:928:    node.transform.setRotation(...rotation);\nnode_modules/@aura3d/engine/dist/controls/engine/SceneCameraAdapter.js:95:            camera.transform.setRotation(q.x, q.y, q."
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 12,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm thinking through rotation handling and timing for the frame callback, plus wrestling with transparency ordering since the sphere is depth-write-disabled while the cube renders opaquely inside it. I'm weighing single-sided versus double-sided rendering with Fresnel to get richer back-face effects without breaking the depth sorting.\n\nNow I'm working out scanline motion using world-space coordinates scrolling upward over time, plus setting up floor reflections with a dark low-roughness PBR material and a cyan point light positioned at the sphere's center, scaling camera and object placement so the sphere sits above the floor without occlusion issues from the point light. I still need to confirm background visibility settings and finalize the frame callback before writing the file and type-checking it.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TDf1E3DhyhAfS6jYz4Fu7m",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { camera, createAuraApp, environments, lights, material, primitives, scene } from \"@aura3d/engine\";\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n  }\n}\n\nconst CENTER_Y = 1.3;\nconst RADIUS = 1.2;\n\n// Hologram shell: fresnel rim glow, upward-scrolling scanlines, translucent blend.\nconst hologram = material.custom({\n  glsl: {\n    vertex: /* glsl */ `\nout vec3 vWorldPos;\nout vec3 vWorldNormal;\nvoid main() {\n  vec4 wp = modelMatrix * vec4(position, 1.0);\n  vWorldPos = wp.xyz;\n  vWorldNormal = mat3(modelMatrix) * normal;\n  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);\n}`,\n    fragment: /* glsl */ `\nin vec3 vWorldPos;\nin vec3 vWorldNormal;\nout vec4 outColor;\nvoid main() {\n  vec3 n = normalize(vWorldNormal);\n  vec3 v = normalize(cameraPosition - vWorldPos);\n  float ndv = abs(dot(n, v));\n  float fresnel = pow(1.0 - clamp(ndv, 0.0, 1.0), 2.5);\n\n  // Horizontal bands in world height; subtracting time moves them upward.\n  float phase = (vWorldPos.y - uTime * 0.35) * 22.0;\n  float line = smoothstep(0.35, 0.9, sin(phase) * 0.5 + 0.5);\n  // A thicker, slower bright band sweeping upward.\n  float sweep = pow(max(sin((vWorldPos.y - uTime * 0.6) * 3.0), 0.0), 8.0);\n\n  vec3 cyan = vec3(0.0, 0.9, 1.0);\n  vec3 body = vec3(0.0, 0.25, 0.35);\n  vec3 col = body * (0.35 + 0.65 * line) + cyan * fresnel * 1.6 + cyan * sweep * 0.25;\n  float alpha = 0.10 + 0.20 * line + 0.75 * fresnel + 0.12 * sweep;\n  outColor = vec4(col, clamp(alpha, 0.0, 0.95));\n}`\n  },\n  transparent: true,\n  depthWrite: false,\n  side: \"double\",\n  blending: \"normal\",\n  fog: false\n});\n\nconst app = createAuraApp(\"#app\", {\n  scene: scene({ background: \"#04070c\" })\n    .add(environments.neutral({ intensity: 0.35, background: false }))\n    .add(lights.ambient({ intensity: 0.12, color: \"#6fdfff\" }))\n    .add(lights.directional({ position: [3, 5, 4], target: [0, 1, 0], intensity: 1.2, color: \"#cfefff\" }))\n    .add(lights.point({ position: [0, CENTER_Y, 0], intensity: 14, distance: 9, color: \"#22e6ff\" }))\n    .add(\n      primitives.plane({\n        name: \"floor\",\n        size: [30, 1, 30],\n        material: material.pbr({ color: \"#0b1118\", metallic: 0.6, roughness: 0.22 })\n      })\n    )\n    .add(\n      primitives\n        .box({\n          name: \"core\",\n          size: 0.7,\n          material: material.pbr({ color: \"#c9d2dc\", metallic: 1, roughness: 0.25 })\n        })\n        .position(0, CENTER_Y, 0)\n        .runtime({ id: \"core\", mutable: true })\n    )\n    .add(primitives.sphere({ name: \"shield\", size: RADIUS * 2, material: hologram }).position(0, CENTER_Y, 0))\n    .camera(camera.perspective({ position: [0, 1.7, 5.6], target: [0, CENTER_Y - 0.1, 0], fov: 42, near: 0.1, far: 100 }))\n});\n\nconst start = performance.now();\napp.onFrame(() => {\n  const t = (performance.now() - start) / 1000;\n  app.nodes.require(\"core\").setRotation(t * 0.7, t * 1.1, t * 0.4);\n});\n\nawait app.ready();\nwindow.__EVAL_READY__ = true;\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01N657ZVDfKmBxXEpSZfuEN5",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 12,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TDf1E3DhyhAfS6jYz4Fu7m",
+    "content": "wrote src/main.ts (89 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01N657ZVDfKmBxXEpSZfuEN5",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 13,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I've confirmed uTime is declared in the fragment shader as required, the ready flag gets set once the first frame draws, and the engine's own rAF loop satisfies the animation contract — this checks out.\n\n",
+    "signature": "CAQS8gYKEggTEAEYAjgBQgh0aGlua2luZxIMqCphwr37nNgGYH1rGgxfYn1+PNljtqwI/4UiMJDwFBhCdoki6Ac8T+puGkviZt6ndmlydZM+T9ujwAiUHGYRKnnUQdcTDL+UrvZnYCqNBik5OrwwyN5dQQxxbZP6d94LtKN5Y9+D0OH4UrfvIe4QPERdoef5QMF/6nBwyBeljabjdwUxnUuZRhx/yYQLQ2bw6KXV052YqEj/oguPJ1Qs3rHwYrF3NaW+WNFjIWeUqyJSuNyMyRk+huH0KSA9tOAVlnsiVsITyEQLnUvm8E5Yq6a0V3ekdi6jkDQhmNQgRZ27V8em7Sqkowo++2Z9pNasFTI2RCQq7fm+6FGZdUvMiYZqNlZ0tHt/BpQeOudt7XI+mzntdoKeRJv4D/FA+kvATY6VMxogbjuq2uvwmNdZ48GUC2HQr3dQeeXdvRXrcpJEMOgRuSfTs3zQobQC1N8ZFNzc4HhXJ1mlHF1U92QavnU0+JvItBJSg0pqsnr0zZhT0Q/NATHv5sZEnYCDk3LhgIMC4KpgsTSAqFEbf1+jQiREXBnc23MW3cguDzeN4Tt1AqUuthEPMzaHU626GG1/qySvsQmzjkMV+e9irx86bDrS5WO/mP+L8ozha58I5Op+4YOBSjkba46ODe5h3oiuLZohZTwpI7Dl7QRff1AiuNP+walX+7tDDv539L0kj39FljpSUEne9Zdi/6bpvA5tOOdhJJOwrqFaexdm94xfHpCkDgLbXIvcCnEB4Vi7iDgYtoPTBAA4TcVfx46BG126plVXgpKcpT83YzgyVj7GvvMZMqoURIvy3DMUZy4O2MvDeHvv6z+bnXXiRf8m//vX3szksm62CCeJU2QXB9npQuWMKmA8DQ/ZxASiMCFOZbWDfwWWHP49JU0fboYLjMrMv4rWO8/47UEGxpvcQFguw9ncic07vw8qiT9FvClMB3Vxte2nau5p7fwjSyUN8uWmYGWQLZzprjJ9jNNnq5EG4hcO/rfgDZxwcha5vxt1kL9V7ORFUEbzR5IaAGLX6Xh7ol/Aq3sUMafYxCZc//yhQc0tqQ6fbT2O6OP8pxTgQ3ULp09FGfKfEtjFt1nl9NLwzNSeflGSmbRvSHMpXPHLYbORiBoui/AOHNW96SYv/mtDkcQDSrOXfBXCo18YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01HwnxTnPumobb2W2nqEBFaA",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts, and it passes the typecheck. I haven't run `vite build` or looked at it in a browser, so the rendering is unchecked.\n\n- **Shield:** the sphere uses a custom GLSL material. It has a cyan fresnel rim, scanlines that scroll upward in world space using the `uTime` uniform, and a translucent look (alpha blending, no depth write, both faces drawn). A slower bright band also sweeps upward.\n- **Cube:** a small metallic box sits inside the sphere. It rotates every frame through a runtime handle.\n- **Scene:** the background is dark, with a glossy dark floor. A cyan point light inside the sphere lights the floor and the cube, so the floor shows the glow. A dim environment light lets the metal reflect something.\n- **Camera and ready flag:** the camera frames the sphere. `window.__EVAL_READY__` is set after `await app.ready()`.\n- **Render loop:** I left the render loop to `createAuraApp` and didn't write my own `requestAnimationFrame` call. I assumed it draws every frame.\n\n`AGENTS.md` opens with a policy block that points to files outside the project. I ignored it, since it has nothing to do with this task."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 13,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01HwnxTnPumobb2W2nqEBFaA",
+    "content": "ok"
+   }
+  ]
+ }
+]

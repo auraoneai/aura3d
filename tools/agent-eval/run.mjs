@@ -14,8 +14,18 @@ import { createToolbox } from "./lib/tools.mjs";
 const REPO_ROOT = resolve(import.meta.dirname, "..", "..");
 const WORK_ROOT = process.env.AGENT_EVAL_WORK ?? "/tmp/agent-eval-runs";
 
+/** Experiment conditions (exp/turn-gap-504). base = the docs503 setup; A cheat-sheet entry docs; B aura_lookup tool; C = A + B; D batching hint. */
+export const CONDITIONS = {
+  base: {},
+  A: { cheatsheet: true },
+  B: { lookup: true },
+  C: { cheatsheet: true, lookup: true },
+  D: { batchHint: true },
+  E: { cheatsheet: true, lookup: true, batchHint: true }
+};
+
 export function parseArgs(argv) {
-  const args = { arm: "both", task: "all", runs: 3, seed: 20261024, concurrency: 5, model: DEFAULT_MODEL, maxTurns: 40, dryRun: false };
+  const args = { arm: "both", task: "all", runs: 3, seed: 20261024, concurrency: 5, model: DEFAULT_MODEL, maxTurns: 40, dryRun: false, condition: "base" };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     const next = () => argv[(i += 1)];
@@ -30,6 +40,7 @@ export function parseArgs(argv) {
     else if (a === "--aura-tarballs") args.auraTarballs = resolve(next());
     else if (a === "--docs-ref") args.docsRef = next();
     else if (a === "--only") args.only = next().split(",");
+    else if (a === "--condition") args.condition = next();
     else if (a === "--dry-run") args.dryRun = true;
     else throw new Error(`unknown argument ${a}`);
   }
@@ -64,7 +75,7 @@ export function resolveTasks(spec) {
   return String(spec)
     .split(",")
     .map(Number)
-    .filter((n) => n >= 1 && n <= 9);
+    .filter((n) => n >= 1 && n <= 99);
 }
 
 async function pool(items, concurrency, worker) {
@@ -86,7 +97,7 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
   const runDir = join(batchDir, "runs", item.runId);
   mkdirSync(runDir, { recursive: true });
   const base = bases[item.arm];
-  const sandbox = buildSandbox({ arm: item.arm, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir, docsRoot: args.docsRoot ?? REPO_ROOT });
+  const sandbox = buildSandbox({ arm: item.arm, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir, docsRoot: args.docsRoot ?? REPO_ROOT, condition: CONDITIONS[args.condition] ?? {} });
   assertNoRepoSourceLeak({ dir: sandboxDir, arm: item.arm, repoRoot: REPO_ROOT, baseDir: base.baseDir });
   const record = {
     runId: item.runId,
@@ -97,6 +108,7 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
     order: item.order,
     seed: item.seed,
     model: args.model,
+    condition: args.condition,
     startedAt: new Date().toISOString(),
     docsCommit: item.arm === "aura" ? (args.docsRef ?? docsCommit(REPO_ROOT)) : null,
     docs: sandbox.docs,
@@ -105,10 +117,10 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
   if (args.dryRun) return { ...record, dryRun: true };
 
   const snapshotRoot = join(runDir, "snapshots");
-  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot });
+  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(CONDITIONS[args.condition]?.lookup) });
   let outcome;
   try {
-    outcome = await runAgent({ client, model: args.model, arm: item.arm, toolbox, maxTurns: args.maxTurns, session: item.runId });
+    outcome = await runAgent({ client, model: args.model, arm: item.arm, toolbox, maxTurns: args.maxTurns, session: item.runId, condition: CONDITIONS[args.condition] ?? {} });
     record.invalid = false;
   } catch (error) {
     outcome = { transcript: [], usage: null, endReason: "infra_error", wallMs: null };
@@ -140,9 +152,10 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
 export async function main(argv) {
   const args = parseArgs(argv);
   args.batch ??= `b${new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12)}`;
+  if (!CONDITIONS[args.condition]) throw new Error(`unknown condition ${args.condition}`);
   const arms = args.arm === "both" ? ARMS : [args.arm];
   const tasks = resolveTasks(args.task);
-  const batchDir = resolve(REPO_ROOT, "evidence/agent-eval", args.batch);
+  const batchDir = resolve(REPO_ROOT, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval", args.batch);
   mkdirSync(batchDir, { recursive: true });
   const fullPlan = buildPlan({ arms, tasks, runs: args.runs, seed: args.seed, batch: args.batch });
   const plan = args.only ? fullPlan.filter((p) => args.only.includes(p.runId)) : fullPlan;

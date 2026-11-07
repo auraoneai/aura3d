@@ -1,0 +1,169 @@
+{
+  "runId": "b511-sheet-t36-aura-r2",
+  "batch": "b511-sheet",
+  "arm": "aura",
+  "task": 36,
+  "idx": 2,
+  "order": 16,
+  "seed": 20261107016,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T03:02:24.853Z",
+  "docsCommit": "907a25413",
+  "docs": {
+    "files": 111,
+    "sha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 43449,
+  "usage": {
+    "input": 174723,
+    "uncachedInput": 174723,
+    "output": 1979,
+    "turns": 8,
+    "perTurnInput": [
+      3334,
+      14943,
+      20487,
+      22109,
+      25146,
+      25313,
+      31361,
+      32030
+    ],
+    "perTurnOutput": [
+      20,
+      67,
+      72,
+      35,
+      65,
+      34,
+      1327,
+      359
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1513,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 1513,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 183
+    },
+    {
+      "i": 2,
+      "t": 1513,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4957,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 151
+    },
+    {
+      "i": 4,
+      "t": 4957,
+      "type": "list",
+      "path": "public/assets"
+    },
+    {
+      "i": 5,
+      "t": 4957,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 6,
+      "t": 11442,
+      "type": "search",
+      "pattern": "sha256"
+    },
+    {
+      "i": 7,
+      "t": 11452,
+      "type": "search",
+      "pattern": "unsafeModelUrl|queryParam|skipHash|verify"
+    },
+    {
+      "i": 8,
+      "t": 13189,
+      "type": "search",
+      "pattern": "defineModelAssets"
+    },
+    {
+      "i": 9,
+      "t": 13189,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 80
+    },
+    {
+      "i": 10,
+      "t": 16023,
+      "type": "search",
+      "pattern": "setRotation|setYaw|play\\(|lookAt|camera\\.follow|setCamera|onFrame|setPosition"
+    },
+    {
+      "i": 11,
+      "t": 17510,
+      "type": "search",
+      "pattern": "setRotation\\(|setCameraPose|setCamera\\(|play\\("
+    },
+    {
+      "i": 12,
+      "t": 32801,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 2967
+    },
+    {
+      "i": 13,
+      "t": 34140,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 14,
+      "t": 43449,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts. It passes the typecheck, but I couldn't run it in a browser, so none of the behaviour has been seen on screen.\n\n- **Model and path:** The soldier loads from `/assets/soldier.glb` and loops `Walk`. Each frame it is placed on a circle of radius 4 around the origin, and its yaw is set to the direction of travel.\n- **Facing:** I assumed the model faces +Z. If it walks backwards or sideways in the browser, the fix is one yaw offset in `placeSoldier`.\n- **Controls:** Pressing `r` crossfades to `Run` over 0.4 s, and `w` crossfades back to `Walk`. The ground speed eases toward 3.6 m/s for run and 1.4 m/s for walk, so the pace changes smoothly with the clip.\n- **Scene:** There is a ground plane and a path ring drawn with two thin cylinders. Lighting is a hemisphere light plus a shadow-casting directional light. The camera is fixed above and behind the circle, so it frames the whole path rather than following the soldier.\n- **Ready flag:** `window.__EVAL_READY__` is set in the first frame callback, which may run just before that frame is actually drawn.\n- **Unchecked sizes:** I didn't check how `primitives.cylinder` interprets `size`, so the path ring may not match radius 4 exactly.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

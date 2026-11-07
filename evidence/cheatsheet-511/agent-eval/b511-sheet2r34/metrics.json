@@ -1,0 +1,248 @@
+[
+  {
+    "runId": "b511-sheet2r34-t34-aura-r1",
+    "arm": "aura",
+    "task": 34,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 36,
+    "agentWallSec": 160.4,
+    "tokensIn": 2084653,
+    "tokensOut": 5132,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 9,
+    "readCalls": 23,
+    "searchCalls": 22,
+    "writeCalls": 3,
+    "srcLines": 149,
+    "srcTokens": 971,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.5,
+    "bundleGzipKB": null,
+    "readyMs": 736,
+    "consoleErrors": 0,
+    "docsSha256": "c0367aac97d8e1b92d98549192e2f1a154a1fff2f5bec7f36effe73c0d306c39",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "pyramid",
+          "pass": true,
+          "why": "The loop builds rows of 5, 4, 3, 2 and 1 boxes (15 total). Each box and the static floor and ball use the engine's `.physics()` bodies, and the code calls `app.physics.step`. Nothing is hand-rolled. The probes show no errors and an animated"
+        },
+        {
+          "id": "launch",
+          "pass": true,
+          "why": "The ball is held at its start position until the clock reaches 1.5 s. It is then teleported and given velocity (0, 2.2, -22), which heads toward the pyramid at z=0. By my estimate it arrives at about y≈1.5, which hits the second row. The pr"
+        },
+        {
+          "id": "settle",
+          "pass": true,
+          "why": "The ball (mass 6) hits dynamic boxes with friction 0.6 on a static floor with friction 0.8. The physics is stepped at a fixed 1/60 s with the gravity set in the app options. Restitution is low, so the boxes should tumble and come to rest. N"
+        },
+        {
+          "id": "reset",
+          "pass": true,
+          "why": "A Space keydown handler calls `resetShot()`. That rebuilds the scene with `app.setScene`, resets the clock and flags, and relaunches after 0.4 s. The probes did not press Space. The code assumes `setScene` rebuilds the physics bodies and th"
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The scene has a directional sun with a 2048 shadow map fitted around the pyramid, and neutral environment lighting. The boxes and ball cast shadows and the floor receives them. The perspective camera at (10, 5.5, 11) looking at (0, 1.2, 3) "
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 62,
+        "rulesLines": 30,
+        "glueLines": 30,
+        "notes": "Scene covers buildScene: floor, 15 boxes, ball, lights, camera. Rules cover the launch constants, the launch and hold logic, and the reset. Glue covers the imports, the global declaration, `createAuraApp` setup, the manual fixed-step accumulator, the keydown listener and the double-rAF ready flag."
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet2r34-t34-aura-r2",
+    "arm": "aura",
+    "task": 34,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 28,
+    "agentWallSec": 140.9,
+    "tokensIn": 1551647,
+    "tokensOut": 4528,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 7,
+    "readCalls": 24,
+    "searchCalls": 17,
+    "writeCalls": 1,
+    "srcLines": 121,
+    "srcTokens": 972,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.7,
+    "bundleGzipKB": null,
+    "readyMs": 722,
+    "consoleErrors": 0,
+    "docsSha256": "c0367aac97d8e1b92d98549192e2f1a154a1fff2f5bec7f36effe73c0d306c39",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "pyramid",
+          "pass": true,
+          "why": "Rows of 5,4,3,2,1 give 15 dynamic box bodies with halfExtents, mass and friction, on a static box floor. The bodies are stepped with the engine's app.physics.step and bound to nodes via bindNodes, so there is no hand-rolled physics."
+        },
+        {
+          "id": "launch",
+          "pass": true,
+          "why": "launchAt is set to now+1500ms after app.ready(). onFrame then calls launchBall, which teleports the ball to [0,1.8,8] and sets velocity [0,0.4,-24] toward the pyramid at z=0. The ball is held in place until then. The probes show an animated"
+        },
+        {
+          "id": "settle",
+          "pass": true,
+          "why": "The boxes and ball are dynamic bodies with friction and low restitution, stepped at a fixed 1/120 s with an accumulator. Tumbling and settling follow from the engine physics. The probes show no errors and an animated frame."
+        },
+        {
+          "id": "reset",
+          "pass": true,
+          "why": "The Space keydown handler (with preventDefault and a repeat guard) calls resetShot. That rebuilds the scene via app.setScene, clears the launched flag, and schedules a relaunch after 600 ms. It relies on setScene re-creating the physics bod"
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "A directional sun with shadow:true, boxes and ball with castShadow, a floor with receiveShadow, a fill light and a neutral environment. The perspective camera at [9,4.5,12] looks at [0,1.6,2], which frames the pyramid and the ball's approac"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 58,
+        "rulesLines": 22,
+        "glueLines": 30,
+        "notes": "Scene covers buildScene: lights, floor, pyramid loops, ball, camera. Rules are launch/reset logic, the Space handler and the launch timing. Glue is the constants and global declaration, createAuraApp setup, the manual fixed-timestep accumulator loop in onFrame, the guard counter, the ready bootstrap"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet2r34-t34-aura-r3",
+    "arm": "aura",
+    "task": 34,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 23,
+    "agentWallSec": 90.8,
+    "tokensIn": 850135,
+    "tokensOut": 3264,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 5,
+    "readCalls": 13,
+    "searchCalls": 13,
+    "writeCalls": 3,
+    "srcLines": 87,
+    "srcTokens": 758,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9272.3,
+    "bundleGzipKB": null,
+    "readyMs": 509,
+    "consoleErrors": 0,
+    "docsSha256": "c0367aac97d8e1b92d98549192e2f1a154a1fff2f5bec7f36effe73c0d306c39",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 14,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "pyramid",
+          "pass": true,
+          "why": "The loop builds rows of 5,4,3,2,1 boxes (15 total). Each box and the floor use the engine's .physics() with dynamic/static bodies, and physics.bindNodes is enabled. No hand-rolled physics. The probe shows a non-blank render."
+        },
+        {
+          "id": "launch",
+          "pass": true,
+          "why": "onFrame accumulates dt, and at 1.5 s it calls ball.setVelocity([19,1.2,0]) from x=-7 toward the pyramid at x=0. The probes show animated:true. They don't directly measure the launch time."
+        },
+        {
+          "id": "settle",
+          "pass": true,
+          "why": "The engine rigid bodies (friction 0.6, restitution 0.1, bound to nodes) are stepped every frame, so the boxes tumble and come to rest. The probes show motion (diff 0.27) and no errors. Settling itself isn't measured."
+        },
+        {
+          "id": "reset",
+          "pass": true,
+          "why": "The Space keydown handler resets elapsed and launched, then calls app.setScene(buildScene()), which rebuilds the bodies and relaunches after 1.5 s. The probes did not exercise Space, so this is judged from the source only."
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The outdoor-day look preset supplies lighting and shadows, and looks.appOptions is applied. The perspective camera at [-1.5,4.2,12.5] looking at [-0.5,1,0] with fov 45 frames both the pyramid and the ball start at x=-7. The probe frame has "
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 28,
+        "glueLines": 14,
+        "notes": "Scene lines cover the box layout loop, the palette, and buildScene (floor, boxes, ball, camera). Rules lines cover the launch constants, launch(), the Space reset handler, and the onFrame timer. Glue lines cover the import, the BoxSpec interface, createAuraApp options, the elapsed/launched state, th"
+      }
+    }
+  }
+]

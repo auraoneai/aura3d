@@ -19,6 +19,8 @@ export function basePackageJson(arm, { auraVersion = AURA_VERSION, tarballs = nu
     return { name: "eval-base-three", private: true, type: "module", dependencies: { three: "0.185.1", "@types/three": "0.185.4", vite: "7.3.2", typescript: "5.9.3" } };
   }
   const dependencies = { "@aura3d/engine": auraVersion, "@aura3d/assets": auraVersion, vite: "7.3.2", typescript: "5.9.3" };
+  // Optional engine peers a scaffolded project ships (for example "@dimforge/rapier3d-compat@0.20.0" for physics), as name@version pairs.
+  for (const spec of (process.env.AGENT_EVAL_EXTRA_AURA_DEPS ?? "").split(",").filter(Boolean)) dependencies[spec.slice(0, spec.lastIndexOf("@"))] = spec.slice(spec.lastIndexOf("@") + 1);
   const pkg = { name: "eval-base-aura", private: true, type: "module", dependencies };
   if (tarballs) {
     const overrides = {};

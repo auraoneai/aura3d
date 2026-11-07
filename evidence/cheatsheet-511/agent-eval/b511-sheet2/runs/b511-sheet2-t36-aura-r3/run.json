@@ -1,0 +1,241 @@
+{
+  "runId": "b511-sheet2-t36-aura-r3",
+  "batch": "b511-sheet2",
+  "arm": "aura",
+  "task": 36,
+  "idx": 3,
+  "order": 14,
+  "seed": 20261107014,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T03:39:10.374Z",
+  "docsCommit": "HEAD",
+  "docs": {
+    "files": 111,
+    "sha256": "c0367aac97d8e1b92d98549192e2f1a154a1fff2f5bec7f36effe73c0d306c39"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 48463,
+  "usage": {
+    "input": 278894,
+    "uncachedInput": 278894,
+    "output": 2321,
+    "turns": 11,
+    "perTurnInput": [
+      3334,
+      14870,
+      16641,
+      18668,
+      20977,
+      25524,
+      28859,
+      34146,
+      38036,
+      38593,
+      39246
+    ],
+    "perTurnOutput": [
+      20,
+      61,
+      63,
+      55,
+      47,
+      148,
+      54,
+      113,
+      1227,
+      193,
+      340
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1635,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 1635,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 179
+    },
+    {
+      "i": 2,
+      "t": 1635,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4640,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 4,
+      "t": 4640,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 4640,
+      "type": "list",
+      "path": "public/assets"
+    },
+    {
+      "i": 6,
+      "t": 4647,
+      "type": "search",
+      "pattern": "sha256"
+    },
+    {
+      "i": 7,
+      "t": 6893,
+      "type": "read",
+      "path": "docs/agents/build-a-game.md",
+      "lines": 40
+    },
+    {
+      "i": 8,
+      "t": 6893,
+      "type": "read",
+      "path": "docs/agents/troubleshooting.md",
+      "lines": 30
+    },
+    {
+      "i": 9,
+      "t": 6900,
+      "type": "search",
+      "pattern": "sha256.*(verify|mismatch|skip|0\\.repeat)|queryParam"
+    },
+    {
+      "i": 10,
+      "t": 9166,
+      "type": "search",
+      "pattern": "sha256"
+    },
+    {
+      "i": 11,
+      "t": 9203,
+      "type": "search",
+      "pattern": "defineModelAssets|interface ModelAssetEntry|ModelAssetSpec"
+    },
+    {
+      "i": 12,
+      "t": 10901,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/assets/productionModels.d.ts",
+      "lines": 62
+    },
+    {
+      "i": 13,
+      "t": 10902,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/assets/productionModels.js",
+      "lines": 112
+    },
+    {
+      "i": 14,
+      "t": 16774,
+      "type": "search",
+      "pattern": "crossFade|lights\\.directional|\\.play\\(|setRotation|lookAt"
+    },
+    {
+      "i": 15,
+      "t": 18815,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 40
+    },
+    {
+      "i": 16,
+      "t": 18824,
+      "type": "search",
+      "pattern": "setRotation|play\\(|setPosition|targetHeight|facing|yaw"
+    },
+    {
+      "i": 17,
+      "t": 24575,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 18,
+      "t": 37846,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 2955
+    },
+    {
+      "i": 19,
+      "t": 38402,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 20,
+      "t": 43039,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 21,
+      "t": 43039,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 22,
+      "t": 43712,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 23,
+      "t": 48463,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/build-a-game.md",
+    "docs/agents/recipes.md",
+    "docs/agents/troubleshooting.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/assets/productionModels.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/assets/productionModels.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts and it passes typecheck. I couldn't run it in a browser or run `vite build`, so the visuals and the facing direction are untested.\n\n- **Soldier:** `/assets/soldier.glb` loads through `defineModelAssets`, scaled to 1.8 m, and plays `Walk` in a loop. I took the sha256 from the soldier example in `docs/agents/recipes.md` rather than computing it from the file.\n- **Path:** each frame the soldier is placed on a radius-4 circle around the origin. Its yaw is `atan2(vx, vz)` of the travel direction. This assumes the model faces +Z, so if it walks sideways or backwards, change `MODEL_YAW_OFFSET`.\n- **Controls:** `r` calls `play(\"Run\", { crossFade: 0.4 })` and `w` switches back to `Walk` the same way. Ground speed eases between 1.4 m/s and 3.6 m/s instead of jumping.\n- **Scene:** a ground plane, a darker track plane under the circle, and neutral, hemisphere and shadow-casting directional lights. A fixed perspective camera at (0, 8.5, 9.5) looks at the origin and frames the whole circle.\n- **Ready flag:** `window.__EVAL_READY__` is set on the first animation frame after `app.ready()` resolves, so it only fires once the model has loaded. I avoided top-level `await` so the default Vite build target doesn't reject it.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

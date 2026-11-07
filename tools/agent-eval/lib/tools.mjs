@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
+import { createLookup } from "./lookup.mjs";
 import { resolveInside, writeSnapshot } from "./sandbox.mjs";
 
 export const TOOL_DEFINITIONS = [
@@ -49,6 +50,16 @@ export const TOOL_DEFINITIONS = [
   }
 ];
 
+/** Extra tool for the lookup conditions (B, C): one query returns recipe source, exact signatures and gotchas. */
+export const LOOKUP_TOOL = {
+  name: "aura_lookup",
+  description:
+    "One-call Aura3D documentation lookup. Pass a short keyword query (API names, what you need to do), for example 'camera orbit autoRotate', 'instances per-instance colors', 'custom shader water uniform', 'sky day night sun'. Returns in ONE result the best-matching working recipe source, exact type signatures and known gotchas. Prefer it to reading or searching doc files one by one.",
+  input_schema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
+};
+
+export const toolDefinitions = ({ lookup = false } = {}) => (lookup ? [...TOOL_DEFINITIONS, LOOKUP_TOOL] : TOOL_DEFINITIONS);
+
 const WRITABLE = [/^src\//, /^index\.html$/, /^vite\.config\.ts$/];
 const READABLE_NODE_MODULES = ["node_modules/@aura3d", "node_modules/three", "node_modules/@types/three"];
 const DOC_PREFIXES = ["llms.txt", "AGENTS.md", "docs/", ".agents/"];
@@ -56,7 +67,8 @@ const MAX_READ_CHARS = 14000;
 
 const norm = (p) => p.replaceAll("\\", "/").replace(/^\.\//, "");
 
-export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTsc }) {
+export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTsc, lookup = false }) {
+  const lookupFn = lookup ? createLookup(dir) : null;
   const started = now();
   const events = [];
   const docsOpened = new Set();
@@ -167,6 +179,12 @@ export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTs
         }
         throw new Error(`search failed: ${String(error.stderr ?? error.message).slice(0, 200)}`);
       }
+    },
+    aura_lookup({ query }) {
+      if (!lookupFn) throw new Error("unknown tool aura_lookup");
+      const out = lookupFn(query);
+      record({ type: "lookup", query: String(query).slice(0, 80), chars: out.length });
+      return out;
     },
     typecheck() {
       if (!state.draftTaken) {

@@ -13,8 +13,8 @@ const WORK = process.env.AGENT_EVAL_WORK ?? "/tmp/agent-eval-runs";
 const [mode, batch] = process.argv.slice(2);
 if (!mode || !batch) throw new Error("usage: score-local.mjs build|serve <batch>");
 const runsDir = join(WORK, batch);
-const ids = readdirSync(join(REPO, "evidence/agent-eval", batch, "runs")).sort();
-const outFile = join(REPO, "evidence/agent-eval", batch, "local-build.json");
+const ids = readdirSync(join(REPO, (process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval"), batch, "runs")).sort();
+const outFile = join(REPO, (process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval"), batch, "local-build.json");
 
 function dirSize(dir) {
   let total = 0;
