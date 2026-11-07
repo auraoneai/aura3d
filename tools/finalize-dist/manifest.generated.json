@@ -10,6 +10,10 @@
       "file": "packages/rendering/src/volumetrics.ts"
     },
     {
+      "name": "@aura3d/engine/procedural",
+      "file": "packages/engine/src/public/procedural.ts"
+    },
+    {
       "name": "@aura3d/engine/geometry-tools",
       "file": "packages/engine/src/public/geometry-tools.ts"
     },
@@ -671,6 +675,12 @@
       "name": "./geometry-tools",
       "source": "packages/engine/src/public/geometry-tools.ts",
       "dist": "./dist/engine/public/geometry-tools.js",
+      "conditions": true
+    },
+    {
+      "name": "./procedural",
+      "source": "packages/engine/src/public/procedural.ts",
+      "dist": "./dist/engine/public/procedural.js",
       "conditions": true
     },
     {

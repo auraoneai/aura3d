@@ -121,6 +121,10 @@
       "source": "packages/engine/src/public/geometry-tools.ts",
       "conditions": true
     },
+    "./procedural": {
+      "source": "packages/engine/src/public/procedural.ts",
+      "conditions": true
+    },
     "./media-node": {
       "source": "packages/engine/src/agent-api/media-node.ts"
     }
@@ -134,6 +138,10 @@
     [
       "@aura3d/rendering/volumetrics",
       "packages/rendering/src/volumetrics.ts"
+    ],
+    [
+      "@aura3d/engine/procedural",
+      "packages/engine/src/public/procedural.ts"
     ],
     [
       "@aura3d/engine/geometry-tools",
