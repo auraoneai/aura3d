@@ -275,8 +275,11 @@ export interface AuraPhysicsRuntime {
    * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
    * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
    * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+   *
+   * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+   * engine returns has it, so call it as `await app.physics.ready?.()`.
    */
-  ready(): Promise<void>;
+  ready?(): Promise<void>;
 }
 
 /**

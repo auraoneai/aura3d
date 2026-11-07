@@ -405,7 +405,7 @@ void interactions.orbit({ target: "crate" });
 
 ## `physics`
 
-Rapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use. Needs `npm install @dimforge/rapier3d-compat@0.20.0` (optional peer; once installed, every app that imports the engine loads its 1.08 MB gzip chunk at startup unless it is built with `aura3d()` from `@aura3d/assets/vite`, which leaves Rapier out of apps that never mention physics, or `aura3d({ physics: "lazy" })`, which downloads it on first use (then `await app.physics.ready()` before imperative calls); see `docs/concepts/physics.md`): without it you get the typed `PHYSICS_BACKEND_MISSING` error (`error.code`, `error.installCommand`) in `diagnostics().errors`, on the canvas, from `app.physics`, from `preloadPhysics()`, and from `aura3d doctor`. Working example: recipe 16 (`recipes-src/physics-basics`).
+Rapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use. Needs `npm install @dimforge/rapier3d-compat@0.20.0` (optional peer; once installed, every app that imports the engine loads its 1.08 MB gzip chunk at startup unless it is built with `aura3d()` from `@aura3d/assets/vite`, which leaves Rapier out of apps that never mention physics, or `aura3d({ physics: "lazy" })`, which downloads it on first use (then `await app.physics.ready?.()` before imperative calls); see `docs/concepts/physics.md`): without it you get the typed `PHYSICS_BACKEND_MISSING` error (`error.code`, `error.installCommand`) in `diagnostics().errors`, on the canvas, from `app.physics`, from `preloadPhysics()`, and from `aura3d doctor`. Working example: recipe 16 (`recipes-src/physics-basics`).
 
 ```ts
 void physics.box;

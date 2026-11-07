@@ -14,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
  */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const GENERATOR = path.join(ROOT, "packages/assets/scripts/gen-physics-entry-points.mjs");
+// invariant: the fixture copies the real PHYSICS_USAGE_PATTERN line from auraPhysics.ts so the generator under test uses the scanner keyword rule the plugin ships; the toContain checks below assert generator output, not source text
 const SCANNER_PATTERN_LINE = readFileSync(path.join(ROOT, "packages/assets/src/vite/auraPhysics.ts"), "utf8")
   .split("\n")
   .find((line) => line.startsWith("export const PHYSICS_USAGE_PATTERN = "))!;

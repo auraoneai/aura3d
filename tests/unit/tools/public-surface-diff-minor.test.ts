@@ -142,6 +142,37 @@ export declare const createGame: <TCue extends string>(options: CreateOptions<TC
     expect(change?.classification).toEqual({ compatible: false, breaking: true, disposition: "breaking" });
   }, 60000);
 
+  // An options interface whose inline `physics?: { ... }` literal gains a nested optional member. The class with a
+  // private member keeps the two comparison copies from being related by the checker, so only the text rule decides.
+  const NESTED_BEFORE = `
+export declare class Renderer { private readonly id; }
+export interface CreateOptions {
+  readonly renderer?: Renderer;
+  readonly physics?: {
+    readonly layers?: readonly string[] | undefined;
+    readonly bindNodes?: boolean | undefined;
+  };
+}
+export declare function createApp(options?: CreateOptions): void;
+`;
+  it("accepts an interface whose inline object member only gains an optional member", () => {
+    const after = NESTED_BEFORE.replace("readonly bindNodes?: boolean | undefined;", "readonly bindNodes?: boolean | undefined;\n    /** Load mode. */\n    readonly load?: \"eager\" | \"on-demand\" | undefined;");
+    const report = diff(NESTED_BEFORE, after, "1.1.0", "minor");
+    expect(report.diagnostics).toEqual([]);
+    expect(report.changes.filter((change) => change.classification.breaking)).toEqual([]);
+    expect(dispositions(report)).toMatchObject({ CreateOptions: "compatible-widening" });
+  }, 60000);
+
+  it("fails an inline object member that gains a required member or loses one", () => {
+    const required = NESTED_BEFORE.replace("readonly bindNodes?: boolean | undefined;", "readonly bindNodes?: boolean | undefined;\n    readonly load: \"eager\";");
+    const removed = NESTED_BEFORE.replace("readonly bindNodes?: boolean | undefined;", "readonly load?: \"eager\";");
+    const optionality = NESTED_BEFORE.replace("readonly physics?: {", "readonly physics: {").replace("readonly bindNodes?: boolean | undefined;", "readonly bindNodes?: boolean | undefined;\n    readonly load?: \"eager\";");
+    for (const after of [required, removed, optionality]) {
+      const change = diff(NESTED_BEFORE, after, "1.1.0", "minor").changes.find((entry) => entry.name === "CreateOptions");
+      expect(change?.classification.breaking).toBe(true);
+    }
+  }, 60000);
+
   it("fails removals in a minor", () => {
     const report = diff(
       "export declare const kept: number; export declare const lost: number; export interface Options { a: string; b: string; nested: { c: string; d: string } } export interface Deep { nested: { c: string; d: string } }",

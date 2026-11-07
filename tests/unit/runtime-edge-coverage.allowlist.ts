@@ -3250,6 +3250,38 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "if (!access) throw new Error(\"Transform transaction access is unavailable.\");",
     ]
   },
+  {
+    file: "packages/assets/src/vite/auraPhysics.ts",
+    reason: "5.2.0 physics on demand (lane 519): describes the stripped-build stub that replaces the Rapier init module and fails closed with the typed PHYSICS_BACKEND_MISSING error; a real, documented build mode, not an unimplemented feature",
+    expires: EXPIRES,
+    reviewer: "agent (release 5.2.0 lane 519 merge, 2026-11-07)",
+    markers: [
+      "*   initialisation module (`#aura3d/rapier-init`) replaced by a stub without a Rapier import, so no Rapier chunk is",
+      "*   emitted. The stub's entry points throw the typed PHYSICS_BACKEND_MISSING error with {@link PHYSICS_STRIPPED_MESSAGE}.",
+      "/** Source of the stub that replaces the Rapier initialisation module in a stripped build (no Rapier import). */",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/app/createAuraAppCore.ts",
+    reason: "5.2.0 physics on demand (lane 519): the preview physics bridge is created when the opt-in on-demand backend finishes loading; describes real deferred loading, not a missing feature",
+    expires: EXPIRES,
+    reviewer: "agent (release 5.2.0 lane 519 merge, 2026-11-07)",
+    markers: [
+      "/** The preview bridge for headless / canvas-2D mounts; deferred (created on load) while on-demand physics is loading. */",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/physics/onDemandPhysics.ts",
+    reason: "5.2.0 physics on demand (lane 519): app.physics before the opt-in backend load fails closed with the typed PHYSICS_NOT_READY error (await app.physics.ready?.()); deferred bodies are replayed on load",
+    expires: EXPIRES,
+    reviewer: "agent (release 5.2.0 lane 519 merge, 2026-11-07)",
+    markers: [
+      "/** True once the backend has loaded and the deferred declared bodies were created. */",
+      "const unavailable = (member: string): Error => {",
+      "return () => { throw unavailable(`${name}.${key}()`); };",
+      "return () => { throw unavailable(`${key}()`); };",
+    ]
+  },
 ];
 
 export const runtimeEdgeAllowlistMarkers: readonly string[] = runtimeEdgeAllowlist.flatMap((group) =>

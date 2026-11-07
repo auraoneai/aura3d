@@ -569,7 +569,7 @@ export interface AuraCreateAppOptions {
      * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
      * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
      * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
-     * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready()` (or `await app.ready()`)
+     * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
      * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
      * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
      * build: await `ensurePhysics()` before creating the app).

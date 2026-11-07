@@ -529,6 +529,12 @@ export function typeWidens(checker: ts.TypeChecker, before: ts.Type, after: ts.T
  * also covers generic declarations, whose separately declared type parameters the
  * checker cannot relate across the two comparison copies. A merged or overloaded
  * shape whose existing member list changes fails closed.
+ *
+ * For an interface, an existing property whose type is an inline object literal
+ * (`readonly physics?: { ... }`) may itself change in the same way: its name,
+ * modifiers and optionality keep their text and the literal only gains optional
+ * members, recursively. Old values stay assignable and every member a reader used
+ * is kept. Any other change to an existing member fails closed.
  */
 export function declarationOnlyAddsMembers(before: ts.Symbol, after: ts.Symbol): boolean {
   const single = (symbol: ts.Symbol) => {
@@ -543,28 +549,49 @@ export function declarationOnlyAddsMembers(before: ts.Symbol, after: ts.Symbol):
     ...(node.typeParameters ?? []).map((p) => p.getText()), ...(node.heritageClauses ?? []).map((h) => h.getText())
   ].join(" "));
   if (header(oldNode) !== header(newNode)) return false;
-  const members = (node: ts.ClassDeclaration | ts.InterfaceDeclaration) => {
-    const map = new Map<string, string[]>();
-    for (const member of node.members as ts.NodeArray<ts.ClassElement | ts.TypeElement>) {
+  const members = (list: ts.NodeArray<ts.ClassElement | ts.TypeElement>) => {
+    const map = new Map<string, (ts.ClassElement | ts.TypeElement)[]>();
+    for (const member of list) {
       const isStatic = (ts.canHaveModifiers(member) ? ts.getModifiers(member) ?? [] : []).some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
       const key = `${ts.SyntaxKind[member.kind] === "Constructor" ? "constructor" : isStatic ? "static " : ""}${member.name ? member.name.getText() : ts.SyntaxKind[member.kind]}`;
-      map.set(key, [...(map.get(key) ?? []), normalize(member.getText())]);
+      map.set(key, [...(map.get(key) ?? []), member]);
     }
     return map;
   };
-  const oldMembers = members(oldNode), newMembers = members(newNode);
-  for (const [key, texts] of oldMembers) {
-    if (newMembers.get(key)?.join("\0") !== texts.join("\0")) return false;
+  const texts = (nodes: readonly ts.Node[] | undefined) => nodes?.map((node) => normalize(node.getText())).join("\0");
+  /** Count of widened members (added optional ones, recursively), or -1 when the list does not only widen. */
+  const widenedMembers = (oldList: ts.NodeArray<ts.TypeElement>, newList: ts.NodeArray<ts.TypeElement>): number => {
+    const oldMap = members(oldList), newMap = members(newList);
+    let widened = 0;
+    for (const [key, oldNodes] of oldMap) {
+      const newNodes = newMap.get(key);
+      if (texts(newNodes) === texts(oldNodes)) continue;
+      const oldMember = oldNodes[0], newMember = newNodes?.[0];
+      if (oldNodes.length !== 1 || newNodes?.length !== 1 || !oldMember || !newMember) return -1;
+      if (!ts.isPropertySignature(oldMember) || !ts.isPropertySignature(newMember)) return -1;
+      const head = (member: ts.PropertySignature) => normalize([...(ts.getModifiers(member) ?? []).map((m) => m.getText()), member.name.getText(), member.questionToken ? "?" : ""].join(" "));
+      if (head(oldMember) !== head(newMember)) return -1;
+      if (!oldMember.type || !newMember.type || !ts.isTypeLiteralNode(oldMember.type) || !ts.isTypeLiteralNode(newMember.type)) return -1;
+      const nested = widenedMembers(oldMember.type.members, newMember.type.members);
+      if (nested <= 0) return -1;
+      widened += nested;
+    }
+    for (const member of newList) {
+      const key = member.name ? member.name.getText() : ts.SyntaxKind[member.kind];
+      if (oldMap.has(key)) continue;
+      if (!(ts.isPropertySignature(member) || ts.isMethodSignature(member)) || !member.questionToken) return -1;
+      widened += 1;
+    }
+    return widened;
+  };
+  if (ts.isClassDeclaration(oldNode) || ts.isClassDeclaration(newNode)) {
+    const oldMembers = members(oldNode.members), newMembers = members(newNode.members);
+    for (const [key, nodes] of oldMembers) {
+      if (texts(newMembers.get(key)) !== texts(nodes)) return false;
+    }
+    return newMembers.size > oldMembers.size;
   }
-  if (ts.isClassDeclaration(newNode)) return newMembers.size > oldMembers.size;
-  let added = 0;
-  for (const member of newNode.members) {
-    const key = member.name ? member.name.getText() : ts.SyntaxKind[member.kind];
-    if (oldMembers.has(key)) continue;
-    if (!(ts.isPropertySignature(member) || ts.isMethodSignature(member)) || !member.questionToken) return false;
-    added += 1;
-  }
-  return added > 0;
+  return widenedMembers(oldNode.members, newNode.members) > 0;
 }
 /** A `readonly [...]` tuple constant whose existing elements keep their text and
  * which only appends elements (an inventory such as a template list gaining an

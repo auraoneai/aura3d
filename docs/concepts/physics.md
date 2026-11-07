@@ -71,9 +71,9 @@ export default defineConfig({ plugins: [aura3d()] }); // physics: "auto" (defaul
   has loaded, declared bodies and `onCollision` / `onCollisionWith` / `onTriggerEnter` / `onTriggerExit` handlers are queued and
   applied in order on load, `app.physics.step()` and `contacts()` return `[]`, and every other `app.physics` call (`createBody`,
   `createJoint`, `bodies.*`, `queries.*`, `gravity()`, ...) throws a typed error with `error.code === "PHYSICS_NOT_READY"` that tells
-  you to `await app.physics.ready()` (or `await app.ready()`, which also waits for a load in flight). After that, `app.physics` is the
+  you to `await app.physics.ready?.()` (`ready` is optional in the `AuraPhysicsRuntime` type so the 5.2.0 addition stays non-breaking; the engine always provides it) or `await app.ready()`, which also waits for a load in flight. After that, `app.physics` is the
   same object and behaves exactly like the eager build. Code that calls `app.physics.createBody(...)` right after `createAuraApp(...)`
-  therefore needs one `await app.physics.ready()` first; that is why this mode is opt-in. The same semantics are available without
+  therefore needs one `await app.physics.ready?.()` first; that is why this mode is opt-in. The same semantics are available without
   the plugin through `createAuraApp(target, { physics: { load: "on-demand" } })` (Rapier is then already downloaded by an eager
   build, but the API behaves identically, so dev and prod agree), and for non-Vite bundlers through the `aura3d-physics-on-demand`
   package condition. Genre kits and `createGame` construct their worlds synchronously: in a lazy build, `await ensurePhysics()` (from

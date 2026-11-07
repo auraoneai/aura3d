@@ -67,7 +67,7 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
     expect(physics.step(1 / 60)).toEqual([]);
     expect(physics.contacts()).toEqual([]);
     open();
-    await physics.ready();
+    await physics.ready!();
     expect(app.physics).toBe(physics);
     expect(physics.bodies.has("crate")).toBe(true);
     expect(physics.bodies.has("ground")).toBe(true);
@@ -78,7 +78,7 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
   it("simulates exactly like the eager app after N steps", async () => {
     const eager = createAuraApp(undefined as never, { scene: crateScene() });
     const lazy = createAuraApp(undefined as never, { scene: crateScene(), physics: { load: "on-demand" } });
-    await lazy.physics.ready();
+    await lazy.physics.ready!();
     const eagerPositions: Array<readonly number[]> = [];
     const lazyPositions: Array<readonly number[]> = [];
     for (const steps of [1, 30, 120]) {
@@ -128,7 +128,7 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
         .physics({ type: "dynamic", shape: "box", halfExtents: [0.5, 0.5, 0.5], mass: 1 })
     ));
     open();
-    await app.physics.ready();
+    await app.physics.ready!();
     expect(app.physics.bodies.has("other")).toBe(true);
     expect(app.physics.bodies.has("crate")).toBe(false);
     app.dispose();
@@ -145,7 +145,7 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
     expect(access.preloads).toBe(1);
     app.nodes.remove!("gone");
     open();
-    await app.physics.ready();
+    await app.physics.ready!();
     expect(app.physics.bodies.has("kept")).toBe(true);
     expect(app.physics.bodies.has("gone")).toBe(false);
     app.dispose();
@@ -161,7 +161,7 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => undefined);
     try {
       const app = createAuraAppWithPhysicsWorldAccess(access, undefined as never, { scene: crateScene() });
-      await expect(app.physics.ready()).rejects.toBe(stripped);
+      await expect(app.physics.ready!()).rejects.toBe(stripped);
       await app.ready();
       expect(app.diagnostics().errors.some((message) => message.includes("physics was stripped at build time"))).toBe(true);
       expect(() => app.physics.bodies.require("crate")).toThrow(stripped);
@@ -173,7 +173,7 @@ describe("on-demand physics", { timeout: 60_000 }, () => {
   it("leaves the default eager app unchanged: synchronous bodies and an already resolved ready()", async () => {
     const app = createAuraApp(undefined as never, { scene: crateScene() });
     expect(app.physics.bodies.has("crate")).toBe(true);
-    await expect(app.physics.ready()).resolves.toBeUndefined();
+    await expect(app.physics.ready!()).resolves.toBeUndefined();
     expect(app.physics).toBe(app.physics);
     app.dispose();
   });
