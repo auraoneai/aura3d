@@ -1,0 +1,538 @@
+[
+  {
+    "id": "bench505-physics-sheet-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": true,
+    "page": {
+      "pageErrors": [
+        "Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:49100/assets/world-JTaImCgw.js:1:18189)\n    at nt (http://127.0.0.1:49100/assets/world-JTaImCgw.js:1:46036)\n    at new pt (http://127.0.0.1:49100/assets/world-JTaImCgw.js:1:52899)\n    at D (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:53294)\n    at E (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:57501)\n    at Pg (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:59645)\n    at RZ (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:91465)\n    at http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:93558"
+      ],
+      "consoleErrorCount": 1
+    },
+    "probes": {
+      "blank": true,
+      "animated": false,
+      "frame": {
+        "mean": 0,
+        "std": 0,
+        "nonblack": 0,
+        "diff": 0,
+        "changedFrac": 0
+      },
+      "ready": false
+    },
+    "bundle": {
+      "rawKB": 9612
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": true,
+    "page": {
+      "pageErrors": [
+        "console.error Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:49101"
+      ],
+      "consoleErrorCount": 1
+    },
+    "probes": {
+      "blank": true,
+      "animated": false,
+      "frame": {
+        "mean": 0,
+        "std": 0,
+        "nonblack": 0,
+        "diff": 0,
+        "changedFrac": 0
+      },
+      "ready": false
+    },
+    "bundle": {
+      "rawKB": 9635
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t10-aura-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": null,
+    "bundle": {
+      "rawKB": 0
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 192.5,
+        "std": 39.3,
+        "nonblack": 1,
+        "diff": 5.55,
+        "changedFrac": 0.0818
+      },
+      "ready": true,
+      "task": 11,
+      "initial": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "hasState": true,
+      "idle3s": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "stableAtRest": true,
+      "clickedSwing": true,
+      "startAngleAbs": 59.881868217222326,
+      "maxAngleAbs": 59.881868217222326,
+      "maxDisplaced": 11,
+      "cratesField": 15,
+      "reachedSettled": true,
+      "success": true,
+      "clickedReset": true,
+      "afterReset": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "resetOk": true,
+      "trajectory": "{\"phase\":\"swinging\",\"displaced\":0,\"angle\":59.881868217222326} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":47.95805138292522} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":9.56994351837584} {\"phase\":\"swinging\",\"displaced\":8,\"angle\":-16.187524968149912} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":-28.724275149199972} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":-25.098914929346275} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":-12.116171441911725} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":5.1276132512698185} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":19.871241074530758} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":26.606247589575183} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":23.12569092799057} {\"phase\":\"swinging\",\"displaced\":11,\"angle\":10.98665812958993} {\"phase\":\"settled\",\"displaced\":11,\"angle\":-5.014774240319171} {\"phase\":\"settled\",\"displaced\":11,\"angle\":-18.59670353988218} {\"phase\":\"settled\",\"displaced\":11,\"angle\":-24.671172966987303}"
+    },
+    "bundle": {
+      "rawKB": 9624
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 200,
+        "std": 34.9,
+        "nonblack": 1,
+        "diff": 7.88,
+        "changedFrac": 0.1117
+      },
+      "ready": true,
+      "task": 11,
+      "initial": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "hasState": true,
+      "idle3s": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "stableAtRest": true,
+      "clickedSwing": true,
+      "startAngleAbs": 4.4444444444444455,
+      "maxAngleAbs": 59.99999999999999,
+      "maxDisplaced": 15,
+      "cratesField": 15,
+      "reachedSettled": true,
+      "success": true,
+      "clickedReset": true,
+      "afterReset": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "resetOk": true,
+      "trajectory": "{\"phase\":\"swinging\",\"displaced\":0,\"angle\":4.4444444444444455} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":44.44444444444442} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":59.99999999999999} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":45.80123035072473} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":29.468043845591524} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":9.299242650316918} {\"phase\":\"swinging\",\"displaced\":8,\"angle\":13.584910332911436} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":17.13591841696512} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":17.520056163954212} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":14.987569826524698} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":10.334919306837172} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":4.2539769707616815} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":2.3673608253860823} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":8.567806605469094} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":13.461682861386988} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":16.370129938369217} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":16.909768905870813} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":15.033972344412232} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":11.0330930733634} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":5.496686170491847} {\"phase\":\"settled\",\"displaced\":15,\"angle\":0.7655101694765477} {\"phase\":\"settled\",\"displaced\":15,\"angle\":6.842187372534106} {\"phase\":\"settled\",\"displaced\":15,\"angle\":11.86069682982499}"
+    },
+    "bundle": {
+      "rawKB": 9630
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 202.3,
+        "std": 44.6,
+        "nonblack": 0.999,
+        "diff": 7.31,
+        "changedFrac": 0.0754
+      },
+      "ready": true,
+      "task": 11,
+      "initial": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "hasState": true,
+      "idle3s": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "stableAtRest": true,
+      "clickedSwing": true,
+      "startAngleAbs": 59.79741605753165,
+      "maxAngleAbs": 59.79741605753165,
+      "maxDisplaced": 15,
+      "cratesField": 15,
+      "reachedSettled": true,
+      "success": true,
+      "clickedReset": true,
+      "afterReset": {
+        "phase": "ready",
+        "crates": 15,
+        "displaced": 0,
+        "ballAngleDeg": 0
+      },
+      "resetOk": true,
+      "trajectory": "{\"phase\":\"swinging\",\"displaced\":0,\"angle\":59.79741605753165} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":51.19349870980096} {\"phase\":\"swinging\",\"displaced\":0,\"angle\":18.307413317883075} {\"phase\":\"swinging\",\"displaced\":5,\"angle\":-13.998478407986877} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":-20.6836600249343} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":-20.389698945778445} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":-15.326489866122492} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":-7.390436476093738} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":1.1674538626001516} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":8.239146365734143} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":12.366532817062796} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":13.001252557616166} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":8.35630538228998} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":3.1795060411343856} {\"phase\":\"swinging\",\"displaced\":15,\"angle\":-2.0187292900467346} {\"phase\":\"settled\",\"displaced\":15,\"angle\":-6.004506632362207}"
+    },
+    "bundle": {
+      "rawKB": 9628
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 54.5,
+        "std": 60.3,
+        "nonblack": 1,
+        "diff": 0.78,
+        "changedFrac": 0.0118
+      },
+      "ready": true,
+      "task": 12,
+      "initial": {
+        "phase": "ready",
+        "spawned": 0,
+        "bins": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total": 0
+      },
+      "hasState": true,
+      "clickedDrop": true,
+      "finalState": {
+        "phase": "dropping",
+        "spawned": 20,
+        "bins": [
+          4,
+          1,
+          2,
+          1,
+          4,
+          2,
+          3
+        ],
+        "total": 17
+      },
+      "binsFirst": [
+        4,
+        1,
+        2,
+        1,
+        4,
+        2,
+        3
+      ],
+      "nonEmptyBins": 7,
+      "success": false,
+      "clickedReset": true,
+      "afterReset": {
+        "phase": "ready",
+        "spawned": 0,
+        "bins": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total": 0
+      },
+      "resetOk": true,
+      "binsSecond": [
+        4,
+        1,
+        2,
+        1,
+        4,
+        2,
+        3
+      ],
+      "repeatable": true,
+      "trajectory": "{\"phase\":\"dropping\",\"spawned\":1,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":18,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":13,\"bins\":[4,0,2,1,3,1,2]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[5,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[5,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":17,\"bins\":[4,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":19,\"bins\":[6,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[5,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":17,\"bins\":[4,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":17,\"bins\":[4,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":17,\"bins\":[4,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":17,\"bins\":[4,1,2,1,4,2,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":17,\"bins\":[4,1,2,1,4,2,3]}"
+    },
+    "bundle": {
+      "rawKB": 9614
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": false,
+      "frame": {
+        "mean": 44.4,
+        "std": 48.5,
+        "nonblack": 1,
+        "diff": 0.41,
+        "changedFrac": 0.0077
+      },
+      "ready": true,
+      "task": 12,
+      "initial": {
+        "phase": "ready",
+        "spawned": 0,
+        "bins": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total": 0
+      },
+      "hasState": true,
+      "clickedDrop": true,
+      "finalState": {
+        "phase": "dropping",
+        "spawned": 20,
+        "bins": [
+          4,
+          2,
+          0,
+          1,
+          2,
+          2,
+          7
+        ],
+        "total": 18
+      },
+      "binsFirst": [
+        4,
+        2,
+        0,
+        1,
+        2,
+        2,
+        7
+      ],
+      "nonEmptyBins": 6,
+      "success": false,
+      "clickedReset": true,
+      "afterReset": {
+        "phase": "ready",
+        "spawned": 0,
+        "bins": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total": 0
+      },
+      "resetOk": true,
+      "binsSecond": [
+        4,
+        2,
+        0,
+        1,
+        2,
+        2,
+        7
+      ],
+      "repeatable": true,
+      "trajectory": "{\"phase\":\"dropping\",\"spawned\":1,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":16,\"total\":1,\"bins\":[1,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":12,\"bins\":[3,1,0,1,1,0,6]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,2,0,1,2,2,7]}"
+    },
+    "bundle": {
+      "rawKB": 9618
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-physics-sheet-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 48.6,
+        "std": 54.8,
+        "nonblack": 1,
+        "diff": 0.93,
+        "changedFrac": 0.0123
+      },
+      "ready": true,
+      "task": 12,
+      "initial": {
+        "phase": "ready",
+        "spawned": 0,
+        "bins": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total": 0
+      },
+      "hasState": true,
+      "clickedDrop": true,
+      "finalState": {
+        "phase": "settled",
+        "spawned": 20,
+        "bins": [
+          5,
+          5,
+          1,
+          2,
+          0,
+          2,
+          5
+        ],
+        "total": 20
+      },
+      "binsFirst": [
+        5,
+        5,
+        1,
+        2,
+        0,
+        2,
+        5
+      ],
+      "nonEmptyBins": 6,
+      "success": true,
+      "clickedReset": true,
+      "afterReset": {
+        "phase": "ready",
+        "spawned": 0,
+        "bins": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "total": 0
+      },
+      "resetOk": true,
+      "binsSecond": [
+        5,
+        5,
+        1,
+        2,
+        0,
+        2,
+        5
+      ],
+      "repeatable": true,
+      "trajectory": "{\"phase\":\"dropping\",\"spawned\":1,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":5,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":9,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":13,\"total\":0,\"bins\":[0,0,0,0,0,0,0]} {\"phase\":\"dropping\",\"spawned\":18,\"total\":4,\"bins\":[1,1,0,1,0,0,1]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":6,\"bins\":[2,1,0,1,0,1,1]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":10,\"bins\":[2,2,1,1,0,1,3]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":15,\"bins\":[3,4,1,1,0,2,4]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":18,\"bins\":[4,4,1,2,0,2,5]} {\"phase\":\"dropping\",\"spawned\":20,\"total\":20,\"bins\":[5,5,1,2,0,2,5]} {\"phase\":\"settled\",\"spawned\":20,\"total\":20,\"bins\":[5,5,1,2,0,2,5]} {\"phase\":\"settled\",\"spawned\":20,\"total\":20,\"bins\":[5,5,1,2,0,2,5]}"
+    },
+    "bundle": {
+      "rawKB": 9615
+    },
+    "readyMs": null
+  }
+]

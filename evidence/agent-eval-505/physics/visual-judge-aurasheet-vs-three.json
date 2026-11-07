@@ -1,0 +1,608 @@
+{
+  "model": "claude-sonnet-5.5",
+  "auraPrefix": "bench505-physics-sheet",
+  "threePrefix": "bench505-physics",
+  "judgeCallsPerPair": 3,
+  "results": [
+    {
+      "task": 10,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            }
+          },
+          "totals": {
+            "aura": 5,
+            "three": 15
+          },
+          "winner": "three",
+          "why": "Candidate A renders a curved domino row with a visible toppling wave, a ball, a ramp and legible Release/Reset buttons, while both frames of Candidate B are completely black."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 5,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "Candidate A renders a blank black page, while B shows a curved domino line on a green table with a ramp, a ball, a visible toppling wave, and legible Release/Reset buttons."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 5,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "Candidate A renders only a black page, while Candidate B shows a curved domino line mid-collapse with a visible ramp, ball and Release/Reset buttons."
+        }
+      ],
+      "votes": [
+        "three",
+        "three",
+        "three"
+      ],
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 5,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "Candidate A shows only black frames and is broken, while B shows a lit, curved, color-graded domino chain mid-collapse with legible Release/Reset buttons."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            }
+          },
+          "totals": {
+            "aura": 5,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "Candidate A renders a lit scene with colored dominoes, a table, a ball, a working chain reaction and legible buttons, while Candidate B is a blank black page."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            }
+          },
+          "totals": {
+            "aura": 5,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "A renders a lit domino curve on a wooden table with working Release/Reset buttons and a toppling wave, while B is a blank black page."
+        }
+      ],
+      "votes": [
+        "three",
+        "three",
+        "three"
+      ],
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "noFrames": [
+        "aura"
+      ],
+      "calls": []
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "noFrames": [
+        "three"
+      ],
+      "calls": []
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 5
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 22
+          },
+          "winner": "three",
+          "why": "A shows a detailed lattice crane, a full pyramid in the first frame and wood crates tumbling after impact, with a clear sky and a small overlay. B's crane is a plain flat-coloured block structure, the framing crops the pyramid, and the grey backdrop is dull, although its crates scatter plausibly."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "A has a detailed lattice crane, a blue sky, a believable pyramid-to-scatter progression, and a ball path that stays in frame. B has a simple flat crane, no sky visible, crates that scatter past the frame edge, and a UI strip that is less clean."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "A has a detailed lattice crane, a sky gradient, a clear pyramid-then-impact sequence, and unobtrusive buttons. B has a simple crane, all 15 crates are already displaced by the time of the frames so the pyramid never shows, and the ball appears to hover in the second frame."
+        }
+      ],
+      "votes": [
+        "three",
+        "three",
+        "three"
+      ],
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "noFrames": [
+        "three"
+      ],
+      "calls": []
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 14,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "B's bin counters update and match the balls resting in the bins, while A's counters stay at 0 with balls already in bins, and A's header text wraps awkwardly and its bin labels sit at the bottom edge, although A has the glossier, better-lit look."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 18
+          },
+          "winner": "three",
+          "why": "A shows distinct red balls, green bins with orange dividers and live counts that match the balls resting in bins 5 to 7, while B's balls rest at the bottom but every counter still reads 0 and its dividers are short and faint, though B has slightly glossier lighting."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 16,
+            "three": 17
+          },
+          "winner": "three",
+          "why": "A's bin counters update as balls settle (bins 5, 6 and 7 show counts), while B shows balls resting at the bottom with every bin count still at 0, even though B has the glossier lighting and larger, clearer bin numbers."
+        }
+      ],
+      "votes": [
+        "three",
+        "three",
+        "three"
+      ],
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 18,
+            "three": 17
+          },
+          "winner": "aura",
+          "why": "A has a lit board with highlighted pegs and clearly defined colored bins, though its balls are tiny; B's balls are more readable but its pegs are dark and low-contrast and its bins are only thin divider lines."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 19,
+            "three": 18
+          },
+          "winner": "aura",
+          "why": "A has lighter, more cohesive lighting with glossy pegs and clearly defined colored bins, whereas B's dark pegs, dim lighting and bins reduced to thin dividers look flatter despite its more readable multicolored balls."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 20,
+            "three": 18
+          },
+          "winner": "aura",
+          "why": "A has better lighting and depth, with glossy light pegs and clearly colored 3D bins, while B's dark, low-contrast pegs and thin divider lines look flatter even though its colorful balls are easier to see."
+        }
+      ],
+      "votes": [
+        "aura",
+        "aura",
+        "aura"
+      ],
+      "majority": "aura"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 18,
+            "three": 16
+          },
+          "winner": "aura",
+          "why": "B has a more cohesive palette (translucent bins, tan dividers, salmon balls), better depth and highlights on pegs, and balls visibly landing in bins with matching counts, while A looks flat with tiny dark pegs and a count mismatch (19 dropped, 1 in bins, though the UI is clearer)."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 19,
+            "three": 15
+          },
+          "winner": "aura",
+          "why": "B has a clearer lit board with highlights on the pegs, translucent bins in distinct colors, and balls visibly landing in bins with matching counts; A's pegs are small and dark with flat lighting, and its balls look stuck near the top in the first frame and sparse in the bins."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 19,
+            "three": 15
+          },
+          "winner": "aura",
+          "why": "A has visible specular highlights on pegs and balls, a cohesive grey-blue, copper and teal palette, and bin counts that match the balls resting in the bins, while B's dark board, tiny pegs and flat red balls give little depth or gloss."
+        }
+      ],
+      "votes": [
+        "aura",
+        "aura",
+        "aura"
+      ],
+      "majority": "aura"
+    }
+  ]
+}

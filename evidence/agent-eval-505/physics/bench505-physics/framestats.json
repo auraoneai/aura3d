@@ -1,0 +1,86 @@
+{
+ "bench505-physics-t10-three-r1": {
+  "mean": 62.4,
+  "std": 31.1,
+  "nonblack": 1.0,
+  "diff": 1.41,
+  "changedFrac": 0.0204
+ },
+ "bench505-physics-t10-three-r2": {
+  "mean": 80.4,
+  "std": 28.5,
+  "nonblack": 1.0,
+  "diff": 1.4,
+  "changedFrac": 0.0222
+ },
+ "bench505-physics-t10-three-r3": {
+  "mean": 92.2,
+  "std": 40.3,
+  "nonblack": 1.0,
+  "diff": 1.96,
+  "changedFrac": 0.0339
+ },
+ "bench505-physics-t11-aura-r2": {
+  "mean": 220.6,
+  "std": 39.2,
+  "nonblack": 1.0,
+  "diff": 6.66,
+  "changedFrac": 0.0809
+ },
+ "bench505-physics-t11-aura-r3": {
+  "mean": 201.3,
+  "std": 47.6,
+  "nonblack": 0.999,
+  "diff": 3.42,
+  "changedFrac": 0.0428
+ },
+ "bench505-physics-t11-three-r2": {
+  "mean": 170.7,
+  "std": 34.0,
+  "nonblack": 1.0,
+  "diff": 4.49,
+  "changedFrac": 0.073
+ },
+ "bench505-physics-t12-aura-r1": {
+  "mean": 57.2,
+  "std": 56.7,
+  "nonblack": 0.999,
+  "diff": 0.94,
+  "changedFrac": 0.0138
+ },
+ "bench505-physics-t12-aura-r2": {
+  "mean": 36.2,
+  "std": 39.0,
+  "nonblack": 0.999,
+  "diff": 0.49,
+  "changedFrac": 0.0058
+ },
+ "bench505-physics-t12-aura-r3": {
+  "mean": 50.3,
+  "std": 51.3,
+  "nonblack": 1.0,
+  "diff": 1.27,
+  "changedFrac": 0.0162
+ },
+ "bench505-physics-t12-three-r1": {
+  "mean": 29.3,
+  "std": 23.9,
+  "nonblack": 1.0,
+  "diff": 0.16,
+  "changedFrac": 0.0039
+ },
+ "bench505-physics-t12-three-r2": {
+  "mean": 31.4,
+  "std": 24.8,
+  "nonblack": 1.0,
+  "diff": 0.45,
+  "changedFrac": 0.0079
+ },
+ "bench505-physics-t12-three-r3": {
+  "mean": 29.8,
+  "std": 28.6,
+  "nonblack": 1.0,
+  "diff": 0.46,
+  "changedFrac": 0.0072
+ }
+}

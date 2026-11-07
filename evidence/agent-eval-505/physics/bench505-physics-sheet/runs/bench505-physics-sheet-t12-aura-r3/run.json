@@ -1,0 +1,148 @@
+{
+  "runId": "bench505-physics-sheet-t12-aura-r3",
+  "batch": "bench505-physics-sheet",
+  "arm": "aura",
+  "task": 12,
+  "idx": 3,
+  "order": 1,
+  "seed": 20261106001,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:10:20.743Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "wallMs": 132773,
+  "usage": {
+    "input": 142734,
+    "uncachedInput": 142734,
+    "output": 7530,
+    "turns": 7,
+    "perTurnInput": [
+      3334,
+      11678,
+      14694,
+      20737,
+      24186,
+      33579,
+      34526
+    ],
+    "perTurnOutput": [
+      20,
+      45,
+      107,
+      1118,
+      67,
+      5642,
+      531
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2210,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2210,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 2211,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 8125,
+      "type": "search",
+      "pattern": "physics|rigid|HTML|overlay|label|text"
+    },
+    {
+      "i": 4,
+      "t": 8125,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 13399,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 6,
+      "t": 13399,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 7,
+      "t": 13404,
+      "type": "search",
+      "pattern": "text|Text|canvasTexture|texture\\.|hud|ui\\."
+    },
+    {
+      "i": 8,
+      "t": 65506,
+      "type": "search",
+      "pattern": "fov\\??:|readonly fov|verticalFov|setPosition\\(|opacity\\??:"
+    },
+    {
+      "i": 9,
+      "t": 69043,
+      "type": "search",
+      "pattern": "camera\\.perspective|fov"
+    },
+    {
+      "i": 10,
+      "t": 124188,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 12613
+    },
+    {
+      "i": 11,
+      "t": 125243,
+      "type": "typecheck",
+      "pass": true
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

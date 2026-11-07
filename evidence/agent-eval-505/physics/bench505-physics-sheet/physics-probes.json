@@ -1,0 +1,4082 @@
+{
+ "bench505-physics-sheet-t10-aura-r1": {
+  "ready": false,
+  "pageErrors": [
+   "Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:49100/assets/world-JTaImCgw.js:1:18189)\n    at nt (http://127.0.0.1:49100/assets/world-JTaImCgw.js:1:46036)\n    at new pt (http://127.0.0.1:49100/assets/world-JTaImCgw.js:1:52899)\n    at D (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:53294)\n    at E (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:57501)\n    at Pg (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:59645)\n    at RZ (http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:91465)\n    at http://127.0.0.1:49100/assets/index-DKgtorz9.js:3029:93558"
+  ]
+ },
+ "bench505-physics-sheet-t10-aura-r2": {
+  "ready": false,
+  "pageErrors": [
+   "console.error Error: @aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics.\n    at Ue (http://127.0.0.1:49101"
+  ]
+ },
+ "bench505-physics-sheet-t11-aura-r1": {
+  "ready": true,
+  "task": 11,
+  "initial": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "hasState": true,
+  "idle3s": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "stableAtRest": true,
+  "clickedSwing": true,
+  "samples": [
+   {
+    "t": 59,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 59.881868217222326
+   },
+   {
+    "t": 354,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 56.2954508162087
+   },
+   {
+    "t": 658,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 47.95805138292522
+   },
+   {
+    "t": 1129,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 26.395347792735482
+   },
+   {
+    "t": 1421,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 9.56994351837584
+   },
+   {
+    "t": 1715,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": -6.651713543003148
+   },
+   {
+    "t": 2006,
+    "phase": "swinging",
+    "displaced": 8,
+    "angle": -16.187524968149912
+   },
+   {
+    "t": 2479,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -26.367457971011092
+   },
+   {
+    "t": 2771,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -28.724275149199972
+   },
+   {
+    "t": 3059,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -28.27379752484346
+   },
+   {
+    "t": 3350,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -25.098914929346275
+   },
+   {
+    "t": 3631,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -19.527532395680463
+   },
+   {
+    "t": 3919,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -12.116171441911725
+   },
+   {
+    "t": 4199,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": -3.61036400477439
+   },
+   {
+    "t": 4474,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 5.1276132512698185
+   },
+   {
+    "t": 4742,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 13.218536993023987
+   },
+   {
+    "t": 5007,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 19.871241074530758
+   },
+   {
+    "t": 5272,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 24.46651203677452
+   },
+   {
+    "t": 5533,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 26.606247589575183
+   },
+   {
+    "t": 5810,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 26.131984089543245
+   },
+   {
+    "t": 6077,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 23.12569092799057
+   },
+   {
+    "t": 6345,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 17.901567678976658
+   },
+   {
+    "t": 6611,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 10.98665812958993
+   },
+   {
+    "t": 6876,
+    "phase": "swinging",
+    "displaced": 11,
+    "angle": 3.0803086054279256
+   },
+   {
+    "t": 7139,
+    "phase": "settled",
+    "displaced": 11,
+    "angle": -5.014774240319171
+   },
+   {
+    "t": 7408,
+    "phase": "settled",
+    "displaced": 11,
+    "angle": -12.484161590586623
+   },
+   {
+    "t": 7673,
+    "phase": "settled",
+    "displaced": 11,
+    "angle": -18.59670353988218
+   },
+   {
+    "t": 7938,
+    "phase": "settled",
+    "displaced": 11,
+    "angle": -22.780897562252875
+   },
+   {
+    "t": 8203,
+    "phase": "settled",
+    "displaced": 11,
+    "angle": -24.671172966987303
+   }
+  ],
+  "startAngleAbs": 59.881868217222326,
+  "maxAngleAbs": 59.881868217222326,
+  "maxDisplaced": 11,
+  "cratesField": 15,
+  "reachedSettled": true,
+  "success": true,
+  "clickedReset": true,
+  "afterReset": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "resetOk": true,
+  "pageErrors": []
+ },
+ "bench505-physics-sheet-t11-aura-r2": {
+  "ready": true,
+  "task": 11,
+  "initial": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "hasState": true,
+  "idle3s": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "stableAtRest": true,
+  "clickedSwing": true,
+  "samples": [
+   {
+    "t": 121,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 4.4444444444444455
+   },
+   {
+    "t": 485,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 44.44444444444442
+   },
+   {
+    "t": 737,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 59.99999999999999
+   },
+   {
+    "t": 1461,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 45.80123035072473
+   },
+   {
+    "t": 1820,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 29.468043845591524
+   },
+   {
+    "t": 2177,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 9.299242650316918
+   },
+   {
+    "t": 2927,
+    "phase": "swinging",
+    "displaced": 8,
+    "angle": 13.584910332911436
+   },
+   {
+    "t": 3294,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 17.13591841696512
+   },
+   {
+    "t": 3644,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 17.520056163954212
+   },
+   {
+    "t": 3993,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 14.987569826524698
+   },
+   {
+    "t": 4335,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 10.334919306837172
+   },
+   {
+    "t": 4675,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 4.2539769707616815
+   },
+   {
+    "t": 5017,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 2.3673608253860823
+   },
+   {
+    "t": 5357,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 8.567806605469094
+   },
+   {
+    "t": 5685,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 13.461682861386988
+   },
+   {
+    "t": 6007,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 16.370129938369217
+   },
+   {
+    "t": 6343,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 16.909768905870813
+   },
+   {
+    "t": 6670,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 15.033972344412232
+   },
+   {
+    "t": 6991,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 11.0330930733634
+   },
+   {
+    "t": 7315,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 5.496686170491847
+   },
+   {
+    "t": 7633,
+    "phase": "settled",
+    "displaced": 15,
+    "angle": 0.7655101694765477
+   },
+   {
+    "t": 7949,
+    "phase": "settled",
+    "displaced": 15,
+    "angle": 6.842187372534106
+   },
+   {
+    "t": 8278,
+    "phase": "settled",
+    "displaced": 15,
+    "angle": 11.86069682982499
+   }
+  ],
+  "startAngleAbs": 4.4444444444444455,
+  "maxAngleAbs": 59.99999999999999,
+  "maxDisplaced": 15,
+  "cratesField": 15,
+  "reachedSettled": true,
+  "success": true,
+  "clickedReset": true,
+  "afterReset": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "resetOk": true,
+  "pageErrors": []
+ },
+ "bench505-physics-sheet-t11-aura-r3": {
+  "ready": true,
+  "task": 11,
+  "initial": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "hasState": true,
+  "idle3s": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "stableAtRest": true,
+  "clickedSwing": true,
+  "samples": [
+   {
+    "t": 106,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 59.79741605753165
+   },
+   {
+    "t": 426,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 57.04878007865318
+   },
+   {
+    "t": 761,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 51.19349870980096
+   },
+   {
+    "t": 1407,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 31.31672699219103
+   },
+   {
+    "t": 1727,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 18.307413317883075
+   },
+   {
+    "t": 2045,
+    "phase": "swinging",
+    "displaced": 0,
+    "angle": 4.2300190011812475
+   },
+   {
+    "t": 2713,
+    "phase": "swinging",
+    "displaced": 5,
+    "angle": -13.998478407986877
+   },
+   {
+    "t": 3036,
+    "phase": "swinging",
+    "displaced": 10,
+    "angle": -18.406043071606856
+   },
+   {
+    "t": 3363,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -20.6836600249343
+   },
+   {
+    "t": 3688,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -21.24138385264058
+   },
+   {
+    "t": 4009,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -20.389698945778445
+   },
+   {
+    "t": 4344,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -18.347169577705998
+   },
+   {
+    "t": 4673,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -15.326489866122492
+   },
+   {
+    "t": 5003,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -11.580506500644375
+   },
+   {
+    "t": 5331,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -7.390436476093738
+   },
+   {
+    "t": 5655,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -3.047282742037211
+   },
+   {
+    "t": 5989,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 1.1674538626001516
+   },
+   {
+    "t": 6317,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 4.999943323785158
+   },
+   {
+    "t": 6642,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 8.239146365734143
+   },
+   {
+    "t": 6970,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 10.727483412239309
+   },
+   {
+    "t": 7299,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 12.366532817062796
+   },
+   {
+    "t": 7637,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 13.118070480590132
+   },
+   {
+    "t": 7967,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 13.001252557616166
+   },
+   {
+    "t": 8291,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 12.086832925853
+   },
+   {
+    "t": 8933,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 8.35630538228998
+   },
+   {
+    "t": 9254,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 5.859202272927265
+   },
+   {
+    "t": 9583,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 3.1795060411343856
+   },
+   {
+    "t": 9903,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": 0.4976225706202567
+   },
+   {
+    "t": 10229,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -2.0187292900467346
+   },
+   {
+    "t": 10549,
+    "phase": "swinging",
+    "displaced": 15,
+    "angle": -4.224407811628075
+   },
+   {
+    "t": 10870,
+    "phase": "settled",
+    "displaced": 15,
+    "angle": -6.004506632362207
+   }
+  ],
+  "startAngleAbs": 59.79741605753165,
+  "maxAngleAbs": 59.79741605753165,
+  "maxDisplaced": 15,
+  "cratesField": 15,
+  "reachedSettled": true,
+  "success": true,
+  "clickedReset": true,
+  "afterReset": {
+   "phase": "ready",
+   "crates": 15,
+   "displaced": 0,
+   "ballAngleDeg": 0
+  },
+  "resetOk": true,
+  "pageErrors": []
+ },
+ "bench505-physics-sheet-t12-aura-r1": {
+  "ready": true,
+  "task": 12,
+  "initial": {
+   "phase": "ready",
+   "spawned": 0,
+   "bins": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 0
+  },
+  "hasState": true,
+  "clickedDrop": true,
+  "samples": [
+   {
+    "t": 20,
+    "phase": "dropping",
+    "spawned": 1,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 522,
+    "phase": "dropping",
+    "spawned": 3,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 1036,
+    "phase": "dropping",
+    "spawned": 5,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 1605,
+    "phase": "dropping",
+    "spawned": 7,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 2127,
+    "phase": "dropping",
+    "spawned": 9,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 2639,
+    "phase": "dropping",
+    "spawned": 11,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 3156,
+    "phase": "dropping",
+    "spawned": 13,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 3768,
+    "phase": "dropping",
+    "spawned": 16,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 4283,
+    "phase": "dropping",
+    "spawned": 18,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 4800,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 5314,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 5838,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 2,
+    "bins": [
+     2,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 6354,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 4,
+    "bins": [
+     3,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 6865,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 6,
+    "bins": [
+     3,
+     0,
+     0,
+     1,
+     2,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 7385,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 8,
+    "bins": [
+     4,
+     0,
+     0,
+     1,
+     3,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 7901,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 13,
+    "bins": [
+     5,
+     0,
+     2,
+     1,
+     3,
+     0,
+     2
+    ]
+   },
+   {
+    "t": 8416,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 13,
+    "bins": [
+     4,
+     0,
+     2,
+     1,
+     3,
+     1,
+     2
+    ]
+   },
+   {
+    "t": 8939,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 14,
+    "bins": [
+     4,
+     0,
+     2,
+     1,
+     3,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 9446,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 15,
+    "bins": [
+     5,
+     0,
+     2,
+     1,
+     3,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 9968,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 16,
+    "bins": [
+     5,
+     0,
+     2,
+     1,
+     4,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 10472,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 16,
+    "bins": [
+     5,
+     0,
+     2,
+     1,
+     4,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 10990,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 16,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 11509,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 12022,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 12652,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 13173,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 13689,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 14196,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 14699,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 19,
+    "bins": [
+     6,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 15218,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 15727,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 16229,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 16732,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 17255,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 17773,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 18294,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 18798,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 19317,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 19821,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 20329,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 20834,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 21338,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 21852,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 22378,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 22899,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 23402,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 23907,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 24417,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 24939,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 19,
+    "bins": [
+     6,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 25443,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 25960,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 26470,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 26989,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 27516,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 28022,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 28527,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 29044,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 29552,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 30063,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 30580,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 31097,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 31607,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 32130,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 32654,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 33163,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 33683,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 34189,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 34694,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 35215,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 35740,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 36256,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 19,
+    "bins": [
+     6,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 36775,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 37286,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 37808,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 38327,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 38843,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 39360,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 39884,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 40398,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 40927,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 41430,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 41939,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 42446,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 42961,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 43471,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 43982,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 44493,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 44996,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 45500,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 46003,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 46509,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 47015,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 47544,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 48071,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     5,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 48601,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 49115,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   },
+   {
+    "t": 49639,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 17,
+    "bins": [
+     4,
+     1,
+     2,
+     1,
+     4,
+     2,
+     3
+    ]
+   }
+  ],
+  "finalState": {
+   "phase": "dropping",
+   "spawned": 20,
+   "bins": [
+    4,
+    1,
+    2,
+    1,
+    4,
+    2,
+    3
+   ],
+   "total": 17
+  },
+  "binsFirst": [
+   4,
+   1,
+   2,
+   1,
+   4,
+   2,
+   3
+  ],
+  "nonEmptyBins": 7,
+  "success": false,
+  "clickedReset": true,
+  "afterReset": {
+   "phase": "ready",
+   "spawned": 0,
+   "bins": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 0
+  },
+  "resetOk": true,
+  "binsSecond": [
+   4,
+   1,
+   2,
+   1,
+   4,
+   2,
+   3
+  ],
+  "repeatable": true,
+  "pageErrors": []
+ },
+ "bench505-physics-sheet-t12-aura-r2": {
+  "ready": true,
+  "task": 12,
+  "initial": {
+   "phase": "ready",
+   "spawned": 0,
+   "bins": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 0
+  },
+  "hasState": true,
+  "clickedDrop": true,
+  "samples": [
+   {
+    "t": 29,
+    "phase": "dropping",
+    "spawned": 1,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 536,
+    "phase": "dropping",
+    "spawned": 3,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 1066,
+    "phase": "dropping",
+    "spawned": 5,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 1697,
+    "phase": "dropping",
+    "spawned": 7,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 2208,
+    "phase": "dropping",
+    "spawned": 9,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 2716,
+    "phase": "dropping",
+    "spawned": 11,
+    "total": 1,
+    "bins": [
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 3241,
+    "phase": "dropping",
+    "spawned": 13,
+    "total": 1,
+    "bins": [
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 3914,
+    "phase": "dropping",
+    "spawned": 16,
+    "total": 1,
+    "bins": [
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 4435,
+    "phase": "dropping",
+    "spawned": 18,
+    "total": 1,
+    "bins": [
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 4959,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 3,
+    "bins": [
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     2
+    ]
+   },
+   {
+    "t": 5495,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 5,
+    "bins": [
+     3,
+     0,
+     0,
+     0,
+     0,
+     0,
+     2
+    ]
+   },
+   {
+    "t": 6004,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 8,
+    "bins": [
+     3,
+     0,
+     0,
+     0,
+     1,
+     0,
+     4
+    ]
+   },
+   {
+    "t": 6540,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 10,
+    "bins": [
+     3,
+     1,
+     0,
+     1,
+     1,
+     0,
+     4
+    ]
+   },
+   {
+    "t": 7046,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 10,
+    "bins": [
+     3,
+     1,
+     0,
+     1,
+     1,
+     0,
+     4
+    ]
+   },
+   {
+    "t": 7550,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 12,
+    "bins": [
+     3,
+     1,
+     0,
+     1,
+     1,
+     0,
+     6
+    ]
+   },
+   {
+    "t": 8091,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 14,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     1,
+     0,
+     6
+    ]
+   },
+   {
+    "t": 8639,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 16,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     1,
+     6
+    ]
+   },
+   {
+    "t": 9171,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 9713,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 10216,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 10747,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 11250,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 11787,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 12317,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 13016,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 13534,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 14053,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 14569,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 15114,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 15632,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 16149,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 16674,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 17212,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 17734,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 18268,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 18795,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 19319,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 19831,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 20357,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 20897,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 21409,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 21925,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 22464,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 22991,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 23515,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 24048,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 24580,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 25093,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 25614,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 26134,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 26656,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 27203,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 27735,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 28276,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 28792,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 29324,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 29851,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 30377,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 30915,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 31458,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 31961,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 32509,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 33052,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 33562,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 34093,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 34621,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 35162,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 35677,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 36200,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 36735,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 37282,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 37810,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 38332,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 38875,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 39410,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 39953,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 40465,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 40974,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 41516,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 42052,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 42562,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 43102,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 43616,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 44128,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 44639,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 45171,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 45692,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 46226,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 46752,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 47280,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 47838,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 48394,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 48944,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 49475,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   },
+   {
+    "t": 50002,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     2,
+     0,
+     1,
+     2,
+     2,
+     7
+    ]
+   }
+  ],
+  "finalState": {
+   "phase": "dropping",
+   "spawned": 20,
+   "bins": [
+    4,
+    2,
+    0,
+    1,
+    2,
+    2,
+    7
+   ],
+   "total": 18
+  },
+  "binsFirst": [
+   4,
+   2,
+   0,
+   1,
+   2,
+   2,
+   7
+  ],
+  "nonEmptyBins": 6,
+  "success": false,
+  "clickedReset": true,
+  "afterReset": {
+   "phase": "ready",
+   "spawned": 0,
+   "bins": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 0
+  },
+  "resetOk": true,
+  "binsSecond": [
+   4,
+   2,
+   0,
+   1,
+   2,
+   2,
+   7
+  ],
+  "repeatable": true,
+  "pageErrors": []
+ },
+ "bench505-physics-sheet-t12-aura-r3": {
+  "ready": true,
+  "task": 12,
+  "initial": {
+   "phase": "ready",
+   "spawned": 0,
+   "bins": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 0
+  },
+  "hasState": true,
+  "clickedDrop": true,
+  "samples": [
+   {
+    "t": 17,
+    "phase": "dropping",
+    "spawned": 1,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 528,
+    "phase": "dropping",
+    "spawned": 3,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 1034,
+    "phase": "dropping",
+    "spawned": 5,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 1629,
+    "phase": "dropping",
+    "spawned": 7,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 2154,
+    "phase": "dropping",
+    "spawned": 9,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 2661,
+    "phase": "dropping",
+    "spawned": 11,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 3187,
+    "phase": "dropping",
+    "spawned": 13,
+    "total": 0,
+    "bins": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 3829,
+    "phase": "dropping",
+    "spawned": 16,
+    "total": 2,
+    "bins": [
+     1,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "t": 4343,
+    "phase": "dropping",
+    "spawned": 18,
+    "total": 4,
+    "bins": [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ]
+   },
+   {
+    "t": 4849,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 4,
+    "bins": [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ]
+   },
+   {
+    "t": 5366,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 6,
+    "bins": [
+     2,
+     1,
+     0,
+     1,
+     0,
+     1,
+     1
+    ]
+   },
+   {
+    "t": 5900,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 9,
+    "bins": [
+     2,
+     1,
+     1,
+     1,
+     0,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 6430,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 10,
+    "bins": [
+     2,
+     2,
+     1,
+     1,
+     0,
+     1,
+     3
+    ]
+   },
+   {
+    "t": 6934,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 15,
+    "bins": [
+     3,
+     4,
+     1,
+     1,
+     0,
+     2,
+     4
+    ]
+   },
+   {
+    "t": 7469,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 15,
+    "bins": [
+     3,
+     4,
+     1,
+     1,
+     0,
+     2,
+     4
+    ]
+   },
+   {
+    "t": 7983,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 16,
+    "bins": [
+     4,
+     4,
+     1,
+     1,
+     0,
+     2,
+     4
+    ]
+   },
+   {
+    "t": 8496,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     4,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 9044,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 18,
+    "bins": [
+     4,
+     4,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 9570,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 20,
+    "bins": [
+     5,
+     5,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 10112,
+    "phase": "dropping",
+    "spawned": 20,
+    "total": 20,
+    "bins": [
+     5,
+     5,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 10651,
+    "phase": "settled",
+    "spawned": 20,
+    "total": 20,
+    "bins": [
+     5,
+     5,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 11165,
+    "phase": "settled",
+    "spawned": 20,
+    "total": 20,
+    "bins": [
+     5,
+     5,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 11685,
+    "phase": "settled",
+    "spawned": 20,
+    "total": 20,
+    "bins": [
+     5,
+     5,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   },
+   {
+    "t": 12203,
+    "phase": "settled",
+    "spawned": 20,
+    "total": 20,
+    "bins": [
+     5,
+     5,
+     1,
+     2,
+     0,
+     2,
+     5
+    ]
+   }
+  ],
+  "finalState": {
+   "phase": "settled",
+   "spawned": 20,
+   "bins": [
+    5,
+    5,
+    1,
+    2,
+    0,
+    2,
+    5
+   ],
+   "total": 20
+  },
+  "binsFirst": [
+   5,
+   5,
+   1,
+   2,
+   0,
+   2,
+   5
+  ],
+  "nonEmptyBins": 6,
+  "success": true,
+  "clickedReset": true,
+  "afterReset": {
+   "phase": "ready",
+   "spawned": 0,
+   "bins": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 0
+  },
+  "resetOk": true,
+  "binsSecond": [
+   5,
+   5,
+   1,
+   2,
+   0,
+   2,
+   5
+  ],
+  "repeatable": true,
+  "pageErrors": []
+ }
+}

@@ -1,0 +1,1908 @@
+[
+  {
+    "runId": "bench505-physics-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "hasState": false,
+      "chainReaction": false,
+      "resetOk": false,
+      "secondRunOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 300,
+    "tokensIn": 3256497,
+    "tokensOut": 7143,
+    "docsFilesOpened": 8,
+    "typesFilesOpened": 17,
+    "readCalls": 38,
+    "searchCalls": 23,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 0,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "canvas#app exists but build.ok is false and no package.json or src is present."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No source creates any domino bodies."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No ball or ramp source exists."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No Release button exists in the DOM."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No Reset button or reset logic exists."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No physics stepping code exists."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No __TASK_STATE__ is defined and the probes are empty."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No simulation exists, and the probes show no toppling."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No reset behaviour or second chain reaction exists."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "The referenced module does not exist, so nothing runs and the canvas stays blank."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "Only an HTML shell and a tsconfig were delivered; no application code."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "hasState": false,
+      "chainReaction": false,
+      "resetOk": false,
+      "secondRunOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 281.5,
+    "tokensIn": 3692345,
+    "tokensOut": 6066,
+    "docsFilesOpened": 8,
+    "typesFilesOpened": 19,
+    "readCalls": 42,
+    "searchCalls": 25,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 0,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 25,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "canvas#app exists, but there is no package.json and the build failed (ok: false)."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No source code creates any domino bodies."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No ball or ramp exists in the source."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No Release button exists in the DOM."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No Reset button exists."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No physics loop or fixed timestep exists."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No window.__TASK_STATE__ is defined, and the probes are empty."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No simulation exists and no probe results were recorded."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No reset behaviour exists and no probe results were recorded."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "The referenced module is not in the final source and the build failed, so nothing runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 25,
+        "notes": "Only index.html and tsconfig boilerplate exist; there is no application code."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "hasState": false,
+      "chainReaction": false,
+      "resetOk": false,
+      "secondRunOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 319.2,
+    "tokensIn": 3019196,
+    "tokensOut": 7163,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 16,
+    "readCalls": 34,
+    "searchCalls": 22,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 0,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "canvas#app exists, but build.ok is false and no package.json or src/main.ts was shown."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No source for domino bodies was provided."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No ball or ramp source and no probe data."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No Release button in the DOM or source."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No Reset button or reset logic present."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No physics loop source was provided."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No __TASK_STATE__ in the provided source and probes are empty."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No probe results; the chain reaction is unverified."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No probe results; reset and re-release are unverified."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script src=/src/main.ts",
+          "why": "The entry module is referenced but not provided, and the build failed, so the app does not work."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No application source was provided. Only the HTML scaffold and tsconfig exist."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t10-three-r1",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "chainReaction": false,
+      "resetOk": true,
+      "secondRunOk": false
+    },
+    "probePassFraction": 0.7142857142857143,
+    "turns": 6,
+    "agentWallSec": 239.7,
+    "tokensIn": 57373,
+    "tokensOut": 7157,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 2,
+    "srcLines": 345,
+    "srcTokens": 3034,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 2505,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0.7777777777777778,
+    "silentNoOps": 1,
+    "glueLines": 90,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, the app builds with vite, and probes show build ok with no errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "TILE_COUNT=30, and a loop creates 30 individual dynamic rigid bodies, each with a cuboid collider."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A fixed ramp exists, and the ball starts as a fixed body on the ramp (at rest) until release."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A Release button is created in the DOM, and its click sets releasePending, which turns the ball dynamic. Nothing else releases it."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Reset rebuilds the world, so all tiles and the ball return to initial transforms with zero velocity. The probe confirms toppled=0 and phase ready."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "An accumulator with FIXED_DT=1/120 and world.timestep set is used."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined with getters for phase, total, toppled and ballReleased, refreshed each frame. total is 30."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "toppled rose monotonically and the phase reached 'settled', but the max was 26, below the required 27."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "Reset returned toppled to 0 and phase to 'ready', but the second run peaked at 26 and probe secondOk is false. It reproduced a chain reaction, but it fell short of the success threshold."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "ballBody RigidBodyDesc.fixed().setLinearDamping/setAngularDamping",
+          "why": "Damping is set on a fixed body. It has no effect while the body is fixed, and the body is later switched to dynamic."
+        }
+      ],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 70,
+        "glueLines": 90,
+        "notes": "Glue covers renderer setup, the camera-fitting loop, the fixed-step accumulator loop, button DOM creation, state-exposure plumbing, and mesh/body sync. The layout math is partly scene description."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t10-three-r2",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "chainReaction": true,
+      "resetOk": true,
+      "secondRunOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 10,
+    "agentWallSec": 918.3,
+    "tokensIn": 200971,
+    "tokensOut": 14212,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 3,
+    "writeCalls": 3,
+    "srcLines": 685,
+    "srcTokens": 5508,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 511,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 115,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, the app loads via a vite module script, and the build probe reports ok."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "TILE_COUNT = 30. A loop creates 30 individual dynamic Body.box instances (isStatic false) with box collision shapes."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A static ramp body exists. The ball starts asleep and locked on the ramp, and the initial probe shows ballReleased false."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The Release button calls release(), which unlocks and wakes the ball only on click. Probes show the chain starts after the click."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Reset calls world.reset(), which restores pos, q, v, w, asleep and locked for every body. The afterReset probe shows the ready state."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "An accumulator steps the world with a constant DT of 1/240, and the frame delta is clamped to MAX_FRAME."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is defined with phase, total, toppled and ballReleased getters, and updateState() runs every frame. total is 30."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The trajectory is monotonic, toppled reaches 30, and the phase ends as 'settled'."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "After Reset the probe shows toppled 0 and phase 'ready'. The second release reaches secondMax 30."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 130,
+        "rulesLines": 60,
+        "glueLines": 115,
+        "notes": "The Three.js project ships a hand-written physics engine (~350 lines). Counting it as glue would push the figure far higher, but it is treated here as the physics/game-rules domain. The glue counted is renderer and loop bootstrap, the accumulator, the DOM button creation, the state getters and the c"
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t10-three-r3",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "chainReaction": true,
+      "resetOk": true,
+      "secondRunOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 10,
+    "agentWallSec": 541.3,
+    "tokensIn": 222199,
+    "tokensOut": 14534,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 3,
+    "writeCalls": 3,
+    "srcLines": 676,
+    "srcTokens": 5585,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 510,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 370,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, the module script loads /src/main.ts, and the build probe reports ok."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A loop over TILE_COUNT=30 creates 30 separate dynamic Body objects (mass 0.5) with box shapes. The ball and static bodies are separate."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A static ramp body and a sphere ball body exist. The ball starts with held=true and zero velocity, so it is at rest until release."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A Release button is created in the DOM. Its click handler sets held=false and wakes the ball, and nothing else releases it. The probe shows the ball released only after the click."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The Reset handler calls reset() on every non-static body, restoring pos, q, v and w. It re-sleeps the tiles and holds the ball again. The probe confirms phase returns to ready with toppled 0."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Physics uses an accumulator with a constant DT=1/240 and a capped number of steps per frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined with a getter and its snapshot is rebuilt every frame. total is 30 in the probe."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The trajectory is monotonic and reaches 30 of 30, and the final phase is settled."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "After Reset the state is ready with toppled 0. A second Release reached 30 (secondMax 30)."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "src/main.ts: renderer.setPixelRatio(1)/shadow settings, key.shadow.radius = 4",
+          "why": "shadow.radius has no effect with PCFShadowMap (it only applies to VSM and PCFSoft in some versions), so this setting is likely ignored."
+        },
+        {
+          "where": "src/main.ts: Object.defineProperty set: () => {}",
+          "why": "The no-op setter is intentional and harmless, but it silently discards any writes."
+        }
+      ],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 60,
+        "glueLines": 370,
+        "notes": "physics.ts is a custom rigid-body engine of about 330 lines, so it counts as glue because the library should supply it. The remaining glue is the renderer and loop setup, the accumulator, the camera auto-fit loop, the button DOM creation and the state snapshot plumbing."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "hasState": false,
+      "stableAtRest": false,
+      "wreckDisplacesCrates": false,
+      "resetOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 707.5,
+    "tokensIn": 3395061,
+    "tokensOut": 9000,
+    "docsFilesOpened": 8,
+    "typesFilesOpened": 15,
+    "readCalls": 35,
+    "searchCalls": 22,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 0,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "index.html has canvas#app, but the build failed (build.ok false) and src/main.ts, which index.html loads, is missing from the final source."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "There is no source code; no crate bodies are created."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "Nothing runs, and there are no probe results, so stability cannot be shown."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No wrecking ball, constraint or pendulum is implemented."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "There is no Swing button and no ballAngleDeg reporting."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "There is no Reset button or reset logic."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "There is no physics loop, so no fixed timestep exists."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "window.__TASK_STATE__ is never defined, because no script exists."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "There is no behavior to verify, and the probes object is empty."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "The module referenced by index.html does not exist in the final source, so nothing executes and the build fails."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No source code was delivered beyond the HTML shell and tsconfig."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "stableAtRest": true,
+      "wreckDisplacesCrates": true,
+      "resetOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 24,
+    "agentWallSec": 552.8,
+    "tokensIn": 1540466,
+    "tokensOut": 21071,
+    "docsFilesOpened": 8,
+    "typesFilesOpened": 4,
+    "readCalls": 18,
+    "searchCalls": 12,
+    "writeCalls": 4,
+    "srcLines": 787,
+    "srcTokens": 6337,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9627,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, and the build probe reports ok with no page errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "buildCrates() makes rows of 5, 4, 3, 2 and 1 crates, 15 in all. Each has finite mass and runs through the custom rigid-body solver."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The idle3s probe shows displaced 0 and stableAtRest true. The crates are kept asleep until the ball hits, so this stability is by construction rather than solved contact stability."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The ball hangs from a fixed PIVOT. solveRope removes radial velocity and the position is re-projected to ROPE_L each step, so the length stays constant."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The Swing button pulls the ball to START_ANGLE (60°) and then releases it. The probe's maxAngleAbs is 59.99999 and ballAngleDeg is computed from the ball position."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "resetAll rebuilds the crates (reset position, identity orientation, zero velocity), clears solver state, re-places the ball at angle 0 and sets mode to ready. The afterReset probe shows displaced 0 and phase ready."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "An accumulator steps substep(STEP) at a fixed 1/240 s."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is defined via a getter and republished every frame in onFrame, with phase, crates (15), displaced and ballAngleDeg."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "After Swing the probe reached maxDisplaced 13 and phase settled. After Reset it showed displaced 0 and phase ready."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 170,
+        "rulesLines": 330,
+        "glueLines": 150,
+        "notes": "The physics engine (collision detection, solver, integration) is hand-written and counted as rules. Glue is the vector helpers, the matrix-packing helpers (putMat, basisFromBar), the HUD buttons, the onFrame/state publishing and the readiness flag."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": null,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "stableAtRest": true,
+      "wreckDisplacesCrates": true,
+      "resetOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 40,
+    "agentWallSec": 873.3,
+    "tokensIn": 3280444,
+    "tokensOut": 27694,
+    "docsFilesOpened": 11,
+    "typesFilesOpened": 10,
+    "readCalls": 27,
+    "searchCalls": 19,
+    "writeCalls": 6,
+    "srcLines": 960,
+    "srcTokens": 8376,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9631,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, and the probes report build ok with no page errors and a rendered, non-blank frame."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "World creates 5+4+3+2+1 = 15 box bodies with invMass > 0, positioned as a pyramid at x offsets centred on pyramidX with y = 0.5 + row. They are dynamic bodies in a custom engine."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The idle3s probe shows displaced 0 and stableAtRest true. Crates also start asleep."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The pivot is fixed and the rope length is constant, enforced by projectRope and ropeVelocity on a dynamic sphere body. The rope length is held exactly after each step."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A Swing button exists and releaseFrom(60) is called. The probe's startAngleAbs is 59.63 and ballAngleDeg is reported."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "reset() restores crate position, quaternion and velocities, and the ball pose. The probe's afterReset shows phase ready, displaced 0 and angle 0."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The loop uses an accumulator with a fixed dt of 1/120, capped at 40 steps per frame."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined via a getter and updated every frame in onFrame. It holds phase, crates=15, displaced and ballAngleDeg."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The probes show maxDisplaced 13 and reachedSettled true. After reset, resetOk is true with phase ready and displaced 0."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 90,
+        "glueLines": 75,
+        "notes": "The custom physics engine (~600 lines) is counted as neither scene nor rules, but it is a deliberate, task-required implementation rather than glue. Glue here is the render sync, the accumulator loop, the DOM buttons and HUD, the Euler conversion and the state plumbing. Estimated about 75 lines."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t11-three-r1",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "stopped_without_finish",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "hasState": false,
+      "stableAtRest": false,
+      "wreckDisplacesCrates": false,
+      "resetOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 7,
+    "agentWallSec": 239.8,
+    "tokensIn": 31336,
+    "tokensOut": 2892,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 2,
+    "srcTokens": 19,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 0,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0,
+    "silentNoOps": 0,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "canvas#app exists, but src/main.ts is missing and the build failed (build.ok false)."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No crate bodies are created; there is no main.ts."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "There is no simulation, and no probes ran."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No wrecking ball or constraint is implemented."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "There is no Swing button and no ballAngleDeg."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "There is no Reset button or reset logic."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "There is no physics loop, so no fixed timestep."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "window.__TASK_STATE__ is never defined."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "There is no behavior to test, and the probes are empty."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "Only a RAPIER re-export (2 lines) exists; there is no application code."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t11-three-r2",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "stableAtRest": true,
+      "wreckDisplacesCrates": true,
+      "resetOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 12,
+    "agentWallSec": 1134.5,
+    "tokensIn": 348226,
+    "tokensOut": 19816,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 1,
+    "readCalls": 5,
+    "searchCalls": 3,
+    "writeCalls": 4,
+    "srcLines": 897,
+    "srcTokens": 7246,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 525,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 480,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app and loads /src/main.ts as a module. The probe reports build.ok true with no page errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The loop builds rows of ROWS-row = 5,4,3,2,1 boxes with invMass 1 in a custom rigid-body engine. The probe reports crates = 15."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Probe idle3s shows displaced 0 and phase 'ready', and stableAtRest is true."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The ball is a dynamic sphere body. World.step applies a pendulum constraint with a fixed pivot and ROPE_LENGTH, plus a velocity solve and a position projection onto the rope sphere each step. During the scripted pull, setBallAngle also keep"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The Swing button (#swing) eases the ball to PULL_ANGLE = 60°. Probe maxAngleAbs is 59.47 and ballAngleDeg is reported from the actual ball position. startAngleAbs 0 was sampled at click time, before the pull began."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "resetScene restores crate position, orientation and velocities, and puts the ball back at angle 0. Probe afterReset shows displaced 0 and phase 'ready'."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A fixed DT = 1/120 accumulator loop calls simStep, with a cap of 12 steps per frame."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is defined with a getter, and updateState runs every frame. It exposes phase, crates 15, displaced and ballAngleDeg. The probe confirmed the fields and a changing trajectory."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "After Swing, maxDisplaced reached 15 and phase reached 'settled' (reachedSettled true). After Reset, displaced 0 and phase 'ready'."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "main.ts: key.shadow.radius = 4 with PCFSoftShadowMap",
+          "why": "three.js ignores shadow.radius for PCFSoftShadowMap, so the requested softening never appears."
+        }
+      ],
+      "glue": {
+        "sceneLines": 270,
+        "rulesLines": 70,
+        "glueLines": 480,
+        "notes": "Scene lines include the procedural canvas textures, crane, yard, lights, crates and ball. Glue is mostly the hand-written rigid-body engine in physics.ts (about 340 lines of contact generation, solver, integration and sleeping). The rest is renderer, loop, UI buttons, HUD, state export, the seeded r"
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t11-three-r3",
+    "arm": "three",
+    "task": 11,
+    "valid": false,
+    "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+    "endReason": "infra_error",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "hasState": false,
+      "stableAtRest": false,
+      "wreckDisplacesCrates": false,
+      "resetOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": null,
+    "agentWallSec": null,
+    "tokensIn": null,
+    "tokensOut": null,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 0,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 0,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": null,
+    "silentNoOps": null,
+    "glueLines": null,
+    "judged": false
+  },
+  {
+    "runId": "bench505-physics-t12-aura-r1",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "allBallsCounted": true,
+      "resetOk": true,
+      "repeatable": true
+    },
+    "probePassFraction": 1,
+    "turns": 18,
+    "agentWallSec": 188.5,
+    "tokensIn": 994379,
+    "tokensOut": 9098,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 3,
+    "readCalls": 13,
+    "searchCalls": 7,
+    "writeCalls": 4,
+    "srcLines": 396,
+    "srcTokens": 3414,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9615,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 215,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app and the build probe reports ok with no page errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "There are 8 staggered peg rows alternating 7 and 6 pegs. They are rendered as instanced cylinders and collided as fixed circles in hand-written code, not as engine bodies. The probe shows balls bouncing off them and spreading across all 7 b"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 7 bins with 6 divider rectangles used in collision, plus divider meshes and DOM labels 1-7. Balls were counted in all 7 bins."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Exactly 20 pooled balls are spawned at 0.25 s simulated intervals using the offset ((i*37)%11-5)*0.02. The trajectory shows spawned climbing to 20. The balls are hand-simulated circles rendered as spheres, not engine dynamic bodies. I could"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "resetSim deactivates and moves all balls offscreen, then zeroes spawned and sets started=false. The probe afterReset shows phase 'ready', spawned 0 and all bins 0."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "An accumulator loop steps physics at a fixed DT of 1/120, with frame dt clamped to 0.25."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Each bin has a DOM count element updated from the same bins array that feeds __TASK_STATE__, so the displayed counts match the state."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined with phase, spawned, a 7-length bins array and total. updateState runs every frame, and the probe trajectory shows the values changing over time."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Final state is phase 'settled', spawned 20, total 20 and bins [2,2,3,3,1,4,5], which sums to 20 with 7 non-empty bins. The second run after Reset gave identical bins and the probe reports repeatable true."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 55,
+        "rulesLines": 85,
+        "glueLines": 215,
+        "notes": "Most glue is a hand-written 2D physics engine (circle, rect and ball-ball collision, a 4-iteration solver, the integrator, a stuck-ball nudge) at about 130 lines. The rest is a DOM overlay with buttons, labels and status text, a manual camera-to-screen projection (PX_PER_UNIT, toScreenX/Y), the fixe"
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t12-aura-r2",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "allBallsCounted": true,
+      "resetOk": true,
+      "repeatable": true
+    },
+    "probePassFraction": 1,
+    "turns": 17,
+    "agentWallSec": 193,
+    "tokensIn": 896900,
+    "tokensOut": 8625,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 3,
+    "readCalls": 16,
+    "searchCalls": 8,
+    "writeCalls": 1,
+    "srcLines": 380,
+    "srcTokens": 3274,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9615,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 240,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app. The build succeeded and the page reached ready with no page or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "There are 10 rows alternating 6 and 7 pegs, offset by half a bin width. The pegs are static circle obstacles in the hand-written solver and are never moved. They are not bodies in a physics engine, but they behave as fixed colliders."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 6 divider capsules in the solver, with matching divider boxes in the scene. DOM labels 1-7 sit under the bins and fit inside the 640x360 canvas."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Ball i spawns at simTime >= i*0.25 with x = ((i*37)%11-5)*0.02, and the probe trajectory shows spawned reaching exactly 20. The balls are 2D circles in a custom solver rendered as sphere meshes, not engine rigid bodies. I could not check th"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "resetSim deactivates and parks all balls and zeroes simTime and spawned. The afterReset probe shows phase 'ready', spawned 0, and all bins 0."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "An accumulator advances physics in fixed STEP = 1/240 increments, with dt clamped and a substep guard."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Each frame the per-bin DOM counts are set from current.bins, which is the same object __TASK_STATE__ returns. The HUD text also shows spawned, total, and phase."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined with a getter returning current, which is recomputed every frame. The initial probe shows phase, spawned, bins (length 7), and total."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The final state is settled with spawned 20, total 20, and bins summing to 20 with 7 non-empty bins. After Reset and a second Drop, bins are identical: [3,1,2,9,1,2,2]."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 70,
+        "rulesLines": 70,
+        "glueLines": 240,
+        "notes": "Most glue is the hand-written 2D circle physics (peg, ball, divider, wall and floor collision resolution, a stuck-ball nudge, and a manual substep loop), about 150 lines. The rest is DOM overlay and button construction, a manual pixel projection helper, the defineProperty state getter, the accumulat"
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t12-aura-r3",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "allBallsCounted": true,
+      "resetOk": true,
+      "repeatable": true
+    },
+    "probePassFraction": 1,
+    "turns": 17,
+    "agentWallSec": 161.8,
+    "tokensIn": 743114,
+    "tokensOut": 8578,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 2,
+    "readCalls": 11,
+    "searchCalls": 12,
+    "writeCalls": 2,
+    "srcLines": 493,
+    "srcTokens": 3635,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9616,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 260,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, and the build probe reports ok with no page errors or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The source builds 8 staggered rows alternating 7 and 6 pegs, and the pegs never move. There is no physics engine. The pegs are static data used by the hand-written circle collision, and the scene renders them as an instanced cylinder mesh. "
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 6 inner divider positions, which are collided as capsule-like circles. Seven bin floors and backs are drawn. DOM labels 1-7 are positioned under the bins."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "20 sphere nodes are pre-created and activated one at a time every 0.25 s of simulated time, with a deterministic offset of ((i*37)%11-5)*0.02. The trajectory probe shows spawned going 4, 9, 13, 17, 20 and ending at exactly 20. The balls are"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "resetAll deactivates and hides every ball and zeroes spawned and the state. The afterReset probe shows phase 'ready', spawned 0, bins all 0 and total 0."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "A fixed STEP of 1/240 is run from an accumulator, and the frame dt is clamped to 0.25 s."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The DOM bin-count spans and the info panel are refreshed from state every frame, so they match __TASK_STATE__.bins by construction."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is defined with phase, spawned, bins (length 7) and total. updateState runs every frame in onFrame, and the probes confirm it changes during the run."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The final state is spawned 20, total 20, phase 'settled', with bins [4,3,1,2,5,0,5] summing to 20 and 6 non-empty bins. After Reset and a second drop the bins are identical, so repeatable is true."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "material.pbr({ ..., opacity: 1 }) on the bin-backs instances",
+          "why": "opacity 1 is the default, so the option does nothing."
+        }
+      ],
+      "glue": {
+        "sceneLines": 125,
+        "rulesLines": 70,
+        "glueLines": 260,
+        "notes": "Estimate over about 455 counted lines. Glue is the hand-written 2D physics (circle, divider and ball collision, impulse math, anti-stall nudge) at about 130 lines. The DOM overlay, buttons, labels and screen projection add about 95 lines. The fixed-step accumulator, state getter, frame loop, ready f"
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t12-three-r1",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "stopped_without_finish",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "allBallsCounted": false,
+      "resetOk": true,
+      "repeatable": true
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 4,
+    "agentWallSec": 90.5,
+    "tokensIn": 39797,
+    "tokensOut": 6171,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 350,
+    "srcTokens": 2897,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 509,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 1,
+    "glueLines": 220,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, build.ok is true, there are no page errors, and the app reached ready."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "There are 9 rows alternating 6 and 7 pegs, staggered by half a bin width. Pegs are a fixed array of circle colliders that never move. There is no physics engine, but they act as static colliders."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Six divider meshes with matching capsule collision split the floor into 7 bins. Canvas-texture labels showing 1-7 sit below the floor, inside the camera frustum."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Balls spawn in step() at simTime >= i*0.25 for 20 balls, with a deterministic offset ((i*37)%11-5)*0.02. The probe shows spawned reaching 20. The bodies are hand-rolled circles, not engine bodies, and the offset formula could not be checked"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "reset() removes the ball meshes and clears spawned, simTime and dropping. The probe shows afterReset with phase 'ready' and all zeros."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "A fixed DT of 1/240 with an accumulator and a MAX_STEPS_PER_FRAME cap."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Each bin label texture is redrawn from the computed bins whenever its count changes, so the on-screen counts come from the same array as __TASK_STATE__.bins."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined via a getter, with phase, spawned, bins of length 7 and total. updateState() runs every frame and the probes read live values."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "The probe reports success:false. spawned and total reached 20, 7 bins were non-empty, the sum was 20, and the Reset-then-Drop run gave an identical bins array. But phase stayed 'dropping' for the whole trajectory and never became 'settled'."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "updateState() settled-phase logic",
+          "why": "Any ball in a bin with speed above 0.1 sets moving=true. The probe shows all 20 balls in bins with bins unchanged, yet phase stays 'dropping' and never becomes 'settled'. The settled transition never fires, and startDrop's early return stay"
+        }
+      ],
+      "glue": {
+        "sceneLines": 110,
+        "rulesLines": 60,
+        "glueLines": 220,
+        "notes": "Glue is the hand-written 2D physics (collideStatic, step, ball-ball resolution, anti-stall, about 115 lines), renderer and camera bootstrapping, the accumulator loop and ready flag, DOM button construction, the __TASK_STATE__ getter, canvas-texture label drawing, and constants and type declarations."
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t12-three-r2",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "stopped_without_finish",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "allBallsCounted": true,
+      "resetOk": true,
+      "repeatable": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 96,
+    "tokensIn": 42551,
+    "tokensOut": 6806,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 412,
+    "srcTokens": 3063,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 516,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 215,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, the build probe is ok, and there are no page or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "10 staggered rows alternate 6 and 7 pegs. They are immovable circle colliders in a hand-written physics loop, with no physics engine."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Six interior divider colliders plus the side walls form seven bins. Sprite labels 1-7 sit at y=-1, inside the camera's visible range."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Exactly 20 pooled circle balls are activated when simTime >= i*0.25, and the probe trajectory shows spawned reaching 20. The x offset ((i*37)%11-5)*0.02 is deterministic. The task's x-offset spec is not shown, so that part is assumed to mat"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "resetAll deactivates and hides all balls and zeroes spawned and simTime. updateState then yields phase 'ready'. The probe afterReset shows zero bins, total 0 and phase 'ready'."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "An accumulator loop steps a fixed DT of 1/240, with the frame time clamped to 0.25 s."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Each bin label sprite redraws its count from the same computation that writes state.bins whenever the count changes, so the on-screen counts and the state agree."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is defined with phase, spawned, bins (length 7) and total, and updateState runs every frame. The probe sees it from the start."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Final state: spawned 20, total 20, phase 'settled', bins [6,0,3,4,0,0,7] summing to 20, with 4 non-empty bins. After Reset and a second drop the bins are identical, so repeatable is true."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 110,
+        "rulesLines": 60,
+        "glueLines": 215,
+        "notes": "Glue is mostly the hand-rolled 2D physics: collidePoint, ball-ball, wall and floor handling, sleep logic and manual integration, about 125 lines. The rest is the fixed-step loop, renderer/canvas setup, canvas-texture label drawing, DOM button creation, global typings and the state getter. Scene line"
+      }
+    }
+  },
+  {
+    "runId": "bench505-physics-t12-three-r3",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "allBallsCounted": true,
+      "resetOk": true,
+      "repeatable": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 115.1,
+    "tokensIn": 65305,
+    "tokensOut": 7216,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 3,
+    "srcLines": 399,
+    "srcTokens": 3162,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 516,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 205,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app, the page loaded with no page or console errors, and the build probe reports ok."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "There are 12 staggered rows alternating 6 and 7 pegs. Each peg is an entry in the immutable `statics` array and is rendered through an InstancedMesh."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Six divider segments create 7 bins, with matching divider meshes. Number sprites 1-7 sit below the board at y=-0.65, inside the camera's view range, and the bin counts were consistent in the probes."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The click handler schedules 20 spawns at 0.25 s of simulated time (`nextSpawnTime += SPAWN_INTERVAL`). The offset is `((i*37)%11-5)*0.02`. Probes show spawned going 0 to 20. The bodies are custom 2D circles rendered as sphere meshes, and I "
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Reset removes the ball meshes, empties `balls`, and zeroes spawned and bins. The probe's afterReset state is phase 'ready' with all counts 0."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "An accumulator steps `fixedStep()` at FIXED_DT = 1/120, with the frame delta clamped to 0.1 s and at most 30 steps per frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Per-bin count sprites are drawn in the scene and a DOM text shows the total. Both come from the same `binCounts` that is copied into `__TASK_STATE__.bins` each frame."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "`__TASK_STATE__` is a getter on window. A new state object with phase, spawned, bins (length 7) and total is built every frame, and the probes confirm it exists."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Final state is spawned 20, total 20, phase 'settled', bins [3,3,1,4,3,1,5] summing to 20, with 7 non-empty bins. After Reset and a second drop the bins are identical (repeatable true)."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "renderer.setClearColor(0x0b0f1a)",
+          "why": "The same color is also set as scene.background. The scene background overrides the renderer clear color on every render, so this call has no visible effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 95,
+        "rulesLines": 70,
+        "glueLines": 205,
+        "notes": "Glue is mostly the hand-written 2D physics (collideStatic, collideBalls, collideBounds, physicsStep with its broad phase and iteration loop, about 105 lines). The rest is the offscreen-canvas Label class (about 35), the DOM button and info panel (about 18), the renderer, accumulator loop and ready f"
+      }
+    }
+  }
+]

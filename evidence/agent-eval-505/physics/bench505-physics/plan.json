@@ -1,0 +1,183 @@
+{
+  "args": {
+    "arm": "both",
+    "task": "10,11,12",
+    "runs": 3,
+    "seed": 20261106,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "base",
+    "batch": "bench505-physics"
+  },
+  "plan": [
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 3,
+      "order": 0,
+      "runId": "bench505-physics-t12-aura-r3",
+      "seed": 20261106000
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 2,
+      "order": 1,
+      "runId": "bench505-physics-t11-aura-r2",
+      "seed": 20261106001
+    },
+    {
+      "task": 11,
+      "arm": "three",
+      "idx": 1,
+      "order": 2,
+      "runId": "bench505-physics-t11-three-r1",
+      "seed": 20261106002
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 3,
+      "order": 3,
+      "runId": "bench505-physics-t11-aura-r3",
+      "seed": 20261106003
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 2,
+      "order": 4,
+      "runId": "bench505-physics-t10-aura-r2",
+      "seed": 20261106004
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 2,
+      "order": 5,
+      "runId": "bench505-physics-t12-aura-r2",
+      "seed": 20261106005
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 1,
+      "order": 6,
+      "runId": "bench505-physics-t11-aura-r1",
+      "seed": 20261106006
+    },
+    {
+      "task": 11,
+      "arm": "three",
+      "idx": 2,
+      "order": 7,
+      "runId": "bench505-physics-t11-three-r2",
+      "seed": 20261106007
+    },
+    {
+      "task": 10,
+      "arm": "three",
+      "idx": 1,
+      "order": 8,
+      "runId": "bench505-physics-t10-three-r1",
+      "seed": 20261106008
+    },
+    {
+      "task": 12,
+      "arm": "three",
+      "idx": 2,
+      "order": 9,
+      "runId": "bench505-physics-t12-three-r2",
+      "seed": 20261106009
+    },
+    {
+      "task": 12,
+      "arm": "three",
+      "idx": 3,
+      "order": 10,
+      "runId": "bench505-physics-t12-three-r3",
+      "seed": 20261106010
+    },
+    {
+      "task": 10,
+      "arm": "three",
+      "idx": 3,
+      "order": 11,
+      "runId": "bench505-physics-t10-three-r3",
+      "seed": 20261106011
+    },
+    {
+      "task": 10,
+      "arm": "three",
+      "idx": 2,
+      "order": 12,
+      "runId": "bench505-physics-t10-three-r2",
+      "seed": 20261106012
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 1,
+      "order": 13,
+      "runId": "bench505-physics-t12-aura-r1",
+      "seed": 20261106013
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 3,
+      "order": 14,
+      "runId": "bench505-physics-t10-aura-r3",
+      "seed": 20261106014
+    },
+    {
+      "task": 11,
+      "arm": "three",
+      "idx": 3,
+      "order": 15,
+      "runId": "bench505-physics-t11-three-r3",
+      "seed": 20261106015
+    },
+    {
+      "task": 12,
+      "arm": "three",
+      "idx": 1,
+      "order": 16,
+      "runId": "bench505-physics-t12-three-r1",
+      "seed": 20261106016
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 1,
+      "order": 17,
+      "runId": "bench505-physics-t10-aura-r1",
+      "seed": 20261106017
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/b505-physics-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.0.2",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/b505-physics-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

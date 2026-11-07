@@ -1,0 +1,99 @@
+{
+  "runId": "bench505-physics-t11-three-r3",
+  "batch": "bench505-physics",
+  "arm": "three",
+  "task": 11,
+  "idx": 3,
+  "order": 15,
+  "seed": 20261106015,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T00:28:45.076Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 1111,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1111,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2595,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2595,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2595,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 5,
+      "t": 2595,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 6,
+      "t": 6183,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 7,
+      "t": 7286,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 8,
+      "t": 7286,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-physics-runs/bench505-physics/bench505-physics-t11-three-r3/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

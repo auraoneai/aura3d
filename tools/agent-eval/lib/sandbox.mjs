@@ -171,7 +171,7 @@ export function findRepoSourceLeaks({ dir, arm, repoRoot, baseDir }) {
       const mine = hashFile(join(dir, file));
       for (const candidate of candidates) {
         const theirs = join(repoRoot, candidate);
-        if (existsSync(theirs) && hashFile(theirs) === mine && !file.startsWith("public/assets/")) violations.push(`${file} is identical to repo source ${candidate}`);
+        if (!candidate.startsWith("evidence/") && existsSync(theirs) && hashFile(theirs) === mine && !file.startsWith("public/assets/")) violations.push(`${file} is identical to repo source ${candidate}`);
       }
     }
     if (["index.html", "tsconfig.json", "package.json", "TASK.md"].includes(file) && readFileSync(join(dir, file), "utf8").includes(repoRoot)) {

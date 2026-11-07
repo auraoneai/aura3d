@@ -43,7 +43,7 @@ if (mode === "serve") {
   ids.forEach((id, i) => {
     const root = join(runsDir, id, "dist");
     if (!existsSync(root)) return;
-    const port = 47000 + i;
+    const port = Number(process.env.AGENT_EVAL_PORT_BASE ?? 47000) + i;
     ports[id] = port;
     createServer((req, res) => {
       let p = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname)).replace(/^(\.\.[/\\])+/, "");

@@ -28,6 +28,9 @@ export function probeChecks(task, remote) {
       mobileNoHScroll: p.mobile?.noHorizontalScroll === true
     });
   if (task === 7) Object.assign(items, { animated: p.animated === true });
+  if (task === 10) Object.assign(items, { hasState: p.hasState === true, chainReaction: p.success === true, resetOk: p.resetOk === true, secondRunOk: p.secondOk === true });
+  if (task === 11) Object.assign(items, { hasState: p.hasState === true, stableAtRest: p.stableAtRest === true, wreckDisplacesCrates: p.success === true, resetOk: p.resetOk === true });
+  if (task === 12) Object.assign(items, { hasState: p.hasState === true, allBallsCounted: p.success === true, resetOk: p.resetOk === true, repeatable: p.repeatable === true });
   const values = Object.values(items);
   return { items, passed: values.filter(Boolean).length, total: values.length };
 }

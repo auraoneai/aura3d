@@ -1,0 +1,433 @@
+{
+  "model": "claude-sonnet-5.5",
+  "auraPrefix": "bench505-physics",
+  "threePrefix": "bench505-physics",
+  "judgeCallsPerPair": 3,
+  "results": [
+    {
+      "task": 10,
+      "idx": 1,
+      "noFrames": [
+        "aura"
+      ],
+      "calls": []
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "noFrames": [
+        "aura"
+      ],
+      "calls": []
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "noFrames": [
+        "aura"
+      ],
+      "calls": []
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "noFrames": [
+        "aura",
+        "three"
+      ],
+      "calls": []
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 10,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B shows a detailed lattice crane, a metallic ball, wood-textured crates and a sky, with crates tumbling naturally and a readable UI, while A's crane is broken into giant yellow shards that hide the scene and its materials and shadows are flat."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 1
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 5
+            }
+          },
+          "totals": {
+            "aura": 9,
+            "three": 21
+          },
+          "winner": "three",
+          "why": "B shows a detailed lattice crane, a metallic ball, wood-textured crates and a shadowed concrete yard, with the pyramid scattering on impact and a clear UI; A is broken by a large yellow geometry artifact covering the crane and has flat crates with no visible crane."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 5
+            }
+          },
+          "totals": {
+            "aura": 10,
+            "three": 23
+          },
+          "winner": "three",
+          "why": "B shows a detailed lattice crane, a metallic ball, wood-textured crates with shadows and a clear UI, and the crates scatter believably on impact; A has a large yellow polygon artifact covering the crane, so the crane is not visible, and its crates are flat-coloured."
+        }
+      ],
+      "votes": [
+        "three",
+        "three",
+        "three"
+      ],
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "noFrames": [
+        "three"
+      ],
+      "calls": []
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "aura": 19,
+            "three": 13
+          },
+          "winner": "aura",
+          "why": "A has a larger, clearer board with distinct colors and legible bin numbers and counts aligned under the bins, though its status text sits over the board; B is dark and low-contrast with tiny pegs and tiny bin labels and counts."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 20,
+            "three": 14
+          },
+          "winner": "aura",
+          "why": "B shows a larger, clearer board with highlighted pegs and balls, readable bin numbers whose counts match the balls resting in the bins, and only a minor HUD overlay, while A is small, dim and flat with tiny pegs and weak lighting."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 2
+            }
+          },
+          "totals": {
+            "aura": 19,
+            "three": 13
+          },
+          "winner": "aura",
+          "why": "A fills the frame with a clear board, distinct purple, teal, white and salmon materials, and large bin numbers whose counts match the 'In bins: 6' readout, while B is small and dark with tiny pegs and barely legible counters."
+        }
+      ],
+      "votes": [
+        "aura",
+        "aura",
+        "aura"
+      ],
+      "majority": "aura"
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B has cast shadows for depth, distinct wood, pegs, bins and multicolored balls, and bin counts that match the balls resting in them, while A has flat grey pegs, uniform orange balls, weak lighting and a status text overlay on the board."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "A has a wooden frame, multicolored glossy balls, pegs with cast shadows for depth, and live bin counts that already show balls resting, while B is flatly lit with uniform orange balls, no resting balls or counts yet, and a status text overlaid on the board."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 15,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B has peg shadows for depth, distinct colored balls, a wood frame, and balls visibly resting in bins with matching counts, while A looks flat, has tiny balls, shows no balls in bins, and its status text overlaps the board."
+        }
+      ],
+      "votes": [
+        "three",
+        "three",
+        "three"
+      ],
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "totals": {
+            "aura": 19,
+            "three": 13
+          },
+          "winner": "aura",
+          "why": "B has a 3D perspective with peg shadows and highlights, colour-coded bins with aligned numbers and counts, and a clear status readout, while A looks flat and dark with tiny dim pegs and no visible depth."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 21,
+            "three": 15
+          },
+          "winner": "aura",
+          "why": "A has a larger, more readable board with glossy balls, pegs that cast shadows, colour-coded bins and matching counters, while B's pegs are tiny and grey, its bins are dull, and its lighting is flat."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "totals": {
+            "aura": 22,
+            "three": 17
+          },
+          "winner": "aura",
+          "why": "A has larger, more readable pegs, glossy balls with peg shadows, distinct color-coded bins with matching numbers, and a clear status readout, while B has tiny dull pegs, flat-looking balls and two similar bin colors."
+        }
+      ],
+      "votes": [
+        "aura",
+        "aura",
+        "aura"
+      ],
+      "majority": "aura"
+    }
+  ]
+}
