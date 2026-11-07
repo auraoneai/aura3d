@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/showcase-splat-turf",
+  "version": "5.0.3",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Splat Turf showcase, a finite 1200 m paint-the-road arcade runner with a six-column paint grid, tank management, solvent strips, eraser bots, and coverage-graded results.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5200",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4200"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/showcase-number-surge",
+  "version": "5.0.3",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Number Surge showcase: a neon-arcade number runner. Drag to steer, pick the better gate, grow your number and smash the boss wall.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5199",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4199"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

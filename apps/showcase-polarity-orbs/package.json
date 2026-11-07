@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/showcase-polarity-orbs",
+  "version": "5.0.3",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Polarity Orbs showcase, an arcade polarity-flip orb collector: drag to steer, tap to flip between red and blue, collect your colour, dodge the rest.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5201",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4201"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

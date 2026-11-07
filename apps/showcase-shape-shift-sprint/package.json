@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/showcase-shape-shift-sprint",
+  "version": "5.0.3",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Shape Shift Sprint showcase, an endless shape-matching runner: steer through the hole that fits your shape, grab morph tokens to swap shapes, and chain perfect fits for combo multipliers.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5198",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4198"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}
