@@ -820,6 +820,13 @@ export interface Prd02EnvironmentBindOptions {
 
 const warnedEnvironmentUpgradeFailures = new Set<string>();
 
+/**
+ * Errors raised while validating the caller's request policy (for example an
+ * empty credential `securityContext`) before any fetch. They are caller errors,
+ * not a missing HDRI, so they never degrade to the LOOK_HDRI procedural probe.
+ */
+const environmentRequestPolicyErrors = new WeakSet<object>();
+
 /** One console warning per distinct failure; never an error or unhandled rejection. */
 function warnEnvironmentUpgradeFailureOnce(message: string): void {
   if (warnedEnvironmentUpgradeFailures.has(message) || warnedEnvironmentUpgradeFailures.size >= 32) return;
@@ -880,7 +887,7 @@ export function bindPrd02EnvironmentProbe(
       const retryable = isEnvironmentProbePendingError(error);
       if (!retryable) recordEnvironmentProbeOutcome(options.device, outcomeKey, "failed");
       const reason = error instanceof Error ? error.message : String(error);
-      if (hdriUrl !== undefined && !retryable) {
+      if (hdriUrl !== undefined && !retryable && !(typeof error === "object" && error !== null && environmentRequestPolicyErrors.has(error))) {
         // LOOK_HDRI_MISSING: degrade to a procedural probe at matched exposure, log one console.error, surface it in diagnostics.
         const { message, fallback } = reportLookHdriMissing(hdriUrl, reason);
         options.onHdriMissing?.({ url: hdriUrl, message, fallback });
@@ -932,7 +939,7 @@ export function bindPrd02EnvironmentProbe(
     const reflectionSource = assets?.reflection ?? request.reflection;
     const acquire = async (): Promise<EnvironmentProbe> => {
       if (isEnvironmentProbeFactoryPending(resolveFactory())) throw new Error("ENVIRONMENT_PROBE_PENDING:fromEquirect");
-      const appPolicy = mergeAssetRequestOptions({}, options.request);
+      let appPolicy: AssetRequestOptions;
       const prepare = (input: typeof source) => {
         const url = typeof input === "string" ? input : input.url;
         const format = typeof input === "string" ? undefined : input.format;
@@ -941,12 +948,23 @@ export function bindPrd02EnvironmentProbe(
       };
       // Snapshot both sources before hashing: a caller may retain and mutate
       // its input while either asynchronous identity computation is pending.
-      const prepared = prepare(source);
-      const reflection = reflectionSource ? prepare(reflectionSource) : undefined;
-      const [sourceIdentity, reflectionIdentity] = await Promise.all([
-        requestIdentityDetails(prepared.policy, prepared.url),
-        reflection ? requestIdentityDetails(reflection.policy, reflection.url) : Promise.resolve(undefined)
-      ]);
+      let prepared: ReturnType<typeof prepare>;
+      let reflection: ReturnType<typeof prepare> | undefined;
+      let sourceIdentity: Awaited<ReturnType<typeof requestIdentityDetails>>;
+      let reflectionIdentity: Awaited<ReturnType<typeof requestIdentityDetails>> | undefined;
+      try {
+        appPolicy = mergeAssetRequestOptions({}, options.request);
+        prepared = prepare(source);
+        reflection = reflectionSource ? prepare(reflectionSource) : undefined;
+        [sourceIdentity, reflectionIdentity] = await Promise.all([
+          requestIdentityDetails(prepared.policy, prepared.url),
+          reflection ? requestIdentityDetails(reflection.policy, reflection.url) : Promise.resolve(undefined)
+        ]);
+      } catch (error) {
+        // Policy rejected before any fetch: fail the upgrade without a fallback probe.
+        if (typeof error === "object" && error !== null) environmentRequestPolicyErrors.add(error);
+        throw error;
+      }
       if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
       const identity = JSON.stringify([sourceIdentity.key, prepared.format ?? "auto", reflectionIdentity?.key ?? null, reflection?.format ?? null]);
       const key = {

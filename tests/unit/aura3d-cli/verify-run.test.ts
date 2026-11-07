@@ -66,6 +66,7 @@ describe("explainer table", () => {
   test("every code has a cause and a fix, and every code the pipeline can raise is in the table", () => {
     for (const item of VERIFY_CODE_TABLE) { expect(item.cause.length, item.code).toBeGreaterThan(20); expect(item.fix.length, item.code).toBeGreaterThan(10); }
     expect(new Set(VERIFY_CODE_TABLE.map((c) => c.code)).size).toBe(VERIFY_CODE_TABLE.length);
+    // invariant: source must keep every finding code raised in verify/run.ts and verify/lint.ts as a quoted `"CODE"` literal (makeFinding("CODE") or a prefixed constant) — each code the pipeline can raise needs a cause and fix in VERIFY_CODE_TABLE, so `aura3d verify --explain` never meets an unknown code
     const src = (name: string) => readFileSync(new URL(`../../../packages/aura3d-cli/src/verify/${name}`, import.meta.url), "utf8");
     const raised = new Set<string>();
     for (const m of src("run.ts").matchAll(/makeFinding\(\s*(?:[^"(),]+\?\s*)?"([A-Z][A-Z0-9_]+)"/g)) raised.add(m[1]!);
