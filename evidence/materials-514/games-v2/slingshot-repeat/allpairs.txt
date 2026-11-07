@@ -1,0 +1,21 @@
+slingshot-siege-base1.png a22749a8
+slingshot-siege-base2.png a22749a8
+slingshot-siege-base3.png 90c7a761
+slingshot-siege-branch1.png a22749a8
+slingshot-siege-branch2.png 90c7a761
+slingshot-siege-branch3.png a22749a8
+slingshot-siege-base1.png | slingshot-siege-base2.png: mean 0 max 0
+slingshot-siege-base1.png | slingshot-siege-base3.png: mean 0.0013 max 1
+slingshot-siege-base1.png | slingshot-siege-branch1.png: mean 0 max 0
+slingshot-siege-base1.png | slingshot-siege-branch2.png: mean 0.0013 max 1
+slingshot-siege-base1.png | slingshot-siege-branch3.png: mean 0 max 0
+slingshot-siege-base2.png | slingshot-siege-base3.png: mean 0.0013 max 1
+slingshot-siege-base2.png | slingshot-siege-branch1.png: mean 0 max 0
+slingshot-siege-base2.png | slingshot-siege-branch2.png: mean 0.0013 max 1
+slingshot-siege-base2.png | slingshot-siege-branch3.png: mean 0 max 0
+slingshot-siege-base3.png | slingshot-siege-branch1.png: mean 0.0013 max 1
+slingshot-siege-base3.png | slingshot-siege-branch2.png: mean 0 max 0
+slingshot-siege-base3.png | slingshot-siege-branch3.png: mean 0.0013 max 1
+slingshot-siege-branch1.png | slingshot-siege-branch2.png: mean 0.0013 max 1
+slingshot-siege-branch1.png | slingshot-siege-branch3.png: mean 0 max 0
+slingshot-siege-branch2.png | slingshot-siege-branch3.png: mean 0.0013 max 1

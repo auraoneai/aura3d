@@ -12,7 +12,7 @@ const port = 9700 + Math.floor(Math.random() * 250);
 const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/mat514-chrome-${port}`, `--window-size=${W},${H}`, "--enable-gpu", "--use-angle=metal", "--ignore-gpu-blocklist", "--no-first-run", "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Watchdog: a hung page must never keep the shared GPU lock.
-setTimeout(() => { console.error("WATCHDOG: capture exceeded 150 s"); try { chrome.kill("SIGKILL"); } catch {} process.exit(2); }, 150000).unref();
+setTimeout(() => { console.error("WATCHDOG: capture exceeded 240 s"); try { chrome.kill("SIGKILL"); } catch {} process.exit(2); }, 240000).unref();
 let targets;
 for (let i = 0; i < 50; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (targets.find((t) => t.type === "page")) break; } catch {} await sleep(200); }
 const ws = new WebSocket(targets.find((t) => t.type === "page").webSocketDebuggerUrl);
@@ -22,7 +22,10 @@ ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pend.has(d.id)
   else if (d.method === "Runtime.exceptionThrown") logs.push(JSON.stringify(d.params.exceptionDetails).slice(0, 300)); };
 const send = (method, params = {}) => new Promise((r) => { const id = ++n; pend.set(id, r); ws.send(JSON.stringify({ id, method, params })); });
 const ev = async (expr) => { const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true }); if (r.result.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails).slice(0, 300)); return r.result.result.value; };
-await send("Page.enable"); await send("Runtime.enable");
+await send("Page.enable"); await send("Runtime.enable"); await send("Network.enable");
+// CAP_NET_IDLE=1: readiness by network quiescence (works for canvases the readPixels probe cannot read).
+let inflight = 0, lastNetActivity = Date.now();
+ws.addEventListener("message", (m) => { const d = JSON.parse(m.data); if (d.method === "Network.requestWillBeSent") { inflight++; lastNetActivity = Date.now(); } else if (d.method === "Network.loadingFinished" || d.method === "Network.loadingFailed") { inflight = Math.max(0, inflight - 1); lastNetActivity = Date.now(); } });
 await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 1, mobile: false });
 await send("Page.addScriptToEvaluateOnNewDocument", { source: fs.readFileSync(path.join(here, "shim.js"), "utf8") });
 await send("Page.navigate", { url });
@@ -39,6 +42,13 @@ if (process.env.CAP_WAIT_READY) {
   while (Date.now() - t0 < Number(process.env.CAP_WAIT_MAX_MS || 110000) && stable < 4) { const v = await ev(probe).catch(() => -3); last = v; stable = v >= 0.2 ? stable + 1 : 0; await sleep(150); }
   console.error("READY", JSON.stringify({ lit: last, waitedMs: Date.now() - t0, stable }));
   if (stable < 4) { console.error("NOT_READY: canvas never lit; frame is not a valid game frame"); }
+}
+if (process.env.CAP_NET_IDLE) {
+  // Virtual time stays still (frame(0)) while loads finish; quiet = no request in flight and none started for CAP_NET_IDLE_MS.
+  const quiet = Number(process.env.CAP_NET_IDLE_MS || 5000), t0 = Date.now();
+  while (Date.now() - t0 < Number(process.env.CAP_WAIT_MAX_MS || 100000) && !(inflight === 0 && Date.now() - lastNetActivity > quiet)) { await ev("window.__vt.frame(0)").catch(() => {}); await sleep(150); }
+  for (let i = 0; i < 20; i++) { await ev("window.__vt.frame(0)").catch(() => {}); await sleep(150); }
+  console.error("NETIDLE", JSON.stringify({ waitedMs: Date.now() - t0, inflight }));
 }
 for (let i = 0; i < N; i++) { await ev(`window.__vt.frame(${dt})`).catch(() => {}); if (i < 40) await sleep(60); else if (i % 10 === 0) await sleep(20); }
 await sleep(300);

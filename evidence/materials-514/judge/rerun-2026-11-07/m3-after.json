@@ -1,0 +1,100 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "label": "m3-after",
+  "ourFrame": "/tmp/fx517-mat/judgeframes/m3-after.png",
+  "task": "12-materials-3.md",
+  "rubricMax": 25,
+  "results": [
+    {
+      "label": "m3-after",
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A has a warm, dark gallery mood with a visible spotlight pool and a detailed, strongly reflective gold trophy with its engraved band, while B looks cold and washed out with bright windows, a grey floor, no clear warm spotlight, and a smaller, less reflective trophy, even though its marble veining is"
+    },
+    {
+      "label": "m3-after",
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "B shows a warm spotlight pool, a soft shadow behind the pedestal and a convincingly reflective gold cup with a darker band, while A has a flat, washed-out grey floor, a small trophy and little spotlight falloff or shadow."
+    },
+    {
+      "label": "m3-after",
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "B has a warm spotlight pool with falloff on the floor, a more convincing gold trophy with a darker engraved band and a warm gallery mood, while A shows a flat grey floor, harsh blown-out windows, and a cooler, less spotlit look with less convincing gold and marble."
+    }
+  ]
+}

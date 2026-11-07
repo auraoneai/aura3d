@@ -56,3 +56,105 @@ are NOT counted (`games/invalid-black/` shows three). The 5-game requirement is 
 Code-level argument: no live game calls `studioMetal`, `studioGlass` or `preset: "softbox"` (new APIs); the only edits on shared paths are
 a scene-scan that returns the same node list when no studio material is present, `qrFlagsWithStudioGlass(flags, false)` which returns the same
 object, and an `EnvironmentCache` branch for the new `softbox` key.
+
+**Superseded by the v2 neutrality run below (2026-11-07).** The "black canvas" diagnosis above was wrong: it was not machine load. The
+repo-root vite server does not serve route-local `apps/<route>/public/*` (app vite configs point `publicDir` at the root `public/`; the
+route dir is layered only by `tools/remote-capture.sh`), so every game whose GLBs live in `apps/<route>/public/aura-assets` got the SPA
+`index.html` instead of the GLB (Bunker Zero says so on screen: "gLTF extension scan failed for /aura-assets/bzGuardMeshy.010bba7b.glb:
+HTTP 200"). No LFS pointers were involved (none in either checkout).
+
+## Pixel neutrality v2 (`games-v2/`, 2026-11-07)
+
+Method (`tools/neutral.sh`, `tools/pairs.mjs`): per game four captures in the order base A, branch A, base B, branch B, all on the
+virtual-clock shim, 90 frames of 16.667 ms, 960x540, real GPU (headless Chrome, Metal), one capture at a time under `/tmp/a3d-rea.lock`.
+Each capture first waits with virtual time frozen (`frame(0)`) until the network is idle for 5 s (`CAP_NET_IDLE`), so slow loads cannot
+change how much game time the measured frames cover. Base = origin/main e5387f3b0 worktree on :18515, branch = this lane's HEAD (no
+uncommitted engine changes) on :18514. Games with route-local assets are served through `tools/route-public-proxy.mjs` (:18525 -> :18515,
+:18524 -> :18514; the same proxy code for both sides; it only adds files that exist in `apps/*/public` and not in the root `public`).
+Every frame listed as valid was opened and checked: it is the intended game page with its 3D scene drawn (not black, not the marketing
+page, not another game).
+
+| game | valid | base A vs base B (noise) | branch A vs branch B | base A vs branch A | base B vs branch B |
+|---|---|---|---|---|---|
+| aurora-lander | yes | 0 | 0 | 0 | 0 (all four md5 a93908dc) |
+| bunker-zero `?floor=1&autostart=1` | yes | 0 | 0 | 0 | 0 (all four md5 3c5bc202) |
+| dot-dash-3d | yes | 0 | 0 | 0 | 0 (all four md5 28841279) |
+| bank-shot | yes | 0 / max 1 | 0 / max 1 | 0 (same md5) | 0 (same md5) |
+| pips-big-leap | yes | 0 | 0.0005 / max 1 | 0 (same md5) | 0.0005 / max 1 |
+| slingshot-siege | yes | 0.0013 / max 1 | 0 | 0 (same md5) | 0.0013 / max 1 |
+| aura-diamond-3d | yes, dark night look in base and branch alike | 0 | 0 | 0 | 0 (all four md5 6b4a05de) |
+| roadster-rush | yes (title card over the 3D street) | 0.169 / max 2 | 0.169 / max 2 | 0.168 / max 2 | 0.169 / max 2 |
+| teleoperator | yes | 0.0008 / max 20 | 1.89 / max 80 | 1.89 / max 80 | 0.0018 / max 20 |
+| cross-hop | frames valid, NOT deterministic under the shim | 13.9 / max 212 | 15.7 / max 220 | 16.9 | 14.8 |
+
+Seven games (aurora-lander, bunker-zero, dot-dash-3d, bank-shot, pips-big-leap, slingshot-siege, aura-diamond-3d) have base-vs-base noise
+of 0 to max 1 and base-vs-branch of 0 to max 1, inside their own noise floor. Five of them have byte-identical base and branch frames.
+
+Non-zero diffs explained:
+- **teleoperator**: multimodal, not a branch effect. Over three rounds (`games-v2/teleoperator-repeat/allpairs.txt`, 12 frames) the frame
+  that differed (branch A, md5 688e1fd8) is produced byte-for-byte by origin/main too (run 3 base B and run 4 base B are 688e1fd8), and the
+  most common branch frame (768b0879) is also produced by origin/main (run 4 base A).
+- **roadster-rush**: the same 0.17 / max 2 residual appears between two base runs; base and branch differ by the same amount.
+- **cross-hop**: traffic is not frozen by the shim (base vs base 13.9); not usable as neutrality proof, listed for completeness.
+
+### Slingshot Siege (re-review blocker 2)
+
+The old `games/slingshot-siege-branch.png` (mean 0.0055, max 44 vs `baseA`) is not reproducible and is run-to-run noise that origin/main
+shows too:
+- `games-v2/slingshot-repeat/` repeats the ORIGINAL capture method (`tools/sling-repeat.sh`: `CAP_WAIT_READY` readPixels probe, base and
+  branch interleaved, 3 each). Slingshot renders one of two frames, md5 a22749a8 or 90c7a761 (mean 0.0013, max 1 apart), and BOTH
+  origin/main and the branch produce BOTH (base 1, base 2, branch 1, branch 3 = a22749a8; base 3, branch 2 = 90c7a761;
+  `allpairs.txt`). The v2 run adds four more (base A, branch A, branch B = a22749a8; base B = 90c7a761).
+- The old frames themselves are from a different game state: the old `baseA` differs from all ten new frames by mean 2.84 / max 193,
+  i.e. the 2026-11-06 session (a much busier machine) captured a different moment, and its base/branch pair differed by timing as well.
+- Code level: the `EnvironmentCache` edit only adds `"softbox"` next to `"neutral"` in two boolean expressions; for every existing key
+  (`neutral`, `studio`, `outdoor`, `sunset`, `night`, `indoor`, URL HDRIs, captures) `keyId()` and `reusable` evaluate exactly as on main,
+  and the new loader branch runs only for `preset === "softbox"`. Slingshot uses `looks.preset(...)` (a look node), never a studio
+  material, so `needsSoftboxEnvironment` returns the node list unchanged and `qrFlagsWithStudioGlass(flags, false)` returns the same
+  object. No engine change was needed.
+
+## Blind judge re-run (`judge/rerun-2026-11-07/`, frames `frames/rerun-2026-11-07/`)
+
+Fresh real-GPU captures of the same benchmark sources (800x600 window, 640x360 canvas, matching the three.js frames), same rubric and
+procedure (`tools/judge-514.mjs`, the judge-visual.mjs rubric from origin/exp/turn-gap-504, model claude-sonnet-5.5 via Prism, seed
+20261106, 3 calls per pair against the three.js frames of runs r1, r2, r3 from bench505-materials).
+
+| frame | aura wins | aura mean /25 | three.js mean /25 |
+|---|---|---|---|
+| materials-1 before | 0/3 | 13.3 | 19.0 |
+| materials-1 after | 0/3 | 14.7 | 19.0 |
+| materials-3 before | 1/3 | 16.3 | 17.3 |
+| materials-3 after | 0/3 | 15.0 | 18.0 |
+
+three.js still wins materials-1 3 of 3 and, in this run, materials-3 3 of 3 for the "after" frame (the first run gave 1/3 and 2/3). The
+materials-3 before/after difference is inside the judge's run-to-run noise. Judge reasons, quoted: materials-1 "B's floor and backdrop
+are washed out, its shadows are faint, and its fabric looks pinkish and flat"; materials-3 "flat, washed-out grey floor, a small trophy
+and little spotlight falloff", "cooler, less spotlit look".
+
+## Is the remaining materials-1 gap the environment / backdrop? (no)
+
+- `m1/backdrop.ts` = `m1/after.ts` with the softbox probe painted behind the scene (`background: true`): **0 pixel difference** to
+  `m1/after.ts` (`frames/rerun-2026-11-07/m1-backdrop.png`). The benchmark's own seamless cove geometry fills the whole view, so glass
+  already has the cove to refract and no probe backdrop is ever visible.
+- `m1/diffuse-040.ts`, `m1/diffuse-015.ts`: softbox `diffuseIntensity` 0.40 / 0.15. Both frames are identical to each other and within
+  mean 0.01 / max 9 of `after`, so `diffuseIntensity` has no visible effect on this render path (noted, not changed here). Probe swap
+  alone: cove wall luma 227.7 with the old studio probe (`before`) vs 235.3 with softbox (`after`); three.js cove wall 187, floor 231. The
+  probe accounts for about 8 of the about 48 luma by which our wall is brighter; the rest comes from the scene's direct lights (key 2.6,
+  softbox light 3, rim 2, fill 0.8) and exposure/tone on the same source.
+- A minimal scene with no authored backdrop (`glass-min/`): `auto.ts` (no environments node, the shipped default) is byte-identical to
+  `before.ts` (explicit softbox probe, background off). The candidate default "studio glass brings the probe backdrop"
+  (`backdrop.ts`, frame `frames/glass-min/backdrop-rejected.png`) changes the backdrop but not the glass: mean luma inside the glass
+  sphere 182.9 -> 184.3, and the sphere's contrast against its surroundings drops (23.0 -> 18.1). It was tried as an engine default and
+  reverted; no default was changed.
+- What the judge and the luma numbers point at instead (outside this lane's materials/environment scope): exposure of the white cove,
+  contact-shadow strength, the fabric's red, and framing (three.js spheres are larger in frame).
+
+## Declarations vs published 5.0.2 (`tsc -p tsconfig.build.json --declaration --emitDeclarationOnly`, compared with `npm pack @aura3d/engine@5.0.2` / `@aura3d/rendering@5.0.2`)
+
+Touched files only, import-specifier / `.js` normalisation ignored. All additions: `material.studioMetal`, `material.studioGlass`,
+`AuraStudioEnvironmentOptions` (extends `AuraEnvironmentOptionsV2` with `preset?: "studio" | "softbox"`; `environments.studio`'s parameter
+widens to it), `sceneUsesStudioGlass`, `qrFlagsWithStudioGlass`, new modules `studioMaterial`, `SoftboxEnvironmentScene`,
+`softboxEmbedded`, `softboxEmbeddedLoader`; `EnvironmentCache.d.ts`, `createAuraAppCore.d.ts`, `frameLoop.d.ts` unchanged.
+One caveat to report: the string unions `AuraEnvironmentPresetName` and `AuraEnvironmentSourceResolution.probe.preset` gain `"softbox"`.
+Widening a union is additive for inputs, but these also appear in output positions (`AuraEnvironmentNodeV2.preset`, the resolved probe),
+so a consumer with an exhaustive `switch` + `never` check over them would see a new case at compile time.

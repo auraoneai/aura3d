@@ -1,0 +1,100 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "label": "m1-before",
+  "ourFrame": "/tmp/fx517-mat/judgeframes/m1-before.png",
+  "task": "10-materials-1.md",
+  "rubricMax": 25,
+  "results": [
+    {
+      "label": "m1-before",
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows three clearly distinct materials (tinted glass with highlights, brushed steel with streaked reflections, a deep red woven sphere) with better shading, a curved backdrop and contact shadows, while B looks washed out, with a nearly white glass sphere and a faded fabric sphere."
+    },
+    {
+      "label": "m1-before",
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B shows three clearly different materials (tinted glass with highlights, chrome-like metal, red woven fabric) with soft contact shadows, while A's glass is washed-out white, the metal looks like striped banding, and the fabric is dark with a moiré pattern."
+    },
+    {
+      "label": "m1-before",
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B's glass has a visible tint, specular highlights and light reflections, its metal reads as brushed with a stretched reflection, and its fabric shows a clear woven pattern with soft shading, whereas A's glass looks like a washed-out white ball and its metal shows odd vertical banding."
+    }
+  ]
+}
