@@ -44,6 +44,12 @@ export const WIND_VFX_PRESETS: Readonly<Record<string, EffectSpec>> = {
       { type: "emitter", preset: "dust", count: 10, speed: [0.5, 1.2], life: [0.4, 0.8], gravity: -2.5, color: "#9cb874", size: [0.04, 0.09], spread: 0.9, additive: false, maxScreen: 0.03 }
     ]
   },
+  "wind-footfall": {
+    name: "wind-footfall",
+    layers: [
+      { type: "emitter", preset: "dust", count: 5, speed: [0.3, 0.8], life: [0.3, 0.6], gravity: -2, color: "#b9c58f", size: [0.03, 0.07], spread: 0.7, additive: false, maxScreen: 0.025 }
+    ]
+  },
   "wind-ripple": {
     name: "wind-ripple",
     layers: [
@@ -101,6 +107,8 @@ export interface WindVfx {
   bellRing(at: Vec3): void;
   lanternFlare(at: Vec3): void;
   hopLanding(at: Vec3, wet: boolean): void;
+  /** A foot plants while walking: a few grass specks (a splash on wet ground). */
+  footfall(at: Vec3, wet: boolean): void;
   /** Per frame: keep the petal stream upwind of the traveller, fire a gust streak when a gust band passes, fade the bell flash. */
   update(traveller: Vec3, time: number, dt: number): void;
   stop(): void;
@@ -108,7 +116,7 @@ export interface WindVfx {
 
 export function createWindVfx(app: AuraApp, options: { readonly low: boolean; readonly reducedMotion: () => boolean; readonly reducedFlash: () => boolean; readonly chimney?: Vec3 | null }): WindVfx {
   const effects = app.effects;
-  if (!effects) return { letterFound() {}, bellRing() {}, lanternFlare() {}, hopLanding() {}, update() {}, stop() {} };
+  if (!effects) return { letterFound() {}, bellRing() {}, lanternFlare() {}, hopLanding() {}, footfall() {}, update() {}, stop() {} };
   // the floating-dot cause is fixed in the engine (E-F): runtime effects stay on
   effects.runtime = "on";
   for (const [kind, spec] of Object.entries(WIND_VFX_PRESETS)) effects.registerPreset(kind, spec);
@@ -134,6 +142,7 @@ export function createWindVfx(app: AuraApp, options: { readonly low: boolean; re
     },
     lanternFlare(at) { fire("wind-lantern-flare", at); },
     hopLanding(at, wet) { fire(wet ? "wind-ripple" : "wind-grass-flick", at); },
+    footfall(at, wet) { fire(wet ? "wind-ripple" : "wind-footfall", at, { count: wet ? 4 : 5 }); },
     update(traveller, time, dt) {
       const s = scale();
       if (s > 0 && s !== petalMotion) {
