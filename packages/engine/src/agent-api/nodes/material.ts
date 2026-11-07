@@ -16,6 +16,7 @@ import { noteUnrenderedOptions } from "./optionDiagnostics.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 import { solarPlanetMaterial } from "../nodes/solar.js";
 import { resolveDepthPreviewMaterialOptions } from "@aura3d/rendering";
+import { assertAuraColorOption } from "../color.js";
 
 
 /**
@@ -696,6 +697,9 @@ export const material = lazyNamespace(() => ({
     return materialNode(options);
   },
   pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => {
+    for (const key of ["color", "emissive", "sheenColor", "specularColor", "attenuationColor"] as const) {
+      assertAuraColorOption((options as Record<string, unknown>)[key], `material.pbr({ ${key} })`);
+    }
     if (options.iridescenceThicknessRange !== undefined || options.iridescenceThicknessMinimum !== undefined ||
         options.iridescenceThicknessMaximum !== undefined) {
       resolveIridescenceThickness(options);

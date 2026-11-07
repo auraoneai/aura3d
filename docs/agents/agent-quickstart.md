@@ -118,3 +118,8 @@ The complete table is [`threejs-to-aura3d.md`](threejs-to-aura3d.md); signatures
 - Look and evidence: `docs/agents/art-direction.md`, `docs/agents/verification.md`.
 - Skills (load on demand): `aura3d-core`, `aura3d-scene-authoring`, `aura3d-assets`, `aura3d-browser-game`.
 - Claim labels before saying "works", "ships" or "faster": `docs/agents/claims-and-boundaries.md`.
+
+## Colours and look HDRIs
+
+- Every colour input (`material.*`, `scene().background`, lights, fog, instance `colors`, effects) accepts any CSS form: `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`rgba()`, `hsl()`/`hsla()`, `oklch()`, the 148 CSS names and `transparent`. A value that matches none throws `AuraColorParseError` with `code: "COLOR_INVALID"` naming the value and the option (`material.pbr({ color })`); it is never replaced by a near-black fallback. Hex colours produce the same values as before.
+- `looks.preset(id)` loads its HDRI from `/hdri/<file>.hdr` (golden-hour: `kloppenheim_06_puresky_1k.hdr`, outdoor looks: `autumn_field_puresky_1k.hdr`, studio and interior looks: `studio_small_08_1k.hdr`). Scaffolded templates ship the file under `public/hdri/`. If the file 404s or is a git-LFS pointer the engine renders a procedural probe at the measured mean exposure of the real HDRI (lighting and colour cast differ, no sun disc or softbox shapes), logs one `console.error` with `LOOK_HDRI_MISSING` naming the file and the fix, and lists the same message in `app.diagnostics().warnings`. `aura3d check-deploy` warns before deploy when a used preset's HDRI is not under `public/hdri/`.

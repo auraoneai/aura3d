@@ -11,6 +11,13 @@ import { particles } from "./particles.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { assertWeatherTransformFields } from "../../production-runtime/effects/WeatherTransform.js";
 import { ignoredOptionsNote } from "./optionDiagnostics.js";
+import { assertAuraColorOption } from "../color.js";
+
+/** Validate `effects.fog({ color })` at its API entry (throws COLOR_INVALID naming the option); contributes no fields. */
+function fogColorChecked(color: unknown): Record<string, never> {
+  assertAuraColorOption(color, "effects.fog({ color })");
+  return {};
+}
 
 /**
  * Fields scene fog reads: the legacy compile (`density`, `color`, `intensity`)
@@ -158,6 +165,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
         {
           kind: "effect",
           effect: "fog",
+          ...fogColorChecked(options.color),
           ...(options.density !== undefined ? { density: options.density as number } : {}),
           ...(options.color !== undefined ? { color: options.color as string } : {}),
           intensity: options.intensity,

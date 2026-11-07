@@ -158,6 +158,7 @@ A real object named in the task: `npx @aura3d/cli@latest assets resolve "<object
 
 ## More pitfalls
 
+- `looks.preset(id)` loads `/hdri/<file>.hdr` from `public/hdri/` (scaffolds ship it); if the file is missing the scene gets a procedural probe and `LOOK_HDRI_MISSING` in `app.diagnostics().warnings`. Colours accept any CSS form (`hsl()`, `rgb()`, names, `#rgb`); an invalid one throws `COLOR_INVALID`.
 - Pools (bullets, traffic, particles) must be sized from the simulation's measured peak, or objects pop in and out.
 - Judge steady state: the first frame is lit differently from the baked probe seconds later. Capture at 3, 25 and 60 s; animated scenes flip between captures, so compare static bands before reverting anything.
 

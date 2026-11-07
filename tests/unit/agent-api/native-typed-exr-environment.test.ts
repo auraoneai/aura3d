@@ -184,7 +184,8 @@ describe("typed root EXR environment", () => {
       const rejected = bindPrd02EnvironmentProbe(typedResolution(typedDwaaEnvironment("0".repeat(64))), { ...options, onUpgradeFailed: failure });
       await expect(rejected.pending!).rejects.toThrow(/SHA-256 integrity mismatch/i);
       expect(failure).toHaveBeenCalledTimes(1);
-      expect(harness.fromEquirect).toHaveBeenCalledTimes(1);
+      // The failed load degrades to the LOOK_HDRI_MISSING procedural probe: one extra (generated) fromEquirect.
+      await vi.waitFor(() => expect(harness.fromEquirect).toHaveBeenCalledTimes(2));
       harness.cache.release(probe);
     } finally { harness.dispose(); }
     expect(harness.images[0]?.disposed).toBe(true);
@@ -343,7 +344,7 @@ describe("typed root EXR environment", () => {
       await expect(wrongHash.pending!).rejects.toThrow(/integrity|sha-?256/i);
       expect(failed).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledTimes(2);
-      expect(harness.fromEquirect).toHaveBeenCalledTimes(1);
+      await vi.waitFor(() => expect(harness.fromEquirect).toHaveBeenCalledTimes(2));
     } finally { harness.dispose(); }
     expect(harness.images[0]?.disposed).toBe(true);
     expect(harness.probes[0]?.specularCube.disposed).toBe(true);

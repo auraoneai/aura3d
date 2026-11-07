@@ -1,0 +1,104 @@
+[
+ {
+  "game": "showcase-bank-shot",
+  "meanLuma": 47.7,
+  "blackFrac": 0.074,
+  "distinct": 116424,
+  "baseVsBase": {
+   "mad": 0.012,
+   "pctPx>8": 0.01
+  },
+  "baseVsBranch": {
+   "mad": 0.012,
+   "pctPx>8": 0.01
+  },
+  "base2VsBranch": {
+   "mad": 0.001,
+   "pctPx>8": 0.0
+  }
+ },
+ {
+  "game": "showcase-aurora-lander",
+  "meanLuma": 38.9,
+  "blackFrac": 0.006,
+  "distinct": 37926,
+  "baseVsBase": {
+   "mad": 0.0,
+   "pctPx>8": 0.0
+  },
+  "baseVsBranch": {
+   "mad": 0.0,
+   "pctPx>8": 0.0
+  },
+  "base2VsBranch": {
+   "mad": 0.0,
+   "pctPx>8": 0.0
+  }
+ },
+ {
+  "game": "showcase-top-tennis",
+  "meanLuma": 84.2,
+  "blackFrac": 0.008,
+  "distinct": 86394,
+  "baseVsBase": {
+   "mad": 0.0,
+   "pctPx>8": 0.0
+  },
+  "baseVsBase3": {
+   "mad": 0.372,
+   "pctPx>8": 0.04
+  },
+  "baseVsBranch": {
+   "mad": 0.366,
+   "pctPx>8": 0.01
+  },
+  "base2VsBranch": {
+   "mad": 0.366,
+   "pctPx>8": 0.01
+  },
+  "branchVsBranch2": {
+   "mad": 0.366,
+   "pctPx>8": 0.01
+  },
+  "baseVsBranch2": {
+   "mad": 0.367,
+   "pctPx>8": 0.01
+  }
+ },
+ {
+  "game": "showcase-blockfall-reactor",
+  "meanLuma": 34.6,
+  "blackFrac": 0.277,
+  "distinct": 112007,
+  "baseVsBase": {
+   "mad": 10.752,
+   "pctPx>8": 23.97
+  },
+  "baseVsBranch": {
+   "mad": 8.748,
+   "pctPx>8": 18.02
+  },
+  "base2VsBranch": {
+   "mad": 10.957,
+   "pctPx>8": 24.71
+  }
+ },
+ {
+  "game": "showcase-strange-orbit-port",
+  "meanLuma": 21.4,
+  "blackFrac": 0.0,
+  "distinct": 622,
+  "baseVsBase": {
+   "mad": 34.827,
+   "pctPx>8": 89.7
+  },
+  "baseVsBranch": {
+   "mad": 34.978,
+   "pctPx>8": 90.3
+  },
+  "base2VsBranch": {
+   "mad": 4.792,
+   "pctPx>8": 15.0
+  }
+ }
+]

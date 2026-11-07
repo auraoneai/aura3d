@@ -68,6 +68,7 @@ import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginP
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
   type Prd07RendererOperation } from "@aura3d/rendering";
 import type { AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere.js";
+import { reportLookHdriMissing } from "./environmentFallback.js";
 
 /** Models that need a loaded actor at mount (hidden-at-mount models with a runtime handle can be shown later); module-private,
  * identical to the predicate in observations.ts. */
@@ -1005,6 +1006,7 @@ export async function createProductionRuntimeSceneRenderer(
           if (mountAbort.signal.aborted || disposed) return;
           hdriState.status = "fallback";
           hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
+          hdriWarnings.add(reportLookHdriMissing(hdriUrl, error instanceof Error ? error.message : String(error)).message);
         });
     }
     // GU47 E-B handoff: an explicit app quality tier caps the local shadow
