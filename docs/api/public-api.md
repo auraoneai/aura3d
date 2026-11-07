@@ -30825,7 +30825,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ```ts
 import { type FetchTemplateAssetsOptions, type FetchTemplateAssetsResult, type TemplateAssetEntry } from "./template-assets.js";
-export declare const CREATE_AURA3D_TEMPLATES: readonly ["product-viewer", "cinematic-scene", "mini-game", "racing-starter", "falling-blocks-starter", "fighting-game", "arena-shooter", "animation-channel", "prompt-animation-channel", "animation-studio", "episode-builder", "character-controller", "premium-product-viewer", "architecture-interior", "material-authoring", "asset-inspector", "character-viewer", "postprocess-scene", "custom-scene", "large-scene"];
+export declare const CREATE_AURA3D_TEMPLATES: readonly ["product-viewer", "cinematic-scene", "mini-game", "racing-starter", "falling-blocks-starter", "fighting-game", "arena-shooter", "animation-channel", "prompt-animation-channel", "animation-studio", "episode-builder", "character-controller", "premium-product-viewer", "architecture-interior", "material-authoring", "asset-inspector", "character-viewer", "postprocess-scene", "custom-scene", "large-scene", "procedural-scene"];
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 /**
  * Retired template names → current names (Q-13-4 / #700: the `three-compat-*`
