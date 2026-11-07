@@ -24,6 +24,7 @@ import { sceneFromSource } from "../renderer/RenderShared";
 import { registerBenchmarkNonSceneContributor } from "../renderer/FrameGraph";
 import { MaterialInstance } from "../MaterialInstance";
 import { PortableShaderMaterial } from "../PortableShaderMaterial";
+import { customDepthShaderKeyOf } from "../DepthPass";
 import { UnlitMaterial } from "../UnlitMaterial";
 import { renderStateHasExtendedCommandFields } from "../Material";
 import { PBRMaterial } from "../PBRMaterial";
@@ -208,12 +209,18 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     const material = item.material;
     const base = material instanceof MaterialInstance ? material.baseMaterial : material;
-    if (base instanceof PortableShaderMaterial) fail(item, "an unverified custom or graph material participant");
-    if (!forwardContactParticipantSafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
+    // Custom and graph materials: outside strict, a pristine one is represented in the mask depth either by its own
+    // paired depth program (`castShadow: true`: the author's vertex stage, skinning variants included) or, for a graph
+    // that does not move vertices, by the position-only depth. Anything else keeps the old refusal.
+    const portable = base instanceof PortableShaderMaterial ? base : undefined;
+    if (portable && (strict || !portableContactDepthRepresentable(item, portable))) fail(item, "an unverified custom or graph material participant");
+    if (!portable && !forwardContactParticipantSafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
     if (item.geometry.topology !== "triangles") fail(item, "non-triangle coverage");
     if (item.geometryMatrix && !identityMatrix(item.geometryMatrix)) fail(item, "a geometry transform");
     if (item.instanceAttributes?.length || (item.instanceCount !== undefined && item.instanceCount > 1 && !item.instanceTransforms)) fail(item, "custom instance attributes");
-    if (item.skinning || item.morphTargets?.length || item.morphWeights?.length) fail(item, "skinning or morph deformation");
+    // Skinned and morphed participants are drawn by the mask depth with the same deformation the forward pass applies
+    // (skinning variant in the depth shader, CPU morph resolve in DepthPass); a malformed deformation contract fails here.
+    if ((item.morphTargets === undefined) !== (item.morphWeights === undefined)) fail(item, "skinning or morph deformation");
     if ((item.lodFade !== undefined && Math.abs(item.lodFade) < 0.999) || (item.cameraFade !== undefined && item.cameraFade < 0.999)) fail(item, "dithered coverage");
     if (item.modelViewProjectionMatrix && ctx.camera) {
       const model = (item.modelMatrix ?? identity) as Mat4;
@@ -228,7 +235,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
       const cutoff = material!.getParameter("u_alphaCutoff");
       if (typeof cutoff === "number" && cutoff > 0) fail(item, "alpha-tested coverage");
       if (material!.getParameter("u_spriteMode") === 1 || material!.getParameter("u_roundPoints") === 1) fail(item, "sprite or point coverage");
-      if (![UnlitMaterial.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, SkinnedLitMaterial.prototype].includes(Object.getPrototypeOf(base))) {
+      if (!portable && ![UnlitMaterial.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, SkinnedLitMaterial.prototype].includes(Object.getPrototypeOf(base))) {
         fail(item, "an unknown material shader");
       }
     }
@@ -251,6 +258,13 @@ const noConsumerRuns = new WeakMap<object, number>();
 function isStockTangentFrameFeature(feature: { readonly id: string; readonly owner?: string; readonly hooks: readonly string[] }): boolean {
   return feature.id === "prd04.tangentFrame" && feature.owner === "prd04"
     && feature.hooks.length === 2 && feature.hooks[0] === "vertex:world" && feature.hooks[1] === "fragment:normal";
+}
+
+/** True when the mask depth reproduces a portable (custom or graph) material's clip positions. */
+function portableContactDepthRepresentable(item: RenderItem, base: PortableShaderMaterial): boolean {
+  if (base.disposed || !base.graphSourcesPristine || base.graphRequiresWebGPU) return false;
+  if (customDepthShaderKeyOf(item.material) !== undefined) return true;
+  return base.graphMaterial && !base.graphDisplaced && !item.skinning;
 }
 
 /** Match the first visible casting sun selected by prd02SunDirection, retaining its identity. */
