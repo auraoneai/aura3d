@@ -40,7 +40,7 @@ const ROWS = [
   ["time to ready, ms (software GL)", (m) => m.readyMs, "num0"]
 ];
 
-const TASK_NAMES = { 1: "PBR cube with orbit", 2: "forest of 10,000 instances", 3: "skinned character with crossfade", 4: "game loop (fixed step, score, restart)", 5: "shader water", 6: "complete mobile arcade game", 7: "prop on pedestal" };
+const TASK_NAMES = { 1: "PBR cube with orbit", 2: "forest of 10,000 instances", 3: "skinned character with crossfade", 4: "game loop (fixed step, score, restart)", 5: "shader water", 6: "complete mobile arcade game", 7: "prop on pedestal", 10: "procedural lighthouse", 11: "procedural medieval handcart", 12: "procedural stylised tree" };
 
 export function renderReport({ batches, metrics, meta = {} }) {
   const valid = metrics.filter((m) => m.valid);
