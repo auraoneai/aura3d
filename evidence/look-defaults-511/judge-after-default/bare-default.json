@@ -1,0 +1,127 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "results": [
+    {
+      "task": 1,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows a gold metallic cube with a visible specular gradient on a dark-grey background, centred and fully framed, while B's cube is a pale, washed-out grey with little metallic character and the background is a lighter gradient with a dark band at the top rather than a plain dark grey."
+    },
+    {
+      "task": 1,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 1,
+      "idx": 3,
+      "error": "missing frames"
+    },
+    {
+      "task": 2,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 16
+      },
+      "winner": "tie",
+      "why": "Both show a dense, colour-varied forest patch on a ground plane with sky, but neither visibly shows trunks, rocks, shadows or clear fog, and A's fog and depth are subtle while B's saturated flat shading looks cartoonish."
+    },
+    {
+      "task": 2,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 2,
+      "idx": 3,
+      "error": "missing frames"
+    },
+    {
+      "task": 9,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 5,
+          "materials": 3,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 2,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "A shows clear cyan and magenta rim lighting, a dark background and floor pools of coloured light, with a detailed robot; B has flat grey lighting, no visible coloured rim, a weak floor shadow and a lit-grey floor that isn't dramatic."
+    },
+    {
+      "task": 9,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 9,
+      "idx": 3,
+      "error": "missing frames"
+    }
+  ]
+}

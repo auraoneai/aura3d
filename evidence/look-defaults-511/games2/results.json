@@ -1,0 +1,9 @@
+{
+  "method": "route built from origin/main and from lane branch with AURA3D_ONLY_ROUTE; served on 127.0.0.1; /apps/<route>/?start=1; virtual clock; 1280x720; mean abs RGB diff 0-255",
+  "showcase-top-tennis": { "baseVsBase2": 0.3657, "baseVsBranch": 0.0001, "lumBase": 84.42, "lumBranch": 84.42 },
+  "showcase-roadster-rush": { "baseVsBase2": 0.2006, "baseVsBranch": 0.2002, "lumBase": 42.95, "lumBranch": 42.95 },
+  "showcase-heatsink": { "baseVsBase2": 53.5497, "baseVsBranch": 0.6961, "lumBase": 23.4, "lumBranch": 23.41 },
+  "showcase-aura-links-3d": { "baseVsBase2": 0.3756, "baseVsBranch": 0.3756, "lumBase": 85.18, "lumBranch": 85.18 },
+  "showcase-where-the-wind-wanders-port": { "baseVsBase2": 8.9936, "baseVsBranch": 6.8437, "lumBase": 127.83, "lumBranch": 127.67 },
+  "showcase-silt-and-signal-port": { "baseVsBase2": 1.7917, "baseVsBranch": 1.7917, "lumBase": 114.76, "lumBranch": 114.77 }
+}
