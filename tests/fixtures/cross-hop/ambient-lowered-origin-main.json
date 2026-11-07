@@ -1,0 +1,217 @@
+{
+ "pollen": {
+  "emitter": {
+   "key": "eff.alpha.soft-dot.true.false.0",
+   "nodeId": "crosshop pollen",
+   "origin": [
+    0,
+    1.6,
+    -8
+   ],
+   "capacity": 220,
+   "emissionRate": 30,
+   "life": [
+    4,
+    7
+   ],
+   "speed": [
+    0.04371428571428571,
+    0.05142857142857143
+   ],
+   "spread": 0.06,
+   "spawnRadius": 1.15,
+   "direction": [
+    0,
+    1,
+    0
+   ],
+   "gravity": 0.02,
+   "size": [
+    0.03,
+    0.06
+   ],
+   "color": [
+    1,
+    0.8879231178819663,
+    0.4793201831008268
+   ],
+   "alpha": 0.85,
+   "spin": 0.6,
+   "stretch": 0,
+   "drag": 0.12,
+   "seed": 3937892588
+  }
+ },
+ "fireflies": {
+  "emitter": {
+   "key": "eff.additive.vfx:glow.true.false.0",
+   "nodeId": "crosshop fireflies",
+   "origin": [
+    0,
+    0.8,
+    -8
+   ],
+   "capacity": 140,
+   "emissionRate": 18,
+   "life": [
+    3,
+    6
+   ],
+   "speed": [
+    0.07649999999999998,
+    0.08999999999999998
+   ],
+   "spread": 0.06,
+   "spawnRadius": 1.15,
+   "direction": [
+    0,
+    1,
+    0
+   ],
+   "gravity": 0,
+   "size": [
+    0.05,
+    0.09
+   ],
+   "color": [
+    1,
+    0.768151147247507,
+    0.1946178304415758
+   ],
+   "alpha": 0.85,
+   "spin": 0.6,
+   "stretch": 0,
+   "drag": 0.12,
+   "seed": 413531935
+  }
+ },
+ "embers": {
+  "emitter": {
+   "key": "eff.additive.vfx:spark-streak.true.false.0",
+   "nodeId": "crosshop embers",
+   "origin": [
+    0,
+    0.3,
+    -8
+   ],
+   "capacity": 300,
+   "emissionRate": 40,
+   "life": [
+    1.5,
+    3
+   ],
+   "speed": [
+    0.51,
+    0.6
+   ],
+   "spread": 0.06,
+   "spawnRadius": 1.15,
+   "direction": [
+    0,
+    1,
+    0
+   ],
+   "gravity": 0.9,
+   "size": [
+    0.03,
+    0.07
+   ],
+   "color": [
+    1,
+    0.1946178304415758,
+    0.02315336617811041
+   ],
+   "alpha": 0.85,
+   "spin": 0.6,
+   "stretch": 0,
+   "drag": 0.12,
+   "seed": 454498574
+  }
+ },
+ "rain": {
+  "emitter": {
+   "key": "eff.alpha.vfx:rain-streak.true.false.0",
+   "nodeId": "crosshop rain",
+   "origin": [
+    0,
+    7,
+    -8
+   ],
+   "capacity": 1200,
+   "emissionRate": 260,
+   "life": [
+    0.5,
+    0.8
+   ],
+   "speed": [
+    46.598289374849024,
+    54.82151691158709
+   ],
+   "spread": 0.06,
+   "spawnRadius": 1.15,
+   "direction": [
+    0,
+    1,
+    0
+   ],
+   "gravity": -9,
+   "size": [
+    0.02,
+    0.04
+   ],
+   "color": [
+    0.3467040563550296,
+    0.5520114015120001,
+    1
+   ],
+   "alpha": 0.85,
+   "spin": 0.6,
+   "stretch": 0,
+   "drag": 0.12,
+   "seed": 1873852640
+  }
+ },
+ "confetti": {
+  "emitter": {
+   "key": "eff.alpha.soft-dot.true.false.0",
+   "nodeId": "crosshop confetti",
+   "origin": [
+    0,
+    4,
+    -8
+   ],
+   "capacity": 200,
+   "emissionRate": 26,
+   "life": [
+    3,
+    5
+   ],
+   "speed": [
+    0.47733463025093076,
+    0.5615701532363891
+   ],
+   "spread": 0.06,
+   "spawnRadius": 1.15,
+   "direction": [
+    0,
+    1,
+    0
+   ],
+   "gravity": -0.3,
+   "size": [
+    0.04,
+    0.08
+   ],
+   "color": [
+    1,
+    0.3419144249086609,
+    0.6444796819705821
+   ],
+   "alpha": 0.85,
+   "spin": 0.6,
+   "stretch": 0,
+   "drag": 0.12,
+   "seed": 3555476890
+  }
+ }
+}

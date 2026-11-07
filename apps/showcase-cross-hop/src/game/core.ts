@@ -677,15 +677,33 @@ function backdropMaterial(color: string) {
   return material.pbr({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.96, metalness: 0, practical: true });
 }
 
-/** GU47 CH47-14: the theme's ambient particle emitter, following the player through the `ambient` runtime node. */
+const QA_PARAMS = typeof location !== "undefined" ? new URLSearchParams(location.search) : null;
+/** ?diag=1&qaNoAmbient=1 drops the theme ambient emitter, so a frame pair isolates its pixels (measurement only). */
+const QA_NO_AMBIENT = QA_PARAMS?.get("diag") === "1" && QA_PARAMS.get("qaNoAmbient") === "1";
+/** ?diag=1&qaCamEye=x,y,z&qaCamAt=x,y,z[&qaCamFov=deg]: a fixed free camera in the diorama look, e.g. into the theme
+ *  ambient emitter volume (measurement only). */
+const QA_CAM_FREE = ((): { eye: [number, number, number]; target: [number, number, number]; fov: number } | null => {
+  if (QA_PARAMS?.get("diag") !== "1") return null;
+  const vec = (key: string): [number, number, number] | null => {
+    const v = (QA_PARAMS.get(key) ?? "").split(",").map(Number);
+    return v.length === 3 && v.every(Number.isFinite) ? [v[0]!, v[1]!, v[2]!] : null;
+  };
+  const eye = vec("qaCamEye"), target = vec("qaCamAt");
+  return eye && target ? { eye, target, fov: Number(QA_PARAMS.get("qaCamFov")) || 40 } : null;
+})();
+/**
+ * GU47 CH47-14: the theme's ambient particle emitter, following the player through the `ambient` runtime node.
+ * Authored without `shape`/`shapeSize` on purpose: 5.0.2 ignored them (point spawn, 1.15 m radius) and 5.1 honours them,
+ * which spread every theme's few hundred small particles through a 34 x 3 x 20.7 m box where they all but vanish. Without
+ * them the emitter lowers exactly as in 5.0.2 (`AmbientEmitter.shapeSize` stays as data). Real-GPU frames per theme:
+ * evidence/lane-511-engine-api/games-r3.
+ */
 function ambientNode(ti: number): AuraSceneNode | null {
   const a = ambientEmitter(THEME_LOOKS[ti]!.ambient, reducedMotion);
-  if (!a) return null;
+  if (!a || QA_NO_AMBIENT) return null;
   return effects.particles({
     name: a.name,
     position: [a.offset[0], a.offset[1], a.offset[2]],
-    shape: "box",
-    shapeSize: a.shapeSize,
     rate: a.rate,
     maxParticles: a.maxParticles,
     loop: true,
@@ -1376,6 +1394,7 @@ function syncDioramaCamera(px: number, pz: number, py: number, warn: number): vo
     reducedMotion
   });
   const fov = p.fov + (reducedMotion ? 0 : warn * 3);
+  if (QA_CAM_FREE) { app.camera?.setPose({ position: QA_CAM_FREE.eye, target: QA_CAM_FREE.target, fov: QA_CAM_FREE.fov }); return; }
   app.camera?.setPose({ position: p.position, target: p.target, fov });
   dioramaView.position = p.position; dioramaView.target = p.target; dioramaView.fov = fov;
   const flat = backdropFlat(p.position, p.target, fov, FLOOR_Y);

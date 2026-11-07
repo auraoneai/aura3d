@@ -2174,7 +2174,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-cross-hop/src/game/core.ts",
-          "sha256": "d48919ce67e1f920be370288990d98deebffff36e79b03847b6c03be5b386cb7"
+          "sha256": "b7e4bdcbd6f7eb9e80d4e4c91573d5bac0f9fbcb5a15ede741619f7827057252"
         },
         {
           "path": "apps/showcase-cross-hop/src/game/world.ts",
