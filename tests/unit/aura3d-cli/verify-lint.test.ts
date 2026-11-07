@@ -107,14 +107,17 @@ describe("verify lint rules", () => {
 describe("lint tables stay in step with the engine", () => {
   const engine = (path: string) => readFileSync(new URL(`../../../packages/engine/src/agent-api/${path}`, import.meta.url), "utf8");
   test("reserved uniform names equal RESERVED_UNIFORM_NAMES in customMaterial.ts", () => {
+    // invariant: source must keep `const RESERVED_UNIFORM_NAMES = new Set([...])` in customMaterial.ts — LINT_UNIFORM_RESERVED must flag exactly the names the engine rejects, so a renamed or reshaped table fails here instead of drifting silently
     const block = /const RESERVED_UNIFORM_NAMES = new Set\(\[([\s\S]*?)\]\)/.exec(engine("compiler/customMaterial.ts"))![1]!;
     expect([...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort()).toEqual([...RESERVED_UNIFORM_NAMES].sort());
   });
   test("fog options equal FOG_OPTION_KEYS in effects.ts", () => {
+    // invariant: source must keep `export const FOG_OPTION_KEYS: readonly string[] = [...]` in nodes/effects.ts — the fog option lint must accept exactly the keys the engine applies
     const block = /export const FOG_OPTION_KEYS: readonly string\[\] = \[([\s\S]*?)\];/.exec(engine("nodes/effects.ts"))![1]!;
     expect([...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort()).toEqual([...FOG_VALID_OPTIONS].sort());
   });
   test("instances.model unapplied options equal the engine set", () => {
+    // invariant: source must keep `const UNAPPLIED_INSTANCED_MODEL_OPTIONS = { ... }` in nodes/instances.ts — the lint must warn on exactly the instances.model options the engine ignores
     const block = /const UNAPPLIED_INSTANCED_MODEL_OPTIONS[^=]*= \{([\s\S]*?)\n\};/.exec(engine("nodes/instances.ts"))![1]!;
     expect([...block.matchAll(/^  (\w+):/gm)].map((m) => m[1]).sort()).toEqual([...INSTANCES_MODEL_UNAPPLIED_OPTIONS].sort());
   });
