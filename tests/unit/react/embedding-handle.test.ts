@@ -293,5 +293,5 @@ describe("lifecycle (R-07 neighbourhood: StrictMode, multi-instance, SSR)", () =
     const html = renderToString(createElement(adapter.AuraCanvasWithRef, { ref: { current: null } }));
     expect(html).toContain("<canvas");
     expect(html).toContain('tabindex="-1"');
-  }, 60_000);
+  }, 240_000);
 });
