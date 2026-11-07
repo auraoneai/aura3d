@@ -32,6 +32,8 @@ createAuraApp("#app", {
     .add(looks.preset(LOOK_ID))
     .background("#5560a8")
     .add(primitives.box({ name: "dark deck", size: [9, 0.1, 9], position: [0, -0.05, 0], material: material.pbr({ color: "#101723", roughness: 0.92 }), receiveShadow: true }))
+    // Wide dark street under the deck and skyline so the towers stand on ground rather than float over the sky colour.
+    .add(primitives.box({ name: "street", size: [40, 0.1, 40], position: [0, -0.16, -6], material: material.pbr({ color: "#0b0f1a", roughness: 0.95 }), receiveShadow: true }))
     .addMany(gridLines)
     .addMany(skyline)
     // luma is authored at ~103 m and model() fits it to ~1.55 m; scale 1.5 -> a ~2.3 m emissive monolith.

@@ -879,7 +879,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/postprocess-scene/src/main.ts",
-        "sha256": "d9220f5bf88b73d7ce8a2e863f5f8ae38d15e9381525a303b8b67502bdd75ac4"
+        "sha256": "3e0940802f9c19042f36eae4370d63dfc21f392cf6b3068595cb36c12b7ba262"
       },
       "sourceDependencies": [
         {
