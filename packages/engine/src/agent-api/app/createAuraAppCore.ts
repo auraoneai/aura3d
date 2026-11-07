@@ -62,6 +62,7 @@ import { createAuraXRRuntime } from "../xr/xrRuntime.js";
 import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { createWorkerRootApp } from "./workerRootApp.js";
 import { workerCanvasTransferAttempted } from "./workerRuntime.js";
+import { coldStartLookEnabled, withColdStartLook } from "../looks/coldStartLook.js";
 
 type ReadinessStage = "renderer" | "first-frame";
 type ReadyBackend = "webgl2" | "webgpu";
@@ -289,6 +290,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   // payload.extra.mountTiming (see markTiming in ./platform).
   markTiming("a3d:mount:create-app-start");
   let snapshot = normalizeSceneSnapshot(options.scene);
+  // 5.1: scenes that author no look/light/environment get the hero-stage defaults; authored scenes are returned unchanged.
+  if (coldStartLookEnabled()) snapshot = withColdStartLook(snapshot);
   /*
    * One top-level node at a time, so the compiled scene can find the children of a mounted group or look by the group's
    * runtime id (`app.nodes.remove`). The concatenation is the same node list as flattening the whole list at once.
@@ -2040,7 +2043,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     },
     setScene(nextScene) {
       assertMutableFrame();
-      const nextSnapshot = normalizeSceneSnapshot(nextScene);
+      const nextSnapshot = coldStartLookEnabled() ? withColdStartLook(normalizeSceneSnapshot(nextScene)) : normalizeSceneSnapshot(nextScene);
       assertScenePhysicsPivotSupport(nextSnapshot.nodes);
       const nextRenderSnapshot = flattenForRender(nextSnapshot, true);
       // The preview bridge is a separate world, so prepare it before changing
