@@ -10,6 +10,7 @@ import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { measureLoudness } from "@aura3d/audio";
 import { inspectNRRDDataReference, OBJLoader, parseModel3MF, parsePLY, parseSTL, type NativeMeshData } from "@aura3d/assets";
 import { admitAssetForRole } from "./asset-role-admission.js";
+import { lookHdriWarnings } from "./look-hdri-check.js";
 import { assertStagedGlbFile, captureGlbSource, checkGlbDependencies, referencedGlbResourcePaths, type CapturedGlb } from "./glb-dependency-validation.js";
 import { CERTIFY_CATEGORY_RULES } from "./commands/assets/certifyCategories.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
@@ -1620,6 +1621,7 @@ export function checkDeploy(options: CheckDeployOptions = {}): AssetValidationRe
     }
   }
   warnings.push(...deadAssetUrlWarnings(resolve(projectDir, distDir), distDir));
+  warnings.push(...lookHdriWarnings(projectDir, distDir));
   const validation = validateAssets({
     projectDir,
     noPlaceholders: options.noPlaceholders,

@@ -12,6 +12,7 @@
 
 - Dark or flat frame: authored lights with no environment get no image-based light. Add `environments.neutral({ intensity })` or a `looks.preset(id)`; metals need it to reflect anything.
 - Colour applied twice: instance `colors` multiply the material colour. Use a `#ffffff` base material when you pass `colors`.
+- `looks.preset(id)` loads `/hdri/<file>.hdr` from `public/hdri/` (scaffolds ship it); if the file is missing the scene gets a procedural probe and `LOOK_HDRI_MISSING` in `app.diagnostics().warnings`. Colours accept any CSS form (`hsl()`, `rgb()`, names, `#rgb`); an invalid one throws `COLOR_INVALID`.
 - Moving a node: give it `.runtime({ id, mutable: true })` at build time, then `app.nodes.require(id).setPosition(...)`. Without the runtime id `require` throws.
 - Do not invent asset paths or ids: `npx @aura3d/cli@latest assets resolve "<object>" --name <name>`, then `model(assets.<name>)`.
 - Black frame with an admitted model: a route-local URL built with `new URL(..., import.meta.url)` is absolute and blocked as unsafe-url. Use `/aura-assets/<file>`, the file under the app's `public/aura-assets/`, and list it in `aura.assets.json`.

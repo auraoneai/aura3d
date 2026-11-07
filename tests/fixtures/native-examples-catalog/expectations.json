@@ -1050,11 +1050,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/colorUtils.ts",
-          "sha256": "f3efbf552ae6ee85e34376c21d8cdc201a7785ff3ab1f16f506e9e38097b9258"
+          "sha256": "103494e6471d173488cb91a10ce8e3fa2ace7a7f47fd1a8d444551d4b65a9bba"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/color.ts",
-          "sha256": "31e4599d54fab03efa55b52df7469dca2123df2dfeadb8eeb5adf82e72213fab"
+          "sha256": "df3249710a0f91dbfd70312e76119dd1acb2aede1d908de97360a0aa567e475b"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/sceneGraph.ts",
@@ -1078,7 +1078,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "df8e737a8af80ea3f14b337edddfed2e6111f642f58e34db8410a6ac5bb9ca1e"
+          "sha256": "9143e2129bd8ce67bff0527b91f8e4c522dc87c882dd005aa0db32f4ba1b74cf"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
