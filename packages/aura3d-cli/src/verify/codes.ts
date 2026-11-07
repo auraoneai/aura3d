@@ -1,0 +1,81 @@
+// Error-code explainer for `aura3d verify`. One table, keyed by stable code: severity, the step that raises it, a plain-English
+// cause and a concrete fix hint. `aura3d verify --explain <code>` prints an entry; a future MCP server can serve the same table.
+// Codes are append-only: never rename or reuse one, because agents key their repair logic on them.
+
+export type VerifySeverity = "error" | "warning" | "info";
+export type VerifyStepId = "typecheck" | "assets" | "lint" | "build" | "serve" | "render" | "inspect" | "verify";
+
+export interface VerifyCodeEntry {
+  readonly code: string;
+  readonly severity: VerifySeverity;
+  readonly step: VerifyStepId;
+  readonly title: string;
+  /** Plain-English cause. */
+  readonly cause: string;
+  /** Concrete fix hint an agent can act on. */
+  readonly fix: string;
+}
+
+const entry = (code: string, severity: VerifySeverity, step: VerifyStepId, title: string, cause: string, fix: string): VerifyCodeEntry => ({ code, severity, step, title, cause, fix });
+
+export const VERIFY_CODE_TABLE: readonly VerifyCodeEntry[] = [
+  entry("VERIFY_STEP_CRASHED", "error", "verify", "A verify step threw", "The step itself failed unexpectedly (not a finding about your project).", "Re-run with --only <step> to isolate it; if it repeats, report the message field."),
+  entry("TYPECHECK_ERROR", "error", "typecheck", "TypeScript error", "tsc rejected the project; the message carries the TS code and text.", "Fix the reported line. For an unknown @aura3d/engine export, `rg` the export in docs/agents/api-surface.md instead of guessing a name."),
+  entry("TYPECHECK_UNAVAILABLE", "warning", "typecheck", "Typecheck skipped", "No tsconfig.json or no TypeScript compiler could be resolved for this project.", "Add a tsconfig.json (strict, moduleResolution bundler) and `npm i -D typescript`."),
+  entry("ASSET_VALIDATION_FAILED", "error", "assets", "Asset manifest check failed", "`assets validate` rejected aura.assets.json or a referenced file (missing file, hash drift, licence or provenance gap).", "Run `aura3d assets validate --source` for the full list, then re-add the asset with `aura3d assets add` or `assets resolve` instead of editing the manifest by hand."),
+  entry("ASSET_VALIDATION_WARNING", "warning", "assets", "Asset manifest warning", "`assets validate` accepted the manifest but flagged something worth fixing.", "Read the message; fix it before a release gate (`assets validate --release`)."),
+  entry("ASSET_PATH_INVENTED", "error", "assets", "Model path is not a typed asset", "A model is referenced by a string path instead of a typed `assets.<key>`, so nothing proved the file exists, is licensed or has bounds. Invented paths load as 404s and draw nothing.", "Run `aura3d assets resolve \"<object>\" --name <name>` (or `assets add ./file.glb --name <name>`), then use `model(assets.<name>)` from src/aura-assets.ts."),
+  entry("ASSET_KEY_UNKNOWN", "error", "assets", "assets.<key> is not defined", "The code reads `assets.<key>` but src/aura-assets.ts defines no such key.", "Use a key listed in src/aura-assets.ts, or add the asset first with `aura3d assets add`."),
+  entry("LINT_SHADOW_NO_RECEIVER", "warning", "lint", "Light has shadow on, nothing receives shadows", "A light sets `shadow`, but every surface node in the project is a receiver-off node: `receiveShadow: false`, or a `material.custom` without `receiveShadow: true` (custom materials do not receive by default). The shadow pass runs and no shadow is ever visible.", "Add `receiveShadow: true` to the ground or surface that should show the shadow (or `receiveShadow: true` inside the `material.custom` spec and multiply your lit term by `a3dSunShadowAuto(worldPos, normal)`), and keep `castShadow` on the objects that cast. Remove `shadow` from the light if you do not want shadows."),
+  entry("LINT_SKY_HIDES_BACKGROUND", "info", "lint", "Sky node covers the scene background", "The scene sets a background colour and also adds a sky (`sky.*`). The sky draws over the clear colour, so the background you set is never seen (it still seeds fog and fallback colour). The canonical recipes do this on purpose, so it is informational.", "If you expected the background colour to show, drop the sky node; if you want the sky, you can drop the background or keep it as the fallback colour."),
+  entry("LINT_SHADER_UNIFORM_UNREAD", "warning", "lint", "Custom shader uniform is never read", "A uniform is declared in `material.custom({ uniforms })` but the GLSL never mentions it, so setting it changes nothing.", "Use the uniform in the vertex or fragment source, or delete it from `uniforms`."),
+  entry("LINT_SHADER_ATTRIBUTE_UNREAD", "warning", "lint", "Custom vertex attribute is never read", "`geometry.*({ attributes })` supplies a named attribute that no custom GLSL in the project reads.", "Declare `in <type> <name>;` in the vertex shader and read it, or drop the attribute."),
+  entry("LINT_EFFECT_OPTION_IGNORED", "warning", "lint", "Option is accepted but ignored", "An `effects.*` or `instances.model` option is not read by the lowering (the engine reports it as OPTION_IGNORED at runtime), so it has no effect.", "Remove the option, or use the builder that implements it (the message lists the valid options)."),
+  entry("LINT_UTIME_NOT_ANIMATED", "warning", "lint", "Shader reads uTime but nothing advances time", "The engine binds `uTime` from the host-supplied clock, which stays 0 unless you drive it, so a uTime-only animation is a frozen frame. This is a static guess; MOTION_NONE confirms it on a real frame.", "Declare your own uniform (e.g. `waveClock`), mark the node `.runtime({ id: \"water\", mutable: true })`, and in `app.onFrame` call `app.nodes.require(\"water\").setUniform?.(\"waveClock\", seconds)`."),
+  entry("LINT_UNIFORM_RESERVED", "error", "lint", "Reserved uniform name", "`uniforms` declares a name the generated GLSL prelude already owns (uTime, uResolution, cameraPosition, the matrices, position, normal, uv ...). The material fails validation and the draw is skipped.", "Rename the uniform (e.g. `uTime` to `waveClock`)."),
+  entry("LINT_READY_NOT_AWAITED", "warning", "lint", "app.ready() is not awaited", "The project mounts an app but never awaits `app.ready()` (or chains on it), so mount errors and asset failures are not observed and code that follows can run before the first frame.", "Await it inside a function (`async function main() { const app = createAuraApp(...); await app.ready(); } void main();`) or chain `app.ready().then(...)`. Avoid module-level await (see LINT_TOP_LEVEL_AWAIT_READY)."),
+  entry("LINT_TOP_LEVEL_AWAIT_READY", "warning", "lint", "Module-level `await app.ready()`", "`await app.ready()` at module scope makes the entry module wait on the app, and in a single-entry Vite bundle the engine's lazily imported chunks import back from that same entry, so the module graph can wait on itself and the app never becomes ready (observed with monorepo-source builds: no console output, blank canvas, no data-aura3d-ready).", "Move the app into `async function main() { ...; await app.ready(); } void main();`, or use `app.ready().then(...)`."),
+  entry("LINT_SCALE_EXTREME", "warning", "lint", "Node scale looks off by orders of magnitude", "A `.scale(...)` literal is >= 50 or <= 0.02. It is probably a unit mix-up (cm vs m) and fills or vanishes from the frame.", "Check the asset's `bounds` in src/aura-assets.ts and scale to metres (1 unit = 1 m)."),
+  entry("LINT_CAMERA_INSIDE_OBJECT", "warning", "lint", "Camera starts inside an object", "The camera distance is smaller than half the size of a large scaled node at the origin, so the camera sits inside it and only back faces (or nothing) draw.", "Increase the camera distance, or reduce the node scale."),
+  entry("BUILD_FAILED", "error", "build", "Build failed", "The project build script exited non-zero.", "Read the build output tail in the finding; fix the first error."),
+  entry("BUILD_SCRIPT_MISSING", "error", "build", "No build script", "package.json has no `build` script.", "Add `\"build\": \"vite build\"` to package.json."),
+  entry("DEPLOY_CHECK_FAILED", "error", "build", "check-deploy failed", "`check-deploy` found a problem in dist (missing hashed asset, unreferenced file, licence gate).", "Run `aura3d check-deploy --dist dist` for the list and fix the first entry."),
+  entry("SERVE_FAILED", "error", "serve", "Static server could not start", "No dist/index.html, or the local static server failed to bind.", "Run the build first and confirm dist/index.html exists."),
+  entry("BROWSER_UNAVAILABLE", "error", "render", "No Chrome found for the render step", "The default driver launches a locally installed Chrome over the DevTools protocol and none was found.", "Pass --chrome <path> or set AURA3D_CHROME; or skip the browser steps with --skip render,inspect."),
+  entry("RENDER_NAVIGATION_FAILED", "error", "render", "Page did not load", "The browser could not load the served page (HTTP error, timeout or navigation failure).", "Check the build output and that index.html loads the module script."),
+  entry("RENDER_NEVER_READY", "error", "render", "App never reported ready", "The page loaded but `document.body.dataset.aura3dReady` never appeared within the readiness budget, so no first frame was reported. Causes seen: module-level `await app.ready()` deadlocking a single-entry bundle (LINT_TOP_LEVEL_AWAIT_READY), a canvas that is not the one passed to createAuraApp, an exception swallowed before mount, or assets that take longer than the budget.", "Check LINT_TOP_LEVEL_AWAIT_READY first, then the console findings; raise --ready-timeout-ms only if the scene loads large assets."),
+  entry("RENDERER_MOUNT_FAILED", "error", "render", "Renderer failed to mount", "createAuraApp could not start a renderer (no WebGL2, a thrown mount error, or an invalid scene). Nothing draws. The text is in app.diagnostics().errors.", "Read the message in the finding; usual causes are an invalid scene spec, missing WebGL2 in the browser, or a zero-size canvas. Pass `strict: true` to createAuraApp to surface it as a rejected ready()."),
+  entry("RENDER_DEGRADED", "warning", "render", "A feature is degraded", "The renderer logged a `*_DEGRADED` code: a requested feature fell back to a simpler path on this device.", "Read the specific code in the evidence (e.g. TRANSMISSION_DEGRADED); remove the feature or accept the fallback."),
+  entry("RUNTIME_OPTION_IGNORED", "warning", "inspect", "Runtime reported OPTION_IGNORED", "A builder option was accepted but not applied; the engine recorded OPTION_IGNORED.", "Remove the listed option or use the builder that reads it."),
+  entry("RUNTIME_DEGRADATION", "warning", "inspect", "Compiler reported a degradation", "The scene compiler recorded a degradation (a node or option that could not be lowered as written); the code is in the evidence.", "Read the message; remove or replace the node it names."),
+  entry("RUNTIME_NO_LIGHTS", "warning", "inspect", "Scene has no lights", "The engine warns that the scene has no lights. Lit materials (pbr, metal) render dark or black without a light or environment.", "Add `lights.studio()`, `lights.directional(...)` or `lights.ambient()`, or a `looks.preset(...)` / `environments.*`."),
+  entry("RUNTIME_NO_INTERACTIONS", "info", "inspect", "Scene has no interactions", "The engine notes that the scene has no camera interaction. Fine for a fixed shot.", "Add `interactions.orbit()` if a viewer should be able to move the camera."),
+  entry("RUNTIME_DIAGNOSTIC_ERROR", "error", "inspect", "Engine diagnostics reported an error", "The engine recorded an error (shader compile failure, asset load failure, invalid node ...).", "Read the message; CUSTOM_SHADER_COMPILE_FAILED includes the GLSL log and the offending line."),
+  entry("RUNTIME_DIAGNOSTIC_WARNING", "warning", "inspect", "Engine diagnostics reported a warning", "The engine recorded a warning during mount or the first frames.", "Read the message and fix it if it describes something you intended to work."),
+  entry("CONSOLE_ERROR", "error", "inspect", "Console error", "The page logged a console error.", "Read the text; fix the first one, later ones are often consequences."),
+  entry("PAGE_EXCEPTION", "error", "inspect", "Uncaught exception", "The page threw an uncaught exception.", "Read the message in the evidence; the first exception is the root cause."),
+  entry("REQUEST_FAILED", "error", "inspect", "A request failed (HTTP error or network failure)", "A file the page asked for returned an HTTP error or failed to load (commonly a model or texture path that is not in dist).", "Put the file under public/ (or import it) so it ships in dist, and reference it through a typed asset."),
+  entry("FRAME_BLACK", "error", "inspect", "Frame is black", "The captured frame has no bright pixels. Typical causes: no light, a light pointing away, a camera looking at nothing, a mount failure, an unlit material on a dark background.", "Add `lights.directional(...)` or a `looks.preset(...)`, check the camera target, and read the other findings first (RENDERER_MOUNT_FAILED, RUNTIME_DIAGNOSTIC_ERROR)."),
+  entry("FRAME_DIM", "warning", "inspect", "Frame is very dim", "The frame has content but its brightest 1% of pixels is dark, usually an under-lit scene.", "Raise light intensity or add an environment/look preset; check exposure."),
+  entry("FRAME_FLAT", "error", "inspect", "Frame is one flat colour", "The frame has almost no distinct colours, i.e. only the clear colour or one fullscreen surface. Typical causes: a fog density that swallows the scene, a background or sky covering everything, the camera inside an object.", "Lower fog density or move `near`/`far`, check the camera position against object sizes and scales, and check LINT_* findings."),
+  entry("FRAME_EMPTY", "warning", "inspect", "Frame has no scene texture", "Most of the frame is flat: the scene is missing, tiny, huge or behind the camera. Typical causes: a scale off by 100x, a camera pointed away, a model that failed to load.", "Check node scale against asset bounds, the camera target and distance, and REQUEST_FAILED / RUNTIME_DIAGNOSTIC_ERROR findings."),
+  entry("MOTION_NONE", "warning", "inspect", "Nothing moved between two frames", "Two frames captured about a second apart are pixel-identical. Fine for a static product shot; a bug for water, particles or a game.", "If the scene should animate, drive time yourself (`setUniform` in `app.onFrame` on a `.runtime({ mutable: true })` node) and check LINT_UTIME_NOT_ANIMATED.")
+];
+
+const BY_CODE = new Map(VERIFY_CODE_TABLE.map((item) => [item.code, item] as const));
+
+/** Look up a code. `X_DEGRADED` codes without their own row resolve to RENDER_DEGRADED. Case-insensitive. */
+export function explainCode(code: string): VerifyCodeEntry | undefined {
+  const key = code.trim().toUpperCase();
+  const direct = BY_CODE.get(key);
+  if (direct) return direct;
+  if (/^[A-Z0-9_]+_DEGRADED$/.test(key)) {
+    const base = BY_CODE.get("RENDER_DEGRADED")!;
+    return { ...base, code: key, title: `${key} (degraded feature)` };
+  }
+  return undefined;
+}
+
+export function formatExplanation(item: VerifyCodeEntry): string {
+  return [`${item.code}  [${item.severity}, step ${item.step}]`, item.title, "", `Cause: ${item.cause}`, `Fix:   ${item.fix}`].join("\n");
+}
