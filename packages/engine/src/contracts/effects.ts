@@ -203,10 +203,10 @@ export interface AuraParticleEmitterOptions {
   readonly attachTo?: string | { readonly node: string; readonly socket?: string };
   /**
    * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
-   * Omitted keeps the legacy `radius` disc. `"mesh-surface"` was removed in 5.1: it was accepted but never read; scatter
-   * from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+   * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+   * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
    */
-  readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge";
+  readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
   /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
   readonly shapeSize?: AuraVec3 | number;
   /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
@@ -239,8 +239,11 @@ export interface AuraParticleEmitterOptions {
   readonly speedOverLife?: AuraCurve;
   readonly color?: AuraColor;
   readonly colorOverLife?: AuraColorRamp;
-  // `intensity` (a documented HDR multiplier that nothing read) was removed from the emitter options in 5.1. The legacy
-  // `AuraEffectNode.intensity` strength field is still accepted; pre-multiply `color` for an HDR boost.
+  /**
+   * HDR multiplier.
+   * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+   */
+  readonly intensity?: number;
   readonly sprite?: AuraVfxSpriteSource;
   readonly blend?: AuraBlendMode;
   readonly shading?: AuraVfxShading;

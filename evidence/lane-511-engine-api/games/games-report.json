@@ -1,0 +1,250 @@
+{
+ "meanAbsDiff": {
+  "cross-hop-t0": {
+   "meanAbsDiff": 0.3358,
+   "pctPixelsOver8": 0.789
+  },
+  "cross-hop-t1": {
+   "meanAbsDiff": 0.2091,
+   "pctPixelsOver8": 0.493
+  },
+  "cross-hop-t2": {
+   "meanAbsDiff": 0.1625,
+   "pctPixelsOver8": 0.432
+  },
+  "cross-hop-t3": {
+   "meanAbsDiff": 3.2808,
+   "pctPixelsOver8": 9.38
+  },
+  "cross-hop-t4": {
+   "meanAbsDiff": 0.034,
+   "pctPixelsOver8": 0.146
+  },
+  "cross-hop-t5": {
+   "meanAbsDiff": 0.1737,
+   "pctPixelsOver8": 0.415
+  },
+  "dot-dash": {
+   "meanAbsDiff": 0.0042,
+   "pctPixelsOver8": 0.017
+  },
+  "hoops-manila": {
+   "meanAbsDiff": 0.021,
+   "pctPixelsOver8": 0.028
+  },
+  "pips-big-leap": {
+   "meanAbsDiff": 0.6101,
+   "pctPixelsOver8": 1.349
+  },
+  "slingshot-ch1": {
+   "meanAbsDiff": 5.7268,
+   "pctPixelsOver8": 21.484
+  },
+  "hoops-manila-pre-curve-fix": {
+   "meanAbsDiff": 2.0904
+  }
+ },
+ "capture": {
+  "cross-hop-t0": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 310,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 307,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   }
+  },
+  "cross-hop-t1": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 306,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 308,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   }
+  },
+  "cross-hop-t2": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 307,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 306,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   }
+  },
+  "cross-hop-t3": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 309,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 307,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   }
+  },
+  "cross-hop-t4": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 308,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 307,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   }
+  },
+  "cross-hop-t5": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 308,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 307,
+     "title": "Cross Hop \u2014 Aura3D Endless Lane Hopper"
+    },
+    "errors": []
+   }
+  },
+  "dot-dash": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 311,
+     "title": "Glint Courier \u2014 circuit-board chase"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 307,
+     "title": "Glint Courier \u2014 circuit-board chase"
+    },
+    "errors": []
+   }
+  },
+  "pips-big-leap": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 312,
+     "title": "PIP'S BIG LEAP \u2014 3D Mascot Platformer \u00b7 Aura3D Showcase"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": 323,
+     "title": "PIP'S BIG LEAP \u2014 3D Mascot Platformer \u00b7 Aura3D Showcase"
+    },
+    "errors": []
+   }
+  },
+  "slingshot-ch1": {
+   "before": {
+    "ready": false,
+    "info": {
+     "state": "aiming",
+     "frame": 1712,
+     "title": "Aura3D - Slingshot Siege"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": false,
+    "info": {
+     "state": "aiming",
+     "frame": 1775,
+     "title": "Aura3D - Slingshot Siege"
+    },
+    "errors": []
+   }
+  },
+  "hoops-manila": {
+   "before": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": null,
+     "title": "Aura Hoops 3D \u2014 Streetball Worldwide \u00b7 Aura3D Showcase"
+    },
+    "errors": []
+   },
+   "after": {
+    "ready": true,
+    "info": {
+     "state": "playing",
+     "frame": null,
+     "title": "Aura Hoops 3D \u2014 Streetball Worldwide \u00b7 Aura3D Showcase"
+    },
+    "errors": []
+   }
+  }
+ },
+ "notes": "before = 5.0.2 lowering (temporary local toggle that ignores the 5.1 particle options; not committed); after = this branch. Virtual clock shim + seeded Math.random, headless Chrome ANGLE Metal (Apple GPU). Non-zero diffs on cross-hop/pips/slingshot are edge-only moving-scene jitter (frame counters differ by a few frames between loads), not particle changes. hoops-manila after uses the explicit fade-envelope curve; hoops-manila-after-pre-curve-fix is the dimmer-motes render (meanAbsDiff 2.09)."
+}

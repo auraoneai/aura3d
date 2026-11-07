@@ -53,11 +53,11 @@ ignores these options.
 Builder defaults are not intent: `effects.particles` writes `sizeOverLife: [0.35, 1, 0.58]` and
 `alphaOverLife: [0, 0.92, 0]` on every node, so a curve equal to its default is treated as not authored.
 
-Removed from `AuraParticleEmitterOptions` (they were never read; the legacy `AuraEffectNode.intensity` strength field is
-unchanged and still accepted):
+Still accepted, no effect yet (kept in the type so the declaration stays additive):
 
-- `intensity` as an "HDR multiplier". Pre-multiply `color` for a boost.
-- `shape: "mesh-surface"`. Use `scatterInArea` / `scatterTransforms` and place emitters.
+- `intensity` (typed "HDR multiplier", marked `@deprecated`): the emitter does not read it. Pre-multiply `color` for a boost.
+  The legacy `AuraEffectNode.intensity` strength field is unchanged.
+- `shape: "mesh-surface"`: the emitter keeps the legacy `radius` disc. Use `scatterInArea` / `scatterTransforms` and place emitters.
 
 ## New exports
 
