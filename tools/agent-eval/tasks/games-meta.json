@@ -1,0 +1,22 @@
+{
+  "11": {
+    "id": "games-1",
+    "title": "Brick Breaker (3D breakout)",
+    "visualRubric": "A strong frame shows a clearly readable 3D play field with a distinct paddle, a ball, and a wall of at least four colored brick rows lit with depth (shading or shadow), with an intentional camera angle. Score each 1-5: (1) composition and camera framing of the whole field; (2) brick/paddle/ball readability and color separation; (3) lighting, materials and depth cues (not flat or untextured placeholder look); (4) HUD and overlay legibility and placement outside the canvas; (5) overall polish and absence of clipping, z-fighting, black or empty regions."
+  },
+  "12": {
+    "id": "games-2",
+    "title": "Tower Stacker",
+    "visualRubric": "A strong frame shows a tower of clean, evenly lit slabs with a gradual color progression, a moving top slab, and visible fallen cut-off pieces, framed from a good three-quarter camera angle with a pleasing background (gradient, sky or fog) rather than a flat clear color. Score each 1-5: (1) camera framing and tower composition; (2) slab color progression and shading; (3) lighting, shadows and depth cues; (4) HUD legibility and placement; (5) overall polish with no clipping, flicker or empty areas."
+  },
+  "13": {
+    "id": "games-3",
+    "title": "Hurdle Sprinter (endless runner)",
+    "visualRubric": "A strong frame shows a readable runner silhouette on a clearly defined track with hurdles ahead, a convincing sense of speed and depth (scenery receding, fog or horizon), and an intentional chase camera. Score each 1-5: (1) camera framing and sense of depth/speed; (2) runner and hurdle readability and contrast with the track; (3) lighting, materials and environment (sky, horizon, ground not flat); (4) HUD and overlay legibility; (5) overall polish with no clipping, popping hurdles at close range or empty regions."
+  },
+  "14": {
+    "id": "games-4",
+    "title": "Lantern Pop (pointer whack game)",
+    "visualRubric": "A strong frame shows a well-lit 3x3 stage with clearly readable cells, glowing lanterns that stand out from the background (emissive or bloom-like look), a distinct bomb variant, a visible hover highlight and a tasteful backdrop. Score each 1-5: (1) camera framing of the whole grid; (2) lantern vs bomb vs cell readability; (3) lighting, glow and material quality (not flat); (4) HUD and overlay legibility; (5) overall polish with no clipping, empty regions or unreadable effects."
+  }
+}

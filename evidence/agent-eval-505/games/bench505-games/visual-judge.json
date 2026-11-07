@@ -1,0 +1,2793 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "majority": [
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 17.333333333333332,
+        "three": 21.333333333333332
+      }
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura-sheet",
+      "meanTotals": {
+        "aura-sheet": 19,
+        "three": 18
+      }
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 14.666666666666666,
+        "three": 21.333333333333332
+      }
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 17.333333333333332,
+        "three": 19
+      }
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 14.333333333333334,
+        "three": 20.333333333333332
+      }
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 17,
+        "three": 19.333333333333332
+      }
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 11,
+        "three": 16.666666666666668
+      }
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 8.333333333333334,
+        "three": 17
+      }
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 1,
+        "three": 2,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 14.666666666666666,
+        "three": 15
+      }
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 9,
+        "three": 17
+      }
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 11,
+        "three": 16.666666666666668
+      }
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 2,
+        "three": 1,
+        "tie": 0
+      },
+      "majority": "aura-sheet",
+      "meanTotals": {
+        "aura-sheet": 15.333333333333334,
+        "three": 14.666666666666666
+      }
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 11.666666666666666,
+        "three": 21
+      }
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 16.333333333333332,
+        "three": 18.333333333333332
+      }
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura": 11,
+        "three": 19.666666666666668
+      }
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura-sheet",
+      "meanTotals": {
+        "aura-sheet": 18.666666666666668,
+        "three": 17
+      }
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura",
+      "meanTotals": {
+        "aura": 20,
+        "three": 16
+      }
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura-sheet",
+      "meanTotals": {
+        "aura-sheet": 20,
+        "three": 16
+      }
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura",
+      "meanTotals": {
+        "aura": 16.666666666666668,
+        "three": 16.333333333333332
+      }
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 14.333333333333334,
+        "three": 18
+      }
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura",
+      "meanTotals": {
+        "aura": 18.333333333333332,
+        "three": 15.333333333333334
+      }
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 13,
+        "three": 18.666666666666668
+      }
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura",
+      "meanTotals": {
+        "aura": 16.666666666666668,
+        "three": 15
+      }
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "validCalls": 3,
+      "votes": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "meanTotals": {
+        "aura-sheet": 14.333333333333334,
+        "three": 18.333333333333332
+      }
+    }
+  ],
+  "calls": [
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 18,
+        "three": 22
+      },
+      "winner": "three",
+      "why": "A has five saturated, clearly separated brick rows, an angled perspective camera with visible depth and a clean HUD, while B's pastel bricks look washed out, with only four rows and a flatter frontal view."
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B has five saturated, clearly separated brick rows with visible depth shading, a clear perspective camera and a cleaner HUD, while A's pastel bricks are washed out, its four rows are barely distinct from each other, and its frame and wall geometry look flatter."
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B has five saturated, clearly separated brick rows, stronger shading and depth, and a clean perspective camera, while A's pastel bricks are washed out, its four rows are less distinct, and its flat orthographic-like framing gives weaker depth."
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 19,
+        "three": 18
+      },
+      "winner": "aura-sheet",
+      "why": "B fills the frame better and has visible cast shadows from the bricks and paddle plus a thicker, shaded paddle, so depth reads more clearly, while A has a nice perspective angle but a flat-looking paddle, no visible shadows and smaller bricks."
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 19,
+        "three": 18
+      },
+      "winner": "aura-sheet",
+      "why": "A fills the frame better and shows cast shadows from the bricks, paddle and ball, so its depth reads more clearly, while B has a more angled camera and richer colours but no visible cast shadows and a smaller, emptier field."
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 19,
+        "three": 18
+      },
+      "winner": "aura-sheet",
+      "why": "B fills the frame better and its cast shadows from the bricks and paddle give clearer depth, while A has saturated colours and a nice perspective but a flat grey paddle, no shadows and a smaller, emptier field."
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "A shows a bright, well-framed 3D field with five clearly separated, shaded brick rows and a distinct paddle and ball, while B is very dark and low-contrast with flat-looking bricks and a barely readable paddle."
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 22
+      },
+      "winner": "three",
+      "why": "A has bright, well-separated colored bricks with visible depth, a lit floor and a clear perspective camera, while B is very dark with dim, low-contrast bricks and a flat black background."
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B shows a bright, well-framed perspective field with clearly separated, shaded brick rows, a visible floor and a legible paddle and ball, while A is dark, flat and low-contrast on a black background with a tiny paddle and ball and a dim, nearly invisible floor."
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A has a more intentional perspective camera, more saturated and clearly separated brick colors, and stronger shading and depth, while B looks washed out and nearly front-on with a flat grey paddle and a duller field."
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A has a perspective camera angle, saturated and well-separated brick colors, and visible brick depth. B is nearly top-down with washed-out pastel bricks and a flatter look, and its HUD sits close to the canvas edge with a dim hint line."
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 18,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B has a clear perspective camera, saturated and well-separated brick rows with visible depth, and a lit floor, while A is a nearly flat front view with washed-out pastel bricks and less depth."
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B shows a bright, clearly framed play field with a visible floor, walls, well-separated shaded brick colors and a legible HUD, while A is very dark with barely visible walls and a nearly invisible floor."
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "A shows a bright, well-framed field with five clearly separated, shaded brick rows, a distinct paddle and ball, and a legible HUD, whereas B is very dark, the walls and floor are nearly invisible, and the field is small within the frame."
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B shows a bright, well-framed field with clearly separated colored bricks, visible shading and a readable floor and walls, while A is very dark with a barely visible play field and dim, muddy colors."
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B has more saturated, clearly separated row colors, a higher camera angle that shows the field's depth, and a HUD with a controls hint, while A's bricks look washed out toward the right and its frontal view is flatter."
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A has saturated, clearly separated brick rows with even shading, a visible controls hint in the HUD, and a clear tilted camera view. B's bricks wash out to pastel on the right side, its paddle and walls look flatter, and it has no controls hint."
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "A has saturated, evenly lit brick rows with clear side faces, a readable perspective field, and a HUD with a controls hint, while B's right-hand bricks look washed out from uneven lighting, its colors are paler, and it shows no controls hint."
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "B has clearly visible, distinctly coloured slabs with face shading against a contrasting background, whereas A is washed out pale blue on pale grey with the tower running off the bottom edge and very low contrast."
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "B shows distinct, saturated slabs with visible side shading and a clear moving top slab, while A is washed out in pale blue on a pale grey background, its tower runs off the bottom edge, and form barely reads."
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows a clear three-quarter view of distinct, shaded, colored slabs on a flat but readable background, while B is washed out in pale blue-white fog, has a tower that runs off the bottom of the frame, and shows poor slab contrast and color progression."
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 2,
+          "lighting": 1,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura-sheet": 8,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows clearly colored, shaded slabs (salmon and pink) in a three-quarter view on a uniform background with a legible HUD, while B's slabs are nearly black with no color variation, a harsh dark horizon over a flat gray ground, and a plain HUD."
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 9,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "B shows clearly colored, distinguishable slabs with a visible color change, a moving top slab and a readable HUD with controls hint, while A's slabs are nearly black and flat-looking on a plain grey ground with a hard horizon, so form and color progression do not read."
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 2,
+          "lighting": 1,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura-sheet": 8,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows clearly colored, shaded slabs with a moving top slab, a readable HUD and a consistent background, while B's slabs render almost black on a flat grey ground with a hard horizon edge, so form and color progression can't be read."
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A has a clean dark gradient-free background with clearly readable slabs and a legible HUD, while B's large grey ground plane clips off the frame edges, washes out the scene against a pale background, and looks less polished."
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows clean, well-lit slabs against a dark gradient-free background with a legible HUD, while B has a large distracting grey ground plane that gets cropped by the viewport, a washed-out pale background, and less distinct slab shading."
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 12
+      },
+      "winner": "aura",
+      "why": "A shows a lit ground plane, a light background, and slabs with some shading and colour variation, giving it more depth, while B has a flat dark navy background, no ground or shadows, and a nearly flat slab look."
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 9,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A's slabs render almost black with no visible color or form, while B shows clearly lit, colored slabs with a legible HUD and a readable three-quarter view, though its background is flat and neither candidate shows a tower, fallen pieces or a gradient."
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 9,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A's slabs render almost black with no visible color or form, while B shows clearly lit, colored slabs with readable faces, a moving top slab and a legible HUD, despite its flat dark background."
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura-sheet": 9,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows clearly lit, colored slabs with readable form and a legible HUD, while B's slabs render almost black with no visible color or shading, though B has a background gradient and a ground shadow."
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A shows a centred, clearly readable isometric tower of light-blue slabs with a dark background and a legible HUD, while B's slabs render near-black on a flat grey ground plane with a harsh horizon, which makes the form and any color progression unreadable."
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows a clean isometric slab with light-blue colouring, readable side shading and a clear HUD, while B's slabs render near-black on a flat grey ground plane with no colour progression and a hard horizon edge."
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 1,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows a centred, readable isometric tower with light-blue slab colouring, simple face shading and a clear HUD, while B renders near-black slabs on a flat grey floor with weak colour, little visible shading and an awkward off-centre framing."
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 16,
+        "three": 16
+      },
+      "winner": "aura-sheet",
+      "why": "A has a perspective three-quarter view with a visible floor plane, distinct top and side shading, and clearer color separation between slabs, while B uses a flat isometric look on a plain dark background with low-contrast, nearly monochrome slabs, though B is cleaner and its HUD is slightly more leg"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 16,
+        "three": 13
+      },
+      "winner": "aura-sheet",
+      "why": "A has a perspective camera, a ground plane and clearly shaded top and side faces with stronger colour contrast, while B sits on a flat dark clear colour with pale, low-contrast slabs that read as flat."
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura-sheet": 14,
+        "three": 15
+      },
+      "winner": "three",
+      "why": "A has a clean, centred isometric framing on a plain dark background with a legible HUD, while B shows a large flat grey ground plane with a odd horizon edge that looks like an artifact, though B has slightly better face shading and color contrast between slabs."
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "A shows a clear runner on a distinct orange track with visible hurdles, trees, side posts and legible HUD and game-over overlay, while B is washed out by heavy fog with hardly any visible hurdles and little contrast."
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B has a clearly defined track, saturated sky, trees and visible hurdles with good contrast against the runner and a legible game-over overlay, while A is washed out by heavy fog, shows no hurdles in the playing frame, and has a runner that blends into the grey track."
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B shows a clearly defined track, readable runner, visible hurdles, trees and legible overlays with good contrast, while A is washed out by heavy fog, shows no hurdles in the playing frame, and has a low-contrast runner and track."
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 16,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A shows clearly visible, high-contrast hurdles on a well-defined red track with a clear game-over overlay, while B has nicer fog, depth and shadows but its pale pink hurdles are barely readable against the grey road and washed-out haze."
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 3
+        },
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows hurdles clearly against a high-contrast red track with roadside posts, trees and a working game-over overlay, while B has better fog and depth but its hurdles are thin, pale and barely visible against the grey road."
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 16,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B shows clearly visible striped hurdles, a strongly contrasting orange track, roadside posts and a legible game-over overlay, while A has nicer fog and depth but its hurdles are tiny, faint and hard to read against the grey road."
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B shows a clear orange track with trees, red posts, a sky gradient and a runner that stands out, while A is washed out by heavy fog, and its HUD at the top and the wide overlay band hide the horizon and make the runner and track low-contrast."
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B has a clear orange track, a readable runner, trees, red posts and a deep horizon, while A is washed out by heavy fog and a large overlay banner that cover the scene, with the track and hurdle low in contrast."
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows a saturated orange track with a clear blue-shirted runner, trees, red posts and a convincing horizon with depth, while B is washed out by heavy fog and a wide gray overlay, which leaves the runner and hurdles low in contrast."
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 20,
+        "three": 17
+      },
+      "winner": "aura-sheet",
+      "why": "A has fog, soft shadows, a graded sky and a varied ground that give strong depth, while B has a flat green ground, a harsh saturated track and a dim, murky game-over frame, though B's solid hurdle boxes read clearly."
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 18,
+        "three": 17
+      },
+      "winner": "aura-sheet",
+      "why": "A has better depth cues (fog, horizon haze, soft shadows, varied trees and posts) and a clearer runner, though its hurdles are thin and low-contrast red bars and the start text overlaps the scene. B has a clear track, readable hurdles and a proper game-over overlay, but its flat saturated colors and"
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 18,
+        "three": 17
+      },
+      "winner": "aura-sheet",
+      "why": "A has better depth, fog, shadows and horizon atmosphere with a clear runner, though its hurdles are thin, flat red bars that are hard to read. B's hurdle is more readable and shows the game-over overlay, but its environment looks flatter and more placeholder-like, and the game-over frame is dark wit"
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 21,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's playing frame shows a clear runner, high-contrast red-and-white hurdles, receding posts and trees, a bright sky and horizon fog, and a well-formatted HUD, while B is darker, its yellow hurdles have lower contrast against the brown track, and its second frame is already a game-over state."
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 20,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's playing frame has a bright sky, a clear grey track, high-contrast red hurdles, receding trees and posts, and a readable runner, while B is darker with low-contrast yellow hurdles on a brown track and shows only the ready and lost states."
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 19,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's playing frame has a bright sky, a grey track and red-and-white hurdles that contrast clearly with it, and its HUD is legible, while B is darker, its yellow hurdles sit on a brown track with weaker contrast, and its frames show only the ready and lost states."
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 20,
+        "three": 16
+      },
+      "winner": "aura-sheet",
+      "why": "A has a bright sky, a clear grey track with white markings, an orange hurdle that contrasts well with the track, and a lit horizon. B is darker and murkier, with a brown track that blends with the dark runner and a muted yellow hurdle."
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 20,
+        "three": 16
+      },
+      "winner": "aura-sheet",
+      "why": "B has a brighter sky and horizon, a wider grey track with clear lane markings, and orange hurdles that stand out from the track, while A is dark and muted with a low-contrast olive hurdle on a brown track."
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 20,
+        "three": 16
+      },
+      "winner": "aura-sheet",
+      "why": "A has a bright sky, fog and a grey track with white markings that contrast clearly with the blue runner and orange hurdles, while B is dark and muted, with a brown track and a yellow hurdle that blends into it and a runner that is harder to read."
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 18,
+        "three": 17
+      },
+      "winner": "aura",
+      "why": "A frames a larger, evenly lit grid with clearly readable pedestals and a glowing lantern that stands out, while B has stronger lantern glow but a dark, low-contrast scene, a small grid and a hard-edged trapezoid platform that looks like a placeholder."
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's whole grid sits in a bright, evenly lit scene where the cells and the single glowing lantern read clearly, whereas B's dark, low-contrast stage hides much of the grid, although B has more detail (two lanterns, dark holes, a mention of a purple bomb)."
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's grid is brighter and more clearly framed against a visible stage with a single lantern that glows and stands out, while B is very dark and its holes and platform barely separate from the backdrop, even though B shows two lanterns and a clearer HUD layout."
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 15,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A has a dark, moody stage with glowing yellow lanterns, translucent glass shells, deep holes and ringed rims that read as emissive and varied, while B is a washed-out flat grey scene with plain discs and only one lantern glow, though B's framing is cleaner and the grid is easier to see."
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 15,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "A has a dark, moody stage with glowing yellow lanterns that stand out, deep holes, and a ring-shaped hover highlight, while B is washed out and flat gray with a single pale lantern and little depth or backdrop."
+    },
+    {
+      "task": 14,
+      "idx": 1,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 13,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B's dark stage with a visible floor plane, deep holes and bright yellow lanterns in glass shells makes the lanterns stand out and gives depth, while A's grey, evenly lit scene looks flat and washed out, with only one small lantern glow."
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 19,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's lanterns glow with a bloom-like look against a lit backdrop, its cells are clearly readable, and its HUD includes help text. B is flatter and darker, its lanterns are matte orange with no glow, and it has a black empty strip under the HUD."
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 19,
+        "three": 14
+      },
+      "winner": "aura",
+      "why": "A shows glowing, bloom-like lanterns on lit blue pedestals with a graded backdrop and a full HUD with instructions, while B has a dark, flat slab with matte black holes, less glow, and a black empty strip under the HUD."
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "A's lanterns glow strongly against a lit gradient backdrop with rim-lit pedestals and a clear HUD with instructions, while B's board is dark and flat, its lanterns are dimmer, and a black strip sits under the HUD, though B frames the whole grid more clearly."
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 13,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "B's orange lanterns with caps stand out against the dark stage and the holes are clearly readable, while A's flat grey pedestals, plain grey backdrop and matte pink sphere have little glow or depth."
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 13,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A shows a clearly framed 3x3 board with ringed holes and orange lanterns that stand out against the dark backdrop, while B is flat and grey with no glow and a lone pink sphere that reads poorly."
+    },
+    {
+      "task": 14,
+      "idx": 2,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 13,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B shows a framed 3x3 board with distinct holes and glowing orange lanterns with visible shading against a dark backdrop, while A has flat grey pedestals and a single pink sphere with a weak glow and a washed-out look."
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 15
+      },
+      "winner": "aura",
+      "why": "A's lit stage has distinct tiles with bright rings and glowing yellow lanterns that read clearly against the backdrop, while B's dark, murky board has black holes and lanterns that look less distinct, though B's halo glow and lantern shape are decent."
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 15
+      },
+      "winner": "aura",
+      "why": "A shows a brighter, well-lit stage with clearly separated cells and glowing lanterns that stand out, while B's board is dark and murky, with black holes that read less clearly even though its lanterns have a halo and a more lantern-like shape."
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 18,
+        "three": 15
+      },
+      "winner": "aura",
+      "why": "B's brighter stage with distinct blue cell tiles and clearly glowing lanterns reads better than A's dark, murky olive plane, where the grid is hard to make out and the lantern glow halos look muddy."
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 1,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 13,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B's dark backdrop makes the glowing lanterns with halos stand out against clearly outlined cells, while A's washed-out grey scene has flat pedestals and only a weak glow on its single lantern."
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 2,
+      "order": [
+        "three",
+        "aura-sheet"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura-sheet": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura-sheet": 17,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A's dark stage makes the two glowing lanterns with halos stand out clearly and its blue rim rings read well, while B's washed-out grey scene gives the single lantern less glow contrast and a flatter, plainer look."
+    },
+    {
+      "task": 14,
+      "idx": 3,
+      "subject": "aura-sheet",
+      "ref": "three",
+      "call": 3,
+      "order": [
+        "aura-sheet",
+        "three"
+      ],
+      "scores": {
+        "aura-sheet": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura-sheet": 13,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "B's dark backdrop gives its glowing, cylindrical lanterns with halos strong contrast against blue-ringed holes, while A's washed-out grey scene is flat and its single lantern stands out less."
+    }
+  ]
+}

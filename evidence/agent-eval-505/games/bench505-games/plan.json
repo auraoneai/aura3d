@@ -1,0 +1,327 @@
+{
+  "args": {
+    "arm": "aura,aura-sheet,three",
+    "task": "11,12,13,14",
+    "runs": 3,
+    "seed": 20261106,
+    "concurrency": 6,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "base",
+    "batch": "bench505-games"
+  },
+  "plan": [
+    {
+      "task": 14,
+      "arm": "three",
+      "idx": 3,
+      "order": 0,
+      "runId": "bench505-games-t14-three-r3",
+      "seed": 20261106000
+    },
+    {
+      "task": 12,
+      "arm": "three",
+      "idx": 1,
+      "order": 1,
+      "runId": "bench505-games-t12-three-r1",
+      "seed": 20261106001
+    },
+    {
+      "task": 14,
+      "arm": "aura",
+      "idx": 3,
+      "order": 2,
+      "runId": "bench505-games-t14-aura-r3",
+      "seed": 20261106002
+    },
+    {
+      "task": 11,
+      "arm": "aura-sheet",
+      "idx": 3,
+      "order": 3,
+      "runId": "bench505-games-t11-aura-sheet-r3",
+      "seed": 20261106003
+    },
+    {
+      "task": 13,
+      "arm": "aura",
+      "idx": 3,
+      "order": 4,
+      "runId": "bench505-games-t13-aura-r3",
+      "seed": 20261106004
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 1,
+      "order": 5,
+      "runId": "bench505-games-t12-aura-r1",
+      "seed": 20261106005
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 2,
+      "order": 6,
+      "runId": "bench505-games-t11-aura-r2",
+      "seed": 20261106006
+    },
+    {
+      "task": 12,
+      "arm": "aura-sheet",
+      "idx": 1,
+      "order": 7,
+      "runId": "bench505-games-t12-aura-sheet-r1",
+      "seed": 20261106007
+    },
+    {
+      "task": 11,
+      "arm": "three",
+      "idx": 2,
+      "order": 8,
+      "runId": "bench505-games-t11-three-r2",
+      "seed": 20261106008
+    },
+    {
+      "task": 12,
+      "arm": "three",
+      "idx": 3,
+      "order": 9,
+      "runId": "bench505-games-t12-three-r3",
+      "seed": 20261106009
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 3,
+      "order": 10,
+      "runId": "bench505-games-t12-aura-r3",
+      "seed": 20261106010
+    },
+    {
+      "task": 13,
+      "arm": "three",
+      "idx": 2,
+      "order": 11,
+      "runId": "bench505-games-t13-three-r2",
+      "seed": 20261106011
+    },
+    {
+      "task": 13,
+      "arm": "aura-sheet",
+      "idx": 1,
+      "order": 12,
+      "runId": "bench505-games-t13-aura-sheet-r1",
+      "seed": 20261106012
+    },
+    {
+      "task": 14,
+      "arm": "aura",
+      "idx": 1,
+      "order": 13,
+      "runId": "bench505-games-t14-aura-r1",
+      "seed": 20261106013
+    },
+    {
+      "task": 13,
+      "arm": "aura-sheet",
+      "idx": 2,
+      "order": 14,
+      "runId": "bench505-games-t13-aura-sheet-r2",
+      "seed": 20261106014
+    },
+    {
+      "task": 11,
+      "arm": "aura-sheet",
+      "idx": 1,
+      "order": 15,
+      "runId": "bench505-games-t11-aura-sheet-r1",
+      "seed": 20261106015
+    },
+    {
+      "task": 14,
+      "arm": "three",
+      "idx": 1,
+      "order": 16,
+      "runId": "bench505-games-t14-three-r1",
+      "seed": 20261106016
+    },
+    {
+      "task": 12,
+      "arm": "aura-sheet",
+      "idx": 3,
+      "order": 17,
+      "runId": "bench505-games-t12-aura-sheet-r3",
+      "seed": 20261106017
+    },
+    {
+      "task": 11,
+      "arm": "aura-sheet",
+      "idx": 2,
+      "order": 18,
+      "runId": "bench505-games-t11-aura-sheet-r2",
+      "seed": 20261106018
+    },
+    {
+      "task": 11,
+      "arm": "three",
+      "idx": 3,
+      "order": 19,
+      "runId": "bench505-games-t11-three-r3",
+      "seed": 20261106019
+    },
+    {
+      "task": 13,
+      "arm": "three",
+      "idx": 3,
+      "order": 20,
+      "runId": "bench505-games-t13-three-r3",
+      "seed": 20261106020
+    },
+    {
+      "task": 13,
+      "arm": "aura",
+      "idx": 1,
+      "order": 21,
+      "runId": "bench505-games-t13-aura-r1",
+      "seed": 20261106021
+    },
+    {
+      "task": 14,
+      "arm": "aura-sheet",
+      "idx": 3,
+      "order": 22,
+      "runId": "bench505-games-t14-aura-sheet-r3",
+      "seed": 20261106022
+    },
+    {
+      "task": 13,
+      "arm": "aura",
+      "idx": 2,
+      "order": 23,
+      "runId": "bench505-games-t13-aura-r2",
+      "seed": 20261106023
+    },
+    {
+      "task": 13,
+      "arm": "aura-sheet",
+      "idx": 3,
+      "order": 24,
+      "runId": "bench505-games-t13-aura-sheet-r3",
+      "seed": 20261106024
+    },
+    {
+      "task": 14,
+      "arm": "three",
+      "idx": 2,
+      "order": 25,
+      "runId": "bench505-games-t14-three-r2",
+      "seed": 20261106025
+    },
+    {
+      "task": 14,
+      "arm": "aura-sheet",
+      "idx": 1,
+      "order": 26,
+      "runId": "bench505-games-t14-aura-sheet-r1",
+      "seed": 20261106026
+    },
+    {
+      "task": 12,
+      "arm": "three",
+      "idx": 2,
+      "order": 27,
+      "runId": "bench505-games-t12-three-r2",
+      "seed": 20261106027
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 3,
+      "order": 28,
+      "runId": "bench505-games-t11-aura-r3",
+      "seed": 20261106028
+    },
+    {
+      "task": 12,
+      "arm": "aura-sheet",
+      "idx": 2,
+      "order": 29,
+      "runId": "bench505-games-t12-aura-sheet-r2",
+      "seed": 20261106029
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 2,
+      "order": 30,
+      "runId": "bench505-games-t12-aura-r2",
+      "seed": 20261106030
+    },
+    {
+      "task": 14,
+      "arm": "aura",
+      "idx": 2,
+      "order": 31,
+      "runId": "bench505-games-t14-aura-r2",
+      "seed": 20261106031
+    },
+    {
+      "task": 11,
+      "arm": "three",
+      "idx": 1,
+      "order": 32,
+      "runId": "bench505-games-t11-three-r1",
+      "seed": 20261106032
+    },
+    {
+      "task": 13,
+      "arm": "three",
+      "idx": 1,
+      "order": 33,
+      "runId": "bench505-games-t13-three-r1",
+      "seed": 20261106033
+    },
+    {
+      "task": 14,
+      "arm": "aura-sheet",
+      "idx": 2,
+      "order": 34,
+      "runId": "bench505-games-t14-aura-sheet-r2",
+      "seed": 20261106034
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 1,
+      "order": 35,
+      "runId": "bench505-games-t11-aura-r1",
+      "seed": 20261106035
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/b505-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.0.2",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/b505-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

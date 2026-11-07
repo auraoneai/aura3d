@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eval app</title>
+    <style>
+      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }
+      #stage { position: relative; width: 640px; height: 360px; overflow: hidden; }
+      #app { display: block; width: 640px; height: 360px; }
+      #overlay {
+        position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+        background: rgba(0, 0, 0, 0.55); text-align: center; pointer-events: none;
+      }
+      #overlay.show { display: flex; }
+      #overlay h1 { margin: 0 0 6px; font-size: 32px; }
+      #overlay p { margin: 2px 0; font-size: 15px; }
+      #hud { display: flex; gap: 24px; width: 640px; box-sizing: border-box; padding: 6px 12px; background: #11161d; font-variant-numeric: tabular-nums; }
+      #hud span b { color: #ffd54a; }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="app" width="640" height="360"></canvas>
+      <div id="overlay"><h1 id="overlay-title"></h1><p id="overlay-detail"></p><p id="overlay-hint"></p></div>
+    </div>
+    <div id="hud">
+      <span>Distance: <b id="hud-distance">0</b> m</span>
+      <span>Best: <b id="hud-best">0</b> m</span>
+      <span>Status: <b id="hud-status">ready</b></span>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

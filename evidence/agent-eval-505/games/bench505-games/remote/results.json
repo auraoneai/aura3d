@@ -1,0 +1,2821 @@
+[
+  {
+    "id": "bench505-games-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 66.5,
+        "std": 65.9,
+        "nonblack": 0.889,
+        "diff": 0.65,
+        "changedFrac": 0.0053
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 32
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 31
+          },
+          "motionDiff": 1.740869747267829,
+          "after4s": {
+            "status": "ready",
+            "score": 10,
+            "lives": 2,
+            "bricksLeft": 31
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 32
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6489.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 7.6,
+        "std": 22.4,
+        "nonblack": 0.19,
+        "diff": 0.31,
+        "changedFrac": 0.0034
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 0.9049374875353856,
+          "after4s": {
+            "status": "ready",
+            "score": 10,
+            "lives": 2,
+            "bricksLeft": 39
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 7,
+        "std": 23.2,
+        "nonblack": 0.153,
+        "diff": 0.72,
+        "changedFrac": 0.0061
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": false,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 0.0028298600680298274,
+          "after4s": {
+            "status": "ready",
+            "score": 10,
+            "lives": 2,
+            "bricksLeft": 39
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-aura-sheet-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 56.3,
+        "std": 62,
+        "nonblack": 0.889,
+        "diff": 1.48,
+        "changedFrac": 0.0154
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 2.3175347877873316,
+          "after4s": {
+            "status": "ready",
+            "score": 10,
+            "lives": 2,
+            "bricksLeft": 39
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6489.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-aura-sheet-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 58.9,
+        "std": 63.6,
+        "nonblack": 0.889,
+        "diff": 0.97,
+        "changedFrac": 0.0076
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 2.485381888018714,
+          "after4s": {
+            "status": "ready",
+            "score": 20,
+            "lives": 2,
+            "bricksLeft": 38
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6489.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-aura-sheet-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 61.4,
+        "std": 64.8,
+        "nonblack": 0.891,
+        "diff": 1.04,
+        "changedFrac": 0.0095
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 3.1579825811915927,
+          "after4s": {
+            "status": "ready",
+            "score": 20,
+            "lives": 2,
+            "bricksLeft": 38
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 38.3,
+        "std": 50.1,
+        "nonblack": 0.895,
+        "diff": 0.73,
+        "changedFrac": 0.0075
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 0.538975715637207,
+          "after4s": {
+            "status": "ready",
+            "score": 20,
+            "lives": 2,
+            "bricksLeft": 38
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 503
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 53,
+        "std": 58.6,
+        "nonblack": 0.891,
+        "diff": 1.31,
+        "changedFrac": 0.011
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 5.641338636477788,
+          "after4s": {
+            "status": "ready",
+            "score": 20,
+            "lives": 2,
+            "bricksLeft": 38
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 503.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t11-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 56,
+        "std": 61.3,
+        "nonblack": 0.889,
+        "diff": 0.69,
+        "changedFrac": 0.0065
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "servesToPlaying": true,
+          "motion": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          },
+          "afterServe": {
+            "status": "playing",
+            "score": 10,
+            "lives": 3,
+            "bricksLeft": 39
+          },
+          "motionDiff": 3.494769122865465,
+          "after4s": {
+            "status": "ready",
+            "score": 20,
+            "lives": 2,
+            "bricksLeft": 38
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "lives": 3,
+            "bricksLeft": 40
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 503.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 191.4,
+        "std": 86.5,
+        "nonblack": 0.884,
+        "diff": 1.16,
+        "changedFrac": 0.0416
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": false,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 0,
+          "afterDrops": {
+            "status": "lost",
+            "score": 1,
+            "height": 1
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 174.1,
+        "std": 83.8,
+        "nonblack": 0.891,
+        "diff": 3.19,
+        "changedFrac": 0.0583
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": false,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 0,
+          "afterDrops": {
+            "status": "playing",
+            "score": 3,
+            "height": 3
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 4,
+            "height": 4
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 96.3,
+        "std": 69.7,
+        "nonblack": 0.806,
+        "diff": 7.91,
+        "changedFrac": 0.0974
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 3.3206875407033496,
+          "afterDrops": {
+            "status": "lost",
+            "score": 1,
+            "height": 1
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-aura-sheet-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 71.9,
+        "std": 55.9,
+        "nonblack": 0.809,
+        "diff": 0.48,
+        "changedFrac": 0.0095
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 1.6251406255695555,
+          "afterDrops": {
+            "status": "lost",
+            "score": 1,
+            "height": 1
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-aura-sheet-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": false,
+      "frame": {
+        "mean": 36.3,
+        "std": 22.4,
+        "nonblack": 0.827,
+        "diff": 0.1,
+        "changedFrac": 0.0022
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 1.5932777581943407,
+          "afterDrops": {
+            "status": "lost",
+            "score": 1,
+            "height": 1
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6487
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-aura-sheet-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 103.9,
+        "std": 61.9,
+        "nonblack": 0.893,
+        "diff": 2.58,
+        "changedFrac": 0.0568
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 1.0706059137980144,
+          "afterDrops": {
+            "status": "lost",
+            "score": 0,
+            "height": 0
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 99.2,
+        "std": 44,
+        "nonblack": 0.884,
+        "diff": 1.47,
+        "changedFrac": 0.0586
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 0.6433349715338813,
+          "afterDrops": {
+            "status": "lost",
+            "score": 1,
+            "height": 1
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 499.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 30.4,
+        "std": 33.6,
+        "nonblack": 0.884,
+        "diff": 5.97,
+        "changedFrac": 0.0621
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 2.1117761929829917,
+          "afterDrops": {
+            "status": "playing",
+            "score": 3,
+            "height": 3
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 4,
+            "height": 4
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 499.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t12-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 37.7,
+        "std": 36.1,
+        "nonblack": 0.884,
+        "diff": 4.27,
+        "changedFrac": 0.0422
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "dropsChangeState": true,
+          "clickChangesOrRestarts": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "motionDiff": 3.052661485142178,
+          "afterDrops": {
+            "status": "lost",
+            "score": 2,
+            "height": 2
+          },
+          "afterClick": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "height": 0
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 499.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 177.8,
+        "std": 81.4,
+        "nonblack": 0.884,
+        "diff": 87.54,
+        "changedFrac": 0.8228
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": false,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          },
+          "motionDiff": 2.8758472866482205,
+          "s1": {
+            "status": "playing",
+            "score": 4,
+            "speed": 8.11602175016441,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 8,
+            "speed": 8.21399085369487,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 9,
+            "speed": 8.233726131142722,
+            "airborne": true
+          },
+          "statuses": [
+            "playing"
+          ],
+          "maxScore": 85,
+          "maxSpeed": 10.060517701562032,
+          "final": {
+            "status": "playing",
+            "score": 89,
+            "speed": 10.157553997247078,
+            "airborne": false
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 141,
+        "std": 83.3,
+        "nonblack": 0.818,
+        "diff": 5.69,
+        "changedFrac": 0.1437
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          },
+          "motionDiff": 4.133331484264797,
+          "s1": {
+            "status": "playing",
+            "score": 12,
+            "speed": 10.242882695396254,
+            "airborne": false
+          },
+          "s2": {
+            "status": "playing",
+            "score": 24,
+            "speed": 10.481179043992277,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 25,
+            "speed": 10.516171680162632,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 41,
+          "maxSpeed": 10.692895086214532,
+          "final": {
+            "status": "lost",
+            "score": 41,
+            "speed": 0,
+            "airborne": true
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6490.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 168.5,
+        "std": 77.4,
+        "nonblack": 0.886,
+        "diff": 91.01,
+        "changedFrac": 0.8206
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": false,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 8,
+            "airborne": false
+          },
+          "motionDiff": 7.301186045010884,
+          "s1": {
+            "status": "playing",
+            "score": 5.5,
+            "speed": 8.11,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 13.97,
+            "speed": 8.28,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 14.94,
+            "speed": 8.3,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 29.57,
+          "maxSpeed": 8.59,
+          "final": {
+            "status": "lost",
+            "score": 29.57,
+            "speed": 8.59,
+            "airborne": false
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 8,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6492.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-aura-sheet-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 146.8,
+        "std": 68.7,
+        "nonblack": 0.884,
+        "diff": 66.31,
+        "changedFrac": 0.8216
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": false,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 8,
+            "airborne": false
+          },
+          "motionDiff": 10.825849619176653,
+          "s1": {
+            "status": "playing",
+            "score": 5.23,
+            "speed": 8.10467015978982,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 11.35,
+            "speed": 8.227146280807052,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 12.18,
+            "speed": 8.243615664852824,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 29.5,
+          "maxSpeed": 8.588598996564668,
+          "final": {
+            "status": "lost",
+            "score": 29.5,
+            "speed": 8.588598996564668,
+            "airborne": false
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 8,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6489.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-aura-sheet-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 128.5,
+        "std": 66.5,
+        "nonblack": 0.891,
+        "diff": 13.55,
+        "changedFrac": 0.2695
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          },
+          "motionDiff": 18.942333188321854,
+          "s1": {
+            "status": "playing",
+            "score": 6,
+            "speed": 10.12,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 13,
+            "speed": 10.25,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 14,
+            "speed": 10.27,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 44,
+          "maxSpeed": 10.8,
+          "final": {
+            "status": "lost",
+            "score": 44,
+            "speed": 0,
+            "airborne": false
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6489.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-aura-sheet-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 125,
+        "std": 64.8,
+        "nonblack": 0.891,
+        "diff": 15.82,
+        "changedFrac": 0.3357
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": false,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          },
+          "motionDiff": 15.641482664479149,
+          "s1": {
+            "status": "playing",
+            "score": 4.82,
+            "speed": 9.08,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 13.97,
+            "speed": 9.22,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 14.58,
+            "speed": 9.23,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 56.26,
+          "maxSpeed": 9.88,
+          "final": {
+            "status": "lost",
+            "score": 56.26,
+            "speed": 0,
+            "airborne": false
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 0,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6490.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 89.5,
+        "std": 50,
+        "nonblack": 0.891,
+        "diff": 42.01,
+        "changedFrac": 0.8064
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": false,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 8,
+            "airborne": false
+          },
+          "motionDiff": 26.468188875251347,
+          "s1": {
+            "status": "playing",
+            "score": 4.023451183706789,
+            "speed": 8.097225930831375,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 12.225244238034271,
+            "speed": 8.302144205384595,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 12.778744740676283,
+            "speed": 8.315996689898874,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 21.912445994358876,
+          "maxSpeed": 8.544243928019023,
+          "final": {
+            "status": "lost",
+            "score": 21.912445994358876,
+            "speed": 8.544243928019023,
+            "airborne": true
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 8,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 506.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 59,
+        "std": 37.8,
+        "nonblack": 0.89,
+        "diff": 66.08,
+        "changedFrac": 0.802
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": false,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 10,
+            "airborne": false
+          },
+          "motionDiff": 7.643142627345191,
+          "s1": {
+            "status": "playing",
+            "score": 5.024242010545478,
+            "speed": 10.09709221722592,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 15.223661287091236,
+            "speed": 10.30103268082643,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 15.91131355293439,
+            "speed": 10.314781134159878,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 24.580083076954054,
+          "maxSpeed": 10.488119605829946,
+          "final": {
+            "status": "lost",
+            "score": 24.580083076954054,
+            "speed": 10.488119605829946,
+            "airborne": false
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 10,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 505.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t13-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 68.6,
+        "std": 41,
+        "nonblack": 0.891,
+        "diff": 11.04,
+        "changedFrac": 0.2297
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "motion": true,
+          "playing": true,
+          "scoreIncreases": true,
+          "typesOk": true,
+          "airborneAfterJump": true,
+          "eventuallyEndsOrRuns": true,
+          "lostOccurred": true,
+          "hudFollows": false,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "speed": 9,
+            "airborne": false
+          },
+          "motionDiff": 12.715201397736868,
+          "s1": {
+            "status": "playing",
+            "score": 4.6,
+            "speed": 9.1,
+            "airborne": true
+          },
+          "s2": {
+            "status": "playing",
+            "score": 13.9,
+            "speed": 9.3,
+            "airborne": false
+          },
+          "afterJump": {
+            "status": "playing",
+            "score": 14.4,
+            "speed": 9.32,
+            "airborne": true
+          },
+          "statuses": [
+            "playing",
+            "lost"
+          ],
+          "maxScore": 55.1,
+          "maxSpeed": 10.21,
+          "final": {
+            "status": "lost",
+            "score": 55.1,
+            "speed": 10.21,
+            "airborne": true
+          },
+          "afterR": {
+            "status": "ready",
+            "score": 0,
+            "speed": 9,
+            "airborne": false
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 506.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 82.7,
+        "std": 43.9,
+        "nonblack": 0.891,
+        "diff": 54.32,
+        "changedFrac": 0.7643
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53330000000002,
+            "activeCells": []
+          },
+          "timer": [
+            44.53330000000002,
+            43.0334000000001
+          ],
+          "motionDiff": 2.459900743431515,
+          "cellsSeen": [
+            4,
+            7,
+            5,
+            3,
+            0
+          ],
+          "scoreRange": [
+            0,
+            15
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 34.36710000000063,
+            "activeCells": [
+              4
+            ]
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53330000000003,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6494.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 65.4,
+        "std": 38.4,
+        "nonblack": 0.961,
+        "diff": 42.23,
+        "changedFrac": 0.7935
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.550000000000026,
+            "activeCells": []
+          },
+          "timer": [
+            44.550000000000026,
+            43.05000000000011
+          ],
+          "motionDiff": 3.85694103812178,
+          "cellsSeen": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            0,
+            8,
+            7,
+            1
+          ],
+          "scoreRange": [
+            0,
+            10
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 34.13333333333395,
+            "activeCells": [
+              1,
+              6
+            ]
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53333333333336,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6495.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 38.3,
+        "std": 52.4,
+        "nonblack": 0.426,
+        "diff": 28.8,
+        "changedFrac": 0.3626
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.50529999998209,
+            "activeCells": []
+          },
+          "timer": [
+            44.50529999998209,
+            42.98290000000586
+          ],
+          "motionDiff": 2.266810635725657,
+          "cellsSeen": [
+            3,
+            7,
+            2,
+            0,
+            6,
+            8,
+            1,
+            5
+          ],
+          "scoreRange": [
+            0,
+            10
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 34.17790000000553,
+            "activeCells": [
+              1,
+              2
+            ]
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.51089999997615,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6493.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-aura-sheet-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 99.5,
+        "std": 46,
+        "nonblack": 0.893,
+        "diff": 65.3,
+        "changedFrac": 0.8211
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.48340000000003,
+            "activeCells": []
+          },
+          "timer": [
+            44.48340000000003,
+            42.95010000000013
+          ],
+          "motionDiff": 1.6016034682591755,
+          "cellsSeen": [
+            3,
+            7,
+            2,
+            0,
+            6
+          ],
+          "scoreRange": [
+            0,
+            10
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 34.06710000000065,
+            "activeCells": [
+              7
+            ]
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53340000000003,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6491.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-aura-sheet-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 98.1,
+        "std": 44.8,
+        "nonblack": 0.886,
+        "diff": 64.02,
+        "changedFrac": 0.8229
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.533200000000015,
+            "activeCells": []
+          },
+          "timer": [
+            44.533200000000015,
+            43.03340000000011
+          ],
+          "motionDiff": 0.9039048684967889,
+          "cellsSeen": [
+            3,
+            7,
+            2,
+            0,
+            6
+          ],
+          "scoreRange": [
+            0,
+            10
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 10,
+            "timeLeft": 34.367000000000665,
+            "activeCells": [
+              6
+            ]
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.533400000000036,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6491.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-aura-sheet-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 106.9,
+        "std": 51.6,
+        "nonblack": 0.886,
+        "diff": 71.05,
+        "changedFrac": 0.8195
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53,
+            "activeCells": []
+          },
+          "timer": [
+            44.53,
+            43.03
+          ],
+          "motionDiff": 1.6580351061291165,
+          "cellsSeen": [
+            4,
+            0,
+            7,
+            8
+          ],
+          "scoreRange": [
+            0,
+            10
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 34.37,
+            "activeCells": []
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 6493.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 28.3,
+        "std": 24,
+        "nonblack": 0.85,
+        "diff": 18.68,
+        "changedFrac": 0.7927
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.550000000000026,
+            "activeCells": [
+              1
+            ]
+          },
+          "timer": [
+            44.550000000000026,
+            43.050100000000114
+          ],
+          "motionDiff": 0.15839929713143241,
+          "cellsSeen": [
+            6,
+            4,
+            5,
+            3,
+            7,
+            1
+          ],
+          "scoreRange": [
+            0,
+            10
+          ],
+          "afterClicks": {
+            "status": "lost",
+            "score": 0,
+            "timeLeft": 34.45040000000068,
+            "activeCells": []
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53320000000002,
+            "activeCells": [
+              1
+            ]
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 515.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 23.2,
+        "std": 25.4,
+        "nonblack": 0.822,
+        "diff": 16.24,
+        "changedFrac": 0.294
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.55010000000003,
+            "activeCells": []
+          },
+          "timer": [
+            44.55010000000003,
+            43.050100000000114
+          ],
+          "motionDiff": 1.6660087009270985,
+          "cellsSeen": [
+            0,
+            2,
+            5,
+            1,
+            6,
+            4,
+            8,
+            3
+          ],
+          "scoreRange": [
+            0,
+            20
+          ],
+          "afterClicks": {
+            "status": "playing",
+            "score": 10,
+            "timeLeft": 34.26710000000067,
+            "activeCells": [
+              4,
+              6
+            ]
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.533400000000036,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 512.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-games-t14-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 27.1,
+        "std": 29,
+        "nonblack": 0.829,
+        "diff": 18.18,
+        "changedFrac": 0.3774
+      },
+      "task": {
+        "checks": {
+          "ready": true,
+          "hasState": true,
+          "canvasSize": true,
+          "singleCanvas": true,
+          "hudOutsideCanvas": true,
+          "hudShowsState": true,
+          "initialOk": true,
+          "startsOnEnter": true,
+          "timerDecreases": true,
+          "motion": true,
+          "lanternsPop": true,
+          "pointerChangesScore": true,
+          "hudFollows": true,
+          "restartResets": true
+        },
+        "samples": {
+          "initial": {
+            "status": "ready",
+            "score": 0,
+            "timeLeft": 45,
+            "activeCells": []
+          },
+          "afterEnter": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.53340000000003,
+            "activeCells": []
+          },
+          "timer": [
+            44.53340000000003,
+            43.03340000000009
+          ],
+          "motionDiff": 1.721897582213084,
+          "cellsSeen": [
+            4,
+            6,
+            5,
+            3,
+            7,
+            1
+          ],
+          "scoreRange": [
+            0,
+            15
+          ],
+          "afterClicks": {
+            "status": "lost",
+            "score": 5,
+            "timeLeft": 36.367000000000495,
+            "activeCells": []
+          },
+          "afterR": {
+            "status": "playing",
+            "score": 0,
+            "timeLeft": 44.533200000000036,
+            "activeCells": []
+          }
+        }
+      }
+    },
+    "bundle": {
+      "rawKB": 511.4
+    },
+    "readyMs": null
+  }
+]

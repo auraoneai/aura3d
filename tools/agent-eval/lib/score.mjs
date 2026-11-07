@@ -28,6 +28,12 @@ export function probeChecks(task, remote) {
       mobileNoHScroll: p.mobile?.noHorizontalScroll === true
     });
   if (task === 7) Object.assign(items, { animated: p.animated === true });
+  if (task >= 11) {
+    // 505 games: deterministic in-page probe (probe-505.js) results, merged into probes.task by score-merge-505.mjs.
+    const c = p.task?.checks ?? {};
+    const keys = { 11: ["ready", "hasState", "initialOk", "motion", "servesToPlaying", "restartResets", "hudShowsState", "canvasSize"], 12: ["ready", "hasState", "initialOk", "motion", "dropsChangeState", "restartResets", "hudShowsState", "canvasSize"], 13: ["ready", "hasState", "initialOk", "motion", "playing", "scoreIncreases", "typesOk", "restartResets", "hudShowsState", "canvasSize"], 14: ["ready", "hasState", "initialOk", "startsOnEnter", "timerDecreases", "lanternsPop", "restartResets", "hudShowsState", "canvasSize"] }[task];
+    for (const k of keys) items[k] = c[k] === true;
+  }
   const values = Object.values(items);
   return { items, passed: values.filter(Boolean).length, total: values.length };
 }

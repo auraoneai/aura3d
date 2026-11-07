@@ -1,0 +1,133 @@
+{
+  "runId": "bench505-games-t11-aura-sheet-r2",
+  "batch": "bench505-games",
+  "arm": "aura-sheet",
+  "task": 11,
+  "idx": 2,
+  "order": 18,
+  "seed": 20261106018,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:14:30.506Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 61071,
+  "usage": {
+    "input": 84252,
+    "uncachedInput": 84252,
+    "output": 4587,
+    "turns": 6,
+    "perTurnInput": [
+      3334,
+      11462,
+      11951,
+      12062,
+      22404,
+      23039
+    ],
+    "perTurnOutput": [
+      20,
+      11,
+      80,
+      22,
+      4088,
+      366
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 5207,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 11
+    },
+    {
+      "i": 1,
+      "t": 5207,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 5207,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 6784,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 4,
+      "t": 6784,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 11528,
+      "type": "search",
+      "pattern": "setVisible|visible|remove|setScale|interface AuraRuntimeNode|setInstances"
+    },
+    {
+      "i": 6,
+      "t": 14187,
+      "type": "search",
+      "pattern": "setVisible|setInstances\\(|setScale\\("
+    },
+    {
+      "i": 7,
+      "t": 55692,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 9900
+    },
+    {
+      "i": 8,
+      "t": 56235,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 9,
+      "t": 61071,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the whole game in `src/main.ts`. It passes `typecheck`, but I haven't run `vite build` or opened it in a browser, so the gameplay is untested.\n\n- **Gameplay:**\n  - The paddle moves with Left/Right or A/D.\n  - The ball bounces off the walls, the ceiling, the paddle and the bricks.\n  - The bounce angle off the paddle depends on where the ball lands, up to 60° from vertical.\n  - There are 8×5 bricks, one colour per row, worth 50, 40, 30, 20 and 10 points from the top row down.\n  - Space serves, R restarts, and you start with 3 lives. Losing a ball puts you back in `ready` until you press Space again.\n  - The status becomes `lost` at 0 lives and `won` when every brick is gone.\n- **UI:** a DOM HUD below the canvas shows score, lives and status. A \"You win!\" or \"Game over\" overlay with an \"R to restart\" hint appears over the canvas on win or loss.\n- **Task state:** `window.__TASK_STATE__` is a getter that returns `{ status, score, lives, bricksLeft }`. `window.__TASK_READY__` is set to `true` one `requestAnimationFrame` after `app.ready()` resolves.\n- **Rendering:** the canvas, render loop and resize are all handled by `createAuraApp(\"#app\")`. Bricks are hidden when hit.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

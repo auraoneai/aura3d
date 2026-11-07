@@ -24,6 +24,9 @@ export const CONDITIONS = {
   E: { cheatsheet: true, lookup: true, batchHint: true }
 };
 
+/** "aura-sheet" = the aura arm under the cheat-sheet condition (A); used by the 505 benchmark. */
+export const baseArm = (arm) => (arm === "aura-sheet" ? "aura" : arm);
+
 export function parseArgs(argv) {
   const args = { arm: "both", task: "all", runs: 3, seed: 20261024, concurrency: 5, model: DEFAULT_MODEL, maxTurns: 40, dryRun: false, condition: "base" };
   for (let i = 0; i < argv.length; i += 1) {
@@ -75,7 +78,7 @@ export function resolveTasks(spec) {
   return String(spec)
     .split(",")
     .map(Number)
-    .filter((n) => n >= 1 && n <= 9);
+    .filter((n) => n >= 1 && n <= 14);
 }
 
 async function pool(items, concurrency, worker) {
@@ -96,9 +99,11 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
   const sandboxDir = join(workDir, "sandbox");
   const runDir = join(batchDir, "runs", item.runId);
   mkdirSync(runDir, { recursive: true });
-  const base = bases[item.arm];
-  const sandbox = buildSandbox({ arm: item.arm, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir, docsRoot: args.docsRoot ?? REPO_ROOT, condition: CONDITIONS[args.condition] ?? {} });
-  assertNoRepoSourceLeak({ dir: sandboxDir, arm: item.arm, repoRoot: REPO_ROOT, baseDir: base.baseDir });
+  const armBase = baseArm(item.arm);
+  const condition = CONDITIONS[item.arm === "aura-sheet" ? "A" : args.condition] ?? {};
+  const base = bases[armBase];
+  const sandbox = buildSandbox({ arm: armBase, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir, docsRoot: args.docsRoot ?? REPO_ROOT, condition });
+  assertNoRepoSourceLeak({ dir: sandboxDir, arm: armBase, repoRoot: REPO_ROOT, baseDir: base.baseDir });
   const record = {
     runId: item.runId,
     batch: args.batch,
@@ -108,19 +113,19 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
     order: item.order,
     seed: item.seed,
     model: args.model,
-    condition: args.condition,
+    condition: item.arm === "aura-sheet" ? "A" : args.condition,
     startedAt: new Date().toISOString(),
-    docsCommit: item.arm === "aura" ? (args.docsRef ?? docsCommit(REPO_ROOT)) : null,
+    docsCommit: armBase === "aura" ? (args.docsRef ?? docsCommit(REPO_ROOT)) : null,
     docs: sandbox.docs,
     base: { versions: base.versions, patch: base.patch }
   };
   if (args.dryRun) return { ...record, dryRun: true };
 
   const snapshotRoot = join(runDir, "snapshots");
-  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(CONDITIONS[args.condition]?.lookup) });
+  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(condition.lookup) });
   let outcome;
   try {
-    outcome = await runAgent({ client, model: args.model, arm: item.arm, toolbox, maxTurns: args.maxTurns, session: item.runId, condition: CONDITIONS[args.condition] ?? {} });
+    outcome = await runAgent({ client, model: args.model, arm: armBase, toolbox, maxTurns: args.maxTurns, session: item.runId, condition });
     record.invalid = false;
   } catch (error) {
     outcome = { transcript: [], usage: null, endReason: "infra_error", wallMs: null };
@@ -153,14 +158,14 @@ export async function main(argv) {
   const args = parseArgs(argv);
   args.batch ??= `b${new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12)}`;
   if (!CONDITIONS[args.condition]) throw new Error(`unknown condition ${args.condition}`);
-  const arms = args.arm === "both" ? ARMS : [args.arm];
+  const arms = args.arm === "both" ? ARMS : args.arm.split(",");
   const tasks = resolveTasks(args.task);
   const batchDir = resolve(REPO_ROOT, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval", args.batch);
   mkdirSync(batchDir, { recursive: true });
   const fullPlan = buildPlan({ arms, tasks, runs: args.runs, seed: args.seed, batch: args.batch });
   const plan = args.only ? fullPlan.filter((p) => args.only.includes(p.runId)) : fullPlan;
   if (args.docsRef) args.docsRoot = exportDocs(REPO_ROOT, args.docsRef, join(WORK_ROOT, args.batch, "docs"));
-  const bases = Object.fromEntries(arms.map((arm) => [arm, ensureBase(arm, { tarballs: args.auraTarballs ?? null })]));
+  const bases = Object.fromEntries([...new Set(arms.map(baseArm))].map((arm) => [arm, ensureBase(arm, { tarballs: args.auraTarballs ?? null })]));
   writeFileSync(
     join(batchDir, args.only ? `plan-rerun-${Date.now()}.json` : "plan.json"),
     JSON.stringify({ args, plan, bases, note: "model sampling is not seedable through Prism; seeds fix plan order and run ids only" }, null, 2)

@@ -1,0 +1,4138 @@
+[
+  {
+    "runId": "bench505-games-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 65.8,
+    "tokensIn": 257103,
+    "tokensOut": 4977,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 0,
+    "readCalls": 8,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 316,
+    "srcTokens": 2612,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6489.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "ArrowLeft/ArrowRight and KeyA/KeyD set the paddle direction, and paddleX is clamped to ±(HALF_W − PADDLE_W/2). The motion probe passed."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The source reflects off the side walls, the ceiling, the paddle (angle set by hit offset) and bricks (axis chosen from the closest-point delta)."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8x4 = 32 bricks in four row colors. In the probe, a brick hit took bricksLeft from 32 to 31 and score from 0 to 10."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3. The probe showed lives dropping to 2 and status returning to ready after a miss. loseLife() sets status to lost at 0 lives."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The step function sets status to won when no brick is alive, and syncTaskState() runs afterwards. This path was not exercised in the probe."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Space moves status from ready to playing, and the servesToPlaying probe passed. R resets state, and the afterR sample shows 0 score, 3 lives and 32 bricks."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The HUD div is inserted after the canvas and shows score, lives and status. hudOutsideCanvas, hudShowsState and hudFollows all passed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ exposes status, score, lives and bricksLeft, and the probe samples show the expected values."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "On won or lost, updateDom() shows an overlay with 'You win!' or 'Game over' and 'Press R to restart'. The probe did not reach this state, so this is judged from the source."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 60,
+        "rulesLines": 175,
+        "glueLines": 95,
+        "notes": "Estimated from the source. Scene lines cover the scene() chain and the brick-adding loop. Rules lines cover constants, brick layout, sim state, serve/restart, collision and step logic. Glue lines cover the type and global declarations, the task-state sync, keyboard handling, DOM HUD and overlay crea"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 0.9090909090909091,
+    "turns": 10,
+    "agentWallSec": 86.9,
+    "tokensIn": 431741,
+    "tokensOut": 5829,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 3,
+    "readCalls": 13,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 355,
+    "srcTokens": 2709,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 110,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "keydown/keyup handle ArrowLeft/ArrowRight and KeyA/KeyD, and update() clamps paddleX to ±PADDLE_LIMIT. The probe confirms the scene moves."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "stepBall reflects off the left/right walls and the ceiling, applies an angle-based bounce on the paddle, and reflects off bricks by the smaller overlap axis."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "8x5 = 40 bricks with five distinct ROW_COLORS. hitBrick removes the brick and adds ROW_POINTS. The probe shows bricksLeft 40 -> 39 and score 0 -> 10."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3. loseLife decrements them and sets status 'lost' at 0. The probe shows lives 3 -> 2 after a miss, with status back to ready."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "hitBrick sets status 'won' when bricksLeft <= 0."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Space calls serve(), which moves ready to playing (probe: servesToPlaying true). R calls restart(), which resets score, lives, bricks and ball (probe: restartResets true)."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The #hud div is created after the canvas, outside it, and updateHud writes score, lives and status. The probes hudOutsideCanvas, hudShowsState and hudFollows are all true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is a getter returning the state object with status, score, lives and bricksLeft. Probe samples show the expected values (initial ready/0/3/40)."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "updateHud shows #overlay with 'YOU WIN!' or 'GAME OVER' and 'Press R to restart' when status is won or lost. No probe exercised it, but the code is correct."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 70,
+        "rulesLines": 190,
+        "glueLines": 110,
+        "notes": "Glue is the manual DOM HUD and overlay construction and updates (~45), the keyboard handlers (~35), the rAF loop with dt clamping and ready bootstrapping (~20), and the global typing, state getter, and node-handle sync helpers setBrickVisible/syncBricks/present (~25). Scene lines cover the stage def"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": false,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 0.8181818181818182,
+    "turns": 15,
+    "agentWallSec": 112.2,
+    "tokensIn": 697965,
+    "tokensOut": 5843,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 2,
+    "readCalls": 12,
+    "searchCalls": 5,
+    "writeCalls": 3,
+    "srcLines": 333,
+    "srcTokens": 2725,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 120,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Source maps ArrowLeft/KeyA and ArrowRight/KeyD to the paddle and clamps paddleX to FIELD_LEFT+PADDLE_W/2..FIELD_RIGHT-PADDLE_W/2. The probes do not exercise the paddle directly."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "stepBall reflects off the left and right walls and the ceiling, uses angle-based paddle bounce, and stepBrickCollision does circle-vs-AABB reflection."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "8x5 bricks with 5 distinct row colors. The probe shows bricksLeft 40 to 39 and score 0 to 10 after a hit."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3. The probe shows lives 2 after a miss, with status back to ready. loseLife sets lost at 0 lives."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "stepBrickCollision sets status to won when bricksLeft <= 0. Not exercised by the probes, but the logic is correct."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Probes show ready to playing on serve and a full reset to 0/3/40/ready after R."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The #hud div sits after the canvas. The probes report hudOutsideCanvas, hudShowsState and hudFollows as true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A getter on window.__TASK_STATE__ returns status, score, lives and bricksLeft. The probe samples match the expected values."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The #overlay div shows YOU WIN! or GAME OVER with 'Press R to restart' when status is won or lost. The probes did not reach this state, but the source is correct."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "present(): app.nodes.require('paddle'/'ball').setPosition(...)",
+          "why": "The probe check 'motion' is false and motionDiff is only 0.0028. Gameplay state changes (score, lives), but little on-canvas movement of the ball or paddle is visible, so the position updates may not render, or not visibly."
+        }
+      ],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 150,
+        "glueLines": 120,
+        "notes": "Glue is the DOM HUD and overlay construction, keyboard listeners, the rAF loop with dt clamping and ready flag, the presentation sync with the shown map, the window state getter and global typings, and the clamp helper. Rules cover the constants, brick grid generation, state, serve/restart/lose-life"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-aura-sheet-r1",
+    "arm": "aura-sheet",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 75.9,
+    "tokensIn": 130981,
+    "tokensOut": 4824,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 2,
+    "writeCalls": 3,
+    "srcLines": 266,
+    "srcTokens": 2515,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6489.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 90,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Keydown/keyup map ArrowLeft/ArrowRight and A/D to left/right flags. onFrame moves the paddle and clamps it to ±(HALF_W - PADDLE_W/2)."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "step() reflects the ball off the left/right walls and the ceiling, and off the paddle with an angle based on hit offset. Bricks use closest-point collision and flip vx or vy. The probe shows a brick hit during play."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8x5 = 40 bricks with five distinct row colors. The probe shows bricksLeft 40 -> 39 and score 0 -> 10 after a hit, and the brick is hidden with setVisible(false)."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3. loseLife() decrements them when the ball falls below the paddle, and status becomes lost at 0. The probe shows lives 3 -> 2 after a miss. The lost branch is verified in source only."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "When bricksLeft reaches 0 the brick-hit code sets status to won. This was not reached in the probes, so it is verified in source only."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Space calls serve(), which changes ready to playing; the probe confirms this. R calls restart(), and the probe shows afterR back at ready, 0 score, 3 lives and 40 bricks."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The HUD is a DOM div after the canvas showing score, lives and status. The probes hudOutsideCanvas, hudShowsState and hudFollows all pass."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is a getter returning status, score, lives and bricksLeft. The probe samples show the expected values."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "updateHud() shows a full-canvas overlay on won or lost, with the title and 'Press R to restart.'. The overlay is placed over the canvas with top:-360px. The probes did not capture a won or lost state, so this is verified in source only."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 120,
+        "glueLines": 90,
+        "notes": "Scene covers constants, the brick data and layout loop, lights, the camera and the box/sphere primitives. Rules cover state, serve, restart, loseLife and the collision step. Glue is the DOM HUD and overlay construction, updateHud, key mapping and listeners, the __TASK_STATE__ getter, the onFrame boo"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-aura-sheet-r2",
+    "arm": "aura-sheet",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 61.1,
+    "tokensIn": 84252,
+    "tokensOut": 4587,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 2,
+    "writeCalls": 1,
+    "srcLines": 227,
+    "srcTokens": 2389,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6489.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The frame loop reads ArrowLeft/ArrowRight and KeyA/KeyD, and paddleX is clamped to ±(HALF_W − PADDLE_HW). The motion probe passed."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "stepBall reflects off the left and right walls and the ceiling. The paddle hit sets an angle-based velocity, and hitBricks flips the velocity per axis. In the probe the ball scored brick hits and the status later returned to 'ready' after a"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8x5 = 40 bricks with five distinct row colors. The probe showed bricksLeft going 40 → 39 → 38 and the score going 0 → 10 → 20."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3 and drop on a miss (the probe showed lives 2 after 4s). The source sets status 'lost' when lives reach 0."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "hitBricks sets status 'won' when bricksLeft <= 0. This path was not exercised by the probe, but the logic is correct."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Space calls serve() and the probe went ready → playing. R calls restart(), and the probe afterR showed 0 score, 3 lives, 40 bricks and status ready."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The #hud div is outside the canvas and shows score, lives and status. The hudOutsideCanvas, hudShowsState and hudFollows probes all passed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is a getter returning status, score, lives and bricksLeft. The probe samples show the expected values."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "updateHud shows #overlay on won or lost with the text 'Press R to restart.' The source is correct, though the probe did not reach a win or loss."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 50,
+        "rulesLines": 110,
+        "glueLines": 75,
+        "notes": "Scene: geometry constants, brick generation, the scene builder chain and the per-brick add loop. Rules: serve, restart, ball stepping, brick and paddle collision, lives, win/loss and paddle movement. Glue: the manual DOM HUD, help text and overlay construction, updateHud, keyboard listeners and key "
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-aura-sheet-r3",
+    "arm": "aura-sheet",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 53,
+    "tokensIn": 70388,
+    "tokensOut": 4329,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 2,
+    "writeCalls": 1,
+    "srcLines": 233,
+    "srcTokens": 2274,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Arrow keys and A/D map to left/right in keyName, and paddleX is clamped to ±(HALF_W - PADDLE_HALF) in onFrame. The motion probe is true."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The source reflects the ball off the left/right walls and ceiling with abs() flips. The paddle bounce sets an angle from the hit offset. Bricks reflect on the axis of least overlap."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8x5 = 40 bricks with five distinct row colors, one shared material per row. The probe shows bricksLeft going 40→39 and score 0→10 after a hit."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3 (initial probe). The after-4s probe shows lives 2 after a miss. loseLife sets status to lost at 0 lives."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The brick-hit code sets status to 'won' when bricksLeft reaches 0. This path was not exercised by the probes."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The servesToPlaying probe is true (ready→playing). After R, the state is reset to ready, score 0, lives 3, bricksLeft 40."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The #hud div is outside the canvas and shows score, lives and status. The hudOutsideCanvas, hudShowsState and hudFollows probes are all true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is defined through a getter returning status, score, lives and bricksLeft. The probe samples show the expected values."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "updateDom shows the #overlay with 'You win!' or 'Game over' and 'press R to restart' when the status is won or lost. The overlay path was not exercised by the probes."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 32,
+        "rulesLines": 120,
+        "glueLines": 85,
+        "notes": "Glue is the HUD and overlay DOM construction (~28 lines), the keyboard handling and held-set (~25 lines), the state getter and __TASK_STATE__/READY bootstrap (~15 lines), and the place/updateDom/onFrame plumbing (~17 lines). The scene description covers the camera, lights, walls, paddle, ball and br"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-three-r1",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 47.2,
+    "tokensIn": 30904,
+    "tokensOut": 4442,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 313,
+    "srcTokens": 2595,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 503,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 120,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "keydown maps ArrowLeft/KeyA and ArrowRight/KeyD to paddle movement, and paddleX is clamped to ±(FIELD_HALF_W − PADDLE_W/2). The motion probe passed."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "stepBall reflects the ball off the left/right walls and the ceiling. collideBox reflects it off the paddle (with an angle based on where it hits) and off bricks. The probes show brick hits and a missed ball."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8x5 = 40 bricks with 5 different row colors. Probes show a hit took score 0→10 and bricksLeft 40→39, and the brick mesh is hidden on a hit."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3. loseLife decrements them and sets status to lost at 0. The probe shows lives 3→2 after a miss."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The brick-hit code sets status to 'won' when bricksLeft reaches 0. This was not exercised in the probes but the logic is correct."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "serve() moves status from ready to playing, and the probe confirms it. restart() resets score, lives, bricks, paddle and ball, and the probe afterR shows 0, 3, 40 and ready."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The #hud div is inserted after the canvas and shows score, lives and status. It is updated every frame, and the hudOutsideCanvas, hudShowsState and hudFollows probes passed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is a getter returning {status, score, lives, bricksLeft}. The probes show the expected values and transitions."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "On won or lost the overlay is shown with 'You win!' or 'Game over' and 'Press R to restart'. The overlay is only displayed in those states and was not exercised by the probes."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 75,
+        "rulesLines": 130,
+        "glueLines": 120,
+        "notes": "Scene covers constants, camera, lights, walls, paddle, ball and brick creation. Rules cover state, serve, restart, collideBox, stepBall, loseLife and update. Glue is the renderer setup, HUD and overlay DOM bootstrapping, the state/ready globals and typings, syncVisuals, the key mapping and listeners"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-three-r2",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 54.9,
+    "tokensIn": 30866,
+    "tokensOut": 4413,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 290,
+    "srcTokens": 2444,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 503.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 105,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Left/Right arrows and A/D map to 'left'/'right', and paddleX is clamped to ±(FIELD_HALF_W - half width). The motion probe passed."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "stepBall reflects off the left/right walls and ceiling, applies angle-based paddle bounces, and uses circle-vs-AABB reflection for bricks. The probe shows bricks being hit during play."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "8x5 = 40 bricks with five distinct row colors. Probes show bricksLeft going 40 → 39 → 38 and score 0 → 10 → 20 as bricks are hit."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3, and loseLife decrements them and sets status to 'lost' at 0. The probe shows lives 3 → 2 after a miss."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "hitBrick sets status to 'won' when bricksLeft <= 0. This is verified from source only, since the probe did not clear the board."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Space calls serve(), which moves ready to playing (servesToPlaying true). R calls restart(), and the afterR sample is back to 0 / 3 / 40 / ready."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A #hud div is inserted after the canvas with score, lives and status spans. The hudOutsideCanvas, hudShowsState and hudFollows checks all passed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The window.__TASK_STATE__ getter returns status, score, lives and bricksLeft. The probe samples show the expected values and types."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "On 'won' or 'lost', updateHud shows a full-canvas overlay reading 'YOU WIN!' or 'GAME OVER' with 'Press R to restart'. This is verified from source only, since the probe never reached win or loss."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 75,
+        "rulesLines": 150,
+        "glueLines": 105,
+        "notes": "Glue covers the TaskState typing and window declaration, HUD and overlay DOM construction (~35 lines), renderer setup, key normalization and listeners (~30 lines), the rAF loop with dt clamp and sub-stepping, and the manual circle-vs-AABB and paddle-angle math. Scene lines are the constants, lights,"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t11-three-r3",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": null,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "servesToPlaying": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 52.8,
+    "tokensIn": 43196,
+    "tokensOut": 4792,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 2,
+    "srcLines": 338,
+    "srcTokens": 2677,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 503.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 115,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Left/right and A/D set the direction through both e.code and e.key. The paddle position is clamped to ±(HALF_W − PADDLE_W/2) every step."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Source reflects the ball off the left/right walls, the ceiling, the paddle (angle set by hit offset) and bricks (circle-vs-AABB normal reflection). Probes show score and bricksLeft changing and a life lost, so bounces and collisions run."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8x5 = 40 bricks, one material color per row, and the probe shows bricksLeft 40. A hit hides the brick, decrements bricksLeft and adds ROW_POINTS (probe: score 0→10→20, bricksLeft 40→39→38)."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Lives start at 3, and the probe after 4s shows lives 2 with the ball reset to ready after a miss. loseLife sets status 'lost' and lives 0 when lives reach 0."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "When bricksLeft <= 0 after a brick hit, status is set to 'won' and the ball stops. This path was not exercised by the probes, but the code is correct."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Space calls serve(), which changes ready to playing (probe servesToPlaying true). R calls restart(), which resets state, bricks and paddle (probe afterR returns the initial values)."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The HUD is a div outside the canvas with Score, Lives and Status spans. Probes hudOutsideCanvas, hudShowsState and hudFollows are all true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is a getter returning a copy of {status, score, lives, bricksLeft}. Probe samples show the expected values and types."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "On won or lost, a DOM overlay is shown with 'You win!' or 'Game over' and 'Press R to restart.' The code is correct; the probes did not reach a won or lost state."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 65,
+        "rulesLines": 150,
+        "glueLines": 115,
+        "notes": "Glue is the HUD/overlay/wrapper DOM bootstrapping (~30 lines), the renderer setup and render loop with fixed-step accumulator (~25), the keyboard handling with its duplicated code/key mapping (~45), and the TaskState and window typings plus the ready flag (~15). Constants and the physics/collision m"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-aura-r1",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": false,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 0.9090909090909091,
+    "turns": 22,
+    "agentWallSec": 166.5,
+    "tokensIn": 1024752,
+    "tokensOut": 6974,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 5,
+    "readCalls": 15,
+    "searchCalls": 12,
+    "writeCalls": 3,
+    "srcLines": 316,
+    "srcTokens": 2321,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6486.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 1,
+    "glueLines": 130,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "The source moves the mover back and forth in step() and shows it through syncScene(). However, the probe reports motion=false and motionDiff=0 before any input, so no visible oscillation was measured. Probes override the code."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A keydown handler for Space and a canvas click handler both call drop(). Probes dropsChangeState and clickChangesOrRestarts are true, and a drop took the state to height 1 and then lost."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "drop() computes the overlap from the mover and top edges, sets moverW to the overlap and recentres moverX on it. The overhang is spawned as a debris piece with the correct centre and width, and gravity and rotation make it fall."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |dx| <= PERFECT_TOL, moverX snaps to topX and the width is unchanged. Score increases by 1 + BONUS."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Overlap <= 0.001 sets status to lost, and the probe observed status 'lost'. Reaching height 25 (WIN_HEIGHT) sets status to won. The slab and debris arrays are sized so a 25-high tower works."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The camera uses follow with targetNode 'cam', and syncScene eases the cam node's Y toward the top of the tower. The probes do not measure this directly, so it rests on the code."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a canvas click after game end both call resetGame(). The probe shows playing/0/0 after the click and after R."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A DOM div is appended to the body outside the canvas and shows Score, Best and Status. Probes hudOutsideCanvas, hudShowsState and hudFollows are true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height}. The probes read the expected values and hasState is true."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "Moving slab updates via slabHandles[height+1].setPosition/setScale/setVisible in syncScene",
+          "why": "The code intends a visibly oscillating slab, but the probe measured motion=false and motionDiff=0 before input. The requested effect was not observed."
+        }
+      ],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 110,
+        "glueLines": 130,
+        "notes": "Rough estimate. Scene is the scene() builder with the pillar, pooled slabs, debris and camera target. Rules are drop(), step(), spawn, reset, speedFor and the constants. Glue is the HSL colour helper, the DOM HUD construction and publish(), the runtime handle pooling and syncScene(), input listeners"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-aura-r2",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": false,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 0.9090909090909091,
+    "turns": 19,
+    "agentWallSec": 128.4,
+    "tokensIn": 798787,
+    "tokensOut": 4972,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 3,
+    "readCalls": 14,
+    "searchCalls": 11,
+    "writeCalls": 2,
+    "srcLines": 246,
+    "srcTokens": 1821,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6486.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 1,
+    "glueLines": 100,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "The code advances phase and calls setPosition each tick. But the probe reports motion=false and motionDiff=0, so no horizontal slab movement showed up before input."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space and the canvas click both call drop(). Probes show dropsChangeState and clickChangesOrRestarts true, with score and height rising from 3 to 4 after a click."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "drop() computes the overlap, sets the new slab width to it, and starts a debris piece for the overhang. The debris gets gravity, rotation and sideways velocity."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |delta| <= 0.08 the slab keeps its full width and x, and score gains 1 + bonus (2 points). The probes did not exercise this path, so the verdict rests on the code."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "overlap <= 0 sets status to lost. Reaching height 25 sets won. Both follow from the code. The probes did not reach either end state."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Each tick eases camY toward height*SLAB_H-0.6 and calls app.camera?.setPose. Frame diffs show the scene changing. The probes did not isolate the camera, so this is judged from the code."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a click when status is not playing call restart(). The afterR probe shows score 0, height 0 and status playing, and restartResets is true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A DOM div appended to the body shows Score, Best and Status. Probes hudOutsideCanvas, hudShowsState and hudFollows are all true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height}. The probes read these values correctly in every sample."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "Moving slab per-frame setPosition(movingX(), ...) in tick()",
+          "why": "The probe measured motionDiff 0 and motion=false, so the oscillation requested by the code never appears in the rendered frames."
+        }
+      ],
+      "glue": {
+        "sceneLines": 40,
+        "rulesLines": 120,
+        "glueLines": 100,
+        "notes": "Glue is the hslToHex/levelColor helpers, manual DOM HUD construction and publish text updates, keyboard and click listeners, the rAF loop with dt clamping, the manual camera easing and setPose call, debris pool integration, the ready-frame counter, the started flag, Window type declarations, and the"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-aura-r3",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 13,
+    "agentWallSec": 114.8,
+    "tokensIn": 583969,
+    "tokensOut": 5637,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 2,
+    "readCalls": 13,
+    "searchCalls": 6,
+    "writeCalls": 5,
+    "srcLines": 242,
+    "srcTokens": 2146,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The active slab moves back and forth within ±RANGE and is shown from the first frame via restart() and render(). Probes confirm it: animated is true, motion is true, and initial status is playing."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The keydown handler for Space and the pointerdown/click handlers on the canvas all call drop() while status is playing. Probes show dropsChangeState and clickChangesOrRestarts both true."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "drop() computes the overlap, sets the new level width to the overlap, and centres it on the overlap. The overhang goes into a cut-N faller with gravity and rotation, which render() shows and then hides after 3 seconds."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "If |activeX - prev.x| <= PERFECT_TOL (0.12), the new level keeps the previous width and x, and the score gains 1 + BONUS. A 'perfect' message is shown."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "overlap <= 0 sets status to lost, and the probe observed 'lost' after the drops. Reaching levels.length - 1 >= 25 sets 'won', and slab-0 through slab-25 are pre-allocated, so the index is valid. The win path was not exercised by a probe."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "camY eases toward (levels.length-1)*SLAB_H and is subtracted from every slab and the floor position. The camera node itself stays fixed, but the rising tower stays in view."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a click when status is not playing both call restart(), which resets levels, score, status and fallers. Probes show afterClick and afterR both at playing, score 0, height 0."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A div#hud is appended to the body outside the canvas, with spans for score, best and status. sync() updates them, and the probes hudOutsideCanvas, hudShowsState and hudFollows are true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "sync() writes window.__TASK_STATE__ = {status, score, height} with height = levels.length - 1. The probes read the expected values, for example lost with score 1 and height 1, and playing with 0 and 0 after a restart."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 30,
+        "rulesLines": 120,
+        "glueLines": 95,
+        "notes": "Glue is mostly hand-built HUD DOM (about 30 lines), keyboard and pointer wiring with click/pointerdown de-duplication, the hidden-set visibility bookkeeping in show(), the per-frame loop over all 26 slab/cut node pairs in render() with manual camY offsetting, the global declarations, the ready hands"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-aura-sheet-r1",
+    "arm": "aura-sheet",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 10,
+    "agentWallSec": 102.4,
+    "tokensIn": 276017,
+    "tokensOut": 5276,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 2,
+    "readCalls": 7,
+    "searchCalls": 5,
+    "writeCalls": 1,
+    "srcLines": 227,
+    "srcTokens": 1965,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 78,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "spawnMoving makes the slab visible and the frame loop oscillates it between ±RANGE. Probes show motionDiff of 1.63 and animated true with status playing initially."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A keydown handler for Space and a canvas pointerdown handler both call drop() while playing. The dropsChangeState probe is true and afterDrops shows a changed state."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The code computes the overlap as right minus left and sets the slab scale and position to it. The overhang gets its own debris box with gravity and rotation. The probe's first drop gave score 1 and height 1, consistent with a trimmed placem"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |delta| is within TOLERANCE (0.12), the slab keeps the full top width and snaps to the top's x. The score increases by 2 (slab plus bonus) and a 'Perfect! +1' message is shown. This path was not exercised by the probes."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A drop with |delta| >= mw sets status to lost, and the probe confirmed lost after the drops. Reaching stack.length-1 >= 25 sets won. The win path was not exercised by the probes."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The camera is static, but the 'world' group is eased downward by an offset that grows with stack height. The tower's top therefore stays in view, which is equivalent to following it."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and pointerdown after the game ends call resetGame(). The afterClick and afterR probes both show playing with score 0 and height 0, and restartResets is true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A DOM div appended to the body, outside the canvas, holds score, best and status spans. The hudOutsideCanvas, hudShowsState and hudFollows probes are all true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height: stack.length-1}. The probes read it correctly in every sampled state."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 28,
+        "rulesLines": 120,
+        "glueLines": 78,
+        "notes": "Glue is the HUD DOM construction and publish text updates, the keyboard and pointer listeners, the window globals and type declaration, the ready handshake, the node() helper and the per-frame node transform plumbing. It also includes the hand-written falling-piece physics (gravity, integration, cul"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-aura-sheet-r2",
+    "arm": "aura-sheet",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 11,
+    "agentWallSec": 98.9,
+    "tokensIn": 304377,
+    "tokensOut": 4474,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 3,
+    "readCalls": 9,
+    "searchCalls": 7,
+    "writeCalls": 1,
+    "srcLines": 197,
+    "srcTokens": 1624,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 65,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The moving slab is placed at AMPLITUDE*sin(phase) and starts at phase -π/2. The probe shows motion (motionDiff 1.59) and the initial frame is 82.7% non-black while status is playing."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A keydown handler for Space and a canvas click handler both call drop() while status is playing. The probes show drops changing state and the click having an effect."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "drop() computes the overlap and pushes a slab whose width equals it. It also spawns a debris piece for the overhang, which falls under gravity in step() and is rendered through the pooled debris nodes."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |mx - top.x| <= 0.15 the slab keeps the full width, snapped to top.x, and score increases by 2 (1 plus a bonus of 1). This path was not exercised by the probes, but the code is correct."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "An overlap <= 0 sets status to lost, and the probe confirms afterDrops is lost. height() >= 25 sets won, and the 26 pooled slab nodes cover that case."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The camera itself is fixed. render() eases a world shift toward the tower top, so the tower stays in frame as it rises. The visual effect is camera following, done by lowering the world."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a click after the game ends both call reset(), which restores score, height, status and phase. The probes show afterClick and afterR as playing with score 0 and height 0. Best is intentionally kept across restarts."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A #hud div is appended to the body outside the canvas and shows Score, Best and Status. The probes report hudOutsideCanvas, hudShowsState and hudFollows as true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height} on reset and on every drop. The probe samples show the expected values."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 30,
+        "rulesLines": 110,
+        "glueLines": 65,
+        "notes": "Scene covers the scene builder, lights, ground and the slab/debris pool loop. Rules cover constants, drop/reset/win/lose logic, debris physics and the perfect-drop flash. Glue is the global type declarations, HUD DOM construction and updates, key and click listeners, the per-frame node sync loop in "
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-aura-sheet-r3",
+    "arm": "aura-sheet",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 16,
+    "agentWallSec": 105.3,
+    "tokensIn": 453230,
+    "tokensOut": 4845,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 4,
+    "readCalls": 10,
+    "searchCalls": 9,
+    "writeCalls": 1,
+    "srcLines": 223,
+    "srcTokens": 1896,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6487.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The slab moves on a sine path from the first frame, and the motion probe passed (motionDiff 1.07) with status 'playing' at start."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A keydown handler for Space and a canvas click listener both call drop(). The dropsChangeState probe passed and afterDrops reached 'lost'."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "drop() computes the overlap, sets the placed slab's width to it, and spawns the cut remainder as a falling piece on the correct side, with gravity and rotation applied."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |dx| <= 0.25 the slab keeps the top slab's width and x, and score gets an extra +1 on top of the normal +1."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Overlap <= 0 sets status to 'lost', which the probe observed. stacked >= 25 sets 'won'. The probes never reached the win branch, but the code is straightforward."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Each frame camY eases toward tower.length + 1 and setPose is called with the new camera position and target. The probes did not measure the camera directly, and the code gives no sign of a failure."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R calls startRound(), and a click while status is not 'playing' also calls it, resetting score, stacked height and status. The restartResets probe passed, and afterClick and afterR both read 'playing' with 0 and 0."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A div inserted after the canvas shows Score, Best (session max) and Status. The hudOutsideCanvas, hudShowsState and hudFollows probes all passed."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height: stacked}. The hasState and initialOk probes passed."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 30,
+        "rulesLines": 100,
+        "glueLines": 85,
+        "notes": "Glue covers HUD DOM construction, publish(), input listeners, hidden-transform and color array padding helpers, the per-frame rebuild and setInstances of both instance buffers, camera pose easing, the ready flag, the global type declaration and imports. Rules cover the constants, drop, startRound, s"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-three-r1",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 42,
+    "tokensIn": 36331,
+    "tokensOut": 3242,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 239,
+    "srcTokens": 1790,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 499.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 70,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "update() moves the current slab back and forth within ±RANGE every frame. It is spawned in restart() before any input, and the motion probe passed (motionDiff 0.64)."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The keydown handler calls drop() on Space while playing. The canvas pointerdown calls onAction(), which calls drop() while playing. The dropsChangeState probe passed and the state reached lost."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "In a non-perfect drop, newW is set to the overlap and newX to the overlap center. The overhang becomes a faller with correct centers (topR + w/2 on the right, topL - w/2 on the left), and fallers get gravity and spin."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "If |cur.x - top.x| <= PERFECT_TOL (0.12), the new slab snaps to the top slab's x and keeps its full width. Score increases by 1 + BONUS (2), and a background flash is triggered."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "overlap <= 0 sets status to 'lost', which the probe observed. After 25 successful drops, stack.length - 1 reaches 25 (WIN_HEIGHT) and status becomes 'won'."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "camTargetY is raised on each drop, camY eases toward it, and the camera position and lookAt are updated every frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R calls restart(), and a pointerdown when status is not playing also calls restart(). restart() resets score, status and the stack, so height returns to 0. Probes afterClick and afterR both show playing/0/0."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A DOM #hud div is inserted after the canvas, outside it. It shows Score, Best (session best) and Status, and the hudOutsideCanvas and hudShowsState probes passed."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height: stack.length - 1}. It is called on restart and on each drop, and the hasState probe passed."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 50,
+        "rulesLines": 125,
+        "glueLines": 70,
+        "notes": "Glue is the renderer and camera setup, manual DOM HUD construction and publish(), keyboard and pointer listeners, the rAF loop with dt clamping, mesh and material disposal, the camera-follow easing, and the task-state and ready globals. Scene lines cover lights, slab and faller meshes, colors and ba"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-three-r2",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 38.1,
+    "tokensIn": 25853,
+    "tokensOut": 2947,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 200,
+    "srcTokens": 1556,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 499.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The current slab is placed at x = -RANGE*cos(phase) from the first frame, and the motion probe passed (motionDiff 2.11)."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A Space keydown and a canvas pointerdown both call drop(). The probes show the score and height rising after drops (3) and after a click (4)."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The placed slab is built with width = overlap, centred on the overlap. The overhang becomes a falling mesh with gravity, drift and spin."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |cx - prev.x| <= 0.12, the slab is placed at prev.x with its full width and the score increases by 1 + 1 (bonus)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Zero or negative overlap sets status to 'lost'. The win check is tower.length - 1 >= 25, which sets 'won'. Neither end state was reached in the probes, so this is verified from the code only."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "camY eases toward (tower.length - 1) * SLAB_H each frame, and the camera position and lookAt use camY."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The R key restarts at any time. A pointerdown restarts when status is not 'playing'. restart() resets score, status and tower, and the probe shows afterR at 0/0/playing."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A div#hud is appended to the body outside the canvas and shows Score, Best and Status. The hudOutsideCanvas, hudShowsState and hudFollows probes all passed."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() sets window.__TASK_STATE__ = {status, score, height} with height = tower.length - 1. The probes confirm the values change as expected."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 28,
+        "rulesLines": 100,
+        "glueLines": 85,
+        "notes": "Scene covers the lights, camera, materials, slab meshes and colours. Rules cover drop/trim/perfect/win/lose, speed, restart and state publishing. Glue covers renderer setup, the global type declaration, HUD DOM building and updates, the key and pointer listeners, the rAF loop with dt clamping, the c"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t12-three-r3",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "dropsChangeState": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 40.3,
+    "tokensIn": 27315,
+    "tokensOut": 3561,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 240,
+    "srcTokens": 1782,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 499.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "spawnMoving() runs in reset() before any input and update() oscillates the slab along x or z. The probes report motion (motionDiff 3.05) and an initial status of playing."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space keydown and canvas pointerdown both call drop() while status is 'playing'. The probes show dropsChangeState and clickChangesOrRestarts both true."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "On a partial overlap, placed[size] is set to the overlap and the placed center to (lo+hi)/2. The overhang is built as a separate slab and added to debris, which falls under gravity and spin."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "When |curC-prevC| <= 0.1, the placed slab takes the previous top's full w and d and snaps to its x and z, and bonus=1 makes that drop score 2 instead of 1."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "An overlap below 0.001 sets status to 'lost', and the probe confirmed 'lost' after the drops. Reaching height >= 25 sets 'won' in drop(). The won path was not exercised by the probes, but the code is correct."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "update() eases camY toward the top slab's y plus 1.5 and repositions the camera and lookAt each frame."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R calls reset(), and a canvas pointerdown calls reset() when status is not 'playing'. The probes show score, height and status back to 0, 0, playing after both click and R."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A div appended to the body outside the canvas shows score, best and status, updated in publish(). The probes show hudOutsideCanvas, hudShowsState and hudFollows all true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() assigns window.__TASK_STATE__ = {status, score, height}. The probes show hasState and initialOk true, with values updating after drops."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 40,
+        "rulesLines": 150,
+        "glueLines": 75,
+        "notes": "Glue is the global type declarations, renderer and orthographic camera setup, DOM HUD construction and updates, key and pointer listeners, the rAF loop with dt clamping, the camera-follow easing, and the debris cleanup and reset bookkeeping. Scene lines cover lights, materials, mesh creation and col"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-aura-r1",
+    "arm": "aura",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 9,
+    "agentWallSec": 115.8,
+    "tokensIn": 292313,
+    "tokensOut": 6381,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 0,
+    "readCalls": 10,
+    "searchCalls": 3,
+    "writeCalls": 1,
+    "srcLines": 307,
+    "srcTokens": 2838,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 80,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Status starts as ready with speed 0. The first jump input sets status to playing, and the probes show playing with score rising."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp and KeyW call jumpInput, and so does pointerdown. A gravity arc is applied, and the `!airborne` guard blocks double jumps. The probe shows airborne true after a jump and false later."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A seeded mulberry-style RNG (default seed 12345, overridable by ?seed) sets both the gap (sp*0.95+6+rng*14) and the height (0.35 to 1.0)."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The step function ends the run with 'lost' when |rel| < 0.45 and jumpY < h - 0.02. The probe never saw 'lost' (lostOccurred false), so this is verified by code only. The probe's jump timing may simply have cleared every hurdle. No probe con"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Score is floor(distance). Speed is 8 + 0.024*distance. The probes show speed rising from 8.1 to 10.16 as score reached 89."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "When distance >= 500 the code clamps distance to 500 and calls endRun('won'). The probes did not reach 500, so this is verified by code only. The logic is correct."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a jump input in the won or lost state both call resetRun. The probe afterR shows status ready, score 0 and restartResets true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The HUD is a DOM div outside the canvas showing distance, best and status. An overlay appears on won, lost and ready. The probes report hudOutsideCanvas, hudShowsState and hudFollows all true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is set every frame with status, score, speed and airborne. The probes report hasState and typesOk true, and the sampled values match the code."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Lane dashes, posts and trees are repositioned from distance using wrapping, and the probe reports motion true with a frame diff of 87.5."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 90,
+        "rulesLines": 95,
+        "glueLines": 80,
+        "notes": "Scene covers the track, scenery pools, hurdles, runner shapes and the per-frame scenery and runner positioning. Rules cover tuning constants, state, spawning, reset, jump, step and collision, and the HUD text and status logic. Glue is the RNG helper, the mutable() id helper, wrap/speedAt, the HUD an"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-aura-r2",
+    "arm": "aura",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 14,
+    "agentWallSec": 157.7,
+    "tokensIn": 734235,
+    "tokensOut": 8959,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 3,
+    "readCalls": 13,
+    "searchCalls": 6,
+    "writeCalls": 3,
+    "srcLines": 398,
+    "srcTokens": 3871,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6490.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Initial probe state is ready with speed 0. After the first jump input the status is playing and the score rises (12, then 24). The code sets status to playing in jumpInput and advances distance in stepSim."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jumpInput. Gravity is integrated each step, and jumping is blocked while airborne. The probe shows airborne true after the jump."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Hurdle height is 0.4 to 1.15 m and the gap is 1.15 to 2.35 s of travel. Both come from mulberry32 seeded with SEED, and the RNG is reset on each restart."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "stepSim calls endRun('lost') on overlap with a hurdle while y is below its height. The probe statuses go playing then lost."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Score is floor(distance). Speed is 10 + 0.02 × distance, so the probe speed climbs from 10.24 to 10.48 to 10.69 as the score goes from 12 to 24 to 41."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "stepSim calls endRun('won') when distance reaches 500, and that sets status won and the score to 500. The probe run ended in a loss before 500 m, so this is confirmed from the source only. Hurdle spawning stops at 495 m."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and any jump input in the won or lost state call resetRun. The probe after R shows ready, score 0, speed 0, airborne false."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The HUD is a DOM div outside the canvas showing distance, best and status. A game-over overlay appears on loss or win. The hudOutsideCanvas, hudShowsState and hudFollows probes all pass."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is published every frame and on input with status, score, speed and airborne. The typesOk and hasState probes pass."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Dashes, crosswalk bars, posts and trees are repositioned each frame from distance with wrapZ. The motion probe is true, with frame diff 5.69 and changedFrac 0.14."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "ring(r: Ring, prefix, n) helper",
+          "why": "The Ring parameter r is never used. Hurdle and cap lookups pass DASH only as a placeholder, so the argument has no effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 115,
+        "rulesLines": 110,
+        "glueLines": 150,
+        "notes": "Glue is the mulberry32 and seed parsing, the roughly 70-line DOM HUD built from injected CSS and innerHTML, the keyboard and pointer listeners, publishState, the fixed-timestep accumulator, node lookup and ring helpers, wrapZ and swingLimb math, and the main/ready bootstrapping. Scene is the primiti"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-aura-r3",
+    "arm": "aura",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 21,
+    "agentWallSec": 214.4,
+    "tokensIn": 1046225,
+    "tokensOut": 10448,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 2,
+    "readCalls": 13,
+    "searchCalls": 8,
+    "writeCalls": 5,
+    "srcLines": 444,
+    "srcTokens": 4166,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6492.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 0,
+    "glueLines": 125,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "step() only advances while status is 'playing', and jumpInput() moves 'ready' to 'playing'. The probe went initial 'ready' to 'playing' with score rising."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jumpInput(). Jumping requires y===0 and vy===0, so there is no double-jump. Gravity is integrated each step, and the probe saw airborne true after the jump."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "spawnHurdles() uses mulberry32(SEED) for hurdle height (0.4-1.0) and for the gap, which has a speed-based minimum plus a random extra (0 about 25% of the time, otherwise 0-12 m). The seed is reset on each run."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A hurdle overlap while y < h-0.03 calls endRun('lost'). The probes recorded the 'lost' status."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Distance accumulates at speedAt(distance) = 8 + 0.02*distance. The probes show score rising to 29.57 and speed from 8 to 8.59."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "step() clamps distance to 500 and calls endRun('won') once distance >= 500. The probes never reached 500 m, so this is confirmed from the code only."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "keydown R calls restartInput(), and a jump after won/lost calls resetRun(). The probe after R showed status 'ready', score 0 and speed 8."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "The DOM HUD sits outside the canvas, with a best readout and a game-over overlay in the source. The probe 'hudFollows' is false, so the HUD did not track the state at some sampled moment. A likely cause is that restartInput() and jumpInput("
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "syncState() writes status, score (distance rounded to 2 decimals), speed and airborne. The probes report hasState, typesOk and initialOk all true."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Stripes, dashes, posts and trees are repositioned each frame from -distance using modulo wrap-around, and hurdles move with distance. The probes show motion and animated true."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 120,
+        "glueLines": 125,
+        "notes": "Glue is mostly the mulberry32 helper, the seed query parsing, the scroller bookkeeping, DOM element lookups and HUD/overlay text syncing, the keyboard and pointer listeners, the node-handle cache, the fixed-timestep substep loop, the readiness polling loop, and the global type declarations. Scene co"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-aura-sheet-r1",
+    "arm": "aura-sheet",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 4,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 11,
+    "agentWallSec": 105,
+    "tokensIn": 215021,
+    "tokensOut": 6007,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 5,
+    "searchCalls": 5,
+    "writeCalls": 5,
+    "srcLines": 248,
+    "srcTokens": 2569,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6489.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 1,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "jumpInput moves status from ready to playing and jumps. Probes show initial ready, then playing with score rising."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jumpInput. Gravity integrates vy and ry, and tryJump needs ry<=0 and vy===0, so there is no double-jump. The airborneAfterJump probe passed."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A mulberry32-style RNG seeded from SEED sets hurdle height (0.4 to 1.0) and spacing (rng-scaled gap), and reset reseeds it."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "step sets status to lost when |hurdle.d - dist| < 0.5 and the runner is below the hurdle height. Probes saw status lost (lostOccurred true)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Score rose from 0 to 29.5 and speed from 8 to 8.59, following speedAt(dist) = 8 + 0.02*dist."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "step sets dist = GOAL and status = won when dist >= 500. The probes never reached 500 m, so this rests on the code, which looks correct."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R calls reset, giving ready with score 0 (afterR probe confirms). A jump after the end calls reset, then playing, then tryJump."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "The HUD sits outside the canvas, shows distance, best and status, and the overlay appears on lost and won. However, the probe hudFollows is false, so the HUD did not track the live state as the checker expected."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "__TASK_STATE__ is set every frame with status, score, speed and airborne. The hasState, typesOk and initialOk probes all passed."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Center dashes and side trees are repositioned from dist each frame, and hurdles move with z = dist - d. The motion probe passed and frame diff is high."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "updateDom HUD text and overlay",
+          "why": "The probe hudFollows is false: the DOM HUD does not match or follow the exposed state as expected, so the requested live HUD behavior is not fully working."
+        }
+      ],
+      "glue": {
+        "sceneLines": 55,
+        "rulesLines": 75,
+        "glueLines": 95,
+        "notes": "Scene covers the scene chain, scenery loops, hurdle pool and runner joints. Rules cover constants, spawn, jump, step and collision logic. Glue covers the seeded RNG helper, the mod and node helpers, keyboard and pointer wiring, HUD and overlay DOM construction and updates, per-frame substepping, the"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-aura-sheet-r2",
+    "arm": "aura-sheet",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 9,
+    "agentWallSec": 107.5,
+    "tokensIn": 176246,
+    "tokensOut": 5855,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 0,
+    "readCalls": 5,
+    "searchCalls": 2,
+    "writeCalls": 3,
+    "srcLines": 225,
+    "srcTokens": 2550,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6489.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 80,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Status starts as ready with speed 0. The first jump input sets status to playing, and distance then advances every frame. Probe: initial ready, then playing with score rising."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp and KeyW call pressJump, as does window pointerdown. Jump sets vy=10 and gravity 28 pulls it back down. A jump is only allowed when !airborne. Probe: airborne true after a jump and false later."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A seeded LCG (rand) gives each hurdle a height of 0.45 to 1.1 and a gap of 15 to 29 m plus a distance term. The RNG is reseeded on every reset."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The run is set to lost when the runner's distance window overlaps a hurdle and y is below the hurdle height. Probe: statuses went playing then lost, and speed dropped to 0."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Speed is 10 + 0.02*distance, so it rises gradually. Probe: score went 6, 13, 14, 44 and speed went 10.12, 10.25, 10.27, up to 10.8."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "When distance >= 500 the code clamps distance and sets status to won. The probe run was lost before reaching 500, so this is verified from the source only, and the logic is correct."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "KeyR calls resetRun, giving ready with distance 0. A jump input after won or lost resets, then sets playing and jumps. Probe: afterR showed ready, score 0."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A separate DOM div below the canvas shows Distance, Best and Status. An overlay div shows Game over or You win text. Probe: hudOutsideCanvas, hudShowsState and hudFollows are all true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "publish() writes {status, score, speed, airborne} with the expected types. Probe: hasState and typesOk are true."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The dash, post and tree groups are offset each frame by mod(distance, period), so they move toward the camera. Probe: animated true, motionDiff about 18.9, changedFrac 0.27."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "scroller(id, period, kids) in src/main.ts",
+          "why": "The period parameter is never used. The wrap periods (6, 10, 24) are hard-coded separately in the onFrame mod() calls."
+        }
+      ],
+      "glue": {
+        "sceneLines": 85,
+        "rulesLines": 100,
+        "glueLines": 80,
+        "notes": "Glue is the HUD and overlay DOM construction and text updates, key and pointer listeners, the global type declaration, the seeded RNG and mod helpers, the per-frame node-lookup and pose updates (pooled hurdles and scenery offsets driven by hand), and the app creation and ready bootstrap. Scene lines"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-aura-sheet-r3",
+    "arm": "aura-sheet",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 101.4,
+    "tokensIn": 106894,
+    "tokensOut": 6364,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 283,
+    "srcTokens": 2827,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6490.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 1,
+    "glueLines": 90,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The first jump input changes status from ready to playing, and update() then advances distance every frame. The probe shows ready, then playing with the score rising."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jumpInput(). Gravity and JUMP_V give a parabolic arc, and the `!airborne` guard blocks a double jump. The probe shows airborne true after a jump."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Hurdle height is 0.35 + rng()*0.65 and spacing is speed*0.7 + 3.5 + rng()*10, drawn from a seeded mulberry-style RNG that is re-seeded on reset."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "step() sets status to lost when the runner overlaps a hurdle in depth and y is below the hurdle height. The probe's statuses list includes lost."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The score rises from 0 to 56.26 and speed goes from about 9.08 to 9.88. This matches speedAt(d) = 9 + 0.016*d."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The source sets status to won when dist >= 500. The probe never reached 500 m (max score 56.26), so this is judged from the source only, and the logic is correct."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "KeyR and a jump while won or lost both call resetRun(). The probe shows ready with score 0 after R."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "The HUD is outside the canvas and shows state, but the probe check hudFollows is false, so the HUD did not track state changes in the run. The overlay is only updated through renderHud() and not by the periodic refresh."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "window.__TASK_STATE__ holds status, score, speed and airborne with the right types. The probes (hasState, initialOk, typesOk) pass."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The 'scroll' group is offset by dist % PERIOD every frame, so the stripes, posts and trees move toward the camera. The probe shows motion and a large frame diff."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "DOM HUD refresh (renderHud and the onFrame HUD update)",
+          "why": "The probe reports hudFollows false, so the HUD elements are not reliably following the live state."
+        }
+      ],
+      "glue": {
+        "sceneLines": 100,
+        "rulesLines": 105,
+        "glueLines": 90,
+        "notes": "Scene covers the track, scenery loops, hurdle pool and runner rig. Rules cover tunables, spawn, step, jump and collision, the win/lose logic, and runner pose selection. Glue covers the RNG helper, seed parsing, global typing, HUD and overlay DOM construction and styling, innerHTML rendering, key and"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-three-r1",
+    "arm": "three",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 72.2,
+    "tokensIn": 36568,
+    "tokensOut": 6080,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 399,
+    "srcTokens": 3405,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 1,
+    "glueLines": 135,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "update() returns unless status is 'playing' and advances distance by speed*dt. jump() switches 'ready' to 'playing'. Probes show ready, then playing, with the score rising."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jump(). Gravity is vy -= GRAVITY*dt, and a jump only sets vy when !airborne, so there is no double-jump. Probes show airborne true after a jump."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Hurdle height is 0.35 + rand()*0.65 and spacing is speed*0.8 + 5 + rand()*12, both from mulberry32(SEED). The seed can be set with the ?seed= URL parameter."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The swept-range collision check sets status to 'lost'. Probes show a 'lost' status and a final sample of lost."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "speedAt(d) is 8 + 0.025*d. Probes show the score rising and speed going from 8 to about 8.54."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The code sets distance = GOAL and status = 'won' once distance >= 500. The probes never reached 500 m, so this rests on the code alone, and the logic is correct."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a jump after won or lost both call resetGame(), which sets distance 0 and status 'ready'. The probe afterR shows ready, score 0, speed 8."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "The HUD is a DOM element outside the canvas, with distance, best, status and a Game Over overlay. The probe check hudFollows is false, so the HUD was not seen tracking the state. The code looks correct, but probes take precedence."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is synced every frame with status, score (distance), speed and airborne. The probes' typesOk and hasState checks passed."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Dashes, posts and trees wrap around the runner in updateWrapped as distance grows. Probes show motion with a large frame diff (changedFrac 0.81)."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "HUD text (distEl/bestEl/statusEl)",
+          "why": "The probe check hudFollows is false, so the HUD text did not match the state samples as expected. Distance is shown with Math.floor, which may differ from the score, but the exact cause is not visible in the source."
+        }
+      ],
+      "glue": {
+        "sceneLines": 170,
+        "rulesLines": 100,
+        "glueLines": 135,
+        "notes": "Glue is the seeded RNG helper, the DOM HUD and overlay construction and updateHud, the renderer and camera bootstrapping, the keyboard and pointer listeners, the rAF loop with dt clamping, state syncing, and the updateWrapped modulo plumbing. The scene lines cover the ground, track, edges, scenery p"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-three-r2",
+    "arm": "three",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 60.8,
+    "tokensIn": 45634,
+    "tokensOut": 5271,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 2,
+    "srcLines": 340,
+    "srcTokens": 2872,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 505.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 1,
+    "glueLines": 130,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "step() advances distance only while status is 'playing'. jump() moves 'ready' to 'playing'. Probes show ready, then playing with the score increasing."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jump(). Gravity is integrated each step and `if (airborne) return` blocks double-jumps. The probe saw airborne=true after a jump."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Hurdle height is 0.4 + rng()*0.7 and spacing is speed-based plus rng()*14, all from a mulberry32 RNG seeded by the ?seed param or 12345."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The z-overlap check combined with y < hurdle height calls endRun('lost'). The probe saw the statuses playing, then lost."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Score is the accumulated distance, and speed = 10 + 0.02*distance. The probe saw speed rise from 10 to 10.49 as the score rose to 24.6."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "`distance >= WIN_DISTANCE` sets 'won' in the source. The probe never reached 500 m, so this rests on the code only."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "R and a jump after won/lost both call resetGame(). The probe saw status ready, score 0 and speed 10 after R."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "The HUD is a DOM element outside the canvas with distance, best and status, plus a game-over overlay. The probe check hudFollows is false, so the HUD did not track the state as measured."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "window.__TASK_STATE__ has status, score, speed and airborne, updated every frame. The probe checks typesOk, hasState and initialOk are all true."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Dashes, edge marks, posts and trees are recycled along the track while the camera follows the runner, so scenery moves past. The probe shows animated=true and a frame diff of 66."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "publish() HUD spans (elDist/elBest/elStatus)",
+          "why": "The HUD is updated every frame, but the probe check hudFollows is false, so the HUD tracking the state is not confirmed at runtime."
+        }
+      ],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 95,
+        "glueLines": 130,
+        "notes": "Glue is the renderer/canvas bootstrap, the mulberry32 helper, the pool-recycling scenery system, HUD and overlay DOM construction, the publish() state sync, input listeners, the rAF loop with dt clamping, and the manual camera follow. Scene is the ground, track, runner, hurdle and tree meshes, light"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t13-three-r3",
+    "arm": "three",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "motion": true,
+      "playing": true,
+      "scoreIncreases": true,
+      "typesOk": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 71.1,
+    "tokensIn": 49801,
+    "tokensOut": 5749,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 2,
+    "srcLines": 374,
+    "srcTokens": 3040,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 0,
+    "glueLines": 100,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The runner advances only in step() while status is 'playing'. jumpInput() moves ready to playing, and the probe went from ready to playing after the first jump."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Space, ArrowUp, KeyW and pointerdown all call jumpInput(). Gravity and JUMP_V give an arc, and `if (!airborne)` blocks a second jump. The probe saw airborne true after the jump and false after landing."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Hurdles come from mulberry32(SEED). Height is 0.4 to 1.1 and the gap varies with rand() and speed."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "step() ends the run as 'lost' when |h.z - distance| < 0.5 and y < h.h. The probe recorded the playing to lost transition."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Score rose from 0 to 55.1 and speed from 9 to 10.21 in the probe. speedAt() grows linearly with distance."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "step() sets distance to GOAL and calls endRun('won') when distance >= 500. The probe never reached 500 m, so this is judged from the source only."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "After R the probe showed status ready, score 0, speed 9. A jump after the end calls reset() and then sets status to 'playing'."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "The HUD is a DOM element outside the canvas with distance, best and status, plus a game-over overlay. However, the probe check hudFollows is false, so the HUD was not confirmed to track the game state, even though hudShowsState and hudOutsi"
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is published every frame with status, score, speed and airborne. The probe's typesOk and initialOk checks are both true."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Stripes, lane dashes, posts and trees are recycled by distance. The probe measured animated true, motion true and changedFrac 0.23."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 170,
+        "rulesLines": 120,
+        "glueLines": 100,
+        "notes": "Glue covers the mulberry32 helper, renderer, canvas and fog setup, the pool recycling helper, DOM HUD and overlay construction, the input listeners, the fixed-step loop, state publishing and the global type declarations. Scene lines are the scenery, runner, lights and camera. Rules lines are the jum"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-aura-r1",
+    "arm": "aura",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 14,
+    "agentWallSec": 165.5,
+    "tokensIn": 648932,
+    "tokensOut": 10150,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 2,
+    "readCalls": 11,
+    "searchCalls": 12,
+    "writeCalls": 1,
+    "srcLines": 543,
+    "srcTokens": 5180,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6494.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 195,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "buildScene adds nine pedestals on a 3x3 grid (SPACING 2.1) with a perspective camera. The frame probe shows non-blank, animated output."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "spawn() draws from mulberry32(SEED) and raises a lantern in a random free cell. Its duration is max(0.5, 1.5 - score*0.006), which shrinks with score. The probes saw varied activeCells (4,7,5,3,0)."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "pickCell builds a camera ray by hand, tests it against spheres around raised objects, then falls back to the pedestal-plane cell. A raised lantern gives +10 with a burst effect. The probe score range reached 15 and pointerChangesScore is tr"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Clicking an empty or lowered cell sets score to max(0, score-5), flashes the red miss pad, and shows '-5' in the HUD message."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A hover-i cylinder is toggled for hoverCell from pointermove. It only shows while status is playing, which is acceptable. The probes did not measure it directly."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Bombs spawn with about 14% probability after the first two spawns. Clicking a raised bomb calls endRound('lost')."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decreases (probe: 44.53 to 43.03). At 0, endRound chooses won if score >= 150, otherwise lost."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The Start button and Enter begin a round from the ready state. R and the Restart button call startRound, which resets score, time and status. The probes startsOnEnter and restartResets are true; afterR shows timeLeft back at 44.53."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A DOM #hud div sits after the canvas and shows score, time and status. The probes hudOutsideCanvas and hudShowsState are true. An end-of-round overlay shows the title and final score."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is the live state object with status, score, timeLeft and activeCells. The probe samples match the expected shape, and activeCells lists only raised cells."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 95,
+        "rulesLines": 140,
+        "glueLines": 195,
+        "notes": "Glue is hand-written ray picking and vector helpers (about 75 lines), DOM HUD and overlay construction (about 30), the seeded RNG and seed parsing (about 18), the node-handle cache with the shown-flag visibility bookkeeping (about 45), and the boot, rAF loop and input wiring (about 40). The per-fram"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-aura-r2",
+    "arm": "aura",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 16,
+    "agentWallSec": 198.8,
+    "tokensIn": 758038,
+    "tokensOut": 11786,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 3,
+    "readCalls": 14,
+    "searchCalls": 10,
+    "writeCalls": 1,
+    "srcLines": 668,
+    "srcTokens": 5506,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6495.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 260,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Nine pedestal cylinders and hole discs are placed on a 3x3 grid with spacing 1.8. The frame probe shows a non-blank, animated render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "spawn() uses the seeded mulberry32 RNG to choose cells. holdTime() shrinks from 1.25 s to a 0.45 s floor as score rises. The probe saw lanternsPop true and all 9 cells in cellsSeen."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A manual camera ray is tested against sphere colliders at each cell's current height, and a raised lantern gives +10. The probe shows pointerChangesScore true with score range 0 to 10."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Clicks that miss a raised object fall back to a ray-plane hit test against the grid and call penalize(). That subtracts 5 with Math.max(0, ...) and shows a red ring, embers and a '-5' popup."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "pointermove runs pick() and positions and shows an emissive hover-ring on the hovered cell. No probe checks it directly, but the code path is complete."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Bombs spawn with 15% probability after the first 3 spawns. Clicking a raised bomb calls endRound('lost')."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The 45 s timer decrements in step(), and at 0 the round ends 'won' if score >= 150 and 'lost' otherwise. The probe confirms timerDecreases."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Enter and the Start button start a round, and R or the Restart button call startRound(). The probe confirms startsOnEnter and restartResets (afterR timeLeft 44.5, score 0)."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A DOM HUD with score, time and status sits outside the canvas, plus an overlay for the end-of-round result. The probe confirms hudOutsideCanvas, hudShowsState and hudFollows."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ holds status, score, timeLeft and activeCells, and the probe samples show them updating correctly."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 110,
+        "rulesLines": 150,
+        "glueLines": 260,
+        "notes": "Glue is mainly the hand-written camera ray and projection math (pointerRay, vector helpers, raySphere, projectToCanvas), the DOM HUD and overlay construction, the fixed-step loop and boot, input listeners, and the particle pool plumbing. Scene lines are the primitives, materials, lights and camera. "
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-aura-r3",
+    "arm": "aura",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 14,
+    "agentWallSec": 298.3,
+    "tokensIn": 679821,
+    "tokensOut": 10974,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 2,
+    "readCalls": 12,
+    "searchCalls": 6,
+    "writeCalls": 3,
+    "srcLines": 631,
+    "srcTokens": 5285,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6493.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 285,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Nine slab/hole/rim cells are built in a 3x3 layout on a base. The frame probe shows non-blank, animated output."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A seeded mulberry32 RNG picks the cell, and cellsSeen shows 8 different cells popping. Stay time is max(0.45, 1.4 - score*0.006), so it shrinks with score."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A camera-ray sphere test against raised lanterns, with a fallback ground-plane test, maps clicks to cells. popAt gives +10, and the pointerChangesScore probe passed with scoreRange [0,10]."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "missAt does score = max(0, score-5) and shows a red '-5' toast, a miss marker and red particles. Clicks on empty or lowered cells reach it. The pointerChangesScore probe passed."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A hover cylinder is moved to the picked cell on pointermove and hidden on pointerleave. This is not directly probed, but the code path is sound."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "popAt on a bomb cell calls endRound('lost', ...). Bombs spawn with 16% chance after the first 3 spawns. The probes did not exercise a bomb click."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decreases (44.5 to 42.98 in the probe). At 0 the round ends with won if score >= 150, else lost."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Enter in the ready state or the Start button starts the round. R or the Restart button calls startRound, which resets score, time and status. The startsOnEnter and restartResets probes passed."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A DOM HUD div outside the canvas shows score, time and status, and an overlay shows the start and win/lose screens. The hudOutsideCanvas and hudShowsState probes passed."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is the live state object with status, score, timeLeft and activeCells, and the probe samples show all four fields. activeCells lists cells in the rising or up phase."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "syncHud: toastEl.textContent = toastTimer > 0 ? toastEl.textContent : \"\"",
+          "why": "When the timer is positive this assigns the element's text to itself. When it is zero, update() has already cleared the text, so the line has no effect."
+        },
+        {
+          "where": "endRound: if (status === \"won\" || state.timeLeft < 0) state.timeLeft = Math.max(0, state.timeLeft)",
+          "why": "timeLeft is already clamped to >= 0 by the timer logic, so this clamp never changes anything."
+        }
+      ],
+      "glue": {
+        "sceneLines": 100,
+        "rulesLines": 175,
+        "glueLines": 285,
+        "notes": "Scene lines are the buildNodes geometry, the materials and the createAuraApp scene. Rules lines are spawn, pop/miss scoring, round start/end, the cell phase update and the bomb logic. Glue lines are the seeded RNG and URL seed parsing, type and global declarations, DOM HUD and overlay construction, "
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-aura-sheet-r1",
+    "arm": "aura-sheet",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 10,
+    "agentWallSec": 125.2,
+    "tokensIn": 238711,
+    "tokensOut": 8639,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 1,
+    "readCalls": 5,
+    "searchCalls": 7,
+    "writeCalls": 2,
+    "srcLines": 367,
+    "srcTokens": 3564,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6491.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Nine cylinder pedestals with dark hole discs are built in a 3x3 layout. The probe frame is non-blank and animated."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Spawns use a seeded mulberry32 RNG. The duration is max(0.45, 1.5 - score*0.0065), so it shrinks with score. Probes saw lanterns in cells 3, 7, 2, 0 and 6."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A manual camera ray is tested against a sphere at the raised lantern position, and a hit gives +10. The pointerChangesScore probe passed and the score range reached 10."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Clicking a cell with no active item (lowered or empty) applies score = max(0, score-5), shows a red ring on the cell, and sets '-5' in the HUD feedback. Probes show the score never went below 0."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "pointermove runs the same picking, and a cyan ring is placed under the hovered cell. No probe measured this directly."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Bombs spawn from the third spawn onward with 16% probability. Clicking one calls endRound('lost'), which shows the overlay."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decreases each frame. At 0, endRound returns won if score >= 150, else lost. The timerDecreases probe passed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Enter and the overlay button start a round, and the R key or the Restart button starts a new one. The startsOnEnter and restartResets probes passed, and afterR shows time reset to about 44.5 with score 0."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A separate #hud div outside the canvas shows score, time and status, and an overlay appears at round end. The hudOutsideCanvas, hudShowsState and hudFollows probes passed."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "publish() runs every frame and writes status, score, timeLeft and activeCells to window.__TASK_STATE__. The initial and later samples have the expected shape."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "burst(): app.nodes.require(\"flash\").setMaterial?.(...)",
+          "why": "The optional call suggests setMaterial may not exist on the node handle. If so, the bomb flash never turns orange and stays gold. The probes do not confirm that it works."
+        }
+      ],
+      "glue": {
+        "sceneLines": 70,
+        "rulesLines": 100,
+        "glueLines": 150,
+        "notes": "Glue is a manual camera basis and ray-casting math (cross, norm, rayAt, hitSphere, ground intersection), a hand-written seeded RNG, DOM element lookups and event wiring, state publishing, and per-frame node-position animation for lanterns, bombs, hover, miss ring, flash and sparks. The duplicated ho"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-aura-sheet-r2",
+    "arm": "aura-sheet",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 103,
+    "tokensIn": 147891,
+    "tokensOut": 7222,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 1,
+    "readCalls": 5,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 369,
+    "srcTokens": 3725,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6491.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 190,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The scene builds nine pedestals and holes in a 3x3 grid (cellX/cellZ, spacing 2.4). The frame probe shows a non-blank, animated render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "spawn() picks a cell with the seeded mulberry-style rand(). The lantern life is lifeFor() = max(0.6, 1.5 - score*0.004), so it shrinks with score. The probe saw lanterns pop in cells 3, 7, 2, 0 and 6."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "pick() casts a hand-built camera ray against a per-cell box. A pointerdown on a raised lantern gives +10. The probe shows the score going from 0 to 10 and activeCells containing 6."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A click on a cell with no item or an expired item calls addScore(-5), which floors at 0 via Math.max. It also sets missFlash, which shows a red ring and a score pulse. The probe did not exercise this directly. A lantern in its drop phase st"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A hover ring (hover{i}) is shown for the cell under the pointer while the status is playing. The pick runs on pointermove and every frame."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking a bomb calls burst, then endRound('lost'). The 16% bomb spawn chance is in spawn(). The probe did not click a bomb, so this is verified from the code only."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decreases, and the probe confirms this. At 0 it calls endRound(score >= 150 ? 'won' : 'lost')."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Enter or the Start button starts from ready, and the probe confirms startsOnEnter. The R key or the Restart button calls startRound(), which resets score, time, status, items and the RNG. The probe confirms afterR reset the score to 0 and t"
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A div HUD below the canvas shows score, time and status, and the probe confirms hudOutsideCanvas, hudShowsState and hudFollows. A DOM overlay with Start and Restart buttons shows on ready, won and lost."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ holds status, score, timeLeft and activeCells, and syncState() refreshes it every frame and after each action. The probe's initial, afterEnter and afterClicks samples have the expected shape. activeCells also lists cel"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 130,
+        "glueLines": 190,
+        "notes": "Scene covers the materials, lights, camera, effects, and the per-cell and spark entities. Rules cover spawn timing, scoring, win/lose conditions, and the click and key handlers. Glue is mostly DOM HUD and overlay construction and updates (about 60 lines), manual camera-ray picking math (about 45), t"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-aura-sheet-r3",
+    "arm": "aura-sheet",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 12,
+    "agentWallSec": 133.4,
+    "tokensIn": 270796,
+    "tokensOut": 9248,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 1,
+    "readCalls": 5,
+    "searchCalls": 8,
+    "writeCalls": 1,
+    "srcLines": 477,
+    "srcTokens": 4364,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6493.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 250,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Nine pedestals, holes and lantern/bomb groups are built in a 3x3 grid with SPACING 2.4. The frame probes show a non-blank, rendered scene."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A seeded mulberry-style RNG picks a free cell for each spawn. The lift duration is max(0.55, 1.5 - score*0.005), so it shrinks with score. The lanternsPop probe passed and cellsSeen was [4,0,7,8]."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "pickCell builds a camera ray by hand and tests it against a sphere for each raised item, then against the pedestal plane. handleClick adds 10 for an active lantern. The pointerChangesScore probe passed and scoreRange reached 10."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A click on an empty or lowered cell sets score to max(0, score-5), shows a red miss flash, emits red particles and flashes the HUD score red. Not directly observed in the probes (the clicked score stayed 0), but the code path is correct."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "pointermove sets hover from pickCell, and a cyan halo cylinder is positioned and shown on the hovered cell each frame, hidden when hover is -1."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "A bomb spawns after the first 3 spawns with 12% probability. Clicking an active bomb calls endRound('lost'). Verified from the code only, not triggered in the probes."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decrements by dt. At 0 it calls endRound(score >= 150 ? 'won' : 'lost'). The timer probe showed the time decreasing (44.53, then 43.03)."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Enter or the Start button starts a round from ready. R or the Restart button calls startRound, which resets score, time, status, items and particles. The startsOnEnter and restartResets probes passed."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A DOM #hud div outside the canvas shows score, time and status. An overlay with a title and Start/Restart buttons shows for ready, won and lost. The hudOutsideCanvas, hudShowsState and hudFollows probes passed."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is updated every frame and on every state change with status, score, timeLeft and activeCells. The hasState and initialOk probes passed."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 55,
+        "rulesLines": 150,
+        "glueLines": 250,
+        "notes": "Scene lines are the materials and scene construction. Rules lines are the constants, game state, spawn/click/round logic and update. Glue is the seeded RNG, the DOM HUD and overlay bootstrapping, about 55 lines of manual camera-ray and plane picking math, pointer/key wiring, node-handle caching, the"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-three-r1",
+    "arm": "three",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 97.8,
+    "tokensIn": 63528,
+    "tokensOut": 8217,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 2,
+    "srcLines": 560,
+    "srcTokens": 4607,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 515.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The loop builds 9 pedestals, holes and rings on a 3x3 grid at SPACING offsets, and the frame probe shows a non-blank, animated render."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "spawn() picks a free cell with the seeded mulberry32 RNG, and currentLife() shrinks with score (1.4 - 0.006*score, floor 0.5). Cells lower when age >= life. The probes saw many different cells pop (cellsSeen)."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "pointerdown runs Raycaster.setFromCamera against invisible cylinder hit meshes and maps the hit to a cell index. A raised lantern gives +10, and the probes recorded a score of 10 (scoreRange [0,10])."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "handleHit() falls through for inactive cells and sets score = max(0, score-5). Feedback is a red flash ring, a ped emissive tint, a camera shake and a 'Miss! -5' HUD message."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "pointermove sets hoverCell via ray picking. The hovered cell gets a cyan ring, a ring scale of 1.06 and an emissive tint on the pedestal."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking an active bomb calls endRound('lost'). The probes show status 'lost' after the clicks, with activeCells cleared."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decrements by dt (the probe timer samples confirm it decreases). At 0 the status becomes won when score >= 150, otherwise lost. This path was not run to completion in the probes, but the code is correct."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The Start button and the Enter key (in ready state) call startRound(). R and the Restart button also call it, resetting score, time, status and the RNG. The probes confirm startsOnEnter and restartResets (afterR is playing with timeLeft abo"
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A DOM HUD div outside the canvas shows score, time and status (hudOutsideCanvas, hudShowsState and hudFollows all pass). A DOM overlay shows the title, the final score and a Restart button at end of round."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is the live state object with status, score, timeLeft and activeCells. The probe samples show all four fields with the expected values."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 170,
+        "glueLines": 150,
+        "notes": "Estimates for a roughly 560-line file. Scene covers geometry, materials, lights and the nine-cell construction. Rules cover spawn, scoring, timer and status. Glue covers manual DOM HUD and overlay construction, renderer, camera and resize setup, the seeded RNG helper, raycaster and pointer plumbing,"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-three-r2",
+    "arm": "three",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 94.7,
+    "tokensIn": 43683,
+    "tokensOut": 7686,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 494,
+    "srcTokens": 4151,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 512.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 170,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "A 3x3 grid of cells (hole, ring and holder per cell) is built on a ground box with a perspective camera. The frame probe shows 82% non-black pixels."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "spawn() picks the cell from a mulberry32 RNG seeded with SEED, and the RNG is reset on each round start. Duration is max(0.5, 1.3 - score*0.005) with jitter, so it shrinks with score. The lanternsPop probe passed and 8 different cells were "
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "pickCell() casts a ray from the pointer onto a plane and tests each cell's bounds. A click on a live lantern gives +10, and the pointerChangesScore probe saw the score reach 10."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A click on a cell with no live target calls addScore(-5), which floors at 0 with Math.max. Feedback is a red flash ring, a particle burst, camera shake and a red score flash in the HUD."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The cell under the pointer (hovered index) gets a light-blue ring color and emissive each frame while playing."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking a live bomb calls endRound('lost'), which sets status to lost and shows the overlay. The probes did not click a bomb, so this rests on the code only, and the code is clear."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft starts at 45 and decreases, and the timer probe confirmed it. At 0, endRound uses won if score >= 150 and lost otherwise."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Enter or the Start button starts from ready, and R or the Restart button calls startRound(), which resets score, time and status. The startsOnEnter and restartResets probes passed."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "HUD spans for score, time and status are DOM elements outside the canvas, and the hudOutsideCanvas and hudShowsState probes passed. An overlay shows the title and final score when the status is not playing."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "window.__TASK_STATE__ holds status, score, timeLeft and activeCells, and syncState() updates activeCells. The hasState and initialOk probes passed, and the sampled values match the spec."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 130,
+        "glueLines": 170,
+        "notes": "Scene is the cell, lantern and bomb meshes, lights, camera and ground. Rules are spawn, scoring, round flow and input handlers. Glue is the seeded RNG helper, renderer and loop bootstrapping, the manual ray-to-plane pick, the particle pool and burst code, and about 50 lines of hand-built DOM HUD, ov"
+      }
+    }
+  },
+  {
+    "runId": "bench505-games-t14-three-r3",
+    "arm": "three",
+    "task": 14,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "ready": true,
+      "hasState": true,
+      "initialOk": true,
+      "startsOnEnter": true,
+      "timerDecreases": true,
+      "lanternsPop": true,
+      "restartResets": true,
+      "hudShowsState": true,
+      "canvasSize": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 89,
+    "tokensIn": 42357,
+    "tokensOut": 7424,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 487,
+    "srcTokens": 4162,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 511.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 130,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Nine cells are built in a 3x3 grid with holes, rings and a ground box, and the frame probe shows it rendered (nonblack 0.83)."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "spawn() picks a free cell with the seeded mulberry32 RNG. The raise duration is max(0.55, 1.5 - score*0.006), so it shrinks with score. The probe saw lanterns in cells 4, 6, 5, 3, 7 and 1."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A Raycaster against invisible hit cylinders maps the pointer to the cell. A raised lantern gives +10, a particle burst and floating text. The probe shows pointerChangesScore true and a score range of 0 to 15."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A click on a cell that is not active, or whose lantern is already lowered, sets score to max(0, score-5) and triggers a ring flash, a shake and '-5' floating text."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "pointermove sets hoverCell. The loop recolors the hovered ring to cyan and scales it up."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking an active bomb calls endRound('lost'). The probe's afterClicks sample shows status 'lost' with 36 s left."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "timeLeft counts down from 45 (probe: 44.53 then 43.03). At 0, endRound(score >= 150 ? 'won' : 'lost') runs."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The Start/Restart overlay button and Enter (when ready) start a round, and R restarts at any time. The probe shows startsOnEnter and restartResets true, with afterR at score 0, timeLeft about 44.5 and status playing."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A DOM HUD div below the canvas shows score, time and status, and an overlay shows the title, final score and button at the end. The probe shows hudOutsideCanvas, hudShowsState and hudFollows true."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "syncState() on every HUD update sets window.__TASK_STATE__ to {status, score, timeLeft, activeCells}. The probe shows hasState and initialOk true."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 165,
+        "rulesLines": 135,
+        "glueLines": 130,
+        "notes": "Glue is the mulberry32 helper, DOM HUD and overlay bootstrapping, renderer and loop setup, manual raycast and screen projection (pickCell, plus a dead cellScreenPos), the particle system, the floatText DOM animation, the clipped() helper, and type and global declarations. Counts are estimates."
+      }
+    }
+  }
+]

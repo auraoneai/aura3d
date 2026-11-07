@@ -39,6 +39,8 @@ export function readTask(taskNumber, arm, tasksDir = join(AGENT_EVAL_DIR, "tasks
   const file = readdirSync(tasksDir).find((name) => name.startsWith(`${String(taskNumber).padStart(2, "0")}-`) && name.endsWith(".md") && !name.startsWith("00-"));
   if (!file) throw new Error(`no task ${taskNumber}`);
   const contract = readFileSync(join(tasksDir, "00-contract.md"), "utf8");
+  // Tasks 11+ (505 benchmark) carry their own full rendering contract in the prompt text; it is delivered verbatim.
+  if (Number(taskNumber) >= 11) return { file, text: readFileSync(join(tasksDir, file), "utf8") };
   return { file, text: `${readFileSync(join(tasksDir, file), "utf8")}\n${contract}`.replaceAll("{{LIBRARY}}", LIBRARY_LABEL[arm]) };
 }
 
@@ -142,7 +144,7 @@ function repoSourceIndex(repoRoot) {
   // Git checkout: tracked files; ACR source pass (no .git): the staged manifest.
   const index = new Map();
   for (const path of listCandidateFiles(repoRoot, FORBIDDEN_ROOTS)) {
-    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || path.startsWith("evidence/agent-eval/")) continue;
+    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || path.startsWith("evidence/agent-eval")) continue;
     const name = basename(path);
     if (!index.has(name)) index.set(name, []);
     index.get(name).push(path);

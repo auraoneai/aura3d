@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eval app</title>
+    <style>
+      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }
+      #stage { position: relative; width: 640px; height: 360px; }
+      #app { display: block; width: 640px; height: 360px; touch-action: none; }
+      #hud { display: flex; gap: 24px; width: 640px; padding: 6px 10px; box-sizing: border-box; background: #10141f; font-size: 15px; }
+      #hud b { color: #ffd36b; }
+      #feedback { margin-left: auto; min-width: 90px; text-align: right; font-weight: 700; }
+      #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(5, 8, 20, 0.72); text-align: center; }
+      #overlay.hidden { display: none; }
+      #overlay h1 { margin: 0; font-size: 30px; }
+      #overlay p { margin: 0; max-width: 460px; }
+      #overlay button { font: inherit; font-size: 18px; padding: 8px 26px; border: 0; border-radius: 6px; background: #ffb43a; color: #201400; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="app" width="640" height="360"></canvas>
+      <div id="overlay">
+        <h1 id="overlay-title">Lantern Pop</h1>
+        <p id="overlay-text">Pop the glowing lanterns (+10). Missing a cell costs 5. Avoid the red bombs! Score 150 in 45 seconds to win.</p>
+        <button id="overlay-button" type="button">Start</button>
+      </div>
+    </div>
+    <div id="hud">
+      <span>Score: <b id="hud-score">0</b></span>
+      <span>Time: <b id="hud-time">45.0</b></span>
+      <span>Status: <b id="hud-status">ready</b></span>
+      <span id="feedback"></span>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,254 @@
+{
+ "bench505-games-t11-aura-r1": {
+  "mean": 66.5,
+  "std": 65.9,
+  "nonblack": 0.889,
+  "diff": 0.65,
+  "changedFrac": 0.0053
+ },
+ "bench505-games-t11-aura-r2": {
+  "mean": 7.6,
+  "std": 22.4,
+  "nonblack": 0.19,
+  "diff": 0.31,
+  "changedFrac": 0.0034
+ },
+ "bench505-games-t11-aura-r3": {
+  "mean": 7.0,
+  "std": 23.2,
+  "nonblack": 0.153,
+  "diff": 0.72,
+  "changedFrac": 0.0061
+ },
+ "bench505-games-t11-aura-sheet-r1": {
+  "mean": 56.3,
+  "std": 62.0,
+  "nonblack": 0.889,
+  "diff": 1.48,
+  "changedFrac": 0.0154
+ },
+ "bench505-games-t11-aura-sheet-r2": {
+  "mean": 58.9,
+  "std": 63.6,
+  "nonblack": 0.889,
+  "diff": 0.97,
+  "changedFrac": 0.0076
+ },
+ "bench505-games-t11-aura-sheet-r3": {
+  "mean": 61.4,
+  "std": 64.8,
+  "nonblack": 0.891,
+  "diff": 1.04,
+  "changedFrac": 0.0095
+ },
+ "bench505-games-t11-three-r1": {
+  "mean": 38.3,
+  "std": 50.1,
+  "nonblack": 0.895,
+  "diff": 0.73,
+  "changedFrac": 0.0075
+ },
+ "bench505-games-t11-three-r2": {
+  "mean": 53.0,
+  "std": 58.6,
+  "nonblack": 0.891,
+  "diff": 1.31,
+  "changedFrac": 0.011
+ },
+ "bench505-games-t11-three-r3": {
+  "mean": 56.0,
+  "std": 61.3,
+  "nonblack": 0.889,
+  "diff": 0.69,
+  "changedFrac": 0.0065
+ },
+ "bench505-games-t12-aura-r1": {
+  "mean": 191.4,
+  "std": 86.5,
+  "nonblack": 0.884,
+  "diff": 1.16,
+  "changedFrac": 0.0416
+ },
+ "bench505-games-t12-aura-r2": {
+  "mean": 174.1,
+  "std": 83.8,
+  "nonblack": 0.891,
+  "diff": 3.19,
+  "changedFrac": 0.0583
+ },
+ "bench505-games-t12-aura-r3": {
+  "mean": 96.3,
+  "std": 69.7,
+  "nonblack": 0.806,
+  "diff": 7.91,
+  "changedFrac": 0.0974
+ },
+ "bench505-games-t12-aura-sheet-r1": {
+  "mean": 71.9,
+  "std": 55.9,
+  "nonblack": 0.809,
+  "diff": 0.48,
+  "changedFrac": 0.0095
+ },
+ "bench505-games-t12-aura-sheet-r2": {
+  "mean": 36.3,
+  "std": 22.4,
+  "nonblack": 0.827,
+  "diff": 0.1,
+  "changedFrac": 0.0022
+ },
+ "bench505-games-t12-aura-sheet-r3": {
+  "mean": 103.9,
+  "std": 61.9,
+  "nonblack": 0.893,
+  "diff": 2.58,
+  "changedFrac": 0.0568
+ },
+ "bench505-games-t12-three-r1": {
+  "mean": 99.2,
+  "std": 44.0,
+  "nonblack": 0.884,
+  "diff": 1.47,
+  "changedFrac": 0.0586
+ },
+ "bench505-games-t12-three-r2": {
+  "mean": 30.4,
+  "std": 33.6,
+  "nonblack": 0.884,
+  "diff": 5.97,
+  "changedFrac": 0.0621
+ },
+ "bench505-games-t12-three-r3": {
+  "mean": 37.7,
+  "std": 36.1,
+  "nonblack": 0.884,
+  "diff": 4.27,
+  "changedFrac": 0.0422
+ },
+ "bench505-games-t13-aura-r1": {
+  "mean": 177.8,
+  "std": 81.4,
+  "nonblack": 0.884,
+  "diff": 87.54,
+  "changedFrac": 0.8228
+ },
+ "bench505-games-t13-aura-r2": {
+  "mean": 141.0,
+  "std": 83.3,
+  "nonblack": 0.818,
+  "diff": 5.69,
+  "changedFrac": 0.1437
+ },
+ "bench505-games-t13-aura-r3": {
+  "mean": 168.5,
+  "std": 77.4,
+  "nonblack": 0.886,
+  "diff": 91.01,
+  "changedFrac": 0.8206
+ },
+ "bench505-games-t13-aura-sheet-r1": {
+  "mean": 146.8,
+  "std": 68.7,
+  "nonblack": 0.884,
+  "diff": 66.31,
+  "changedFrac": 0.8216
+ },
+ "bench505-games-t13-aura-sheet-r2": {
+  "mean": 128.5,
+  "std": 66.5,
+  "nonblack": 0.891,
+  "diff": 13.55,
+  "changedFrac": 0.2695
+ },
+ "bench505-games-t13-aura-sheet-r3": {
+  "mean": 125.0,
+  "std": 64.8,
+  "nonblack": 0.891,
+  "diff": 15.82,
+  "changedFrac": 0.3357
+ },
+ "bench505-games-t13-three-r1": {
+  "mean": 89.5,
+  "std": 50.0,
+  "nonblack": 0.891,
+  "diff": 42.01,
+  "changedFrac": 0.8064
+ },
+ "bench505-games-t13-three-r2": {
+  "mean": 59.0,
+  "std": 37.8,
+  "nonblack": 0.89,
+  "diff": 66.08,
+  "changedFrac": 0.802
+ },
+ "bench505-games-t13-three-r3": {
+  "mean": 68.6,
+  "std": 41.0,
+  "nonblack": 0.891,
+  "diff": 11.04,
+  "changedFrac": 0.2297
+ },
+ "bench505-games-t14-aura-r1": {
+  "mean": 82.7,
+  "std": 43.9,
+  "nonblack": 0.891,
+  "diff": 54.32,
+  "changedFrac": 0.7643
+ },
+ "bench505-games-t14-aura-r2": {
+  "mean": 65.4,
+  "std": 38.4,
+  "nonblack": 0.961,
+  "diff": 42.23,
+  "changedFrac": 0.7935
+ },
+ "bench505-games-t14-aura-r3": {
+  "mean": 38.3,
+  "std": 52.4,
+  "nonblack": 0.426,
+  "diff": 28.8,
+  "changedFrac": 0.3626
+ },
+ "bench505-games-t14-aura-sheet-r1": {
+  "mean": 99.5,
+  "std": 46.0,
+  "nonblack": 0.893,
+  "diff": 65.3,
+  "changedFrac": 0.8211
+ },
+ "bench505-games-t14-aura-sheet-r2": {
+  "mean": 98.1,
+  "std": 44.8,
+  "nonblack": 0.886,
+  "diff": 64.02,
+  "changedFrac": 0.8229
+ },
+ "bench505-games-t14-aura-sheet-r3": {
+  "mean": 106.9,
+  "std": 51.6,
+  "nonblack": 0.886,
+  "diff": 71.05,
+  "changedFrac": 0.8195
+ },
+ "bench505-games-t14-three-r1": {
+  "mean": 28.3,
+  "std": 24.0,
+  "nonblack": 0.85,
+  "diff": 18.68,
+  "changedFrac": 0.7927
+ },
+ "bench505-games-t14-three-r2": {
+  "mean": 23.2,
+  "std": 25.4,
+  "nonblack": 0.822,
+  "diff": 16.24,
+  "changedFrac": 0.294
+ },
+ "bench505-games-t14-three-r3": {
+  "mean": 27.1,
+  "std": 29.0,
+  "nonblack": 0.829,
+  "diff": 18.18,
+  "changedFrac": 0.3774
+ }
+}

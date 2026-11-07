@@ -1,0 +1,218 @@
+{
+  "bench505-games-t11-aura-r1": {
+    "ok": true,
+    "ms": 4779,
+    "bundleKb": 9614,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-aura-r2": {
+    "ok": true,
+    "ms": 4226,
+    "bundleKb": 9613,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-aura-r3": {
+    "ok": true,
+    "ms": 4186,
+    "bundleKb": 9613,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-aura-sheet-r1": {
+    "ok": true,
+    "ms": 4245,
+    "bundleKb": 9614,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-aura-sheet-r2": {
+    "ok": true,
+    "ms": 4136,
+    "bundleKb": 9614,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-aura-sheet-r3": {
+    "ok": true,
+    "ms": 4503,
+    "bundleKb": 9613,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-three-r1": {
+    "ok": true,
+    "ms": 592,
+    "bundleKb": 503,
+    "log": "val-runs/bench505-games/bench505-games-t11-three-r1/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t11-three-r1/dist/assets/index-DQbOxuLf.js  515.03 kB │ gzip: 130.08 kB\n✓ built in 443ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-three-r2": {
+    "ok": true,
+    "ms": 529,
+    "bundleKb": 504,
+    "log": "val-runs/bench505-games/bench505-games-t11-three-r2/dist/index.html                  0.53 kB │ gzip:   0.36 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t11-three-r2/dist/assets/index-pVD1TWNI.js  515.24 kB │ gzip: 130.07 kB\n✓ built in 422ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t11-three-r3": {
+    "ok": true,
+    "ms": 530,
+    "bundleKb": 504,
+    "log": "val-runs/bench505-games/bench505-games-t11-three-r3/dist/index.html                  0.53 kB │ gzip:   0.36 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t11-three-r3/dist/assets/index-BTLLGxWi.js  515.76 kB │ gzip: 130.32 kB\n✓ built in 421ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-aura-r1": {
+    "ok": true,
+    "ms": 4166,
+    "bundleKb": 9612,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-aura-r2": {
+    "ok": true,
+    "ms": 4165,
+    "bundleKb": 9611,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-aura-r3": {
+    "ok": true,
+    "ms": 4292,
+    "bundleKb": 9613,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-aura-sheet-r1": {
+    "ok": true,
+    "ms": 4236,
+    "bundleKb": 9612,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-aura-sheet-r2": {
+    "ok": true,
+    "ms": 4243,
+    "bundleKb": 9612,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-aura-sheet-r3": {
+    "ok": true,
+    "ms": 4215,
+    "bundleKb": 9612,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-three-r1": {
+    "ok": true,
+    "ms": 523,
+    "bundleKb": 500,
+    "log": "val-runs/bench505-games/bench505-games-t12-three-r1/dist/index.html                  0.53 kB │ gzip:   0.36 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t12-three-r1/dist/assets/index-CiR6uNIU.js  511.58 kB │ gzip: 128.77 kB\n✓ built in 417ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-three-r2": {
+    "ok": true,
+    "ms": 513,
+    "bundleKb": 500,
+    "log": "val-runs/bench505-games/bench505-games-t12-three-r2/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t12-three-r2/dist/assets/index-B8dlgiay.js  511.22 kB │ gzip: 128.61 kB\n✓ built in 409ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t12-three-r3": {
+    "ok": true,
+    "ms": 516,
+    "bundleKb": 500,
+    "log": "val-runs/bench505-games/bench505-games-t12-three-r3/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t12-three-r3/dist/assets/index-Djiab53Z.js  511.67 kB │ gzip: 128.95 kB\n✓ built in 413ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-aura-r1": {
+    "ok": true,
+    "ms": 4479,
+    "bundleKb": 9614,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-aura-r2": {
+    "ok": true,
+    "ms": 4452,
+    "bundleKb": 9615,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-aura-r3": {
+    "ok": true,
+    "ms": 4457,
+    "bundleKb": 9618,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-aura-sheet-r1": {
+    "ok": true,
+    "ms": 4201,
+    "bundleKb": 9614,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-aura-sheet-r2": {
+    "ok": true,
+    "ms": 4185,
+    "bundleKb": 9614,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-aura-sheet-r3": {
+    "ok": true,
+    "ms": 4163,
+    "bundleKb": 9615,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-three-r1": {
+    "ok": true,
+    "ms": 511,
+    "bundleKb": 507,
+    "log": "val-runs/bench505-games/bench505-games-t13-three-r1/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t13-three-r1/dist/assets/index-BcQP6IIq.js  518.83 kB │ gzip: 131.26 kB\n✓ built in 409ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-three-r2": {
+    "ok": true,
+    "ms": 515,
+    "bundleKb": 506,
+    "log": "val-runs/bench505-games/bench505-games-t13-three-r2/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t13-three-r2/dist/assets/index-C9scU1dK.js  517.92 kB │ gzip: 130.90 kB\n✓ built in 412ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t13-three-r3": {
+    "ok": true,
+    "ms": 530,
+    "bundleKb": 507,
+    "log": "val-runs/bench505-games/bench505-games-t13-three-r3/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t13-three-r3/dist/assets/index-Cu5pvFOw.js  518.29 kB │ gzip: 131.11 kB\n✓ built in 421ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-aura-r1": {
+    "ok": true,
+    "ms": 4167,
+    "bundleKb": 9619,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-aura-r2": {
+    "ok": true,
+    "ms": 4099,
+    "bundleKb": 9620,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-aura-r3": {
+    "ok": true,
+    "ms": 4125,
+    "bundleKb": 9618,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-aura-sheet-r1": {
+    "ok": true,
+    "ms": 4461,
+    "bundleKb": 9617,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-aura-sheet-r2": {
+    "ok": true,
+    "ms": 4376,
+    "bundleKb": 9617,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-aura-sheet-r3": {
+    "ok": true,
+    "ms": 4207,
+    "bundleKb": 9618,
+    "log": "nt to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-three-r1": {
+    "ok": true,
+    "ms": 529,
+    "bundleKb": 516,
+    "log": "val-runs/bench505-games/bench505-games-t14-three-r1/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t14-three-r1/dist/assets/index-Ck50hOK9.js  527.61 kB │ gzip: 134.27 kB\n✓ built in 422ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-three-r2": {
+    "ok": true,
+    "ms": 527,
+    "bundleKb": 513,
+    "log": "val-runs/bench505-games/bench505-games-t14-three-r2/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t14-three-r2/dist/assets/index-Cb0o3SzV.js  524.44 kB │ gzip: 133.11 kB\n✓ built in 418ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  },
+  "bench505-games-t14-three-r3": {
+    "ok": true,
+    "ms": 536,
+    "bundleKb": 512,
+    "log": "val-runs/bench505-games/bench505-games-t14-three-r3/dist/index.html                  0.53 kB │ gzip:   0.35 kB\n../../../../../../tmp/agent-eval-runs/bench505-games/bench505-games-t14-three-r3/dist/assets/index-BaHzqDX9.js  523.70 kB │ gzip: 132.99 kB\n✓ built in 428ms\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  }
+}

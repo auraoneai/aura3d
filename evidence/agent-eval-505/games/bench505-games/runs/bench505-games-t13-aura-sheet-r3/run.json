@@ -1,0 +1,145 @@
+{
+  "runId": "bench505-games-t13-aura-sheet-r3",
+  "batch": "bench505-games",
+  "arm": "aura-sheet",
+  "task": 13,
+  "idx": 3,
+  "order": 24,
+  "seed": 20261106024,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:15:33.553Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 101436,
+  "usage": {
+    "input": 106894,
+    "uncachedInput": 106894,
+    "output": 6364,
+    "turns": 6,
+    "perTurnInput": [
+      3334,
+      11623,
+      14647,
+      19447,
+      28456,
+      29387
+    ],
+    "perTurnOutput": [
+      20,
+      46,
+      654,
+      69,
+      5149,
+      426
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1463,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1463,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1463,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 3634,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 4,
+      "t": 3634,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 3637,
+      "type": "search",
+      "pattern": "perspective|setTransform|setScale|setVisible"
+    },
+    {
+      "i": 6,
+      "t": 30252,
+      "type": "search",
+      "pattern": "setScale|setVisible|setPosition"
+    },
+    {
+      "i": 7,
+      "t": 30295,
+      "type": "search",
+      "pattern": "setScale|setVisible\\b"
+    },
+    {
+      "i": 8,
+      "t": 35465,
+      "type": "search",
+      "pattern": "nodes\\.|createAuraApp|onFrame|ready"
+    },
+    {
+      "i": 9,
+      "t": 93748,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 11801
+    },
+    {
+      "i": 10,
+      "t": 94240,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 11,
+      "t": 101436,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the endless runner in `src/main.ts`. It typechecks, but I couldn't run `vite build` or open it in a browser here, so it hasn't been run.\n\n- **Gameplay:**\n  - The runner stays at the origin and the track scenery scrolls past (cross stripes, dashes, posts, trees).\n  - Space, ArrowUp, W or a pointer click/tap jumps. There is no double jump, and the jump follows a gravity arc.\n  - Speed rises from 9 m/s by 0.016 m/s per metre, so it is about 17 m/s at 500 m.\n  - Hurdles vary in height and spacing, generated from a seeded generator (default seed 1337, or `?seed=N` in the URL). Hitting one ends the run as `lost`. Reaching 500 m sets `won`.\n- **Restart behaviour:**\n  - The game starts in `ready` and begins on the first jump input.\n  - R, or a jump input after the run ends, resets to distance 0 in `ready`. It does not start playing straight away.\n  - Restarting reuses the same seed, so the hurdle layout repeats.\n- **State and HUD:**\n  - `window.__TASK_STATE__` holds status, score (distance in metres), speed and airborne, and is updated every frame and on each input.\n  - Speed is reported as 0 whenever the status isn't `playing`.\n  - A DOM bar under the canvas shows distance, best for the page session and status. An overlay appears for ready, game over and win, with a restart hint.\n  - `window.__TASK_READY__` is set after the first frame is drawn.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}
