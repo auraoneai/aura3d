@@ -1,0 +1,112 @@
+[
+  {
+    "slug": "showcase-silt-and-signal-port",
+    "meanLuma": {
+      "base1": 59.2,
+      "branch1": 59.24
+    },
+    "baseVsBranch": {
+      "mad": 0.4248,
+      "over16": 0.01032
+    },
+    "noise": {
+      "base": {
+        "mad": 0.3009,
+        "over16": 0.00757
+      },
+      "branch": {
+        "mad": 0.1951,
+        "over16": 0.00512
+      }
+    },
+    "verdict": "within-noise"
+  },
+  {
+    "slug": "showcase-teleoperator",
+    "meanLuma": {
+      "base1": 38.72,
+      "branch1": 38.72
+    },
+    "baseVsBranch": {
+      "mad": 0,
+      "over16": 0
+    },
+    "noise": {
+      "base": {
+        "mad": 0.0077,
+        "over16": 0.00004
+      },
+      "branch": {
+        "mad": 0,
+        "over16": 0
+      }
+    },
+    "verdict": "within-noise"
+  },
+  {
+    "slug": "showcase-cross-hop",
+    "meanLuma": {
+      "base1": 84.84,
+      "branch1": 83.46
+    },
+    "baseVsBranch": {
+      "mad": 15.4193,
+      "over16": 0.25668
+    },
+    "noise": {
+      "base": {
+        "mad": 14.1194,
+        "over16": 0.24026
+      },
+      "branch": {
+        "mad": 15.2364,
+        "over16": 0.25907
+      }
+    },
+    "verdict": "within-noise"
+  },
+  {
+    "slug": "showcase-kart-havoc",
+    "meanLuma": {
+      "base1": 147.29,
+      "branch1": 147.3
+    },
+    "baseVsBranch": {
+      "mad": 0.0527,
+      "over16": 0.00086
+    },
+    "noise": {
+      "base": {
+        "mad": 0.1037,
+        "over16": 0.00142
+      },
+      "branch": {
+        "mad": 0.1605,
+        "over16": 0.00195
+      }
+    },
+    "verdict": "within-noise"
+  },
+  {
+    "slug": "showcase-cloud-runner-port",
+    "meanLuma": {
+      "base1": 96,
+      "branch1": 96
+    },
+    "baseVsBranch": {
+      "mad": 0.4572,
+      "over16": 0.00783
+    },
+    "noise": {
+      "base": {
+        "mad": 0.7988,
+        "over16": 0.01628
+      },
+      "branch": {
+        "mad": 1.2077,
+        "over16": 0.02667
+      }
+    },
+    "verdict": "within-noise"
+  }
+]
