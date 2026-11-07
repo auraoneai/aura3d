@@ -30,7 +30,7 @@ import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
+  BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_OUTPUT_EXPOSURE, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture, compensatedBase } from "./art/textures";
@@ -863,8 +863,8 @@ const mg = createGame({
     win: { punch: { fovDeg: 2.6, ms: 420 }, flash: { color: "#ffd76a", peak: 0.2, ms: 500 } }
   },
   qualityRebuild: { flags: ["game"] },
-  // BZ-08: ACES through the output, never a look preset
-  output: { toneMapping: "aces", ...labOptions.output },
+  // BZ-08: ACES through the output, never a look preset (lane 521 exposure: art/look.ts BZ_OUTPUT_EXPOSURE).
+  output: { toneMapping: "aces", exposure: BZ_OUTPUT_EXPOSURE, ...labOptions.output },
   ...(labOptions.renderer ? { renderer: labOptions.renderer } : {}),
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
 });

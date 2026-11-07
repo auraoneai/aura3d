@@ -54,6 +54,13 @@ export const BZ_POST = {
   toneMapping: "aces"
 } as const;
 
+/**
+ * Lane 521: output exposure. 5.0 renders the board-formed concrete albedo maps on the corridor walls and ceiling that
+ * 4.7.18 drew as the flat tint, which took the deployed F1 corridor from luma 82 to 64 (walls and ceiling visibly dimmer);
+ * this lift brings the corridor back to the 4.7.18 level and keeps the concrete detail.
+ */
+export const BZ_OUTPUT_EXPOSURE = 1.7;
+
 /** GU47 phase 3: the first-person field of view (was 72; the rubric found the enemies too small in frame). Render only. */
 export const BZ_FOV = 66;
 
