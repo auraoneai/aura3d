@@ -1,0 +1,3 @@
+play btn
+state {"ready":"true","mf":false,"sbf":false,"gpu":"ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)","playBtn":true,"rm":true}
+errors []
