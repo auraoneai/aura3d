@@ -1,0 +1,51 @@
+{
+  "id": "black-frame-no-light",
+  "run": 1,
+  "expected": [
+    "FRAME_BLACK"
+  ],
+  "repaired": true,
+  "repairedAtTurn": 1,
+  "turns": 1,
+  "apiCalls": 3,
+  "initialCodes": [
+    "RUNTIME_NO_LIGHTS",
+    "RUNTIME_NO_INTERACTIONS",
+    "FRAME_BLACK"
+  ],
+  "finalCodes": [
+    "RUNTIME_NO_INTERACTIONS",
+    "FRAME_EMPTY"
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "tools": [
+        "list_files"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "read_file"
+      ]
+    },
+    {
+      "turn": 1,
+      "tools": [
+        "write_file",
+        "done"
+      ]
+    },
+    {
+      "turn": 1,
+      "verifyCodes": [
+        "RUNTIME_NO_INTERACTIONS",
+        "FRAME_EMPTY"
+      ],
+      "ok": true
+    }
+  ],
+  "seconds": 291,
+  "finalSource": "import { camera, createAuraApp, lights, material, primitives, scene } from \"@aura3d/engine\";\n\n// Hand-written lambert shader. lightDir is the direction towards the light (normalized), so lit surfaces are not black.\nconst lit = (r: number, g: number, b: number) => material.custom({\n  glsl: {\n    vertex: /* glsl */ `\nout vec3 vNormal;\nvoid main() {\n  vNormal = normal;\n  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);\n}`,\n    fragment: /* glsl */ `\nin vec3 vNormal;\nout vec4 outColor;\nvoid main() {\n  float lambert = max(dot(normalize(vNormal), normalize(lightDir)), 0.0);\n  outColor = vec4(vec3(${r}, ${g}, ${b}) * lambert, 1.0);\n}`\n  },\n  uniforms: { lightDir: { type: \"vec3\", value: [0.45, 0.71, 0.54] } }\n});\n\nasync function main(): Promise<void> {\n  const app = createAuraApp(\"#app\", {\n  scene: scene({ background: \"#000000\" })\n    .add(lights.studio())\n    .add(primitives.sphere({ name: \"ball\", material: lit(0.9, 0.28, 0.3) }).position(0, 0.6, 0).scale(1.6))\n    .add(primitives.box({ name: \"block\", material: lit(0.29, 0.62, 1.0) }).position(2, 0.5, 0))\n    .camera(camera.orbit({ target: [0, 0.5, 0], distance: 7, fov: 40 }))\n});\n  await app.ready();\n}\nvoid main();\n"
+}

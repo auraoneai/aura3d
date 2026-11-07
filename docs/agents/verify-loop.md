@@ -173,7 +173,29 @@ The seeded scenes build from monorepo source through the shared `_shared/vite.co
 
 `tools/agent-loop/repair-harness.mjs` gives a subject model (Kiro Prism, `claude-sonnet-5.5` by default, subject only) the first verify report and three tools confined to `src/` (`list_files`, `read_file`, `write_file`) plus `done`. After each `done` the harness re-runs verify and shows the new report. No docs, no manifest, no expected code, no shell. A run is `REPAIRED` at the first turn whose report has none of the scene's expected codes and zero error findings; the budget is 5 turns. Prism sampling is not seedable, so a run is one sample, not a rate.
 
-RESULTS_SECTION
+### Results recorded in this lane (2026-11-06)
+
+**Unit and integration tests (no browser, driver mocked):** 46 tests in `verify-lint`, `verify-run`, `verify-seeded` and `verify-repair-harness` pass. They prove the lint rules (including false-positive guards and parity with the engine tables), the report plumbing, the code mapping, the frame analysis (identical output to `tools/release/render-gate/analysis.mjs` on five test images) and the repair-harness bookkeeping. They do not prove the engine behaves as the mocked captures say.
+
+**Real Chrome, `tests/reports/agent-loop/real-gpu/` (reports, text output and the two captured frames per run):** local headless Chrome on an Apple M4 Max, no `--software-gl`. The reports record backend `webgl2`; whether ANGLE used Metal or a software path was not checked. One run each:
+
+| Project | Result | Findings raised |
+| --- | --- | --- |
+| seeded `frozen-utime-water` | ok (warnings only) | `LINT_UTIME_NOT_ANIMATED`, `MOTION_NONE` (0.000% of pixels changed over 1 s) |
+| seeded `black-frame-no-light` | fail | `FRAME_BLACK` (p99 luma 0), `RUNTIME_NO_LIGHTS` |
+| seeded `fog-hides-scene` | fail | `FRAME_FLAT` (2 distinct colours) |
+| template `vite-vanilla` (staged) | ok | `MOTION_NONE` warning (a static product shot, so this is expected noise) |
+| template `product-viewer` (staged) | ok | `FRAME_EMPTY` warning at 9.6% textured blocks against a 10% threshold (the frame is drawn; this is a borderline false positive on a large flat backdrop), and two real `ASSET_VALIDATION_WARNING`s (manifest bounds do not match the GLB) |
+
+All ten seeded scenes were run through real Chrome once during development, before several fixes below (8 of 10 raised their expected code then; the two misses were the black-frame seed and `RUNTIME_OPTION_IGNORED`, both since fixed). That run is not committed and the other seven scenes were not re-run in a browser after the fixes, so only the five rows above are current evidence. What the real runs taught, all fixed before the committed runs: the engine supplies a default environment, so "no `lights.*`" alone never gives a black frame (the original seed drew a lit sphere), and the seed is now a hand-written lambert shader whose light uniform is never set; `RUNTIME_NO_LIGHTS` is the engine's own signal for the missing-light case and is a separate code; staged templates need the HDRI set that `create-aura3d` copies, otherwise they 404 on `/hdri/studio_small_08_1k.hdr` and verify correctly reports `REQUEST_FAILED` for a staging artefact; and the `await app.ready()` finding in the section below.
+
+The staged `product-viewer` frame shows the product floating above the plinth. That was observed in the committed frame and is not investigated or attributed here (it could be a staging artefact of the monorepo-source build or a template composition issue).
+
+**Subject repair run (n=1, model `claude-sonnet-5.5` through Kiro Prism, 5-turn budget):** `tests/reports/agent-loop/repair-static/`. Run with `--no-browser`, so the subject saw typecheck, assets, lint and build findings only. This covers the 8 seeded scenes that have a static expectation: **8 of 8 repaired in 1 turn** (all edits in the first turn, 3 model calls each), where "repaired" means the scene's expected code is gone and the report has no error findings. Read that number with these limits: the lint message for these defects names the fix, the scenes are 15 to 30 lines, it is one sample, and the success test is the report, not a render. One repair does not preserve the scene's intent: for `invented-asset-path` the subject replaced the `model(assets.robot)` node with box primitives, because it has no shell to admit a real asset; the report is clean but `claims-and-boundaries.md` forbids that fallback for a named object. The other repairs removed the seeded defect and kept the scene (a driven `waveClock` uniform, `receiveShadow: true`, scale 1, camera distance 40, and so on). No repair was verified in a browser. The two scenes that can only be detected at runtime (`black-frame-no-light`, `fog-hides-scene`) need the browser in the loop and are covered next.
+
+**Runtime-only scenes (browser in the loop, `tests/reports/agent-loop/repair-runtime/`):** `black-frame-no-light` and `fog-hides-scene`, n=1, real Chrome on every verify: **2 of 2 repaired in 1 turn** (3 model calls each, 291 s and 493 s wall time, most of it waiting for the shared browser lock). `FRAME_BLACK` and `FRAME_FLAT` were gone afterwards; both reports still carry a `FRAME_EMPTY` warning (a flat-ish scene), which the success test allows. The black-frame repair set the light uniform and also added `lights.studio()`; the fog repair lowered the density from 40 to 0.02.
+
+**Total: 10 of 10 seeded scenes repaired within the 5-turn budget, all in the first turn, one sample each (n=1).** The 10 are split across two modes (8 static-only, 2 with the browser), and the 8 static repairs were not re-rendered. Prism sampling is not seedable, so a repeat can differ; one sample of one model on 10 small scenes supports "the report is usable by a model for these defects" and nothing about rates, other models or real projects.
 
 ## A finding from building this
 
