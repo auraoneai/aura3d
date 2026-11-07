@@ -13,6 +13,7 @@ import { createPhysicalMaterialSpec, resolveIridescenceThickness } from "../../m
 import { validateMaterialVisualQA } from "../looks/structuralQA.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { noteUnrenderedOptions } from "./optionDiagnostics.js";
+import { markStudioMaterial } from "./studioMaterial.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 import { solarPlanetMaterial } from "../nodes/solar.js";
 import { resolveDepthPreviewMaterialOptions } from "@aura3d/rendering";
@@ -872,6 +873,44 @@ export const material = lazyNamespace(() => ({
     ior: options.ior ?? 1.5,
     envMapIntensity: options.envMapIntensity ?? 2.05
   }, options, material.glass),
+  /**
+   * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+   * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+   * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+   * every option still overrides.
+   */
+  studioMetal: (options: AuraMaterialSpec = {}): AuraMaterialSpec => markStudioMaterial(presetFrom({
+    name: options.name ?? "studio metal",
+    color: options.color ?? "#d9dee5",
+    roughness: options.roughness ?? 0.16,
+    metallic: options.metallic ?? options.metalness ?? 1,
+    metalness: options.metalness ?? options.metallic ?? 1,
+    clearcoat: options.clearcoat ?? 0,
+    envMapIntensity: options.envMapIntensity ?? 1
+  }, options, material.metal)),
+  /**
+   * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+   * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+   * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+   * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+   * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+   */
+  studioGlass: (options: AuraMaterialSpec & { readonly tint?: AuraColor } = {}): AuraMaterialSpec => {
+    const { tint, ...rest } = options;
+    return markStudioMaterial(presetFrom({
+      name: rest.name ?? "studio glass",
+      color: rest.color ?? tint ?? "#eaf6ff",
+      roughness: rest.roughness ?? 0.01,
+      opacity: rest.opacity ?? 1,
+      transmission: rest.transmission ?? 1,
+      thickness: rest.thickness ?? 0.8,
+      ior: rest.ior ?? 1.5,
+      clearcoat: rest.clearcoat ?? 0,
+      attenuationColor: rest.attenuationColor ?? tint ?? "#a8d8ec",
+      attenuationDistance: rest.attenuationDistance ?? 1.4,
+      envMapIntensity: rest.envMapIntensity ?? 1.25
+    }, rest, material.glass));
+  },
   blackRubber: (options: AuraMaterialSpec = {}): AuraMaterialSpec => presetFrom({
     name: options.name ?? "black rubber",
     color: options.color ?? "#0b0d11",

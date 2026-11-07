@@ -1,0 +1,23 @@
+{
+  "name": "softbox",
+  "source": "procedural",
+  "faceSize": 128,
+  "mipCount": 4,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "softbox.specular.ktx2",
+  "sh9": "softbox.sh9.f32",
+  "sha256": {
+    "specular": "6b3888cc04bed5ac8aebf52742a31bdbb4728d0beb130269b479b5919e1e1f50",
+    "sh9": "5543eb2a275642ceac41fe4b97b36b615a81cf8d00f82b8daa13994f9005fcce"
+  },
+  "license": "CC0",
+  "tags": [
+    "studio",
+    "metal",
+    "glass",
+    "softbox"
+  ],
+  "bakedBy": "tools/environments/bake-softbox.ts (Aura3D SoftboxEnvironmentScene.ts)",
+  "exposure": 0.41567517370000384,
+  "samplesPerTexel": 128
+}

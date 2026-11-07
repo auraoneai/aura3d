@@ -109,6 +109,8 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 | `material.brushedMetal(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.frostedGlass(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.clearGlass(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
+| `material.studioMetal(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
+| `material.studioGlass(options?: AuraMaterialSpec & { readonly tint?: AuraColor; })` | `AuraMaterialSpec` |  |
 | `material.blackRubber(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.matteClay(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.ceramic(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
@@ -174,7 +176,7 @@ void environments.neutral({ intensity: 0.8, background: false });
 | `environments.none(options?: {…})` | `AuraNodeBuilder<AuraEnvironmentNode>` | options: name?: string \| undefined |
 | `environments.capture(options?: {…})` | `AuraNodeBuilder<AuraEnvironmentNode>` | options: name?: string \| undefined; intensity?: number \| undefined; diffuseIntensity?: number \| undefined; specularIntensity?: number \| undefined; rotation?: number \| undefined; background?: boolean \| AuraEnvironment…; color?: string \| undefined; position?: AuraVec3 \| undefined; resolution?: 64 \| 128 \| 256 \| undefined; update?: "once" \| "on-demand" \| { …; include?: "all" \| "sky-only" \| unde… |
 | `environments.hdri(options: {…})` | `AuraNodeBuilder<AuraEnvironmentNode>` | options: name?: string \| undefined; intensity?: number \| undefined; diffuseIntensity?: number \| undefined; specularIntensity?: number \| undefined; rotation?: number \| undefined; background?: boolean \| AuraEnvironment…; color?: string \| undefined; texture: AuraAssetRef<"texture">; reflectionTexture?: AuraAssetRef<"texture"> \|… |
-| `environments.studio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
+| `environments.studio(options?: AuraStudioEnvironmentOptions)` | `AuraNodeBuilder<AuraEnvironmentNode>` | options: preset?: "studio" \| "softbox" \| un…; name?: string \| undefined; intensity?: number \| undefined; diffuseIntensity?: number \| undefined; specularIntensity?: number \| undefined; rotation?: number \| undefined; background?: boolean \| AuraEnvironment…; color?: string \| undefined |
 | `environments.materialLab(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.productHero(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.nightCinematic(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |

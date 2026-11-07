@@ -9,7 +9,7 @@ import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } fr
 import { assertScenePhysicsPivotSupport, createRuntimeScenePhysicsWithAccess, expandInstancePhysicsNodes, instanceTransformFromPhysics, fixedModelBoundsPhysicsGuard, nodePhysicsPosition, pivotPhysicsColliderSync, nodePositionFromPhysics, nodeRotationQuaternion, offsetPhysicsPosition, resolveNodePhysicsOffset, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics-core.js";
 import { hasNonzeroPivot } from "../pivotGuard.js";
 import { colorToLinearRgba } from "../colorUtils.js";
-import { scene } from "../nodes/scene.js";
+import { scene, sceneUsesStudioGlass } from "../nodes/scene.js";
 import { createComputeSurface, type AuraComputeDeviceSource } from "../nodes/compute.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { renderer } from "../rendererDiagnostics.js";
@@ -35,7 +35,7 @@ import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, registerManagedRootApp, reserveRootCanvas, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import type { PhysicsWorldAccess } from "../physics/PhysicsWorldAccess.js";
 import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./rendererOptions.js";
-import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
+import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
 import { clearTypedGLBActorQrFlags, setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { bindActorAnimationContext, createActorAnimationContext, disposeActorAnimationContext } from "./actorAnimationHandle.js";
 import { setWorldBuilderFlags } from "../world/flags.js";
@@ -311,7 +311,7 @@ export function createAuraAppWithPhysicsWorldAccess(
   // opts out (`allowUrlFlags:false`); without this the `a3d-qr` param was dead
   // for every app — lane extensions, actor sources and clip-drive all gated on
   // the resolved flags and silently ran flag-off under `?a3d-qr=animation`.
-  const qrFlags = qrFlagsWithAnimationMixer(
+  const qrFlags = qrFlagsWithStudioGlass(qrFlagsWithAnimationMixer(
     resolveQrFlags({
       options: options.qualityRebuild?.flags,
       url: options.qualityRebuild?.allowUrlFlags === false
@@ -319,7 +319,7 @@ export function createAuraAppWithPhysicsWorldAccess(
         : typeof location !== "undefined" ? location.href : undefined
     }),
     options.animation?.mixer
-  );
+  ), sceneUsesStudioGlass(snapshot.nodes));
   // T4.5 (PRD-15): strict callers receive the migration error before a
   // physics-declaring app allocates either of its worlds.
   if ((options.strict ?? qrFlags.on("A3D_QR_STRICT")) && options.renderer) {

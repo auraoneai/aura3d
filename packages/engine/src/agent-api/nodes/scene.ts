@@ -4,6 +4,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { applyOverrideMaterial, assertAuraOverrideMaterial } from "./overrideMaterial.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder, toSceneNode } from "./builder.js";
+import { envSourceBuilders } from "./environments.js";
+import { isStudioMaterial } from "./studioMaterial.js";
 import { camera } from "./camera.js";
 import { applyOrbitInteraction } from "./orbitInteraction.js";
 import { isPositiveFinite, lowerLookNode } from "../sceneMath.js";
@@ -16,6 +18,37 @@ import { validateClippingGroup } from "@aura3d/rendering";
 import { AuraClipGroup, type AuraClipGroupSnapshot, type AuraClipScope } from "./clipping.js";
 
 const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
+
+/** What the scene's nodes say about studio materials: any studio-material hint, and whether an environment or look is authored. */
+function scanStudioMaterials(nodes: readonly AuraSceneNode[]): { readonly hinted: boolean; readonly authored: boolean; readonly glass: boolean } {
+  let hinted = false;
+  let authored = false;
+  let glass = false;
+  const visit = (node: unknown, depth: number): void => {
+    if (depth > 12 || node === null || typeof node !== "object") return;
+    const record = node as { kind?: unknown; material?: { transmission?: unknown } | undefined; children?: unknown };
+    // A look node expands to its own environment, so it counts as authored.
+    if (record.kind === "environment" || record.kind === "look") authored = true;
+    if (isStudioMaterial(record.material)) {
+      hinted = true;
+      if (typeof record.material?.transmission === "number" && record.material.transmission > 0) glass = true;
+    }
+    if (Array.isArray(record.children)) for (const child of record.children) visit(child, depth + 1);
+  };
+  for (const node of nodes) visit(node, 0);
+  return { hinted, authored, glass };
+}
+
+/** True when no node is an environment and some node's material carries the studio-material hint. */
+function needsSoftboxEnvironment(nodes: readonly AuraSceneNode[]): boolean {
+  const { hinted, authored } = scanStudioMaterials(nodes);
+  return hinted && !authored;
+}
+
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean {
+  return scanStudioMaterials(nodes).glass;
+}
 
 // Enumerable symbols follow the engine's object-spread snapshots but are not
 // written to JSON. This keeps captured state stable while a mounted scene can
@@ -243,7 +276,9 @@ export class AuraSceneBuilder {
   toJSON(): AuraSceneSnapshot {
     const clipping = this.clippingGroup;
     const clippingSnapshot = clipping ? snapshotClipping(clipping, "global") : undefined;
-    const nodes = dropShadowedLookFill(this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes]);
+    const lookNodes = dropShadowedLookFill(this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes]);
+    // `material.studioMetal` / `material.studioGlass` ask for the softbox probe; an authored environment always wins.
+    const nodes = needsSoftboxEnvironment(lookNodes) ? [...lookNodes, toSceneNode(envSourceBuilders.studio({ preset: "softbox", name: "softbox studio ibl environment (studio material default)" }))] : lookNodes;
     return {
       schema: "aura3d-scene-snapshot/1.0",
       ...(clippingSnapshot ? { clipping: clippingSnapshot } : {}),

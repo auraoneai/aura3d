@@ -213,6 +213,19 @@ export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legac
   };
 }
 
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags {
+  if (!usesStudioGlass || flags.values.A3D_QR_MATERIALS_TRANSMISSION !== undefined) return flags;
+  if (isTrustedQrFlags(flags)) return createTrustedQrFlags({ ...flags.values, A3D_QR_MATERIALS_TRANSMISSION: true });
+  const values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>> = Object.freeze({ ...flags.values, A3D_QR_MATERIALS_TRANSMISSION: true });
+  return { values, on(name: QrFlagName): boolean { return name === "A3D_QR_MATERIALS_TRANSMISSION" || flags.on(name); } };
+}
+
 export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly url?: URL | string; readonly env?: Readonly<Record<string, string | undefined>> }): QrFlags {
   // Flag names are data. A null prototype prevents inherited or polluted
   // properties from defeating first-write precedence for a real flag.
