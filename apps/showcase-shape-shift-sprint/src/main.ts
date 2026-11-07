@@ -407,8 +407,12 @@ function snapshotState() {
   };
 }
 
-/** QA replay script: a JSON array of partial inputs ({} = idle); the first step usually {start:true}. */
-function parseScript(text: string): Input[] {
+/** QA replay script: a JSON array of partial inputs ({} = idle) or an array; the first step usually {start:true}. */
+function parseScript(text: string | readonly Partial<Input>[]): Input[] {
+  if (typeof text !== "string") {
+    if (!Array.isArray(text)) throw new Error("shape-shift-sprint: replay script must be a JSON array of inputs");
+    return text.map((r) => ({ ...IDLE, ...r }));
+  }
   if (text.trim() === "") return [{ ...IDLE, start: true }];
   const raw = JSON.parse(text) as Partial<Input>[];
   if (!Array.isArray(raw)) throw new Error("shape-shift-sprint: replay script must be a JSON array of inputs");
@@ -434,7 +438,7 @@ const qa = installQaHooks("shape-shift", {
     render();
     updateHud();
   },
-  replay(text: string, warmup = config.warmup, seed = config.seed) {
+  replay(text: string | readonly Partial<Input>[], warmup = config.warmup, seed = config.seed) {
     return replay(seed, warmup, parseScript(text)).trace;
   },
   reset(seed = config.seed) {

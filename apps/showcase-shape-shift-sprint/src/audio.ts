@@ -4,7 +4,7 @@
  * from sim-state diffs (`diffSounds`), never fired from the sim; silent until the first user gesture;
  * mute is persisted by main.ts under `splatSiblings.shape-shift-sprint.mute`.
  */
-import { noteFrom, type CueSpec } from "@aura3d/engine/audio";
+import { noteFrom, type CueSpec, type SynthContext } from "@aura3d/engine/audio";
 import { createGameSound, type GameSound, type GameSoundOptions, type SoundEvent } from "../../../examples/shared/runner-kit/index";
 
 const note = noteFrom(523.25); // C5
@@ -105,11 +105,12 @@ export const CUES: Record<CueName, CueSpec> = {
   }
 };
 
-export function soundOptions(): GameSoundOptions<CueName> {
+export function soundOptions(options: { context?: SynthContext } = {}): GameSoundOptions<CueName> {
   return {
     cues: CUES,
     bpm: BPM,
     noiseSeed: 0x53517b,
+    ...(options.context ? { context: options.context } : {}),
     sequence: (n, at, eighth, voice) => {
       voice({ type: "triangle", freq: note(ARP[n % ARP.length] as number), at, dur: 0.85 * eighth, gain: 0.055 });
       if (n % 2 === 0) voice({ type: "sine", freq: note(BASS[(n / 2) % BASS.length] as number), at, dur: 1.7 * eighth, gain: 0.085 });
@@ -117,6 +118,6 @@ export function soundOptions(): GameSoundOptions<CueName> {
   };
 }
 
-export function createShapeSound(): GameSound<CueName> {
-  return createGameSound<CueName>(soundOptions());
+export function createShapeSound(options: { context?: SynthContext } = {}): GameSound<CueName> {
+  return createGameSound<CueName>(soundOptions(options));
 }

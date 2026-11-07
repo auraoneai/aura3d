@@ -57,6 +57,18 @@ const dyn = (m: MeshData) => geometry.dynamic({
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k];
 
+/** Every distinct `material.custom` program the game draws with (for the GLSL compile test). */
+export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
+  return [
+    { name: "sky", spec: skySpec(gradientSkyFragment(LOOK.skyStops)) },
+    { name: "toon", spec: toonSpec(WALL_LINEAR) },
+    { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
+    { name: "flat-shield", spec: flatSpec(hexToLinear(LOOK.tokenColors.shield), 0.24) },
+    { name: "flat-wildcard", spec: flatSpec(hexToLinear(LOOK.tokenColors.wildcard), 0.45) },
+    { name: "shadow", spec: shadowSpec() }
+  ];
+}
+
 export function buildWorld(options: WorldOptions): World {
   const builder = scene()
     .background(LOOK.skyStops[LOOK.skyStops.length - 1].hex)

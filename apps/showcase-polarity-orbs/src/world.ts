@@ -50,6 +50,18 @@ export const NODE_IDS = [
   "shield", "orbs", "powerups", "particles", "shockwave", "streams"
 ] as const;
 
+/** Every distinct `material.custom` program the game draws with (for the GLSL compile test). */
+export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
+  return [
+    { name: "sky-blend", spec: skyBlendSpec() },
+    { name: "toon", spec: toonSpec(LINEAR.red) },
+    { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
+    { name: "flat", spec: flatSpec(LINEAR.mint, 0.25) },
+    { name: "flat-tone", spec: flatSpec([1, 1, 1], 0.95, true) },
+    { name: "shadow", spec: shadowSpec() }
+  ];
+}
+
 const POWERUP_TONES: Record<PowerupKind, Rgb> = {
   rainbow: LINEAR.gold,
   shield: LINEAR.mint,

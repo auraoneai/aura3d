@@ -129,7 +129,7 @@ describe("number-surge sim: scoring, walls, death, restart", () => {
   it("autopilot scores, smashes walls and persists the biggest smash in state", () => {
     const sim = new NumberSurgeSim(11);
     const pilot = new Autopilot();
-    for (let i = 0; i < 6000 && sim.o.phase === "playing"; i += 1) sim.advance(pilot.next(sim, i));
+    for (let i = 0; i < 6000 && (i === 0 || sim.o.phase === "playing"); i += 1) sim.advance(pilot.next(sim, i));
     expect(sim.o.score).toBeGreaterThan(0);
     expect(sim.o.wallsSmashed).toBeGreaterThanOrEqual(1);
     expect(sim.o.biggestSmash).toBeGreaterThanOrEqual(40);
@@ -186,7 +186,7 @@ describe("number-surge sim: scoring, walls, death, restart", () => {
     const pilot = new Autopilot();
     const hps: number[] = [];
     let passed = 0;
-    for (let i = 0; i < 9000 && sim.o.phase === "playing"; i += 1) {
+    for (let i = 0; i < 9000 && (i === 0 || sim.o.phase === "playing"); i += 1) {
       sim.advance(pilot.next(sim, i));
       for (const w of sim.o.walls) {
         if (w.active && !hps.includes(w.hp)) hps.push(w.hp);
@@ -208,12 +208,12 @@ describe("number-surge sim: scoring, walls, death, restart", () => {
     expect(Math.abs(sim.o.laneOffset)).toBeGreaterThan(0.5);
     sim.begin();
     expect(sim.o.laneOffset).toBe(0);
-    // Drag state cleared: a held pointer without a fresh down must not keep steering.
-    for (let i = 0; i < 60; i += 1) sim.advance({ ...IDLE, down: true });
-    expect(sim.o.laneOffset).toBe(0);
     expect(sim.o.number).toBe(CONFIG.START_NUMBER);
     expect(sim.o.score).toBe(0);
     expect(sim.o.distance).toBe(0);
+    // Drag state cleared: a held pointer without a fresh down must not keep steering.
+    for (let i = 0; i < 60; i += 1) sim.advance({ ...IDLE, down: true });
+    expect(sim.o.laneOffset).toBe(0);
   });
 
   it("steering clamps to the lane limit and eases toward the drag target", () => {

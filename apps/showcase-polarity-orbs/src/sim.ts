@@ -142,6 +142,7 @@ export class PolarityOrbsSim {
 
   private readonly seed: number;
   private rng: GameRng;
+  private fxRng: GameRng;
   private ye = 0;
   private dragging = false;
   private popupSeq = 0;
@@ -151,6 +152,7 @@ export class PolarityOrbsSim {
   constructor(seed: number) {
     this.seed = seed;
     this.rng = new GameRng(seed);
+    this.fxRng = new GameRng(seed ^ 0x5f3759df);
     this.o = {
       phase: "splash", tick: 0, score: 0, combo: 0, bestCombo: 0, mult: 1,
       lives: CONFIG.MAX_LIVES, distance: 0, speed: CONFIG.SPEED_INIT, laneOffset: 0,
@@ -168,6 +170,7 @@ export class PolarityOrbsSim {
   /** Start / restart: re-seeds the counted stream and re-centres steering AND drag state (audit fix C4). */
   begin(): void {
     this.rng = new GameRng(this.seed);
+    this.fxRng = new GameRng(this.seed ^ 0x5f3759df);
     this.ye = 0;
     this.dragging = false;
     this.nextRowId = 0;
@@ -438,10 +441,10 @@ export class PolarityOrbsSim {
       p.x = x;
       p.y = y;
       p.z = z;
-      p.vx = (this.rng.next() - 0.5) * 6;
-      p.vy = this.rng.next() * 5 + 1;
-      p.vz = (this.rng.next() - 0.5) * 4;
-      p.maxLife = 0.5 + this.rng.next() * 0.4;
+      p.vx = (this.fxRng.next() - 0.5) * 6;
+      p.vy = this.fxRng.next() * 5 + 1;
+      p.vz = (this.fxRng.next() - 0.5) * 4;
+      p.maxLife = 0.5 + this.fxRng.next() * 0.4;
       p.life = p.maxLife;
       p.color = PARTICLE_COLORS[colorIndex] as number;
       if (++spawned >= count) break;

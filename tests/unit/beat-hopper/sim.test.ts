@@ -216,8 +216,9 @@ describe("beat-hopper sim", () => {
     expect(sim.o.perfect).toBe(20);
     expect(sim.o.combo).toBe(20);
     expect(sim.o.mult).toBe(5);
-    // 4 at x1, 4 at x2, 4 at x3, 4 at x4, 4 at x5 = 60 * (4 + 8 + 12 + 16 + 20)
-    expect(sim.o.score).toBe(60 * (4 + 8 + 12 + 16 + 20));
+    expect(sim.o.milestones).toBe(5);
+    // 3 at x1 (combo 1..3), 4 at x2 (4..7), 4 at x3 (8..11), 4 at x4 (12..15), 5 at x5 (16..20) + 5 milestones
+    expect(sim.o.score).toBe(60 * (3 + 8 + 12 + 16 + 25) + 5 * CONFIG.MILESTONE_BONUS);
   });
 
   it("milestone every 750 adds +100 and a gold popup; popups keep the last 64 with monotonic seq (C2)", () => {
@@ -279,8 +280,8 @@ describe("beat-hopper sim", () => {
         const abs = index * CONFIG.BEATS_PER_PHRASE + b;
         expect(abs - prevBeat).toBeGreaterThanOrEqual(1);
         if (prevType !== "bar" && type !== "bar") expect(abs - prevBeat).toBeGreaterThanOrEqual(2);
-        if (index === 0) expect(b - lastLocal).toBe(2);
-        if (index >= 4) expect(b - lastLocal).toBe(1);
+        if (index === 0 && lastLocal >= 0) expect(b - lastLocal).toBe(2);
+        if (index >= 4 && lastLocal >= 0) expect(b - lastLocal).toBe(1);
         lastLocal = b;
         prevBeat = abs;
         prevType = type;

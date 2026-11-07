@@ -58,7 +58,7 @@ const BASS = [-12, -5, -8, -10];
 
 const ladder = (level: number): number => note(LADDER[Math.min(LADDER.length - 1, Math.max(0, level))] as number);
 
-const CUES: GameSoundOptions<PolaritySound>["cues"] = {
+export const CUES: GameSoundOptions<PolaritySound>["cues"] = {
   flip: {
     layers: [
       { freq: 300, type: "square", dur: 0.12, gain: 0.1, slideTo: 620 },

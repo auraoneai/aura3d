@@ -92,12 +92,12 @@ const stopVec = (stop: SkyStop): string => {
   return `srgbToLinear(vec3(${r.toFixed(4)}, ${g.toFixed(4)}, ${b.toFixed(4)}))`;
 };
 
-const gradientExpr = (stops: readonly SkyStop[]): string => {
+const gradientExpr = (stops: readonly SkyStop[], name: string): string => {
   const sorted = [...stops].sort((a, b) => a.t - b.t);
-  const lines = [`vec3 c = ${stopVec(sorted[0] as SkyStop)};`];
+  const lines = [`vec3 ${name} = ${stopVec(sorted[0] as SkyStop)};`];
   for (let i = 1; i < sorted.length; i++) {
     const a = sorted[i - 1] as SkyStop, b = sorted[i] as SkyStop;
-    lines.push(`c = mix(c, ${stopVec(b)}, smoothstep(${a.t.toFixed(4)}, ${b.t.toFixed(4)}, t));`);
+    lines.push(`${name} = mix(${name}, ${stopVec(b)}, smoothstep(${a.t.toFixed(4)}, ${b.t.toFixed(4)}, t));`);
   }
   return lines.join("\n  ");
 };
@@ -113,10 +113,8 @@ ${SRGB}
 void main() {
   float y = normalize(vWorld - cameraPosition).y;
   float t = clamp(0.5 - y * 0.5, 0.0, 1.0);
-  ${gradientExpr(LOOK.skyWarm)}
-  vec3 warm = c;
-  ${gradientExpr(LOOK.skyCool)}
-  vec3 cool = c;
+  ${gradientExpr(LOOK.skyWarm, "warm")}
+  ${gradientExpr(LOOK.skyCool, "cool")}
   outColor = vec4(mix(warm, cool, uMix), 1.0);
 }`;
 
