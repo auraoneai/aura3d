@@ -1,0 +1,92 @@
+[
+  {
+    "task": "1",
+    "label": "after",
+    "order": [
+      "aura",
+      "three"
+    ],
+    "totals": {
+      "aura": 15,
+      "three": 19
+    },
+    "scores": {
+      "aura": {
+        "readability": 4,
+        "lighting": 2,
+        "materials": 2,
+        "fidelity": 3,
+        "polish": 4
+      },
+      "three": {
+        "readability": 4,
+        "lighting": 3,
+        "materials": 4,
+        "fidelity": 4,
+        "polish": 4
+      }
+    },
+    "winner": "three",
+    "why": "B shows a gold metallic cube with visible specular gradients and clearer form, while A is a pale, nearly flat grey cube with weak metallic cues and low face contrast."
+  },
+  {
+    "task": "2",
+    "label": "after",
+    "order": [
+      "three",
+      "aura"
+    ],
+    "totals": {
+      "aura": 12,
+      "three": 16
+    },
+    "scores": {
+      "three": {
+        "readability": 4,
+        "lighting": 3,
+        "materials": 3,
+        "fidelity": 3,
+        "polish": 3
+      },
+      "aura": {
+        "readability": 3,
+        "lighting": 2,
+        "materials": 2,
+        "fidelity": 2,
+        "polish": 3
+      }
+    },
+    "winner": "three",
+    "why": "A shows the whole forest with clear tree shapes, depth fog and dark ground contrast, while B is cropped at the bottom, washed out, and has flat shading with no visible shadows, rocks or trunks."
+  },
+  {
+    "task": "9",
+    "label": "after",
+    "order": [
+      "three",
+      "aura"
+    ],
+    "totals": {
+      "aura": 17,
+      "three": 18
+    },
+    "scores": {
+      "three": {
+        "readability": 4,
+        "lighting": 4,
+        "materials": 3,
+        "fidelity": 4,
+        "polish": 3
+      },
+      "aura": {
+        "readability": 4,
+        "lighting": 3,
+        "materials": 3,
+        "fidelity": 3,
+        "polish": 4
+      }
+    },
+    "winner": "three",
+    "why": "A has a clearly visible cyan and magenta rim light with a dark background and a more detailed robot (boxy head with eyes, antenna, chest panel), while B's lighting is a flat pink wash with a weak rim light and a simpler robot, though B has a cleaner floor shadow and fewer artifacts."
+  }
+]

@@ -103,3 +103,15 @@ A self-judgement is not a pass of the quality bar; only a panel round passes it.
 ## 7. Claims
 
 A look claim without a captured frame is `prototype`. Labels are in [claims-and-boundaries.md](claims-and-boundaries.md); the quality ladder (L0 to L4: text only, primitive sketch, asset-backed draft, realtime cinematic scene, production handoff) and the evidence workflow are in the `aura3d-evidence-review` skill; the release bar is [showcase quality gates](../project/showcase/quality-gates.md). Only L3 or better is public product proof.
+
+## 8. Helpers for scenes without a look preset (5.1, opt-in)
+
+Scenes that call `looks.preset(...)` are unchanged. For a scene that does not (a hero cube, a procedural figure, a large instanced field), three opt-in helpers fix the weak defaults seen in the cold-start trial:
+
+- `looks.heroStage({ target, radius, background })` adds studio IBL, a warm key, cool fill and back rim sized to the subject, and a floor that fades into `background` (set it equal to `scene({ background })`) so no floor edge shows. `floor: false` keeps only the lighting. `environmentIntensity`, `keyColor`, `fillColor`, `rimColor` retune it. Use it instead of `environments.neutral` when a metal or gloss material reads flat grey.
+- `looks.heroRig(...)` is the three lights alone.
+- `looks.fogForExtent({ extent, haze, mode, color })` sizes scene fog by distance: opacity `haze` (default 0.35) at `extent` world units. Use the distance to the far edge you want to see (a forest orbit camera at 135 units over a 62 unit forest wants `extent: 260`). A fixed density that looks right at 5 units washes out a scene viewed from 15 to 130.
+
+`model(asset)` still fits a model's longest side to 1.55 world units unless you pass an explicit scale; size cameras, floors and `heroStage({ radius })` from that, not from the source file's units.
+
+Proof for these helpers is in `evidence/look-defaults-511/`; the one-frame blind judge there shows the gap to three.js narrowing on the robot and not closing on the cube or forest.
