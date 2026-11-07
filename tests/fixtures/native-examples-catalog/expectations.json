@@ -354,7 +354,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/falling-blocks-starter/src/main.ts",
-        "sha256": "dc33e3c55a436e9930eb612437e63c038a85637c373878c72153ab69def29a74"
+        "sha256": "3a795289c2bcd335d7a36b0198a0de363bab167707a34b38b40928a88a898fad"
       },
       "sourceDependencies": [
         {
@@ -1357,7 +1357,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/character-viewer/src/main.ts",
-        "sha256": "6870a1421ecdc35756281430924dfdb6fc3aa6227646dddb89747e41e09959bb"
+        "sha256": "84cbcac628e9ae53cc14aa92e3550958bb98bbcdadf66828681fe9d63155249d"
       },
       "sourceDependencies": [
         {
@@ -1483,7 +1483,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/procedural-scene/src/main.ts",
-        "sha256": "0872d7301a7a0d2fcb269d718ba12a28961f459f8f50d1d557974e7520779b56"
+        "sha256": "3f8c14a3006a5749b49925b0d90b556fd06d59155a5d6ec3c84af43efb7709e4"
       },
       "sourceDependencies": [
         {
@@ -1883,7 +1883,7 @@
       "sourceDependencies": [
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/empty-document.ts",
-          "sha256": "6e7aee36c8a8263889a34374cae3fb14ff0cce9d3fc6b5e09797ff6f979eefe8"
+          "sha256": "04728c44808260c8a0da2f6f65b45111787f559125172055143d9d962be01196"
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",

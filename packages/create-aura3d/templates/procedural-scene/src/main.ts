@@ -56,7 +56,7 @@ const robot = group("robot", [
 
 const app = createAuraApp("#app", {
   scene: scene()
-    .add(looks.preset(LOOK_ID)) // environment light, key shadow, fog, background and grade as one unit
+    .add(looks.preset(LOOK_ID, { fogDensityScale: 0.2, exposureEv: -0.5, background: "#1f2635" })) // environment light, key shadow, fog, background and grade as one unit; a dark backdrop, light fog and trimmed exposure keep the metal readable
     .add(primitives.plane({ name: "floor", size: [14, 1, 14], material: material.pbr({ color: "#262a33", roughness: 0.85 }), receiveShadow: true }))
     .add(robot)
     .add(interactions.orbit({ target: "floor" }))
