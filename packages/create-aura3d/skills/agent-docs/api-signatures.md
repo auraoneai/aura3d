@@ -60,7 +60,7 @@ const stage = scene({ background: "#101418" }).add(primitives.box({ name: "crate
 
 ## `looks`
 
-Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options.
+Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options. HDRI-backed presets load `/hdri/<file>.hdr` from `public/hdri/`; a missing file degrades to a procedural probe, logs one `LOOK_HDRI_MISSING` console error and lists it in `app.diagnostics().warnings`.
 
 ```ts
 void looks.preset("product-studio");
@@ -77,7 +77,7 @@ void looks.preset("product-studio");
 
 ## `material`
 
-Colours are CSS strings. Metals need an environment.
+Colours are CSS strings (`#rgb`, `#rrggbbaa`, `rgb()`, `hsl()`, `oklch()`, names); an invalid value throws `COLOR_INVALID` naming the option. Metals need an environment.
 
 ```ts
 void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
