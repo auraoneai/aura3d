@@ -1,0 +1,45 @@
+{
+  "appId": "showcase-beat-hopper",
+  "route": "/apps/showcase-beat-hopper/",
+  "generatedAt": "2026-11-07T12:45:16.959Z",
+  "ok": true,
+  "checks": [
+    {
+      "name": "dist/index.html exists",
+      "ok": true
+    },
+    {
+      "name": "has #app mount",
+      "ok": true
+    },
+    {
+      "name": "has #hud root",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "aura-assets dir",
+      "ok": true
+    },
+    {
+      "name": "manifest assets",
+      "ok": true,
+      "detail": "1 assets"
+    },
+    {
+      "name": "typegen exists",
+      "ok": true
+    },
+    {
+      "name": "font admitted",
+      "ok": true
+    },
+    {
+      "name": "font provenance",
+      "ok": true
+    }
+  ]
+}

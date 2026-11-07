@@ -8,12 +8,14 @@ import { CONFIG, IDLE, applyOp, type Input, type NumberSurgeSim } from "./sim";
 export interface AutopilotParams {
   /** Maximum steering delta per step (world units). */
   maxDx: number;
+  /** When true, steers to the worse gate so browser specs can drive the wall-fail -> gameOver path. */
+  reckless?: boolean;
 }
 
 export const DEFAULT_AUTOPILOT: AutopilotParams = { maxDx: 0.35 };
 
-/** The lane x the policy wants: the better-result gate of the nearest unresolved row. */
-export function targetLane(sim: NumberSurgeSim): number | null {
+/** The lane x the policy wants: the better-result gate of the nearest unresolved row (or worse when `reckless`). */
+export function targetLane(sim: NumberSurgeSim, reckless = false): number | null {
   const o = sim.o;
   if (o.phase !== "playing") return null;
   let rowIndex = -1;
@@ -31,8 +33,13 @@ export function targetLane(sim: NumberSurgeSim): number | null {
   const b = o.gates[rowIndex * 2 + 1]!;
   const ra = applyOp(o.number, a.kind, a.n);
   const rb = applyOp(o.number, b.kind, b.n);
-  if (ra > rb) return a.x;
-  if (rb > ra) return b.x;
+  if (reckless) {
+    if (ra < rb) return a.x;
+    if (rb < ra) return b.x;
+  } else {
+    if (ra > rb) return a.x;
+    if (rb > ra) return b.x;
+  }
   return Math.abs(o.laneOffset - a.x) <= Math.abs(o.laneOffset - b.x) ? a.x : b.x;
 }
 
@@ -47,11 +54,11 @@ export class Autopilot {
   }
 
   next(sim: NumberSurgeSim, stepIndex: number): Input {
-    if (stepIndex === 0 || sim.o.phase === "gameOver" || sim.o.phase === "splash") {
+    if (stepIndex === 0 || (!this.params.reckless && sim.o.phase === "gameOver") || sim.o.phase === "splash") {
       this.reset();
       return { ...IDLE, start: true };
     }
-    const target = targetLane(sim);
+    const target = targetLane(sim, this.params.reckless === true);
     if (target === null) return { ...IDLE };
     const dx = Math.max(-this.params.maxDx, Math.min(this.params.maxDx, target - this.ye));
     this.ye = Math.max(-CONFIG.LANE_LIMIT, Math.min(CONFIG.LANE_LIMIT, this.ye + dx));

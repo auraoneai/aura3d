@@ -105,7 +105,7 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
     return out as T;
   };
   return {
-    distance: b.distance, tick: b.tick, back: (1 - t) * moved,
+    distance: b.distance, tick: mix(a.tick, b.tick, t), back: (1 - t) * moved,
     player: m(a.player, b.player), camera: m(a.camera, b.camera)
   };
 }
@@ -115,7 +115,7 @@ export function viewOf(sim: PolarityOrbsSim, shown: Shown): PolarityOrbsSim {
   const back = shown.back;
   const shift = <T extends { z: number }>(list: readonly T[]): T[] => (back === 0 ? (list as T[]) : list.map((e) => ({ ...e, z: e.z - back })));
   return Object.create(sim, {
-    o: { value: { ...sim.o, distance: sim.o.distance - back } },
+    o: { value: { ...sim.o, distance: sim.o.distance - back, tick: shown.tick } },
     orbs: { value: shift(sim.orbs) },
     powerups: { value: shift(sim.powerups) },
     particles: { value: shift(sim.particles) },

@@ -89,7 +89,7 @@ describe("splat turf mechanics", () => {
   it("eraser bot: -15 tank and wipes the last 15 m of trail", () => {
     const sim = running(11);
     const b = sim.o.bots[0]!;
-    b.active = true; b.row = 20; b.x = 0; b.dir = 1; b.hit = false;
+    b.active = true; b.row = 20; b.x = 0; b.dir = 0; b.hit = false;
     sim.o.bots[1]!.active = false;
     sim.o.bots[2]!.active = false;
     runUntilRow(sim, 19);

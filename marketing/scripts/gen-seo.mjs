@@ -128,6 +128,11 @@ const MANIFEST = {
   "/apps/the-bellkeepers-walk/": { source: "apps/showcase-where-the-wind-wanders-port/index.html", freq: "weekly", priority: "0.60" },
   "/apps/duneglide/": { source: "apps/showcase-silt-and-signal-port/index.html", freq: "weekly", priority: "0.60" },
   "/apps/cumulus-dash/": { source: "apps/showcase-cloud-runner-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-shape-shift-sprint/": { source: "apps/showcase-shape-shift-sprint/index.html", freq: "weekly", priority: "0.70" },
+  "/apps/showcase-number-surge/": { source: "apps/showcase-number-surge/index.html", freq: "weekly", priority: "0.70" },
+  "/apps/showcase-splat-turf/": { source: "apps/showcase-splat-turf/index.html", freq: "weekly", priority: "0.70" },
+  "/apps/showcase-polarity-orbs/": { source: "apps/showcase-polarity-orbs/index.html", freq: "weekly", priority: "0.70" },
+  "/apps/showcase-beat-hopper/": { source: "apps/showcase-beat-hopper/index.html", freq: "weekly", priority: "0.70" },
 };
 
 // Docs pages that exist as files but are not sitemap entries:

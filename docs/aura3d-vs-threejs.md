@@ -59,7 +59,7 @@ Beyond the hero, the five-scene benchmark has a PBR viewer with HDR lighting, sh
 | Working with AI coding agents | `llms.txt`, 14 agent skills, compiled recipes and a type-traps table, written into every new project by `create-aura3d` | No official agent docs | `packages/aura3d-cli/skills/`; `create-aura3d --help` |
 | Coming from three.js | `aura3d migrate three` maps 245 three.js constructs and writes an annotated port worklist | n/a | `packages/aura3d-cli/src/migrate-three/mappings.ts`; [`migration/from-threejs.md`](migration/from-threejs.md) |
 | Starting a project | 20 `create-aura3d` templates (product viewer, mini-game, racing, falling blocks, fighting, arena shooter, character controller, animation studio and more), each with route-health and screenshot tests | Generic Vite templates | `packages/create-aura3d/templates/` |
-| Proof it ships | 25 playable games built on Aura3D | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
+| Proof it ships | 30 playable games built on Aura3D | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
 
 ## The moat
 

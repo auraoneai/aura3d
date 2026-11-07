@@ -227,6 +227,31 @@
       "name": "showcase-cloud-runner-port",
       "path": "/apps/showcase-cloud-runner-port/",
       "noScroll": true
+    },
+    {
+      "name": "showcase-shape-shift-sprint",
+      "path": "/apps/showcase-shape-shift-sprint/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-number-surge",
+      "path": "/apps/showcase-number-surge/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-splat-turf",
+      "path": "/apps/showcase-splat-turf/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-polarity-orbs",
+      "path": "/apps/showcase-polarity-orbs/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-beat-hopper",
+      "path": "/apps/showcase-beat-hopper/",
+      "noScroll": true
     }
   ]
 }

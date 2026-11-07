@@ -4,7 +4,7 @@
  * target path (the policy never detours for a token, so an aligned token is collected on the way).
  * With a wildcard active the nearest hole of the target row is fine.
  */
-import { CONFIG, IDLE, type Input, type ShapeShiftSim, type WallRow } from "./sim";
+import { IDLE, type Input, type ShapeShiftSim, type WallRow } from "./sim";
 
 export interface AutopilotParams {
   maxDx: number;
@@ -36,8 +36,7 @@ export function steerDx(sim: ShapeShiftSim, params: AutopilotParams, rowsPassed:
     for (const h of row.holes) if (Math.abs(o.laneOffset - h.laneX) < Math.abs(o.laneOffset - nearest.laneX)) nearest = h;
     target = nearest.laneX;
   } else if (matching) target = matching.laneX;
-  const gain = 0.012 * (CONFIG.STEER_SPEED / 6);
-  return Math.round(Math.max(-params.maxDx, Math.min(params.maxDx, (target - sim.ye) / gain)));
+  return Math.max(-params.maxDx, Math.min(params.maxDx, target - sim.ye));
 }
 
 export class Autopilot {

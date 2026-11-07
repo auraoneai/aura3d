@@ -430,8 +430,13 @@ const qa = installQaHooks("splat-turf", {
     return snapshotState();
   },
   /** Headless replay of a capture script on a fresh sim (no rendering): returns the trace rows. */
-  replay(text: string, warmup = config.warmup, seed = config.seed) {
-    return replay(seed, warmup, expandScript(parseScript(text))).trace;
+  replay(text: string | readonly Partial<Input>[], warmup = config.warmup, seed = config.seed) {
+    const inputs: Input[] = typeof text !== "string"
+      ? text.map((r) => ({ ...IDLE, ...r }))
+      : text.trim().startsWith("[")
+        ? (JSON.parse(text) as Partial<Input>[]).map((r) => ({ ...IDLE, ...r }))
+        : expandScript(parseScript(text));
+    return replay(seed, warmup, inputs).trace;
   },
   reset(seed = config.seed) {
     sim = new SplatTurfSim(seed);

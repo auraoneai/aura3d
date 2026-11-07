@@ -143,8 +143,8 @@ export class PolarityOrbsSim {
   private readonly seed: number;
   private rng: GameRng;
   private fxRng: GameRng;
-  private ye = 0;
-  private dragging = false;
+  ye = 0;
+  dragging = false;
   private popupSeq = 0;
   private nextRowId = 0;
   private nextMilestone = CONFIG.MILESTONE;
@@ -191,6 +191,7 @@ export class PolarityOrbsSim {
       this.spawnRow(z);
       z -= CONFIG.ROW_SPACING;
     }
+    this.o.rngCount = this.rng.count;
   }
 
   advance(input: Input = IDLE): void {

@@ -141,11 +141,11 @@ export function botMesh(): MeshData {
   ]);
 }
 
-/** Finish gate: two posts (r 0.12, h 3) at x +/-3.1 and a 6.4 x 0.4 x 0.24 bar at y 2.9. */
+/** Finish gate: two posts (r 0.12, h 3) at x +/-3.08 and a 6.4 x 0.4 x 0.24 bar at y 2.9. */
 export function finishMesh(): MeshData {
   return merge([
-    translateMesh(cylinderMesh(0.12, 3, 10), -3.1, 1.5, 0),
-    translateMesh(cylinderMesh(0.12, 3, 10), 3.1, 1.5, 0),
+    translateMesh(cylinderMesh(0.12, 3, 10), -3.08, 1.5, 0),
+    translateMesh(cylinderMesh(0.12, 3, 10), 3.08, 1.5, 0),
     translateMesh(boxMesh(6.4, 0.4, 0.24), 0, 2.9, 0)
   ]);
 }

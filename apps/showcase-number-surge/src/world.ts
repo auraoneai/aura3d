@@ -69,10 +69,24 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
 /* ------------------------------------------------------------ canvas painters */
 
 function makeCanvas(w: number, h: number): { canvas: HTMLCanvasElement; g: CanvasRenderingContext2D } {
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const g = canvas.getContext("2d") as CanvasRenderingContext2D;
+  if (typeof document !== "undefined") {
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const g = canvas.getContext("2d");
+    if (g) return { canvas, g };
+  }
+  const g = {
+    canvas: null as unknown as HTMLCanvasElement,
+    fillStyle: "",
+    textAlign: "center" as CanvasTextAlign,
+    textBaseline: "middle" as CanvasTextBaseline,
+    font: "",
+    clearRect: () => undefined,
+    fillText: () => undefined
+  } as unknown as CanvasRenderingContext2D;
+  const canvas = { width: w, height: h, getContext: () => g } as unknown as HTMLCanvasElement;
+  (g as unknown as { canvas: HTMLCanvasElement }).canvas = canvas;
   return { canvas, g };
 }
 

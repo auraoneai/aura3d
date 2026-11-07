@@ -30,25 +30,27 @@ export class Autopilot {
     const row = sim.rows.find((r) => !r.resolved && r.z < 0);
     if (!row) return { ...IDLE, down: true };
 
-    // Uniform-opposite row: flip once, early enough to be matching before the row crosses.
-    if (row.uniform && !this.flipped.has(row.id) && !this.mistakeRows.has(row.id) && row.z > -20) {
-      const first = sim.orbs.find((orb) => orb.active && orb.row === row.id);
-      if (first && first.polarity !== o.polarity && o.rainbowTimer <= 0) {
+    const mistake = this.mistakeRows.has(row.id);
+    if (!this.flipped.has(row.id) && row.z > -20) {
+      const hasMatch = sim.orbs.some((orb) => orb.active && orb.row === row.id && orb.polarity === o.polarity);
+      const hasWrong = sim.orbs.some((orb) => orb.active && orb.row === row.id && orb.polarity !== o.polarity);
+      const shouldFlip = mistake ? !hasWrong : row.uniform && !hasMatch && o.rainbowTimer <= 0;
+      if (shouldFlip) {
         this.flipped.add(row.id);
         return { ...IDLE, down: true, tap: true };
       }
     }
 
-    // Steer to the nearest matching orb of the next row (rainbow matches everything).
+    // Steer to the nearest matching orb of the next row (or wrong orb on a mistake row).
     let targetX = o.laneOffset;
     let best = Infinity;
     for (const orb of sim.orbs) {
       if (!orb.active || orb.row !== row.id) continue;
-      if (orb.polarity !== o.polarity && o.rainbowTimer <= 0) continue;
+      if (mistake ? orb.polarity === o.polarity : orb.polarity !== o.polarity && o.rainbowTimer <= 0) continue;
       const d = Math.abs(orb.x - o.laneOffset);
       if (d < best) { best = d; targetX = orb.x; }
     }
-    const dx = Math.max(-this.maxDx, Math.min(this.maxDx, (targetX - o.laneOffset) / CONFIG.DRAG_SCALE));
+    const dx = Math.max(-this.maxDx, Math.min(this.maxDx, (targetX - sim.ye) / CONFIG.DRAG_SCALE));
     return { start: false, down: true, up: false, dx, tap: false };
   }
 

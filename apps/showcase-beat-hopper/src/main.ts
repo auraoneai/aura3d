@@ -379,6 +379,10 @@ const qa = installQaHooks("beat-hopper", {
     hud?.update(sim, best, config.manual);
     reactToFrame();
   },
+  replay(inputs: string | readonly Partial<Input>[], warmup = config.warmup, seed = config.seed) {
+    const list = typeof inputs === "string" ? (JSON.parse(inputs) as Partial<Input>[]) : inputs;
+    return replay(seed, warmup, list.map((i) => ({ ...IDLE, ...i }))).trace;
+  },
   reset(seed = config.seed) {
     sim = new BeatHopperSim(seed);
     rig.reset(sim);

@@ -37,7 +37,7 @@ export class Autopilot {
 
   next(sim: BeatHopperSim, stepIndex: number): Input {
     const o = sim.o;
-    if (stepIndex === 0 || o.phase === "splash" || o.phase === "gameOver") {
+    if (o.phase === "splash") {
       this.holding = false;
       this.resolved = 0;
       this.seen.clear();

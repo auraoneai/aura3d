@@ -257,6 +257,56 @@
    "verification": "replay-verified",
    "evidenceFolder": "kid-goku-beyond-the-clouds-port",
    "text": "Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Includes creatures, boulders, the duel and finale, with audio; the hero, creatures and scenery are generated models."
+  },
+  {
+   "appFolder": "showcase-shape-shift-sprint",
+   "previewSlug": "shape-shift-sprint",
+   "url": "/apps/showcase-shape-shift-sprint/",
+   "title": "Shape Shift Sprint",
+   "genre": "platformer",
+   "verification": "playable",
+   "evidenceFolder": "shape-shift-sprint",
+   "text": "Shape-gate runner on a candy-primary track: steer into the wall hole matching your current sphere, cube or cone form, grab morph and wildcard tokens, and chain perfect passes."
+  },
+  {
+   "appFolder": "showcase-number-surge",
+   "previewSlug": "number-surge",
+   "url": "/apps/showcase-number-surge/",
+   "title": "Number Surge",
+   "genre": "platformer",
+   "verification": "playable",
+   "evidenceFolder": "number-surge",
+   "text": "Arithmetic-gate runner through a neon dusk corridor: steer through the stronger operation gate to grow your number, build pick-quality combos, and smash numbered boss walls every 400 metres."
+  },
+  {
+   "appFolder": "showcase-splat-turf",
+   "previewSlug": "splat-turf",
+   "url": "/apps/showcase-splat-turf/",
+   "title": "Splat Turf",
+   "genre": "arcade",
+   "verification": "playable",
+   "evidenceFolder": "splat-turf",
+   "text": "Paint-coverage arcade runner over a 1,200-metre course: coat six road lanes, collect paint cans to keep your tank full, dodge solvent strips and eraser bots, and finish with an S-to-C coverage grade."
+  },
+  {
+   "appFolder": "showcase-polarity-orbs",
+   "previewSlug": "polarity-orbs",
+   "url": "/apps/showcase-polarity-orbs/",
+   "title": "Polarity Orbs",
+   "genre": "arcade",
+   "verification": "playable",
+   "evidenceFolder": "polarity-orbs",
+   "text": "Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow power-ups, and dodge opposite charges."
+  },
+  {
+   "appFolder": "showcase-beat-hopper",
+   "previewSlug": "beat-hopper",
+   "url": "/apps/showcase-beat-hopper/",
+   "title": "Beat Hopper",
+   "genre": "platformer",
+   "verification": "playable",
+   "evidenceFolder": "beat-hopper",
+   "text": "Rhythm-timed obstacle runner on a 132 BPM beat grid: tap to hop over blocks and gaps or hold to duck under bars inside PERFECT and GOOD timing windows while the world pulses to the sequencer."
   }
  ]
 }

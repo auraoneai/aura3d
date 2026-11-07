@@ -228,6 +228,6 @@
       "turbo": "showcase-turbo-drift-circuit (retired app)",
       "showcase": "the showcase gallery library"
     },
-    "generic": ["prop", "helper", "robotcand", "animationPointer"]
+    "generic": ["prop", "helper", "robotcand", "animationPointer", "gtWalsheimBold"]
   }
 }

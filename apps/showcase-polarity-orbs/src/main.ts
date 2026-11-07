@@ -12,7 +12,7 @@ import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { CONFIG, IDLE, PolarityOrbsSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
-import { CameraRig, createPolarityPresenter } from "./presentation";
+import { CameraRig, createPolarityPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { LOOK } from "./look";
 import { Hud } from "./hud";
@@ -155,7 +155,8 @@ function render(live = false): void {
   if (!app || !runtime || renderFailed) return;
   try {
     const shown = live ? presenter.present(loop, true) : undefined;
-    runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
+    const viewSim = shown ? viewOf(sim, shown) : sim;
+    runtime.update(viewSim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
       ...(shown ? { shown } : {}),
       camera: rig.at(live ? loop.alpha : 1),
       reducedMotion,
@@ -172,6 +173,7 @@ function render(live = false): void {
 function advance(input: Input): void {
   sim.advance(input);
   rig.step(sim);
+  pilot?.observe(sim);
   steps++;
 }
 
@@ -461,7 +463,7 @@ function snapshotState() {
   for (const orb of sim.orbs) if (orb.active) activeOrbs++;
   for (const p of sim.powerups) if (p.active) activePowerups++;
   return {
-    ...o, steps, rngCount: sim.o.rngCount, best,
+    ...o, steps, rngCount: sim.o.rngCount, best, ye: sim.ye,
     orbs: activeOrbs, powerups: activePowerups, particles: sim.particles.filter((p) => p.active).length,
     rows: sim.rows.length
   };
@@ -488,8 +490,20 @@ const qa = installQaHooks("polarity-orbs", {
     return snapshotState();
   },
   /** Headless replay of a capture script on a fresh sim (no rendering): returns the trace rows. */
-  replay(text: string, warmup = config.warmup, seed = config.seed) {
-    return replay(seed, warmup, parseScript(text)).trace;
+  replay(script: string | readonly Partial<Input>[], warmup = config.warmup, seed = config.seed) {
+    let inputs: Input[];
+    if (typeof script === "string") {
+      const trimmed = script.trim();
+      if (trimmed.startsWith("[")) {
+        const parsed = JSON.parse(trimmed) as Partial<Input>[];
+        inputs = parsed.map((item) => ({ ...IDLE, ...item }));
+      } else {
+        inputs = parseScript(script);
+      }
+    } else {
+      inputs = script.map((item) => ({ ...IDLE, ...item }));
+    }
+    return replay(seed, warmup, inputs).trace;
   },
   reset(seed = config.seed) {
     sim = new PolarityOrbsSim(seed);

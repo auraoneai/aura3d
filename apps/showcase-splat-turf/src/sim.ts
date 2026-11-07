@@ -159,7 +159,6 @@ export class SplatTurfSim {
     }
     for (const p of o.particles) p.active = false;
     for (let i = 0; i < o.segments.length; i++) (o.segments[i] as Segment).row = i - CONFIG.SEGMENT_BACK;
-    this.history.length = 0;
   }
 
   advance(input: Input = IDLE): void {
@@ -330,7 +329,7 @@ export class SplatTurfSim {
     const o = this.o;
     for (const b of o.bots) {
       if (!b.active || b.hit) continue;
-      if (Math.abs(o.distance - b.row) < 0.7 && Math.abs(o.laneOffset - b.x) < 0.9) {
+      if (o.distance >= b.row && o.distance - b.row < 0.7 && Math.abs(o.laneOffset - b.x) < 0.9) {
         b.hit = true;
         o.tank = Math.max(0, o.tank - CONFIG.ERASER_PENALTY);
         o.eraserHits++;

@@ -467,13 +467,21 @@ function snapshotState() {
   };
 }
 
-/* Script text for QA replay: `<steps>x[SDU T]*|- dx=<n>` per line (# comments allowed), one line per frame run. */
-function parseSurgeScript(text: string): Input[] {
+/* Script text for QA replay: `<steps>x[SDU T]*|- dx=<n>` per line (# comments allowed), or a JSON/input array. */
+function parseSurgeScript(text: string | readonly Partial<Input>[]): Input[] {
+  if (typeof text !== "string") {
+    if (!Array.isArray(text)) throw new Error("number-surge: replay script must be an array or string");
+    return text.map((r) => ({ ...IDLE, ...r }));
+  }
+  const trimmed = text.trim();
+  if (trimmed.startsWith("[")) {
+    return (JSON.parse(trimmed) as Partial<Input>[]).map((r) => ({ ...IDLE, ...r }));
+  }
   const out: Input[] = [];
   for (const [i, raw] of text.split("\n").entries()) {
     const line = raw.replace(/#.*$/, "").trim();
     if (line === "") continue;
-    const m = /^(\d+)x([SDUT]*|-)\s+dx=(-?\d+)$/.exec(line);
+    const m = /^(\d+)x([SDUT]*|-)\s+dx=(-?\d+(?:\.\d+)?)$/.exec(line);
     if (!m) throw new Error(`number-surge script line ${i + 1}: cannot parse "${line}"`);
     const flags = m[2] === "-" ? "" : (m[2] as string);
     const frame: Input = {
@@ -506,8 +514,9 @@ const qa = installQaHooks("number-surge", {
     for (let i = 0; i < n; i += 1) advance(i === 0 ? { ...IDLE, ...input } : IDLE);
     render();
     updateHud();
+    return snapshotState();
   },
-  replay(text: string, warmup = config.warmup, seed = config.seed) {
+  replay(text: string | readonly Partial<Input>[], warmup = config.warmup, seed = config.seed) {
     return replay(seed, warmup, parseSurgeScript(text)).trace;
   },
   reset(seed = config.seed) {
@@ -528,9 +537,12 @@ const qa = installQaHooks("number-surge", {
     get booted(): boolean {
       return ready;
     },
-    runAutopilot(n: number) {
-      const driver = new Autopilot();
-      for (let i = 0; i < n; i += 1) advance(driver.next(sim, i));
+    runAutopilot(n: number, reckless = false) {
+      const driver = new Autopilot({ maxDx: 0.35, reckless });
+      for (let i = 0; i < n; i += 1) {
+        if (reckless && sim.o.phase === "gameOver") break;
+        advance(driver.next(sim, sim.o.phase === "playing" ? i + 1 : i));
+      }
       render();
       updateHud();
       return snapshotState();
