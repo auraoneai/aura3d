@@ -30,9 +30,18 @@ export interface LabFlags {
 
 export interface LabAppOptions {
   readonly renderer?: { readonly backend: LabBackend; readonly allowFallback: true };
-  /** Merge with the game's own `createWorker`; absent means no worker was requested. */
-  readonly worker?: { readonly fallback: "main-thread" };
+  /**
+   * Absent means no worker was requested. `createGame` accepts this fragment as is (games run on the main thread and
+   * honor `fallback: "main-thread"`). For `createAuraApp` pass the game's `createWorker` as the second argument of
+   * `labAppOptions` so the fragment carries it (see `LabAppOptionsWithWorker`).
+   */
+  readonly worker?: { readonly fallback: "main-thread"; readonly createWorker?: () => Worker };
   readonly output?: { readonly outputColorSpace: "display-p3" };
+}
+
+/** `LabAppOptions` whose worker fragment always carries `createWorker`: spread it into `createAuraApp` without a cast. */
+export interface LabAppOptionsWithWorker extends Omit<LabAppOptions, "worker"> {
+  readonly worker?: { readonly fallback: "main-thread"; readonly createWorker: () => Worker };
 }
 
 export function parseLabFlags(search: string | URLSearchParams | undefined): LabFlags {
@@ -67,10 +76,12 @@ export function readLabFlags(): LabFlags {
  * Maps flags to `createAuraApp` option fragments to spread into the app options. Every experimental backend keeps its
  * WebGL2 fallback (`allowFallback: true`, worker `main-thread`). Returns `{}` when no flag is active.
  */
-export function labAppOptions(flags: LabFlags): LabAppOptions {
+export function labAppOptions(flags: LabFlags): LabAppOptions;
+export function labAppOptions(flags: LabFlags, createWorker: () => Worker): LabAppOptionsWithWorker;
+export function labAppOptions(flags: LabFlags, createWorker?: () => Worker): LabAppOptions {
   return {
     ...(flags.backend ? { renderer: { backend: flags.backend, allowFallback: true as const } } : {}),
-    ...(flags.worker ? { worker: { fallback: "main-thread" as const } } : {}),
+    ...(flags.worker ? { worker: { fallback: "main-thread" as const, ...(createWorker ? { createWorker } : {}) } } : {}),
     ...(flags.gamut ? { output: { outputColorSpace: "display-p3" as const } } : {})
   };
 }

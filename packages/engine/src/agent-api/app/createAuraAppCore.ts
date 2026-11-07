@@ -2001,7 +2001,22 @@ export function createAuraAppWithPhysicsWorldAccess(
     // region parity:L7 (continued) — the members themselves must live in the
     // object literal; the helpers above stay in the lane-owned block.
     get info() {
-      return parityL7AuraRenderer()?.info;
+      const renderer = parityL7AuraRenderer();
+      const base = renderer?.info;
+      if (!base) return base;
+      // 5.1: surface the device's byte gauges that the renderer's info omits.
+      const device = (renderer as { readonly device?: { getDiagnostics?(): { readonly bufferBytes?: number; readonly textureBytes?: number } } } | undefined)?.device;
+      let gauges: { readonly bufferBytes?: number; readonly textureBytes?: number } | undefined;
+      try { gauges = device?.getDiagnostics?.(); } catch { gauges = undefined; }
+      if (!gauges || (gauges.bufferBytes === undefined && gauges.textureBytes === undefined)) return base;
+      return {
+        ...base,
+        memory: {
+          ...base.memory,
+          ...(gauges.bufferBytes !== undefined ? { bufferBytes: gauges.bufferBytes } : {}),
+          ...(gauges.textureBytes !== undefined ? { textureBytes: gauges.textureBytes } : {})
+        }
+      };
     },
     get xr() {
       return parityL7XR;

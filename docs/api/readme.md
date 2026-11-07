@@ -42,6 +42,7 @@ Use these labels in API docs and examples:
 | [`model-loader.md`](model-loader.md) | `defineModelAssets` and `modelsEnabledFromUrl`: hashed same-origin models with a procedural fallback, plus `scene(init)` and `setUniform` behaviour. | `@aura3d/engine` |
 | [`glsl-chunks.md`](glsl-chunks.md) | `#include` chunks for `material.custom`: math, noise, sky, fog, triplanar, toon and colour-space helpers. | `material.custom` |
 | [`scatter-merge.md`](scatter-merge.md) | Seeded scatter planning (`scatterAlongPath`, `scatterInArea`) and static-mesh baking (`mergeStatic`). Exported from the `@aura3d/engine` root. | `@aura3d/engine` |
+| [`engine-api-gaps-5-1.md`](engine-api-gaps-5-1.md) | 5.1 additive gaps: `createGame` renderer/output/worker passthrough, `AuraRendererInfo` export and memory bytes, `effects.particles` shape/wind/curve options, single-route showcase build. | `@aura3d/engine`, `@aura3d/game` |
 | [`skinned-actors.md`](skinned-actors.md) | `attachRootRenderSource` and `TypedGLBActor`: draw `cloneSkinned` actors in the app render loop from the root export. | `@aura3d/engine` |
 | [`ball-flight.md`](ball-flight.md) | Exact event-time ball flight for racket sports. | `game.racketSports().ballFlight` |
 | [`racket-athlete-rig.md`](racket-athlete-rig.md) | Procedural racket-sport athlete: locomotion solver and limb posing. | `game.racketSports().athleteRig` |

@@ -4,6 +4,13 @@ Version: 5.0.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## Unreleased (5.1, additive)
+
+- `createGame` accepts `renderer`, `output` and a main-thread `worker` request; `labAppOptions(flags, createWorker)` yields a `createAuraApp`-ready worker fragment. See `docs/api/engine-api-gaps-5-1.md`.
+- `AuraRendererInfo` and `AuraPrecompileResult` are exported; `app.info.memory` adds `bufferBytes` and `textureBytes`.
+- `effects.particles`: `shape`, `shapeSize`, `coneAngleDeg`, `wind`, `stretch`, `sizeOverLife`, `alphaOverLife` and `lifetimeColorRamp` are now simulated by the CPU emitter (they were accepted and ignored). Games that already set them (for example the Manila dust motes and Cross Hop ambient volume) now get the authored volume. `intensity` and `shape: "mesh-surface"` were removed from `AuraParticleEmitterOptions` (never read).
+- `AURA3D_ONLY_ROUTE` builds one showcase route without the all-assets and `showcase-index` checks.
+
 ## 5.0.2 (2026-11-06)
 
 Restores contact shadows, removes more ways a default path could blank a scene, and adds the render gate and the AI-authoring docs. The public API is additive only.

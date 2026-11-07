@@ -8,6 +8,7 @@ import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
 import type { AuraHeightFogSpec } from "../../contracts/atmosphere.js";
 import { particles } from "./particles.js";
+import { PARTICLE_DEFAULT_ALPHA_OVER_LIFE, PARTICLE_DEFAULT_SIZE_OVER_LIFE } from "./particleDefaults.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { assertWeatherTransformFields } from "../../production-runtime/effects/WeatherTransform.js";
 import { ignoredOptionsNote } from "./optionDiagnostics.js";
@@ -385,8 +386,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
 	      lifetimeColorRamp: options.lifetimeColorRamp,
 	      materialMode: options.materialMode ?? (options.emitter === "fountain" ? "additive-glow" : "soft-alpha"),
 	      texturedBillboard: options.texturedBillboard ?? true,
-	      sizeOverLife: options.sizeOverLife ?? [0.35, 1, 0.58],
-	      alphaOverLife: options.alphaOverLife ?? [0, 0.92, 0],
+	      sizeOverLife: options.sizeOverLife ?? PARTICLE_DEFAULT_SIZE_OVER_LIFE,
+	      alphaOverLife: options.alphaOverLife ?? PARTICLE_DEFAULT_ALPHA_OVER_LIFE,
 	      velocityOverLife: options.velocityOverLife ?? [1, 0.82, 0.28],
 	      turbulence: options.turbulence ?? 0.16,
 	      noise: options.noise ?? 0.22

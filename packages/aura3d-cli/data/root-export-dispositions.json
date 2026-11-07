@@ -5127,6 +5127,16 @@
       "owners": []
     },
     {
+      "name": "AuraPrecompileResult",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Result type of app.precompile()",
+      "consumers": [],
+      "owners": []
+    },
+    {
       "name": "AuraPrimitiveHumanoidPrefabOptions",
       "kind": "type",
       "from": ".",
@@ -5513,6 +5523,16 @@
       "to": "deleted",
       "disposition": "deprecated",
       "reason": "\u00a76.6 union name \u2014 deprecated until 4.0.0; not in \u00a76.6 keep-set; no destination subpath applies",
+      "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "AuraRendererInfo",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Type of app.info (render counters + memory incl. bufferBytes/textureBytes); games read it for QA memory hooks",
       "consumers": [],
       "owners": []
     },
