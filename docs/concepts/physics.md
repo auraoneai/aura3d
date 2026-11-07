@@ -18,7 +18,7 @@ the library had four hardcoded genre kits and no path to a fifth.
 ## Install the Rapier backend
 
 Physics runs on `@dimforge/rapier3d-compat`, an optional peer of `@aura3d/engine`. It is not installed with the engine, so a project that
-never installs it never ships it; once it is installed, every app in the project loads it at startup (see the costs below). Install it once in any project that calls `.physics({...})`, `app.physics`, `preloadPhysics()` or
+never installs it never ships it; once it is installed, every app in the project loads it at startup unless it is built with the Aura3D Vite plugin (see the costs and the two modes below). Install it once in any project that calls `.physics({...})`, `app.physics`, `preloadPhysics()` or
 `new PhysicsWorld()`:
 
 ```bash
@@ -32,38 +32,72 @@ If it is missing, the failure is typed and immediate rather than an anonymous st
 - `createAuraApp` keeps the app alive: `app.diagnostics().errors` contains the message, the canvas shows the error overlay, and the console logs it. Declared bodies stay unsimulated.
 - `aura3d doctor` fails a project whose `src/` uses physics while the backend cannot be resolved, and prints the same command.
 
-### What installing Rapier costs (measured, and not lazy)
+### What installing Rapier costs, and how to pay it only when you use physics
 
-Once `@dimforge/rapier3d-compat` is resolvable from your project, **every** app that imports `@aura3d/engine` downloads and initialises
-it at startup, including an app that never touches physics. The engine root statically imports the physics world module, which
-initialises the WASM backend with a top-level `await`; that is what makes `app.physics` and `new PhysicsWorld()` usable synchronously
-the moment `createAuraApp` returns.
+Once `@dimforge/rapier3d-compat` is resolvable from your project, the engine's physics world module initialises it with a top-level
+`await`; that is what makes `app.physics` and `new PhysicsWorld()` usable synchronously the moment `createAuraApp` returns. Without
+help from the build, that means **every** app that imports `@aura3d/engine` downloads and initialises Rapier at startup, including
+an app that never touches physics. The Aura3D Vite plugin removes that cost in two ways:
 
-Measured in a clean Vite 8 consumer (the npm dependency tree of `@aura3d/engine@5.0.2`), for a small app that draws one box and
-never uses physics (gzip at level 9):
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import { aura3d } from "@aura3d/assets/vite";
 
-| Engine | Rapier installed | JS emitted | gzip | Rapier chunk | Fetched at startup |
+export default defineConfig({ plugins: [aura3d()] }); // physics: "auto" (default) | "lazy" | true | false
+```
+
+- **`physics: "auto"` (default): strip at build time.** On `vite build` the plugin walks your app's own module graph (your source,
+  including dynamically imported modules and shared folders outside the Vite root, plus any third-party dependency that itself
+  depends on `@aura3d/*` or Rapier). Any mention of physics keeps Rapier: `.physics(`, `app.physics`, `preloadPhysics`,
+  `ensurePhysics`, `PhysicsWorld`, `@aura3d/physics`, `@dimforge/rapier*`, rigid bodies, colliders, character controllers, vehicles,
+  ragdolls, scene kits and every genre kit (`game`, `games`, `createGame*`), case-insensitive, comments and strings included. Only
+  when there is no mention at all is the solver module replaced by a stub without a Rapier import, so no Rapier chunk is emitted.
+  The build log says which way it went (`[aura3d] physics kept ("physics" in src/level.ts)` or `[aura3d] physics stripped: ...`).
+  If a stripped app uses physics after all (for example through a property name computed at runtime), `app.physics`,
+  `new PhysicsWorld()` and `preloadPhysics()` throw the typed error with `error.code === "PHYSICS_BACKEND_MISSING"` and the message
+  `PHYSICS_BACKEND_MISSING: physics was stripped at build time because no physics usage was found; set aura3d({ physics: true }) in vite.config`.
+  `vite dev` never strips; neither does an SSR build. `physics: true` never strips, `physics: false` always does.
+- **`physics: "lazy"`: download on first use.** Rapier stays in the build as a separate chunk but is fetched only when a scene
+  declares `.physics({...})` bodies (initial scene, `app.setScene` or a runtime node add) or `app.physics` is first touched. Until it
+  has loaded, declared bodies and `onCollision` / `onCollisionWith` / `onTriggerEnter` / `onTriggerExit` handlers are queued and
+  applied in order on load, `app.physics.step()` and `contacts()` return `[]`, and every other `app.physics` call (`createBody`,
+  `createJoint`, `bodies.*`, `queries.*`, `gravity()`, ...) throws a typed error with `error.code === "PHYSICS_NOT_READY"` that tells
+  you to `await app.physics.ready()` (or `await app.ready()`, which also waits for a load in flight). After that, `app.physics` is the
+  same object and behaves exactly like the eager build. Code that calls `app.physics.createBody(...)` right after `createAuraApp(...)`
+  therefore needs one `await app.physics.ready()` first; that is why this mode is opt-in. The same semantics are available without
+  the plugin through `createAuraApp(target, { physics: { load: "on-demand" } })` (Rapier is then already downloaded by an eager
+  build, but the API behaves identically, so dev and prod agree), and for non-Vite bundlers through the `aura3d-physics-on-demand`
+  package condition. Genre kits and `createGame` construct their worlds synchronously: in a lazy build, `await ensurePhysics()` (from
+  `@aura3d/engine/physics`) before creating them, as in the `aura3d-no-tla` build.
+
+Measured in a clean Vite 8 consumer (the npm dependency tree of `@aura3d/engine@5.0.2` with Rapier installed, engine replaced by the
+packed tarball), gzip at level 9, scripts fetched by headless Chrome with the real GPU:
+
+| App | Build | JS emitted | gzip | Rapier chunk | Rapier fetched |
 | --- | --- | --- | --- | --- | --- |
-| 5.0.2 (npm) | no | 6.55 MB | 1.93 MB | none | - |
-| 5.0.2 (npm) | yes | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | yes |
-| this branch | no | 6.55 MB | 1.93 MB | none | - |
-| this branch | yes | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | yes |
-| this branch, `aura3d-no-tla` condition | yes | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | yes (in the background) |
+| one lit box, no physics | 5.0.2 (npm), no plugin | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | at startup |
+| one lit box, no physics | this engine, no plugin | 9.41 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | at startup |
+| one lit box, no physics | `aura3d()` (auto) | **6.55 MB** | **1.93 MB** | **none** | never |
+| one lit box, no physics | `aura3d({ physics: "lazy" })` | 9.41 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | never (not used) |
+| recipe 16 (physics at startup) | `aura3d()` (auto: kept) | 9.41 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | at startup |
+| intro scene, physics scene after 2.5 s | `aura3d({ physics: "lazy" })` | 9.41 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | 2.78 s, on first use |
 
-The chunk lists, sizes and the scripts the browser fetched are in `evidence/physics-514/bundle-sizes.json`. The cost is the same in
-5.0.2; this change does not add or remove it. What to do:
+The physics app's output with `aura3d()` is byte-identical to the build without the plugin, and recipe 16 reports the same state
+after 140 fixed steps in every configuration (eager, `auto`, `lazy`, 5.0.2: `solidHits 109`, `firstCrateHitStep 78`, identical body
+positions) with byte-identical frames. The numbers, chunk lists and network timelines are in `evidence/physics-519/`.
 
-- Do not install Rapier in a project that does not use physics, not even "just in case". Installing `@aura3d/physics` or
-  `@aura3d/physics-rapier` from npm also installs it (they list it as a dependency, and npm normally hoists it where the engine
-  resolves it), so the same cost applies.
-- A project that uses physics pays the 1.08 MB gzip once, at startup, and gets synchronous `app.physics`.
+Without the plugin nothing changes, and the rest still applies:
+
+- Do not install Rapier in a project that does not use physics, not even "just in case", unless you build with `aura3d()`.
+  Installing `@aura3d/physics` or `@aura3d/physics-rapier` from npm also installs it (they list it as a dependency).
 - The `aura3d-no-tla` condition (see "Bundler targets and top-level await" below) does not avoid the download: it only moves the WASM
-  initialisation off the import path, and the lazy module still starts loading Rapier as soon as it is evaluated.
-- Loading Rapier only for scenes that declare physics bodies is not possible without a breaking change. The bundler cannot know at
-  build time whether a scene will call `.physics({...})` (it is a method on every node), so the chunk would have to be a runtime
-  dynamic import, and Rapier's WASM initialisation is asynchronous (its `init()` returns a promise). `createAuraApp(...)` followed immediately by
-  `app.physics.createBody(...)`, `body.velocity()` or `app.physics.raycast(...)` would then have nothing to answer with; a queueing
-  facade cannot return those synchronous results. Making physics async-only is an open owner decision for 5.x (C5-05 in
+  initialisation off the import path, and that module still starts loading Rapier as soon as it is evaluated.
+- Rapier's separate-`.wasm` build (`@dimforge/rapier3d`, not `-compat`) would be smaller on the wire (measured for 0.20.0: a 2.02 MB
+  `.wasm`, 0.76 MB gzip, plus 0.24 MB of JS glue, against the compat chunk's 2.85 MB / 1.08 MB gzip with the WASM inlined as base64)
+  and could be compiled while streaming and cached on its own, but it imports the `.wasm` as an ES module, which needs a WASM bundler
+  plugin in every consumer and a different package name. It is not used: switching would break existing installs.
+- Making `lazy` the default (and `app.physics` async-first) is the breaking change left for 6.0 (C5-05 in
   `docs/project/5.0-games-and-examples-upgrade-plan.md`).
 
 A complete example is recipe 16 in `docs/agents/recipes.md` (`docs/agents/recipes-src/physics-basics`).
