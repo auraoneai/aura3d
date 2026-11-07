@@ -207,6 +207,8 @@ export type { AuraClipPlane, AuraClipScope, AuraClipOptions, AuraGlobalClipOptio
 export type { AuraXRButtonHandle, AuraXRButtonOptions, AuraXRDeviceBridge, AuraXREnterResult, AuraXREventMap, AuraXREventName, AuraXRFrameEvent, AuraXRMode, AuraXRRuntime, AuraXRSceneHelperOptions, AuraXRSceneHelpers, AuraXRSessionInit, AuraXRSessionProvenance, AuraXRVisual } from "../agent-api/index.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "../agent-api/index.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "../agent-api/nodes/types/runtime.js";
+// 5.1 additive: renderer counters type that `app.info` returns, and the `app.precompile()` result.
+export type { AuraRendererInfo, AuraPrecompileResult } from "../agent-api/nodes/types/runtime.js";
 export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDistanceMaterialOptions, AuraShadowMaterialOptions } from "../agent-api/index.js";
 // camera.frame geometry (docs/agents/api-signatures.md): pure bounds + lens + aspect + fill -> pose.
 export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubject.js";

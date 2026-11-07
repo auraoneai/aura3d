@@ -122,6 +122,24 @@ const retiredPrototypeRoutes = [
 const evidenceRoutes = [];
 
 const publicRoutes = [...showcaseRoutes, ...evidenceRoutes];
+
+/**
+ * `AURA3D_ONLY_ROUTE=<route>` builds one route. Everything outside that route (the all-assets and LFS pointer scans,
+ * the `showcase-index` redirect target, retired-route redirects, catalog aliases of other routes) is out of scope, so a
+ * checkout whose unrelated routes still hold LFS pointers builds and exits 0. Unset keeps the full-site contract.
+ */
+export function resolveOnlyRoute(value = process.env.AURA3D_ONLY_ROUTE) {
+  const onlyRoute = value?.trim();
+  if (!onlyRoute) return undefined;
+  if (!publicRoutes.includes(onlyRoute)) {
+    throw new Error(`AURA3D_ONLY_ROUTE=${onlyRoute} is not a public showcase route`);
+  }
+  return onlyRoute;
+}
+
+function routesInScope(onlyRoute) {
+  return onlyRoute ? [onlyRoute] : publicRoutes;
+}
 const supersededPublicRoutes = [
   "showcase-material-asset-inspector",
   "showcase-public-racing-presentation-proof",
@@ -165,13 +183,22 @@ function assertEngineBuildContract() {
   assertRequiredEngineSourceHelpers();
 }
 
-function assertShowcaseAssetsMaterialized() {
+export function assertShowcaseAssetsMaterialized(onlyRoute = undefined, root = repoRoot) {
+  if (onlyRoute) {
+    // Single-route build: only that route's own payload must be materialized. Typed assets it uses are checked one by
+    // one when they are copied (`copyAuraAssetFile`), so unrelated pointers never block it.
+    assertNoGitLfsPointers(
+      path.join(root, "apps", onlyRoute, "public", "aura-assets"),
+      `apps/${onlyRoute}/public/aura-assets`
+    );
+    return;
+  }
   assertNoGitLfsPointers(
-    path.join(repoRoot, "public", "aura-assets"),
+    path.join(root, "public", "aura-assets"),
     "public/aura-assets"
   );
   for (const collection of ["apps", "examples"]) {
-    const collectionDir = path.join(repoRoot, collection);
+    const collectionDir = path.join(root, collection);
     if (!existsSync(collectionDir)) continue;
     for (const entry of readdirSync(collectionDir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
@@ -279,8 +306,8 @@ function runViteBuild(configPath) {
   }
 }
 
-function copyRouteHealth() {
-  for (const route of publicRoutes) {
+function copyRouteHealth(onlyRoute) {
+  for (const route of routesInScope(onlyRoute)) {
     const routeHealth = path.join(repoRoot, "apps", route, "route-health.json");
     if (!existsSync(routeHealth)) continue;
     const outputDir = path.join(distDir, "apps", route);
@@ -292,7 +319,7 @@ function copyRouteHealth() {
    * references them by absolute path. `aura-assets/` is excluded here: it is
    * mirrored once into dist/aura-assets by copyRouteLocalAuraAssets().
    */
-  for (const route of publicRoutes) {
+  for (const route of routesInScope(onlyRoute)) {
     const routePublic = path.join(repoRoot, "apps", route, "public");
     if (!existsSync(routePublic)) continue;
     for (const entry of readdirSync(routePublic, { withFileTypes: true })) {
@@ -486,8 +513,8 @@ export function buildCatalogRouteAliases({ catalog, routes, reservedRoutes = [],
   return aliases;
 }
 
-function ensureBuiltRouteFavicons() {
-  for (const route of publicRoutes) {
+function ensureBuiltRouteFavicons(onlyRoute) {
+  for (const route of routesInScope(onlyRoute)) {
     const builtHtml = path.join(distDir, "apps", route, "index.html");
     if (!existsSync(builtHtml)) continue;
     const html = readFileSync(builtHtml, "utf8");
@@ -503,10 +530,10 @@ function ensureBuiltRouteFavicons() {
   }
 }
 
-function copyAuraAssets() {
+function copyAuraAssets(onlyRoute) {
   const manifest = readJson(path.join(repoRoot, "aura.assets.json"));
   const manifestAssets = new Map(manifest.assets.map((asset) => [asset.id, asset]));
-  const routeAssetIds = collectRouteAssetIds(manifestAssets);
+  const routeAssetIds = collectRouteAssetIds(manifestAssets, onlyRoute);
   const ignoredTokens = new Set();
   const copiedAssetIds = new Set();
 
@@ -534,7 +561,7 @@ function copyAuraAssets() {
    */
   const companionTextures = path.join(repoRoot, "public", "aura-assets", "Textures");
   if (existsSync(companionTextures)) {
-    assertNoGitLfsPointers(companionTextures, "public/aura-assets/Textures");
+    if (!onlyRoute) assertNoGitLfsPointers(companionTextures, "public/aura-assets/Textures");
     const target = path.join(distDir, "aura-assets", "Textures");
     mkdirSync(target, { recursive: true });
     cpSync(companionTextures, target, { recursive: true });
@@ -551,7 +578,7 @@ function copyAuraAssets() {
     }
   }
 
-  for (const route of showcaseRoutes) {
+  for (const route of onlyRoute ? [onlyRoute] : showcaseRoutes) {
     const routePublicAssets = path.join(repoRoot, "apps", route, "public", "aura-assets");
     if (existsSync(routePublicAssets)) {
       copyRouteLocalAuraAssets(route);
@@ -568,11 +595,11 @@ function resolveShowcaseAssetBaseUrl() {
   return configuredBase.replace(/\/+$/, "");
 }
 
-function collectRouteAssetIds(manifestAssets) {
+function collectRouteAssetIds(manifestAssets, onlyRoute) {
   const routeAssetIds = new Set();
   const assetReferencePattern = /(?:assets|rootAssets)(?:\s+as\s+any\))?\.([A-Za-z0-9_$]+)/g;
   const routeEntries = [
-    ...publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "src")])
+    ...routesInScope(onlyRoute).map((route) => [route, path.join(repoRoot, "apps", route, "src")])
   ];
   for (const [route, routeDir] of routeEntries) {
     if (!existsSync(routeDir)) continue;
@@ -656,7 +683,16 @@ function copyRouteLocalAuraAssets(route) {
   copyMissingOnly(source, target, rootAuraAssets);
 }
 
-function assertBuiltRoutes() {
+export function assertBuiltRoutes(onlyRoute = undefined, outDir = distDir) {
+  if (onlyRoute) {
+    // Single-route build: dist may hold other routes' stale output, so only this route is checked and nothing else
+    // (retired redirects, `showcase-index`) is written or required.
+    assertNoGitLfsPointers(path.join(outDir, "apps", onlyRoute), `marketing/dist/apps/${onlyRoute}`);
+    const builtHtml = path.join(outDir, "apps", onlyRoute, "index.html");
+    if (!existsSync(builtHtml)) throw new Error(`showcase route did not build: ${builtHtml}`);
+    return;
+  }
+  const distDir = outDir;
   assertNoGitLfsPointers(distDir, "marketing/dist");
 
   for (const route of supersededPublicRoutes) {
@@ -708,29 +744,37 @@ function assertBuiltRoutes() {
   writeFileSync(path.join(retiredCorridorDir, "index.html"), redirectHtml, "utf8");
 }
 
-function main() {
+export function main() {
+  const onlyRoute = resolveOnlyRoute();
   assertEngineBuildContract();
   const catalog = readJson(path.join(repoRoot, "tools", "site", "games.catalog.json"));
   // Validate catalog paths/collisions before starting the expensive Vite build.
   catalogRouteAliases(catalog, publicRoutes, reservedAliasRoutes);
   const showcaseAssetBaseUrl = resolveShowcaseAssetBaseUrl();
-  if (!showcaseAssetBaseUrl) assertShowcaseAssetsMaterialized();
+  if (!showcaseAssetBaseUrl) assertShowcaseAssetsMaterialized(onlyRoute);
   const tempDir = mkdtempSync(path.join(tmpdir(), "aura3d-marketing-showcase-"));
   try {
     const configPath = writeViteConfig(tempDir);
     runViteBuild(configPath);
-    ensureBuiltRouteFavicons();
-    copyRouteHealth();
+    ensureBuiltRouteFavicons(onlyRoute);
+    copyRouteHealth(onlyRoute);
     if (showcaseAssetBaseUrl) {
       removeLocalAuraAssets(distDir);
-    } else if (!process.env.AURA3D_ONLY_ROUTE || !existsSync(path.join(distDir, "aura-assets"))) {
-      copyAuraAssets();
+    } else if (!onlyRoute || !existsSync(path.join(distDir, "aura-assets"))) {
+      copyAuraAssets(onlyRoute);
     }
-    assertBuiltRoutes();
-    const aliases = buildCatalogRouteAliases({ catalog, routes: publicRoutes, reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });
+    assertBuiltRoutes(onlyRoute);
+    const aliasCatalog = onlyRoute ? { ...catalog, games: catalog.games.filter((game) => game?.appFolder === onlyRoute) } : catalog;
+    const aliases = onlyRoute && aliasCatalog.games.length === 0
+      ? []
+      : buildCatalogRouteAliases({ catalog: aliasCatalog, routes: routesInScope(onlyRoute), reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });
     // Copy aliases before the optional CDN pass so both HTML copies and any
     // newly included route-local public files receive identical URL rewriting.
     if (showcaseAssetBaseUrl) rewriteBuiltAuraAssetUrls(distDir, showcaseAssetBaseUrl);
+    if (onlyRoute) {
+      console.log(`Built single showcase route ${onlyRoute} (AURA3D_ONLY_ROUTE), ${aliases.length} catalog aliases; other routes were not built or checked.`);
+      return;
+    }
     console.log(`Built ${showcaseRoutes.length} showcase routes, ${aliases.length} catalog aliases, and ${evidenceRoutes.length} evidence routes with the local @aura3d/engine public source (lanes included) for package version ${expectedEngineVersion}.`);
   } finally {
     rmSync(tempDir, { force: true, recursive: true });

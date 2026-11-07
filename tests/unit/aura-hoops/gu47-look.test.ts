@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { lowerEffectNode } from "../../../packages/engine/src/production-runtime/effects/EffectNodeLowering";
 import {
   COURT_IDS,
   COURT_RIGS,
@@ -57,6 +58,20 @@ describe("Aura Hoops 3D GU47 look table", () => {
     for (const node of courtWeatherNodes(COURT_RIGS.manila, false)) {
       const position = (node as { position?: readonly number[] }).position ?? [0, 0, 0];
       expect(Math.abs(position[0] ?? 0)).toBeGreaterThanOrEqual(17);
+    }
+  });
+
+  it("keeps the Manila rain curtains on the 5.0.2 option set (no shape, stretch or curves) so they render as shipped", () => {
+    const curtains = courtWeatherNodes(COURT_RIGS.manila, false) as unknown as Record<string, unknown>[];
+    expect(curtains).toHaveLength(2);
+    for (const node of curtains) {
+      for (const key of ["shape", "shapeSize", "stretch", "wind"]) expect(node[key]).toBeUndefined();
+      // The builder writes its default curves; lowering treats a default curve as not authored (5.0.2 envelope).
+      expect(node.alphaOverLife).toEqual([0, 0.92, 0]);
+      expect(node.sizeOverLife).toEqual([0.35, 1, 0.58]);
+      // Lowered: none of the 5.1 emitter extras, and the 5.0.2 stretch default for the sprite (no authored stretch).
+      const lowered = lowerEffectNode(node as never) as unknown as { emitter: Record<string, unknown> };
+      for (const key of ["shape", "coneAngle", "wind", "sizeOverLife", "alphaOverLife", "colorOverLife"]) expect(lowered.emitter[key], key).toBeUndefined();
     }
   });
 

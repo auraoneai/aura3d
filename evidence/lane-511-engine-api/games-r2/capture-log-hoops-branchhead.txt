@@ -1,0 +1,4 @@
+hoops-manila-wide branchhead true 6 {"state":"playing","beaconFrame":null,"vnow":5116.749000000008,"title":"Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase","url":"/apps/showcase-aura-hoops-3d/index.html?court=manila&diag=1&qaCam=wide&autostart=1"}
+hoops-manila-curtain-in branchhead true 5 {"state":"playing","beaconFrame":null,"vnow":5100.082000000008,"title":"Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase","url":"/apps/showcase-aura-hoops-3d/index.html?court=manila&diag=1&qaCamEye=8,5.2,3&qaCamAt=19,4,3&qaCamFov=30&autostart=1"}
+hoops-manila-curtain-top branchhead true 4 {"state":"playing","beaconFrame":null,"vnow":5083.415000000007,"title":"Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase","url":"/apps/showcase-aura-hoops-3d/index.html?court=manila&diag=1&qaCamEye=26,9,3&qaCamAt=19,3.5,3&qaCamFov=30&autostart=1"}
+exit 0

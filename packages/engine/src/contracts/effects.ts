@@ -201,8 +201,15 @@ export interface AuraParticleEmitterOptions {
   readonly name?: string;
   readonly position?: AuraVec3;
   readonly attachTo?: string | { readonly node: string; readonly socket?: string };
+  /**
+   * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+   * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+   * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+   */
   readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+  /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
   readonly shapeSize?: AuraVec3 | number;
+  /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
   readonly coneAngleDeg?: number;
   /** Particles per second (continuous). */
   readonly rate?: number;
@@ -221,19 +228,26 @@ export interface AuraParticleEmitterOptions {
   readonly angularVelocity?: AuraRange;
   readonly gravity?: number | AuraVec3;
   readonly drag?: number;
+  /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
   readonly wind?: AuraVec3 | "weather";
   readonly noise?: { readonly strength: number; readonly frequency: number; readonly scroll?: number } | number;
   readonly collision?: { readonly plane?: number; readonly heightfield?: "world"; readonly bounce?: number; readonly lifeLoss?: number };
+  /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
   readonly sizeOverLife?: AuraCurve;
+  /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
   readonly alphaOverLife?: AuraCurve;
   readonly speedOverLife?: AuraCurve;
   readonly color?: AuraColor;
   readonly colorOverLife?: AuraColorRamp;
-  /** HDR multiplier. */
+  /**
+   * HDR multiplier.
+   * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+   */
   readonly intensity?: number;
   readonly sprite?: AuraVfxSpriteSource;
   readonly blend?: AuraBlendMode;
   readonly shading?: AuraVfxShading;
+  /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
   readonly stretch?: { readonly mode: "velocity" | "none"; readonly factor?: number };
   readonly softDistance?: number;
   readonly nearFade?: number;
@@ -257,6 +271,7 @@ export interface AuraLegacyParticleFields {
   readonly particleCount?: number;
   readonly emissionRate?: number;
   readonly groundCollision?: boolean;
+  /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
   readonly lifetimeColorRamp?: readonly AuraColor[];
   readonly velocityOverLife?: readonly number[];
   readonly turbulence?: number;

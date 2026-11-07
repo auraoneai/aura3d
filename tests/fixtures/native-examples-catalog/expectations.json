@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "a94996f98c97946a08e3ae957a705658acecd666dcb172f71d7a547c214f73e2" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "a74a1803a5ef357ec78b80d45329fbf2b999b0d34fc059f81453ed3be3b3cf5a" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -1030,7 +1030,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "83376fd4856b777280f17a55189b19ef5559ff45c9c6bff468a4423e03a899b3"
+          "sha256": "b6540f47c392da7215b34c61a82eb70bbf6ee058921489a7afbee227388ef066"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
@@ -1102,7 +1102,7 @@
         },
         {
           "path": "packages/game/src/createGameCore.ts",
-          "sha256": "b64d016c667c6d13cb81173de820b132062d3ca1cdb1ecc4411be5585decfb0c"
+          "sha256": "304828cf5a28c2a433aba808ed76e4e25f8d57622ff6b0f1f2f29bf631799a58"
         },
         {
           "path": "packages/game/src/touch/TouchControls.ts",
@@ -2087,7 +2087,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "85a22159aea04b8cb464ba61c9df114cd7ae693c3783058015f2114be4196cfc"
+        "sha256": "04f814a2c06d88e884f6472dbb5f9220e8455fe53fdb95e5edb531f59c1b3f5b"
       },
       "sourceDependencies": [
         {
@@ -2236,7 +2236,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-cross-hop/src/game/core.ts",
-          "sha256": "e627fcb9513ce83724ca2e176e6f61146d1d4f4644d27c8c3dcd7b736fc1757d"
+          "sha256": "50945d58b514dd94863a2859e2e9d394b1252748c1bf6d926fe0d94db38889cb"
         },
         {
           "path": "apps/showcase-cross-hop/src/game/world.ts",

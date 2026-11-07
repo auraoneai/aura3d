@@ -1,0 +1,38 @@
+{
+  "files": 2275,
+  "laneMissingFiles": [],
+  "laneRemovedLines": {
+    "engine/contracts/effects.d.ts": {
+      "removed": [
+        "/** HDR multiplier. */"
+      ],
+      "addedOnBranchNotMain": [
+        "* Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `\"gpu\"` keeps the disc spawn).",
+        "* Omitted keeps the legacy `radius` disc. `\"mesh-surface\"` is still accepted but has no effect yet (the emitter keeps the",
+        "* legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.",
+        "/** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */",
+        "/** Half-angle of the emission cone around `direction`; `shape: \"cone\"` defaults to 25. Replaces `spread` jitter. */",
+        "/** Constant air drift in m/s added to every particle. `\"weather\"` is not read by the emitter and is ignored. */",
+        "/** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */",
+        "/** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */",
+        "* HDR multiplier.",
+        "* @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.",
+        "/** `\"velocity\"` draws velocity-stretched billboards (`factor` default 0.02); `\"none\"` forces upright ones. */",
+        "/** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */"
+      ]
+    },
+    "game/createGameCore.d.ts": {
+      "removed": [
+        "export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, \"target\"> & Omit<AuraCreateGameAppOptions, \"scene\"> & {"
+      ],
+      "addedOnBranchNotMain": [
+        "* Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request",
+        "* (`fallback: \"main-thread\"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.",
+        "export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>[\"worker\"]): void;",
+        "export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, \"target\"> & Omit<AuraCreateGameAppOptions, \"scene\" | \"worker\"> & {"
+      ]
+    }
+  },
+  "laneAddedFiles": 0,
+  "mainOnlyRemovals": 0
+}

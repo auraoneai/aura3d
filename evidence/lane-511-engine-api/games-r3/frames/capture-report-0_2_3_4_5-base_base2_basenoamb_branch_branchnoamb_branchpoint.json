@@ -1,0 +1,372 @@
+{
+  "cross-hop-diorama-t0-pollen-near": {
+    "base": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=0&seed=7&diag=1&qaCamEye=0,2.4000000000000004,-1&qaCamAt=0,1.6,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "base2": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=0&seed=7&diag=1&qaCamEye=0,2.4000000000000004,-1&qaCamAt=0,1.6,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "basenoamb": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=0&seed=7&diag=1&qaCamEye=0,2.4000000000000004,-1&qaCamAt=0,1.6,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "branch": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=0&seed=7&diag=1&qaCamEye=0,2.4000000000000004,-1&qaCamAt=0,1.6,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchnoamb": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=0&seed=7&diag=1&qaCamEye=0,2.4000000000000004,-1&qaCamAt=0,1.6,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchpoint": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=0&seed=7&diag=1&qaCamEye=0,2.4000000000000004,-1&qaCamAt=0,1.6,-8&qaCamFov=50&qaAmbientPoint=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    }
+  },
+  "cross-hop-diorama-t2-fireflies-near": {
+    "base": {
+      "ready": true,
+      "bootFrames": 6,
+      "info": {
+        "state": "playing",
+        "vnow": 6116.76900000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=2&seed=7&diag=1&qaCamEye=0,1.6,-1&qaCamAt=0,0.8,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "base2": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=2&seed=7&diag=1&qaCamEye=0,1.6,-1&qaCamAt=0,0.8,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "basenoamb": {
+      "ready": true,
+      "bootFrames": 6,
+      "info": {
+        "state": "playing",
+        "vnow": 6116.76900000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=2&seed=7&diag=1&qaCamEye=0,1.6,-1&qaCamAt=0,0.8,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "branch": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=2&seed=7&diag=1&qaCamEye=0,1.6,-1&qaCamAt=0,0.8,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchnoamb": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=2&seed=7&diag=1&qaCamEye=0,1.6,-1&qaCamAt=0,0.8,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchpoint": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=2&seed=7&diag=1&qaCamEye=0,1.6,-1&qaCamAt=0,0.8,-8&qaCamFov=50&qaAmbientPoint=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    }
+  },
+  "cross-hop-diorama-t3-embers-near": {
+    "base": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=3&seed=7&diag=1&qaCamEye=0,1.1,-1&qaCamAt=0,0.3,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "base2": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=3&seed=7&diag=1&qaCamEye=0,1.1,-1&qaCamAt=0,0.3,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "basenoamb": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=3&seed=7&diag=1&qaCamEye=0,1.1,-1&qaCamAt=0,0.3,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "branch": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=3&seed=7&diag=1&qaCamEye=0,1.1,-1&qaCamAt=0,0.3,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchnoamb": {
+      "ready": true,
+      "bootFrames": 6,
+      "info": {
+        "state": "playing",
+        "vnow": 6116.76900000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=3&seed=7&diag=1&qaCamEye=0,1.1,-1&qaCamAt=0,0.3,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchpoint": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=3&seed=7&diag=1&qaCamEye=0,1.1,-1&qaCamAt=0,0.3,-8&qaCamFov=50&qaAmbientPoint=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    }
+  },
+  "cross-hop-diorama-t4-rain-near": {
+    "base": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=4&seed=7&diag=1&qaCamEye=0,7.8,-1&qaCamAt=0,7,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "base2": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=4&seed=7&diag=1&qaCamEye=0,7.8,-1&qaCamAt=0,7,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "basenoamb": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=4&seed=7&diag=1&qaCamEye=0,7.8,-1&qaCamAt=0,7,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "branch": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=4&seed=7&diag=1&qaCamEye=0,7.8,-1&qaCamAt=0,7,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchnoamb": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=4&seed=7&diag=1&qaCamEye=0,7.8,-1&qaCamAt=0,7,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchpoint": {
+      "ready": true,
+      "bootFrames": 3,
+      "info": {
+        "state": "playing",
+        "vnow": 6066.768000000029,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=4&seed=7&diag=1&qaCamEye=0,7.8,-1&qaCamAt=0,7,-8&qaCamFov=50&qaAmbientPoint=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    }
+  },
+  "cross-hop-diorama-t5-confetti-near": {
+    "base": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=5&seed=7&diag=1&qaCamEye=0,4.8,-1&qaCamAt=0,4,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "base2": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=5&seed=7&diag=1&qaCamEye=0,4.8,-1&qaCamAt=0,4,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "basenoamb": {
+      "ready": true,
+      "bootFrames": 4,
+      "info": {
+        "state": "playing",
+        "vnow": 6083.4350000000295,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=5&seed=7&diag=1&qaCamEye=0,4.8,-1&qaCamAt=0,4,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5332"
+      },
+      "errors": []
+    },
+    "branch": {
+      "ready": true,
+      "bootFrames": 6,
+      "info": {
+        "state": "playing",
+        "vnow": 6116.76900000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=5&seed=7&diag=1&qaCamEye=0,4.8,-1&qaCamAt=0,4,-8&qaCamFov=50&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchnoamb": {
+      "ready": true,
+      "bootFrames": 7,
+      "info": {
+        "state": "playing",
+        "vnow": 6133.436000000031,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=5&seed=7&diag=1&qaCamEye=0,4.8,-1&qaCamAt=0,4,-8&qaCamFov=50&qaNoAmbient=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    },
+    "branchpoint": {
+      "ready": true,
+      "bootFrames": 5,
+      "info": {
+        "state": "playing",
+        "vnow": 6100.10200000003,
+        "title": "Cross Hop — Aura3D Endless Lane Hopper",
+        "url": "/apps/showcase-cross-hop/index.html?look=diorama&theme=5&seed=7&diag=1&qaCamEye=0,4.8,-1&qaCamAt=0,4,-8&qaCamFov=50&qaAmbientPoint=1&autostart=1",
+        "host": "127.0.0.1:5331"
+      },
+      "errors": []
+    }
+  }
+}

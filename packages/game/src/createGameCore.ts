@@ -125,10 +125,25 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
   reset(): Promise<void>;
 }
 
+/**
+ * Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request
+ * (`fallback: "main-thread"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.
+ */
+export function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): void {
+  if (worker === undefined) return;
+  if (worker.fallback === "main-thread") return;
+  const error = new Error(
+    'createGame does not support worker rendering because its game loop requires synchronous onFrame callbacks. Pass worker: { fallback: "main-thread" } to accept the request on the main thread, or use createAuraApp with worker.'
+  ) as Error & { code: string };
+  error.name = "AuraWorkerError";
+  error.code = "worker-unsupported";
+  throw error;
+}
+
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
 export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> =
-  Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene"> & {
+  Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
     /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
     readonly target: AuraAppTarget;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
@@ -206,8 +221,10 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
   const {
     id: _id, target: _target, layout: _layout, hud: _hud, touch: _touch, sound: _sound,
     juice: _juice, scenarios: _scenarios, soundAdapter, evidence: _evidence, onReset: _onReset,
+    worker,
     ...appOptions
   } = options;
+  assertGameWorkerRequest(worker);
   const runtime = createGameAppForEntry(options.target, {
     ...appOptions,
     diagnostics: {

@@ -648,6 +648,10 @@ export interface AuraRendererInfo {
     readonly textures: number;
     readonly renderTargets?: number;
     readonly programs?: number;
+    /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+    readonly bufferBytes?: number;
+    /** 5.1: resident texture bytes when the device reports them. */
+    readonly textureBytes?: number;
   };
   readonly approximateGpuMemoryBytes?: number;
 }

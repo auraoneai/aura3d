@@ -1,0 +1,61 @@
+{
+  "before": {
+    "outcome": {
+      "state": "ready",
+      "stage": "first-frame",
+      "backend": "webgl2"
+    },
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "info": {
+      "render": {
+        "calls": 2,
+        "triangles": 3572,
+        "points": 0,
+        "lines": 0,
+        "frame": 274
+      },
+      "memory": {
+        "geometries": 8,
+        "textures": 3,
+        "renderTargets": 1,
+        "programs": 2,
+        "bufferBytes": 393800,
+        "textureBytes": 10745856
+      },
+      "approximateGpuMemoryBytes": 11139656
+    }
+  },
+  "after": {
+    "outcome": {
+      "state": "ready",
+      "stage": "first-frame",
+      "backend": "webgl2"
+    },
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "info": {
+      "render": {
+        "calls": 2,
+        "triangles": 3572,
+        "points": 0,
+        "lines": 0,
+        "frame": 249
+      },
+      "memory": {
+        "geometries": 8,
+        "textures": 4,
+        "renderTargets": 1,
+        "programs": 2,
+        "bufferBytes": 393800,
+        "textureBytes": 23328768
+      },
+      "approximateGpuMemoryBytes": 23722568
+    }
+  },
+  "logs": [
+    "{\"type\":\"debug\",\"args\":[{\"type\":\"string\",\"value\":\"[vite] connecting...\"}],\"executionContextId\":2,\"timestamp\":1794018859832.741,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"4\",\"url\":\"http://127.0.0.1:5199/@vite/client\",\"lineNumber\":732,\"columnNumber\":8}]}}",
+    "{\"type\":\"debug\",\"args\":[{\"type\":\"string\",\"value\":\"[vite] connected.\"}],\"executionContextId\":2,\"timestamp\":1794018859835.94,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"handleMessage\",\"scriptId\":\"4\",\"url\":\"http://127.0.0.1:5199/@vite/client\",\"lineNumber\":826,\"columnNumber\":11},{\"functionName\":\"\",\"scriptId\":\"4\",\"url\":\"http://127.0.0.1:5199/@vite/client\",\"lineNumber\":457,\"columnNumber\":41},{\"function",
+    "{\"entry\":{\"source\":\"network\",\"level\":\"error\",\"text\":\"Failed to load resource: the server responded with a status of 404 (Not Found)\",\"timestamp\":1794018860096.618,\"url\":\"http://127.0.0.1:5199/favicon.ico\",\"networkRequestId\":\"12050.1659\"}}",
+    "{\"type\":\"debug\",\"args\":[{\"type\":\"string\",\"value\":\"[vite] connecting...\"}],\"executionContextId\":3,\"timestamp\":1794018864913.104,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"4\",\"url\":\"http://127.0.0.1:5199/@vite/client\",\"lineNumber\":732,\"columnNumber\":8}]}}",
+    "{\"type\":\"debug\",\"args\":[{\"type\":\"string\",\"value\":\"[vite] connected.\"}],\"executionContextId\":3,\"timestamp\":1794018864925.894,\"stackTrace\":{\"callFrames\":[{\"functionName\":\"handleMessage\",\"scriptId\":\"4\",\"url\":\"http://127.0.0.1:5199/@vite/client\",\"lineNumber\":826,\"columnNumber\":11},{\"functionName\":\"\",\"scriptId\":\"4\",\"url\":\"http://127.0.0.1:5199/@vite/client\",\"lineNumber\":457,\"columnNumber\":41},{\"functio"
+  ]
+}

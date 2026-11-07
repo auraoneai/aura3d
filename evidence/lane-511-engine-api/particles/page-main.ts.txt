@@ -1,0 +1,19 @@
+import { camera, createAuraApp, effects, lights, primitives, scene } from "@aura3d/engine";
+
+const variant = new URLSearchParams(location.search).get("variant") ?? "after";
+const after = variant === "after";
+const common = { rate: 300, maxParticles: 600, lifetime: [3, 3], speed: 0.4, gravity: 0, size: [0.06, 0.06], prewarm: 3, seed: 5, sprite: "soft-dot" };
+const emitters = [
+  // box volume, left
+  effects.particles({ ...common, name: "box", position: [-3, 0, 0], color: "#ffd27a", ...(after ? { shape: "box", shapeSize: [2, 2, 1] } : {}) } as never),
+  // cone + wind + size curve, centre
+  effects.particles({ ...common, name: "cone", position: [0, -1.5, 0], color: "#7ad2ff", speed: 2, direction: [0, 1, 0], ...(after ? { shape: "point", coneAngleDeg: 12, wind: [0.8, 0, 0], sizeOverLife: [0.3, 1.6] } : {}) } as never),
+  // ring + colour ramp, right
+  effects.particles({ ...common, name: "ring", position: [3, 0, 0], color: "#ffffff", speed: 0, ...(after ? { shape: "ring", shapeSize: 1.2, lifetimeColorRamp: ["#ff3030", "#30ff60", "#3060ff"], alphaOverLife: [1, 1, 0] } : {}) } as never)
+];
+let s = scene().camera(camera.orbit({ target: [0, 0, 0], position: [0, 0.5, 9] }));
+s = s.add(lights.directional({ intensity: 1 })).add(primitives.plane({ name: "floor", size: [14, 6] }).position(0, -2.6, 0).rotate(-Math.PI / 2, 0, 0));
+for (const e of emitters) s = s.add(e);
+const app = createAuraApp(document.getElementById("c") as HTMLCanvasElement, { scene: s, preserveDrawingBuffer: true });
+(window as any).__ready = app.readiness({ stage: "first-frame" }).then((o: unknown) => { (window as any).__outcome = o; return o; });
+(window as any).__app = app;

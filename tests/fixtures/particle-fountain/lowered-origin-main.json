@@ -1,0 +1,526 @@
+{
+ "_source": "prefabs.particleFountain lowered through lowerEffectNode on origin/main (5.0.2 emitter look); regenerated only if the 5.0.2 look is intentionally changed",
+ "cases": {
+  "default": {},
+  "red": {
+   "color": "#ff0000"
+  },
+  "big": {
+   "color": "#22c55e",
+   "count": 2400,
+   "emissionRate": 300
+  }
+ },
+ "lowered": {
+  "default": [
+   {
+    "type": "emitter",
+    "nodeId": "narrow upward lifetime colored gravity fountain plume",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "narrow upward lifetime colored gravity fountain plume",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 420,
+     "emissionRate": 120,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.7777499999999999,
+      0.9149999999999999
+     ],
+     "spread": 0.06,
+     "spawnRadius": 1.04,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.11697066775851084,
+      0.3762621229909065,
+      0.9559733532492861
+     ],
+     "alpha": 0.85,
+     "spin": 0.6,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 1574484049
+    }
+   },
+   {
+    "type": "emitter",
+    "nodeId": "falling collision splash particle band",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "falling collision splash particle band",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 202,
+     "emissionRate": 38,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.09817499999999998,
+      0.11549999999999999
+     ],
+     "spread": 0.06,
+     "spawnRadius": 1.9,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.4910208498478356,
+      0.7912979403326302,
+      0.9822505503331171
+     ],
+     "alpha": 0.85,
+     "spin": 0.6,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 988109062
+    }
+   },
+   {
+    "type": "emitter",
+    "nodeId": "older blue mist particles after ground collision",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "older blue mist particles after ground collision",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 151,
+     "emissionRate": 29,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.32,
+      0.32
+     ],
+     "spread": 0.35,
+     "spawnRadius": 2.2,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.11697066775851084,
+      0.3762621229909065,
+      0.9559733532492861
+     ],
+     "alpha": 0.85,
+     "spin": 2.4,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 1543188012
+    }
+   }
+  ],
+  "red": [
+   {
+    "type": "emitter",
+    "nodeId": "narrow upward lifetime colored gravity fountain plume",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "narrow upward lifetime colored gravity fountain plume",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 420,
+     "emissionRate": 120,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.7777499999999999,
+      0.9149999999999999
+     ],
+     "spread": 0.06,
+     "spawnRadius": 1.04,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      1,
+      0,
+      0
+     ],
+     "alpha": 0.85,
+     "spin": 0.6,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 1574484049
+    }
+   },
+   {
+    "type": "emitter",
+    "nodeId": "falling collision splash particle band",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "falling collision splash particle band",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 202,
+     "emissionRate": 38,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.09817499999999998,
+      0.11549999999999999
+     ],
+     "spread": 0.06,
+     "spawnRadius": 1.9,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.4910208498478356,
+      0.7912979403326302,
+      0.9822505503331171
+     ],
+     "alpha": 0.85,
+     "spin": 0.6,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 988109062
+    }
+   },
+   {
+    "type": "emitter",
+    "nodeId": "older blue mist particles after ground collision",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "older blue mist particles after ground collision",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 151,
+     "emissionRate": 29,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.32,
+      0.32
+     ],
+     "spread": 0.35,
+     "spawnRadius": 2.2,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.11697066775851084,
+      0.3762621229909065,
+      0.9559733532492861
+     ],
+     "alpha": 0.85,
+     "spin": 2.4,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 1543188012
+    }
+   }
+  ],
+  "big": [
+   {
+    "type": "emitter",
+    "nodeId": "narrow upward lifetime colored gravity fountain plume",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "narrow upward lifetime colored gravity fountain plume",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 2400,
+     "emissionRate": 300,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.7777499999999999,
+      0.9149999999999999
+     ],
+     "spread": 0.06,
+     "spawnRadius": 1.04,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.01599629336550963,
+      0.5583403896342679,
+      0.1119324278369056
+     ],
+     "alpha": 0.85,
+     "spin": 0.6,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 1574484049
+    }
+   },
+   {
+    "type": "emitter",
+    "nodeId": "falling collision splash particle band",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "falling collision splash particle band",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 1152,
+     "emissionRate": 96,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.09817499999999998,
+      0.11549999999999999
+     ],
+     "spread": 0.06,
+     "spawnRadius": 1.9,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.4910208498478356,
+      0.7912979403326302,
+      0.9822505503331171
+     ],
+     "alpha": 0.85,
+     "spin": 0.6,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 988109062
+    }
+   },
+   {
+    "type": "emitter",
+    "nodeId": "older blue mist particles after ground collision",
+    "effect": "particles",
+    "consumer": "particle-pass",
+    "sim": "cpu",
+    "batch": {
+     "blend": "alpha",
+     "shading": "unlit",
+     "softDepth": true,
+     "stretch": false,
+     "frameBlend": false,
+     "atlasKey": "soft-dot"
+    },
+    "emitter": {
+     "key": "eff.alpha.soft-dot.true.false.0",
+     "nodeId": "older blue mist particles after ground collision",
+     "origin": [
+      0,
+      0,
+      0
+     ],
+     "capacity": 864,
+     "emissionRate": 72,
+     "life": [
+      1.2,
+      2.4
+     ],
+     "speed": [
+      0.32,
+      0.32
+     ],
+     "spread": 0.35,
+     "spawnRadius": 2.2,
+     "direction": [
+      0,
+      1,
+      0
+     ],
+     "gravity": 9.8,
+     "size": [
+      0.05,
+      0.14
+     ],
+     "color": [
+      0.11697066775851084,
+      0.3762621229909065,
+      0.9559733532492861
+     ],
+     "alpha": 0.85,
+     "spin": 2.4,
+     "stretch": 0,
+     "drag": 0.12,
+     "seed": 1543188012
+    }
+   }
+  ]
+ }
+}

@@ -14,6 +14,7 @@ import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
 import type { AuraTransformSpec } from "../../agent-api/nodes/types.js";
 import { assertWeatherTransformFields } from "./WeatherTransform.js";
 import { parseAuraColor } from "../../agent-api/color.js";
+import { PARTICLE_DEFAULT_ALPHA_OVER_LIFE, PARTICLE_DEFAULT_SIZE_OVER_LIFE, isAuthoredCurve } from "../../agent-api/nodes/particleDefaults.js";
 
 export interface EffectNodeLike extends AuraTransformSpec {
   readonly kind: string;
@@ -38,6 +39,15 @@ export interface EffectNodeLike extends AuraTransformSpec {
   /** flipbook-sprite: wrap frames (default true) or play once over life. */
   readonly loop?: boolean;
   readonly intensity?: number;
+  /** 5.1 spawn volume of `effects.particles`; see `EmitterDescriptor.shape`. */
+  readonly shape?: string;
+  readonly shapeSize?: AuraVec3 | number;
+  readonly coneAngleDeg?: number;
+  /** 5.1 `effects.particles` velocity stretch: `{ mode: "velocity", factor }` or `{ mode: "none" }`. */
+  readonly stretch?: { readonly mode?: string; readonly factor?: number };
+  readonly sizeOverLife?: readonly number[];
+  readonly alphaOverLife?: readonly number[];
+  readonly lifetimeColorRamp?: readonly unknown[];
   /** weather density (0..1) — scales the rain/snow volume particle count. */
   readonly density?: number;
   readonly mist?: boolean;
@@ -221,6 +231,57 @@ function particleSizeRange(size: EffectNodeLike["size"]): readonly [number, numb
   return asRange(size as number | readonly [number, number] | undefined);
 }
 
+const PARTICLE_SHAPES = new Set(["point", "sphere", "hemisphere", "cone", "box", "disc", "ring", "edge"]);
+
+function shapeExtents(size: AuraVec3 | number | undefined, kind: string): AuraVec3 {
+  const fallback = kind === "box" ? 1 : 0.5;
+  if (typeof size === "number" && Number.isFinite(size) && size >= 0) return [size, size, size];
+  if (Array.isArray(size) && size.length >= 3 && size.every((v) => typeof v === "number" && Number.isFinite(v) && v >= 0)) {
+    return [size[0]!, size[1]!, size[2]!];
+  }
+  return [fallback, fallback, fallback];
+}
+
+/** `#rgb` / `#rrggbb` to linear RGB; null for anything else (named colours are not resolved here). */
+function rampColor(value: unknown): AuraVec3 | null {
+  if (Array.isArray(value) && value.length >= 3 && value.every((v) => typeof v === "number")) return [value[0], value[1], value[2]];
+  if (typeof value !== "string" || !value.startsWith("#")) return null;
+  const hex = value.length === 4 ? `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}` : value;
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return null;
+  return [
+    srgbChannelToLinear(parseInt(hex.slice(1, 3), 16) / 255),
+    srgbChannelToLinear(parseInt(hex.slice(3, 5), 16) / 255),
+    srgbChannelToLinear(parseInt(hex.slice(5, 7), 16) / 255)
+  ];
+}
+
+/**
+ * 5.1: the `effects.particles` options the CPU emitter simulates beyond the legacy surface. Only authored values
+ * produce fields, so a node without them lowers exactly as before.
+ */
+function lowerEmitterExtras(node: EffectNodeLike): Partial<Mutable<EmitterDescriptor>> {
+  const extras: Partial<Mutable<EmitterDescriptor>> = {};
+  // `shapeSize` without `shape` implies a box volume.
+  const shapeKind = typeof node.shape === "string" && PARTICLE_SHAPES.has(node.shape) ? node.shape : node.shape === undefined && node.shapeSize !== undefined ? "box" : undefined;
+  if (shapeKind !== undefined) {
+    extras.shape = { kind: shapeKind as NonNullable<EmitterDescriptor["shape"]>["kind"], size: shapeExtents(node.shapeSize, shapeKind) };
+  }
+  const coneDeg = typeof node.coneAngleDeg === "number" && Number.isFinite(node.coneAngleDeg) ? node.coneAngleDeg : shapeKind === "cone" ? 25 : undefined;
+  if (coneDeg !== undefined) extras.coneAngle = (Math.max(0, Math.min(180, coneDeg)) * Math.PI) / 180;
+  if (Array.isArray(node.wind) && node.wind.length >= 3 && node.wind.every((v) => typeof v === "number" && Number.isFinite(v))) {
+    if (node.wind[0] !== 0 || node.wind[1] !== 0 || node.wind[2] !== 0) extras.wind = [node.wind[0]!, node.wind[1]!, node.wind[2]!];
+  }
+  if (isAuthoredCurve(node.sizeOverLife, PARTICLE_DEFAULT_SIZE_OVER_LIFE)) extras.sizeOverLife = node.sizeOverLife.slice();
+  if (isAuthoredCurve(node.alphaOverLife, PARTICLE_DEFAULT_ALPHA_OVER_LIFE)) extras.alphaOverLife = node.alphaOverLife.slice();
+  if (Array.isArray(node.lifetimeColorRamp) && node.lifetimeColorRamp.length > 0) {
+    const ramp = node.lifetimeColorRamp.map(rampColor);
+    if (ramp.every((c): c is AuraVec3 => c !== null)) extras.colorOverLife = ramp;
+  }
+  return extras;
+}
+
+type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
 function hashSeed(nodeId: string): number {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < nodeId.length; i++) {
@@ -366,6 +427,13 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       // GU47 E-F: an atlas sprite replaces the analytic soft-dot (own batch key, frame blend on multi-frame sequences).
       const sprite = lowerSprite(node);
       const atlasKey = sprite ? spriteAtlasKey(sprite) : "soft-dot";
+      // 5.1 `stretch`: `{ mode: "velocity", factor }` forces velocity-stretched billboards, `{ mode: "none" }` forces
+      // upright ones; absent keeps the `spark` material-mode default.
+      const stretchMode = node.stretch?.mode;
+      const stretchOn = stretchMode === "velocity" ? true : stretchMode === "none" ? false : materialMode === "spark";
+      const stretchFactor = stretchMode === "velocity" && typeof node.stretch?.factor === "number" && Number.isFinite(node.stretch.factor) && node.stretch.factor >= 0
+        ? node.stretch.factor
+        : stretchOn ? 0.02 : 0;
       return {
         type: "emitter",
         nodeId,
@@ -379,7 +447,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           ...(node.softDistance !== undefined ? { softDistance: node.softDistance } : {}),
           ...(node.nearFade !== undefined ? { nearFade: node.nearFade } : {}),
           ...(node.maxScreen !== undefined && node.maxScreen > 0 ? { maxScreen: node.maxScreen } : {}),
-          stretch: materialMode === "spark",
+          stretch: stretchOn,
           frameBlend: sprite?.kind === "builtin" && sprite.frames > 1,
           atlasKey,
           ...(node.lowRes === true ? { lowRes: true } : {})
@@ -389,7 +457,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           // §6.2.2 material key — identical blend/atlas/flags merge into one
           // instanced draw in ProductionEffectSystem.feed.
           // Trailing bit: lowRes batches never merge with full-res ones.
-          key: `eff.${blend}.${atlasKey}.${materialMode !== "spark"}.${materialMode === "spark"}.${node.lowRes === true ? 1 : 0}${node.maxScreen !== undefined && node.maxScreen > 0 ? `.m${node.maxScreen}` : ""}`, 
+          key: `eff.${blend}.${atlasKey}.${materialMode !== "spark"}.${materialMode === "spark"}${stretchOn !== (materialMode === "spark") ? `.st${stretchOn ? 1 : 0}` : ""}.${node.lowRes === true ? 1 : 0}${node.maxScreen !== undefined && node.maxScreen > 0 ? `.m${node.maxScreen}` : ""}`, 
           nodeId,
           origin: position,
           capacity: count,
@@ -405,11 +473,12 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           color: nodeColor(node),
           alpha: materialMode === "smoke" ? 0.35 : 0.85,
           spin: node.emitter === "swirl" ? 2.4 : 0.6,
-          stretch: materialMode === "spark" ? 0.02 : 0,
+          stretch: stretchFactor,
           drag,
           seed: seedOverride ?? (node.seed ?? hashSeed(nodeId)),
           ...(node.prewarm !== undefined ? { prewarm: node.prewarm } : {}),
-          ...(node.burst !== undefined ? { burst: node.burst } : {})
+          ...(node.burst !== undefined ? { burst: node.burst } : {}),
+          ...lowerEmitterExtras(node)
         }
       };
     }

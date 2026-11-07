@@ -1,0 +1,192 @@
+{
+ "cross-hop-diorama-t0-pollen": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.027,
+   "pctPixelsOver8": 0.101
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0339,
+   "pctPixelsOver8": 0.158
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0307,
+   "pctPixelsOver8": 0.116
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0052,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0257,
+   "pctPixelsOver8": 0.116
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0285,
+   "pctPixelsOver8": 0.101
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0368,
+   "pctPixelsOver8": 0.177
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0235,
+   "pctPixelsOver8": 0.101
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-diorama-t2-fireflies": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0042,
+   "pctPixelsOver8": 0.013
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0042,
+   "pctPixelsOver8": 0.013
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0026,
+   "pctPixelsOver8": 0.004
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0016,
+   "pctPixelsOver8": 0.009
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0026,
+   "pctPixelsOver8": 0.004
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  }
+ },
+ "cross-hop-diorama-t3-embers": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0004,
+   "pctPixelsOver8": 0.002
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0376,
+   "pctPixelsOver8": 0.133
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0374,
+   "pctPixelsOver8": 0.13
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0004,
+   "pctPixelsOver8": 0.002
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0376,
+   "pctPixelsOver8": 0.132
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0562,
+   "pctPixelsOver8": 0.185
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0372,
+   "pctPixelsOver8": 0.13
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0003,
+   "pctPixelsOver8": 0.002
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.056,
+   "pctPixelsOver8": 0.185
+  }
+ },
+ "cross-hop-diorama-t4-rain": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0451,
+   "pctPixelsOver8": 0.135
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0451,
+   "pctPixelsOver8": 0.135
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0451,
+   "pctPixelsOver8": 0.135
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0451,
+   "pctPixelsOver8": 0.135
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0451,
+   "pctPixelsOver8": 0.135
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0451,
+   "pctPixelsOver8": 0.135
+  }
+ },
+ "cross-hop-diorama-t5-confetti": {
+  "base-vs-base2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "base-vs-branch": {
+   "meanAbsDiff": 0.0227,
+   "pctPixelsOver8": 0.099
+  },
+  "base-vs-branchpoint": {
+   "meanAbsDiff": 0.0183,
+   "pctPixelsOver8": 0.085
+  },
+  "branch-vs-branchpoint": {
+   "meanAbsDiff": 0.0044,
+   "pctPixelsOver8": 0.013
+  },
+  "base-vs-basenoamb": {
+   "meanAbsDiff": 0.0183,
+   "pctPixelsOver8": 0.085
+  },
+  "branch-vs-branchnoamb": {
+   "meanAbsDiff": 0.0227,
+   "pctPixelsOver8": 0.099
+  },
+  "branchpoint-vs-branchnoamb": {
+   "meanAbsDiff": 0.0183,
+   "pctPixelsOver8": 0.085
+  },
+  "basenoamb-vs-branchnoamb": {
+   "meanAbsDiff": 0.0183,
+   "pctPixelsOver8": 0.085
+  }
+ }
+}

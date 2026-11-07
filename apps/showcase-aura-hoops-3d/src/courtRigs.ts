@@ -163,6 +163,8 @@ export interface CourtRig {
 
 const SODIUM = HOOPS_PALETTE.sodium;
 const TUNGSTEN = "#ffb46b";
+/** The emitter's built-in fade-in (0..1/8) / fade-out (3/4..1) envelope as an explicit curve, so honoring alphaOverLife keeps the 5.0.2 look. */
+const FADE_ENVELOPE_CURVE: readonly number[] = [0, 1, 1, 1, 1, 1, 1, 0.5, 0];
 const COURT_CENTRE: AuraVec3 = [0, 0, 4];
 
 /** Rucker floods stand at (±11, -7) and (±11, 13); the lamp heads sit 9 m up, slightly inboard. */
@@ -614,7 +616,8 @@ export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): Aur
       size: [0.012, 0.022],
       color: "#f3e3c2",
       sprite: "soft-dot",
-      alphaOverLife: [0, 0.5, 0],
+      // 5.0.2 look: the engine's default fade envelope (in 0..1/8, out 3/4..1) as an explicit curve, since alphaOverLife is honored now.
+      alphaOverLife: FADE_ENVELOPE_CURVE,
       loop: true,
       seed: 0x6d07
     }) as unknown as AuraNodeBuilder<AuraSceneNode>);
@@ -689,12 +692,12 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
     }
   } else if (rig.weather.rain === "outside") {
     for (const side of [-1, 1] as const) {
-      // A tall box spanning the open side from the gutter to the ground: streaks spawn through it and fall fast.
+      // Authored with the 5.0.2 option set on purpose: shape/shapeSize/stretch/alphaOverLife are honored since 5.1, so the
+      // curtain keeps the shipped 5.0.2 emitter (point spawn, built-in fade envelope, sprite-default stretch). Real-GPU
+      // main-vs-branch frames: evidence/lane-511-engine-api/games-r2 (qaCamEye views onto the emitter, qaNoRain pairs).
       out.push(effects.particles({
         name: `${rig.id}-rain-curtain-${side < 0 ? "w" : "e"}`,
         position: [side * 19, 4.5, 3],
-        shape: "box",
-        shapeSize: [3, 9, 30],
         rate: reducedMotion ? 160 : 320,
         maxParticles: reducedMotion ? 200 : 400,
         lifetime: [0.45, 0.6],
@@ -703,8 +706,6 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
         size: [0.02, 0.03],
         color: "#b9c7da",
         sprite: "rain-streak",
-        stretch: { mode: "velocity", factor: 0.06 },
-        alphaOverLife: [0.6, 0.6, 0],
         loop: true,
         seed: 0x3a11 + side
       }).toJSON());

@@ -1,0 +1,116 @@
+{
+ "hoops-manila-wide": {
+  "main-vs-branch": {
+   "meanAbsDiff": 0.0151,
+   "pctPixelsOver8": 0.017
+  },
+  "main-vs-main2": {
+   "meanAbsDiff": 0.0116,
+   "pctPixelsOver8": 0.012
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0069,
+   "pctPixelsOver8": 0.009
+  },
+  "main2-vs-branch2": {
+   "meanAbsDiff": 0.0044,
+   "pctPixelsOver8": 0.006
+  },
+  "main-vs-branchhead": {
+   "meanAbsDiff": 0.0044,
+   "pctPixelsOver8": 0.006
+  },
+  "main-vs-mainnorain": {
+   "meanAbsDiff": 0.0103,
+   "pctPixelsOver8": 0.011
+  },
+  "branch-vs-branchnorain": {
+   "meanAbsDiff": 0.0028,
+   "pctPixelsOver8": 0.005
+  },
+  "branchhead-vs-branchnorain": {
+   "meanAbsDiff": 0.0129,
+   "pctPixelsOver8": 0.015
+  },
+  "mainnorain-vs-branchnorain": {
+   "meanAbsDiff": 0.0076,
+   "pctPixelsOver8": 0.011
+  }
+ },
+ "hoops-manila-curtain-in": {
+  "main-vs-branch": {
+   "meanAbsDiff": 0.0098,
+   "pctPixelsOver8": 0.016
+  },
+  "main-vs-main2": {
+   "meanAbsDiff": 0.0075,
+   "pctPixelsOver8": 0.008
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0105,
+   "pctPixelsOver8": 0.016
+  },
+  "main2-vs-branch2": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "main-vs-branchhead": {
+   "meanAbsDiff": 0.008,
+   "pctPixelsOver8": 0.01
+  },
+  "main-vs-mainnorain": {
+   "meanAbsDiff": 0.0079,
+   "pctPixelsOver8": 0.01
+  },
+  "branch-vs-branchnorain": {
+   "meanAbsDiff": 0.0064,
+   "pctPixelsOver8": 0.013
+  },
+  "branchhead-vs-branchnorain": {
+   "meanAbsDiff": 0.0059,
+   "pctPixelsOver8": 0.008
+  },
+  "mainnorain-vs-branchnorain": {
+   "meanAbsDiff": 0.0059,
+   "pctPixelsOver8": 0.008
+  }
+ },
+ "hoops-manila-curtain-top": {
+  "main-vs-branch": {
+   "meanAbsDiff": 0.0,
+   "pctPixelsOver8": 0.0
+  },
+  "main-vs-main2": {
+   "meanAbsDiff": 0.0031,
+   "pctPixelsOver8": 0.005
+  },
+  "branch-vs-branch2": {
+   "meanAbsDiff": 0.0033,
+   "pctPixelsOver8": 0.004
+  },
+  "main2-vs-branch2": {
+   "meanAbsDiff": 0.0064,
+   "pctPixelsOver8": 0.009
+  },
+  "main-vs-branchhead": {
+   "meanAbsDiff": 0.0067,
+   "pctPixelsOver8": 0.011
+  },
+  "main-vs-mainnorain": {
+   "meanAbsDiff": 0.0041,
+   "pctPixelsOver8": 0.007
+  },
+  "branch-vs-branchnorain": {
+   "meanAbsDiff": 0.0026,
+   "pctPixelsOver8": 0.006
+  },
+  "branchhead-vs-branchnorain": {
+   "meanAbsDiff": 0.0064,
+   "pctPixelsOver8": 0.009
+  },
+  "mainnorain-vs-branchnorain": {
+   "meanAbsDiff": 0.0052,
+   "pctPixelsOver8": 0.008
+  }
+ }
+}
