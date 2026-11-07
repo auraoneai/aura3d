@@ -12,11 +12,11 @@ import {
 //   composeGeometry                    one draw call per material with a vertex colour per part
 const SIZE = 44;
 const fbm = createFbm2D(9, { octaves: 5, frequency: 0.07 });
-const crag = createFbm2D(2, { octaves: 4, frequency: 0.16, ridged: true });
+const crag = createFbm2D(2, { octaves: 3, frequency: 0.12 });
 const groundAt = (x: number, z: number): number => {
   const r = Math.hypot(x - 1.5, z + 0.5) / (SIZE * 0.5);
   const dome = Math.max(0, 1 - r * r * 1.9) ** 1.4;
-  return dome * 6.2 + fbm(x, z) * 1.5 + Math.max(0, crag(x, z)) * 1.4 * dome - 2.2;
+  return dome * 6.2 + fbm(x, z) * 1.5 + Math.max(0, crag(x, z)) * 1.1 * dome - 2.2;
 };
 const island = heightfieldGeometry({
   heightAt: groundAt, size: SIZE, segments: 176, base: -7,
