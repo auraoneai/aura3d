@@ -64,6 +64,9 @@ describe("public package API contracts", () => {
       ...rootExportSpecifiers
     ]);
     const exampleSources = collectSourceFiles("examples");
+    const reactPeers = Object.keys((JSON.parse(readFileSync("packages/react/package.json", "utf8")) as { peerDependencies?: Record<string, string> }).peerDependencies ?? {})
+      .filter((name) => !name.startsWith("@aura3d/"));
+    const reactHostPeers = new Set(reactPeers.flatMap((name) => name === "react" ? ["react", "react-dom/client"] : [name]));
 
     expect(exampleSources.length).toBeGreaterThan(0);
     for (const file of exampleSources) {
@@ -82,6 +85,8 @@ describe("public package API contracts", () => {
         if (file.includes("/tests/") || file.endsWith(".spec.ts") || file.endsWith(".test.ts")) {
           if (["@playwright/test", "vitest"].includes(specifier)) continue;
         }
+        // A React host example (one that uses the public @aura3d/react barrel) may import that package's own React peer.
+        if (imports.includes("@aura3d/react") && reactHostPeers.has(specifier)) continue;
         expect(isLocalExampleImport(file, specifier), `${file} imports ${specifier}`).toBe(true);
       }
     }

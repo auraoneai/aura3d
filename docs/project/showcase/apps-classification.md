@@ -128,6 +128,7 @@ Their classification gives the route-tier inventory a source-backed signal.
 | `examples/compute-lab` | diagnostic | GPU compute read-back harness; no real-device result is claimed here. |
 | `examples/guard-canvas-lab` | diagnostic | Raw WebGL canvas and black-frame guard harness. |
 | `examples/instanced-texture-probe` | diagnostic | Compares textured primitive, instanced and batched render paths. |
+| `examples/react-embedding-host` | diagnostic | React host embedding two Aura3D canvases; checks the `@aura3d/react` handle, live-data path and page-global cleanup. |
 | `examples/selfheal-lab` | diagnostic | Black-frame guard behavior under dark, black and slow-load scenarios. |
 | `examples/webgpu-presentation-probe` | diagnostic | Isolates browser WebGPU presentation behavior; no Aura3D renderer parity claim. |
 

@@ -22,7 +22,7 @@ export function coldStartLookEnabled(): boolean {
 
 /**
  * The default only applies to plain WebGL2 forward apps: the hero stage needs fog, a shadowed key and sampled studio IBL, which
- * the WebGPU, deferred/meshlet/visibility, worker and texture-residency paths do not all render. Any app that selects one of
+ * the WebGPU, G-buffer/meshlet/visibility, worker and texture-residency paths do not all render. Any app that selects one of
  * those paths (or tunes the renderer in a way that implies a specific path) is left untouched.
  */
 export function coldStartLookApplies(options: { readonly worker?: unknown; readonly frameMode?: unknown; readonly renderer?: unknown }): boolean {
