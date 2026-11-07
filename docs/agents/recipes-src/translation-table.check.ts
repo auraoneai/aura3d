@@ -26,6 +26,12 @@ app.nodes.require("mover").setPosition(1, 1, 0);
 app.nodes.require("mover").setRotation(0, 1, 0);
 app.nodes.require("mover").setScale(1.5);
 
+// 3b E3-06 three.js spellings that compile to the canonical call (see docs/agents/guessable-api.md)
+stage.add(primitives.box({ name: "tilted" }).position(0, 1, 0).rotation(0, 0.5, 0)); // mesh.rotation.set(...) == .rotate(...)
+stage.add(primitives.plane({ name: "floor", size: [20, 20], material: material.pbr({ color: "#2a3038", side: "double" }) })); // PlaneGeometry(w, h) == size [w, 1, d]
+stage.add(lights.directional({ position: [4, 6, 3], intensity: 3, castShadow: true })); // light.castShadow = true == shadow: true
+stage.add(lights.hemisphere({ color: "#bcd7ff", groundColor: "#202428", intensity: 0.6 })); // HemisphereLight(sky, ground) == skyColor
+
 // 4 Group / Object3D hierarchy (children use local transforms)
 stage.add(group("arm", [primitives.capsule({ size: [0.1, 0.5, 0.1] }).position(0, -0.25, 0)], { position: [0, 1.4, 0] }).runtime({ id: "arm", mutable: true }));
 

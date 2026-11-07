@@ -12,7 +12,7 @@ import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec, resolveIridescenceThickness } from "../../material-physical/PhysicalMaterialSpec.js";
 import { validateMaterialVisualQA } from "../looks/structuralQA.js";
 import { lazyNamespace } from "../lazyNamespace.js";
-import { noteUnrenderedOptions } from "./optionDiagnostics.js";
+import { noteMaterialGuesses, noteUnrenderedOptions, normalizeThreeMaterialAliases } from "./optionDiagnostics.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 import { solarPlanetMaterial } from "../nodes/solar.js";
 import { resolveDepthPreviewMaterialOptions } from "@aura3d/rendering";
@@ -695,17 +695,19 @@ export const material = lazyNamespace(() => ({
     }
     return materialNode(options);
   },
-  pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => {
+  pbr: (rawOptions: AuraMaterialSpec = {}): AuraMaterialSpec => {
+    // E3-06: three.js spellings (`transparent`, `side`) normalise to the canonical options; unsupported guesses are noted.
+    const { options, notes: guessNotes } = normalizeThreeMaterialAliases("material.pbr", rawOptions);
     if (options.iridescenceThicknessRange !== undefined || options.iridescenceThicknessMinimum !== undefined ||
         options.iridescenceThicknessMaximum !== undefined) {
       resolveIridescenceThickness(options);
     }
-    return noteUnrenderedOptions("material.pbr", options, resolveMaterialSpecDefaults({
+    return noteMaterialGuesses(noteUnrenderedOptions("material.pbr", options, resolveMaterialSpecDefaults({
       color: "#d7dee8",
       roughness: 0.55,
       metallic: options.metallic ?? options.metalness ?? 0,
       metalness: options.metalness ?? options.metallic ?? 0
-    }, options));
+    }, options)), guessNotes);
   },
   /**
    * Film thickness endpoints are in nanometres. Explicit minimum/maximum
@@ -741,15 +743,18 @@ export const material = lazyNamespace(() => ({
     metalness: options.metalness ?? options.metallic ?? 0,
     practical: options.practical ?? true
   }, options),
-  metal: (options: AuraMaterialSpec = {}): AuraMaterialSpec => noteUnrenderedOptions("material.metal", options, resolveMaterialSpecDefaults({
-    color: options.color ?? "#dce6ee",
-    roughness: options.roughness ?? 0.12,
-    metallic: options.metallic ?? options.metalness ?? 1,
-    metalness: options.metalness ?? options.metallic ?? 1,
-    clearcoat: options.clearcoat ?? 0.12,
-    clearcoatRoughness: options.clearcoatRoughness ?? 0.16,
-    envMapIntensity: options.envMapIntensity ?? 1.45
-  }, options)),
+  metal: (rawOptions: AuraMaterialSpec = {}): AuraMaterialSpec => {
+    const { options, notes } = normalizeThreeMaterialAliases("material.metal", rawOptions);
+    return noteMaterialGuesses(noteUnrenderedOptions("material.metal", options, resolveMaterialSpecDefaults({
+      color: options.color ?? "#dce6ee",
+      roughness: options.roughness ?? 0.12,
+      metallic: options.metallic ?? options.metalness ?? 1,
+      metalness: options.metalness ?? options.metallic ?? 1,
+      clearcoat: options.clearcoat ?? 0.12,
+      clearcoatRoughness: options.clearcoatRoughness ?? 0.16,
+      envMapIntensity: options.envMapIntensity ?? 1.45
+    }, options)), notes);
+  },
   rubber: (options: AuraMaterialSpec = {}): AuraMaterialSpec => resolveMaterialSpecDefaults({
     color: options.color ?? "#111317",
     roughness: options.roughness ?? 0.86,

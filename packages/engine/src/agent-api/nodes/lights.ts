@@ -5,6 +5,20 @@ import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions, AuraPhotomet
 import { AuraNodeBuilder } from "./builder.js";
 import { distance } from "../SpatialAnchoring.js";
 import { createLensFlareNode } from "./lensFlare.js";
+import { ignoredOptionsNote } from "./optionDiagnostics.js";
+
+// E3-06: option names each builder reads (including the three.js aliases `castShadow` and hemisphere `color`).
+// Anything else is reported once as OPTION_IGNORED with a "did you mean" suggestion (warn-only; strict mounts throw).
+const AMBIENT_KEYS = ["name", "intensity", "color"] as const;
+const HEMISPHERE_KEYS = ["name", "skyColor", "groundColor", "intensity", "position", "color"] as const;
+const DIRECTIONAL_KEYS = ["name", "position", "target", "intensity", "color", "shadow", "castShadow"] as const;
+const POINT_KEYS = ["name", "position", "target", "intensity", "power", "distance", "decay", "color", "shadow", "castShadow", "photometricProfile"] as const;
+const SPOT_KEYS = ["name", "position", "target", "angle", "penumbra", "distance", "decay", "intensity", "power", "color", "shadow", "castShadow", "photometricProfile", "projectedImage"] as const;
+
+/** three.js `light.castShadow = true`: `castShadow: true` is `shadow: true`; an explicit `shadow` wins. */
+function resolveShadow<T>(shadow: T | undefined, castShadow: boolean | undefined): T | boolean | undefined {
+  return shadow !== undefined ? shadow : castShadow === true ? true : undefined;
+}
 
 function validateProfile(profile: AuraPhotometricProfile | undefined): void {
   if (!profile) return;
@@ -46,18 +60,20 @@ export const lights = {
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "ambient",
+      ...ignoredOptionsNote("lights.ambient", options, AMBIENT_KEYS),
       name: options.name,
       intensity: options.intensity ?? 0.28,
       color: options.color ?? "#ffffff"
     }),
-  hemisphere: (options: { readonly name?: string; readonly skyColor?: AuraColor; readonly groundColor?: AuraColor; readonly intensity?: number; readonly position?: AuraVec3 } = {}) =>
+  hemisphere: (options: { readonly name?: string; readonly skyColor?: AuraColor; readonly groundColor?: AuraColor; readonly intensity?: number; readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */ readonly color?: AuraColor } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "hemisphere",
+      ...ignoredOptionsNote("lights.hemisphere", options, HEMISPHERE_KEYS),
       name: options.name ?? "hemisphere light",
       position: options.position ?? [0, 1, 0],
       intensity: options.intensity ?? 1,
-      color: options.skyColor ?? "#bcd7ff",
+      color: options.skyColor ?? options.color ?? "#bcd7ff",
       // CCR-02-2 additive field: the C-36 handler reads groundColor.
       ...(options.groundColor !== undefined ? { groundColor: options.groundColor } : {})
     } as AuraLightNode),
@@ -77,22 +93,24 @@ export const lights = {
       ...(options.groundColor !== undefined ? { groundColor: options.groundColor } : {}),
       ...(options.sh !== undefined ? { sh: options.sh } : {})
     } as AuraLightNode),
-  directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraDirectionalShadowOptions } = {}) =>
+  directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */ readonly castShadow?: boolean } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "directional",
+      ...ignoredOptionsNote("lights.directional", options, DIRECTIONAL_KEYS),
       name: options.name,
       position: options.position ?? [3, 4, 3],
       ...(options.target !== undefined ? { target: options.target } : {}),
       intensity: options.intensity ?? 1.5,
       color: options.color ?? "#ffffff",
-      shadow: options.shadow
+      shadow: resolveShadow(options.shadow, options.castShadow)
     }),
-  point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly power?: number; readonly distance?: number; readonly decay?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; readonly photometricProfile?: AuraPhotometricProfile } = {}) => {
+  point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly power?: number; readonly distance?: number; readonly decay?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */ readonly castShadow?: boolean; readonly photometricProfile?: AuraPhotometricProfile } = {}) => {
     validateProfile(options.photometricProfile);
     return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "point",
+      ...ignoredOptionsNote("lights.point", options, POINT_KEYS),
       name: options.name,
       position: options.position ?? [2, 2.5, 1.5],
       ...(options.target !== undefined ? { target: options.target } : {}),
@@ -100,17 +118,18 @@ export const lights = {
       ...(options.power !== undefined ? { power: options.power } : {}),
       ...(options.distance !== undefined ? { distance: options.distance } : {}),
       ...(options.decay !== undefined ? { decay: options.decay } : {}),
-      ...(options.shadow !== undefined ? { shadow: options.shadow } : {}),
+      ...(resolveShadow(options.shadow, options.castShadow) !== undefined ? { shadow: resolveShadow(options.shadow, options.castShadow) } : {}),
       ...(options.photometricProfile !== undefined ? { photometricProfile: options.photometricProfile } : {}),
       color: options.color ?? "#ffffff"
     });
   },
-  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly power?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; readonly photometricProfile?: AuraPhotometricProfile; readonly projectedImage?: AuraProjectedLightImage } = {}) => {
+  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly power?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */ readonly castShadow?: boolean; readonly photometricProfile?: AuraPhotometricProfile; readonly projectedImage?: AuraProjectedLightImage } = {}) => {
     validateProfile(options.photometricProfile);
     validateProjection(options.projectedImage);
     return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "spot",
+      ...ignoredOptionsNote("lights.spot", options, SPOT_KEYS),
       name: options.name ?? "spot light",
       position: options.position ?? [0, 4, 0],
       target: options.target,
@@ -123,7 +142,7 @@ export const lights = {
       ...(options.photometricProfile !== undefined ? { photometricProfile: options.photometricProfile } : {}),
       ...(options.projectedImage !== undefined ? { projectedImage: options.projectedImage } : {}),
       color: options.color ?? "#ffffff",
-      shadow: options.shadow
+      shadow: resolveShadow(options.shadow, options.castShadow)
     });
   },
   studio: (options: { readonly intensity?: number } = {}) =>

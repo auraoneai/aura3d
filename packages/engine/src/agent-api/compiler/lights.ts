@@ -910,9 +910,10 @@ export function queueRuntimeLightPatch(handle: object, patch: AuraLightPatch, op
   if (patch === null || typeof patch !== "object") throw new TypeError("setLight expects a patch object.");
   const seconds = opts?.transitionSeconds === undefined ? 0 : assertNonNegative(opts.transitionSeconds, "transitionSeconds");
   const checked: { -readonly [K in keyof AuraLightPatch]: AuraLightPatch[K] } = {};
-  if (patch.color !== undefined) {
-    parseAuraColor(patch.color); // throws AuraColorParseError on an unparseable colour
-    checked.color = patch.color;
+  const patchColor = patch.color ?? patch.skyColor;
+  if (patchColor !== undefined) {
+    parseAuraColor(patchColor); // throws AuraColorParseError on an unparseable colour
+    checked.color = patchColor;
   }
   if (patch.intensity !== undefined) checked.intensity = assertNonNegative(patch.intensity, "intensity");
   if (patch.power !== undefined) checked.power = assertNonNegative(patch.power, "power");

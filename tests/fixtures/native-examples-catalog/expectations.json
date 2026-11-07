@@ -1894,7 +1894,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
+          "sha256": "6314f5bbab9fe5a49f532c63487b71fa157ffc465d94bf4d791a829dd12d0262"
         }
       ],
       "regions": [
@@ -2641,7 +2641,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
+          "sha256": "6314f5bbab9fe5a49f532c63487b71fa157ffc465d94bf4d791a829dd12d0262"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/geometry.ts",
@@ -3180,7 +3180,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
+          "sha256": "6314f5bbab9fe5a49f532c63487b71fa157ffc465d94bf4d791a829dd12d0262"
         }
       ],
       "regions": [
@@ -3308,7 +3308,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
+          "sha256": "6314f5bbab9fe5a49f532c63487b71fa157ffc465d94bf4d791a829dd12d0262"
         }
       ],
       "regions": [
@@ -3374,7 +3374,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
+          "sha256": "6314f5bbab9fe5a49f532c63487b71fa157ffc465d94bf4d791a829dd12d0262"
         },
         {
           "path": "src/aura-assets.ts",
@@ -3580,7 +3580,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
+          "sha256": "6314f5bbab9fe5a49f532c63487b71fa157ffc465d94bf4d791a829dd12d0262"
         },
         {
           "path": "packages/engine/src/agent-api/xr/xrButton.ts",

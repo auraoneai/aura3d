@@ -212,6 +212,11 @@ export interface AuraMaterialSpec {
   readonly emissive?: AuraColor;
   readonly emissiveIntensity?: number;
   readonly opacity?: number;
+  /**
+   * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+   * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+   */
+  readonly side?: "front" | "back" | "double";
   readonly transmission?: number;
   readonly clearcoat?: number;
   readonly clearcoatRoughness?: number;
