@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import { evaluateRow, renderSummary } from "./analysis.mjs";
 import { createReaCliDriver, createSavedDriver } from "./drivers.mjs";
 import { buildTemplate, listTemplates, serveDirectory } from "./templates.mjs";
-import { MOTION_DEFAULTS, captureMotionFrames, evaluateMotionRow, extractScreenshots, loadMotionConfig, renderMotionSummary, resolveMotionTargets } from "./motion.mjs";
+import { MOTION_DEFAULTS, captureMotionFrames, evaluateMotionRow, extractScreenshots, lastTwo, loadMotionConfig, renderMotionSummary, resolveMotionTargets } from "./motion.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -93,7 +93,7 @@ async function runMotion(o, out) {
   const judge = async (t, url) => {
     let frames = null, failure = null;
     try {
-      if (saved) frames = extractScreenshots(JSON.parse(readFileSync(join(resolve(o.savedDir), `${t.id}.json`), "utf8")));
+      if (saved) frames = lastTwo(extractScreenshots(JSON.parse(readFileSync(join(resolve(o.savedDir), `${t.id}.json`), "utf8"))));
       else {
         frames = await captureMotionFrames(url, { ...scenario });
         frames.forEach((png, i) => writeFileSync(join(out, `${t.id}-${i === 0 ? "a" : "b"}.png`), png));

@@ -20,4 +20,9 @@ const app = createAuraApp("#app", {
     .add(primitives.box({ name: "clock-panel", size: [40, 24, 0.2], material: clock }))
     .camera(camera.perspective({ position: [0, 0, 20], target: [0, 0, 0], fov: 50, near: 0.5, far: 100 }))
 });
-await app.ready();
+try {
+  await app.ready();
+  console.log("probe-ready");
+} catch (error) {
+  console.error("probe-failed", error);
+}

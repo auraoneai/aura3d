@@ -7,7 +7,7 @@ import { encodePng } from "./png.mjs";
 import { parseArgs } from "./index.mjs";
 import {
   MOTION_DEFAULTS, analyzeMotion, buildMotionScenario, captureMotionFrames, evaluateMotionRow, extractScreenshots,
-  lumaGrid, meanAbsDiff, renderMotionSummary, resolveMotionTargets, validateMotionConfig
+  lastTwo, lumaGrid, meanAbsDiff, renderMotionSummary, resolveMotionTargets, validateMotionConfig
 } from "./motion.mjs";
 
 const W = 128, H = 72;
@@ -96,7 +96,7 @@ test("buildMotionScenario: two waits, a screenshot after each step, reduced moti
 test("captureMotionFrames drives REA through an injectable runner and returns the two PNGs", async () => {
   const shot = (buf) => ({ artifacts: { screenshot: { state: "captured", value: { data_base64: buf.toString("base64") } } } });
   const calls = [];
-  const runner = async (bin, args) => { calls.push([bin, ...args.slice(0, 1)]); return { stdout: JSON.stringify({ normalized_result: { steps: [shot(encodePng(flat(10))), shot(encodePng(flat(90)))] } }) }; };
+  const runner = async (bin, args) => { calls.push([bin, ...args.slice(0, 1)]); return { stdout: JSON.stringify({ normalized_result: { steps: [shot(encodePng(flat(200))), shot(encodePng(flat(10))), shot(encodePng(flat(90)))] } }) }; };
   const frames = await captureMotionFrames("http://x/", { runner, reaBin: "rea-stub" });
   assert.equal(frames.length, 2);
   assert.deepEqual(calls, [["rea-stub", "capture-browser-scenario"]]);
@@ -151,4 +151,10 @@ test("parseArgs accepts the motion flags", () => {
   assert.equal(o.motion, true); assert.equal(o.motionThreshold, 0.5); assert.deepEqual(o.motionGrid, { gridWidth: 32, gridHeight: 18 });
   assert.equal(o.intervalMs, 900); assert.equal(o.recipeBase, "http://b/");
   assert.throws(() => parseArgs(["--motion-grid", "bad"]), /WxH/);
+});
+
+test("lastTwo drops the implicit navigation screenshot and keeps short lists as they are", () => {
+  assert.deepEqual(lastTwo([1, 2, 3]), [2, 3]);
+  assert.deepEqual(lastTwo([1, 2]), [1, 2]);
+  assert.deepEqual(lastTwo([1]), [1]);
 });

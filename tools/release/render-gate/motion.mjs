@@ -112,6 +112,9 @@ function findNormalized(d, depth = 0) {
   return null;
 }
 
+/** REA also captures after the implicit navigation step, so the pair that counts is the LAST two screenshots (after settle, after interval). */
+export function lastTwo(frames) { return frames.length > 2 ? frames.slice(-2) : frames; }
+
 /** The two-frame scenario: wait settleMs -> screenshot A, wait intervalMs -> screenshot B. Reduced motion is OFF on purpose. */
 export function buildMotionScenario(url, { width = 960, height = 540, settleMs = MOTION_DEFAULTS.settleMs, intervalMs = MOTION_DEFAULTS.intervalMs, executablePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" } = {}) {
   return {
@@ -201,6 +204,6 @@ export async function captureMotionFrames(url, { reaBin = "/opt/homebrew/bin/rea
     const file = join(dir, "scenario.json");
     writeFileSync(file, JSON.stringify(buildMotionScenario(url, scenarioOptions)));
     const { stdout } = await run(reaBin, ["capture-browser-scenario", file, "--format", "json", "--full-output"], { maxBuffer: 1 << 28, timeout: timeoutMs });
-    return extractScreenshots(JSON.parse(stdout));
+    return lastTwo(extractScreenshots(JSON.parse(stdout)));
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
