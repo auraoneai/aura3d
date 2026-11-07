@@ -28,6 +28,8 @@ export type { AuraDynamicHelper, AuraDynamicHelperOptions } from "../agent-api/i
 export { bindOrbitPointer, createOrbitRig } from "../agent-api/index.js";
 export { bindPointerInteractions } from "../agent-api/index.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "../agent-api/index.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance, createSpatialPicker, bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "../agent-api/index.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions, SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker, SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "../agent-api/index.js";
 export type { AuraOrbitRig, OrbitRigOptions } from "../agent-api/camera/rigs/orbit.js";
 // QA and replay kit (docs/api/qa-kit.md).
 export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";

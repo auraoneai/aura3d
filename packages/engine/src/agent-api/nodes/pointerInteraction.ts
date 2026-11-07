@@ -67,7 +67,7 @@ export function routePointerInteraction(
   return events;
 }
 
-function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined {
+export function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined {
   const viewProjection = presentedViewProjection(app);
   if (viewProjection && viewProjection.length === 16) return { viewProjectionMatrix: viewProjection };
   const spec = app.scene.camera;

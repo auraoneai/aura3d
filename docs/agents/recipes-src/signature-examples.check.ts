@@ -30,6 +30,8 @@ import { AnimationController, camera, createAuraApp, createFixedStepLoop, effect
 { void physics.box; }
 // AnimationController
 { void AnimationController; }
+// createSpatialPicker
+{ const picker14 = createSpatialPicker({ nodes: [] }); }
 // createFixedStepLoop
 { void createFixedStepLoop({ stepSeconds: 1 / 60, step: () => undefined, render: () => undefined }); }
 void [AnimationController, camera, createAuraApp, createFixedStepLoop, effects, environments, geometry, instances, interactions, lights, looks, material, physics, primitives, scene, sky];

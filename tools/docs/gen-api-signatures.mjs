@@ -29,6 +29,7 @@ const ROOTS = [
   { name: "interactions", example: 'void interactions.orbit({ target: "crate" });', note: "`target` is a node name." },
   { name: "physics", pick: ["world", "worldFromScene", "body", "collider", "box", "sphere", "capsule", "plane", "step", "constraint", "raycast"], example: 'void physics.box;', note: "Rapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use." },
   { name: "AnimationController", pick: ["play", "pause", "resume", "restart", "stop", "crossFade", "setLayerWeight", "update", "scrub", "listClips", "registerClip", "on", "once", "state", "dispose"], example: 'void AnimationController;', note: "Clip playback and crossfades for rigged GLBs. Procedural joints are runtime handles instead (recipe 8)." },
+  { name: "createSpatialPicker", example: 'const picker = createSpatialPicker({ nodes: [] });', note: "CPU picking for `points` (nearest to the ray within a pixel or world tolerance) and instanced nodes (per-instance box or sphere). `picker.pick({ camera, ndc }, { viewport, pixelRadius })`; `picker.invalidate(name)` after writing a position or matrix buffer in place. `bindSpatialPicking` adds hover and click." },
   { name: "createFixedStepLoop", example: 'void createFixedStepLoop({ stepSeconds: 1 / 60, step: () => undefined, render: () => undefined });', note: "Deterministic simulation loop for games." }
 ];
 
