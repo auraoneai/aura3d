@@ -21,6 +21,7 @@ import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { shaderGraph } from "../../../packages/engine/src/agent-api/nodes/shaderGraph";
 import "../../../packages/rendering/src/lanes/prd01";
+import "../../../packages/rendering/src/lanes/prd06";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { collectLight } from "../../../packages/rendering/src/LightCollector";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
@@ -720,6 +721,18 @@ describe("prd02.contactShadows contributor publishes the mask to forward shading
         expect(() => broken.execute()).toThrow(/camera depth cannot represent/i);
         expect(contactShadowMask(broken.device)).toBeUndefined();
       } finally { broken.contributor.dispose?.(); geometry.dispose(); broken.device.dispose(); }
+    });
+
+    it("a skinned participant selected by the animation lane's deform feature stays in the mask depth (strict included)", () => {
+      const geometry = skinnedGeometry();
+      const material = new SkinnedLitMaterial();
+      const hero: RenderItem = { label: "deformed-hero", geometry, material, modelMatrix: new Float32Array(16),
+        skinning: { jointCount: 4, matrices: new Float32Array(4 * 16), extraInfluences: false } };
+      const { contributor, device, execute } = run([hero], ["A3D_QR_LIGHTING", "A3D_QR_ANIMATION", "A3D_QR_STRICT"]);
+      try {
+        execute();
+        expect(device.drawCommands.some(draw => draw.label === "deformed-hero:0")).toBe(true);
+      } finally { contributor.dispose?.(); geometry.dispose(); material.dispose(); device.dispose(); }
     });
 
     const displaced = (castShadow: boolean) => {

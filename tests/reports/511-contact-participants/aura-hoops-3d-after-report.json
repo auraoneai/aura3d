@@ -1,0 +1,20 @@
+{
+  "aura-hoops-3d": {
+    "click:Quick Play": true,
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "logs": [
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"p1\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"p2\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"p3\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"p4\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"a0\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"a1\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"a2\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"a3\" has no bone \"Neck\".",
+      "warning: ANIMATION_SOCKET_UNKNOWN_BONE: node \"a4\" has no bone \"Neck\".",
+      "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-4:court-logo:court-logo\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state (10: primitive-4:court-logo:court-logo, primitive-16:net-skirt:net-skirt, primitive-17:rim-halo:rim-halo); an unverified material or geometry participant (1: primitive-26:court-name-paint:court-name-pain",
+      "warning: TRANSMISSION_DEGRADED: material \"material-0\" needs a transmission lobe and frame capture this program lacks; it draws without transmission."
+    ]
+  }
+}

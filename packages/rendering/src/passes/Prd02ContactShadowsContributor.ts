@@ -52,6 +52,8 @@ const forwardContactGuards = (): {
 const forwardContactProvidersSafe = (flags: QrFlags): boolean => forwardContactGuards().providersSafe(flags);
 
 
+const PRD06_DEFORM_FEATURE_ID = "prd06.deform";
+
 export const CONTACT_SHADOWS_SUB_FLAG = SUB_FLAG_CONTACT;
 
 interface ContactShadowsDiagnostics {
@@ -189,7 +191,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
   // (skinned, morphed, wind-deformed, alpha-tested, blended, custom shader) is left out of the mask depth and receives
   // the mask of the surface behind it, instead of removing the contact shadow from the whole scene.
   const included: RenderItem[] = [];
-  const excluded = new Map<string, number>();
+  const excluded = new Map<string, string[]>();
   for (const item of ctx.items) {
     // A per-draw callback aborts every forward draw while a mask is published, so it cannot be left out.
     if (item.onBeforeRender) fail(item, "a draw callback that may change the scene");
@@ -197,11 +199,13 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     catch (error) {
       if (strict || !(error instanceof RenderDeviceError) || error.code !== "CONTACT_SHADOW_DEPTH_UNSUPPORTED") throw error;
       const reason = String((error.details as { reason?: unknown } | undefined)?.reason ?? "unsupported participant");
-      excluded.set(reason, (excluded.get(reason) ?? 0) + 1);
+      const labels = excluded.get(reason) ?? [];
+      labels.push(item.label ?? "unlabelled");
+      excluded.set(reason, labels);
     }
   }
   if (excluded.size > 0) {
-    warnOnce(`CONTACT_SHADOW_PARTIAL: participants with ${[...excluded.keys()].sort().join("; ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
+    warnOnce(`CONTACT_SHADOW_PARTIAL: participants with ${[...excluded.entries()].sort(([a], [b]) => a < b ? -1 : 1).map(([reason, labels]) => `${reason} (${labels.length}: ${labels.slice(0, 3).join(", ")})`).join("; ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
   }
   return included;
   function checkItem(item: RenderItem): void {
@@ -243,6 +247,9 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     const materialClip = (base as typeof base & { readonly clipping?: typeof clipped.materialClipping })?.clipping;
     if ([clipped.globalClipping, clipped.materialClipping ?? materialClip].some(group => group && group.enabled !== false && !group.disposed && (group.planes?.length ?? 0) > 0)) fail(item, "clipping coverage");
     for (const feature of features) {
+      // The animation lane's deform feature moves vertices only for skinned or morphed participants, which the mask depth
+      // reproduces itself (skinning variant, CPU morph resolve), so its selection is not a coverage hazard for them.
+      if (feature.id === PRD06_DEFORM_FEATURE_ID && (item.skinning || item.morphTargets?.length || item.morphWeights?.length)) continue;
       if (!feature.hooks.some(hook => hook === "vertex:deform" || hook === "vertex:world" || hook === "vertex:end" || hook === "fragment:alpha")) continue;
       // The stock tangent frame only derives a tangent varying for normal mapping: it never moves a vertex nor changes coverage.
       if (isStockTangentFrameFeature(feature)) continue;

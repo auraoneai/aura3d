@@ -1,0 +1,8 @@
+{
+  "heatsink": {
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "logs": [
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified custom or graph material participant (7: primitive-1:td skyline 0 bodies:td skyline 0 bodies, primitive-3:td skyline 1 bodies:td skyline 1 bodies, primitive-5:td skyline 2 bodies:td skyline 2 bodies) are outside the conta"
+    ]
+  }
+}

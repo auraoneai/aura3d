@@ -1,0 +1,10 @@
+{
+  "top-tennis": {
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "logs": [
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state (1: primitive-12:net-mesh:net-mesh); an unverified material or geometry participant (2: primitive-15:board-aura-slam:board-aura-slam, primitive-16:board-world-tour:board-world-tour) are outside the conta",
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state (1: primitive-12:net-mesh:net-mesh); an unverified material or geometry participant (3: primitive-15:board-aura-slam:board-aura-slam, primitive-16:board-world-tour:board-world-tour, primitive-17:board-ve",
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state (1: primitive-12:net-mesh:net-mesh) are outside the contact shadow depth and receive the mask of the surface behind them."
+    ]
+  }
+}

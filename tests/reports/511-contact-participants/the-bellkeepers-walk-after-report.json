@@ -1,0 +1,9 @@
+{
+  "the-bellkeepers-walk": {
+    "click:Begin the walk": true,
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "logs": [
+      "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-1:sea:sea\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster."
+    ]
+  }
+}
