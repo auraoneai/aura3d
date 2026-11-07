@@ -99,7 +99,8 @@ const report = { page: "evidence/picking-515", counts: null };
       await s.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 1, y: 1 }); await frame(2);
       await move(c.x, c.y);
       const st = await s.ev("window.__PICK__.state().events.at(-1)");
-      out.instances.tried++; if (st && st.type === "enter" && st.kind === "instance") { if (st.id === i) out.instances.hit++; else out.instances.otherInstance = (out.instances.otherInstance || 0) + 1; }
+      const truth = await s.ev(`window.__PICK__.bruteInstance(${c.x}, ${c.y})`);
+      out.instances.tried++; if (st && st.type === "enter" && st.kind === "instance") { if (st.id === i) out.instances.hit++; else out.instances.otherInstance = (out.instances.otherInstance || 0) + 1; if (st.id === truth) out.instances.matchesBruteForce = (out.instances.matchesBruteForce || 0) + 1; } else if (truth < 0) out.instances.bruteForceMissToo = (out.instances.bruteForceMissToo || 0) + 1;
     }
     return out;
   })();

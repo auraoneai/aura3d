@@ -28,7 +28,7 @@ const app = createAuraApp(root, {
     .add(lights.ambient({ intensity: 0.9 }))
     .add(lights.directional({ position: [5, 9, 4], target: [0, 0, 0], intensity: 2.2 }))
     .add(points({ name: "cloud", positions, size: 2.5, sizeAttenuation: false, runtime: { id: "cloud" } }))
-    .add(instances.box({ name: "crates", transforms, material: material.pbr({ color: "#e0a458", roughness: 0.6 }), runtime: { id: "crates" } }))
+    .add(instances.box({ name: "crates", transforms, material: material.pbr({ color: "#e0a458", roughness: 0.6 }) }).runtime({ id: "crates" }))
 });
 const canvas = (app as unknown as { canvas: HTMLCanvasElement }).canvas;
 
@@ -73,6 +73,49 @@ function render(): void {
   readout.textContent = `hover: ${fmt(lastHover)} | clicks: ${picks.map(fmt).join(" ; ") || "none"}${picks.length === 2 ? ` | distance ${measureDistance(picks[0]!.point, picks[1]!.point).distance.toFixed(3)}` : ""}`;
 }
 
+
+/** Ground truth for the accuracy check: brute-force ray vs every instance box (axis-aligned; transforms carry no rotation). */
+function invert4(m: ArrayLike<number>): number[] {
+  const a = Array.from(m), inv = new Array(16).fill(0);
+  inv[0] = a[5]*a[10]*a[15]-a[5]*a[11]*a[14]-a[9]*a[6]*a[15]+a[9]*a[7]*a[14]+a[13]*a[6]*a[11]-a[13]*a[7]*a[10];
+  inv[4] = -a[4]*a[10]*a[15]+a[4]*a[11]*a[14]+a[8]*a[6]*a[15]-a[8]*a[7]*a[14]-a[12]*a[6]*a[11]+a[12]*a[7]*a[10];
+  inv[8] = a[4]*a[9]*a[15]-a[4]*a[11]*a[13]-a[8]*a[5]*a[15]+a[8]*a[7]*a[13]+a[12]*a[5]*a[11]-a[12]*a[7]*a[9];
+  inv[12] = -a[4]*a[9]*a[14]+a[4]*a[10]*a[13]+a[8]*a[5]*a[14]-a[8]*a[6]*a[13]-a[12]*a[5]*a[10]+a[12]*a[6]*a[9];
+  inv[1] = -a[1]*a[10]*a[15]+a[1]*a[11]*a[14]+a[9]*a[2]*a[15]-a[9]*a[3]*a[14]-a[13]*a[2]*a[11]+a[13]*a[3]*a[10];
+  inv[5] = a[0]*a[10]*a[15]-a[0]*a[11]*a[14]-a[8]*a[2]*a[15]+a[8]*a[3]*a[14]+a[12]*a[2]*a[11]-a[12]*a[3]*a[10];
+  inv[9] = -a[0]*a[9]*a[15]+a[0]*a[11]*a[13]+a[8]*a[1]*a[15]-a[8]*a[3]*a[13]-a[12]*a[1]*a[11]+a[12]*a[3]*a[9];
+  inv[13] = a[0]*a[9]*a[14]-a[0]*a[10]*a[13]-a[8]*a[1]*a[14]+a[8]*a[2]*a[13]+a[12]*a[1]*a[10]-a[12]*a[2]*a[9];
+  inv[2] = a[1]*a[6]*a[15]-a[1]*a[7]*a[14]-a[5]*a[2]*a[15]+a[5]*a[3]*a[14]+a[13]*a[2]*a[7]-a[13]*a[3]*a[6];
+  inv[6] = -a[0]*a[6]*a[15]+a[0]*a[7]*a[14]+a[4]*a[2]*a[15]-a[4]*a[3]*a[14]-a[12]*a[2]*a[7]+a[12]*a[3]*a[6];
+  inv[10] = a[0]*a[5]*a[15]-a[0]*a[7]*a[13]-a[4]*a[1]*a[15]+a[4]*a[3]*a[13]+a[12]*a[1]*a[7]-a[12]*a[3]*a[5];
+  inv[14] = -a[0]*a[5]*a[14]+a[0]*a[6]*a[13]+a[4]*a[1]*a[14]-a[4]*a[2]*a[13]-a[12]*a[1]*a[6]+a[12]*a[2]*a[5];
+  inv[3] = -a[1]*a[6]*a[11]+a[1]*a[7]*a[10]+a[5]*a[2]*a[11]-a[5]*a[3]*a[10]-a[9]*a[2]*a[7]+a[9]*a[3]*a[6];
+  inv[7] = a[0]*a[6]*a[11]-a[0]*a[7]*a[10]-a[4]*a[2]*a[11]+a[4]*a[3]*a[10]+a[8]*a[2]*a[7]-a[8]*a[3]*a[6];
+  inv[11] = -a[0]*a[5]*a[11]+a[0]*a[7]*a[9]+a[4]*a[1]*a[11]-a[4]*a[3]*a[9]-a[8]*a[1]*a[7]+a[8]*a[3]*a[5];
+  inv[15] = a[0]*a[5]*a[10]-a[0]*a[6]*a[9]-a[4]*a[1]*a[10]+a[4]*a[2]*a[9]+a[8]*a[1]*a[6]-a[8]*a[2]*a[5];
+  const det = a[0]*inv[0]+a[1]*inv[4]+a[2]*inv[8]+a[3]*inv[12];
+  return inv.map((v) => v / det);
+}
+function bruteInstance(clientX: number, clientY: number): number {
+  const r = canvas.getBoundingClientRect();
+  const inv = invert4(presentedViewProjection(app as never)!);
+  const nx = ((clientX - r.left) / r.width) * 2 - 1, ny = 1 - ((clientY - r.top) / r.height) * 2;
+  const un = (z: number) => { const x = inv[0]!*nx+inv[4]!*ny+inv[8]!*z+inv[12]!, y = inv[1]!*nx+inv[5]!*ny+inv[9]!*z+inv[13]!, w2 = inv[2]!*nx+inv[6]!*ny+inv[10]!*z+inv[14]!, w = inv[3]!*nx+inv[7]!*ny+inv[11]!*z+inv[15]!; return [x / w, y / w, w2 / w]; };
+  const o = un(-1), f = un(1), d = [f[0]! - o[0]!, f[1]! - o[1]!, f[2]! - o[2]!];
+  let best = -1, bestT = Infinity;
+  transforms.forEach((t, i) => {
+    let t0 = -Infinity, t1 = Infinity;
+    for (let a = 0; a < 3; a += 1) {
+      const lo = t.position[a]! - t.scale[a]! / 2, hi = t.position[a]! + t.scale[a]! / 2;
+      if (Math.abs(d[a]!) < 1e-12) { if (o[a]! < lo || o[a]! > hi) return; continue; }
+      let ta = (lo - o[a]!) / d[a]!, tb = (hi - o[a]!) / d[a]!; if (ta > tb) [ta, tb] = [tb, ta];
+      t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); if (t0 > t1) return;
+    }
+    if (t1 >= 0 && Math.max(t0, 0) < bestT) { bestT = Math.max(t0, 0); best = i; }
+  });
+  return best;
+}
+
 type Bench = { meanMs: number; n: number; firstPickMs: number; hits: number; mode: string };
 function bench(kind: "points" | "instances" | "all", n = 1000, mode: "handles" | "nodes" = "handles"): Bench {
   const rect = canvas.getBoundingClientRect();
@@ -100,6 +143,7 @@ const api = {
   /** Project a node-local world point to client pixels (for scripted clicks). */
   toClient: (p: readonly [number, number, number]) => { const r = canvas.getBoundingClientRect(); const c = worldToCss(presentedViewProjection(app as never)!, p, { width: r.width, height: r.height }); return { x: r.left + c.x, y: r.top + c.y, visible: c.visible }; },
   positions: () => positions,
+  bruteInstance,
   instance: (i: number) => transforms[i]!.position,
   state: () => ({ events, picks: picks.map((p) => ({ kind: p.kind, node: p.nodeName, id: p.kind === "point" ? p.index : p.instanceId, point: p.point })), pickCount: binding.pickCount, shown: overlay.shown, readout: readout.textContent, markerVisible: marker.style.display !== "none", handles: app.nodes.all().length }),
   frameCount: () => (app as unknown as { diagnostics?: { snapshot?: () => { frames?: number } } }).diagnostics?.snapshot?.()?.frames,
