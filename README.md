@@ -107,23 +107,6 @@ Every public claim follows [`docs/agents/claims-and-boundaries.md`](./docs/agent
 - [`docs/workflows/game-conversion-playbook.md`](./docs/workflows/game-conversion-playbook.md): turning a browser game into an Aura3D game
 - Site: https://aura3d.auraone.ai
 
-## Production Deployment (Cloudflare Pages)
-
-**Cloudflare Pages is the canonical production host (prefer Cloudflare over Vercel; do not deploy to Vercel).**
-
-- **`aura3d` (`https://aura3d.auraone.ai` / `https://aura3d.pages.dev`):**
-  ```bash
-  source ~/.config/auraone/cloudflare-env.sh
-  pnpm build && pnpm --dir marketing build
-  wrangler pages deploy marketing/dist --project-name aura3d --branch main
-  ```
-- **`aura3d-wonder-world` (`https://veer.auraone.ai` / `https://aura3d-wonder-world.pages.dev`):**
-  ```bash
-  source ~/.config/auraone/cloudflare-env.sh
-  bash apps/veer-wonder-world/tools/deploy-build.sh
-  wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main
-  ```
-
 ## Contributing
 
 Open issues with the prompt, package version, asset source and a screenshot or route-health output. Inside this monorepo, browsers, Playwright suites and heavy builds run on the remote runner (`tools/remote-acr/run.sh`), not on a laptop. Licensed under MIT.
