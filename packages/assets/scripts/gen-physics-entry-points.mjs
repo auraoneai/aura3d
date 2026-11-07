@@ -24,8 +24,10 @@
  *      the package's own contract for solver-free geometry (shapes, stepper, mesh BVH, surface queries).
  * 2. Propagation. Every value reference in a unit's code is resolved with the type checker and followed into the
  *    engine sources: calls, `new`, members of namespace objects through the resolved property (`prefabs.box` follows
- *    `box`, a bare `prefabs` follows the whole object), shorthand and spread members. Nested closures and object
- *    literals are walked inside their creator, and a referenced class contributes its constructor, fields and every
+ *    `box`, a bare `prefabs` follows the whole object), shorthand and spread members. Import and export aliases
+ *    (`import { x }`, `import { y as x }`, default imports, `export { x } from`, `export *`, `export * as ns`) are
+ *    followed to their declarations, so `{ cityBlock }` with an imported `cityBlock` follows the function itself.
+ *    Nested closures and object literals are walked inside their creator, and a referenced class contributes its constructor, fields and every
  *    method an escaped instance could be called with, so the code that creates an object carries the status of the
  *    methods later called through an interface. Physics status is the fixpoint over the reference graph (cycles included).
  * 3. Boundaries. The app mount runtime (MOUNT_RUNTIME_MODULES: `createAuraApp`, `createGameApp`) creates bodies only
@@ -42,7 +44,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+// `--root <dir>` runs the generator over another tree with the same layout (tests use small fixture trees).
+const rootFlag = process.argv.indexOf("--root");
+const ROOT = rootFlag >= 0 && process.argv[rootFlag + 1]
+  ? path.resolve(process.argv[rootFlag + 1])
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const OUT = path.join(ROOT, "packages/assets/src/vite/physicsEntryPoints.generated.ts");
 const SCANNER = path.join(ROOT, "packages/assets/src/vite/auraPhysics.ts");
 const GENERATOR = "packages/assets/scripts/gen-physics-entry-points.mjs";
@@ -192,13 +198,20 @@ function generate() {
     return unit;
   };
 
-  const resolve = (location) => {
-    let symbol = checker.getSymbolAtLocation(location);
-    if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
-      try { symbol = checker.getAliasedSymbol(symbol); } catch { /* unresolved */ }
-    }
-    return symbol;
+  /**
+   * The target of an import or export alias (`import { x }`, `import x from`, `import { y as x }`, `export { x } from`,
+   * `export *`, `export * as ns`), followed through every re-export hop; any other symbol unchanged. Every symbol that
+   * reaches `reference()` goes through this, so a name imported into a shorthand member (`{ cityBlock }`) is followed
+   * to its declaration instead of stopping at the import binding, which carries no Value flag.
+   */
+  const dealias = (symbol) => {
+    if (!symbol || !(symbol.flags & ts.SymbolFlags.Alias)) return symbol;
+    try {
+      const target = checker.getAliasedSymbol(symbol);
+      return target;
+    } catch { return undefined; }
   };
+  const resolve = (location) => dealias(checker.getSymbolAtLocation(location));
   /**
    * The object literal behind an exported namespace: `const ns = {...}`, or a factory around one such as
    * `lazyNamespace(() => ({...}))` / `Object.freeze({...})`.
@@ -222,7 +235,8 @@ function generate() {
   const isNamespaceObject = (declaration) => namespaceLiteral(declaration) !== undefined;
 
   /** Record the effect of one resolved value symbol on `unit`. Returns true when it resolved to something followable. */
-  const reference = (unit, symbol, name) => {
+  const reference = (unit, aliasOrSymbol, name) => {
+    const symbol = dealias(aliasOrSymbol);
     if (!symbol || !(symbol.flags & ts.SymbolFlags.Value)) return false;
     const declarations = symbol.declarations ?? [];
     let followed = false;
@@ -247,7 +261,7 @@ function generate() {
       if (ts.isSourceFile(declaration) || ts.isModuleDeclaration(declaration)) {
         // `import * as ns` used bare: every export of the module.
         const moduleSymbol = checker.getSymbolAtLocation(ts.isSourceFile(declaration) ? declaration : declaration.name) ?? symbol;
-        for (const exported of checker.getExportsOfModule(moduleSymbol)) reference(unit, exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported, exported.getName());
+        for (const exported of checker.getExportsOfModule(moduleSymbol)) reference(unit, exported, exported.getName());
         followed = true;
         continue;
       }
@@ -353,6 +367,12 @@ function generate() {
     }
     if (ts.isExportAssignment(node) || ts.isSpreadAssignment(node)) { walk(unit, node.expression); return; }
     if (ts.isEnumDeclaration(node)) return;
+    if (ts.isSourceFile(node)) {
+      // A module namespace (`export * as ns`) used whole: every export of the module.
+      const moduleSymbol = checker.getSymbolAtLocation(node);
+      for (const exported of moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : []) reference(unit, exported, exported.getName());
+      return;
+    }
     if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isGetAccessorDeclaration(node)
       || ts.isSetAccessorDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node)) {
       for (const parameter of node.parameters) if (parameter.initializer) walk(unit, parameter.initializer);
@@ -386,24 +406,33 @@ function generate() {
       else addSurface(memberPath, specifier, property, prefix);
     }
   };
+  /** One export of an entry: a value, a namespace object (members as entries) or `export * as ns` (exports as entries). */
+  const addExport = (name, exported, specifier, depth) => {
+    const symbol = dealias(exported);
+    if (!symbol || !(symbol.flags & ts.SymbolFlags.Value)) return;
+    for (const declaration of symbol.declarations ?? []) {
+      const file = declaration.getSourceFile().fileName;
+      if (!inEngineSource(file) && !isPhysicsRuntime(file)) continue;
+      if (isPhysicsRuntime(file)) { addSurface(name, specifier, declaration); continue; }
+      if (isMountRuntime(file)) continue;
+      if (ts.isSourceFile(declaration)) {
+        // `export * as ns from "./module.js"`: every export of the module is `ns.<export>`.
+        containers.set(name, declaration);
+        if (depth >= 3) { addSurface(name, specifier, declaration); continue; }
+        const moduleSymbol = checker.getSymbolAtLocation(declaration);
+        for (const member of moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : []) addExport(`${name}.${member.getName()}`, member, specifier, depth + 1);
+        continue;
+      }
+      if (isNamespaceObject(declaration)) { addMembers(name, specifier, namespaceLiteral(declaration), depth); continue; }
+      if (isUnitKind(declaration) && hasBody(declaration)) addSurface(name, specifier, declaration);
+    }
+  };
   for (const entry of entries) {
     const sourceFile = program.getSourceFile(entry.file);
     if (!sourceFile) throw new Error(`entry not in program: ${rel(entry.file)}`);
     const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
     if (!moduleSymbol) continue;
-    for (const exported of checker.getExportsOfModule(moduleSymbol)) {
-      const symbol = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
-      if (!(symbol.flags & ts.SymbolFlags.Value)) continue;
-      const name = exported.getName();
-      for (const declaration of symbol.declarations ?? []) {
-        const file = declaration.getSourceFile().fileName;
-        if (!inEngineSource(file) && !isPhysicsRuntime(file)) continue;
-        if (isPhysicsRuntime(file)) { addSurface(name, entry.specifier, declaration); continue; }
-        if (isMountRuntime(file)) continue;
-        if (isNamespaceObject(declaration)) { addMembers(name, entry.specifier, namespaceLiteral(declaration), 1); continue; }
-        if (isUnitKind(declaration) && hasBody(declaration)) addSurface(name, entry.specifier, declaration);
-      }
-    }
+    for (const exported of checker.getExportsOfModule(moduleSymbol)) addExport(exported.getName(), exported, entry.specifier, 1);
   }
 
   // Walk every reachable unit, then propagate physics status backwards from the seeds (fixpoint over cycles).
