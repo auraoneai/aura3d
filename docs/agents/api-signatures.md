@@ -60,7 +60,7 @@ const stage = scene({ background: "#101418" }).add(primitives.box({ name: "crate
 
 ## `camera`
 
-`camera.frame(subject | subjects | bounds, { fill, angle, azimuth, elevation, padding, fov, aspect })` returns an orbit camera spec placed so the subject fills `fill` (default 0.6) of the limiting frame axis; `camera.frameScene(scene)` frames a whole scene (ground planes ignored); `camera.framePose(...)` returns the pose for `app.camera.setPose` on resize. Solved for `aspect` (default 16/9).
+`camera.frame(subject | subjects | bounds, { fill, angle, azimuth, elevation, padding, fov, aspect })` returns an orbit camera spec placed so the subject fills `fill` (default 0.6) of the limiting frame axis; `camera.frameScene(scene)` frames a whole scene (ground planes ignored); `camera.framePose(...)` returns the pose for `app.camera.setPose` on resize; `camera.worldBounds(subject)` returns the `{ min, max }` box it frames. Solved for `aspect` (default 16/9).
 
 ```ts
 void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 });
@@ -70,8 +70,9 @@ void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 });
 |---|---|---|
 | `camera.perspective(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | options: position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; up?: AuraVec3 \| undefined; roll?: number \| undefined; offset?: AuraVec3 \| undefined; targetOffset?: AuraVec3 \| undefined; offsetMode?: "scene" \| "target-yaw" \| …; fov?: number \| undefined; focalLength?: number \| undefined; filmGauge?: number \| undefined; filmOffset?: number \| undefined; viewOffset?: { readonly fullWidth: num…; depth?: { readonly mode?: "standa…; near?: number \| undefined; far?: number \| undefined; layers?: number \| undefined; distance… |
 | `camera.orbit(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | same as `camera.perspective` |
-| `camera.frame(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | options: exclude?: ((node: AuraSceneNode) =>… |
+| `camera.frame(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | options: fill?: number \| undefined; angle?: AuraFrameAngle \| undefined; azimuth?: number \| undefined; elevation?: number \| undefined; padding?: number \| undefined; fov?: number \| undefined; aspect?: number \| undefined; minDistance?: number \| undefined; exclude?: ((node: AuraSceneNode) =>… |
 | `camera.frameScene(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | same as `camera.frame` |
+| `camera.worldBounds(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFrameBounds` | same as `camera.frame` |
 | `camera.framePose(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFramePose` | same as `camera.frame` |
 | `camera.frameAsset(asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions)` | `AuraCameraSpec` | asset: type: "model"; format: string; formatMetadata?: FormatMetadata \| undefined; url: string; hash?: string \| undefined; sha256?: string \| undefined; integrity?: AssetIntegrity \| undefined; request?: AssetRequestOptions \| und…; bounds?: AuraVec3 \| undefined; sizeBytes?: number \| undefined; optional?: boolean \| undefined; metadata?: AuraAssetMetadata \| undef…; variants?: AuraAssetVariants \| undef…; requiredDecoders?: readonly AuraAssetRequire…; lods?: readonly AuraAssetLodLeve…; colliderUrl?: string \| undefined; budget?… |
 

@@ -271,6 +271,12 @@ export const camera = lazyNamespace(() => ({
     return camera.orbit({ target: pose.target, position: pose.position, distance: pose.distance, fov: pose.fov, near: pose.near, far: pose.far });
   },
   /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
+  /**
+   * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
+   * re-aim a moving subject: `camera.framePose({ min, max })` after translating it.
+   */
+  worldBounds: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options: AuraCameraFrameOptions = {}): AuraFrameBounds =>
+    frameBoundsOf(subject, options, false),
   framePose: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options: AuraCameraFrameOptions = {}): AuraFramePose =>
     frameCameraPose(frameBoundsOf(subject, options, false), options),
   frameAsset: (asset: AuraAssetRef<"model">, options: AuraCameraFrameAssetOptions = {}): AuraCameraSpec => {

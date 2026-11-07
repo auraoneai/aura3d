@@ -135,6 +135,15 @@ describe("camera.frame integration", () => {
     expect(camera.framePose({ min: [0, 0, 0], max: [1, 1, 1] }).distance).toBeGreaterThan(0);
   });
 
+  test("worldBounds returns the framed box and re-aims a translated subject", () => {
+    const box = camera.worldBounds([body, wing]);
+    expect(box.max[0]).toBeCloseTo(2, 6);
+    expect(box.min[1]).toBeCloseTo(0, 6);
+    const moved = { min: [box.min[0] + 50, box.min[1], box.min[2]], max: [box.max[0] + 50, box.max[1], box.max[2]] } as const;
+    const pose = camera.framePose(moved, { fill: 0.6, angle: "front" });
+    expect(pose.target[0]).toBeCloseTo(50, 3);
+  });
+
   test("a subject with nothing to frame throws", () => {
     expect(() => camera.frame(lights.point({}))).toThrow(RangeError);
   });
