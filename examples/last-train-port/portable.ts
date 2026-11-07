@@ -9,7 +9,7 @@
  */
 import { shaderGraph } from "@aura3d/engine/shader-graph-runtime";
 import type { material } from "@aura3d/engine";
-import { GraphBuilder, glslLike, type Expr } from "../../apps/showcase-port-shared/portable-graph";
+import { GraphBuilder, glslLike, type Expr } from "../shared/portable-graph";
 
 type Material = ReturnType<typeof material.custom>;
 

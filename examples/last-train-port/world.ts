@@ -18,7 +18,7 @@ import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from 
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainGraphSpec, rainSpec, skySpec } from "./materials";
 import { portableCloudMaterial } from "./portable";
-import { readPortableFlag } from "../../apps/showcase-port-shared/portable-flag";
+import { readPortableFlag } from "../shared/portable-flag";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";

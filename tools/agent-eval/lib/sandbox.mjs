@@ -143,7 +143,7 @@ function repoSourceIndex(repoRoot) {
   // Git checkout: tracked files; ACR source pass (no .git): the staged manifest.
   const index = new Map();
   for (const path of listCandidateFiles(repoRoot, FORBIDDEN_ROOTS)) {
-    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || /^evidence\/(?:[^/]+\/)?agent-eval\//.test(path)) continue;
+    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || /^evidence\/(?:[^/]+\/)?agent-eval(?:-[a-z0-9]+)?\//.test(path)) continue;
     const name = basename(path);
     if (!index.has(name)) index.set(name, []);
     index.get(name).push(path);

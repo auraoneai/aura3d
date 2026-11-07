@@ -18,7 +18,7 @@ import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX,
 import { createSiltFx, type SiltFx } from "./fx";
 import { waterGraphMaterial } from "./water-graph";
 import { portableWaterMaterial } from "./portable-water";
-import { readPortableFlag } from "../../apps/showcase-port-shared/portable-flag";
+import { readPortableFlag } from "../shared/portable-flag";
 import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";

@@ -4,7 +4,7 @@ Status: EXPERIMENTAL pilot notes (lane A4, Aura3D 5.1 candidate). No claim is ma
 identical or faster; the numbers are in `evidence/a4-portable/RESULTS.md`. Decision D4 applies: a game converts only after a
 pilot passes the GLSL-vs-portable pixel-diff gate, and the GLSL path stays the default and the original.
 
-Pilots, all behind the default-off `?portable=1` query flag (`apps/showcase-port-shared/portable-flag.ts`, a separate file so
+Pilots, all behind the default-off `?portable=1` query flag (`examples/shared/portable-flag.ts`, a separate file so
 the shared `lab-flags.ts` parser is untouched):
 
 | Pilot | GLSL (default) | Portable (`?portable=1`) |
@@ -23,7 +23,7 @@ call site is a one-line ternary and the rest of the game (`handle.setUniform`, `
 material: readPortableFlag() ? portableCloudMaterial() : material.custom(cloudSpec())
 ```
 
-`apps/showcase-port-shared/portable-graph.ts` is a small expression builder (`GraphBuilder`) so a port reads line for line
+`examples/shared/portable-graph.ts` is a small expression builder (`GraphBuilder`) so a port reads line for line
 like the GLSL. It is a pilot helper, not engine API.
 
 ### Mapping table
