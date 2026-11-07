@@ -87,6 +87,39 @@ describe("minor release widening", () => {
     expect(change?.classification).toEqual({ compatible: false, breaking: true, disposition: "breaking" });
   }, 60000);
 
+  it("accepts a generic class gaining a method, interfaces gaining optional members that mention it, and an appended readonly tuple", () => {
+    const before = `
+export interface SceneNode { readonly kind: string }
+export declare class Builder<T extends SceneNode> { constructor(value: T); position(x: number): Builder<T & { readonly position: number }>; build(): T; }
+export interface App { readonly scene: Builder<SceneNode>; setScene(next: Builder<SceneNode>): void }
+export interface AppOptions { readonly scene: Builder<SceneNode> }
+export declare function box(): Builder<SceneNode>;
+export declare const TEMPLATES: readonly ["viewer", "game"];
+`;
+    const after = `
+export interface SceneNode { readonly kind: string }
+export declare class Builder<T extends SceneNode> { constructor(value: T); position(x: number): Builder<T & { readonly position: number }>; /** alias */ rotation(x: number): Builder<T & { readonly rotation: number }>; build(): T; }
+export interface App { readonly scene: Builder<SceneNode>; setScene(next: Builder<SceneNode>): void; evidence?(): string }
+export interface AppOptions { readonly scene: Builder<SceneNode>; readonly routeState?: boolean }
+export declare function box(): Builder<SceneNode>;
+export declare const TEMPLATES: readonly ["viewer", "game", "procedural"];
+`;
+    const report = diff(before, after, "1.1.0", "minor");
+    expect(report.diagnostics).toEqual([]);
+    expect(report.changes.length).toBeGreaterThan(0);
+    expect(report.changes.filter((change) => change.classification.breaking)).toEqual([]);
+    expect(dispositions(report)).toMatchObject({ Builder: "compatible-widening", App: "compatible-widening", AppOptions: "compatible-widening", TEMPLATES: "compatible-widening" });
+  }, 60000);
+
+  it.each([
+    ["a generic class whose existing method changed", "export declare class Builder<T> { constructor(value: T); size(x: number): Builder<T>; }", "export declare class Builder<T> { constructor(value: T); size(x: string): Builder<T>; extra(): void; }", "Builder"],
+    ["a generic interface gaining a required member", "export interface Box<T> { readonly value: T }", "export interface Box<T> { readonly value: T; readonly label: string }", "Box"],
+    ["a readonly tuple whose existing element changed", 'export declare const TEMPLATES: readonly ["viewer", "game"];', 'export declare const TEMPLATES: readonly ["viewer", "arcade", "procedural"];', "TEMPLATES"]
+  ])("fails %s in a minor", (_label, before, after, name) => {
+    const change = diff(before, after, "1.1.0", "minor").changes.find((entry) => entry.name === name);
+    expect(change?.classification).toEqual({ compatible: false, breaking: true, disposition: "breaking" });
+  }, 60000);
+
   it("fails removals in a minor", () => {
     const report = diff(
       "export declare const kept: number; export declare const lost: number; export interface Options { a: string; b: string; nested: { c: string; d: string } } export interface Deep { nested: { c: string; d: string } }",

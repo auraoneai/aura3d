@@ -519,6 +519,65 @@ export function typeWidens(checker: ts.TypeChecker, before: ts.Type, after: ts.T
  * namespaces: every old member is still present, and a member whose declaration
  * text changed is itself caller-compatible; added members are additions.
  */
+/**
+ * A class or interface whose header (name, type parameters, heritage) and every
+ * existing member keep their exact declaration text, and which only gains members:
+ * any member for a class (callers keep every member they used; a class instance
+ * does not widen otherwise), only optional members for an interface (old values
+ * stay assignable). Named types the members mention are judged as their own
+ * declarations by `attributedWidening`. This is decided on declaration text so it
+ * also covers generic declarations, whose separately declared type parameters the
+ * checker cannot relate across the two comparison copies. A merged or overloaded
+ * shape whose existing member list changes fails closed.
+ */
+export function declarationOnlyAddsMembers(before: ts.Symbol, after: ts.Symbol): boolean {
+  const single = (symbol: ts.Symbol) => {
+    const declarations = (symbol.getDeclarations() ?? []).filter((node) => ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node));
+    return declarations.length === 1 && (symbol.getDeclarations() ?? []).length === 1 ? declarations[0] as ts.ClassDeclaration | ts.InterfaceDeclaration : undefined;
+  };
+  const oldNode = single(before), newNode = single(after);
+  if (!oldNode || !newNode || ts.isClassDeclaration(oldNode) !== ts.isClassDeclaration(newNode)) return false;
+  const normalize = (text: string) => text.replace(/\s+/g, " ").trim().replace(/[;,]$/, "");
+  const header = (node: ts.ClassDeclaration | ts.InterfaceDeclaration) => normalize([
+    ...(ts.getModifiers(node) ?? []).map((m) => m.getText()), node.name?.getText() ?? "",
+    ...(node.typeParameters ?? []).map((p) => p.getText()), ...(node.heritageClauses ?? []).map((h) => h.getText())
+  ].join(" "));
+  if (header(oldNode) !== header(newNode)) return false;
+  const members = (node: ts.ClassDeclaration | ts.InterfaceDeclaration) => {
+    const map = new Map<string, string[]>();
+    for (const member of node.members as ts.NodeArray<ts.ClassElement | ts.TypeElement>) {
+      const isStatic = (ts.canHaveModifiers(member) ? ts.getModifiers(member) ?? [] : []).some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
+      const key = `${ts.SyntaxKind[member.kind] === "Constructor" ? "constructor" : isStatic ? "static " : ""}${member.name ? member.name.getText() : ts.SyntaxKind[member.kind]}`;
+      map.set(key, [...(map.get(key) ?? []), normalize(member.getText())]);
+    }
+    return map;
+  };
+  const oldMembers = members(oldNode), newMembers = members(newNode);
+  for (const [key, texts] of oldMembers) {
+    if (newMembers.get(key)?.join("\0") !== texts.join("\0")) return false;
+  }
+  if (ts.isClassDeclaration(newNode)) return newMembers.size > oldMembers.size;
+  let added = 0;
+  for (const member of newNode.members) {
+    const key = member.name ? member.name.getText() : ts.SyntaxKind[member.kind];
+    if (oldMembers.has(key)) continue;
+    if (!(ts.isPropertySignature(member) || ts.isMethodSignature(member)) || !member.questionToken) return false;
+    added += 1;
+  }
+  return added > 0;
+}
+/** A `readonly [...]` tuple constant whose existing elements keep their text and
+ * which only appends elements (an inventory such as a template list gaining an
+ * entry): `typeof value[number]` widens; nothing a caller read is removed. */
+export function readonlyTupleOnlyAppends(before: ts.Symbol, after: ts.Symbol): boolean {
+  const elements = (symbol: ts.Symbol) => {
+    const node = symbol.valueDeclaration;
+    if (!node || !ts.isVariableDeclaration(node) || !node.type || !ts.isTypeOperatorNode(node.type) || node.type.operator !== ts.SyntaxKind.ReadonlyKeyword || !ts.isTupleTypeNode(node.type.type)) return undefined;
+    return node.type.type.elements.map((element) => element.getText().replace(/\s+/g, " ").trim());
+  };
+  const oldElements = elements(before), newElements = elements(after);
+  return !!oldElements && !!newElements && newElements.length > oldElements.length && oldElements.every((text, index) => newElements[index] === text);
+}
 export function declarationSelfWidens(checker: ts.TypeChecker, before: ts.Symbol, after: ts.Symbol): boolean {
   const assignable = (source: ts.Type, target: ts.Type) => checker.isTypeAssignableTo(source, target);
   const isClass = !!(before.flags & ts.SymbolFlags.Class) && !!(after.flags & ts.SymbolFlags.Class);
@@ -527,6 +586,8 @@ export function declarationSelfWidens(checker: ts.TypeChecker, before: ts.Symbol
     return !!parameters && parameters.length > 0;
   });
   if ((before.flags & ts.SymbolFlags.Type) !== (after.flags & ts.SymbolFlags.Type) || (before.flags & ts.SymbolFlags.Value) !== (after.flags & ts.SymbolFlags.Value)) return false;
+  if ((before.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.Interface)) && declarationOnlyAddsMembers(before, after)) return true;
+  if (readonlyTupleOnlyAppends(before, after)) return true;
   if (before.flags & ts.SymbolFlags.Type) {
     const oldType = checker.getDeclaredTypeOfSymbol(before), newType = checker.getDeclaredTypeOfSymbol(after);
     if (isClass ? !assignable(newType, oldType) : (generic(before) || generic(after) || !typeWidens(checker, oldType, newType))) return false;
