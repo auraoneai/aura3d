@@ -17,6 +17,8 @@ import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, 
 import { DAYLIGHT_KEYS, ORIGINAL_KEY, TRAVELLER_FILL, createDaylightDriver, daylightKeyFor, frameOfKey, isDuskKey, linearToHex, lookPostFor, type DaylightFrame, type LookPost } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
+import { NO_MOTION, bodyMotion, followDrive } from "./gait-motion";
+import { STRIDE_SPEED, footstepCell } from "./locomotion";
 import { KITE_FLIGHT, KITE_HEIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
 import { SEA_LEVEL, STREAM_POINTS, blobOcclusion, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
 
@@ -261,6 +263,13 @@ export function shaftPatch(godRays: number): { intensity: number; godRayDensity:
  * kept and only the drawn camera changes: 0.9 m lower (y 4.5 -> 3.6) and a lead of up to 1.2 m in the walk direction.
  */
 export const STORYBOOK_CAMERA_Y = 3.6;
+/** `?camview=side|back|three` pins a close hero-relative camera for motion captures (presentation only; the sim and the default follow camera are untouched). */
+const CAPTURE_CAMVIEW = typeof location === "undefined" ? null : new URLSearchParams(location.search).get("camview");
+function captureView(view: string, x: number, y: number, z: number): { position: [number, number, number]; target: [number, number, number]; fov: number } {
+  const target: [number, number, number] = [x, y + 1.35, z];
+  const position: [number, number, number] = view === "side" ? [x, y + 1.5, z + 7.5] : view === "back" ? [x - 7.5, y + 1.9, z] : [x - 5.5, y + 2.6, z + 5.5];
+  return { position, target, fov: 34 };
+}
 export const STORYBOOK_LEAD = 1.2;
 export function storybookOffset(): { x: number; y: number; z: number } {
   return { x: CAMERA_OFFSET.x, y: STORYBOOK_CAMERA_Y, z: CAMERA_OFFSET.z };
@@ -647,6 +656,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // WW47-C2: the eased walk lead (world xz) and the previous traveller position it is measured from
       const lead = { x: 0, z: 0, px: START.x, pz: START.z };
       let lastFound = -1;
+      let bodyDrive = 0, footCell = -1;
       let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1, lastStepTime = -1;
       let epilogue: number | null = null;
       let bellAngle = 0;
@@ -770,7 +780,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           sequencer.skip(); seqComplete = false;
           vfxFound = 0; vfxComplete = false; vfxHop = "idle"; vfxTime = -1;
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
-          lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
+          lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); bodyDrive = 0; footCell = -1; gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
         update(state, dt, time, aspect) {
           applyDaylight(daylight.update(options.daylightKey ?? daylightKeyFor({ found: state.found.length, complete: state.complete, epilogue: epilogue !== null }), dt));
@@ -803,8 +813,15 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             if (!heroAnim) tr.setUniform?.("windTime", time);
             node("shadow").setPosition(b.x, -10, b.z);
           } else {
-            tr.setPosition(x, y + hop, z).setRotation(0, yaw, 0);
-            node("shadow").setPosition(x, y + 0.06, z).setScale(1 - 0.35 * Math.min(1, hop / 1.2));
+            // secondary motion from the stride phase (bob, lean, roll), on the hero node only; the sim position is untouched
+            bodyDrive = followDrive(bodyDrive, heroAnim && state.hop.phase === "idle" ? heroAnim.speed / STRIDE_SPEED.Walk : 0, dt);
+            const bm = heroAnim && !original ? bodyMotion(heroAnim.cycle, bodyDrive) : NO_MOTION;
+            tr.setPosition(x, y + hop + bm.bob, z).setRotation(bm.pitch, yaw, bm.roll);
+            node("shadow").setPosition(x, y + 0.06, z).setScale((1 - 0.35 * Math.min(1, hop / 1.2)) * (1 + 0.5 * bm.bob));
+            // a foot plants: a few grass specks at the heel (same footfall cell as the footstep sound)
+            const cell = footstepCell(state.stride);
+            if (vfx && heroAnim && !original && state.moved && state.hop.phase === "idle" && cell !== footCell && footCell >= 0) vfx.footfall([x, y + 0.05, z], streamInfo(x, z).dist < 1.6 || y < SEA_LEVEL + 0.15);
+            footCell = cell;
             if (!original) node("traveller-fill").setPosition(x, y + hop + TRAVELLER_FILL.up, z + TRAVELLER_FILL.toward);
           }
           if (heroAnim) {
@@ -932,7 +949,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           seqComplete = state.complete;
           // WW47-C2 (part): a storybook 40-degree lens on landscape; portrait keeps 50 so the traveller stays in frame
           const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: framing ? framing.fov : aspect < 1 ? 50 : 43 };
-          const shown = sequencer.update(dt, follow) ?? follow;
+          const shownSeq = sequencer.update(dt, follow) ?? follow;
+          const shown = CAPTURE_CAMVIEW ? captureView(CAPTURE_CAMVIEW, x, y + hop, z) : shownSeq;
           node("sky").setPosition(shown.position[0], shown.position[1], shown.position[2]);
           cam.setPose({
             position: shown.position,

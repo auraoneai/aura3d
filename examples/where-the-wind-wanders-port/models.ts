@@ -100,7 +100,7 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
   const castShadow = shadows, receiveShadow = shadows;
   const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
   if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { ...mo("letter"), name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
-  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
+  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", rotationOrder: "YXZ", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
   if (set.kite) {
     // WW47-A1: the paper kite (WP-36 bellKite) on a cream string from the traveller's hand; posed every frame by world.ts
     builder.add(model(MODEL_ASSETS.kite, { name: "kite", targetHeight: KITE_HEIGHT, rotationOrder: "YXZ", castShadow, receiveShadow: false, collider: false, materialOverrides: [{ roughness: 0.78, metallic: 0, rim: { color: "#fff4dc", power: 2.4, intensity: 0.45 } }] }).runtime({ id: "kite" }));
@@ -114,7 +114,15 @@ export const SPEED_SMOOTH_SECONDS = 0.05;
 export const GAIT_DWELL_SECONDS = 0.08;
 
 export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }
-export interface HeroAnimator { update(drive: HeroDrive): Gait; reset(x: number, z: number, time?: number): void; readonly gait: Gait }
+export interface HeroAnimator {
+  update(drive: HeroDrive): Gait;
+  reset(x: number, z: number, time?: number): void;
+  readonly gait: Gait;
+  /** Continuous stride phase (0..1) of the moving gaits; it holds when the hero stops. */
+  readonly cycle: number;
+  /** Low-passed ground speed in world units per second. */
+  readonly speed: number;
+}
 /**
  * Drives the traveller's walk, run and idle clips with the library's `createLocomotion`, fed the real ground speed once
  * per sim step (the stepped QA path calls `update` twice per step, so a zero time delta is skipped). The dominant gait's
@@ -130,6 +138,8 @@ export function createHeroAnimator(app: AuraApp): HeroAnimator {
   let cycle = 0, candidate: Gait = "Idle", candidateFor = 0, speedSmooth = 0;
   return {
     get gait() { return gait; },
+    get cycle() { return cycle; },
+    get speed() { return speedSmooth; },
     reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; cycle = 0; candidate = "Idle"; candidateFor = 0; speedSmooth = 0; primed = true; },
     update({ x, z, airborne, onBoat, time }) {
       if (!primed) { lastX = x; lastZ = z; lastTime = time; primed = true; }
