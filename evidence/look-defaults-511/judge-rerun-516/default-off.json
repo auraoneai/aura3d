@@ -1,0 +1,277 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "results": [
+    {
+      "task": 1,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows a gold metallic-looking cube with gradient shading and visible faces, while B has a blown-out white top and a nearly black side, so it looks flat and not clearly metallic or readable."
+    },
+    {
+      "task": 1,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B shows a gold metallic cube with clear shading, gradients and visible form, while A's cube has a flat white top and nearly black sides with no visible metallic or rough quality."
+    },
+    {
+      "task": 1,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        },
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B shows a centred gold metallic cube with gradient reflections and visible shading on each face, while A's cube has a flat white top and a nearly black body with no visible metallic or rough quality."
+    },
+    {
+      "task": 2,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A has visible fog falloff toward the horizon, shaded cone facets and a dark ground that gives more depth, while B looks flat and washed out with a pale ground, no visible fog or shadows, and no discernible rocks or trunks."
+    },
+    {
+      "task": 2,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "B shows fog depth falloff, visible shading on the cone canopies, and a ground that reads as a ground, with the whole forest in frame, while A is flat-lit, has no visible fog or shadows, and its rocks and trunks cannot be seen among the saturated green canopies."
+    },
+    {
+      "task": 2,
+      "idx": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A shows fog fading into the horizon and some shading depth, with a visible ground and a fully framed forest. B has saturated, flat-looking canopies, a pale ground with no visible fog or shadows, and no visible rocks or trunks."
+    },
+    {
+      "task": 9,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A has a dark background, a visible cyan and magenta rim light with floor pools, and a more detailed robot, while B has flat grey lighting, a bright floor slab, no visible coloured rim light and no clear shadows."
+    },
+    {
+      "task": 9,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A has a dark background, visible cyan and magenta rim lighting, a lit floor and a robot with clear detail, while B has flat grey lighting, no visible coloured rim light, no clear shadows and a bland floor."
+    },
+    {
+      "task": 9,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 5,
+          "materials": 3,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "B has a dark background, a visible cyan and magenta rim light, a lit floor with shadows, and a clearly articulated robot, while A looks flat and evenly lit on a grey floor with no visible coloured rim light or dramatic shadows."
+    }
+  ]
+}
