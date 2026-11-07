@@ -1,0 +1,11 @@
+{
+  "aura-fc-3d": {
+    "click:Quick Play": true,
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "logs": [
+      "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-89:fc-ball-shadow:fc-ball-shadow\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state (9: primitive-3:fc-stripes:fc-stripes, primitive-89:fc-ball-shadow:fc-ball-shadow, primitive-91:fc-goal-ring:fc-goal-ring); an unverified custom or graph material participant (1: primitive-47:fc-flood-po",
+      "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state (8: primitive-3:fc-stripes:fc-stripes, primitive-89:fc-ball-shadow:fc-ball-shadow, primitive-95:h-df0-shadow:h-df0-shadow); an unverified custom or graph material participant (1: primitive-47:fc-flood-po"
+    ]
+  }
+}

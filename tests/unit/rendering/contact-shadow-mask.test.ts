@@ -21,12 +21,17 @@ import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { shaderGraph } from "../../../packages/engine/src/agent-api/nodes/shaderGraph";
 import "../../../packages/rendering/src/lanes/prd01";
+import "../../../packages/rendering/src/lanes/prd06";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { collectLight } from "../../../packages/rendering/src/LightCollector";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { Texture } from "../../../packages/rendering/src/Texture";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
+import { SkinnedLitMaterial } from "../../../packages/rendering/src/SkinnedLitMaterial";
+import { VertexBuffer } from "../../../packages/rendering/src/VertexBuffer";
+import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
+import { IndexBuffer } from "../../../packages/rendering/src/IndexBuffer";
 import { QUALITY_TIERS } from "../../../packages/rendering/src/contracts/quality";
 import type { ProgramFeatures } from "../../../packages/rendering/src/contracts/program";
 import type { FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph";
@@ -672,6 +677,101 @@ describe("prd02.contactShadows contributor publishes the mask to forward shading
       });
       try { expect(maskDraws([caster, floor, { ...floor, label: "moved" }]).partial).toBe(true); }
       finally { unregister(); }
+    });
+  });
+
+  describe("deformed and custom participants are drawn into the mask depth", () => {
+    const skinnedGeometry = (format: VertexFormat = VertexFormat.P3N3J4W4) => new Geometry(new VertexBuffer(format, 3), new IndexBuffer([0, 1, 2], 3));
+    const run = (items: RenderItem[], flags: readonly string[]) => {
+      const contributor = createPrd02ContactShadowsContributor();
+      const ctx = ctxFor({ source: sourceWith({ prd02Contact: {} }), items: [caster, floor, ...items], flags: flagsOn(flags) });
+      const device = ctx.device as MockRenderDevice;
+      return { contributor, ctx, device, execute: () => { device.beginFrame(ctx.width, ctx.height); try { contributor.passes!("shadows", ctx)[0]!.execute({ device, width: ctx.width, height: ctx.height }); } finally { device.endFrame(); } } };
+    };
+
+    it.each([[false, 4], [true, 8]])("a skinned participant (extraInfluences %s) is drawn with its skinning variant, even in strict mode", (extra, influences) => {
+      const geometry = skinnedGeometry(extra ? VertexFormat.P3N3J8W8 : VertexFormat.P3N3J4W4);
+      const material = new SkinnedLitMaterial();
+      const hero: RenderItem = { label: "hero", geometry, material, modelMatrix: new Float32Array(16),
+        skinning: { jointCount: 4, matrices: new Float32Array(4 * 16), extraInfluences: extra } };
+      const { contributor, ctx, device, execute } = run([hero], ["A3D_QR_LIGHTING", "A3D_QR_STRICT"]);
+      try {
+        execute();
+        expect(contactShadowMask(device)).toBeDefined();
+        const hero0 = device.drawCommands.find(draw => draw.label === "hero:0");
+        expect(hero0).toBeDefined();
+        expect(hero0!.vertexFormat?.hasAttribute(extra ? "joints1" : "joints")).toBe(true);
+        expect(influences).toBe(extra ? 8 : 4);
+        expect(ctx.blackboard.has("prd02.contactShadowMask")).toBe(true);
+      } finally { contributor.dispose?.(); geometry.dispose(); material.dispose(); device.dispose(); }
+    });
+
+    it("a morphed participant is drawn with its blended geometry (strict included); half a morph contract still throws in strict", () => {
+      const geometry = new Geometry(new VertexBuffer(VertexFormat.P3N3, 3), new IndexBuffer([0, 1, 2], 3));
+      const targets = [{ name: "t0", positions: [[0.1, 0, 0], [0.1, 0, 0], [0.1, 0, 0]] }] as never;
+      const face: RenderItem = { label: "face", geometry, material: new UnlitMaterial(), modelMatrix: new Float32Array(16), morphTargets: targets, morphWeights: [0.5] };
+      const ok = run([face], ["A3D_QR_LIGHTING", "A3D_QR_STRICT"]);
+      try {
+        ok.execute();
+        expect(contactShadowMask(ok.device)).toBeDefined();
+        expect(ok.device.drawCommands.some(draw => draw.label === "face:0")).toBe(true);
+      } finally { ok.contributor.dispose?.(); ok.device.dispose(); }
+      const broken = run([{ ...face, morphWeights: undefined }], ["A3D_QR_LIGHTING", "A3D_QR_STRICT"]);
+      try {
+        expect(() => broken.execute()).toThrow(/camera depth cannot represent/i);
+        expect(contactShadowMask(broken.device)).toBeUndefined();
+      } finally { broken.contributor.dispose?.(); geometry.dispose(); broken.device.dispose(); }
+    });
+
+    it("a skinned participant selected by the animation lane's deform feature stays in the mask depth (strict included)", () => {
+      const geometry = skinnedGeometry();
+      const material = new SkinnedLitMaterial();
+      const hero: RenderItem = { label: "deformed-hero", geometry, material, modelMatrix: new Float32Array(16),
+        skinning: { jointCount: 4, matrices: new Float32Array(4 * 16), extraInfluences: false } };
+      const { contributor, device, execute } = run([hero], ["A3D_QR_LIGHTING", "A3D_QR_ANIMATION", "A3D_QR_STRICT"]);
+      try {
+        execute();
+        expect(device.drawCommands.some(draw => draw.label === "deformed-hero:0")).toBe(true);
+      } finally { contributor.dispose?.(); geometry.dispose(); material.dispose(); device.dispose(); }
+    });
+
+    const displaced = (castShadow: boolean) => {
+      const graph: ShaderGraphDocument = { version: 1, stage: "material", nodes: [
+        { id: "position", op: "input", type: "vec3", name: "positionLocal" },
+        { id: "offset", op: "constant", type: "vec3", value: [1, 0, 0] },
+        { id: "displaced", op: "add", type: "vec3", inputs: ["position", "offset"] },
+        { id: "color", op: "constant", type: "vec3", value: [1, 1, 1] }
+      ], outputs: { position: "displaced", color: "color" } };
+      return createCustomShaderMaterial({ ...shaderGraph.material({ graph }).custom!, castShadow });
+    };
+
+    it("a pristine custom-depth (castShadow) graph participant is drawn with its own depth program, without a partial warning", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const material = displaced(true);
+      const geometry = Geometry.litCube(1);
+      const { contributor, device, execute } = run([{ geometry, material, label: "car" }], ["A3D_QR_LIGHTING"]);
+      try {
+        execute();
+        expect(contactShadowMask(device)).toBeDefined();
+                expect(device.drawCommands.some(draw => draw.label?.startsWith("car"))).toBe(true);
+        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_PARTIAL"))).toBe(false);
+      } finally { warn.mockRestore(); contributor.dispose?.(); geometry.dispose(); material.dispose(); device.dispose(); }
+    });
+
+    it("a displaced graph without a paired depth program is left out with one warning outside strict, and throws in strict", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const material = displaced(false);
+      const geometry = Geometry.litCube(1);
+      const item: RenderItem = { geometry, material, label: "unpaired-displaced" };
+      const lenient = run([item], ["A3D_QR_LIGHTING"]);
+      const strict = run([item], ["A3D_QR_LIGHTING", "A3D_QR_STRICT"]);
+      try {
+        lenient.execute();
+        expect(contactShadowMask(lenient.device)).toBeDefined();
+        expect(lenient.device.drawCommands.some(draw => draw.label?.startsWith("unpaired-displaced"))).toBe(false);
+        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_PARTIAL"))).toBe(true);
+        expect(() => strict.execute()).toThrow(/unverified custom or graph material/);
+      } finally { warn.mockRestore(); lenient.contributor.dispose?.(); strict.contributor.dispose?.(); geometry.dispose(); material.dispose(); lenient.device.dispose(); strict.device.dispose(); }
     });
   });
 

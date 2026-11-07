@@ -1,0 +1,28 @@
+diff --git a/packages/rendering/src/passes/ContactShadowPass.ts b/packages/rendering/src/passes/ContactShadowPass.ts
+index a33430273..b95da5ce2 100644
+--- a/packages/rendering/src/passes/ContactShadowPass.ts
++++ b/packages/rendering/src/passes/ContactShadowPass.ts
+@@ -226,6 +226,7 @@ export class ContactShadowPass extends BaseRenderPass {
+           sum += r;
+           if (r < 250) below += 1;
+         }
++        (globalThis as { __A3D_CONTACT_MASK_DUMP__?: unknown }).__A3D_CONTACT_MASK_DUMP__ = { w: this.mask.width, h: this.mask.height, px: pixels.slice() }; // TEMPDEBUG
+         mask = { width: this.mask.width, height: this.mask.height, min: min / 255, mean: sum / n / 255, fractionBelow098: below / n };
+       }
+       if (this.ownDepth && device.readDepthPixels) {
+diff --git a/packages/rendering/src/passes/Prd02ContactShadowsContributor.ts b/packages/rendering/src/passes/Prd02ContactShadowsContributor.ts
+index 80a22f066..8a11f2e91 100644
+--- a/packages/rendering/src/passes/Prd02ContactShadowsContributor.ts
++++ b/packages/rendering/src/passes/Prd02ContactShadowsContributor.ts
+@@ -118,6 +118,11 @@ function tierNameOf(ctx: FrameContributorContext): AuraQualityTier | null {
+ 
+ /** C-27 tier + opt-in + sub-flag resolution. Returns null when the pass must not run. */
+ export function contactShadowRequest(ctx: FrameContributorContext): ContactShadowOptions | null {
++  const r = contactShadowRequestBase(ctx); // TEMPDEBUG
++  const o = (globalThis as { __A3D_CONTACT_OVERRIDE__?: ContactShadowOptions }).__A3D_CONTACT_OVERRIDE__; // TEMPDEBUG
++  return r && o ? { ...r, ...o } : r; // TEMPDEBUG
++} // TEMPDEBUG
++function contactShadowRequestBase(ctx: FrameContributorContext): ContactShadowOptions | null {
+   // `A3D_QR_LIGHTING_CONTACT=off` or `?a3dLighting=contact=off` veto even
+   // Ultra/`effects.contactShadows` requests (§6.5 kill switch).
+   if (prd02SubFlagOff(ctx.flags, SUB_FLAG_CONTACT) || !readPrd02KillSwitches(ctx.source).contact) return null;

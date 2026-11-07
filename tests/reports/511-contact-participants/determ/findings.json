@@ -1,0 +1,24 @@
+{
+  "method": "Real GPU (ANGLE Metal, Apple M4 Max), headless Chrome over loopback CDP, virtual-clock shim (shim.js, from lane/504-bellkeeper) so frames are deterministic: two captures of the same build were byte-identical in pixel diff (0 darker pixels, 0 mean abs diff, also across two separate builds). Builds: tools/dev-route-build.mjs with the engine alias pointed at packages/engine/src/public/index.ts (the agent-api entry does not register the lighting lane; the production marketing build uses the public entry). A temporary, reverted patch (tempdebug-override-and-mask-dump.patch) let a run override the effect options and dump the mask texture; A = effects intensity forced to 0 (mask never published), B = the authored options, C = authored options with length 0.8.",
+  "frames_are_game_frames": "Each full frame is the live game (HUD, court/pitch/road, athletes/cars); capture steps are in capture-det.mjs.",
+  "diagnostics_authored_options": {
+    "top-tennis": { "request": "length 0.35, thickness 0.06, intensity 0.9, lights sun", "maskFractionBelow0.98": 0.049, "maskMin": 0.035, "drawsSamplingMask": "75 of 78" },
+    "aura-hoops-3d": { "request": "length 0.42, thickness 0.06, intensity 0.9, lights shadowed", "maskFractionBelow0.98": 0.175, "maskMin": 0.020, "drawsSamplingMask": "62 of 77" },
+    "aura-fc-3d": { "request": "length 0.5, thickness 0.05, intensity 1, lights sun", "maskFractionBelow0.98": 0.126, "maskMin": 0.047, "drawsSamplingMask": "56 of 65" },
+    "roadster-rush": { "request": "length 0.7, thickness 0.08, intensity 1, lights sun", "maskFractionBelow0.98": 0.192, "maskMin": 0.012, "drawsSamplingMask": "39 of 65" }
+  },
+  "answers": {
+    "is_the_mask_drawn_for_hero_meshes": "Yes. The *-mask.png images (640x400 mask texture read back, scaled 2x) show a dark wedge at the feet of every hoops athlete, the tennis players, the fc players and the roadster car and traffic. Heroes are in the mask depth; the only excluded participants are blended or custom decals, flares, sky walls and score text (CONTACT_SHADOW_PARTIAL lists).",
+    "is_the_receiver_sampling_it": "Yes. The forward pass publishes the mask and 75/78, 62/77, 56/65, 39/65 draws sample it. No 'no visible effect' warning fires in any of the four games.",
+    "is_strength_or_radius_too_weak": "Partly. The march length is 0.35 to 0.7 m along the sun, so the shadow reaches 5 to 20 px at gameplay camera distance, and it only exists where the sun's direct term is lit.",
+    "hidden_by_own_blob_shadows_or_sun_shadow_map": "Inferred (not isolated) for tennis and fc: the sun shadow map and the games' blob shadows already darken the ground at the contact point, so multiplying the same sun term by the mask adds little there. Hoops: the floor is lit mostly by spot floodlights, neon points and IBL, none of which the mask touches (contact_shadow_mask.glsl.ts multiplies the directional light's visibility only), so even a 0.8 m or 1.5 m march changes almost nothing on the floor.",
+    "real_cause": "Design limit of the consumer, not a rendering bug: the mask modulates only the shadow-casting sun's direct term. Where that term is small or already shadowed the effect is subtle. Fixing it for hoops needs the shader chunk (ShaderLibrary*.ts, forward/contactShadowMaskStore.ts, contact_shadow_mask.glsl.ts) to apply part of the mask to ambient/other-light terms, which are outside this lane's owned files. No change to the owned files produces a clearly visible foot shadow without regressing other frames, so none was made."
+  },
+  "per_game_settings_needed": {
+    "top-tennis": "authored length 0.35 gives 1.7 mean abs diff in the shadow region (3.5 percent of frame); length about 0.8 gives 8.4 (7.7 percent) and a readable shadow behind the legs. Caveat: longer lengths add screen-space ghosting behind characters.",
+    "aura-fc-3d": "authored length 0.5 is subtle (875 darker px); the pitch is lit by the sun term plus blob shadows, so it needs a longer length or the blob shadows removed to read.",
+    "roadster-rush": "authored 0.7 already visible under the car and behind the wheels (18247 darker px, mean 10.4 in region).",
+    "aura-hoops-3d": "no authored setting helps while the floor is lit by spots and neon; needs the shader-chunk change above."
+  },
+  "regression": "numbers.jsonl: meanAbsDiffOutside is the mean abs per-channel difference outside the shadow region (darker by >12 luma, dilated 6 px). Authored vs off: tennis 0.015, hoops 0.046, fc 0.028, roadster 0.602 (cause not investigated)."
+}

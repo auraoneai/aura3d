@@ -24,6 +24,7 @@ import { sceneFromSource } from "../renderer/RenderShared";
 import { registerBenchmarkNonSceneContributor } from "../renderer/FrameGraph";
 import { MaterialInstance } from "../MaterialInstance";
 import { PortableShaderMaterial } from "../PortableShaderMaterial";
+import { customDepthShaderKeyOf } from "../DepthPass";
 import { UnlitMaterial } from "../UnlitMaterial";
 import { renderStateHasExtendedCommandFields } from "../Material";
 import { PBRMaterial } from "../PBRMaterial";
@@ -50,6 +51,8 @@ const forwardContactGuards = (): {
 } => (ForwardPass as unknown as Record<symbol, never>)[Symbol.for("@aura3d/rendering:forwardContactGuards")];
 const forwardContactProvidersSafe = (flags: QrFlags): boolean => forwardContactGuards().providersSafe(flags);
 
+
+const PRD06_DEFORM_FEATURE_ID = "prd06.deform";
 
 export const CONTACT_SHADOWS_SUB_FLAG = SUB_FLAG_CONTACT;
 
@@ -188,7 +191,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
   // (skinned, morphed, wind-deformed, alpha-tested, blended, custom shader) is left out of the mask depth and receives
   // the mask of the surface behind it, instead of removing the contact shadow from the whole scene.
   const included: RenderItem[] = [];
-  const excluded = new Map<string, number>();
+  const excluded = new Map<string, string[]>();
   for (const item of ctx.items) {
     // A per-draw callback aborts every forward draw while a mask is published, so it cannot be left out.
     if (item.onBeforeRender) fail(item, "a draw callback that may change the scene");
@@ -196,11 +199,13 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     catch (error) {
       if (strict || !(error instanceof RenderDeviceError) || error.code !== "CONTACT_SHADOW_DEPTH_UNSUPPORTED") throw error;
       const reason = String((error.details as { reason?: unknown } | undefined)?.reason ?? "unsupported participant");
-      excluded.set(reason, (excluded.get(reason) ?? 0) + 1);
+      const labels = excluded.get(reason) ?? [];
+      labels.push(item.label ?? "unlabelled");
+      excluded.set(reason, labels);
     }
   }
   if (excluded.size > 0) {
-    warnOnce(`CONTACT_SHADOW_PARTIAL: participants with ${[...excluded.keys()].sort().join("; ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
+    warnOnce(`CONTACT_SHADOW_PARTIAL: participants with ${[...excluded.entries()].sort(([a], [b]) => a < b ? -1 : 1).map(([reason, labels]) => `${reason} (${labels.length}: ${labels.slice(0, 3).join(", ")})`).join("; ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
   }
   return included;
   function checkItem(item: RenderItem): void {
@@ -208,12 +213,18 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     const material = item.material;
     const base = material instanceof MaterialInstance ? material.baseMaterial : material;
-    if (base instanceof PortableShaderMaterial) fail(item, "an unverified custom or graph material participant");
-    if (!forwardContactParticipantSafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
+    // Custom and graph materials: outside strict, a pristine one is represented in the mask depth either by its own
+    // paired depth program (`castShadow: true`: the author's vertex stage, skinning variants included) or, for a graph
+    // that does not move vertices, by the position-only depth. Anything else keeps the old refusal.
+    const portable = base instanceof PortableShaderMaterial ? base : undefined;
+    if (portable && (strict || !portableContactDepthRepresentable(item, portable))) fail(item, "an unverified custom or graph material participant");
+    if (!portable && !forwardContactParticipantSafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
     if (item.geometry.topology !== "triangles") fail(item, "non-triangle coverage");
     if (item.geometryMatrix && !identityMatrix(item.geometryMatrix)) fail(item, "a geometry transform");
     if (item.instanceAttributes?.length || (item.instanceCount !== undefined && item.instanceCount > 1 && !item.instanceTransforms)) fail(item, "custom instance attributes");
-    if (item.skinning || item.morphTargets?.length || item.morphWeights?.length) fail(item, "skinning or morph deformation");
+    // Skinned and morphed participants are drawn by the mask depth with the same deformation the forward pass applies
+    // (skinning variant in the depth shader, CPU morph resolve in DepthPass); a malformed deformation contract fails here.
+    if ((item.morphTargets === undefined) !== (item.morphWeights === undefined)) fail(item, "skinning or morph deformation");
     if ((item.lodFade !== undefined && Math.abs(item.lodFade) < 0.999) || (item.cameraFade !== undefined && item.cameraFade < 0.999)) fail(item, "dithered coverage");
     if (item.modelViewProjectionMatrix && ctx.camera) {
       const model = (item.modelMatrix ?? identity) as Mat4;
@@ -228,7 +239,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
       const cutoff = material!.getParameter("u_alphaCutoff");
       if (typeof cutoff === "number" && cutoff > 0) fail(item, "alpha-tested coverage");
       if (material!.getParameter("u_spriteMode") === 1 || material!.getParameter("u_roundPoints") === 1) fail(item, "sprite or point coverage");
-      if (![UnlitMaterial.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, SkinnedLitMaterial.prototype].includes(Object.getPrototypeOf(base))) {
+      if (!portable && ![UnlitMaterial.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, SkinnedLitMaterial.prototype].includes(Object.getPrototypeOf(base))) {
         fail(item, "an unknown material shader");
       }
     }
@@ -236,6 +247,9 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     const materialClip = (base as typeof base & { readonly clipping?: typeof clipped.materialClipping })?.clipping;
     if ([clipped.globalClipping, clipped.materialClipping ?? materialClip].some(group => group && group.enabled !== false && !group.disposed && (group.planes?.length ?? 0) > 0)) fail(item, "clipping coverage");
     for (const feature of features) {
+      // The animation lane's deform feature moves vertices only for skinned or morphed participants, which the mask depth
+      // reproduces itself (skinning variant, CPU morph resolve), so its selection is not a coverage hazard for them.
+      if (feature.id === PRD06_DEFORM_FEATURE_ID && (item.skinning || item.morphTargets?.length || item.morphWeights?.length)) continue;
       if (!feature.hooks.some(hook => hook === "vertex:deform" || hook === "vertex:world" || hook === "vertex:end" || hook === "fragment:alpha")) continue;
       // The stock tangent frame only derives a tangent varying for normal mapping: it never moves a vertex nor changes coverage.
       if (isStockTangentFrameFeature(feature)) continue;
@@ -251,6 +265,13 @@ const noConsumerRuns = new WeakMap<object, number>();
 function isStockTangentFrameFeature(feature: { readonly id: string; readonly owner?: string; readonly hooks: readonly string[] }): boolean {
   return feature.id === "prd04.tangentFrame" && feature.owner === "prd04"
     && feature.hooks.length === 2 && feature.hooks[0] === "vertex:world" && feature.hooks[1] === "fragment:normal";
+}
+
+/** True when the mask depth reproduces a portable (custom or graph) material's clip positions. */
+function portableContactDepthRepresentable(item: RenderItem, base: PortableShaderMaterial): boolean {
+  if (base.disposed || !base.graphSourcesPristine || base.graphRequiresWebGPU) return false;
+  if (customDepthShaderKeyOf(item.material) !== undefined) return true;
+  return base.graphMaterial && !base.graphDisplaced && !item.skinning;
 }
 
 /** Match the first visible casting sun selected by prd02SunDirection, retaining its identity. */
