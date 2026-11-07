@@ -114,9 +114,11 @@ describe("staged isolated physics provider", () => {
     const load = vi.fn(async () => worldModule(PhysicsWorldStub, ensure));
     const provider = createPhysicsWorldProvider(load);
     const failure = await provider.preload().catch((error: unknown) => error);
-    expect((failure as Error).message).toMatch(/preload physics/i);
+    // An absent backend is the typed PHYSICS_BACKEND_MISSING error (code + install command), not a generic preload failure.
+    expect((failure as Error & { code?: string }).code).toBe("PHYSICS_BACKEND_MISSING");
+    expect((failure as Error).message).toMatch(/npm install @dimforge\/rapier3d-compat@0\.20\.0/);
     expect(((failure as Error).cause as Error).message).toMatch(/optional.*rapier.*unavailable/i);
-    expect(() => provider.requireReady()).toThrow(/await preloadPhysics\(\)/i);
+    expect(() => provider.requireReady()).toThrow(/PHYSICS_BACKEND_MISSING/);
     await provider.preload();
     expect(load).toHaveBeenCalledTimes(2);
     expect(ensure).toHaveBeenCalledTimes(2);
@@ -284,10 +286,10 @@ describe("independent legacy and isolated physics access", () => {
     const legacy = createLegacyPhysicsWorldAccess(module);
     const isolated = createPhysicsWorldProvider(async () => module);
     expect(() => new (legacy.requireReady())()).toThrow(unavailable);
-    await expect(legacy.preload()).rejects.toThrow(/preload physics/i);
+    await expect(legacy.preload()).rejects.toThrow(/PHYSICS_BACKEND_MISSING/);
     expect(() => isolated.requireReady()).toThrow(/await preloadPhysics\(\)/i);
-    await expect(isolated.preload()).rejects.toThrow(/preload physics/i);
-    expect(() => isolated.requireReady()).toThrow(/await preloadPhysics\(\)/i);
+    await expect(isolated.preload()).rejects.toThrow(/PHYSICS_BACKEND_MISSING/);
+    expect(() => isolated.requireReady()).toThrow(/PHYSICS_BACKEND_MISSING/);
   });
 
   it("preserves real default 4.x synchronous construction without legacy preload", async () => {

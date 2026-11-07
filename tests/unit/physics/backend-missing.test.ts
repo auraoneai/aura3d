@@ -18,7 +18,11 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe("PHYSICS_BACKEND_MISSING", () => {
+/** The exact text surfaced to users; the clean-consumer evidence in evidence/physics-514 must contain this string verbatim. */
+const EXPECTED_MESSAGE = `PHYSICS_BACKEND_MISSING: Aura3D physics needs the Rapier backend @dimforge/rapier3d-compat, which is not installed. Install it with: ${INSTALL} (pnpm add @dimforge/rapier3d-compat@0.20.0, yarn add @dimforge/rapier3d-compat@0.20.0).`;
+
+// Tests re-import the engine from source after vi.resetModules(); on a loaded machine that alone can exceed the 5 s default.
+describe("PHYSICS_BACKEND_MISSING", { timeout: 60_000 }, () => {
   it("is thrown by the world constructor with the install command and is observable as a status", async () => {
     await withAbsentBackend(async () => {
       const rapier = await import("../../../packages/physics-rapier/src/index.js");
@@ -29,6 +33,8 @@ describe("PHYSICS_BACKEND_MISSING", () => {
       expect(thrown).toBeInstanceOf(rapier.PhysicsBackendMissingError);
       expect(thrown).toMatchObject({ code: "PHYSICS_BACKEND_MISSING", installCommand: INSTALL, name: "PhysicsBackendMissingError" });
       expect((thrown as Error).message).toContain(INSTALL);
+      // The exact user-facing text (the clean-consumer evidence in evidence/physics-514 contains it verbatim).
+      expect((thrown as Error).message).toBe(EXPECTED_MESSAGE);
     });
   });
 
@@ -60,6 +66,8 @@ describe("PHYSICS_BACKEND_MISSING", () => {
         });
         const diagnostics = app.diagnostics();
         expect(diagnostics.errors.some((entry) => entry.includes("PHYSICS_BACKEND_MISSING") && entry.includes(INSTALL))).toBe(true);
+        // diagnostics().errors entries are "<error name>: <message>".
+        expect(diagnostics.errors).toContain(`PhysicsBackendMissingError: ${EXPECTED_MESSAGE}`);
         expect(errors).toHaveBeenCalledWith(expect.stringContaining("PHYSICS_BACKEND_MISSING"));
         let thrown: unknown;
         try { void app.physics; } catch (error) { thrown = error; }
