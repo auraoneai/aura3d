@@ -428,6 +428,7 @@ export class ProductionEffectSystem {
   private readonly meshBatches = new Map<string, MeshParticleBatch>();
   private drawFeedQueue: ParticlePassDiagnostics | null = null;
   #disposed = false;
+  #vfxDebugHook: (() => unknown) | null = null;
   private time = 0;
   private skyFlagOn = false;
   private weatherFlagOn = false;
@@ -474,7 +475,7 @@ export class ProductionEffectSystem {
     // `?vfxdebug=1` publishes `window.__AURA_VFX_DEBUG__()` with every live runtime emitter, its age and particle count.
     this.runtimeEffectsUrl = /[?&]vfx=off\b/.test(search) ? "off" : /[?&]vfx=on\b/.test(search) ? "on" : null;
     if (/[?&]vfxdebug=1\b/.test(search) && typeof window !== "undefined") {
-      (window as unknown as Record<string, unknown>)["__AURA_VFX_DEBUG__"] = () => ({
+      (window as unknown as Record<string, unknown>)["__AURA_VFX_DEBUG__"] = this.#vfxDebugHook = () => ({
         time: this.time,
         live: this.liveCount(),
         transients: [...this.transients].map(([id, record]) => {
@@ -1875,6 +1876,12 @@ export class ProductionEffectSystem {
     const attempt = (cleanup: () => void): void => { try { cleanup(); } catch (error) { errors.push(error); } };
     this.#managedSnapshot = null;
     this.#managedEpoch++;
+    // R-02: the `?vfxdebug=1` page hook is removed with the system that published it.
+    if (this.#vfxDebugHook && typeof window !== "undefined") {
+      const page = window as unknown as Record<string, unknown>;
+      if (page["__AURA_VFX_DEBUG__"] === this.#vfxDebugHook) delete page["__AURA_VFX_DEBUG__"];
+    }
+    this.#vfxDebugHook = null;
     this.#revokeManagedAuthorities();
     for (const listener of [...this.#managedListeners]) attempt(listener);
     this.#managedListeners.clear();

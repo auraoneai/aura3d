@@ -1,5 +1,7 @@
 # React embedding host
 
+Classification: `internal fixture` (embedding API host demo and real-GPU evidence page; not a catalogued example)
+
 A foreign React app (it owns the page, the inputs and the data) that embeds two
 `AuraCanvas` instances and pushes live data into them without remounting.
 

@@ -347,6 +347,7 @@ function bindCityDayNightToggle(
     offLabel: "Switch to night"
   });
   const ownerWindow = button.ownerDocument?.defaultView;
+  let lastPublished: AuraCityBrowserRuntimeState | undefined;
   const publish = (): AuraCityBrowserRuntimeState => {
     const runtimeState: AuraCityBrowserRuntimeState = {
       kind: "aura-city-browser-runtime",
@@ -361,7 +362,7 @@ function bindCityDayNightToggle(
     button.setAttribute("aria-pressed", String(state.timeOfDay === "night"));
     button.textContent = state.timeOfDay === "night" ? "Switch to day" : "Switch to night";
     if (ownerWindow) {
-      (ownerWindow as unknown as { __AURA3D_CITY__?: AuraCityBrowserRuntimeState }).__AURA3D_CITY__ = runtimeState;
+      (ownerWindow as unknown as { __AURA3D_CITY__?: AuraCityBrowserRuntimeState }).__AURA3D_CITY__ = lastPublished = runtimeState;
     }
     options.onChange?.(state.timeOfDay, runtimeState);
     return runtimeState;
@@ -372,6 +373,13 @@ function bindCityDayNightToggle(
     publish();
   };
   publish();
+  // R-02: the page-global city state leaves with the app it describes (only if no later toggle replaced it).
+  const unsubscribe = app.onRenderTermination?.((event) => {
+    if (event.state !== "disposed") return;
+    unsubscribe?.();
+    const page = ownerWindow as unknown as { __AURA3D_CITY__?: AuraCityBrowserRuntimeState } | null | undefined;
+    if (page && page.__AURA3D_CITY__ === lastPublished) delete page.__AURA3D_CITY__;
+  });
   return button;
 }
 

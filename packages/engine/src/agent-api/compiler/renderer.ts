@@ -55,6 +55,7 @@ import { QUALITY_TIERS, resolveTierSettings, type AuraQualityTier } from "@aura3
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { applyXRViewOverride } from "../xr/xrViewOverride.js";
 import { withPrd01ColorParsing } from "./color.js";
+import { withCompileEvidence } from "./compileEvidence.js";
 import { resolveAppOutputColorPolicy } from "../app/colorManagement.js";
 import { readActiveOutputColorSpace } from "../app/outputColorDiagnostics.js";
 import { bindPostDiagnosticReader } from "../postBridge.js";
@@ -546,7 +547,7 @@ export async function createProductionRuntimeSceneRenderer(
   // Initial opt-in text needs the selected device's limits before admission.
   // Other legacy scenes preserve their existing pre-device construction order.
   const deferLegacyGlyphPrimitives = !flagsOn && flattened.some((node) => node.kind === "primitive" && node.text3D?.sdfGlyphAtlas === "shared");
-  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn || deferLegacyGlyphPrimitives ? [] : withPrd01ColorParsing(runtimeOwner, () => createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions), canvas)));
+  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn || deferLegacyGlyphPrimitives ? [] : withPrd01ColorParsing(runtimeOwner, () => withCompileEvidence(runtimeOwner, () => createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions), canvas))));
   mountPrimitives = primitiveEntries;
   // T2.4 — C-29 `Renderer.create` replaces `ProductionRuntimeRenderer.create`.
   // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
@@ -723,7 +724,7 @@ export async function createProductionRuntimeSceneRenderer(
       (textureBudgetPolicy?.maxBytes === undefined || textureBudgetPolicy.maxBytes >= 512 * 512 * 4);
     const admittedBuiltinGlyphAtlas = glyphAtlasAdmitted ? builtinGlyphAtlas : undefined;
     if (deferLegacyGlyphPrimitives) {
-      primitiveEntries = withPrd01ColorParsing(runtimeOwner, () => createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions), canvas), admittedBuiltinGlyphAtlas));
+      primitiveEntries = withPrd01ColorParsing(runtimeOwner, () => withCompileEvidence(runtimeOwner, () => createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions), canvas), admittedBuiltinGlyphAtlas)));
       mountPrimitives = primitiveEntries;
     }
     if (!Number.isSafeInteger(nativeTextureSizeLimit) || nativeTextureSizeLimit < 1) projectedSpotImageAdmissionEnabled = false;
@@ -1116,7 +1117,7 @@ export async function createProductionRuntimeSceneRenderer(
       const observedActors = currentActors();
       const deviceLost = productionRenderer.isDeviceLost();
       const shadowObservation = createProductionRuntimeShadowObservation(
-        { ...createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights), ...(htmlCanvas && getRootPerformanceQuality(htmlCanvas) ? { size: getRootPerformanceQuality(htmlCanvas)!.shadowSize } : {}) },
+        { ...withCompileEvidence(runtimeOwner, () => createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights)), ...(htmlCanvas && getRootPerformanceQuality(htmlCanvas) ? { size: getRootPerformanceQuality(htmlCanvas)!.shadowSize } : {}) },
         latestDeviceDiagnostics,
         productionRenderer.getShadowEvidence()
       );

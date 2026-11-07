@@ -438,6 +438,12 @@ export interface AuraApp {
   /** Current mount's terminal outcome, or the final disposal outcome. */
   renderTermination?(): AuraRenderTermination | undefined;
   /**
+   * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+   * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+   * here; publishing apps also mirror it to `globalThis` while they are alive.
+   */
+  compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+  /**
    * Subscribe to WebGL context loss. Returns an unsubscribe function.
    *
    * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU

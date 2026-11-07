@@ -33,6 +33,7 @@ import { instances } from "../nodes/instances.js";
 import { material } from "../nodes/material.js";
 import type { AuraStaticModelMatrixCache } from "../sceneGraph.js";
 import { withPrd01ColorParsing } from "./color.js";
+import { withCompileEvidence } from "./compileEvidence.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { assertSdfTextMaterialSupported } from "../nodes/text3d.js";
 import { getMaterialClipping, getSceneClipping } from "../nodes/scene.js";
@@ -471,9 +472,9 @@ export function createProductionRuntimeRendererInput(
   // Standalone callers historically register against the canvas. Mounted apps
   // and workers instead use the same lifetime owner used for registration.
   const owner = runtimeOwner ?? canvas;
-  return withPrd01ColorParsing(owner, () => createProductionRuntimeRendererInputOwned(
+  return withPrd01ColorParsing(owner, () => withCompileEvidence(owner, () => createProductionRuntimeRendererInputOwned(
     owner, snapshot, canvas, actorEntries, primitiveEntries, time, runtimeNodes, runtimeWarnings, environmentLighting, collectedLights, degrade, textureResidency, temporalSceneIdentity
-  ));
+  )));
 }
 
 function createProductionRuntimeRendererInputOwned(

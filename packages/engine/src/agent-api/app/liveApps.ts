@@ -1,6 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
+import { COMPILE_EVIDENCE_GLOBALS } from "../compiler/compileEvidence.js";
 
 /**
  * Live apps on this page, so tooling can act on a scene it did not create.
@@ -24,7 +25,6 @@ const liveAuraApps = new Set<AuraApp>();
 
 /** Apps that published the page-global registry handle; the global is removed with the last of them. */
 const publishedAuraApps = new Set<AuraApp>();
-const ENGINE_EVIDENCE_GLOBALS = ["__A3D_SHADOW_PROXIES__", "__A3D_DENSE_SHADOW_CAP__", "__A3D_SHADOW_TAP_TIER__"] as const;
 
 /** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
 export function registerAuraApp(app: AuraApp, options: { readonly publish?: boolean } = {}): void {
@@ -42,8 +42,18 @@ export function unregisterAuraApp(app: AuraApp): void {
   if (!publishedAuraApps.delete(app) || publishedAuraApps.size > 0 || typeof globalThis === "undefined") return;
   const page = globalThis as Record<string, unknown>;
   if (page.__AURA3D_LIVE_APPS__ === auraAppRegistry) delete page.__AURA3D_LIVE_APPS__;
-  // Compiler audit evidence is written per scene compile; do not leave it behind after the last app.
-  for (const key of ENGINE_EVIDENCE_GLOBALS) delete page[key];
+  // Compiler audit evidence mirrored by publishing apps; do not leave it behind after the last of them.
+  for (const key of COMPILE_EVIDENCE_GLOBALS) delete page[key];
+}
+
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export function clearPageEvidenceWithoutPublishers(): void {
+  if (publishedAuraApps.size > 0 || typeof globalThis === "undefined") return;
+  const page = globalThis as Record<string, unknown>;
+  for (const key of COMPILE_EVIDENCE_GLOBALS) delete page[key];
 }
 
 /** Ownerless builder compatibility is valid only while one app is registered. */

@@ -4,6 +4,7 @@ import { cachedSearchParams } from "../../contracts/urlCache.js";
 import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
 import { resolveProductionRuntimeShadowTuning } from "../compiler/observations.js";
 import { liveInstanceCount } from "./primitives.js";
+import { setCompileEvidence } from "./compileEvidence.js";
 import { groups } from "../nodes/groups.js";
 import { mediaMatches } from "../platform.js";
 import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
@@ -267,14 +268,15 @@ export function resolveShadowSystemConfig(
   const casterInstances = (cascadesOpt === undefined || cascadesOpt === "auto") && denseBudget ? allCasterInstances : 0;
   const dense = casterInstances >= DENSE_INSTANCED_CASTER_CASCADE_CAP_INSTANCES && settings.shadow.cascades > 2 && radius > 15;
   // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): this page's cascade count was capped by the dense-instance budget.
-  if (dense) (globalThis as { __A3D_DENSE_SHADOW_CAP__?: unknown }).__A3D_DENSE_SHADOW_CAP__ = { instances: casterInstances, tierCascades: settings.shadow.cascades, cascades: 2 };
+  // Recorded per app; mirrored to the page global only for apps that publish route state (compileEvidence.ts).
+  if (dense) setCompileEvidence("__A3D_DENSE_SHADOW_CAP__", { instances: casterInstances, tierCascades: settings.shadow.cascades, cascades: 2 });
   const cascades = (cascadesOpt === undefined || cascadesOpt === "auto")
     ? (radius <= 15 ? 1 : (dense ? (Math.min(settings.shadow.cascades, 2) as 1 | 2 | 3 | 4) : settings.shadow.cascades))
     : (cascadesOpt as 1 | 2 | 3 | 4);
   const mapSize = (sunOptions?.mapSize ?? settings.shadow.mapSize) as 1024 | 2048 | 4096;
   const tapTier = resolveShadowPcfTapTier({ quality: tier, casterInstances: allCasterInstances, requested: shadowTapTierOverride(), qualityDefault: shadowQualityTapTierEnabled(), denseDefault: denseShadowTapTierEnabled() });
   // Evidence for audits and the remote A/B (tests/browser/shadow-filter-tier-ab.spec.ts): the tap tier this page resolved.
-  (globalThis as { __A3D_SHADOW_TAP_TIER__?: unknown }).__A3D_SHADOW_TAP_TIER__ = { tier: tapTier.tier, reason: tapTier.reason, casterInstances: allCasterInstances, quality: tier };
+  setCompileEvidence("__A3D_SHADOW_TAP_TIER__", { tier: tapTier.tier, reason: tapTier.reason, casterInstances: allCasterInstances, quality: tier });
   const texelWorld = (radius * 2) / mapSize;
   const enabled = descriptors.some((d) => d.shadowRequested && !d.shadowDisabled);
   return {
