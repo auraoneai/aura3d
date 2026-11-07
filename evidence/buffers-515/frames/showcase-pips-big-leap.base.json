@@ -1,0 +1,18 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-pips-big-leap/",
+ "title": "PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 11.086271724396154,
+ "sd": 42.60607667338913,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-pips-big-leap",
+ "label": "base",
+ "frames": 240,
+ "hz": 60,
+ "real": true
+}

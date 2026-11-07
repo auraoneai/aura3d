@@ -184,6 +184,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";

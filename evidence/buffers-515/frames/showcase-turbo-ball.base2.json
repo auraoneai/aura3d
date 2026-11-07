@@ -1,0 +1,23 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-turbo-ball/",
+ "title": "Turbo Ball — Aura3D 2v2 Rocket Soccer Arena",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 9.476365137318616,
+ "sd": 13.735609563101034,
+ "centerMean": 7.344999999979084,
+ "centerSd": 0.00002254017241173067,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-turbo-ball",
+ "label": "base2",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/stadiumArena.40b48b71.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+ ],
+ "real": false
+}

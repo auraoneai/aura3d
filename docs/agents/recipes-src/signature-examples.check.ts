@@ -22,6 +22,10 @@ import { AnimationController, camera, createAuraApp, createFixedStepLoop, effect
 { void effects.bloom({ intensity: 0.7, threshold: 0.75, radius: 0.55 }); }
 // instances
 { void instances.cone({ name: "pines", transforms: [{ position: [0, 1, 0], scale: [2, 3, 2] }], colors: ["#2f6b34"], material: material.pbr({ color: "#ffffff" }) }); }
+// points
+{ void points({ positions: new Float32Array([0, 0, 0, 1, 1, 1]), colors: new Uint8Array(8).fill(255), size: 2 }); }
+// pointStreamOf
+{ void pointStreamOf; }
 // geometry
 { void geometry.define({ positions: new Float32Array(9), indices: [0, 1, 2], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }); }
 // interactions

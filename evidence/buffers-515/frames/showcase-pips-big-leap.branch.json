@@ -1,0 +1,24 @@
+{
+ "href": "http://127.0.0.1:8602/apps/showcase-pips-big-leap/",
+ "title": "PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 11.086271724396154,
+ "sd": 42.60607667338913,
+ "centerMean": 0,
+ "centerSd": 0,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-pips-big-leap",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/leapBaseCanopy.1ac50631.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject.",
+  "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/leapBaseCanopy.1ac50631.glb: HTTP 200\n    at readinessError (http://127.0.0.1:8602/packages/game/src/session/presented.ts:22:17)\n    at terminalError (http://127.0.0.1:8602/packages/game/src/session/presented.ts:27:40)\n    at handleTermination (http://127.0.0.1:8602/packages/game/src/session/presented.ts:75:13)\n    at awaitGamePresentedDraw (http://127.0.0.1:8602/packages/game/src/session/presented.ts:101:9)\n    at async http://127.0.0.1:8602/packages/game/sr"
+ ],
+ "real": false
+}

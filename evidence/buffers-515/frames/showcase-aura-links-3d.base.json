@@ -1,0 +1,18 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-aura-links-3d/",
+ "title": "Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 4.716932107857886,
+ "sd": 20.888746902654113,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-aura-links-3d",
+ "label": "base",
+ "frames": 240,
+ "hz": 60,
+ "real": true
+}
