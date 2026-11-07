@@ -1,0 +1,9 @@
+{
+  "name": "agent-loop-seeded-invented-asset-path",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}
