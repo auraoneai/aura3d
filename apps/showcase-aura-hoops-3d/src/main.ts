@@ -480,6 +480,20 @@ const QA_STAND = initialParams.get("diag") === "1" && initialParams.get("qaStand
 const QA_CAM_FRONT = initialParams.get("diag") === "1" && initialParams.get("qaCam") === "front";
 /** ?diag=1&qaStep=1: the sim advances only when a probe calls `window.__qaStep(n)` (n fixed steps), so a filmstrip can capture consecutive frames. */
 const QA_STEP = initialParams.get("diag") === "1" && initialParams.get("qaStep") === "1";
+/** ?diag=1&qaCam=wide: a fixed wide view from the near baseline that frames both open sides (Manila rain curtains at x = +-19) (measurement only). */
+const QA_CAM_WIDE = initialParams.get("diag") === "1" && initialParams.get("qaCam") === "wide";
+/** ?diag=1&qaCamEye=x,y,z&qaCamAt=x,y,z[&qaCamFov=deg]: a fixed free camera, e.g. onto a Manila rain curtain emitter at (+-19, 4.5, 3) (measurement only). */
+const QA_CAM_FREE = ((): { eye: [number, number, number]; target: [number, number, number]; fov: number } | null => {
+  if (initialParams.get("diag") !== "1") return null;
+  const vec = (key: string): [number, number, number] | null => {
+    const v = (initialParams.get(key) ?? "").split(",").map(Number);
+    return v.length === 3 && v.every(Number.isFinite) ? [v[0]!, v[1]!, v[2]!] : null;
+  };
+  const eye = vec("qaCamEye"), target = vec("qaCamAt");
+  return eye && target ? { eye, target, fov: Number(initialParams.get("qaCamFov")) || 50 } : null;
+})();
+/** ?diag=1&qaNoRain=1 drops the court rain nodes (Manila rain curtains, Shanghai rain volume), so a frame pair isolates their pixels (measurement only). */
+const QA_NO_RAIN = initialParams.get("diag") === "1" && initialParams.get("qaNoRain") === "1";
 let qaStepsLeft = 0;
 if (QA_STEP && typeof window !== "undefined") (window as unknown as { __qaStep: (n?: number) => void }).__qaStep = (n = 1) => { qaStepsLeft += n; };
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
@@ -980,7 +994,7 @@ function buildScene(v: VenueSpec): any {
     s.addMany(courtPracticalNodes(rig)).addMany(courtLampNodes(rig));
     // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain, wet ground and
     // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
-    s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION)).addMany(courtLightningNodes(rig));
+    s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION).filter((n) => !(QA_NO_RAIN && /rain/.test(String((n as { name?: unknown }).name ?? ""))))).addMany(courtLightningNodes(rig));
     // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
     // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
@@ -3354,7 +3368,9 @@ function updateCamera(dt: number): void {
   // The low chase eye (handler + (5.6, 3.0, 4.2)) can look straight through a courtside pole: the Rucker floodlight at
   // (11, 13) filled the right third of the frame with the handler at (6.4, 11.5) (remote runs g07-after2, g07-final-screens).
   // Swing the eye to the clear side, then push it out of any pole it still stands in.
-  if (game_.phase !== "menu") { clearSight(want.eye, want.target); pushEyeClear(want.eye); }
+  if (QA_CAM_WIDE) want = { eye: [0, 5, 20], target: [0, 4, 3], fov: 75 };
+  if (QA_CAM_FREE) want = { eye: [...QA_CAM_FREE.eye], target: [...QA_CAM_FREE.target], fov: QA_CAM_FREE.fov };
+  if (game_.phase !== "menu" && !QA_CAM_WIDE && !QA_CAM_FREE) { clearSight(want.eye, want.target); pushEyeClear(want.eye); }
   const k = 1 - Math.pow(0.02, dt);
   cam.eye = [lerp(cam.eye[0], want.eye[0], k), lerp(cam.eye[1], want.eye[1], k), lerp(cam.eye[2], want.eye[2], k)];
   cam.target = [lerp(cam.target[0], want.target[0], k), lerp(cam.target[1], want.target[1], k), lerp(cam.target[2], want.target[2], k)];

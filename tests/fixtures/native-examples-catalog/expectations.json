@@ -2025,7 +2025,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "3f32a858c8de4a55db2258ae6e4bc40247088f11287bdb898747237f42174400"
+        "sha256": "b93589b2d1b7c655391089c5c8d1b18a84608eb87cb5d650d1146b7bc49b3836"
       },
       "sourceDependencies": [
         {

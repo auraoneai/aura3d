@@ -692,12 +692,12 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
     }
   } else if (rig.weather.rain === "outside") {
     for (const side of [-1, 1] as const) {
-      // A tall box spanning the open side from the gutter to the ground: streaks spawn through it and fall fast.
+      // Authored with the 5.0.2 option set on purpose: shape/shapeSize/stretch/alphaOverLife are honored since 5.1, so the
+      // curtain keeps the shipped 5.0.2 emitter (point spawn, built-in fade envelope, sprite-default stretch). Real-GPU
+      // main-vs-branch frames: evidence/lane-511-engine-api/games-r2 (qaCamEye views onto the emitter, qaNoRain pairs).
       out.push(effects.particles({
         name: `${rig.id}-rain-curtain-${side < 0 ? "w" : "e"}`,
         position: [side * 19, 4.5, 3],
-        shape: "box",
-        shapeSize: [3, 9, 30],
         rate: reducedMotion ? 160 : 320,
         maxParticles: reducedMotion ? 200 : 400,
         lifetime: [0.45, 0.6],
@@ -706,8 +706,6 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
         size: [0.02, 0.03],
         color: "#b9c7da",
         sprite: "rain-streak",
-        stretch: { mode: "velocity", factor: 0.06 },
-        alphaOverLife: FADE_ENVELOPE_CURVE,
         loop: true,
         seed: 0x3a11 + side
       }).toJSON());
