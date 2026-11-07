@@ -1,0 +1,137 @@
+{
+  "runId": "m511-B-t9-aura-r1",
+  "batch": "m511-B",
+  "arm": "aura",
+  "task": 9,
+  "idx": 1,
+  "order": 10,
+  "seed": 20261106010,
+  "model": "claude-sonnet-5.5",
+  "condition": "B",
+  "startedAt": "2026-11-07T01:47:45.454Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 31890,
+  "usage": {
+    "input": 121363,
+    "uncachedInput": 121363,
+    "output": 2601,
+    "turns": 7,
+    "perTurnInput": [
+      3523,
+      4163,
+      13814,
+      22792,
+      22954,
+      26851,
+      27266
+    ],
+    "perTurnOutput": [
+      6,
+      23,
+      52,
+      35,
+      21,
+      2266,
+      198
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 931,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 3041,
+      "type": "lookup",
+      "query": "scene setup renderer canvas primitives mesh groups directional light shadows rim",
+      "chars": 11762
+    },
+    {
+      "i": 2,
+      "t": 3041,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 5653,
+      "type": "lookup",
+      "query": "group nodes hierarchy children joints setRotation nodes.require animate parts",
+      "chars": 11013
+    },
+    {
+      "i": 4,
+      "t": 5660,
+      "type": "lookup",
+      "query": "camera fixed lookAt position target fov; __EVAL_READY__ first frame",
+      "chars": 8340
+    },
+    {
+      "i": 5,
+      "t": 7052,
+      "type": "search",
+      "pattern": "createAuraApp"
+    },
+    {
+      "i": 6,
+      "t": 8272,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 7,
+      "t": 25720,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 4825
+    },
+    {
+      "i": 8,
+      "t": 28670,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 9,
+      "t": 31890,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts with a procedural robot built from primitives (capsules, spheres and boxes) in a group hierarchy. It has ten articulated joints: hips, chest, head, two shoulders, two elbows, two hip joints and two knees. The idle animation runs from `onFrame`. It breathes, shifts weight side to side, turns the head slowly, and swings the arms gently. Lighting is a strong warm key light with shadows, a cyan rim light and a magenta rim light, on a near-black background with a floor to catch the shadow. The camera is a perspective camera aimed at the robot's centre, and `window.__EVAL_READY__` is set after the first frame. `typecheck` passes. I did not run `vite build` or open the scene in a browser, so the framing and look are unchecked.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

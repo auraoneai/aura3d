@@ -427,6 +427,11 @@
       "browser301": false
     },
     {
+      "name": "@aura3d/mcp",
+      "file": "packages/aura3d-mcp/src/index.ts",
+      "devOnly": true
+    },
+    {
       "name": "create-aura3d",
       "file": "packages/create-aura3d/src/index.ts"
     },

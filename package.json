@@ -330,6 +330,7 @@
     "@aura3d/game": "workspace:*",
     "@aura3d/input": "workspace:*",
     "@aura3d/math": "workspace:*",
+    "@aura3d/mcp": "workspace:*",
     "@aura3d/navigation-recast": "workspace:*",
     "@aura3d/physics": "workspace:*",
     "@aura3d/physics-rapier": "workspace:*",

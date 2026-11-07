@@ -110,6 +110,7 @@ The complete table is [`threejs-to-aura3d.md`](threejs-to-aura3d.md); signatures
 | Console `ENV_FETCH_FAILED:/aura-environments/neutral.manifest.json:404` | The published 4.1.2 lineage requested a missing neutral manifest and fell back to the analytic floor | Upgrade to a version with the embedded neutral probe; see [environment troubleshooting](troubleshooting.md) for non-neutral presets and custom HDRIs |
 | Frame 25 to 40% darker with `effects.vignette()` on (4.2.x; console `POSTPROCESS_V2_UNMIGRATED`) | The vignette ran on display-referred bytes; fixed in 4.3.0 (about 6 to 18% now) | Upgrade, or lower the vignette `intensity`; do not retune every light to compensate |
 | Copying three.js light intensities | Aura3D renders brighter at equal intensities | Start from the look preset; adjust one value at a time |
+| `shadow: true` on several lamps, spots or torches | Only a limited number of local lights cast shadows: the key directional light always, plus up to `localShadowLights` local casters per quality tier (0, 1, 2 or 4); the rest cast nothing, silently | Give the scene one deliberate key shadow caster, ground other local lights with contact or blob shadows, and read `app.diagnostics().lighting.localShadowLights` before claiming a second shadow |
 
 ## 7. Where next
 

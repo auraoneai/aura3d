@@ -611,6 +611,13 @@
       }
     ],
     [
+      "@aura3d/mcp",
+      "packages/aura3d-mcp/src/index.ts",
+      {
+        "vite": false
+      }
+    ],
+    [
       "create-aura3d",
       "packages/create-aura3d/src/index.ts"
     ],
@@ -870,6 +877,11 @@
       }
     },
     "packages/aura3d-cli": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/aura3d-mcp": {
       ".": {
         "source": "src/index.ts"
       }
