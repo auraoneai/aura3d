@@ -79,7 +79,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/engine/scene/math` | `5.1.0` | `./dist/scene/MathTypes.d.ts` | 36 |
 | `@aura3d/engine/scripting` | `5.1.0` | `./dist/scripting/index.d.ts` | 203 |
 | `@aura3d/engine/shader-graph-runtime` | `5.1.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
-| `@aura3d/engine/v5` | `5.1.0` | `./dist/engine/public/v5.d.ts` | 8383 |
+| `@aura3d/engine/v5` | `5.1.0` | `./dist/engine/public/v5.d.ts` | 8411 |
 | `@aura3d/engine/v5/context` | `5.1.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
 | `@aura3d/engine/v5/game` | `5.1.0` | `./dist/game/v5.d.ts` | 11395 |
 | `@aura3d/engine/v5/internal` | `5.1.0` | `./dist/engine/public/v5-internal.d.ts` | 431 |
@@ -36424,7 +36424,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -121082,7 +121082,7 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 ## @aura3d/engine/animation
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -123953,7 +123953,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -129679,7 +129679,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -132304,7 +132304,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -134106,7 +134106,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -216300,7 +216300,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -216967,7 +216967,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -219549,7 +219549,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -306557,7 +306557,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -309685,7 +309685,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -393337,7 +393337,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -393348,7 +393348,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -393374,7 +393374,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -394101,7 +394101,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -395342,7 +395342,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -395981,7 +395981,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -397971,7 +397971,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -398596,7 +398596,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -401234,7 +401234,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -402486,7 +402486,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -402747,7 +402747,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/engine/procedural
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -403044,7 +403044,7 @@ export declare function assertInt(value: number, name: string, min: number): voi
 ## @aura3d/engine/renderer
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -487166,7 +487166,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -487299,7 +487299,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -488424,7 +488424,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -488508,7 +488508,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -489688,7 +489688,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -493889,7 +493889,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -494204,6 +494204,11 @@ export type { TslInput, TslType } from "./nodes/tsl/ir.js";
 export type { AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraToneMappingOperator } from "../contracts/output.js";
 export type { AuraRuntimeNodeHandleParts, TypedGLBActor, TypedGLBActorCrossFadeOptions } from "../production-runtime/TypedGLBActor.js";
 export type { AuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay.js";
+export { frameCameraPose, measureFrameFill } from "./camera/frameSubject.js";
+export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
+export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";
 //# sourceMappingURL=isolated-index.d.ts.map
 ```
 
@@ -560532,6 +560537,274 @@ export declare function createAuraDiagnosticsOverlay(app: AuraApp, host?: HTMLEl
 //# sourceMappingURL=AuraDiagnosticsOverlay.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/frameSubject.d.ts`
+
+```ts
+/**
+ * `camera.frame` geometry: a pure, dependency-free mapping from world bounds +
+ * lens + aspect + fill to a camera pose, so the maths is unit-testable without a
+ * scene, a DOM or a GPU.
+ *
+ * Definition of fill: the larger of the subject's projected height (as a fraction
+ * of the frame height) and projected width (as a fraction of the frame width).
+ * With `fill: 0.6` a landscape frame shows the subject 60% of the frame tall; a
+ * portrait frame shows it 60% of the frame wide when width is the tighter axis.
+ * The projection is exact for perspective (all eight bounds corners are
+ * projected, not a bounding sphere), and the aim is re-centred so the projected
+ * box sits in the middle of the frame.
+ */
+import type { AuraVec3 } from "../nodes/types.js";
+/** Named camera angles; azimuth 0 looks from +Z toward -Z, positive azimuth swings toward +X. */
+export type AuraFrameAngle = "three-quarter" | "front" | "top" | "side";
+export interface AuraFrameBounds {
+    readonly min: AuraVec3;
+    readonly max: AuraVec3;
+}
+export interface AuraFramePoseOptions {
+    /** Fraction (0.05..1) of the limiting frame axis the subject occupies. Default 0.6. */
+    readonly fill?: number;
+    /** A named angle, or pass `azimuth`/`elevation` (radians) which win over it. Default `"three-quarter"`. */
+    readonly angle?: AuraFrameAngle;
+    /** Radians around +Y from +Z. */
+    readonly azimuth?: number;
+    /** Radians above the horizon. */
+    readonly elevation?: number;
+    /** Extra margin as a fraction of the subject size (0.1 = 10% breathing room). Shrinks the effective fill by 1 / (1 + padding). Default 0. */
+    readonly padding?: number;
+    /** Vertical field of view in degrees. Default 40. */
+    readonly fov?: number;
+    /** Frame width / height the fit is solved for. Default 16 / 9. */
+    readonly aspect?: number;
+    /** Never place the eye closer than this. Default 0.05. */
+    readonly minDistance?: number;
+}
+export interface AuraFramePose {
+    readonly position: AuraVec3;
+    readonly target: AuraVec3;
+    readonly distance: number;
+    readonly fov: number;
+    readonly azimuth: number;
+    readonly elevation: number;
+    /** Effective fill the solver targeted (`fill / (1 + padding)`). */
+    readonly fill: number;
+    readonly near: number;
+    readonly far: number;
+}
+export declare const FRAME_ANGLES: Readonly<Record<AuraFrameAngle, {
+    readonly azimuth: number;
+    readonly elevation: number;
+}>>;
+/**
+ * The fill (larger of projected height / width fraction of the frame) the given
+ * pose produces for `bounds`. Tests and callers measure with the same definition
+ * the solver uses.
+ */
+export declare function measureFrameFill(bounds: AuraFrameBounds, pose: Pick<AuraFramePose, "position" | "target" | "fov">, aspect?: number): number;
+/**
+ * Camera pose that frames `bounds` so the subject fills `fill` of the frame.
+ *
+ * Pure: same inputs, same pose. Throws `RangeError` on non-finite bounds.
+ */
+export declare function frameCameraPose(bounds: AuraFrameBounds, options?: AuraFramePoseOptions): AuraFramePose;
+//# sourceMappingURL=frameSubject.d.ts.map
+```
+
+### `./dist/engine/agent-api/camera/frameNodes.d.ts`
+
+```ts
+/**
+ * World bounds of scene nodes for `camera.frame`. Uses the same matrix the
+ * renderer composes for every model/primitive (`createModelMatrix`, which owns
+ * `size`, `scale`, `rotation`, `pivot`, `targetHeight` and normalised model fit)
+ * and the same group flattening the camera rigs use, so the framed box is the
+ * box that is drawn.
+ */
+import type { AuraNodeInput, AuraSceneNode } from "../nodes/types.js";
+import type { AuraFrameBounds, AuraFramePoseOptions } from "./frameSubject.js";
+/** Anything `camera.frame` accepts as a subject. */
+export type AuraFrameSubject = AuraNodeInput | {
+    toJSON(): unknown;
+};
+export interface AuraFrameNodeFilter {
+    /** Return true to leave a node out of the framed bounds (e.g. a ground slab). */
+    readonly exclude?: (node: AuraSceneNode) => boolean;
+}
+/** Default scene-wide filter: skips planes and nodes named like ground, which would otherwise dominate the box. */
+export declare function isGroundLikeNode(node: AuraSceneNode): boolean;
+/**
+ * World-space AABB of the given nodes (groups expanded, hidden nodes and
+ * non-spatial nodes skipped, per-instance transforms honoured), or `undefined`
+ * when nothing occupies space.
+ */
+export declare function worldBoundsOfNodes(subjects: AuraFrameSubject | readonly AuraFrameSubject[], filter?: AuraFrameNodeFilter): AuraFrameBounds | undefined;
+export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameNodeFilter {
+}
+//# sourceMappingURL=frameNodes.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraEffectNode, AuraVec3 } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+/** A light-like source: anything with a world `position` (point or spot light, a mesh) or a travel `direction` (a directional light). */
+export interface AuraGodRaysLightSource {
+    readonly position?: AuraVec3;
+    /** Direction the light travels (a directional light's `direction`); the shafts point back toward the light. */
+    readonly direction?: AuraVec3;
+}
+export interface AuraGodRaysOptions {
+    readonly name?: string;
+    /**
+     * Where the shafts radiate from: `"sun"` (default) is the strongest directional light in the scene; a `[x, y, z]` world
+     * point, a light-like `{ position }` or `{ direction }` object pins it.
+     */
+    readonly source?: "sun" | AuraVec3 | AuraGodRaysLightSource;
+    /** Shaft gain (default 0.7). */
+    readonly intensity?: number;
+    /** Per-step falloff along each shaft, 0.8 to 0.99 (default 0.94); higher gives longer shafts. */
+    readonly decay?: number;
+    /** March samples: 32, 48 or 64 (default 48). A quality tier can only lower this. */
+    readonly samples?: 32 | 48 | 64;
+    /** Shaft colour (default warm white). */
+    readonly color?: AuraColor;
+    /** March density in (0, 1]: the fraction of the screen distance toward the light that is sampled (default 1). */
+    readonly density?: number;
+    /** Scattering medium per metre: shafts build with distance as `1 - exp(-medium * depth)` (default 0.18). */
+    readonly medium?: number;
+}
+export interface AuraVolumetricBeamOptions {
+    readonly name?: string;
+    /** World position of the beam's source (the apex). Default `[0, 0, 0]`. */
+    readonly position?: AuraVec3;
+    /** Direction the beam travels from the source (default `[0, -1, 0]`). Need not be normalised. */
+    readonly direction?: AuraVec3;
+    /** Beam length in world units (default 20). */
+    readonly length?: number;
+    /** Radius of the beam where it ends (default `length * 0.12`). */
+    readonly endRadius?: number;
+    readonly color?: AuraColor;
+    readonly intensity?: number;
+    readonly falloff?: number;
+    readonly edgeSoftness?: number;
+    readonly noise?: number;
+    readonly noiseScale?: number;
+    readonly noiseSpeed?: number;
+    /** Cone sides (default 48). */
+    readonly radialSegments?: number;
+}
+export declare const visualEffectBuilders: {
+    /**
+     * Screen-space god rays: radial shafts march from the light toward each pixel through the scene depth and add onto the
+     * HDR frame (the S4 stage, WebGL2 v2 post chain). Unlike `effects.volumetricFog` it adds no forward fog. It needs
+     * the depth-aware post chain: where the renderer cannot sample depth, the stage is skipped and
+     * `app.diagnostics` carries the degradation instead of failing the frame. Tier `Low` turns the stage off.
+     */
+    readonly godRays: (options?: AuraGodRaysOptions) => AuraNodeBuilder<AuraEffectNode>;
+    /**
+     * Soft light shaft (lighthouse beam, searchlight, window light through haze): an open cone whose silhouette dissolves
+     * and whose dust noise drifts with the clock. Returns a primitive node; add it like any other node.
+     */
+    readonly volumetricBeam: (options?: AuraVolumetricBeamOptions) => AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
+};
+//# sourceMappingURL=effects.visual.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/material.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraMaterialSpec } from "./types.js";
+export interface AuraStrataSlopeOptions {
+    /** Surfaces flatter than this angle from horizontal (degrees) take `flatColor`; steeper ones show the bands. Default 38. */
+    readonly angle?: number;
+    /** Blend width in degrees around `angle`. Default 12. */
+    readonly blend?: number;
+    /** Colour of flat ground (talus, sand, grass) between cliffs. Default: the first palette colour, lightened. */
+    readonly flatColor?: AuraColor;
+}
+export interface AuraStrataMaterialOptions {
+    /** Number of layers across the height range (default 12). */
+    readonly bands?: number;
+    /** Palette cycled through the layers (default: five warm sandstone tones). One to eight colours. */
+    readonly colors?: readonly AuraColor[];
+    /** World-space height range the bands span `[bottom, top]` (default `[0, 10]`). Bands repeat outside it. */
+    readonly heightRange?: readonly [number, number];
+    /** Layer-edge waviness and grain, 0 to 1 (default 0.35). 0 gives ruler-straight layers. */
+    readonly noise?: number;
+    /** World-unit size of the noise features (default 3). */
+    readonly noiseScale?: number;
+    /** Thin dark seam between layers, 0 to 1 (default 0.25). */
+    readonly seam?: number;
+    /** Per-layer brightness variation, 0 to 1 (default 0.18). */
+    readonly variation?: number;
+    /** Colour flat ground separately from steep cliffs. Omit to band every surface. */
+    readonly slope?: AuraStrataSlopeOptions;
+    /** Surface roughness for the specular term (default 0.9). */
+    readonly roughness?: number;
+    /** Seed that shifts the noise (default 0). */
+    readonly seed?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.strata(options)`: sedimentary layers by world height with noisy layer edges, thin seams and per-layer
+ * brightness, lit by every scene light and the scene environment. With `slope`, flat ground reads `flatColor` and only
+ * steep faces show the bands, which is how a canyon wall or heightfield cliff separates from its floor and rim.
+ * Apply it to any mesh, including a `procedural.heightfield` surface.
+ */
+export declare function strataMaterial(options?: AuraStrataMaterialOptions): AuraMaterialSpec;
+export interface AuraCausticsMaterialOptions {
+    /** Colour of the floor under the light (default sand). */
+    readonly color?: AuraColor;
+    /** Colour of the caustic light (default warm white). */
+    readonly causticColor?: AuraColor;
+    /** Caustic brightness (default 1.2). */
+    readonly strength?: number;
+    /** World size of one caustic tile along X and Z (default 6). */
+    readonly scale?: number;
+    /** Animation speed multiplier (default 1). */
+    readonly speed?: number;
+    /** World height of the water surface. With `depthFade` the pattern dims the deeper a point lies below it (default none). */
+    readonly surfaceY?: number;
+    /** Extinction per metre below `surfaceY` (default 0.12; ignored without `surfaceY`). */
+    readonly depthFade?: number;
+    /** Roughness of the floor (default 0.95). */
+    readonly roughness?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.caustics(options)`: a lit floor whose surface carries moving water-caustic light, projected straight down in
+ * world X/Z so every receiver (sand, rock, ruins) shows the same shimmering net. It reads `uTime`, so it animates as long
+ * as the app draws frames (a scene with a `uTime` custom shader is a declared time consumer on builds that include
+ * `timeConsumers`; otherwise add an `app.onFrame` hook or a looping timeline).
+ */
+export declare function causticsMaterial(options?: AuraCausticsMaterialOptions): AuraMaterialSpec;
+export interface AuraLightBeamMaterialOptions {
+    /** Beam colour (default warm white). */
+    readonly color?: AuraColor;
+    /** Brightness multiplier (default 1). */
+    readonly intensity?: number;
+    /** Length of the cone along its axis, in object units: must match the cone's height (default 20). */
+    readonly length?: number;
+    /** How fast the beam fades from source to end (exponent, default 1). */
+    readonly falloff?: number;
+    /** Edge softness exponent: higher gives a brighter core and softer silhouette (default 1.3). */
+    readonly edgeSoftness?: number;
+    /** Dust noise strength, 0 to 1 (default 0.35). */
+    readonly noise?: number;
+    /** World-unit size of the dust features (default 2.5). */
+    readonly noiseScale?: number;
+    /** Noise drift speed (default 0.25). */
+    readonly noiseSpeed?: number;
+}
+/**
+ * `material.lightBeam(options)`: additive soft beam for an open cone or cylinder whose axis is the mesh's local Y with the
+ * source at +Y (`effects.volumetricBeam` builds that mesh for you). Brightness is strongest where the surface faces the
+ * camera, so the silhouette dissolves instead of showing a hard cone edge; a drifting dust noise breaks up the shaft.
+ */
+export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions): AuraMaterialSpec;
+//# sourceMappingURL=material.visual.d.ts.map
+```
+
 ### `./dist/engine/public/v5-context.d.ts`
 
 ```ts
@@ -560846,7 +561119,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -561092,7 +561365,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -648072,7 +648345,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -653268,7 +653541,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -653456,7 +653729,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
@@ -653956,7 +654229,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=b59c63191ad0539ab0d6cdee71406eabc415c2a71a73c457bc310210b693c61f`
 
 ### Export conditions
 
