@@ -144,6 +144,8 @@ const api = {
   toClient: (p: readonly [number, number, number]) => { const r = canvas.getBoundingClientRect(); const c = worldToCss(presentedViewProjection(app as never)!, p, { width: r.width, height: r.height }); return { x: r.left + c.x, y: r.top + c.y, visible: c.visible }; },
   positions: () => positions,
   bruteInstance,
+  /** Instance-only pick at client pixels (pixel radius 0) for the accuracy diagnostic. */
+  pickInstanceAt: (x: number, y: number) => { const r = canvas.getBoundingClientRect(); const ndc = [((x - r.left) / r.width) * 2 - 1, 1 - ((y - r.top) / r.height) * 2] as const; const h = picker.pick({ camera: { viewProjectionMatrix: presentedViewProjection(app as never)! }, ndc }, { kinds: "instances", viewport: { width: r.width, height: r.height } }); return h && h.kind === "instance" ? { id: h.instanceId, distance: h.distance } : undefined; },
   instance: (i: number) => transforms[i]!.position,
   state: () => ({ events, picks: picks.map((p) => ({ kind: p.kind, node: p.nodeName, id: p.kind === "point" ? p.index : p.instanceId, point: p.point })), pickCount: binding.pickCount, shown: overlay.shown, readout: readout.textContent, markerVisible: marker.style.display !== "none", handles: app.nodes.all().length }),
   frameCount: () => (app as unknown as { diagnostics?: { snapshot?: () => { frames?: number } } }).diagnostics?.snapshot?.()?.frames,

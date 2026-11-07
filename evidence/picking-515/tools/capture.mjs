@@ -73,7 +73,8 @@ const report = { page: "evidence/picking-515", counts: null };
   for (let i = 0; i < 4000; i++) { const ok = await s.ev("!!(window.__PICK__ && window.__PICK__.state().handles > 0)").catch(() => false); if (ok) break; await s.ev(`window.__vt.frame(${dt})`).catch(() => {}); await sleep(i < 50 ? 50 : 5); }
   await frame(90);
   const shot = async (name) => { const r = await s.send("Page.captureScreenshot", { format: "png", clip: { x: 0, y: 0, width: 960, height: 620, scale: 1 } }); fs.writeFileSync(path.join(outDir, name), Buffer.from(r.result.data, "base64")); return s.ev(FRAME_STATS(r.result.data)); };
-  report.idle = await shot("01-idle.png");
+  // Under machine load the first presented frame can lag the handle registry; advance until the frame is not blank.
+  for (let k = 0; k < 40; k++) { report.idle = await shot("01-idle.png"); if (report.idle.litFraction > 0.05) break; await frame(30); await sleep(250); }
   const move = async (x, y) => { await s.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y }); await frame(2); };
   const click = async (x, y) => { await s.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y }); await s.send("Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", buttons: 1, clickCount: 1 }); await s.send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 }); await frame(3); };
 
@@ -100,6 +101,8 @@ const report = { page: "evidence/picking-515", counts: null };
       await move(c.x, c.y);
       const st = await s.ev("window.__PICK__.state().events.at(-1)");
       const truth = await s.ev(`window.__PICK__.bruteInstance(${c.x}, ${c.y})`);
+      const direct = await s.ev(`window.__PICK__.pickInstanceAt(${c.x}, ${c.y})`);
+      out.instances.directPicks = (out.instances.directPicks || 0) + (direct ? 1 : 0); if (direct && direct.id === truth) out.instances.directMatchesBruteForce = (out.instances.directMatchesBruteForce || 0) + 1; else (out.instances.mismatch ||= []).push({ target: i, truth, direct, event: st });
       out.instances.tried++; if (st && st.type === "enter" && st.kind === "instance") { if (st.id === i) out.instances.hit++; else out.instances.otherInstance = (out.instances.otherInstance || 0) + 1; if (st.id === truth) out.instances.matchesBruteForce = (out.instances.matchesBruteForce || 0) + 1; } else if (truth < 0) out.instances.bruteForceMissToo = (out.instances.bruteForceMissToo || 0) + 1;
     }
     return out;
