@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-blockfall-reactor",
+  "tag": "base2",
+  "url": "http://127.0.0.1:8516/apps/showcase-blockfall-reactor/index.html?start=1",
+  "readyDetected": true,
+  "title": "Aura3D Showcase - Blockfall Reactor",
+  "href": "http://127.0.0.1:8516/apps/showcase-blockfall-reactor/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 32.21,
+  "sd": 43.42,
+  "colours": 2557,
+  "bodyText": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n30"
+ }
+]

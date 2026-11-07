@@ -40,6 +40,16 @@ export class AuraNodeBuilder<TNode extends AuraSceneNode> {
     return this.with(eulerOrder === undefined ? { rotation: vec } : { rotation: vec, rotationOrder: eulerOrder });
   }
 
+  /**
+   * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+   * output); the canonical spelling stays `rotate`.
+   */
+  rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>;
+  rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>;
+  rotation(x: number | AuraVec3, y?: number | import("../../contracts/sceneGraph").AuraEulerOrder, z?: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }> {
+    return (this.rotate as (...args: unknown[]) => AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>).call(this, x, y, z, order);
+  }
+
   /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
   quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & { readonly quaternion: import("../../contracts/sceneGraph").AuraQuat }> {
     return this.with({ quaternion: [x, y, z, w] as const });

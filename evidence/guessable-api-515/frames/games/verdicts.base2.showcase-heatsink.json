@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-heatsink",
+  "tag": "base2",
+  "url": "http://127.0.0.1:8516/apps/showcase-heatsink/index.html?start=1",
+  "readyDetected": false,
+  "title": "THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase",
+  "href": "http://127.0.0.1:8516/apps/showcase-heatsink/index.html?start=1",
+  "canvases": 2,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 10.04,
+  "sd": 16.87,
+  "colours": 210,
+  "bodyText": "THERMAL DRIFT\nSECTOR 09\nDRONE\nORION\nVOLT\nBASTION\nSPECTRE\nRAZOR\nNIGHTHAWK\nWRAITH\n"
+ }
+]

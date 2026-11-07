@@ -143,6 +143,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
   readonly color?: string;
+  /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+  readonly skyColor?: string;
   readonly intensity?: number;
   readonly power?: number;
   readonly distance?: number;

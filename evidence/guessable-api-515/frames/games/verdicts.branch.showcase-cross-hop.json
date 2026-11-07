@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-cross-hop",
+  "tag": "branch",
+  "url": "http://127.0.0.1:8527/apps/showcase-cross-hop/index.html?start=1",
+  "readyDetected": true,
+  "title": "Cross Hop — Aura3D Endless Lane Hopper",
+  "href": "http://127.0.0.1:8527/apps/showcase-cross-hop/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 4.47,
+  "sd": 20.83,
+  "colours": 309,
+  "bodyText": "Quick Play\nMeadow\nDowntown\nRiverbend\nEmberline\nNeon\nCritter Core\nBuilt with Aura"
+ }
+]

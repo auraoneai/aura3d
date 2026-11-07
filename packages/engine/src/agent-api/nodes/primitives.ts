@@ -114,10 +114,23 @@ export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options
   });
 }
 
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & { readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number] };
+
+function planeOptions(options: AuraPlaneOptions | undefined): AuraPrimitiveOptions | undefined {
+  const size = options?.size;
+  if (options === undefined || !Array.isArray(size) || size.length !== 2) return options as AuraPrimitiveOptions | undefined;
+  return { ...options, size: [size[0] as number, 1, size[1] as number] };
+}
+
 export const primitives = {
   box: (options?: AuraPrimitiveOptions) => primitive("box", options),
   sphere: (options?: AuraPrimitiveOptions) => primitive("sphere", options),
-  plane: (options?: AuraPrimitiveOptions) => primitive("plane", options),
+  plane: (options?: AuraPlaneOptions) => primitive("plane", planeOptions(options)),
   cylinder: (options?: AuraPrimitiveOptions) => primitive("cylinder", options),
   capsule: (options?: AuraPrimitiveOptions) => primitive("capsule", options),
   torus: (options?: AuraPrimitiveOptions) => primitive("torus", options),

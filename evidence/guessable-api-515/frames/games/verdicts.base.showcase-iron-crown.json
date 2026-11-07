@@ -1,0 +1,16 @@
+[
+ {
+  "name": "showcase-iron-crown",
+  "tag": "base",
+  "url": "http://127.0.0.1:8516/apps/showcase-iron-crown/index.html?start=1",
+  "readyDetected": true,
+  "title": "IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase",
+  "href": "http://127.0.0.1:8516/apps/showcase-iron-crown/index.html?start=1",
+  "canvases": 1,
+  "gl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "mean": 8.28,
+  "sd": 29.25,
+  "colours": 309,
+  "bodyText": "Quick Bout\nCombo Lab\nCrown Ladder\nVersus\nPlayer Studio\nAuto\nFighter & Venue\nBuil"
+ }
+]
