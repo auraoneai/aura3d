@@ -69,6 +69,11 @@ manual quality override invalidates every measurement that follows.
    `batched.mesh` apply texture maps since 4.1; older builds drew them white.
    An empty instance array is a no-op with an `INSTANCES_EMPTY` diagnostic, not a
    crash, so plan for zero placements instead of special-casing them.
+   Live data at 10-20 Hz (sensor point clouds, per-frame poses): do not rebuild the scene or tuple
+   arrays. Declare `points.stream({ capacity, colors: "u8x4n", runtime: { id } })`, then
+   `pointStreamOf(app.nodes.require(id)).write(Float32Array, { colors })`; dense instance writes go
+   through `handle.setInstanceMatrices` (primitives and, since 5.1, `instances.model`). See
+   `docs/agents/streaming-buffers.md`; its numbers are measurements, not claims.
 4. Scattered props (trees, rocks, lamps, houses): plan placements with
    `scatterAlongPath` or `scatterInArea` (seeded, exclusion zones, `minDistance`,
    slope and height filters), split them by distance with `splitScatterByDistance`

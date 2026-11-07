@@ -305,6 +305,31 @@ void instances.cone({ name: "pines", transforms: [{ position: [0, 1, 0], scale: 
 | `instances.custom(spec: AuraCustomGeometrySpec, options: Omit<AuraInstancedPrimitiveOptions, "geometry">)` | `AuraNodeBuilder<AuraPrimitiveNode>` | spec: kind: "aura-custom-geometry"; positions: AuraVec3Attribute; normals?: AuraVec3Attribute \| undef…; uvs?: AuraVec2Attribute \| undef…; uv1s?: AuraVec2Attribute \| undef…; colors?: readonly string[] \| reado…; indices: AuraIndexAttribute; attributes?: Readonly<Record<string, A…; bounds?: { readonly min: AuraRootV…; groups?: readonly AuraGeometryGrou…; drawRange?: AuraGeometryDrawRangeSpec…; morphTargets?: readonly AuraGeometryMorp…; topology?: "triangles" \| "lines" \| "…; dynamic?: boolean \| undefined |
 | `instances.model(asset: TAsset, options: {…})` (+1 overloads) | `AuraNodeBuilder<AuraGroupNode>` | options: name?: string \| undefined; material?: AuraMaterialSpec \| undefi…; castShadow?: boolean \| undefined; receiveShadow?: boolean \| undefined; visible?: boolean \| undefined; role?: AuraModelRole \| undefined; scaleMode?: AuraModelScaleMode \| unde…; targetHeight?: number \| undefined; targetMaxDimension?: number \| undefined; targetLength?: number \| undefined; physics?: AuraNodePhysicsSpec \| und…; hiddenNodeNames?: readonly string[] \| undef…; materialOverrides?: readonly AuraModelMateria…; variant?: string \| undefined; lod?… |
 
+## `points`
+
+Static cloud. `Float32Array` positions + packed `Uint8Array`/`Uint32Array`/`Float32Array` colors stay typed (no per-point objects, no color parsing). Live clouds: `points.stream` + `pointStreamOf(handle)` (docs/agents/streaming-buffers.md).
+
+```ts
+void points({ positions: new Float32Array([0, 0, 0, 1, 1, 1]), colors: new Uint8Array(8).fill(255), size: 2 });
+```
+
+| Call | Returns | Options |
+|---|---|---|
+| `points(options: AuraPointsOptions)` | `AuraNodeBuilder<AuraPointsNode>` | options: points?: AuraLinePositionsInput \| …; positions?: AuraLinePositionsInput \| …; colors?: readonly string[] \| Float…; size?: number \| undefined; sizeAttenuation?: boolean \| undefined; map?: AuraMaterialTextureInput …; alphaTest?: number \| undefined; transparent?: boolean \| undefined; material?: AuraMaterialSpec \| undefi…; name?: string \| undefined; visible?: boolean \| undefined; runtime?: AuraRuntimeNodeSpec \| und…; position?: AuraVec3 \| undefined; rotation?: AuraVec3 \| undefined; scale?: number \| AuraVec3 \| undef… |
+| `points.stream(spec: AuraPointStreamSpec)` | `AuraNodeBuilder<AuraPointsNode>` | spec: capacity: number; colors?: AuraPointStreamColorForma…; colorSpace?: "linear" \| "srgb" \| undef…; size?: number \| undefined; sizeAttenuation?: boolean \| undefined; map?: AuraMaterialTextureInput …; alphaTest?: number \| undefined; transparent?: boolean \| undefined; material?: AuraMaterialSpec \| undefi…; bounds?: { readonly min: AuraVec3;…; name?: string \| undefined; visible?: boolean \| undefined; runtime: AuraRuntimeNodeSpec; position?: AuraVec3 \| undefined; rotation?: AuraVec3 \| undefined; scale?: number \| AuraVec3 … |
+
+## `pointStreamOf`
+
+Narrows `app.nodes.require(id)` of a `points.stream({ capacity, colors?, runtime: { id } })` node to `{ write, lease, setDrawCount, drawCount, capacity, stats }`; typed in-place updates, one dirty-range upload.
+
+```ts
+void pointStreamOf;
+```
+
+| Call | Returns | Options |
+|---|---|---|
+| `pointStreamOf(handle: AuraRuntimeNodeHandle \| undefined)` | `AuraPointStreamHandle` |  |
+
 ## `geometry`
 
 `define` builds the spec; mount it with `geometry.custom(spec, { material })`.
