@@ -1,0 +1,28 @@
+{
+  "schema": "aura3d-render-gate-motion/1",
+  "note": "Entries the motion check expects to MOVE. verified: 'real-gpu-2026-11' = frame difference measured above 0.2 on a real GPU in the 5.0.2 utime investigation (tests/reports/utime-investigation/findings.md); 'source-read' = flagged from reading the source, not yet measured by this gate. animated:false rows are measured and recorded but never fail. Only 5 of the 8 recipes animate; the other 3 are static by design and listed as informational rows.",
+  "threshold": 0.2,
+  "settleMs": 4000,
+  "intervalMs": 1500,
+  "entries": [
+    { "kind": "recipe", "id": "water-custom-shader", "animated": true, "reason": "custom shader on its own uniform clock via onFrame + mutable node", "verified": "real-gpu-2026-11" },
+    { "kind": "recipe", "id": "sky-day-night", "animated": true, "reason": "sun/sky advanced from onFrame on a mutable node", "verified": "real-gpu-2026-11" },
+    { "kind": "recipe", "id": "fire-smoke-sparks", "animated": true, "reason": "three effects.particles emitters", "verified": "real-gpu-2026-11" },
+    { "kind": "recipe", "id": "pbr-product-viewer", "animated": true, "reason": "onFrame turntable on a mutable node", "verified": "source-read" },
+    { "kind": "recipe", "id": "procedural-humanoid", "animated": true, "reason": "onFrame pose animation on mutable nodes", "verified": "source-read" },
+    { "kind": "recipe", "id": "terrain-water-fog", "animated": false, "reason": "static by design: pbr water plane, sky without clouds", "verified": "real-gpu-2026-11" },
+    { "kind": "recipe", "id": "night-lights-emissive-bloom", "animated": false, "reason": "static by design", "verified": "source-read" },
+    { "kind": "recipe", "id": "props-kit-instances", "animated": false, "reason": "static by design", "verified": "source-read" },
+
+    { "kind": "template", "id": "mini-game", "animated": true, "reason": "app.onFrame game loop", "verified": "source-read" },
+    { "kind": "template", "id": "racing-starter", "animated": true, "reason": "app.onFrame vehicle loop", "verified": "source-read" },
+    { "kind": "template", "id": "falling-blocks-starter", "animated": true, "reason": "app.onFrame falling pieces", "verified": "source-read" },
+    { "kind": "template", "id": "arena-shooter", "animated": true, "reason": "app.onFrame arena loop", "verified": "source-read" },
+    { "kind": "template", "id": "character-controller", "animated": true, "reason": "app.onFrame controller and idle clip", "verified": "source-read" },
+    { "kind": "template", "id": "character-viewer", "animated": true, "reason": "app.onFrame idle clip", "verified": "source-read" },
+    { "kind": "template", "id": "fighting-game", "animated": true, "reason": "app.onFrame fighters idle", "verified": "source-read" },
+
+    { "kind": "game", "id": "aura-links-3d", "animated": true, "reason": "water surface shader reads uTime (apps/showcase-aura-links-3d/src/game/water.ts)", "verified": "source-read" },
+    { "kind": "game", "id": "roadster-rush", "animated": true, "reason": "sky shader and exhaust plume read uTime (art/sky.ts, art/plume.ts)", "verified": "source-read" }
+  ]
+}
