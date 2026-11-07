@@ -12,6 +12,7 @@ import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec, resolveIridescenceThickness } from "../../material-physical/PhysicalMaterialSpec.js";
 import { validateMaterialVisualQA } from "../looks/structuralQA.js";
 import { lazyNamespace } from "../lazyNamespace.js";
+import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import { noteUnrenderedOptions } from "./optionDiagnostics.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
 import { solarPlanetMaterial } from "../nodes/solar.js";
@@ -667,6 +668,12 @@ export const material = lazyNamespace(() => ({
    * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
    */
   toon: (options: AuraToonMaterialOptions = {}): AuraMaterialSpec => toonMaterial(options),
+  /** Lane 514: height-banded rock layers with slope-based cliff colouring (`AuraStrataMaterialOptions`). */
+  strata: strataMaterial,
+  /** Lane 514: lit floor with an animated water-caustic pattern (`AuraCausticsMaterialOptions`). */
+  caustics: causticsMaterial,
+  /** Lane 514: soft additive beam shader for a cone or cylinder (`AuraLightBeamMaterialOptions`). */
+  lightBeam: lightBeamMaterial,
   matcap: matcapMaterial,
   /** Linear view-depth grayscale; see AuraDepthPreviewMaterialOptions for supported paths and limits. */
   depth: depthPreviewMaterial,

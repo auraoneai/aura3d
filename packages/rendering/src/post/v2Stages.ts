@@ -1615,6 +1615,9 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_density"), godRayDensity(god.density));
       // GU47 phase 2: distance-scaled shaft medium; omitted (0) keeps the unscaled shaft.
       g.uniform1f(g.getUniformLocation(godProg, "u_medium"), godRayMedium(god.medium));
+      // Lane 514: an `effects.godRays` node anchors the shaft pass to the full frame (the half-res target is divided by
+      // the full-res HDR size otherwise, which maps the light to the wrong frame position). Other callers keep 1.
+      g.uniform1f(g.getUniformLocation(godProg, "u_uvScale"), god.frameAnchored === true ? w / hw : 1);
     });
     // Additive blend onto the working HDR target.
     const blendedLease = scratch.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
