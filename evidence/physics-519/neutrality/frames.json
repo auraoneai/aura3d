@@ -1,0 +1,659 @@
+{
+ "frames": {
+  "showcase-bank-shot": {
+   "base-a": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-slingshot-siege": {
+   "base-a": {
+    "sha256": "12f3ad9bb7749e53de3c8cdef86f48acf0411d4dae910fc2a9c54af7c87ad15f",
+    "storedAs": "base-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "12f3ad9bb7749e53de3c8cdef86f48acf0411d4dae910fc2a9c54af7c87ad15f",
+    "storedAs": "base-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "6563f83cb9111d5129c8a1ecce84fc46b01be9bb47c1c92b977dc42aab67ebaf",
+    "storedAs": "branch-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "12f3ad9bb7749e53de3c8cdef86f48acf0411d4dae910fc2a9c54af7c87ad15f",
+    "storedAs": "base-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-blockfall-reactor": {
+   "base-a": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-aurora-lander": {
+   "base-a": {
+    "sha256": "f1c05c788cbb1d9f5311c53f26f698b5e48d8dc891bf61048fadd39b264d723e",
+    "storedAs": "base-showcase-aurora-lander-a.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0°\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/↑/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "594be4bf661f7fac043169c636707aed1307d11d28db24e5fb74d54eaa741d5b",
+    "storedAs": "base-showcase-aurora-lander-b.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0°\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/↑/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "5df8326b0c3e07991dccb272e0c0033fbbc02e3a64130958036fb77b9c83df84",
+    "storedAs": "branch-showcase-aurora-lander-a.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0°\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/↑/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "f37ec383f3aa2682ab667d45600b3879cdcd9314d352f4d07e1b48bd9d1151ff",
+    "storedAs": "branch-showcase-aurora-lander-b.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 · Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0°\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/↑/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-teleoperator": {
+   "base-a": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH · SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919° N · 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH · SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919° N · 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH · SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919° N · 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH · SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919° N · 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-vault-breakers": {
+   "base-a": {
+    "sha256": "917330a1768ad1017281e50539ad6b58b92df24ad7efc4acd0d88876ea4318bb",
+    "storedAs": "base-showcase-vault-breakers-a.png",
+    "info": {
+     "title": "Aura3D - Vault Breakers",
+     "canvases": 1,
+     "text": "SUPER SKILL-SHOT COMBO +1000!\n\nAURA3D PROTOTYPE\n\nVault Breakers\n\nNeon pinball. Fire the flippers, bank five target stand",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: MODEL_CUSTOM_MATERIAL_UNSUPPORTED: model.materialOverrides[0].match cannot be applied to a custom s"
+    ]
+   },
+   "base-b": {
+    "sha256": "917330a1768ad1017281e50539ad6b58b92df24ad7efc4acd0d88876ea4318bb",
+    "storedAs": "base-showcase-vault-breakers-a.png",
+    "info": {
+     "title": "Aura3D - Vault Breakers",
+     "canvases": 1,
+     "text": "SUPER SKILL-SHOT COMBO +1000!\n\nAURA3D PROTOTYPE\n\nVault Breakers\n\nNeon pinball. Fire the flippers, bank five target stand",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: MODEL_CUSTOM_MATERIAL_UNSUPPORTED: model.materialOverrides[0].match cannot be applied to a custom s"
+    ]
+   },
+   "branch-a": {
+    "sha256": "917330a1768ad1017281e50539ad6b58b92df24ad7efc4acd0d88876ea4318bb",
+    "storedAs": "base-showcase-vault-breakers-a.png",
+    "info": {
+     "title": "Aura3D - Vault Breakers",
+     "canvases": 1,
+     "text": "SUPER SKILL-SHOT COMBO +1000!\n\nAURA3D PROTOTYPE\n\nVault Breakers\n\nNeon pinball. Fire the flippers, bank five target stand",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: MODEL_CUSTOM_MATERIAL_UNSUPPORTED: model.materialOverrides[0].match cannot be applied to a custom s"
+    ]
+   },
+   "branch-b": {
+    "sha256": "917330a1768ad1017281e50539ad6b58b92df24ad7efc4acd0d88876ea4318bb",
+    "storedAs": "base-showcase-vault-breakers-a.png",
+    "info": {
+     "title": "Aura3D - Vault Breakers",
+     "canvases": 1,
+     "text": "SUPER SKILL-SHOT COMBO +1000!\n\nAURA3D PROTOTYPE\n\nVault Breakers\n\nNeon pinball. Fire the flippers, bank five target stand",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: MODEL_CUSTOM_MATERIAL_UNSUPPORTED: model.materialOverrides[0].match cannot be applied to a custom s"
+    ]
+   }
+  },
+  "showcase-cross-hop": {
+   "base-a": {
+    "sha256": "4ce9f5dff62ae7e5c59e474ce7e6e01e18ae48630878c0759efff8e1860f07fa",
+    "storedAs": "base-showcase-cross-hop-a.png",
+    "info": {
+     "title": "Cross Hop — Aura3D Endless Lane Hopper",
+     "canvases": 1,
+     "text": "Quick Play\nMeadow\nDowntown\nRiverbend\nEmberline\nNeon\nCritter Core\nBuilt with Aura3D\nSCORE\n0\nMEADOW ROADS\n◈ 0\nBEST 0\nQuick",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404 Nothing will draw. ",
+     "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404\n    at Jh (http://127.0.0.1"
+    ]
+   },
+   "base-b": {
+    "sha256": "4ce9f5dff62ae7e5c59e474ce7e6e01e18ae48630878c0759efff8e1860f07fa",
+    "storedAs": "base-showcase-cross-hop-a.png",
+    "info": {
+     "title": "Cross Hop — Aura3D Endless Lane Hopper",
+     "canvases": 1,
+     "text": "Quick Play\nMeadow\nDowntown\nRiverbend\nEmberline\nNeon\nCritter Core\nBuilt with Aura3D\nSCORE\n0\nMEADOW ROADS\n◈ 0\nBEST 0\nQuick",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404 Nothing will draw. ",
+     "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404\n    at Jh (http://127.0.0.1"
+    ]
+   },
+   "branch-a": {
+    "sha256": "4ce9f5dff62ae7e5c59e474ce7e6e01e18ae48630878c0759efff8e1860f07fa",
+    "storedAs": "base-showcase-cross-hop-a.png",
+    "info": {
+     "title": "Cross Hop — Aura3D Endless Lane Hopper",
+     "canvases": 1,
+     "text": "Quick Play\nMeadow\nDowntown\nRiverbend\nEmberline\nNeon\nCritter Core\nBuilt with Aura3D\nSCORE\n0\nMEADOW ROADS\n◈ 0\nBEST 0\nQuick",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404 Nothing will draw. ",
+     "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404\n    at nh (http://127.0.0.1"
+    ]
+   },
+   "branch-b": {
+    "sha256": "4ce9f5dff62ae7e5c59e474ce7e6e01e18ae48630878c0759efff8e1860f07fa",
+    "storedAs": "base-showcase-cross-hop-a.png",
+    "info": {
+     "title": "Cross Hop — Aura3D Endless Lane Hopper",
+     "canvases": 1,
+     "text": "Quick Play\nMeadow\nDowntown\nRiverbend\nEmberline\nNeon\nCritter Core\nBuilt with Aura3D\nSCORE\n0\nMEADOW ROADS\n◈ 0\nBEST 0\nQuick",
+     "vt": 5000.000000000003
+    },
+    "errors": [
+     "console.error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404 Nothing will draw. ",
+     "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 404\n    at nh (http://127.0.0.1"
+    ]
+   }
+  }
+ },
+ "pixelDiffs": {
+  "showcase-bank-shot": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-slingshot-siege": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 25.2502,
+    "pixelsDiffering": 0.7979,
+    "pixelsDifferingOver8": 0.52936,
+    "diffBox": [
+     0,
+     0,
+     959,
+     539
+    ]
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 25.2502,
+    "pixelsDiffering": 0.7979,
+    "pixelsDifferingOver8": 0.52936,
+    "diffBox": [
+     0,
+     0,
+     959,
+     539
+    ]
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 25.2502,
+    "pixelsDiffering": 0.7979,
+    "pixelsDifferingOver8": 0.52936,
+    "diffBox": [
+     0,
+     0,
+     959,
+     539
+    ]
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-blockfall-reactor": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-aurora-lander": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0.0594,
+    "pixelsDiffering": 0.00679,
+    "pixelsDifferingOver8": 0.00156,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0.0178,
+    "pixelsDiffering": 0.00679,
+    "pixelsDifferingOver8": 0.00131,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0.0416,
+    "pixelsDiffering": 0.00679,
+    "pixelsDifferingOver8": 0.00152,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0.0167,
+    "pixelsDiffering": 0.00679,
+    "pixelsDifferingOver8": 0.00131,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0.0011,
+    "pixelsDiffering": 0.00133,
+    "pixelsDifferingOver8": 0,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0.0583,
+    "pixelsDiffering": 0.00679,
+    "pixelsDifferingOver8": 0.00156,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   }
+  },
+  "showcase-teleoperator": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-vault-breakers": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-cross-hop": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  }
+ }
+}

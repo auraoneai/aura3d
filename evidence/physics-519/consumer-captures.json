@@ -1,0 +1,3035 @@
+{
+ "branch-lazy-plugin-auto-steps140.png": {
+  "sha256": "e901e69d04ec32652dbd84996831703a1a2ad3e33d307a37e82f30e00cd52f2c",
+  "storedAs": "consumer-frames/branch-lazy-plugin-auto-steps140.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-lazy-plugin-auto-present",
+   "query": "steps=140&delay=2500",
+   "fetchedScripts": [
+    "/assets/index-BtE3JiHY.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-C8yeqkiR.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-DLrqk61O.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140&delay=2500"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/index-BtE3JiHY.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/TypedGLBActor-C8yeqkiR.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/world-DLrqk61O.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 83,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 132,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 132,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 135,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 138,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 146,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 175,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": {
+    "errors": [],
+    "stats": {
+     "steps": 140,
+     "solidHits": 109,
+     "hardestHit": 1.4098556041780554,
+     "firstCrateHitStep": 78
+    },
+    "positions": {
+     "ball": [
+      -0.2396,
+      1.2931,
+      -0.0119
+     ],
+     "crate-0-0": [
+      0.2043,
+      0.2523,
+      -0.7624
+     ],
+     "crate-4-2": [
+      1.005,
+      0.8551,
+      0.2572
+     ]
+    },
+    "timeline": [
+     {
+      "t": 135,
+      "event": "app-created (no physics yet)"
+     },
+     {
+      "t": 169,
+      "event": "app-ready"
+     },
+     {
+      "t": 2670,
+      "event": "first-physics-use: setScene with declared bodies"
+     },
+     {
+      "t": 2693,
+      "event": "physics-ready"
+     },
+     {
+      "t": 2765,
+      "event": "simulated"
+     }
+    ],
+    "navigationStart": 1794049377745
+   }
+  }
+ },
+ "branch-lazy-plugin-lazy-steps140.png": {
+  "sha256": "e901e69d04ec32652dbd84996831703a1a2ad3e33d307a37e82f30e00cd52f2c",
+  "storedAs": "consumer-frames/branch-lazy-plugin-auto-steps140.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-lazy-plugin-lazy-present",
+   "query": "steps=140&delay=2500",
+   "fetchedScripts": [
+    "/assets/index-DxnKZh1-.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-CVuLI2A8.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-ys-x6bda.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js",
+    "/assets/rapier-B9LFmugn.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140&delay=2500"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/index-DxnKZh1-.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 15,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/TypedGLBActor-CVuLI2A8.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/world-ys-x6bda.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 173,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 173,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 179,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 185,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 202,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 252,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    },
+    {
+     "ms": 2776,
+     "url": "/assets/rapier-B9LFmugn.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": {
+    "errors": [],
+    "stats": {
+     "steps": 140,
+     "solidHits": 109,
+     "hardestHit": 1.4098556041780554,
+     "firstCrateHitStep": 78
+    },
+    "positions": {
+     "ball": [
+      -0.2396,
+      1.2931,
+      -0.0119
+     ],
+     "crate-0-0": [
+      0.2043,
+      0.2523,
+      -0.7624
+     ],
+     "crate-4-2": [
+      1.005,
+      0.8551,
+      0.2572
+     ]
+    },
+    "timeline": [
+     {
+      "t": 179,
+      "event": "app-created (no physics yet)"
+     },
+     {
+      "t": 248,
+      "event": "app-ready"
+     },
+     {
+      "t": 2750,
+      "event": "first-physics-use: setScene with declared bodies"
+     },
+     {
+      "t": 2887,
+      "event": "physics-ready"
+     },
+     {
+      "t": 2981,
+      "event": "simulated"
+     }
+    ],
+    "navigationStart": 1794049367425
+   }
+  }
+ },
+ "branch-lazyrecipe-plugin-lazy-steps140.png": {
+  "sha256": "e901e69d04ec32652dbd84996831703a1a2ad3e33d307a37e82f30e00cd52f2c",
+  "storedAs": "consumer-frames/branch-lazy-plugin-auto-steps140.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-lazyrecipe-plugin-lazy-present",
+   "query": "steps=140",
+   "fetchedScripts": [
+    "/assets/index-BDIRyQP5.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-D7WWuRvg.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-ys-x6bda.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/index-BDIRyQP5.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/TypedGLBActor-D7WWuRvg.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 9,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/world-ys-x6bda.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 105,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 106,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 109,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 109,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 112,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 135,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 385,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": {
+    "errors": [],
+    "stats": {
+     "steps": 140,
+     "solidHits": 109,
+     "hardestHit": 1.4098556041780554,
+     "firstCrateHitStep": 78
+    },
+    "positions": {
+     "ball": [
+      -0.2396,
+      1.2931,
+      -0.0119
+     ],
+     "crate-0-0": [
+      0.2043,
+      0.2523,
+      -0.7624
+     ],
+     "crate-4-2": [
+      1.005,
+      0.8551,
+      0.2572
+     ]
+    },
+    "timeline": null,
+    "navigationStart": 1794049356625.9
+   }
+  }
+ },
+ "branch-nophys-plugin-auto-present.png": {
+  "sha256": "e8df34fc5b60e1d47f3230c2ea48048fc3a18a6899a7af719dca2b3d7037154c",
+  "storedAs": "consumer-frames/branch-nophys-plugin-auto-present.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-nophys-plugin-auto-present",
+   "query": "",
+   "fetchedScripts": [
+    "/assets/index-D5tMth3x.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/preload-helper-DhL41TXV.js",
+    "/assets/probeBuild-D2fhhBly.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/ForwardPass-ClhR6lAL.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-sEd5aJnl.js",
+    "/assets/TypedGLBActor-cGAQosl0.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-BoApR3zm.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/v2Entry-XaK3bZkv.js",
+    "/assets/TemporalHistory-DCQj77LI.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-C_naqGaS.js",
+    "/assets/neutralEmbeddedLoader-BIg1eYrQ.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/index-D5tMth3x.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/preload-helper-DhL41TXV.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/probeBuild-D2fhhBly.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ForwardPass-ClhR6lAL.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/EXRLoader-sEd5aJnl.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/TypedGLBActor-cGAQosl0.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/world-BoApR3zm.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 156,
+     "url": "/assets/v2Entry-XaK3bZkv.js"
+    },
+    {
+     "ms": 156,
+     "url": "/assets/TemporalHistory-DCQj77LI.js"
+    },
+    {
+     "ms": 164,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 168,
+     "url": "/assets/TemporalHistory-C_naqGaS.js"
+    },
+    {
+     "ms": 184,
+     "url": "/assets/neutralEmbeddedLoader-BIg1eYrQ.js"
+    },
+    {
+     "ms": 229,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": null
+  }
+ },
+ "branch-nophys-plugin-lazy-present.png": {
+  "sha256": "e8df34fc5b60e1d47f3230c2ea48048fc3a18a6899a7af719dca2b3d7037154c",
+  "storedAs": "consumer-frames/branch-nophys-plugin-auto-present.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-nophys-plugin-lazy-present",
+   "query": "",
+   "fetchedScripts": [
+    "/assets/index-DBaKMw1t.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-B7uD6Zho.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-ys-x6bda.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/index-DBaKMw1t.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/TypedGLBActor-B7uD6Zho.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 14,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 14,
+     "url": "/assets/world-ys-x6bda.js"
+    },
+    {
+     "ms": 14,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 14,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 14,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 99,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 100,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 103,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 106,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 114,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 139,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": null
+  }
+ },
+ "branch-nophys-present.png": {
+  "sha256": "e8df34fc5b60e1d47f3230c2ea48048fc3a18a6899a7af719dca2b3d7037154c",
+  "storedAs": "consumer-frames/branch-nophys-plugin-auto-present.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-nophys-present",
+   "query": "",
+   "fetchedScripts": [
+    "/assets/index-Bn-dcvNd.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-DVNkI0QD.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-DLrqk61O.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/index-Bn-dcvNd.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 10,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/TypedGLBActor-DVNkI0QD.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/world-DLrqk61O.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 97,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 193,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 193,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 198,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 203,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 220,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 271,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": null
+  }
+ },
+ "branch-phys-plugin-auto-present-steps140.png": {
+  "sha256": "e901e69d04ec32652dbd84996831703a1a2ad3e33d307a37e82f30e00cd52f2c",
+  "storedAs": "consumer-frames/branch-lazy-plugin-auto-steps140.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-phys-plugin-auto-present",
+   "query": "steps=140",
+   "fetchedScripts": [
+    "/assets/index-C9mCErBi.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-DI2Uy0nM.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-DLrqk61O.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/index-C9mCErBi.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/TypedGLBActor-DI2Uy0nM.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/world-DLrqk61O.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 13,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 101,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 207,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 207,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 370,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 375,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 412,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 622,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": {
+    "errors": [],
+    "stats": {
+     "steps": 140,
+     "solidHits": 109,
+     "hardestHit": 1.4098556041780554,
+     "firstCrateHitStep": 78
+    },
+    "positions": {
+     "ball": [
+      -0.2396,
+      1.2931,
+      -0.0119
+     ],
+     "crate-0-0": [
+      0.2043,
+      0.2523,
+      -0.7624
+     ],
+     "crate-4-2": [
+      1.005,
+      0.8551,
+      0.2572
+     ]
+    },
+    "timeline": null,
+    "navigationStart": 1794049346270.3
+   }
+  }
+ },
+ "branch-phys-plugin-false-present.png": {
+  "sha256": "ab84358483c49fcfc964aa590419a610934b653fffa94d359ef5ded24b52c77b",
+  "storedAs": "consumer-frames/branch-phys-plugin-false-present.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-phys-plugin-false-present",
+   "query": "steps=140",
+   "fetchedScripts": [
+    "/assets/index-D0pp6bOa.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/preload-helper-DhL41TXV.js",
+    "/assets/probeBuild-D2fhhBly.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/ForwardPass-ClhR6lAL.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-sEd5aJnl.js",
+    "/assets/TypedGLBActor-B8m072rj.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-BoApR3zm.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/v2Entry-XaK3bZkv.js",
+    "/assets/TemporalHistory-DCQj77LI.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-C_naqGaS.js",
+    "/assets/neutralEmbeddedLoader-BIg1eYrQ.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/index-D0pp6bOa.js"
+    },
+    {
+     "ms": 11,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/preload-helper-DhL41TXV.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/probeBuild-D2fhhBly.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ForwardPass-ClhR6lAL.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/EXRLoader-sEd5aJnl.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/TypedGLBActor-B8m072rj.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/world-BoApR3zm.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 12,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 107,
+     "url": "/assets/v2Entry-XaK3bZkv.js"
+    },
+    {
+     "ms": 107,
+     "url": "/assets/TemporalHistory-DCQj77LI.js"
+    },
+    {
+     "ms": 110,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 117,
+     "url": "/assets/TemporalHistory-C_naqGaS.js"
+    },
+    {
+     "ms": 135,
+     "url": "/assets/neutralEmbeddedLoader-BIg1eYrQ.js"
+    },
+    {
+     "ms": 221,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [
+    "PhysicsBackendMissingError: PHYSICS_BACKEND_MISSING: physics was stripped at build time because no physics usage was found; set aura3d({ physics: true }) in vite.config",
+    "PhysicsBackendMissingError: PHYSICS_BACKEND_MISSING: physics was stripped at build time because no physics usage was found; set aura3d({ physics: true }) in vite.config"
+   ],
+   "exceptions": [
+    "PhysicsBackendMissingError: PHYSICS_BACKEND_MISSING: physics was stripped at build time because no physics usage was found; set aura3d({ physics: true }) in vite.config\n    at S (http://127.0.0.1:58234/assets/world-BoApR3zm.js:1:17296)\n    at ge (http://127.0.0.1:58234/assets/world-BoApR3zm.js:1:17669)\n    at xe (http://127.0.0.1:58234/assets/world-BoApR3zm.js:1:18276)\n    at je (http://127.0.0.1:58234/assets/world-BoApR3zm.js:1:45825)\n    at new qe (http://127.0.0.1:58234/assets/world-BoApR3zm.js:1:52529)\n    at te (http://127.0.0.1:58234/assets/index-D0pp6bOa.js:3006:53616)\n    at zt (http://127.0.0.1:58234/assets/index-D0pp6bOa.js:3006:70230)\n    at get physics (http://127.0.0.1:58234/assets/index-D0pp6bOa.js:3006:81390)\n    at http://127.0.0.1:58234/assets/index-D0pp6bOa.js:3006:92280"
+   ],
+   "recipe": null
+  }
+ },
+ "branch-phys-present-steps140.png": {
+  "sha256": "e901e69d04ec32652dbd84996831703a1a2ad3e33d307a37e82f30e00cd52f2c",
+  "storedAs": "consumer-frames/branch-lazy-plugin-auto-steps140.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/branch/dist-phys-present",
+   "query": "steps=140",
+   "fetchedScripts": [
+    "/assets/index-C9mCErBi.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-DI2Uy0nM.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-DLrqk61O.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/index-C9mCErBi.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 24,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/TypedGLBActor-DI2Uy0nM.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/world-DLrqk61O.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 25,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 128,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 268,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 269,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 431,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 436,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 473,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 694,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": {
+    "errors": [],
+    "stats": {
+     "steps": 140,
+     "solidHits": 109,
+     "hardestHit": 1.4098556041780554,
+     "firstCrateHitStep": 78
+    },
+    "positions": {
+     "ball": [
+      -0.2396,
+      1.2931,
+      -0.0119
+     ],
+     "crate-0-0": [
+      0.2043,
+      0.2523,
+      -0.7624
+     ],
+     "crate-4-2": [
+      1.005,
+      0.8551,
+      0.2572
+     ]
+    },
+    "timeline": null,
+    "navigationStart": 1794049335469.1
+   }
+  }
+ },
+ "published-nophys-present.png": {
+  "sha256": "e8df34fc5b60e1d47f3230c2ea48048fc3a18a6899a7af719dca2b3d7037154c",
+  "storedAs": "consumer-frames/branch-nophys-plugin-auto-present.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/published/dist-nophys-present",
+   "query": "",
+   "fetchedScripts": [
+    "/assets/index-DkH_tCkE.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-BubbwSD4.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-BtW4nItN.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/index-DkH_tCkE.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 7,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/TypedGLBActor-BubbwSD4.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/world-BtW4nItN.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 8,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 72,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 118,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 118,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 120,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 123,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 131,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 155,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": null
+  }
+ },
+ "published-phys-present-steps140.png": {
+  "sha256": "e901e69d04ec32652dbd84996831703a1a2ad3e33d307a37e82f30e00cd52f2c",
+  "storedAs": "consumer-frames/branch-lazy-plugin-auto-steps140.png",
+  "report": {
+   "dist": "/tmp/phys519/consumer/published/dist-phys-present",
+   "query": "steps=140",
+   "fetchedScripts": [
+    "/assets/index-Ccz1MaIv.js",
+    "/assets/core-CTbf8c1p.js",
+    "/assets/geometry-CfTDB3nx.js",
+    "/assets/blend-DQ8wcZvm.js",
+    "/assets/Texture-DTxK2pAG.js",
+    "/assets/RenderDevice-C16SG2Y8.js",
+    "/assets/ShaderLibraryCore-DZHkoXpY.js",
+    "/assets/Material-Cwu2s6mU.js",
+    "/assets/MaterialInstance-BfhzxYpL.js",
+    "/assets/environment-C1cvPN60.js",
+    "/assets/ProjectionClip-Briltfqk.js",
+    "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+    "/assets/lobes-DexmyCFz.js",
+    "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+    "/assets/InstanceBuffer-XW9Iu5fV.js",
+    "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+    "/assets/ProgramCache-Bs-ATSyi.js",
+    "/assets/prd01-BguQJ55h.js",
+    "/assets/quality-WsR5RWKt.js",
+    "/assets/TextureBudget-Xx59LLFU.js",
+    "/assets/SphericalHarmonics-vhVBxGHB.js",
+    "/assets/probeBuild-DoomduxJ.js",
+    "/assets/WebGL2Device-BT974LRF.js",
+    "/assets/PBRMaterial-BggwD6KE.js",
+    "/assets/ShaderLibrary-6FWyOJhi.js",
+    "/assets/preload-helper-7y9sWmk5.js",
+    "/assets/ForwardPass-GDY6lXl_.js",
+    "/assets/UniformLayout-BqZUpNgX.js",
+    "/assets/LoaderFetch-BuwAIHza.js",
+    "/assets/rolldown-runtime-XKyaHtl9.js",
+    "/assets/lanes-DhkmKRGG.js",
+    "/assets/EXRLoader-Dy7oHqGM.js",
+    "/assets/TypedGLBActor-CKGZTypm.js",
+    "/assets/PostGraph-CwbroYz7.js",
+    "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+    "/assets/ProgramWarmup-DOwuC_m-.js",
+    "/assets/Rgb9e5Cube-HKZn0BP8.js",
+    "/assets/world-BtW4nItN.js",
+    "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+    "/assets/ScalarVolumeFrame-DymSUs6j.js",
+    "/assets/NativePipelineWarmup-DB1Sd79v.js",
+    "/assets/rapier-B9LFmugn.js",
+    "/assets/v2Entry-DRB71tlP.js",
+    "/assets/TemporalHistory-D_QGww1O.js",
+    "/assets/ShaderLibrary-DEqwkoAf.js",
+    "/assets/TemporalHistory-hup3wl_N.js",
+    "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+    "/assets/neutralEmbedded-BmhlQNxh.js"
+   ],
+   "networkTimeline": [
+    {
+     "ms": 0,
+     "url": "/index.html?steps=140"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/index-Ccz1MaIv.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/core-CTbf8c1p.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/geometry-CfTDB3nx.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/blend-DQ8wcZvm.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/Texture-DTxK2pAG.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/RenderDevice-C16SG2Y8.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ShaderLibraryCore-DZHkoXpY.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/Material-Cwu2s6mU.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/MaterialInstance-BfhzxYpL.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/environment-C1cvPN60.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ProjectionClip-Briltfqk.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/lobes-DexmyCFz.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/InstanceBuffer-XW9Iu5fV.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ProgramCache-Bs-ATSyi.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/prd01-BguQJ55h.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/quality-WsR5RWKt.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/TextureBudget-Xx59LLFU.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/SphericalHarmonics-vhVBxGHB.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/probeBuild-DoomduxJ.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/WebGL2Device-BT974LRF.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/PBRMaterial-BggwD6KE.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ShaderLibrary-6FWyOJhi.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/preload-helper-7y9sWmk5.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/ForwardPass-GDY6lXl_.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/UniformLayout-BqZUpNgX.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/LoaderFetch-BuwAIHza.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/rolldown-runtime-XKyaHtl9.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/lanes-DhkmKRGG.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/EXRLoader-Dy7oHqGM.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/TypedGLBActor-CKGZTypm.js"
+    },
+    {
+     "ms": 16,
+     "url": "/assets/PostGraph-CwbroYz7.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/RenderTargetPoolLease-Bq7N7RDn.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/ProgramWarmup-DOwuC_m-.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/Rgb9e5Cube-HKZn0BP8.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/world-BtW4nItN.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/WebGPUDepthOfField-DPTMBJqe.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/ScalarVolumeFrame-DymSUs6j.js"
+    },
+    {
+     "ms": 17,
+     "url": "/assets/NativePipelineWarmup-DB1Sd79v.js"
+    },
+    {
+     "ms": 62,
+     "url": "/assets/rapier-B9LFmugn.js"
+    },
+    {
+     "ms": 136,
+     "url": "/assets/v2Entry-DRB71tlP.js"
+    },
+    {
+     "ms": 136,
+     "url": "/assets/TemporalHistory-D_QGww1O.js"
+    },
+    {
+     "ms": 234,
+     "url": "/assets/ShaderLibrary-DEqwkoAf.js"
+    },
+    {
+     "ms": 237,
+     "url": "/assets/TemporalHistory-hup3wl_N.js"
+    },
+    {
+     "ms": 257,
+     "url": "/assets/neutralEmbeddedLoader-DIrq3QlW.js"
+    },
+    {
+     "ms": 381,
+     "url": "/assets/neutralEmbedded-BmhlQNxh.js"
+    }
+   ],
+   "consoleErrors": [],
+   "exceptions": [],
+   "recipe": {
+    "errors": [],
+    "stats": {
+     "steps": 140,
+     "solidHits": 109,
+     "hardestHit": 1.4098556041780554,
+     "firstCrateHitStep": 78
+    },
+    "positions": {
+     "ball": [
+      -0.2396,
+      1.2931,
+      -0.0119
+     ],
+     "crate-0-0": [
+      0.2043,
+      0.2523,
+      -0.7624
+     ],
+     "crate-4-2": [
+      1.005,
+      0.8551,
+      0.2572
+     ]
+    },
+    "timeline": null,
+    "navigationStart": 1794049324436.5
+   }
+  }
+ }
+}
