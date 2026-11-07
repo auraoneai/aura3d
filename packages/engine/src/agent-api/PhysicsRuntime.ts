@@ -271,6 +271,12 @@ export interface AuraPhysicsRuntime {
    * fast-body frame rather than assuming it did.
    */
   backend(): PhysicsBackendSelection;
+  /**
+   * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+   * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+   * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+   */
+  ready(): Promise<void>;
 }
 
 /**
@@ -755,6 +761,7 @@ export function createPhysicsRuntime(
     bodies,
     queries,
     layers,
+    ready: () => Promise.resolve(),
     createBody(spec: AuraBodySpec = {}) {
       const type = spec.type ?? "dynamic";
       const shape = spec.shape ?? "box";
