@@ -1,0 +1,252 @@
+{
+  "runId": "bench505-materials-sheet-t10-aura-r3",
+  "batch": "bench505-materials-sheet",
+  "arm": "aura",
+  "task": 10,
+  "idx": 3,
+  "order": 0,
+  "seed": 20261106000,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-07T01:28:10.619Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 71364,
+  "usage": {
+    "input": 430277,
+    "uncachedInput": 430277,
+    "output": 3247,
+    "turns": 16,
+    "perTurnInput": [
+      3334,
+      11792,
+      12444,
+      16492,
+      16714,
+      21219,
+      22906,
+      30472,
+      31047,
+      32236,
+      33299,
+      33856,
+      35696,
+      37638,
+      45209,
+      45923
+    ],
+    "perTurnOutput": [
+      20,
+      65,
+      19,
+      47,
+      29,
+      87,
+      65,
+      114,
+      30,
+      58,
+      50,
+      27,
+      185,
+      28,
+      2047,
+      376
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1730,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1730,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1730,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4039,
+      "type": "search",
+      "pattern": "transmission|clearcoat|sheen|anisotropy|ior|metallic|environments\\.|texture"
+    },
+    {
+      "i": 4,
+      "t": 4039,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 5,
+      "t": 5371,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 70
+    },
+    {
+      "i": 6,
+      "t": 8242,
+      "type": "search",
+      "pattern": "interface AuraMaterialSpec|type AuraMaterialSpec\\b"
+    },
+    {
+      "i": 7,
+      "t": 9637,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 190
+    },
+    {
+      "i": 8,
+      "t": 12427,
+      "type": "search",
+      "pattern": "AuraProceduralTextureKind =|AuraProceduralTextureSpec \\{|proceduralTexture\\??:"
+    },
+    {
+      "i": 9,
+      "t": 12433,
+      "type": "search",
+      "pattern": "proceduralTexture|environments\\.(studio|neutral|[a-z]+)\\("
+    },
+    {
+      "i": 10,
+      "t": 14867,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 60
+    },
+    {
+      "i": 11,
+      "t": 14867,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 58
+    },
+    {
+      "i": 12,
+      "t": 14867,
+      "type": "read",
+      "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 13,
+      "t": 19469,
+      "type": "search",
+      "pattern": "interface AuraDirectionalShadow[A-Za-z]*|radius\\?:|softness\\?:|bias\\?:|mapSize\\?"
+    },
+    {
+      "i": 14,
+      "t": 21031,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 50
+    },
+    {
+      "i": 15,
+      "t": 23433,
+      "type": "search",
+      "pattern": "AuraDirectionalShadowOptions|AuraDirectionalShadowSpec|contactShadow"
+    },
+    {
+      "i": 16,
+      "t": 25345,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.lighting.d.ts",
+      "lines": 17
+    },
+    {
+      "i": 17,
+      "t": 25349,
+      "type": "search",
+      "pattern": "AuraDirectionalShadowOptions"
+    },
+    {
+      "i": 18,
+      "t": 26942,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 19,
+      "t": 33826,
+      "type": "search",
+      "pattern": "clearGlass|brushedMetal|fabric\\b.*=|glass\\s*[:=(]"
+    },
+    {
+      "i": 20,
+      "t": 35521,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+      "lines": 150
+    },
+    {
+      "i": 21,
+      "t": 63911,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 3968
+    },
+    {
+      "i": 22,
+      "t": 65591,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 23,
+      "t": 71364,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.lighting.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote `src/main.ts`, and it passes `typecheck`. I haven't run `vite build` or looked at a render, so how the materials look is untested.\n\n- **Set:** a seamless sweep generated in code. The floor curves up into the wall. Three equal spheres (diameter 1.6) sit in a row, with the camera at a fixed raised three-quarter angle looking at the centre.\n- **Glass (left):** `material.clearGlass` with transmission, ior 1.5, a light tint and low roughness.\n- **Metal (centre):** `material.brushedMetal`, fully metallic, with anisotropy and a procedural brushed-metal normal map for a stretched reflection.\n- **Fabric (right):** `material.fabric`, dark red, fully rough, strong sheen, with a procedural fabric-weave normal map and a low environment reflection.\n- **Lighting:** a studio environment gives the metal and glass something to reflect. Key light is a soft-shadow directional (PCSS filter) and the fill is dimmer from the opposite side. A rim light sits behind the spheres. Contact shadows are enabled.\n- **Animation:** the key light drifts side to side with a sine wave on its x position. Each frame it writes `window.__TASK_STATE__` with the three sphere names and the current `keyLightX`. It sets `window.__EVAL_READY__` after `app.ready()`.\n\nGlass transmission and PCSS softness depend on how the engine renders them, so those are the likeliest things to need tuning once you see a frame.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

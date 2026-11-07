@@ -1,0 +1,353 @@
+{
+  "bench505-materials-sheet-t10-aura-r1": {
+    "task": 10,
+    "changedFrac": 0.0045,
+    "motionOk": true,
+    "meanLuma": 114.1,
+    "thirdsLuma": [
+      145.5,
+      138.2,
+      58.3
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-sheet-t10-aura-r2": {
+    "task": 10,
+    "changedFrac": 0.0076,
+    "motionOk": true,
+    "meanLuma": 112.8,
+    "thirdsLuma": [
+      145.2,
+      135.2,
+      58.2
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-sheet-t10-aura-r3": {
+    "task": 10,
+    "changedFrac": 0.0104,
+    "motionOk": true,
+    "meanLuma": 111.5,
+    "thirdsLuma": [
+      144.4,
+      132.7,
+      57.6
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-sheet-t11-aura-r1": {
+    "task": 11,
+    "changedFrac": 0.0403,
+    "motionOk": true,
+    "meanLuma": 10.2,
+    "thirdsLuma": [
+      8.8,
+      20.3,
+      1.5
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.0223,
+    "whiteFrac": 0.0023,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-sheet-t11-aura-r3": {
+    "task": 11,
+    "changedFrac": 0.0424,
+    "motionOk": true,
+    "meanLuma": 30.9,
+    "thirdsLuma": [
+      30.4,
+      42.4,
+      19.8
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.009,
+    "whiteFrac": 0.0175,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-sheet-t12-aura-r1": {
+    "task": 12,
+    "changedFrac": 0.1144,
+    "motionOk": true,
+    "meanLuma": 49.2,
+    "thirdsLuma": [
+      63.3,
+      55.9,
+      28.6
+    ],
+    "thirdsDiffer": true,
+    "goldFrac": 0.0014,
+    "lightLowSatFrac": 0.1505,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-sheet-t12-aura-r2": {
+    "task": 12,
+    "changedFrac": 0.2056,
+    "motionOk": true,
+    "meanLuma": 46.7,
+    "thirdsLuma": [
+      51.3,
+      62.7,
+      26.2
+    ],
+    "thirdsDiffer": true,
+    "goldFrac": 0.0018,
+    "lightLowSatFrac": 0.0824,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t10-aura-r1": {
+    "task": 10,
+    "changedFrac": 0.0057,
+    "motionOk": true,
+    "meanLuma": 110.8,
+    "thirdsLuma": [
+      142.3,
+      132.8,
+      57.1
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t10-aura-r2": {
+    "task": 10,
+    "changedFrac": 0.0062,
+    "motionOk": true,
+    "meanLuma": 110.5,
+    "thirdsLuma": [
+      143.3,
+      130.9,
+      57.6
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t10-aura-r3": {
+    "task": 10,
+    "changedFrac": 0.0063,
+    "motionOk": true,
+    "meanLuma": 111.1,
+    "thirdsLuma": [
+      144.3,
+      132.5,
+      56.9
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t10-three-r1": {
+    "task": 10,
+    "changedFrac": 0.0129,
+    "motionOk": true,
+    "meanLuma": 96.0,
+    "thirdsLuma": [
+      124.8,
+      113.2,
+      50.0
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t10-three-r2": {
+    "task": 10,
+    "changedFrac": 0.2611,
+    "motionOk": true,
+    "meanLuma": 95.2,
+    "thirdsLuma": [
+      121.6,
+      116.2,
+      48.0
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t10-three-r3": {
+    "task": 10,
+    "changedFrac": 0.0416,
+    "motionOk": true,
+    "meanLuma": 101.8,
+    "thirdsLuma": [
+      132.8,
+      122.6,
+      50.1
+    ],
+    "thirdsDiffer": true,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t11-aura-r2": {
+    "task": 11,
+    "changedFrac": 0.0548,
+    "motionOk": true,
+    "meanLuma": 47.9,
+    "thirdsLuma": [
+      59.3,
+      64.8,
+      19.5
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.0101,
+    "whiteFrac": 0.0128,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t11-aura-r3": {
+    "task": 11,
+    "changedFrac": 0.093,
+    "motionOk": true,
+    "meanLuma": 64.3,
+    "thirdsLuma": [
+      69.6,
+      84.7,
+      38.6
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.0015,
+    "whiteFrac": 0.0363,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t11-three-r1": {
+    "task": 11,
+    "changedFrac": 0.0506,
+    "motionOk": true,
+    "meanLuma": 10.3,
+    "thirdsLuma": [
+      8.3,
+      19.9,
+      2.7
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.019,
+    "whiteFrac": 0.0009,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t11-three-r2": {
+    "task": 11,
+    "changedFrac": 0.0452,
+    "motionOk": true,
+    "meanLuma": 33.6,
+    "thirdsLuma": [
+      66.5,
+      23.9,
+      10.5
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.0159,
+    "whiteFrac": 0.0578,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t11-three-r3": {
+    "task": 11,
+    "changedFrac": 0.044,
+    "motionOk": true,
+    "meanLuma": 10.1,
+    "thirdsLuma": [
+      9.5,
+      18.0,
+      2.7
+    ],
+    "thirdsDiffer": true,
+    "redFrac": 0.0154,
+    "whiteFrac": 0.0006,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t12-three-r1": {
+    "task": 12,
+    "changedFrac": 0.132,
+    "motionOk": true,
+    "meanLuma": 15.2,
+    "thirdsLuma": [
+      16.0,
+      25.8,
+      3.7
+    ],
+    "thirdsDiffer": true,
+    "goldFrac": 0.0021,
+    "lightLowSatFrac": 0.0004,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t12-three-r2": {
+    "task": 12,
+    "changedFrac": 0.1022,
+    "motionOk": true,
+    "meanLuma": 11.0,
+    "thirdsLuma": [
+      6.4,
+      26.2,
+      0.2
+    ],
+    "thirdsDiffer": true,
+    "goldFrac": 0.0012,
+    "lightLowSatFrac": 0.0084,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  },
+  "bench505-materials-t12-three-r3": {
+    "task": 12,
+    "changedFrac": 0.0779,
+    "motionOk": true,
+    "meanLuma": 9.3,
+    "thirdsLuma": [
+      6.0,
+      19.8,
+      2.1
+    ],
+    "thirdsDiffer": true,
+    "goldFrac": 0.0015,
+    "lightLowSatFrac": 0.0078,
+    "colourOk": false,
+    "stateAssigned": true,
+    "stateKeysPresent": true,
+    "stateStaticOk": true
+  }
+}

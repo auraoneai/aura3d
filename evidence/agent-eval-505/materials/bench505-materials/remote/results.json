@@ -1,0 +1,660 @@
+[
+  {
+    "id": "bench505-materials-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 110.6,
+        "std": 117.3,
+        "nonblack": 0.479,
+        "diff": 0.61,
+        "changedFrac": 0.0056
+      },
+      "taskProbes": {
+        "task": 10,
+        "changedFrac": 0.0057,
+        "motionOk": true,
+        "meanLuma": 110.8,
+        "thirdsLuma": [
+          142.3,
+          132.8,
+          57.1
+        ],
+        "thirdsDiffer": true,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 6522.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 110.3,
+        "std": 117.2,
+        "nonblack": 0.48,
+        "diff": 0.51,
+        "changedFrac": 0.006
+      },
+      "taskProbes": {
+        "task": 10,
+        "changedFrac": 0.0062,
+        "motionOk": true,
+        "meanLuma": 110.5,
+        "thirdsLuma": [
+          143.3,
+          130.9,
+          57.6
+        ],
+        "thirdsDiffer": true,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 6523.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 111,
+        "std": 118.1,
+        "nonblack": 0.479,
+        "diff": 0.47,
+        "changedFrac": 0.006
+      },
+      "taskProbes": {
+        "task": 10,
+        "changedFrac": 0.0063,
+        "motionOk": true,
+        "meanLuma": 111.1,
+        "thirdsLuma": [
+          144.3,
+          132.5,
+          56.9
+        ],
+        "thirdsDiffer": true,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 6522.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t10-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 95.8,
+        "std": 103.6,
+        "nonblack": 0.48,
+        "diff": 1.95,
+        "changedFrac": 0.0116
+      },
+      "taskProbes": {
+        "task": 10,
+        "changedFrac": 0.0129,
+        "motionOk": true,
+        "meanLuma": 96,
+        "thirdsLuma": [
+          124.8,
+          113.2,
+          50
+        ],
+        "thirdsDiffer": true,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 749.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t10-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 94.9,
+        "std": 102.5,
+        "nonblack": 0.48,
+        "diff": 5.13,
+        "changedFrac": 0.2558
+      },
+      "taskProbes": {
+        "task": 10,
+        "changedFrac": 0.2611,
+        "motionOk": true,
+        "meanLuma": 95.2,
+        "thirdsLuma": [
+          121.6,
+          116.2,
+          48
+        ],
+        "thirdsDiffer": true,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 506.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t10-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 101.5,
+        "std": 108.6,
+        "nonblack": 0.48,
+        "diff": 1.94,
+        "changedFrac": 0.0403
+      },
+      "taskProbes": {
+        "task": 10,
+        "changedFrac": 0.0416,
+        "motionOk": true,
+        "meanLuma": 101.8,
+        "thirdsLuma": [
+          132.8,
+          122.6,
+          50.1
+        ],
+        "thirdsDiffer": true,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 506.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t11-aura-r1-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 46.5,
+        "std": 73.4,
+        "nonblack": 0.48,
+        "diff": 4.71,
+        "changedFrac": 0.0536
+      },
+      "taskProbes": {
+        "task": 11,
+        "changedFrac": 0.0548,
+        "motionOk": true,
+        "meanLuma": 47.9,
+        "thirdsLuma": [
+          59.3,
+          64.8,
+          19.5
+        ],
+        "thirdsDiffer": true,
+        "redFrac": 0.0101,
+        "whiteFrac": 0.0128,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 6529.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 61.9,
+        "std": 83.8,
+        "nonblack": 0.48,
+        "diff": 6.79,
+        "changedFrac": 0.0927
+      },
+      "taskProbes": {
+        "task": 11,
+        "changedFrac": 0.093,
+        "motionOk": true,
+        "meanLuma": 64.3,
+        "thirdsLuma": [
+          69.6,
+          84.7,
+          38.6
+        ],
+        "thirdsDiffer": true,
+        "redFrac": 0.0015,
+        "whiteFrac": 0.0363,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 6527
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 9.7,
+        "std": 30.1,
+        "nonblack": 0.287,
+        "diff": 3.4,
+        "changedFrac": 0.0485
+      },
+      "taskProbes": {
+        "task": 11,
+        "changedFrac": 0.0506,
+        "motionOk": true,
+        "meanLuma": 10.3,
+        "thirdsLuma": [
+          8.3,
+          19.9,
+          2.7
+        ],
+        "thirdsDiffer": true,
+        "redFrac": 0.019,
+        "whiteFrac": 0.0009,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 524.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t11-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 32.5,
+        "std": 67.1,
+        "nonblack": 0.317,
+        "diff": 2.94,
+        "changedFrac": 0.0435
+      },
+      "taskProbes": {
+        "task": 11,
+        "changedFrac": 0.0452,
+        "motionOk": true,
+        "meanLuma": 33.6,
+        "thirdsLuma": [
+          66.5,
+          23.9,
+          10.5
+        ],
+        "thirdsDiffer": true,
+        "redFrac": 0.0159,
+        "whiteFrac": 0.0578,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 531.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t11-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 9.3,
+        "std": 27.8,
+        "nonblack": 0.293,
+        "diff": 2.74,
+        "changedFrac": 0.0429
+      },
+      "taskProbes": {
+        "task": 11,
+        "changedFrac": 0.044,
+        "motionOk": true,
+        "meanLuma": 10.1,
+        "thirdsLuma": [
+          9.5,
+          18,
+          2.7
+        ],
+        "thirdsDiffer": true,
+        "redFrac": 0.0154,
+        "whiteFrac": 0.0006,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 526.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t12-aura-r1-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t12-aura-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t12-aura-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t12-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 15.9,
+        "std": 42.8,
+        "nonblack": 0.21,
+        "diff": 4.42,
+        "changedFrac": 0.1315
+      },
+      "taskProbes": {
+        "task": 12,
+        "changedFrac": 0.132,
+        "motionOk": true,
+        "meanLuma": 15.2,
+        "thirdsLuma": [
+          16,
+          25.8,
+          3.7
+        ],
+        "thirdsDiffer": true,
+        "goldFrac": 0.0021,
+        "lightLowSatFrac": 0.0004,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 529
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t12-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 11.2,
+        "std": 40.4,
+        "nonblack": 0.137,
+        "diff": 3.79,
+        "changedFrac": 0.1041
+      },
+      "taskProbes": {
+        "task": 12,
+        "changedFrac": 0.1022,
+        "motionOk": true,
+        "meanLuma": 11,
+        "thirdsLuma": [
+          6.4,
+          26.2,
+          0.2
+        ],
+        "thirdsDiffer": true,
+        "goldFrac": 0.0012,
+        "lightLowSatFrac": 0.0084,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 529
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-materials-t12-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 9.5,
+        "std": 31.1,
+        "nonblack": 0.162,
+        "diff": 2.48,
+        "changedFrac": 0.0798
+      },
+      "taskProbes": {
+        "task": 12,
+        "changedFrac": 0.0779,
+        "motionOk": true,
+        "meanLuma": 9.3,
+        "thirdsLuma": [
+          6,
+          19.8,
+          2.1
+        ],
+        "thirdsDiffer": true,
+        "goldFrac": 0.0015,
+        "lightLowSatFrac": 0.0078,
+        "colourOk": false,
+        "stateAssigned": true,
+        "stateKeysPresent": true,
+        "stateStaticOk": true
+      }
+    },
+    "bundle": {
+      "rawKB": 527
+    },
+    "readyMs": null
+  }
+]

@@ -28,6 +28,11 @@ export function probeChecks(task, remote) {
       mobileNoHScroll: p.mobile?.noHorizontalScroll === true
     });
   if (task === 7) Object.assign(items, { animated: p.animated === true });
+  if (task >= 10 && task <= 12) {
+    const t = p.taskProbes ?? {};
+    Object.assign(items, { motionOk: t.motionOk === true, thirdsDiffer: t.thirdsDiffer === true, stateStaticOk: t.stateStaticOk === true });
+    if (task >= 11) items.colourOk = t.colourOk === true;
+  }
   const values = Object.values(items);
   return { items, passed: values.filter(Boolean).length, total: values.length };
 }

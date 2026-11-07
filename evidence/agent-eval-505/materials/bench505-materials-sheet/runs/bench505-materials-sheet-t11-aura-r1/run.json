@@ -1,0 +1,224 @@
+{
+  "runId": "bench505-materials-sheet-t11-aura-r1",
+  "batch": "bench505-materials-sheet",
+  "arm": "aura",
+  "task": 11,
+  "idx": 1,
+  "order": 2,
+  "seed": 20261106002,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-07T02:06:58.409Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 676644,
+  "usage": {
+    "input": 609758,
+    "uncachedInput": 609758,
+    "output": 11377,
+    "turns": 13,
+    "perTurnInput": [
+      3334,
+      11734,
+      20851,
+      31532,
+      32586,
+      40523,
+      46796,
+      46998,
+      59204,
+      60382,
+      84505,
+      84896,
+      86417
+    ],
+    "perTurnOutput": [
+      20,
+      51,
+      36,
+      254,
+      47,
+      89,
+      1131,
+      28,
+      1660,
+      24,
+      7432,
+      74,
+      531
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1756,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1756,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1756,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4601,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 4,
+      "t": 4609,
+      "type": "search",
+      "pattern": "clearcoat|envMap|environments\\."
+    },
+    {
+      "i": 5,
+      "t": 6491,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 6,
+      "t": 6600,
+      "type": "search",
+      "pattern": "carPaint|flake"
+    },
+    {
+      "i": 7,
+      "t": 18529,
+      "type": "search",
+      "pattern": "carPaint: \\(|custom: \\(|clearcoatPaint: "
+    },
+    {
+      "i": 8,
+      "t": 18538,
+      "type": "search",
+      "pattern": "material\\.custom"
+    },
+    {
+      "i": 9,
+      "t": 20414,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+      "lines": 230
+    },
+    {
+      "i": 10,
+      "t": 20414,
+      "type": "read",
+      "path": "docs/agents/troubleshooting.md",
+      "lines": 40
+    },
+    {
+      "i": 11,
+      "t": 28140,
+      "type": "search",
+      "pattern": "modelViewProjectionMatrix"
+    },
+    {
+      "i": 12,
+      "t": 82494,
+      "type": "search",
+      "pattern": "SPECIAL_SURFACE_VERTEX_GLSL =|NORMAL_VERTEX_GLSL =|MATCAP_FRAGMENT_GLSL ="
+    },
+    {
+      "i": 13,
+      "t": 84061,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+      "lines": 130
+    },
+    {
+      "i": 14,
+      "t": 538696,
+      "type": "search",
+      "pattern": "RESERVED[A-Z_]* = |reserved uniform"
+    },
+    {
+      "i": 15,
+      "t": 540348,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 211
+    },
+    {
+      "i": 16,
+      "t": 658862,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 13878
+    },
+    {
+      "i": 17,
+      "t": 659370,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 18,
+      "t": 663407,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 19,
+      "t": 663891,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 20,
+      "t": 676644,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/troubleshooting.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts. It typechecks, but I couldn't build it or run it in a browser, so I haven't seen a rendered frame. The GLSL shader and the lighting values are untested, so check the first frame for compile errors, strip placement and brightness.\n\n- **Car:** a lofted bean-shaped body and a separate cabin, both generated in code. The cabin is dark glass with a candy-red roof cap on top. There is a thin chrome belt-line strip around the body, four rubber wheel discs and chrome hub caps.\n- **Paint:** one custom GLSL shader draws every surface, so there are no scene lights. It computes a procedural studio in world space, with two long overhead strips, side strips, a cool blue rim strip behind the car and a dim front fill panel. A candy-red base layer gets sparkle from randomly tilted metallic flakes. A glossy clear coat sits on top and reflects the studio strips, so the highlights slide and bend over the curved panels as the car turns.\n- **Other surfaces:** the chrome, glass and rubber use the same shader with different settings.\n- **Platform:** the turntable is a semi-transparent glossy disc with a glowing ring light and a metal skirt with a glowing rim. A copy of the car, flipped in the shader and faded with height, shows through the disc as a faint mirror image.\n- **Animation and camera:** two groups holding the car and its mirrored copy rotate at 20°/s. The camera is fixed, low and in front-three-quarter view, with the whole car in frame.\n- **Contract:** `window.__TASK_STATE__` is updated every frame with `turntableAngleDeg` and `paintFinish: 'clearcoat'`. `window.__EVAL_READY__` is set after `app.ready()`.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": false
+}

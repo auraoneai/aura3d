@@ -1,0 +1,290 @@
+[
+ {
+  "task": "materials-1",
+  "arm": "aura",
+  "turns": [
+   20,
+   21,
+   20
+  ],
+  "finished": 3,
+  "firstTryTsc": 3,
+  "checklist": [
+   1,
+   1,
+   1
+  ],
+  "motionOk": 3,
+  "rendered": 3,
+  "tokensIn": [
+   1008872,
+   1100068,
+   1013474
+  ],
+  "tokensOut": [
+   11091,
+   4883,
+   11700
+  ],
+  "visual": {
+   "aura_wins": 0,
+   "three_wins": 3,
+   "tie": 0,
+   "no_frames_forfeit": 0
+  }
+ },
+ {
+  "task": "materials-1",
+  "arm": "aura-sheet",
+  "turns": [
+   21,
+   14,
+   16
+  ],
+  "finished": 3,
+  "firstTryTsc": 3,
+  "checklist": [
+   1,
+   1,
+   1
+  ],
+  "motionOk": 3,
+  "rendered": 3,
+  "tokensIn": [
+   823324,
+   489013,
+   430277
+  ],
+  "tokensOut": [
+   4010,
+   3268,
+   3247
+  ],
+  "visual": {
+   "aura_wins": 0,
+   "three_wins": 3,
+   "tie": 0,
+   "no_frames_forfeit": 0
+  }
+ },
+ {
+  "task": "materials-1",
+  "arm": "three",
+  "turns": [
+   6,
+   9,
+   6
+  ],
+  "finished": 3,
+  "firstTryTsc": 3,
+  "checklist": [
+   1,
+   1,
+   1
+  ],
+  "motionOk": 3,
+  "rendered": 3,
+  "tokensIn": [
+   68436,
+   120990,
+   76557
+  ],
+  "tokensOut": [
+   5792,
+   7159,
+   6501
+  ]
+ },
+ {
+  "task": "materials-2",
+  "arm": "aura",
+  "turns": [
+   33,
+   35,
+   33
+  ],
+  "finished": 2,
+  "firstTryTsc": 2,
+  "checklist": [
+   0,
+   1,
+   0.9
+  ],
+  "motionOk": 2,
+  "rendered": 2,
+  "tokensIn": [
+   2126217,
+   3095450,
+   2395881
+  ],
+  "tokensOut": [
+   19886,
+   16405,
+   12595
+  ],
+  "visual": {
+   "aura_wins": 0,
+   "three_wins": 2,
+   "tie": 0,
+   "no_frames_forfeit": 1
+  }
+ },
+ {
+  "task": "materials-2",
+  "arm": "aura-sheet",
+  "turns": [
+   13,
+   12,
+   32
+  ],
+  "finished": 2,
+  "firstTryTsc": 0,
+  "checklist": [
+   1,
+   0,
+   0.9
+  ],
+  "motionOk": 2,
+  "rendered": 1,
+  "tokensIn": [
+   609758,
+   437460,
+   1905728
+  ],
+  "tokensOut": [
+   11377,
+   13410,
+   7251
+  ],
+  "visual": {
+   "aura_wins": 0,
+   "three_wins": 2,
+   "tie": 0,
+   "no_frames_forfeit": 1
+  }
+ },
+ {
+  "task": "materials-2",
+  "arm": "three",
+  "turns": [
+   6,
+   8,
+   5
+  ],
+  "finished": 3,
+  "firstTryTsc": 3,
+  "checklist": [
+   1,
+   1,
+   1
+  ],
+  "motionOk": 3,
+  "rendered": 3,
+  "tokensIn": [
+   79676,
+   129643,
+   73880
+  ],
+  "tokensOut": [
+   7338,
+   8555,
+   7514
+  ]
+ },
+ {
+  "task": "materials-3",
+  "arm": "aura",
+  "turns": [
+   40,
+   40,
+   40
+  ],
+  "finished": 0,
+  "firstTryTsc": 0,
+  "checklist": [
+   0,
+   0,
+   0
+  ],
+  "motionOk": 0,
+  "rendered": 0,
+  "tokensIn": [
+   3043591,
+   2712322,
+   2958261
+  ],
+  "tokensOut": [
+   16920,
+   3100,
+   3987
+  ],
+  "visual": {
+   "aura_wins": 0,
+   "three_wins": 0,
+   "tie": 0,
+   "no_frames_forfeit": 3
+  }
+ },
+ {
+  "task": "materials-3",
+  "arm": "aura-sheet",
+  "turns": [
+   30,
+   35,
+   40
+  ],
+  "finished": 2,
+  "firstTryTsc": 2,
+  "checklist": [
+   1,
+   0.9,
+   0
+  ],
+  "motionOk": 2,
+  "rendered": 2,
+  "tokensIn": [
+   2083655,
+   1945726,
+   2537107
+  ],
+  "tokensOut": [
+   12821,
+   8709,
+   4708
+  ],
+  "visual": {
+   "aura_wins": 0,
+   "three_wins": 2,
+   "tie": 0,
+   "no_frames_forfeit": 1
+  }
+ },
+ {
+  "task": "materials-3",
+  "arm": "three",
+  "turns": [
+   7,
+   7,
+   6
+  ],
+  "finished": 3,
+  "firstTryTsc": 3,
+  "checklist": [
+   1,
+   1,
+   1
+  ],
+  "motionOk": 3,
+  "rendered": 1,
+  "tokensIn": [
+   120966,
+   122542,
+   92880
+  ],
+  "tokensOut": [
+   9215,
+   9840,
+   8716
+  ]
+ }
+]

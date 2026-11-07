@@ -7,7 +7,8 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "n
 import { join, resolve } from "node:path";
 
 const REPO = resolve(import.meta.dirname, "..", "..");
-const [batch, statsFile] = process.argv.slice(2);
+const [batch, statsFile, extraFile] = process.argv.slice(2);
+const extra = extraFile ? JSON.parse(readFileSync(extraFile, "utf8")) : {};
 const WORK = process.env.AGENT_EVAL_WORK ?? "/tmp/agent-eval-runs";
 const batchDir = join(REPO, (process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval"), batch);
 const builds = JSON.parse(readFileSync(join(batchDir, "local-build.json"), "utf8"));
@@ -23,7 +24,7 @@ const out = Object.entries(builds).map(([id, b]) => {
     build: { ok: b.ok },
     readyTimeout: false,
     page: { pageErrors: [], consoleErrorCount: 0 },
-    probes: s ? { blank: !(s.nonblack > 0.2 && s.std > 3), animated: s.diff > 0.1, frame: s } : undefined,
+    probes: s ? { blank: !(s.nonblack > 0.2 && s.std > 3), animated: s.diff > 0.1, frame: s, ...(extra[id] ? { taskProbes: extra[id] } : {}) } : undefined,
     bundle: { rawKB: b.ok ? jsKb(id) : null },
     readyMs: null
   };

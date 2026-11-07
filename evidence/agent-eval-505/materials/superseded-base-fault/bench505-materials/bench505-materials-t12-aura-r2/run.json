@@ -1,0 +1,367 @@
+{
+  "runId": "bench505-materials-t12-aura-r2",
+  "batch": "bench505-materials",
+  "arm": "aura",
+  "task": 12,
+  "idx": 2,
+  "order": 5,
+  "seed": 20261106005,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T01:07:56.346Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 1704,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1704,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1704,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 3212,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 3212,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 4802,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 4802,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 7,
+      "t": 4802,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 6646,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 6647,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 212
+    },
+    {
+      "i": 10,
+      "t": 10191,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 11,
+      "t": 10191,
+      "type": "list",
+      "path": "docs/agents/recipes-src/pbr-product-viewer"
+    },
+    {
+      "i": 12,
+      "t": 12315,
+      "type": "read",
+      "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 13,
+      "t": 12315,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 14,
+      "t": 12316,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 15,
+      "t": 16462,
+      "type": "search",
+      "pattern": "lathe"
+    },
+    {
+      "i": 16,
+      "t": 16468,
+      "type": "search",
+      "pattern": "canvasTexture|CanvasTexture|dataTexture|DataTexture|textures\\.|fromCanvas"
+    },
+    {
+      "i": 17,
+      "t": 19285,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 18,
+      "t": 19285,
+      "type": "list",
+      "path": "docs/agents/recipes-src/procedural-humanoid"
+    },
+    {
+      "i": 19,
+      "t": 20781,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 20,
+      "t": 20781,
+      "type": "list",
+      "path": "docs"
+    },
+    {
+      "i": 21,
+      "t": 23851,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 22,
+      "t": 23851,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 23,
+      "t": 23851,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 24,
+      "t": 25286,
+      "type": "search",
+      "pattern": "createAuraApp"
+    },
+    {
+      "i": 25,
+      "t": 28586,
+      "type": "error",
+      "tool": "read_file"
+    },
+    {
+      "i": 26,
+      "t": 28586,
+      "type": "read",
+      "path": "docs/agents/recipes-src/signature-examples.check.ts",
+      "lines": 36
+    },
+    {
+      "i": 27,
+      "t": 36555,
+      "type": "search",
+      "pattern": "\\bmap:|normalMap|roughnessMap|baseColorMap|uv-?scale|proceduralTexture|textureFr"
+    },
+    {
+      "i": 28,
+      "t": 39908,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 29,
+      "t": 39914,
+      "type": "search",
+      "pattern": "procedural|texture"
+    },
+    {
+      "i": 30,
+      "t": 41175,
+      "type": "list",
+      "path": ".agents/skills/aura3d-materials-environments"
+    },
+    {
+      "i": 31,
+      "t": 42800,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/SKILL.md",
+      "lines": 154
+    },
+    {
+      "i": 32,
+      "t": 42800,
+      "type": "list",
+      "path": ".agents/skills/aura3d-materials-environments/references"
+    },
+    {
+      "i": 33,
+      "t": 55799,
+      "type": "search",
+      "pattern": "environments\\.capture|colors:|vertex colo"
+    },
+    {
+      "i": 34,
+      "t": 58008,
+      "type": "read",
+      "path": "docs/agents/recipes-src/terrain-water-fog/main.ts",
+      "lines": 48
+    },
+    {
+      "i": 35,
+      "t": 58008,
+      "type": "read",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+      "lines": 41
+    },
+    {
+      "i": 36,
+      "t": 58012,
+      "type": "search",
+      "pattern": "lathe|params|runtime"
+    },
+    {
+      "i": 37,
+      "t": 81170,
+      "type": "search",
+      "pattern": "environments\\.(capture|preset|room|hdri)"
+    },
+    {
+      "i": 38,
+      "t": 81173,
+      "type": "search",
+      "pattern": "capture|CubeCamera|PMREM|envMap|RoomEnvironment"
+    },
+    {
+      "i": 39,
+      "t": 88219,
+      "type": "search",
+      "pattern": "environments\\.capture"
+    },
+    {
+      "i": 40,
+      "t": 88228,
+      "type": "search",
+      "pattern": "capture\\(|EnvironmentMapPreset|nightCinematic|data:image|dataUrl|objectURL|blob:"
+    },
+    {
+      "i": 41,
+      "t": 99998,
+      "type": "search",
+      "pattern": "metalStudio|metal-studio|night-cinematic"
+    },
+    {
+      "i": 42,
+      "t": 149189,
+      "type": "search",
+      "pattern": "app\\.camera|AuraCameraController|setCamera|camera\\.set"
+    },
+    {
+      "i": 43,
+      "t": 149198,
+      "type": "search",
+      "pattern": "app\\.camera|\\.camera\\?\\.|cameraController"
+    },
+    {
+      "i": 44,
+      "t": 151285,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 22
+    },
+    {
+      "i": 45,
+      "t": 151292,
+      "type": "search",
+      "pattern": "setPosition|lookAt|\\.camera\\b.*(set|move)"
+    },
+    {
+      "i": 46,
+      "t": 155008,
+      "type": "search",
+      "pattern": "setPose"
+    },
+    {
+      "i": 47,
+      "t": 155017,
+      "type": "search",
+      "pattern": "roundedBox|physical\\(|clearcoat:|envMapIntensity|material\\.pbr\\(\\{[^}]*(opacity|"
+    },
+    {
+      "i": 48,
+      "t": 157523,
+      "type": "read",
+      "path": "docs/agents/recipes-src/translation-table.check.ts",
+      "lines": 90
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-materials-environments/SKILL.md",
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+    "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+    "docs/agents/recipes-src/signature-examples.check.ts",
+    "docs/agents/recipes-src/terrain-water-fog/main.ts",
+    "docs/agents/recipes-src/translation-table.check.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-materials-runs/bench505-materials/bench505-materials-t12-aura-r2/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

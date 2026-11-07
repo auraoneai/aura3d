@@ -1,0 +1,224 @@
+{
+  "runId": "bench505-materials-sheet-t11-aura-r2",
+  "batch": "bench505-materials-sheet",
+  "arm": "aura",
+  "task": 11,
+  "idx": 2,
+  "order": 6,
+  "seed": 20261106006,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-07T02:06:58.607Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_output_tokens",
+  "wallMs": 838882,
+  "usage": {
+    "input": 437460,
+    "uncachedInput": 437460,
+    "output": 13410,
+    "turns": 12,
+    "perTurnInput": [
+      3334,
+      11742,
+      15006,
+      24524,
+      27286,
+      28687,
+      47180,
+      51427,
+      52413,
+      66711,
+      67986,
+      41164
+    ],
+    "perTurnOutput": [
+      20,
+      59,
+      36,
+      346,
+      76,
+      51,
+      2222,
+      176,
+      56,
+      2089,
+      87,
+      8192
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1584,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1584,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1585,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4262,
+      "type": "search",
+      "pattern": "clearcoat|environments\\.|envMap|custom\\("
+    },
+    {
+      "i": 4,
+      "t": 4263,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 5,
+      "t": 6087,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 110
+    },
+    {
+      "i": 6,
+      "t": 6087,
+      "type": "read",
+      "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 7,
+      "t": 26863,
+      "type": "read",
+      "path": "docs/agents/recipes-src/water-custom-shader/main.ts",
+      "lines": 67
+    },
+    {
+      "i": 8,
+      "t": 26872,
+      "type": "search",
+      "pattern": "reserved|AuraCustomMaterialSpec|transparent: true|blending"
+    },
+    {
+      "i": 9,
+      "t": 30788,
+      "type": "search",
+      "pattern": "interface AuraCustomMaterialSpec|AuraCustomUniform|type AuraMaterialBlending|ble"
+    },
+    {
+      "i": 10,
+      "t": 32816,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 75
+    },
+    {
+      "i": 11,
+      "t": 32816,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.d.ts",
+      "lines": 154
+    },
+    {
+      "i": 12,
+      "t": 392208,
+      "type": "search",
+      "pattern": "export declare function group\\(|export interface AuraGroupOptions|setScale\\(|set"
+    },
+    {
+      "i": 13,
+      "t": 644071,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/groups.d.ts",
+      "lines": 23
+    },
+    {
+      "i": 14,
+      "t": 644075,
+      "type": "search",
+      "pattern": "interface AuraTransformSpec|interface AuraCustomGeometryOptions|interface AuraGe"
+    },
+    {
+      "i": 15,
+      "t": 646195,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 16,
+      "t": 646202,
+      "type": "search",
+      "pattern": "custom\\(|define\\("
+    },
+    {
+      "i": 17,
+      "t": 756375,
+      "type": "search",
+      "pattern": "rotate|position\\(|scale\\(|runtime\\("
+    },
+    {
+      "i": 18,
+      "t": 756388,
+      "type": "search",
+      "pattern": "export declare (const|function) (custom|geometry)\\b|custom: \\(|readonly custom"
+    },
+    {
+      "i": 19,
+      "t": 760207,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/geometry.d.ts",
+      "lines": 86
+    },
+    {
+      "i": 20,
+      "t": 760211,
+      "type": "search",
+      "pattern": "interface AuraCustomGeometrySpec|interface AuraPrimitiveOptions"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+    "docs/agents/recipes-src/water-custom-shader/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/geometry.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/groups.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-materials-runs/bench505-materials-sheet/bench505-materials-sheet-t11-aura-r2/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

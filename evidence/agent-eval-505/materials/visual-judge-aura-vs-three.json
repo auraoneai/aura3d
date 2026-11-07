@@ -1,0 +1,506 @@
+{
+  "model": "claude-sonnet-5.5",
+  "judgeCallsPerPair": 3,
+  "results": [
+    {
+      "task": 10,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            }
+          },
+          "winner": "three",
+          "why": "A shows three clearly different materials (tinted glass, streaked brushed metal, dark red woven fabric) with soft contact shadows and a smooth curved backdrop, while B is washed out: the glass and metal spheres nearly vanish into the white floor and the shadows are faint."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 11,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A shows a clear glass sphere, a streaked brushed-metal sphere and a red woven fabric sphere with soft contact shadows and a curved backdrop, while B is overexposed, the glass and metal spheres are washed out and nearly identical, and the shadows are faint."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows three clearly different materials (tinted glass, streaked brushed metal, red woven fabric) with soft contact shadows, while A is washed out so the glass and metal spheres almost vanish into the background."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 12,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A shows a tinted glass sphere with clear highlights, a streaked metal sphere, a visible weave on the fabric and soft contact shadows on a graded floor, while B is washed out with a nearly invisible glass sphere, barely visible shadows and a flat, overexposed backdrop."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 11,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B has a visibly tinted glass sphere with sharp highlights, a chrome-like metal sphere, and clear soft contact shadows on a graded backdrop, while A is washed out, its glass is almost invisible, and its shadows are barely there. Both render into only a 640x360 area of the canvas with black elsewhere."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 13,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a clearly tinted glass sphere, a distinct metal sphere, a visible fabric weave and soft contact shadows on a graded backdrop, while B is washed out, its glass is nearly invisible and its shadows are barely there."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "In B the glass, brushed metal and woven red fabric are clearly different and grounded by soft shadows, while in A the glass and metal spheres are washed out almost to invisibility and the fabric shows only diagonal stripes."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 17
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows a clearly transparent glass sphere with highlights, a streaked metal sphere and a woven red fabric sphere with soft shadows, while A is washed out, with the glass and metal spheres nearly invisible and the fabric looking striped."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows a clearly transparent glass sphere with highlights, a streaked metal sphere and a woven red fabric sphere with grounded shadows, while A's glass and metal spheres are washed out and nearly invisible against the floor."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "error": "missing frames"
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 13,
+            "three": 19
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a darker showroom, a visible floor reflection of the car, a chrome strip, a glossy black cabin and a ring-lit turntable with a clear edge. A's washed-out bright platform, weak strip reflections on the paint and wheels that look detached make it look flatter and less premium."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 14,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a darker, more premium showroom with a glowing ring platform, a visible floor reflection of the car, and clearly distinct chrome, glass and rubber. B's platform is washed-out pale blue, the car looks like it floats above it, and the tyres have a noisy texture."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 12,
+            "three": 19
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a darker showroom, a chrome-and-cyan ring platform with a visible floor reflection, a clear chrome strip, black glass and rubber wheels, and a better-grounded car, while A's washed-out bright platform, weak reflections and floating-looking wheels read as less polished."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 11,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 2
+            }
+          },
+          "winner": "three",
+          "why": "A has a saturated red clearcoat with flake, distinct chrome, glass and rubber, and a dark showroom with a mirrored turntable, while B is washed out with a glaring bright platform, matte grey wheels floating off the floor and a pale pinkish body."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 12,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            }
+          },
+          "winner": "three",
+          "why": "A has a deep candy-red clearcoat with flake, distinct chrome, glass and rubber, a dark showroom with a rim-lit turntable and a floor reflection, while B is washed out by a bright blue glow, has flat grey wheels floating off the platform, and crops the platform at the frame edges."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 13,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 2
+            }
+          },
+          "winner": "three",
+          "why": "A has a deep candy-red finish with flake, distinct chrome, glass and rubber, and a dark showroom with a grounded, reflective turntable. B's scene is washed out with a bright blue haze, the wheels float and look flat grey, and the turntable is cropped by the frame."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "error": "missing frames"
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "error": "missing frames"
+    }
+  ]
+}

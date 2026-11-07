@@ -1,0 +1,2107 @@
+[
+  {
+    "runId": "bench505-materials-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 20,
+    "agentWallSec": 148.8,
+    "tokensIn": 1008872,
+    "tokensOut": 11091,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 4,
+    "readCalls": 16,
+    "searchCalls": 10,
+    "writeCalls": 3,
+    "srcLines": 199,
+    "srcTokens": 1474,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6522.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 50,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Three primitives.sphere calls with the same SPHERE_SIZE, placed in a row at x = -2.05, 0 and 2.05."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "material.clearGlass with transmission 1, ior 1.5, tint color, attenuationColor and opacity 0.3."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "material.brushedMetal with metalness 1, roughness 0.32 and anisotropy 0.9."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "material.fabric with roughness 1, metalness 0, sheen and sheenColor, and a procedural fabric normal texture."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "environments.studio is a procedural environment with no network, and envMapIntensity is set on the materials. The probes show reflections and brightness variation across the frame."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Key, fill and rim directional lights are authored, plus a softbox. The key has a PCSS shadow, the cove receives shadows, and effects.contactShadows is added."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A custom seamless cove geometry with a light-grey material (#cfd1d4) serves as the floor and backdrop."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The key position is updated each frame from keyX(time), and state.keyLightX is updated. The probes report motionOk, stateAssigned and animated."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A single fixed perspective camera at [2.4, 2.5, 7.6] targeting [0, 0.65, 0], fov 36, is never changed. The thirds-luma probe suggests all three spheres are in frame."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set in the first onFrame callback and again after app.ready(). The probes show no readyTimeout."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "material.brushedMetal: `metallic: 1, metalness: 1`",
+          "why": "Both aliases are passed, so one of them is redundant. It has no visible effect."
+        },
+        {
+          "where": "material.fabric: `metallic: 0, metalness: 0`",
+          "why": "Both aliases are passed, so one of them is redundant. It has no visible effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 12,
+        "glueLines": 50,
+        "notes": "The glue is mostly the hand-built cove geometry (profile, positions, normals, uvs, indices, about 45 lines), plus the global declarations, the state object, the ready flag and the frame loop plumbing. Scene description covers lights, materials, spheres and camera."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 21,
+    "agentWallSec": 107.1,
+    "tokensIn": 1100068,
+    "tokensOut": 4883,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 6,
+    "readCalls": 19,
+    "searchCalls": 12,
+    "writeCalls": 2,
+    "srcLines": 202,
+    "srcTokens": 1685,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6523.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 65,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Three primitives.sphere calls with the same RADIUS, positioned in a row at x=-2.05, 0 and 2.05."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "material.clearGlass uses transmission 1, ior 1.5, a tint color and attenuationColor, with opacity 0.28."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "brushedMetal has metalness 1, roughness 0.34 and anisotropy 0.9, which earns the bonus."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "material.fabric has roughness 1, metalness 0, a procedural weave texture, a procedural normal map, sheen and rim."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "environments.neutral is added with intensity 1.1 and no network use. It is procedural, and the materials set envMapIntensity."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Key, fill and rim directional lights are authored. The key has a PCSS shadow, the cove receives shadows, and effects.contactShadows is added."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A custom cove geometry gives a seamless curved backdrop with a light-grey material (#d9dadd)."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "onFrame moves the key light and updates keyLightX. The probes report motionOk and stateAssigned true, with changedFrac 0.006."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The camera is fixed at [1.6,3,8.6] with fov 32 and a target at the center. The thirds luma values differ, consistent with all three spheres being in frame."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set in a requestAnimationFrame after the first frame, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 8,
+        "glueLines": 65,
+        "notes": "Glue is mostly the hand-written cove geometry builder (~45 lines) and the procedural weave texture generator (~35 lines, which I counted partly as scene/asset). The rest is the clock, the ready flag and the global declarations. Engine bootstrapping is minimal."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 20,
+    "agentWallSec": 160.8,
+    "tokensIn": 1013474,
+    "tokensOut": 11700,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 4,
+    "readCalls": 15,
+    "searchCalls": 13,
+    "writeCalls": 4,
+    "srcLines": 171,
+    "srcTokens": 1393,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6522.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 60,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Three primitives.sphere calls with the same size 1.7, positioned in a row at x=-2.2, 0 and 2.2."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "material.clearGlass with transmission 1, ior 1.5, a tint color and attenuationColor."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "brushedMetal with metallic 1, roughness 0.34 and anisotropy 0.9."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "material.fabric with roughness 1, metallic 0, a procedural fabric normal map, and sheen with sheenColor."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "environments.studio is procedural, has no network access, and is applied to the scene. Probes show no errors."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Key, fill and rim directional lights are authored, the key has PCSS shadows, the cyclorama receives shadows, and effects.contactShadows is added."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A custom curved cyclorama mesh with a light-grey PBR material (#d3d5d8)."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The key light is moved via setPosition in onFrame and keyLightX is updated from a sine. Probes report motionOk and stateAssigned."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A single fixed perspective camera at [2.6, 2.7, 8.2] looking at the row of spheres, never modified."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after app.ready() and two rAF calls, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 75,
+        "rulesLines": 12,
+        "glueLines": 60,
+        "notes": "The glue is mostly the hand-built cyclorama geometry: profile loop, positions, normals, uvs and indices arrays. The rest is the __TASK_STATE__ and __EVAL_READY__ plumbing, the update loop and the global declaration. Scene description covers the lights, three spheres, materials and camera."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t10-three-r1",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 109.8,
+    "tokensIn": 68436,
+    "tokensOut": 5792,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 2,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 308,
+    "srcTokens": 2512,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 749.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Three meshes share one SphereGeometry with radius 0.8, placed in a row at x = -2.2, 0, 2.2."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The glass uses MeshPhysicalMaterial with transmission 1, ior 1.5, thickness, and a green-tinted attenuationColor."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The metal has metalness 1, roughness 0.42 with a roughness map, anisotropy 0.85, and a brushed streak texture."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The fabric has roughness 1, metalness 0, a procedural weave color map and bump map, and sheen 1 with a sheenColor."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A procedural room scene is built into an environment texture with PMREMGenerator.fromScene and assigned to scene.environment, with no network use."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Key (RectAreaLight plus SpotLight), fill and rim RectAreaLights are authored. The spot casts shadows onto the floor and blob contact shadows are added. The cyc has receiveShadow true. RectAreaLights cast no shadows, but the spot shadow and "
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The floor is a curved cyclorama backdrop with a light-grey 0xd4d4d4 material."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The key position follows sin(t) and __TASK_STATE__.keyLightX is updated each frame. The probes show motionOk and stateAssigned."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The camera is fixed at (3, 2.9, 9.2) with fov 34 and looks at the spheres. The thirds luma probe shows content across the frame."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after the first render call in the frame function."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "fabric.receiveShadow = true; glass/metal receiveShadow = false",
+          "why": "The fabric sphere receives shadows but nothing meaningful shadows it, so the flag has little visible effect. It is minor."
+        },
+        {
+          "where": "RectAreaLight key/fill/rim",
+          "why": "RectAreaLights cannot cast shadows. Only the SpotLight does, so the three area lights contribute no shadowing."
+        }
+      ],
+      "glue": {
+        "sceneLines": 215,
+        "rulesLines": 12,
+        "glueLines": 85,
+        "notes": "Glue covers renderer setup, the canvas helper, the seeded RNG, PMREM bootstrap, the manual cyc geometry builder with its index loops, the canvas texture generation plumbing, the blob shadow helper, and the rAF loop and ready flag. The procedural texture pixel loops are arguably asset or shader-like "
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t10-three-r2",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 9,
+    "agentWallSec": 160.5,
+    "tokensIn": 120990,
+    "tokensOut": 7159,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 2,
+    "readCalls": 5,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 330,
+    "srcTokens": 2676,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 3,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Three SphereGeometry(1) meshes share one geometry (equal radius) and sit in a row at x=-2.6, 0, 2.6."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Glass uses MeshPhysicalMaterial with transmission 1, ior 1.5, and a teal attenuationColor tint."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Metal has metalness 1, roughness 0.5 with a roughnessMap, and anisotropy 0.85 with a brushed texture (bonus). Roughness is mid-range."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Fabric has roughness 1, metalness 0, a procedural weave canvas texture as map and bumpMap, and sheen with sheenColor."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A procedural studio envScene is run through PMREMGenerator.fromScene and assigned as envMap on the materials, with no network."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Key, fill, rim and rim2 spotlights are authored, the key casts shadows, and a baked contact-shadow floor texture is used. Shadow-map receive is enabled on the cove."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The floor is a curved seamless cove with a light-grey material (0xd2d2d4)."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "key.position.x animates with sin(t) and state.keyLightX is updated each frame. Probes show motionOk and stateAssigned."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The camera is fixed at (2, 2.7, 8.6) looking at (0, 1, 0), and all three spheres are visible. The thirds-luma probe shows content across the frame."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after the first render call, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "glass.castShadow",
+          "why": "The glass mesh never sets castShadow, so it casts no real shadow. Only the baked floor texture gives it a contact shadow."
+        },
+        {
+          "where": "fill/rim/rim2/wallLight spotlights",
+          "why": "They do not cast shadows. This is by design, but only the key light produces real shadows."
+        },
+        {
+          "where": "fabric/metal receiveShadow",
+          "why": "The spheres do not set receiveShadow, so there is no self-shadowing between them. This is minor."
+        }
+      ],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 15,
+        "glueLines": 150,
+        "notes": "Glue is mostly the canvas-texture generation helpers (weave, brushed, floor), manual cove geometry building, the renderer bootstrap, the PMREM env-scene rebuild loop, and the state and ready plumbing. Textures and geometry are partly scene description, so the glue estimate is approximate."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t10-three-r3",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 135.5,
+    "tokensIn": 76557,
+    "tokensOut": 6501,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 1,
+    "readCalls": 4,
+    "searchCalls": 1,
+    "writeCalls": 1,
+    "srcLines": 313,
+    "srcTokens": 2550,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 506.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 115,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "One shared SphereGeometry with radius 0.8 is used for exactly three meshes at x=-2.1, 0 and 2.1."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The glass is a MeshPhysicalMaterial with transmission 1, ior 1.5, thickness and a teal attenuationColor."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The metal has metalness 1, roughness 0.55 with a roughnessMap, and anisotropy 0.85 with a brushed streak texture."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The fabric has roughness 1, metalness 0, a procedural weave canvas texture used as map and bumpMap, and sheen 1 with a sheenColor."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A procedural room scene is baked through PMREMGenerator.fromScene and assigned to scene.environment, with no network use."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "There is a shadow-casting key SpotLight, a fill DirectionalLight and a rim SpotLight. The shadow map is enabled and the floor has receiveShadow plus baked contact shadows."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The floor is a curved cyclorama with a light-grey 0xc4c4c4 material."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "key.position.x is animated with a sine of time and written to __TASK_STATE__.keyLightX every frame. The probes report motionOk and stateAssigned."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The camera is never moved after setup and the probes show all three thirds of the frame are lit and differ, so all three spheres are framed."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after the first render call, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "glassMat.envMapIntensity",
+          "why": "Material envMapIntensity is ignored when scene.environment is used in recent three.js, so it has no effect. scene.environmentIntensity is what applies."
+        },
+        {
+          "where": "glass mesh.castShadow=false / receiveShadow=false",
+          "why": "The glass sphere casts no real shadow, so the floor's contact shadow under it comes only from the baked texture. This is a deliberate workaround rather than a broken option."
+        }
+      ],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 10,
+        "glueLines": 115,
+        "notes": "Glue covers the renderer setup, the PMREM environment bootstrapping, the manual cyclorama geometry builder, the canvas texture helpers and the baked shadow canvas, the manual position and index buffer math, and the rAF loop. Procedural textures are counted partly as scene."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_output_tokens",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "motionOk": false,
+      "thirdsDiffer": false,
+      "stateStaticOk": false,
+      "colourOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 33,
+    "agentWallSec": 279.5,
+    "tokensIn": 2126217,
+    "tokensOut": 19886,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 10,
+    "readCalls": 27,
+    "searchCalls": 28,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "No source for the body geometry; src/main.ts is missing and the build failed."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No paint material code exists."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No flake effect is implemented."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No environment map is generated."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No trim or glass parts exist."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No wheels exist."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No turntable or camera code exists."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "__TASK_STATE__ is never set, and the probes are empty."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No floor reflection or contact shadow exists."
+        },
+        {
+          "id": "c10",
+          "pass": false,
+          "why": "__EVAL_READY__ is never set, and the build failed."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "The referenced entry module is absent from the submission, so the build fails and nothing runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No application source was delivered. Only the HTML shell and tsconfig exist."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 6,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 35,
+    "agentWallSec": 444.8,
+    "tokensIn": 3095450,
+    "tokensOut": 16405,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 12,
+    "readCalls": 31,
+    "searchCalls": 26,
+    "writeCalls": 7,
+    "srcLines": 438,
+    "srcTokens": 4037,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6529.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 170,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The body is a procedural superellipsoid with a 112x72 grid and analytic normals, so faceting is not visible."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "material.physical sets a base colour, metallic 0.55, roughness 0.3, clearcoat 1 and clearcoatRoughness 0.025, which is a separate low-roughness clearcoat layer. An additive coat shell is layered on top."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A 256px random flake normal map is applied to the paint. The coat shader adds per-cell hashed flake glints in world space."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The coat shader builds a procedural strip and softbox studio and reflects it, and rect strip lights and a neutral environment are also used. The probes show whiteFrac 0.0128, so some highlights are visible. The environment map itself is ana"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Chrome trim, a chrome cabin ring and chrome hubs contrast with near-black cabin glass and black rubber against the red paint."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Four tire cylinders use material.blackRubber()."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A turntable group has a deck and ring lights, and it rotates continuously at 20 deg/s. The camera is fixed. The probes confirm motion (motionOk true, changedFrac about 0.055)."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is updated every frame with turntableAngleDeg computed from elapsed time, and paintFinish is 'clearcoat'. The probes show stateAssigned and stateKeysPresent true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A mirrored copy of the car sits under a semi-transparent glossy deck, which gives a faint reflection that grounds the car."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set in a requestAnimationFrame callback after app.ready(). The probes show readyTimeout false."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 12,
+        "glueLines": 170,
+        "notes": "Glue is mostly the hand-written parametric mesh toolkit (buildGrid, superEllipsoid, sweepTube, mirrorY, bounds and smoothstep helpers), the procedural flake texture generator, and the manual mirrored-car duplication. The additive coat-reflection GLSL is shader code and is excluded from glue. The ren"
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 33,
+    "agentWallSec": 333.4,
+    "tokensIn": 2395881,
+    "tokensOut": 12595,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 8,
+    "readCalls": 23,
+    "searchCalls": 23,
+    "writeCalls": 2,
+    "srcLines": 350,
+    "srcTokens": 3536,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6527,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0.9,
+    "silentNoOps": 2,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The body is a superellipsoid with 96x72 segments and smooth area-weighted normals, so it should not look faceted."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "material.carPaint sets color, metallic 0.6, roughness 0.3, clearcoat 1 and clearcoatRoughness 0.015."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A procedural 256x256 flake normal map with random tilted facets is applied as the paint normal map with a repeat of 9x6. Per-pixel variation is present, although whether it is visible at this resolution is uncertain."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "environments.neutral is a stock environment, not a procedurally generated strip/softbox map. The rect lights and emissive fixtures add strip-like highlights, but no environment map with strips is generated and applied."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Chrome trim, rims and caps contrast with near-black glass and rubber against the red paint."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Four dark rubber cylinder wheels are created, plus rims and caps."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A turntable group with a plate, ring light and ticks holds the car, and the group is rotated each frame. The camera is fixed and the probes show motion."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The state is assigned each frame, with turntableAngleDeg growing from the time elapsed and paintFinish 'clearcoat'. The probes report stateAssigned and stateKeysPresent as true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A mirrored car-reflection group sits under a semi-transparent glossy plate, and the car casts shadows."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after app.ready and two animation frames, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "car-reflection group rotated by PI about X",
+          "why": "The car body sits at y>0 and a half-turn about X maps y to -y and z to -z. The mirror is plausible, but the plate is only 0.8 opaque and the reflection's visibility is not confirmed by the probes. Possibly not a no-op, so this is a low-conf"
+        },
+        {
+          "where": "environments.neutral({background:false}) and tex.generateMipmaps/minFilter settings",
+          "why": "The probe reports colourOk false, with redFrac 0.0015, so the red paint barely registers. The intended candy-red look is not clearly working."
+        }
+      ],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 15,
+        "glueLines": 150,
+        "notes": "The glue is mostly manual geometry math: the superellipsoid builder, smoothNormals, the beltTube sweep and the winding-flip checks. The flake texture generator and the RNG add more. App bootstrapping and the ready/state hooks are small."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t11-three-r1",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 6,
+    "agentWallSec": 379.6,
+    "tokensIn": 79676,
+    "tokensOut": 7338,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 1,
+    "readCalls": 5,
+    "searchCalls": 1,
+    "writeCalls": 1,
+    "srcLines": 354,
+    "srcTokens": 2962,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 524.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The body is a 128x72 SphereGeometry scaled into an ellipsoid. The tubes use 240 segments and the platform circle uses 128, so faceting is unlikely."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "MeshPhysicalMaterial has a base colour, metalness 0.62 and roughness 0.36, plus clearcoat 1.0 with clearcoatRoughness 0.025."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A procedural per-pixel flake normal map and colour map are generated from random noise and applied to the paint."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A procedural env scene with softbox strip planes is run through PMREM and assigned to scene.environment. The probes show the paint is not blank and has highlights."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Chrome material is used for trim rings and rims; the cabin uses near-black glass material against the red paint."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Four rubber cylinder wheels are created, two x positions by two sides."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A platform (circle, skirt, torus edge) exists. The turntable group rotates continuously with a fixed camera, and the probes show motionOk."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "turntableAngleDeg increases each frame at 20 deg/s and paintFinish is 'clearcoat'. The probes show stateAssigned, stateKeysPresent and stateStaticOk."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A mirrored car clone with scale.y=-1 sits under a semi-transparent glossy platform top, giving a faint reflection that grounds the car."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set inside the frame function right after the first render call, and there was no ready timeout."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "paint.envMapIntensity and other material envMapIntensity values",
+          "why": "With scene.environment, recent three.js versions ignore material.envMapIntensity unless material.envMap is set. These values likely have no effect."
+        },
+        {
+          "where": "mirror = car.clone() with scale.y=-1",
+          "why": "Negative scale flips face winding, so the mirrored car may render with inverted culling. Three.js handles negative determinant, so this is probably fine; it is listed only as a risk."
+        }
+      ],
+      "glue": {
+        "sceneLines": 230,
+        "rulesLines": 15,
+        "glueLines": 75,
+        "notes": "Glue is the renderer setup, canvas-based gradient background, softbox texture generation, PMREM bootstrapping, seeded RNG, flake texture pixel loops, and the animation loop/state plumbing. The probe's colourOk=false is not a checklist item, and the scene is quite dark (mean luma 10)."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t11-three-r2",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 8,
+    "agentWallSec": 296.5,
+    "tokensIn": 129643,
+    "tokensOut": 8555,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 1,
+    "readCalls": 4,
+    "searchCalls": 2,
+    "writeCalls": 4,
+    "srcLines": 418,
+    "srcTokens": 3501,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 531.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The body is an ellipsoid built from SphereGeometry with 96x64 segments and seam-smoothed normals, so there is no visible faceting."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The paint is a MeshPhysicalMaterial with base colour 0xb8000c, metalness 0.62, roughness 0.34, clearcoat 1 and clearcoatRoughness 0.025."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A procedural 512x512 random flake normal map, repeated 5x5, is applied as the paint normalMap, which gives per-pixel variation."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A PMREM environment is built procedurally from emissive box strips and a gradient dome, then set as scene.environment."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Chrome trim (belt tube, headlights, bumper, hubs) contrasts with the near-black glass cabin."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Four rubber lathe tyres are placed at (±1.2, 0.41, ±0.8)."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The car group sits in a turntable group that rotates every frame, the platform is a separate group, and the camera is static."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "turntableAngleDeg increases each frame and paintFinish is 'clearcoat'. The probes report stateAssigned, stateKeysPresent and motionOk as true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A Reflector mirror disc is dimmed by a dark overlay, which gives a faint reflection on the platform."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after the first render, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "paint.envMapIntensity, glass.envMapIntensity, chrome.envMapIntensity",
+          "why": "In recent three.js, envMapIntensity on a material is ignored when scene.environment is used rather than material.envMap. Only scene.environmentIntensity applies, so these three settings likely have no effect."
+        },
+        {
+          "where": "void startTime; unused startTime variable",
+          "why": "startTime is only initialised and then voided, so it does nothing."
+        }
+      ],
+      "glue": {
+        "sceneLines": 260,
+        "rulesLines": 15,
+        "glueLines": 95,
+        "notes": "Glue covers renderer setup, the smoothSeams normal helper, the bodyContains numeric search for placing the chrome belt, the flake texture generation loop, the overlay canvas texture, the loop, and the PMREM environment bootstrapping."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t11-three-r3",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 5,
+    "agentWallSec": 265.2,
+    "tokensIn": 73880,
+    "tokensOut": 7514,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 4,
+    "srcLines": 317,
+    "srcTokens": 2732,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 526.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 50,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The body is a CapsuleGeometry with 24 cap and 64 radial segments, and the cabin and roof are 64-segment spheres, so faceting should not be visible."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The paint is a MeshPhysicalMaterial with a base colour, metalness 0.55, roughness 0.38, clearcoat 1 and clearcoatRoughness 0.02."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A 512x512 random-perturbed normal map, with mipmaps and repeat, gives per-pixel flake variation on the paint."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A PMREM environment is built from a procedural scene of emissive strip boxes and set as scene.environment. The frame is dark overall, but the strips are bright and feed the paint, glass and chrome."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Chrome belt, bumper bands, side strips and hubs contrast with the near-black glass cabin and the dark rim and rubber parts."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Four wheel groups each have a rubber torus tire, a dark rim disc and a chrome hub."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A turntable group holds the platform top, wall and edge light and rotates continuously, with the car on it. The camera is fixed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The state object is assigned to window.__TASK_STATE__, turntableAngleDeg grows with time and paintFinish is 'clearcoat'. The probes report stateAssigned, stateKeysPresent and stateStaticOk as true."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "A radial-gradient contact shadow plane sits under the car. A mirrored car under a semi-transparent glossy platform adds a faint reflection."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set right after the first renderer.render call, and the probes report no ready timeout."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 235,
+        "rulesLines": 10,
+        "glueLines": 50,
+        "notes": "Glue covers renderer setup, the RAF loop and state plumbing, the canvas-2D background texture, the PMREM generate-and-dispose boilerplate, and the DataTexture and canvas texture helper code. Everything else is scene description (car geometry, materials, lights, platform)."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t12-aura-r1",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "motionOk": false,
+      "thirdsDiffer": false,
+      "stateStaticOk": false,
+      "colourOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 271,
+    "tokensIn": 3043591,
+    "tokensOut": 16920,
+    "docsFilesOpened": 7,
+    "typesFilesOpened": 12,
+    "readCalls": 29,
+    "searchCalls": 31,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 0,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "No source for the pedestal; src/main.ts is missing and the build failed."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No marble material exists in the source."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No trophy geometry exists in the source."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No gold material exists in the source."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No secondary material, base or plate exists in the source."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No environment map is generated."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No lights exist in the source."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No background, floor or wall is set up; the canvas is empty."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No camera animation and no __TASK_STATE__ in the source."
+        },
+        {
+          "id": "c10",
+          "pass": false,
+          "why": "__EVAL_READY__ is never set, and the build failed."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "Only index.html and tsconfig.json were delivered; the referenced src/main.ts does not exist, so there are no source lines to count."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t12-aura-r2",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "motionOk": false,
+      "thirdsDiffer": false,
+      "stateStaticOk": false,
+      "colourOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 166.4,
+    "tokensIn": 2712322,
+    "tokensOut": 3100,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 11,
+    "readCalls": 25,
+    "searchCalls": 29,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "No src/main.ts in the source; build failed. No pedestal or marble texture exists."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No material code exists."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No trophy geometry exists."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No gold material exists."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No secondary material, base or plate exists."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No environment map is generated."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No lights exist."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No scene, background, floor or wall exists."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No camera animation and no __TASK_STATE__; probes are empty."
+        },
+        {
+          "id": "c10",
+          "pass": false,
+          "why": "No __EVAL_READY__ is set, since there is no script and the build failed."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag",
+          "why": "It references /src/main.ts, which is not in the submitted source, so the build fails and nothing runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No application code was submitted, only the HTML shell and tsconfig."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t12-aura-r3",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "motionOk": false,
+      "thirdsDiffer": false,
+      "stateStaticOk": false,
+      "colourOk": false
+    },
+    "probePassFraction": 0.14285714285714285,
+    "turns": 40,
+    "agentWallSec": 191.4,
+    "tokensIn": 2958261,
+    "tokensOut": 3987,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 8,
+    "readCalls": 27,
+    "searchCalls": 28,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "No src/main.ts in the final source; build failed, so no pedestal or marble texture exists."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No material code present."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No trophy geometry present."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No gold material present."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No secondary material or base present."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No environment map code present."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No lights present."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No scene, background, or floor present; the page only has a black body and canvas."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No camera animation and no __TASK_STATE__; probes empty."
+        },
+        {
+          "id": "c10",
+          "pass": false,
+          "why": "No __EVAL_READY__ set; the build failed."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script src=/src/main.ts",
+          "why": "The module references a source file that is missing from the submission, and the build failed, so nothing runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No application source was provided; only the HTML shell and tsconfig exist."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t12-three-r1",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 7,
+    "agentWallSec": 153.6,
+    "tokensIn": 120966,
+    "tokensOut": 9215,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 5,
+    "srcLines": 513,
+    "srcTokens": 4248,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 529,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 120,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "There are 4 stacked marble slabs. The texture comes from turbulence-warped veins and fbm in makeMarbleTexture."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The marble is MeshPhysicalMaterial with roughness 0.2, clearcoat 0.7 and clearcoatRoughness 0.06, and it has a procedural map."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The cup is a LatheGeometry with a stem profile and rings, plus two TubeGeometry handles mirrored by sign."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The gold is 0xffc65a with metalness 1 and roughness 0.1."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A darker, rougher engraved gold band (roughness 0.42) is present, along with a black polished stone base and a gold plate."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "A PMREM environment is built from a procedural scene with windows and lamps, and it is applied as envMap on the gold."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A warm SpotLight casts shadows. A bluish directional fill and a warm rim spotlight are also present."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The background is dark (0x0a0705), with a wooden floor and a wall."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The azimuth is 15*sin(0.28t), giving ±15° (30° total) of slow oscillation. The probes confirm motion and the state is assigned."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set inside the frame function after the first render, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "rim SpotLight",
+          "why": "rim.castShadow is not set. This is harmless but means the rim light has no shadow."
+        },
+        {
+          "where": "gold colour probe",
+          "why": "The probe reports colourOk false and goldFrac of only 0.0021. The gold is barely visible in frame, so the requested warm gold look is weak in the render."
+        }
+      ],
+      "glue": {
+        "sceneLines": 230,
+        "rulesLines": 10,
+        "glueLines": 120,
+        "notes": "Glue covers renderer and loop setup, the shadowed helper, PMREM and window helper plumbing, the canvas texture boilerplate, and the hash/noise math helpers. Procedural texture pixel loops are counted partly as scene description and partly as glue."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t12-three-r2",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.7142857142857143,
+    "turns": 7,
+    "agentWallSec": 298.7,
+    "tokensIn": 122542,
+    "tokensOut": 9840,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 4,
+    "srcLines": 477,
+    "srcTokens": 4197,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 529,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 115,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The pedestal has five stacked marble blocks. The texture is procedural fbm/turbulence-warped veins drawn on a canvas."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The marble uses roughness 0.22, clearcoat 0.7 and clearcoatRoughness 0.06, with a vein map."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The cup is a LatheGeometry from a spline profile that includes a stem, plus two mirrored TubeGeometry handles."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "goldMat is warm (1.0, 0.74, 0.28) with metalness 1 and roughness 0.12."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A darker, rougher gold band (roughness 0.42, patterned map) is present. A dark stone stand carries a gold plate with engraved text."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "PMREMGenerator.fromScene builds an environment from windows, lamps and a strip light. It is applied as envMap on the gold and other materials."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A warm SpotLight with castShadow, a blue directional fill and a warm rim spotlight are all present."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The background is dark (0x070504). A floor plane and a back wall form the gallery."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Azimuth is 15*sin(0.35t), so it oscillates within ±15° (30° range). It is written to the state every frame, and the probes report motionOk and stateAssigned."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set after the first render, and readyTimeout is false."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "spot.shadow.radius = 5",
+          "why": "PCFShadowMap ignores shadow.radius, so the softness setting has no effect."
+        },
+        {
+          "where": "MeshPhysicalMaterial envMap on the floor/stone in the dark scene; probe colourOk false, goldFrac 0.0012",
+          "why": "The probe shows almost no gold pixels are visible and the scene is very dark (mean luma 11). The requested gold reflection effect is barely visible."
+        }
+      ],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 10,
+        "glueLines": 115,
+        "notes": "Glue covers renderer/loop bootstrapping, the PMREM setup, and the canvas texture helpers (value-noise, mulberry32, smoothstep, canvasTexture), plus manual profile/radiusAt math. The marble pixel loop is texture generation and is counted as scene content."
+      }
+    }
+  },
+  {
+    "runId": "bench505-materials-t12-three-r3",
+    "arm": "three",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "motionOk": true,
+      "thirdsDiffer": true,
+      "stateStaticOk": true,
+      "colourOk": false
+    },
+    "probePassFraction": 0.7142857142857143,
+    "turns": 6,
+    "agentWallSec": 273.7,
+    "tokensIn": 92880,
+    "tokensOut": 8716,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 3,
+    "srcLines": 457,
+    "srcTokens": 3780,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 527,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 3,
+    "glueLines": 110,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Four stacked RoundedBox steps, each using a marble texture generated in marble.ts from periodic value noise, fbm and turbulence-warped veins."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "MeshPhysicalMaterial with roughness 0.28, clearcoat 1, clearcoatRoughness 0.04 and a veined map, so it has both glossy parameters and colour variation."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The cup is a LatheGeometry built from a Catmull-Rom profile with a stem, knop and bowl. Two mirrored TubeGeometry handles are attached."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "goldMat has colour (1.0, 0.74, 0.28), metalness 1 and roughness 0.16. The probe's low goldFrac (0.0015) reflects the very dark frame, not these parameters."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "bandMat is a darker, rougher gold (roughness 0.48) with a bump map and is applied to a lathe band. The base uses darkStoneMat and carries a gold plate mesh."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "makeEnvironment builds a room with window and lamp panes and bakes it with PMREMGenerator.fromScene. The result is set as envMap on the gold and other materials."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Key light is a warm SpotLight (0xffd9a3) with castShadow and a 2048 shadow map. A blue DirectionalLight serves as fill and a cool SpotLight as rim."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Background and fog are near-black (0x070504), with a floor plane and a back wall. The probe confirms a dark frame (mean luma 9.3)."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Azimuth is 15*sin(0.35t), a ±15° swing (30° range), written to __TASK_STATE__.cameraAzimuthDeg every frame. The probes report motionOk, stateAssigned and stateStaticOk as true."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "__EVAL_READY__ is set to true right after the first renderer.render call. There was no ready timeout."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "key.shadow.radius = 5",
+          "why": "The shadow map type is PCFSoftShadowMap, which ignores shadow.radius. The setting only affects PCFShadowMap and VSM."
+        },
+        {
+          "where": "ring.scale.set(1, 1, 1)",
+          "why": "This is the default scale, so the call changes nothing."
+        },
+        {
+          "where": "goldMat envMap, envMapIntensity 1.6 and the gold highlights",
+          "why": "The probe measures goldFrac 0.0015 and colourOk false, so the requested gold reflections barely show in the final frame, which has a mean luma of 9.3."
+        }
+      ],
+      "glue": {
+        "sceneLines": 330,
+        "rulesLines": 12,
+        "glueLines": 110,
+        "notes": "Glue is the renderer, tone-mapping and shadow setup, the PMREM bootstrap, the rAF loop and state plumbing. It also includes sampleProfile and outerRadiusAt, the canvas 2D context boilerplate, and the hash/noise/fbm/turbulence/smoothstep helpers in marble.ts. The marble pixel loop and the band bump c"
+      }
+    }
+  }
+]

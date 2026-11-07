@@ -1,0 +1,688 @@
+{
+  "model": "claude-sonnet-5.5",
+  "judgeCallsPerPair": 3,
+  "results": [
+    {
+      "task": 10,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 1,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a grey curved studio backdrop, soft contact shadows, a clearly tinted glass sphere, streaked metal and a dark red weave sphere, while B is washed out with a near-white background, an almost invisible glass sphere, a pinkish fabric sphere and barely any shadows."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 1,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a grey seamless backdrop, clear soft contact shadows, a red weave and a distinct glass sphere, while B is washed out to near-white with a barely visible glass sphere, a pinkish fabric ball and almost no grounding."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 19
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows a legible glass, brushed-metal and red fabric sphere with grounded soft shadows and a curved studio backdrop, while A is washed out, the glass is nearly invisible and the shadows are almost absent."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 8,
+            "three": 17
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 1,
+              "c5": 1
+            }
+          },
+          "winner": "three",
+          "why": "A shows three clearly distinct, well-lit spheres with soft shadows, whereas B is washed out, with the glass nearly invisible, the spheres off-centre and little grounding."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 7,
+            "three": 20
+          },
+          "scores": {
+            "aura": {
+              "c1": 1,
+              "c2": 2,
+              "c3": 2,
+              "c4": 1,
+              "c5": 1
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows three clearly distinct, well-grounded spheres (tinted glass, chrome, red woven fabric), while A is washed out, with the metal sphere missing, the glass nearly invisible, and a stray object at the edge."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 6,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 1,
+              "c2": 2,
+              "c3": 1,
+              "c4": 1,
+              "c5": 1
+            }
+          },
+          "winner": "three",
+          "why": "A shows three distinct, recognisable materials (tinted glass, streaked chrome, red woven sphere) with soft shadows on a smooth backdrop, while B is washed out, with the glass and metal spheres nearly invisible, a stray shape at the left edge, no visible grounding, and the spheres off-centre."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows three clearly different materials (tinted glass with highlights, streaked metal, woven red fabric) with soft shadows, while A is washed out, the glass sphere is nearly invisible, and the metal sphere looks like grey glass."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows three clearly different materials (tinted refractive glass with highlights, streaked metal, visible woven fabric) with soft grounded shadows, while A's glass and metal are nearly invisible washed-out white balls and its lighting is overexposed."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 10,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B shows three clearly different materials (tinted glass with highlights, streaked metal, woven red fabric) with soft contact shadows, while A is washed out, with a near-invisible glass sphere, a metal sphere that is barely distinguishable from the backdrop, and weak grounding."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 16,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 2,
+              "c4": 4,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a deeper candy paint with visible flake, a chrome belt line, a dark glass cabin and rubber wheels, and a smoother car-like body, while A has stronger strip reflections and a better glowing platform ring but weaker material separation and an odd cabin form."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 18,
+            "three": 14
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "aura",
+          "why": "B shows crisp white strip reflections bending over the red panels, denser flake sparkle and a glowing ring-light turntable with a clear mirrored reflection, while A's paint is dark and dull with weak strip reflections, though B's cabin looks slightly detached."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 17,
+            "three": 18
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a more believable car silhouette and four clearly distinct surfaces (paint, chrome belt ring, black glass, rubber wheels) on a grounded turntable with a floor reflection, while A has crisper strip reflections but a fragmented-looking body, weak chrome and a floating cabin."
+        }
+      ],
+      "tally": {
+        "aura": 1,
+        "three": 2,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 16,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "winner": "three",
+          "why": "A has smoother, deeper red paint with visible strip highlights, distinct chrome rings, dark glass and a clear floor reflection, while B has a better car shape and more atmospheric lighting but its paint is covered in noisy glitter and shows almost no soft-box reflections."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 15,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A shows clear strip highlights bending over a glossy red body, a chrome ring, dark glass and a mirrored platform, while B's flake noise is overdone, its body has no readable soft-box reflections and its floor reflection is weak, even though B has the stronger showroom atmosphere."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 16,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "winner": "three",
+          "why": "A shows deeper candy red with visible strip reflections, distinct chrome rings, dark glass, rubber wheels and a clear floor mirror, while B's paint is covered in noisy glitter with almost no strip reflections, even though B has the better showroom set and car silhouette."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 15,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A reads as a dark, warm gallery with a convincing reflective gold trophy, a spotlight pool on the floor and a soft shadow on the wall, while B has more marble veining but its gold looks flatter and the grey floor and bright windows give flat, low-drama lighting."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 15,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 5,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A reads as a warm, cinematic awards-night render with convincing reflective gold, a spotlight pool and a soft shadow behind the pedestal, while B has flatter yellow gold, a bright grey floor with no warm spotlight, and streaky texture on the pedestal steps, even though its marble veining is stronger"
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 15,
+            "three": 18
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A delivers the dark warm gallery with a spotlight pool, a visible shadow behind the pedestal and a richly reflective gold trophy with a detailed band, while B has better marble veining but a flat grey, brightly lit scene and a smaller, plainer yellow trophy."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 14,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 5,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A reads as a dark warm gallery with a clear spotlight pool, soft shadow behind the pedestal and a brighter, more reflective gold cup, while B is evenly and flatly lit with a duller gold and no visible spotlight pool or dramatic shadow."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "totals": {
+            "aura": 14,
+            "three": 19
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "B has a dramatic warm spotlight pool, a visible soft shadow behind the pedestal, a more convincing gold cup with a darker band and richer marble, while A is flatly lit with no clear spotlight or shadow and a washed-out marble look."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "totals": {
+            "aura": 14,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 5,
+              "c4": 4,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "winner": "three",
+          "why": "A delivers the dark warm gallery with a clear spotlight pool, soft shadow behind the pedestal and bright, rich gold with a visible dark band, while B is a flat, evenly lit grey room with duller gold and no real spotlight drama."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "error": "missing frames"
+    }
+  ]
+}

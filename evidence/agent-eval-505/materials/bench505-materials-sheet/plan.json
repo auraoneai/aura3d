@@ -1,0 +1,101 @@
+{
+  "args": {
+    "arm": "aura",
+    "task": "10,11,12",
+    "runs": 3,
+    "seed": 20261106,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "A",
+    "batch": "bench505-materials-sheet"
+  },
+  "plan": [
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 3,
+      "order": 0,
+      "runId": "bench505-materials-sheet-t10-aura-r3",
+      "seed": 20261106000
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 3,
+      "order": 1,
+      "runId": "bench505-materials-sheet-t12-aura-r3",
+      "seed": 20261106001
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 1,
+      "order": 2,
+      "runId": "bench505-materials-sheet-t11-aura-r1",
+      "seed": 20261106002
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 3,
+      "order": 3,
+      "runId": "bench505-materials-sheet-t11-aura-r3",
+      "seed": 20261106003
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 1,
+      "order": 4,
+      "runId": "bench505-materials-sheet-t12-aura-r1",
+      "seed": 20261106004
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 2,
+      "order": 5,
+      "runId": "bench505-materials-sheet-t10-aura-r2",
+      "seed": 20261106005
+    },
+    {
+      "task": 11,
+      "arm": "aura",
+      "idx": 2,
+      "order": 6,
+      "runId": "bench505-materials-sheet-t11-aura-r2",
+      "seed": 20261106006
+    },
+    {
+      "task": 12,
+      "arm": "aura",
+      "idx": 2,
+      "order": 7,
+      "runId": "bench505-materials-sheet-t12-aura-r2",
+      "seed": 20261106007
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 1,
+      "order": 8,
+      "runId": "bench505-materials-sheet-t10-aura-r1",
+      "seed": 20261106008
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/agent-eval-base/aura",
+      "patch": "not-needed",
+      "versions": {
+        "engine": null,
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

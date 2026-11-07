@@ -1,0 +1,126 @@
+{
+  "runId": "bench505-materials-sheet-t11-aura-r3",
+  "batch": "bench505-materials-sheet",
+  "arm": "aura",
+  "task": 11,
+  "idx": 3,
+  "order": 3,
+  "seed": 20261106003,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-07T01:07:56.346Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 1710,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1710,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1710,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4260,
+      "type": "search",
+      "pattern": "clearcoat|sheen|flake|envMap|environments\\."
+    },
+    {
+      "i": 4,
+      "t": 4260,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 8533,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 116
+    },
+    {
+      "i": 6,
+      "t": 8533,
+      "type": "read",
+      "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 7,
+      "t": 11600,
+      "type": "search",
+      "pattern": "flake|carPaint"
+    },
+    {
+      "i": 8,
+      "t": 13486,
+      "type": "search",
+      "pattern": "carPaint|reflectiveFloor|softbox|lights\\.rect|environments\\.capture|environments"
+    },
+    {
+      "i": 9,
+      "t": 13486,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 10,
+      "t": 31578,
+      "type": "search",
+      "pattern": "primitives\\.torus\\(|primitives\\.cylinder\\(|\\.rotate\\(|primitives\\.capsule\\("
+    },
+    {
+      "i": 11,
+      "t": 31581,
+      "type": "search",
+      "pattern": "primitives|geometry\\.|camera\\.|effects\\.|AuraNodeBuilder"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-materials-runs/bench505-materials-sheet/bench505-materials-sheet-t11-aura-r3/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

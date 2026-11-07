@@ -1,0 +1,786 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JSF7BDCNLSxvQPxXVvt9Jn",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012dDRNhpLvDTDh28oDud8v5",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016eAE49AoqNSdqc6KcpJDVJ",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JSF7BDCNLSxvQPxXVvt9Jn",
+    "content": "1\t# Task 11: Polished car-paint object with clearcoat on a turntable\n2\t\n3\tFramework: Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tBuild a single-page browser app with the provided framework, served by vite, drawing into the existing canvas with id #app. Show a glossy, candy-red, car-paint finished object on a slowly rotating turntable in a dark showroom. Since no model files are provided, construct the object procedurally from smooth shapes, for example a rounded, streamlined capsule or bean body with a separate smooth cabin bump and four dark rubber wheel discs, or any other smooth body with clearly curved, large reflective panels. The paint must look like automotive paint: a deep coloured base layer with fine metallic flake sparkle, topped by a glossy clear coat that mirrors a studio environment (long soft-box strip reflections that bend over the curved panels). Add chrome trim, such as a thin ring or strip, and a dark glass or black cabin panel for contrast. The turntable is a circular platform with a subtle ring light or reflective floor on which the object is mirrored faintly. Use a dark background with two or three long strip lights above and to the sides, plus a faint cool rim light, so the reflections read as soft-box highlights. The platform rotates the object at about 20 degrees per second while the camera stays still at a low, slightly front-three-quarter angle with the whole object in frame. Expose window.__TASK_STATE__ = { turntableAngleDeg:"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012dDRNhpLvDTDh28oDud8v5",
+    "content": "1\t# Aura3D\n2\t\n3\t> Aura3D 5.0.2: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai\n4\t\n5\t## Read first\n6\t\n7\t1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked); the full table is in https://aura3d.auraone.ai/llms-full.txt under \"three.js to Aura3D\". Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.\n8\t2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`.\n9\t3. Do not open `node_modules` or `dist` to find an API: signatures are in `docs/agents/api-signatures.md`.\n10\t\n11\t## Pitfalls that cost the most turns (one-line fixes)\n12\t\n13\t- Dark or flat frame: authored lights with no environment get no image-based light. Add `environments.neutral({ intensity })` or a `looks.preset(id)`; metals need it to reflect anything.\n14\t- Colour applied twice: instance `colors` multiply the material colour. Use a `#ffffff` base material when you pass `colors`.\n15\t- Moving a node: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016eAE49AoqNSdqc6KcpJDVJ",
+    "content": "1\t<!-- AURAONE-POLICY-POINTER:START -->\n2\t# AuraOne AI Coding Agent Policy (repository pointer)\n3\t\n4\tCanonical machine-wide policy: `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` (already loaded globally by Codex, Claude Code, Qwen, Kiro, Gemini, Grok, and OpenCode; any other agent **MUST** read `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` before starting work).\n5\tDomain reference files in `/Users/gurbakshchahal/.config/agent-policy/reference/` (`INDEX.md`, `cloud-cost-and-ephemeral-lifecycle.md`, `gitlab-ci-cost-and-lifecycle.md`, `remote-execution.md`, `ci-selection.md`, `parallelism.md`, `shared-service-access.md`, `cloud-contexts.md`, `cloudflare.md`, `vercel-neon.md`, `github-npm.md`, `gitlab-mirror.md`, `ui-typography-density.md`, `linkedin-outreach-research-gate.md`, `room-communication-playbook.md`) are mandatory on-demand reading **only** when triggered by §2 of the canonical policy (never load all reference files unconditionally).\n6\tCloud & GitLab CI Cost, Pre-Authorized Cheapest-Denominator Testing & Mandatory Teardown: **Agents are pre-authorized to run CI/CD, builds, E2E/Playwright suites, and infrastructure tests across AWS, Azure, Cloudflare, GCP, and GitLab CI/CD WITHOUT waiting for Gurbaksh's approval**, provided they **(1) use the cheapest denominator option from the 5-tier hierarchy** via `~/.local/bin/auraone-cost-guard` (existing infra → serverless `$0`-idle Azure ACR Tasks / Container Apps Jobs, AWS CodeBuild, Cloudfla"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01K8rVUfMn9dNTpWkEtEzCh1",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LCPZ1BPgDSkiEkasL2Ezie",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01K8rVUfMn9dNTpWkEtEzCh1",
+    "content": "README.md\nagent-context.md\nagent-quickstart.md\nanti-hallucination-rules.md\napi-signatures.md\napi-surface.md\nart-direction.md\nasset-selection.md\nasset-workflow.md\nbenchmark-recipes.md\nbuild-a-game.md\nbuild-playbook.md\ncinematic-scene-quality.md\nclaims-and-boundaries.md\ncodebase-map.md\ndeployment.md\neffects-and-scene-kits.md\ngame-example-standards.md\ngame-showcase-build.md\ngenre-kits.md\nlessons-learned.md\nnative-capability-recipes.md\nnew-game-checklist.md\nno-hackjob-rules.md\nprompt-to-3d-workflow.md\nrecipes-src/\nrecipes.md\nrendering-proof-required.md\nskills-examples/\ntemplates.md\nthreejs-to-aura3d.md\ntrial-502-protocol.md\ntroubleshooting.md\nverification.md"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LCPZ1BPgDSkiEkasL2Ezie",
+    "content": ".agents/\nAGENTS.md\nTASK.md\ndocs/\nindex.html\nllms.txt\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QqN8AhSbRqkdeSAZCbKC4X",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0153RACHXM4wAZscamftLmqN",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents/recipes-src"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_011mMZT2RKTQC1j6yt2rNunP",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QqN8AhSbRqkdeSAZCbKC4X",
+    "content": "1\t# API signatures (answer-first)\n2\t\n3\tGenerated by `node tools/docs/gen-api-signatures.mjs --write` from the real `@aura3d/engine` root types (`packages/engine/src/public/index.ts`). Do not edit by hand: without `--write` the same command fails when this file is stale. Read this instead of opening `node_modules/@aura3d/engine` type files; every example line is type-checked in [`recipes-src/signature-examples.check.ts`](recipes-src/signature-examples.check.ts). The complete export list is [`docs/api/root-exports.md`](../api/root-exports.md); this page covers the roots agents look up most.\n4\t\n5\tColumns: Call (parameters, `?` = optional), Returns, Options (the keys of the first options object, `?` = optional). Colours are CSS strings, vectors are `[x, y, z]` tuples, angles are radians unless the name says `Deg`.\n6\t\n7\tDefaults the types do not carry (read from `agent-api/nodes/lights.ts`):\n8\t\n9\t| Call | Defaults |\n10\t|---|---|\n11\t| `lights.ambient` | intensity 0.28, color #ffffff |\n12\t| `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |\n13\t| `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |\n14\t| `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |\n15\t| `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |\n16\t\n17\t## `createAuraApp`\n18\t\n19\tMounts the scene, owns renderer, resize, loop and disposal. `await app.ready()` before the first frame is judged.\n20\t\n21\t```ts\n22\tconst app = cre"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0153RACHXM4wAZscamftLmqN",
+    "content": ".gitignore\nfire-smoke-sparks/\nnight-lights-emissive-bloom/\npbr-product-viewer/\nprocedural-humanoid/\nprops-kit-instances/\nsignature-examples.check.ts\nsky-day-night/\nterrain-water-fog/\ntranslation-table.check.ts\ntsconfig.json\nvite.config.ts\nwater-custom-shader/"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_011mMZT2RKTQC1j6yt2rNunP",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Cn1SM8Z7xs2aLrCEE4tSsx",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 143,
+     "limit": 270
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01W2fC5m77AKhYnVv6smn8fL",
+    "name": "search",
+    "input": {
+     "pattern": "carPaint|clearcoat",
+     "path": "docs"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Cn1SM8Z7xs2aLrCEE4tSsx",
+    "content": "143\t|---|---|---|\n144\t| `lights.lensFlare(options?: AuraLensFlareOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: name?: string \\| undefined; position?: AuraVec3 \\| undefined; light?: string \\| undefined; elements?: readonly AuraLensFlareEle…; occlusion?: AuraLensFlareOcclusion \\| …; edgeFade?: number \\| undefined; intensity?: number \\| undefined; runtime?: AuraRuntimeNodeSpec \\| und… |\n145\t| `lights.ambient(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; intensity?: number \\| undefined; color?: string \\| undefined |\n146\t| `lights.hemisphere(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; skyColor?: string \\| undefined; groundColor?: string \\| undefined; intensity?: number \\| undefined; position?: AuraVec3 \\| undefined |\n147\t| `lights.lightProbe(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; sh?: readonly number[] \\| undef…; skyColor?: string \\| undefined; groundColor?: string \\| undefined; intensity?: number \\| undefined; position?: AuraVec3 \\| undefined |\n148\t| `lights.directional(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; position?: AuraVec3 \\| undefined; target?: AuraVec3 \\| undefined; intensity?: number \\| undefined; color?: string \\| undefined; shadow?: boolean \\| AuraDirectional… |\n149\t| `lights.point(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; p"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01W2fC5m77AKhYnVv6smn8fL",
+    "content": "docs/agents/prompt-to-3d-workflow.md:87:- **Materials:** `prefabs.materialSwatches()` with `material.metal`, `glass`, `rubber`, `emissive`, `clearcoat`; keep contrast wall and softboxes in frame.\ndocs/agents/benchmark-recipes.md:62:- Washed material lab: five spheres that all look pastel or matte, with no clear metal, glass, rubber, emissive, and clearcoat distinction.\ndocs/agents/benchmark-recipes.md:184:visible emissive glow, glossy clearcoat, labels or class cues, contact shadows,\ndocs/agents/effects-and-scene-kits.md:70:- The nine textured-PBR glTF extension variants (clearcoat, transmission and similar) do not sample the mask.\ndocs/agents/api-signatures.md:102:| `material.clearcoat(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\ndocs/agents/api-signatures.md:116:| `material.clearcoatPaint(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\ndocs/agents/api-signatures.md:121:| `material.carPaint(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\ndocs/agents/api-signatures.md:127:[Omitted long matching line]\ndocs/agents/troubleshooting.md:121:  `material.clearcoat()` in the same scene.\ndocs/agents/threejs-to-aura3d.md:12:| `MeshStandardMaterial` | `material.pbr({ color, roughness, metallic, emissive, opacity })` | Also `physical` (clearcoat), `emissive`, `toon`, `matcap`. Colour is a CSS string. |\ndocs/agents/skills-examples/aura3d-retexture.md:55:  (base color, emissive, roughness, metallic, clearcoat, and\ndocs/agents/skills-examples/aura3d-materials-environm"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012QyGgjLx35Df4XiDAHmHeG",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NbQNJi8EsBNuoTYhMMda1M",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 244,
+     "limit": 170
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_011DVPTqgh3eHSfh7zvekSC6",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d",
+     "pattern": "clearcoatRoughness|sparkle|flake"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012QyGgjLx35Df4XiDAHmHeG",
+    "content": "1\timport { camera, createAuraApp, environments, interactions, lights, material, primitives, scene } from \"@aura3d/engine\";\n2\t\n3\t// A product on a procedural pedestal: torus knot (clear-coated metal), cylinder plinth, round stage, neutral environment.\n4\t// Metals reflect the environment, so environments.neutral is what makes this read as metal instead of grey plastic.\n5\tconst app = createAuraApp(\"#app\", {\n6\t  scene: scene({ background: \"#d9dde3\" })\n7\t    .add(environments.neutral({ intensity: 1.15, background: false }))\n8\t    .add(lights.directional({ name: \"key\", position: [4, 6.5, 4.5], target: [0, 1, 0], intensity: 2.8, color: \"#fff4e6\", shadow: true }))\n9\t    .add(lights.directional({ name: \"fill\", position: [-5, 3, 2], target: [0, 1, 0], intensity: 1, color: \"#cfdcff\" }))\n10\t    .add(lights.directional({ name: \"rim\", position: [0, 4, -6], target: [0, 1, 0], intensity: 1.6, color: \"#ffffff\" }))\n11\t    .add(primitives.cylinder({ name: \"stage\", size: [9, 0.2, 9], material: material.pbr({ color: \"#eceff3\", roughness: 0.55 }), castShadow: false }).position(0, -0.1, 0))\n12\t    .add(primitives.cylinder({ name: \"plinth\", size: [2.2, 0.9, 2.2], material: material.pbr({ color: \"#f7f8fa\", roughness: 0.35 }) }).position(0, 0.45, 0))\n13\t    .add(primitives.cylinder({ name: \"plinth-ring\", size: [2.32, 0.06, 2.32], material: material.pbr({ color: \"#2a2d33\", metallic: 0.9, roughness: 0.3 }) }).position(0, 0.93, 0))\n14\t    .add(primitives.torusKnot({\n15\t      name: \"product\",\n16\t      siz"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NbQNJi8EsBNuoTYhMMda1M",
+    "content": "244\t| `effects.transition(options: AuraTransitionOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; progress?: number \\| undefined; name?: string \\| undefined |\n245\t| `effects.lensDirt(options: AuraLensDirtOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; intensity?: number \\| undefined; name?: string \\| undefined |\n246\t| `effects.mask(options: AuraPostMaskOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; invert?: boolean \\| undefined; opacity?: number \\| undefined; name?: string \\| undefined |\n247\t| `effects.clearMask(options?: AuraNativePostBaseOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: name?: string \\| undefined |\n248\t| `effects.afterimage(options?: AuraAfterimageOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: decay?: number \\| undefined; name?: string \\| undefined |\n249\t| `effects.bloom(options?: BloomBuilderOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n250\t| `effects.neonBloom(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n251\t| `effects.ambientOcclusion(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n252\t| `effects.contactOcclusion(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n253\t| `effects.colorGrade(options?: AuraColorGradeOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n254\t| `effects.antiAlias(options?: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_011DVPTqgh3eHSfh7zvekSC6",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to check the carPaint options and flake properties in the AuraMaterialSpec type definition.\n\n",
+    "signature": "CAQSugUKEggTEAEYAjgBQgh0aGlua2luZxIMwkM6UQ2QJck7ql31GgzlYslrSSNSDgdatbYiMF5jFdhJIQHwizKITUADjScRCimDqrfMffdX9FQb/134zXv8Jb+3UisUOzsqDdqZUyrVBGfhsoRXn4GZNaIinuX+s9T0A5Cs28E7RV33ZtibItl5R0QapXdpyHaXST9ybh6CX1SSDyASVOCn6ZZbrLWNlP+RzG4mxr85qqbBp8LRi93pGP81+s2uYk3+/LI6iaydtLcN2FMumEEW3IgWOecwAkwQ4ErXH7s/0XDhfpTljT0Dw1+vosBE5OfyZAPljT0hVci1JxjIocyS8Xb27ZK/M2WZ8UH/+Gucr8I4pDUE+0DObDRqI8b+K1r3srwVfRKHrOrjTJwpv+p0O1Qx47BDN+z55QRnRMM8sk4BZ0jz1NUI/8yHfF5Ky0VcVypEutWr6wYSSWisDpVf8xtzHHdWASTbQ1GtYKy5k98JbV2P7iwZq4uB9xk/viXPPgQWQxLVYVJW4RAHjemUz/o0nPPpvipdXRcHChiA/HuJORPmYtgK1Rg6HWBIEnVbhAx+dDTMe866q7i4S3m4wmTEUvzcjwJ4R2HBH9FUZo9Xaf0HgJrE/R1mimC46C37SVDQ3B5/GhVlBoEKmsTOE4rd3pJ4/e48VrkCh2UvB41d3+XLoDoANUzBuiHN1GQtVpPGjDuW6EFXlotzxvTPbuckhJdGQUTLHCaOBQBRheBWWpQwRPRkC826iddCGwLYEkEcJEJUep9LWiL2wRw5SHqCPgSr9N14CT/XM21JbpVJniOrUCqzbYH8r2AqFpgtJtpsQsj141CgJdMW1tSL2qJwoASLSy+dKt463tk5Lqbu8sMiM4F3SGzC3Iz4VpjBq2kMqFleI7dfOa//v5Cxy1hE7EoORU1hKUxxVRgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018noGGvuWHE7pXPiVGJNbxH",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine",
+     "pattern": "carPaint"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01EXB8DVHWxZvzLgjzko5hKg",
+    "name": "list_dir",
+    "input": {
+     "path": "node_modules/@aura3d/engine"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018noGGvuWHE7pXPiVGJNbxH",
+    "content": "search failed: rg: node_modules/@aura3d/engine: IO error for operation on node_modules/@aura3d/engine: No such file or directory (os error 2)\n",
+    "is_error": true
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01EXB8DVHWxZvzLgjzko5hKg",
+    "content": "ENOENT: no such file or directory, scandir '/tmp/b505-materials-runs/bench505-materials/bench505-materials-t11-aura-r2/sandbox/node_modules/@aura3d/engine'",
+    "is_error": true
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KThpJDWkrHRWU7z8TAB1ga",
+    "name": "list_dir",
+    "input": {
+     "path": "node_modules"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012ns4ujnXbgNksJoxuPhpsN",
+    "name": "read_file",
+    "input": {
+     "path": "package.json"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KThpJDWkrHRWU7z8TAB1ga",
+    "content": ".bin/\n.package-lock.json\n@aura3d/\n@esbuild/\n@gltf-transform/\n@loaders.gl/\n@math.gl/\n@probe.gl/\n@rollup/\n@types/\napache-arrow/\nargparse/\ndraco3d/\nesbuild/\nfdir/\nflatbuffers/\nfsevents/\nimage-size/\njson-with-bigint/\nktx-parse/\nmeshoptimizer/\nnanoid/\npicocolors/\npicomatch/\npostcss/\nproperty-graph/\nrollup/\nsource-map-js/\nsprintf-js/\ntexture-compressor/\ntinyglobby/\ntslib/\ntypescript/\nundici-types/\nvite/"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012ns4ujnXbgNksJoxuPhpsN",
+    "content": "1\t{\n2\t  \"name\": \"eval-base-aura\",\n3\t  \"private\": true,\n4\t  \"type\": \"module\",\n5\t  \"dependencies\": {\n6\t    \"@aura3d/engine\": \"5.0.2\",\n7\t    \"@aura3d/assets\": \"5.0.2\",\n8\t    \"vite\": \"7.3.2\",\n9\t    \"typescript\": \"5.9.3\"\n10\t  }\n11\t}\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PZEw1f5j9zYaGoC75XDX84",
+    "name": "list_dir",
+    "input": {
+     "path": "node_modules/@aura3d"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PZEw1f5j9zYaGoC75XDX84",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "That came up empty, and package types aren't available, maybe due to symlinks. Let me search the docs for AuraMaterialSpec instead.\n\n",
+    "signature": "CAQSiQYKEggTEAEYAjgBQgh0aGlua2luZxIM5p1vFiDJObkbm0C6Ggw+K5sOW4H7jTU79L8iMFZcXLAT7mE5FemqIETEyDT3FnlZxkkmDCSPCzkKkZzCFQHiQLps2pnsgMTtDtoPSCqkBW+jmzQO34WzyBDfGZJuoAJTloBE47fMFWbnfQGnNR5FFn9Ow9JT28QVU36tf5xZJay7gm+d4uvTmoS0yqHPYtIiX2BCGlScRFAI6tjv8qVnerahlHfgXGZ9Zj3tRlsvzajUr77mSnu8Gray9O+oNxEcBV1sBwIA4ZAV/fmZrHidkC+5W7tXm9dM68uQ7wh8uy36eX2C+Z+a/22D5WRDkTqe2OjtfNlySy4FQ1QKZUN3ST+I1fcAAXacMAECXizD0T6NfJlcnjVhtPgyTAk11fZ195veTbqQInrKxJZQT0hLakUJTcsI105XN1+TOozjZCYC2Jk/1gumgdB4x4bLWzoMtJQV1HMGvTV89ZXOLbnBTfOKx7kUMRTriGmbUvUlTV01tU/IzhuBc9QYLgRTAQyPy3wXxZUHrN6uvHlY71FoGQCO7INYBWzUUKm02GLUpslMd50RKhGvm5+l40ZhrGpUkKZUT2xmOzr7lEcK2i1gwt1EWFOp1FQGEE+NUo+UATakLoWy/LmxDWPuyFw6mxMyubTb861Ma4bIRst6kvim/RiXojO32IAQeYNe1YQbvUzW1wt+HyKV1rpRN4p9GGSfIbS0w+gFyhQ78XJCIfh0t1VKD2l2l8ThBzBCF1W5IQ7lJye6psvQBBdixXx2Gk35oAM5WvfZ7A564LZoAPiBWMsWTVn68KOhOb9fsgXBdDzc2ItR04yQp7Vl3f/my2WLjDU8lPjyaiseEPGlEflcstwrRgS//Lxr7KxXWRwpM0NwYcjDL+Svlrkvx4cEVubpufUuL7wCeQBn/jg5MeDbFzfnvpdz9PNhPW/ORaOLCaSrER0l0Aw7cvvu6FmWnZypwySGeV5P8W+RyTNLFrgxxpagy348L6Lu6OTXkptb8lMmZgUYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01VM1a3DNREePoqSC841X5dr",
+    "name": "search",
+    "input": {
+     "path": "docs",
+     "pattern": "clearcoatRoughness|sheen|envMapIntensity|metallic:"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XrjaXKhaVnnXAeeNyGQnFx",
+    "name": "search",
+    "input": {
+     "path": ".agents",
+     "pattern": "carPaint|clearcoat|flake"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01VM1a3DNREePoqSC841X5dr",
+    "content": "docs/agents/lessons-learned.md:14:[Omitted long matching line]\ndocs/agents/trial-502-protocol.md:65:[Omitted long matching line]\ndocs/agents/api-signatures.md:83:void material.pbr({ color: \"#c8ccd4\", metallic: 0.9, roughness: 0.38 });\ndocs/agents/api-signatures.md:127:[Omitted long matching line]\ndocs/agents/recipes-src/night-lights-emissive-bloom/main.ts:24:  .add(primitives.plane({ name: \"street\", size: [24, 1, 60], material: material.pbr({ color: \"#1b1e26\", roughness: 0.35, metallic: 0.2 }) }).position(0, 0, -6))\ndocs/agents/recipes-src/night-lights-emissive-bloom/main.ts:34:  stage.add(primitives.cylinder({ name: `post-${i}`, size: [0.12, 3.4, 0.12], material: material.pbr({ color: \"#15171c\", metallic: 0.6, roughness: 0.5 }) }).position(x, 1.7, z));\ndocs/agents/recipes-src/procedural-humanoid/main.ts:6:const steel = material.pbr({ color: \"#b9c1ce\", metallic: 0.55, roughness: 0.38 });\ndocs/agents/recipes-src/procedural-humanoid/main.ts:7:const dark = material.pbr({ color: \"#2a2e39\", metallic: 0.6, roughness: 0.5 });\ndocs/agents/recipes-src/translation-table.check.ts:36:const standard = material.pbr({ color: \"#888888\", roughness: 0.4, metallic: 1 });\ndocs/agents/recipes-src/translation-table.check.ts:37:const physical = material.physical({ color: \"#d4af37\", metallic: 1, roughness: 0.2, clearcoat: 0.8 });\ndocs/agents/recipes-src/signature-examples.check.ts:12:{ void material.pbr({ color: \"#c8ccd4\", metallic: 0.9, roughness: 0.38 }); }\ndocs/agents/recipes-src/pbr-product-view"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XrjaXKhaVnnXAeeNyGQnFx",
+    "content": ".agents/skills/aura3d-art-direction/references/reference-frames.md:36:What you should see: a car body with clearcoat reflections pulling the\n.agents/skills/aura3d-materials-environments/SKILL.md:49:   `material.clearcoatPaint`, and `material.emissive`, plus\n.agents/skills/aura3d-materials-environments/SKILL.md:62:   above (car paint is `material.clearcoatPaint`, thin glass is\n.agents/skills/aura3d-game-art/SKILL.md:81:  bubble, rain-streak, snowflake, smoke-a, smoke-b, fireball, flame-loop,\n.agents/skills/agent-docs/api-signatures.md:102:| `material.clearcoat(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n.agents/skills/agent-docs/api-signatures.md:116:| `material.clearcoatPaint(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n.agents/skills/agent-docs/api-signatures.md:121:| `material.carPaint(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\n.agents/skills/agent-docs/api-signatures.md:127:[Omitted long matching line]\n.agents/skills/agent-docs/threejs-to-aura3d.md:12:| `MeshStandardMaterial` | `material.pbr({ color, roughness, metallic, emissive, opacity })` | Also `physical` (clearcoat), `emissive`, `toon`, `matcap`. Colour is a CSS string. |\n.agents/skills/agent-docs/recipes.md:453:- Look and light values: `environments.neutral` 1.15, key 2.8, fill 1.0, rim 1.6; knot `metallic: 1, roughness: 0.22, clearcoat: 0.8`.\n.agents/skills/agent-docs/recipes.md:474:      material: material.physical({ color: \"#c9a46a\", metallic: 1, roughness: 0.22, clearcoat: 0.8, c"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 10,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since types aren't available I'll lean on typecheck instead, and I should look at the material skill plus the remaining lines of api-signatures around 347-412.\n\n",
+    "signature": "CAQShAYKEggTEAEYAjgBQgh0aGlua2luZxIM81pE1XITp9KvAmfiGgxmJCiwVZ5jOhlIcMEiMHyFN+9ryC+oYWuf7SCMfq3/sBBw35p43oFzQNBIg8HOAXaa/I3DaMuo2mLT+gPsJyqfBTGuHGLJxQE6myvona1EhAGOOwIQZs0orotWDoKXwH+UJEeV025QzqgQDmlx9XSVzwqm8zSSrEjweVnXwt3w4Egf+QeTeKkZg32H1aqJ9hfokYL3Y+YFhZXLZV3+xiHie/bCU0CIO8jh6RJhs7+V+aw4waKsdsSnW8vcyPn9PYE1SK0W8mlalqUxLTFW7MiiEQ8AJyVYetF6Gc4e6We6FodY8KdXQxF47ZPXjk30ZPc3FFMRJt3XErysPMUq44spIuzIDg2nDK9P4XEMhFp806B3hXF8Use3WUcv+cKbMcRmm/kES85gSfPtGiuCcV73gGf+HTdIYMtcJw881Jvd4KWXfzKIYxhMqNJE/1IwZg9hjWzITMDYzy8/u4jRmuq9pMANdquj+3YUN04lchLeRS0AqiN2WmiVv+1cBeqg+UHm3+LusXP/tUETTDKvwfKixPpRLA76T7d70F7yccgGI6A1OM72EgfEdeCcFlccZNzz/F36CaNCvpsEFd4SL2/g6hi/HBptdXZ1Lz2N64+gtutBPzHjrEWdDvnMaANhzrLXnD2Va8jnsnSrVZtMhVPN2luKmxp/EGXgoqhybFJafh91uUjWbjitg4B6JUfQ6iUM8Si2uy3Ap+zBXYaCnHIKzteV21A5Z0eF8GgB4X5BxXi7aJizhLqr9AjA5K8XnDh71wRAnOJHKYhs6tD4yIAn/Lutwb/iLcQnIWyI6uOF3VfYh4Inqu4dYZ74jAsM2obDPDHltWdhiKeNMTlVBrInJDO+VktaM/1pJmMk/fscPebPBx/JFsDSQ2KtTYF2nnTH63CG/DjGvbqX2xFTvn27B0od5PmhUfR9YrJIwVDwqV3duj6VnNWf6icmnB4O6vVBk2NxV7ER7v2zkSxGP5YAGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FcN7HRcudkWXyC6RJR3kk5",
+    "name": "read_file",
+    "input": {
+     "path": ".agents/skills/aura3d-materials-environments/SKILL.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01M3EYUdiNsqn5rPKz9ejXvy",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 347
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FcN7HRcudkWXyC6RJR3kk5",
+    "content": "1\t---\n2\tname: aura3d-materials-environments\n3\tdescription: Chooses and verifies surface looks and lighting environments: built-in `material.*`, `environments.*`, `sky.dayNight`, `weather`, and `water` first, then licensed local textures or HDRIs admitted with `assets add --type texture`, with seam, PBR-channel, and visual-QA checks. Use when a route needs a material, texture set, PBR maps, HDRI or IBL, skybox, night or daytime sky, rain, snow, water, or KTX2 textures.\n4\t---\n5\t\n6\t# Aura3D materials and environments\n7\t\n8\tOrder is fixed: looks/biomes/env presets first, then built-ins, then a\n9\tlicensed local file, then a generated plate as a candidate. There is no\n10\tcatalog search for textures or HDRIs today (the asset index has no texture or\n11\tHDRI adapter), so `assets search` will not find them. Shared rules (claim\n12\tlabels, typed assets, catalog-first for models, benchmark mode) are in\n13\t[../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).\n14\tNo texture or model admitted: [procedural recipes](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) 9, 11, 12, 13 and 15 cover vertex-colour terrain, PBR metal under `environments.neutral`, `material.custom` water, `sky.preetham` and emissive plus bloom; 5.0 adds shader graphs (`material.node`) and depth and normal inputs for post.\n15\t\n16\t## Look target\n17\t\n18\tMost scenes need no per-file HDRI at all: `looks.preset(<genre>)` already supplies environment light, sky/background, fog an"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01M3EYUdiNsqn5rPKz9ejXvy",
+    "content": "347\t| `interactions.raycastHover(options?: {…})` | `InteractionBuilder` | same as `interactions.hover` |\n348\t| `interactions.highlight(options?: {…})` | `InteractionBuilder` | same as `interactions.hover` |\n349\t| `interactions.dragVector(options?: {…})` | `InteractionBuilder` | options: target?: string \\| undefined; vector?: AuraVec3 \\| undefined |\n350\t| `interactions.clickImpulse(options?: {…})` | `InteractionBuilder` | options: target?: string \\| undefined; impulse?: number \\| undefined; vector?: AuraVec3 \\| undefined |\n351\t\n352\t## `physics`\n353\t\n354\tRapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use.\n355\t\n356\t```ts\n357\tvoid physics.box;\n358\t```\n359\t\n360\t| Call | Returns | Options |\n361\t|---|---|---|\n362\t| `physics.world(descriptor?: PhysicsWorldDescriptor)` | `AuraPhysicsWorldController` | descriptor: backend?: PhysicsBackendPreference …; gravity?: Vec3 \\| undefined; fixedDelta?: number \\| undefined; solverIterations?: number \\| undefined; enableSleeping?: boolean \\| undefined; seed?: number \\| undefined; sleepVelocityThreshold?: number \\| undefined; sleepDelay?: number \\| undefined; continuousCollision?: PhysicsContinuousCollisio… |\n363\t| `physics.worldFromScene(sceneValue: AuraSceneBuilder \\| AuraSceneSnapshot, descriptor?: PhysicsWorldDescriptor)` | `AuraPhysicsWorldController` | same as `physics.world` |\n364\t| `physics.body(options?: AuraPhysicsBodyOptions)` | `AuraPhysicsBodyOptions` | options: type?: RigidBodyType \\| undefined; posit"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 11,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since I can't see the installed types, I'll run a typecheck to confirm the module resolves. I'm sketching a design using a canvas-mounted app with primitive shapes—scaling a sphere non-uniformly to form a bean-like body and a separate cabin shape.\n\nFor the cabin I'm considering a dark glass sphere embedded into the top, with cylinder wheels rotated about an axis, so I need to check the rotation API in the docs. I also want a parent group to handle turntable rotation, so I'm searching the docs for how grouping works.\n\n",
+    "signature": "CAQSxgoKEggTEAEYAjgBQgh0aGlua2luZxIMNfC/XiEgtEWbB+NeGgzLEfpdEUOl2tzZJjsiMC2Yp+BbAR1xuiyAIn5rCLc66kSsp5qFbUyOtiqRLJBqIcdHXta8hwg+/MyMBBe5YSrhCYlSXTwQxuQcPyGVUHtlB7pUWRTQilq9GerxOHvano4cIM0jB9bM2ouKmNdYRJyfCeo14GipDDozvYhDcRzTgiQQ5bN8KO+kCqxpu+vW1/bcZw5dikbbfK7iZV2pb6/wa/ImJw3xDc+YJ4Ydn9lFqx8canMbuAfzZMvE/gisOf+s9qjfsF7x2wMDL4VM/SQ3jbXDYLRZg/gbPiVGUATTOYgIwfAt38H7LeCSlltr3ABHiqBW7J4NR1vutmzO9UWYs/4mV8chbv2jUi0yeKUW/1FFiFOuTPyuDo4976pp7KGsmTzPgIrt+ebp/rODRSeg7fQr0olJ5z8oELlmWjIRgTNlaBBl6Zc5g3t6IbiHCWR11NrjBw+BuxwRRbGWDvHb02a0yzD+riAVMWKIFO2G25YHyDmhvGtPHUptswzZ+aqzFDniHOosHWFPnYU+2oMLMNjmi6AUV8czYmt75cC1rwOU9yKYiX0s04kLvmbHGcrS0JO1K3GOnM/8OtvnWKX7BeplXcHxbqH77SLDxoDEnt4RIFISPds/QKO1PwgDnvhV7cmBkK3nZFhk0RxOfzhlh/LlIba8PDUuRBxqMQw2YbhG7fEey96EeDGHZp2S+4NPvVZOG18BRTQ5QtaP1u5vgDKJeyz4Mp6sUeN+mggli9oao09Esocj3nn3i8hN0vP582YxneEPtZQ9XY+AYlUzfsxbFRsh61HSznKEHUE6y+ce+D39DFVSJz/QdmcC1fgUc5ZNPhhVi1bC0IBLgF5z3exJs9h+/8BfnfUITEKkUC3SZTFRDc5Z1gkf/eTVfkcPHqYMh1N7wxQcsssAfw49eNrrz6P6RTzERSM4NffKsN0QZRmHipGf8Y4KqfNV8yS/doGKJtSajc7KqbYfg6YfZRv7JlRMbSJumTS5X2029xOcy8k5tihhJ4/DCCXrBJhb3BQkYeRRQHNogVClfPNrzaljQEjdgg4ZB6Q8kWVSdJvR+Sdxi8t8fdSrUFmVWP4fptv57DrzlywzV569AnKy2edekS7dd7RbOZ0VZlp8NkzTRJXccd/YgbzDru65iWUIkQUHVZY8n+JHOtpc/EuRAPI/PDqEJBTmAReL/3Bw/e0dWwKzseorbzJgTIM+MbtxB7ZPDIa20eA/TZZvSAf3M7BiJJP9uCEu1y9NLmAckUInJvXY8H/VQ/jV5t8X+IhSUFZqavldAXiGbctsRyQI64+PH1wCRl1kTruKPDR3ehorx4ReB4+2ZztB2XqhiRWxGDKPYVY6HcuNxMfYpoEsQg4vKNFVks8mmLT5hwmgEauwC3vhcH2hOfzw8BLW3/0rxpZUI1L8R5c8vY9wbINkceJYVjlqcicY/cb9AlQ6lzrpJI3jCx0t3c7lIfkmLG8+1cncDXHuhGgaxM2DC9R45SclCo4kLSxuCujKqquYpN0bp9KOT+iVF2eAvfvuMMYInUUqOsdGf2Ba0Uewp4YgRopDGnOBPLwiamGpCXD+JS5hnd4OnbxUNBSEh709YIrx8Aqg265zF4WcPRbFP622O/OG7eoHHpJ3/sAvNesu/WSKcAUJF1qrYzj/o/palUfvArrGfroXC7GPq0A5G4QpiP7Vc3w2Na06FfxcK3WysDlb6pm6B9yKoTdmw6LyS/E8n5OMBL/Ydtd+YF+2mupwKXIYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012giF4pxwLYmusBeuQwP7rF",
+    "name": "search",
+    "input": {
+     "path": "docs/agents",
+     "pattern": "\\.rotation\\(|\\.rotate\\(|group\\(|\\.scale\\("
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012giF4pxwLYmusBeuQwP7rF",
+    "content": "docs/agents/effects-and-scene-kits.md:17:  .add(primitives.plane({ name: \"floor\", material: material.pbr({ color: \"#9aa2ae\" }) }).scale([9, 1, 9]))\ndocs/agents/effects-and-scene-kits.md:79:  .add(primitives.plane({ name: \"floor\", material: material.pbr({ color: \"#9aa2ae\" }) }).scale([9, 1, 9]))\ndocs/agents/asset-workflow.md:153:scene().add(model(assets.robot).position(...place.position).scale(place.scale));\ndocs/agents/build-a-game.md:145:      primitives.plane({ name: \"floor\", size: [20, 8, 1] }).rotate(-Math.PI / 2, 0, 0),\ndocs/agents/threejs-to-aura3d.md:9:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:10:[Omitted long matching line]\ndocs/agents/recipes-src/water-custom-shader/main.ts:60:    .add(primitives.sphere({ name: \"islet\", size: 1, material: material.pbr({ color: \"#7a6a52\", roughness: 1 }) }).position(9, -0.5, -14).scale([9, 3, 6]))\ndocs/agents/recipes-src/procedural-humanoid/main.ts:15:  group(`${side}-shoulder`, [\ndocs/agents/recipes-src/procedural-humanoid/main.ts:18:    group(`${side}-elbow`, [\ndocs/agents/recipes-src/procedural-humanoid/main.ts:26:  group(`${side}-hip`, [\ndocs/agents/recipes-src/procedural-humanoid/main.ts:28:    group(`${side}-knee`, [\ndocs/agents/recipes-src/procedural-humanoid/main.ts:35:const robot = group(\"robot\", [\ndocs/agents/recipes-src/procedural-humanoid/main.ts:36:  group(\"hips\", [\ndocs/agents/recipes-src/translation-table.check.ts:24:stage.add(primitives.box({ name: \"mover\" }).position(0, 1, 0).rotate(0, 0.5, 0).scal"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 12,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01AtQ6n3UyUqj9zJPJY8YZAB",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/procedural-humanoid/main.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014r31jHUNZSqS2mZaAQWnKX",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 12,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01AtQ6n3UyUqj9zJPJY8YZAB",
+    "content": "1\timport { camera, createAuraApp, environments, group, interactions, lights, material, primitives, scene } from \"@aura3d/engine\";\n2\t\n3\t// A robot from primitives with a real joint hierarchy: every joint is a `group` whose origin is the pivot, so rotating\n4\t// the shoulder swings the whole arm and rotating the elbow swings only the forearm. The idle animation drives the joints\n5\t// from onFrame. No GLB and no asset admission.\n6\tconst steel = material.pbr({ color: \"#b9c1ce\", metallic: 0.55, roughness: 0.38 });\n7\tconst dark = material.pbr({ color: \"#2a2e39\", metallic: 0.6, roughness: 0.5 });\n8\tconst glow = material.emissive({ color: \"#8fefff\", emissive: \"#46dcff\", emissiveIntensity: 2.4 });\n9\t\n10\t// A limb segment hangs down from its joint: capsule centred half its length below the pivot.\n11\tconst segment = (name: string, length: number, radius: number, mat = steel) =>\n12\t  primitives.capsule({ name, size: [radius * 2, length, radius * 2], material: mat }).position(0, -length / 2, 0);\n13\t\n14\tconst arm = (side: \"l\" | \"r\", x: number) =>\n15\t  group(`${side}-shoulder`, [\n16\t    primitives.sphere({ name: `${side}-shoulder-ball`, size: 0.2, material: dark }),\n17\t    segment(`${side}-upper-arm`, 0.34, 0.055),\n18\t    group(`${side}-elbow`, [\n19\t      primitives.sphere({ name: `${side}-elbow-ball`, size: 0.13, material: dark }),\n20\t      segment(`${side}-forearm`, 0.32, 0.048),\n21\t      primitives.sphere({ name: `${side}-hand`, size: 0.12, material: dark }).position(0, -0.37, 0)\n22\t    ]"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014r31jHUNZSqS2mZaAQWnKX",
+    "content": "1\timport { camera, createAuraApp, effects, environments, instances, lights, material, primitives, scene, type AuraTransformSpec } from \"@aura3d/engine\";\n2\t\n3\t// A night street: lantern posts with real point lights, glowing windows, a moon, fog and bloom.\n4\t// Emissive materials only look like light sources when bloom and fog give them a halo and depth.\n5\tconst lampSpots: Array<[number, number]> = [[-4, 6], [-4, -2], [-4, -10], [4, 2], [4, -6], [4, -14]];\n6\tconst warmWindows: AuraTransformSpec[] = [];\n7\tconst coolWindows: AuraTransformSpec[] = [];\n8\tconst towers: AuraTransformSpec[] = [];\n9\tlet seed = 99;\n10\tconst rand = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);\n11\t\n12\tfor (const side of [-1, 1]) for (let i = 0; i < 6; i += 1) {\n13\t  const x = side * 9.5, z = 8 - i * 6.5, h = 6 + rand() * 7;\n14\t  towers.push({ position: [x, h / 2, z], scale: [4.6, h, 5] });\n15\t  for (let row = 0; row < Math.floor(h / 1.6); row += 1) for (let col = 0; col < 2; col += 1) {\n16\t    if (rand() < 0.35) continue; // dark windows\n17\t    (rand() < 0.7 ? warmWindows : coolWindows).push({ position: [x - side * 2.33, 1.2 + row * 1.5, z - 1.1 + col * 2.2], scale: [0.04, 0.7, 0.9] });\n18\t  }\n19\t}\n20\t\n21\tconst stage = scene({ background: \"#05070d\" })\n22\t  .add(environments.neutral({ intensity: 0.25, background: false }))\n23\t  .add(lights.directional({ name: \"moonlight\", position: [-10, 16, -10], target: [0, 0, -4], intensity: 1.1, color: \"#7d9bff\", shadow: true }))\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 13,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm uncertain about the exact material spec fields available, like clearcoat or flake options, so I'll try using a carPaint-style material call and lean on typechecking to reveal what's actually supported, especially since the @aura3d module folder looks empty. For the metallic flake sparkle effect, I'm weighing whether a carPaint preset already handles it or whether I'd need a riskier custom material approach.\n\n",
+    "signature": "CAQSlQoKEggTEAEYAjgBQgh0aGlua2luZxIMF1UpJwq++xYy1VafGgyRWUEcz6pqnEc8u2UiMA3ZEX9iB75rFt4t0iH8vdwqgvzmoByV75Z9nqtLwrDWH8qWME4MgeTG9IbXu1Az3iqwCVRtHgmdwabj4SZLFyVF4wgpQQCb6pTFQNGPyJ6mSRQNcea+VeQnOk031ROas3Tts5JGPJbuA9qWqqL3C+6nP4e6ZZ6WEp0ZoucYSf7pJNlztrrDV7Wv5xkCk1GpTZ4sDxMz25DM1me6c8X+ZjZznSHxJy+ej0xtYezyULLVOwPXvrZiJwzRrDMgIrPDb/1J5TbtAwcXf+1O/ysGHpYDzeHniAAcM/hEQuE28WcS4m3Sx8/THlZGwusMVeb8jQ33VDFUwjSpqN4ZB/iXKJkf4/G90TKotuiaHtRJ3KzooKpdhlcgOPj0TTG7VnDnKYCD6o8VGdDk2WdudeUym16VnwtqhKn1kXJRsHKH33Ao5XV6fG489qr3V33OrYVM8e7FZYVVt34TiAwSnjslpJ6fi+yliv3UsaFBmCwQtZQbVD1HJuDdw6egNCU+jLEBqLSfOlKH1rbISGBOQC0KMBFGVbeDwjXiCYb46XSy10Wj1VJd62FY4SR16VGT5ESe7yEc/Fgs0pSqxVC4mL00FRQY3iFlPUx1QU2uEYokSsN7mYTLo1ns0sPlvOjajA8bu6aE2+NVYWhsvmX+ZB+++hGThBRiN3i4bMlS6hHkJREbEEZj0aUHX7WStfdsUf5aagQ9yhng0OnFeBtqz5WspjLNAhHXemIijUgjkYbiRZNDK5Diam67uNoyL3RPXtDA6Y8ychUk5bhYEPNaNEweFZ4VTZ+n8kE2NPGyJkKlhKBzjCHFc7u2i2OynWbjxaeW9n7oiMDnRflJ3g0Whnlk4k82r38MjU7ChoPmdh9yiWzn8aondf3D5nECI05BaJL284FtRTej9qtpE4UGpfu61HHkk+rE3BSrJSxPgvvXTCWI7fe94hL/D9dNUk0/0R3DXuYhAdY3fYKbkfsWH9tGMhJACYjL4F8RpI8sC4m1NnjxmxXTUVHrCiS5j3TNX8ddVwMTA1czVbgD4D3jRB3ZWnVyE4ILrjSSlV8CD56c1URtf6OvD5c8fhR9hXyvilH5C/JZa/+aJmpYuV2+OBC6k0T7epz36Yg8m+RiyC6rIpnazDfftB+Qxf1zpnTekcAxiZ93gY0kSU4KCKHejq0asG3w+Tf/n7EEG7TnN8grJsXCWglNbX7keghNqOywkJjTeBmQvKQCCKXbfTAp9a9O0wWM2FfBgys+66Rr2Q+OGpGYrFWMayFPf9Ok985l4mqjSRu6c++CQN91/bGuNzxh8HlQYRrStfEQpURr3jvYe+ykmdIYDwdCK7bFYbI+COXWyycwkra1UX45k3y3gtOLNXfWrV9jZbdorRho4A1nXGi9W8FOHTY7PEEizapI9eoU0UKBlF+zr/hUMZD0c6HBZMUEecMoI4DeyLb+VikT0eegx9tfeD9wEtsZ2oIWoHC/xFzvAZPDtZxOF3vm/SqsyiEe+lfsxKem9QxEzO/fX7wwvgdaa5nnbEaSLxJdDhrGcmxfwmzNbglDdeyJ1J0NOw9RtFMMpdib6+WPLbRkW0lFW/GJ28YjFW8Ove+wyuXjcoIpbuQ5rcNXDSTYgNKKoPjhad1tdks1NybfUCAKvMd/xapU4wy86f87vXaF4ytFMZGxqBgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Mt4LxB1PEiEc15EcCoV7fx",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { material } from \"@aura3d/engine\";\nconst m = material.carPaint({ color: \"#b00010\" });\nconsole.log(m);\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TqEbJ7xabXeS3MiSTWTC6W",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 13,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Mt4LxB1PEiEc15EcCoV7fx",
+    "content": "wrote src/main.ts (4 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TqEbJ7xabXeS3MiSTWTC6W",
+    "content": "src/main.ts(1,26): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations."
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 14,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since the package isn't installed, I can't verify directly, so I'll rely on the documentation and check the tsconfig for path mappings instead.\n\n",
+    "signature": "CAQShwYKEggTEAEYAjgBQgh0aGlua2luZxIMRwhcI3k47RYiyJSpGgwkA2+Y51G6vmsHPvQiMPfExt3x+tzexLZpvshMm2JhtwyVPHP+LzZvGLW1d9T/ZzBiJhNlMZKfDu75+CYYcSqiBZCjvFYSbU50CiOYrer474lqR/TRZ6Rqm7UjIe2+YooRANNEWz052XbqAz06x6lZtJOgViKwDx5J8GzHZu/SexzkL2AEA7lu+VdgDL2rRicSFHfAGlp9WJoZULfnmfVYyCYlYZNQkylRKOnlTadrm0FnKX6L/q4pcRyd9TSncId8DCLKL6CT8XtB2Mz7DdqcMaeVmnG+UKTQfHVR9PE63O/zxcWzB0FDXomn0auLUw7JYbfe6iBg8LrJgV1R1fjJs7vF8duS0Jl21k+bnzBJjlcDiJMVSOTvYpYejnEsvrbNxl3N29wpuXWurZ+ppa86dzygGIBfMHsPCIJYbzGChNMNYfPaZVhx1meyMsubrKt+tFn3DyBmORDYoFheArp3bzfQJTsdevLl8PTHF0EqtiHuN54mjz1evEUHIxB57SidIg6iRYDPlT9LNxVOSLxDcTS036NW9XkrYsVJ/hQ4J6RRlsr0T0oZskMJY6g4FaM0BLepd2hEWgoVXhxVh4fgixJUkCIjwGnBH1SvAPuI6ITxeVywpyfStQ4pzRqjpTnpOCUHwqUPJAFb+VsOkd44PvSI0ZX2BfEidJ4oms8ZRH8XrZO/T2s4o836ap3U8/x6p4dAX1/7HdTUVwqCCBxW7sVyWowNQ9mVLXy2u8U4EkvFpD/m1+zyY1zBFvb1Vt7xYHy0r2JkiF7EcCVZH4HyzaUtocA40+WNw3lmaIpOCQc27fnBXEhcRPnfHNP6aIOM2CZ2cJC8gEzWNM9jqOkzpIUd7fHeJ1lRq/r6udT9EYv0GAqy8+52OKdYUCALrcFq92zBlenHq8ogF4sKXBjOfN84LVJt7csayUnHCyC00n2PyNBmCU47rPubD+LKlEklW6EO0SWErVaOKtrfwEsgoQ2yGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01YXeBQPLUrmiJWKT2uR1fgT",
+    "name": "read_file",
+    "input": {
+     "path": "tsconfig.json"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01VxLCoodJpRsomgiuo3Umfo",
+    "name": "search",
+    "input": {
+     "path": ".",
+     "pattern": "AuraMaterialSpec\\b.*(=|\\{)"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 14,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01YXeBQPLUrmiJWKT2uR1fgT",
+    "content": "1\t{\n2\t  \"compilerOptions\": {\n3\t    \"target\": \"ES2022\",\n4\t    \"module\": \"ESNext\",\n5\t    \"moduleResolution\": \"bundler\",\n6\t    \"lib\": [\"ES2022\", \"DOM\", \"DOM.Iterable\"],\n7\t    \"strict\": true,\n8\t    \"noEmit\": true,\n9\t    \"skipLibCheck\": true,\n10\t    \"types\": []\n11\t  },\n12\t  \"include\": [\"src\"]\n13\t}\n14\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01VxLCoodJpRsomgiuo3Umfo",
+    "content": "./docs/agents/api-signatures.md:76:[Omitted long matching line]\n./docs/agents/api-signatures.md:88:[Omitted long matching line]\n./docs/agents/api-signatures.md:331:| `geometry.multiMaterial(source: AuraCustomGeometrySpec, materials: readonly AuraMaterialSpec[], options?: {…})` | `AuraNodeBuilder<AuraGroupNode>` | same as `geometry.edges` |\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 15,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "The package isn't present in the sandbox, so I can't verify its types directly. I'll check node_modules/.package-lock.json for clues, since the list_dir tool only works within the project.\n\n",
+    "signature": "CAQS2gYKEggTEAEYAjgBQgh0aGlua2luZxIM+9a4+UHRwrxLz89HGgx7e54CDjtiHFgpm9IiMKQQQWvvLRNHhAJ9te4zE0F/ZUvoPH5T6Mvqoyn4bpvJkBooCIbBb8hv5DNZ/EiEoyr1BTJTZS0hfNVgrcT9Kn4/3CqLtDHB416M055HAoVFllR9PN4l9bbi6txObJTNcrAhWB4Aj376otVVpcQobwmEC6kof0af9HgjzkFqEHrzMfgYaqxVidkRmaE5RBi/nOrsoK7APNNeRZzb7yiER1JUk0Mk4CN92+Lg2kgehri/IS/P2RLQG2uiYV1h3u4IHdQ8UP7TxzAUP2Rh/hS0egUXB7Mfptfq2Qu/O3knEz113M0y7C96fnzB5WNRSLAqXkUfv47y3WOuHv4ATFWUdvGTBRYWX2VOEBVg4S3j2PzuqwWrCgdClzlut1r9BlxGrl01oRdtyby6FFjW8/20oPEnfMrGeT8l8o4Lwf3/OiCYbjDVVnyvMwM7Ehd+aJxMqtqpf9B4uNvDGImnm9GgbtcnCHvna3Srftz6TzG2hG8khuPTsLLgpa7kQdyVo343o19ovwOI7apeP9CXBXhdyVEX7Npxn+F8It+0bSp/OVO6lazRZO9Jg9F8U5xTHi9zZRV8DH5QHieAUEXp6w4hr4XdFkThHaE3Glfj2StSU7T7n8308HlNFYSGNfolxuya5a/nckP7MM3v10sEjnRwQxNAgCkFzLq//PndK6yvIde5jKyCWvIp7tZLJ4AXkj71/mcxXQB6aKm4LLzKH5oIyIv6qC5iwDz5UvHR6u4Xl0TrHxv58i7uDec1m+v2oRdFwKb0G/W624ROdNaizzaapkqIgIhKFJgB5c8lbuBhyZDhAuVtuVEcp+92SDf5qc5QzNFz0Ohzbmiw8YBjqBruZQI4VgnDzJK8OnGTLGQGGBAdxt91nMzTUyGjuAFNrTie9tDiz4S7GfzIxgvgQTL/YVJIUvAwa6Qt14O/3xxkihG6pnX4CFkUG68vs37i0/AqDqgRRTRF5dURMD12nmaHbPaHHdBQf0JTYfPED6e9FsUVAPrbi2igyjJSrzvCSXVPH2zbx+4MIsLzaPtn+nUvmGJGt38tzpGe1QCGaGlhFYh2AZzWl9t+IQAYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01L9uQYLP96seqjXTBty6Pb7",
+    "name": "search",
+    "input": {
+     "path": "node_modules/.package-lock.json",
+     "pattern": "aura3d"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PawX3VPAYZse7Bma7WuwjP",
+    "name": "search",
+    "input": {
+     "path": "docs",
+     "pattern": "flake|sparkle|materialLab|sceneKits"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 15,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01L9uQYLP96seqjXTBty6Pb7",
+    "content": "reading node_modules/.package-lock.json is not allowed (only @aura3d/*, three and @types/three are readable)",
+    "is_error": true
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PawX3VPAYZse7Bma7WuwjP",
+    "content": "docs/agents/prompt-to-3d-workflow.md:13:5. Start from the closest `sceneKits.<name>()`, `prefabs.<name>()` or template; add only prompt-required changes.\ndocs/agents/prompt-to-3d-workflow.md:58:`sceneKits.*` return nodes, camera, lights, effects and `toAppOptions()`; customise instead of rebuilding.\ndocs/agents/prompt-to-3d-workflow.md:62:| Physics playground | `sceneKits.physicsPlayground()` |\ndocs/agents/prompt-to-3d-workflow.md:63:| Particle fountain | `sceneKits.particleFountain()` or `prefabs.particleFountain({ count })` |\ndocs/agents/prompt-to-3d-workflow.md:64:| Solar system | `sceneKits.solarSystem()` |\ndocs/agents/prompt-to-3d-workflow.md:65:| Neon tunnel | `sceneKits.neonTunnel()` |\ndocs/agents/benchmark-recipes.md:20:  sceneKits,\ndocs/agents/benchmark-recipes.md:36:import { createAuraApp, sceneKits } from \"@aura3d/engine\";\ndocs/agents/benchmark-recipes.md:45:createAuraApp(\"#app\", sceneKits.physicsPlayground().toAppOptions());\ndocs/agents/benchmark-recipes.md:46:createAuraApp(\"#app\", sceneKits.particleFountain({ emissionRate: 120 }).toAppOptions());\ndocs/agents/benchmark-recipes.md:47:createAuraApp(\"#app\", sceneKits.solarSystem().toAppOptions());\ndocs/agents/benchmark-recipes.md:48:createAuraApp(\"#app\", sceneKits.neonTunnel().toAppOptions());\ndocs/agents/effects-and-scene-kits.md:90:import { createAuraApp, sceneKits } from \"@aura3d/engine\";\ndocs/agents/effects-and-scene-kits.md:92:const kit = sceneKits.materialLab();\ndocs/agents/effects-and-scene-kits.md:98:import {"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 16,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm weighing options for the metallic flake effect in the paint—custom shaders feel too risky without solid type support, so I'm leaning toward a safer approach using clearcoat material with some kind of overlay technique to simulate sparkle, though I'm unsure if procedural textures even apply here beyond fabric or rubber materials.\n\nA custom GLSL shader could give full control over flake sparkle and fake studio-strip reflections, but the risk is that a compile failure would leave the body invisible with no way to debug it blind. I'm now considering a hybrid: keep the physical material with clearcoat as the safe base, while exploring whether IBL studio presets can supply the kind of softbox reflection strips I want.\n\nFor the metal flakes, I'm thinking of a secondary instanced layer — tiny flattened spheres scattered across the ellipsoid surface using spherical coordinates, nudged slightly inward so they just peek through, with high metallic/low roughness and randomized warm-toned instance colors to catch the IBL as the car rotates, sized around 0.025 so they stay visible at low resolution without overwhelming the surface.\n\nFor the base paint, I'm settling on a physical material with candy-red color, moderate metallic and roughness, plus a strong clearcoat with very low clearcoat roughness for glossy depth. For the body geometry I'm weighing an ellipsoid sphere primitive versus a rotated capsule stretched along the x-axis, but noting that non-uniform scaling on a capsule would distort its rounded caps.\n\nI decide ellipsoids are smoother and handle curvature better, so I'm layering two: a main body ellipsoid and a smaller cabin ellipsoid positioned forward and raised for the cockpit. For the cabin itself, I'm sketching a dark glossy glass ellipsoid topped by a slightly smaller red roof ellipsoid that peeks just above the glass surface, creating a layered look where the red roof shows as a thin lens above the dark windshield.\n\nNow I'm positioning the wheels as cylinders rotated so their axis runs along z, placed symmetrically front and back and at the sides; I'm checking whether they stick out past the ellipsoid body at that x-position and adjusting their z offset and thickness so they sit like fenders. I'm adding small chrome hub discs on the outer face of each wheel for a metallic highlight.\n\nFor the belt-line trim, since wrapping a torus around an ellipsoid is tricky, I'm substituting a very flattened ellipsoid (a thin chrome disc) sized slightly larger than the body's equator cross-section, positioned at the body's vertical midpoint, so its edge peeks out as a chrome strip running around the car.\n\nI'm also adding small chrome accents: a grille strip near the front at bumper height, and a thin ellipsoid trim ring at the base of the cabin windows, each sized to just barely protrude from the body's surface at those heights.\n\nFor the turntable, I'm giving it a glossy dark platform (metallic ~0.6, roughness ~0.12) with a faintly reflective floor to make the car feel grounded, considering whether that reflection is driven by a reflectiveFloor material property or needs to be simulated some other way.\n\nI could use the material's opacity property to make the platform translucent, letting a mirrored duplicate car show faintly through it as it rotates.\n\nFor the mirror effect, rather than using negative scale (which flips face winding and breaks culling), I'll build the car via a function that negates y-positions directly—works cleanly since the ellipsoids, wheels, and flakes are all symmetric. Lighting on this mirrored copy won't be physically accurate, but that's fine since it's meant to look like a faint reflection anyway.\n\nI'm also uncertain about opacity support on the material since I can't verify the API or run typecheck reliably—module resolution will likely fail regardless, masking any real type errors. Given that uncertainty, I should minimize risky material options and double-check whether opacity requires setting transparent: true per the docs.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JWJNUwNRFSKUsSMHt3PCeL",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/threejs-to-aura3d.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01AwZ1ckA88fjRpNj6LUouT5",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/water-custom-shader/main.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JWJNUwNRFSKUsSMHt3PCeL",
+    "content": "1\t# If you would write this in three.js, write this in Aura3D\n2\t\n3\tRead this first. Aura3D is a standalone engine with its own renderer: you describe a scene as typed nodes and `createAuraApp` owns the renderer, camera aspect, resize, loop, context loss and disposal. Do not port that plumbing, delete it. Every Aura3D line below is type-checked against the engine in [`recipes-src/translation-table.check.ts`](recipes-src/translation-table.check.ts) (`pnpm exec tsc -p docs/agents/recipes-src/tsconfig.json`). Complete scenes with no admitted models: [`recipes.md`](recipes.md) recipes 8 to 15.\n4\t\n5\t| If you would write (three.js) | Write (Aura3D) | Difference that bites |\n6\t| --- | --- | --- |\n7\t| `Scene` + `PerspectiveCamera` + `WebGLRenderer` + `setAnimationLoop` | `scene({ background }).camera(camera.perspective({ position, target, fov }))` then `createAuraApp(\"#app\", { scene })`; per frame `app.onFrame((f) => ...)` with `f.dt`; `await app.ready()` | No renderer, resize or loop code. Mount target is a `<canvas>` or a sized wrapper. |\n8\t| `new Mesh(geometry, material)` | `primitives.box({ name, size: [w, h, d], material: material.pbr({ color }) })` (also `sphere`, `plane`, `cylinder`, `capsule`, `cone`, `torus`, `torusKnot`, `lathe`, `extrude`, `tube`) | Primitives are unit shapes scaled by `size`. `sphere` size is the **diameter**; `plane` is `[w, 1, d]` and lies in XZ. Unknown option keys are reported, not ignored. |\n9\t| `mesh.position.set(...)`, `rotation`, `scale` | Build ti"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01AwZ1ckA88fjRpNj6LUouT5",
+    "content": "1\timport { camera, createAuraApp, effects, geometry, lights, material, primitives, scene } from \"@aura3d/engine\";\n2\t\n3\t// Water with a custom GLSL material: vertex waves, analytic normal, fresnel mix between deep colour and sky, sun glint.\n4\t// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime.\n5\tconst N = 200, SIZE = 80;\n6\tconst positions = new Float32Array((N + 1) ** 2 * 3);\n7\tconst normals = new Float32Array(positions.length);\n8\tconst indices: number[] = [];\n9\tfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n10\t  const v = j * (N + 1) + i;\n11\t  positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n12\t  normals[v * 3 + 1] = 1;\n13\t  if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n14\t}\n15\t\n16\tconst water = material.custom({\n17\t  glsl: {\n18\t    vertex: /* glsl */ `\n19\tout vec3 vPos;\n20\tout vec3 vNormal;\n21\tvec3 wave(vec2 p, float t, out vec2 slope) {\n22\t  float a = sin(dot(p, vec2(0.21, 0.13)) * 3.0 + t * 1.1) * 0.35;\n23\t  float b = sin(dot(p, vec2(-0.17, 0.25)) * 3.0 + t * 1.4) * 0.22;\n24\t  float c = sin(dot(p, vec2(0.4, 0.31)) * 3.0 + t * 2.1) * 0.08;\n25\t  slope = vec2(cos(dot(p, vec2(0.21, 0.13)) * 3.0 + t * 1.1) * 0.35 * 0.63 + cos(dot(p, vec2(-0.17, 0.25)) * 3.0 + t * 1.4) * 0.22 * -0.51 + cos(dot(p, vec2(0.4, 0.31)) * 3.0 + t * 2.1) * 0.08 * 1.2,\n26\t              cos(dot(p, vec2(0"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 17,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm considering writing a self-contained custom shader for the car paint, using a procedural softbox environment for lighting since that gives full control over the look if it compiles correctly. I need to be careful with world-space normal and position calculations using the model matrix in the vertex stage.\n\nI'm realizing non-uniform scaling complicates normal transforms, since I'd need an inverse-transpose rather than just multiplying by the model matrix's rotation part; I work out that dividing the normal by squared scale factors derived from the matrix column lengths gives the correct result without needing a true matrix inverse. I'm also uncertain whether the material will be lit by scene lights or needs fully authored color output, and whether tone mapping applies to those values, so I'll just have to test and tune visually.\n\nWithout any way to preview the render, I decide it's safer to lean on built-in physically-based materials with moderate settings rather than custom shaders, and pair environment presets like metalStudio with rectangular area lights to produce the strip-shaped specular highlights I want on glossy surfaces. For the metallic flake effect, I'll avoid a risky custom shader layer and instead use instanced tiny flake geometry so a failure there doesn't break the whole render.\n\nI'm thinking through the dark showroom aesthetic: a near-black background color, environment lighting with background disabled, and env intensity dialed down to around 0.5-0.7 so studio reflections don't wash out the car. For the rect/softbox lights I'll experiment with intensity values since the scale isn't well documented, positioning them as long strips above and along the sides of the vehicle.\n\nNow I'm working out the camera setup: a low front-three-quarter angle with the camera positioned roughly 9-10 units from the turntable center, a 35° field of view to frame the ~7-unit-wide car and platform within the 16:9 canvas, and the target aimed slightly above ground level. I'm also adding a cool rim light from behind for contrast and figuring out how the rotation angle state gets tracked each frame without wrapping.\n\nFor the rotation, I'm using performance.now() to drive a continuous angle in degrees (20°/s) rather than relying on potentially inconsistent frame delta units, then converting to radians for the turntable group's rotation call. I'm setting up both the app's own onFrame callback and a redundant requestAnimationFrame loop to update state and rotation together, since calling setRotation twice is harmless and ensures robustness regardless of which update path fires first.\n\nFor the mirror effect, I'm considering using a reflectiveFloor material preset on the platform cylinder combined with screen-space reflections rather than creating a separate mirrored duplicate object, since the duplicate approach risks being obscured by an opaque platform anyway.\n\nFor the ring light on the platform edge, I'm considering a thin emissive torus with bloom to create a glow, scaling a unit torus non-uniformly to get the right proportions since the exact size parameters are uncertain.\n\nI'll simplify instead with two stacked cylinders: a slightly larger base disc with a cool teal emissive material to act as the glowing ring, and a smaller reflective top disc positioned just above it to form the platform surface.\n\nWorking out the vertical stacking so the top disc and ring cylinder don't z-fight, leaving a thin 0.25-wide glowing band visible just below the disc edge. I'm also planning a dark glossy floor disc below everything to anchor the scene against the background.\n\nNow I'm sketching out the flake details for the body — roughly 700 small tangent-aligned bumps scattered over the ellipsoid surface, favoring the upper half, sized for visibility at the render resolution.\n\nThey're metallic and tinted in warm reddish-orange tones for a sparkle effect, generated from a seeded RNG so positions are tangent to the surface and biased toward the visible top portion.\n\nI should generalize this flake-scattering function so it works on the roof ellipsoid too, since parts of it overlap and hide inside the opaque glass cabin region anyway.\n\nWorking through the instances API now — figuring out whether scale takes array or scalar form for spheres/cones, and deciding to specify a small uniform scale for the flakes while leaving default size unspecified.\n\nTo make the turntable's rotation visually obvious despite its circular symmetry, I'm adding small tick marks instanced around the rim edge, positioned radially and rotated to match the platform's angle.\n\nI'm nesting all rotating elements under a \"turntable\" group whose rotation I control at runtime in radians, then working out wheel geometry -- cylinders rotated to spin on the correct axis, sized so tire radius lifts the wheel center properly above the platform, with the car body positioned relative to that.\n\nChecking the wheel/body clearance at the fender position and adjusting the z-offset slightly so the wheel sits right rather than clipping too deep into the body. Now adding chrome hub cylinders at the wheel face with a thin rim ring layered on top for detail.\n\nSettling on a chrome rim disc with a darker center cap for the hubs. For the body paint I'm setting up a deep candy-red physical material with metallic sheen and clearcoat, considering whether a carPaint preset material might give a better glossy finish than manually tuning the physical material properties.\n\nDefining materials for glass (dark glossy clearcoat), chrome (highly metallic, low roughness), and tires (dark matte PBR), then starting to think through lighting setup using a studio environment preset.\n\nFor lighting, I'm planning softbox rect lights: overhead strips positioned above the scene pointing down, plus tall vertical side strips, working out position/target/width/height values to get the right coverage and orientation for each.\n\nI'm settling on intensities by guesswork—around 8 for the softboxes, a key directional at 1.2 for soft platform shadows, and a cool rim light (#6fa8ff, intensity 1.8) from behind to add separation, plus a faint fill, while watching for overexposure given the bloom threshold.\n\nFor the floor, I'll skip fancy preset materials and go explicit: low roughness (.12), moderate metalness (0.5), dark color, paired with screen-space reflections for a faint mirror effect, accepting the risk that SSR might behave unpredictably in a headless render.\n\n",
+    "signature": "CAQSnX0KEggTEAEYAjgBQgh0aGlua2luZxIM0DGdW8P4tPpfi20WGgxGK9Ef4nHpe+Iz3bsiMHIshhkWh4GZociAZMDu49L443hLMsrSufBTslsSjUjT5KYpZ5GNksmR0y5Hnpl8RCq4fJXeGjqct+dhL2unBoh4m6472w/66EAZqlev2kSzIPie4JEog5fCUgHk7Q7n9NVnr4TzTxkyAYC26+egEbHOqD1tOuZi2Zxk4oCj/f+2o2uQ5GcNamDFgZ5j9lODvxq5zunccroAyoYCOnrjTrLhOw7gIUkLYOAX2V7wwDgDVgDfZMq+TEd1BhLa67JSXnnrmE6jN1lLYDLHEdztlFm/cDdQKDN1rnBOBTe8SxpzD0n3PfAfk4zx3ezc/fc70JUtYIBybSijnyMBjnyojXQcCRSapiYv8lFdJ0+jsEvJfeJKix4JVpnGmOqL4rtPRVWalXlmTiNrxHBTZP5ry6gmHkf95E1DhO/qp/Zy9hh/ff2iAysA/odLG7LY+SUpMzBFjxGpOwJQcPnJR/kSBWapkwpCCEOLOk1mVP6D/ND7igwI7V9MY/wtDDJaSTcNsARxYLNDQctok2TRFES7Z++yuhntBYKIObi1MGsR55EBuYENm915wtO0K3LYcgCUxjjE69eOh8y0igo3mPlcJncy5HY1zXbrgsz7wjbWlKaj7YL7/fPQf5E+p2ZKnoz8s9eX1PaPAM78G/JetLr4LLT1wzXcoqeeAH7wPYySO1D5vgaUvgEOTaoTeuIZmO0LzvuNx3jt373cnvazQ/zMX6b0JMdOo4/ck2NDOEBrGQxoEj/lJCi+RhPooGHZppMs3RbGJeH+3nYx+e1v9dC5TFNaUU4CbAciLqoIb7A1j6TdSfTAqIQCRRxl+2AzNf0m0nX5cjgzUQZ/qv4e4JHPQkMruP1bQ2KzhQbAchkNVVQ3j8b3nI2KWdp5q1mkpGLv/YJoCtdfUsGzWFsXJp3Va7fRkEDu0RwjphBysUYq+qviVFR3yDapdJD0zETZq3a+1RrzL1dt9EKUlGbcJBPTCDYUAH80u5FpGMPHhVryOJmyD1+RPljYLailVZ6tzETraDJqeHum2VjBhpnRF4LsFrnIqAI4aK0539+mRNQp3bUkg9BnZ1RrCMDsEXdtxNWkvfQLUZJ4Kh71pi6Zg+ET3h22C82M5DjdmN6hSBf6p9Km9vbhvPnpRy9j1M+cwtw7y/0vUdn+xe+MmvmekFqA+/lWL5ujR1RWS0qFKeeUGwDjh0yM54sHMstPQVrACha3FVGz8/fOvcNj4zgWhVCLdI31/UEbv+DkTBEb6aLhxZInmo84iwPd5paetg8XwD7nKEMLKelYaRTfs4tfLzxn98PzZ1RtIP1AQAmDj1l0zjeQMphIxzto6uS4aXq3gXSD5PkwOc+8t08LWarXrpZuoWtilj/0Km6srNoG0ZXXmwC/sOn3bXdQZ1NdtIsicbco3uVKK1LoDpBL9Wqp25OXbNOHAaVTxon8OpULpXNvL/w5IoahuQJYmQGw6IED9oUmCTefJWuVt07O852cUGolnwVsrLsC0UWfTbkRt1uHxNYqT/3UU4aq9EFpXt0hL5TpW2lvjm8aBr04qw/wyvBU+SceZJdnwF6vDghHjtHAzG68mq+dG+aBocNzV7uIIsC8tpLMrwSRtLQQBXt16sZcBTs8IJSL/emIJ5IR4Yoeb0j3cfIPlMolv9tm/9hQ05XuGSxV9c32V1ubcVoYj91iYRcwgxNwWKNuHKn1YnYtf7ugXdzkJn8le/sUbsCFtzE1VkztMrXCjGeHMAz0jQjT0TCIfO85WLbAh4QZrfXJGPuA9uNtJUIC4TvGV1UF+W+QWN/Td33sWfw0IC4d+Fo/MJ0uE2ZcPoDyy0aKK05nEYKvNA/Pyio+hvD/yWG1O/IQPNFWu13Pr/Zqj2/y2zXy9SszYwEZXZTlWuX7B+ADlYITLuftMTkLtmu6I1o9ZQ8dAfSIqYOwR0IKgSG9AhP36infSU/c3GHuMtA4VOpWCYRiO9NkdfKsnANOgqyKD8E+NchRnkmOM0eiGgYGI5pgeF+R2aR7w10EsOsWWzUNmvB4JPAtEBaQxD6Cu8y23ZsbYZ7vA04EA/lbfY3ZPkXwIqdA42nk081OYK8NQw77R7no/n5aM9s9FtoC0PxOZmp3j14fdGg7d3Q07KChTZHAMJej+XoywK39laI0JGFIFsyKh/XyEJgw80jRP5QMT10cKLBRfVsufO0h/M1v+8BDAoTxWIQFK+6HesRe2htXsod9wBpy8t/sYNSTvlD33w7S31WGedmhSHj5DDHS9e2GTe87td5A303FIjGQf7AtQGuJx7lGWnPtBiskbP7Va2PjFgFAVachMmH4eKR18OCEGW/HaXpOATN2dJnbwLuJ9FMKPVFFrpKb0LjW8RUmRMvI1bAtwTsEfI6fORifCccg7fqbzQRpI9939l32zy44F1XFWZlOrV+pkVL3zW1lgjf7i4vThq9+V0llD6FLFkalbilO4Q8JWbgJ0vEkVnaTap+Tw96DZOfaUbbMw8Dv4adPvl8YQGsKD9y05TXqsV1npo40AJA7ExyFf/+6glkECqV+KyhgKmxUSFY2qtlf5oWEdhBgsydS6NvSRAE9f823/yV06zjoitoHdzwhvEyIlBNe+x2jGPDcJeEsxCpiLvtptQ/PZejzARc2GwkyjMskeDMc0l86NHZCHaZJu4w5tkE95I3qAgrjxvjIuEYtXNFmNNuDaWlHOPA1s3j4472c1SZ/UBH7M2/DCkfFZB/8jkwlpg4Irwg8CirwXx4PYofhHAl9AhwRnj6KW2socijzn3y4p+aRuvRVII+mF2i8t2aTjHC+W/j8YhLERbMKOlOQhthk9RQaUg+ILmYP5kl1Whh3c1UOcoMPf9FaTqpFb/BapR+qPUH5GsuBPYXAqAlQsA08ItnvVB/F+yEchkqgq56d58LdYxXN/NoTWu1KSMhGYBr3iEzDIkqH08xq86YTvXWxuaUU5lEtiFuwTMvx8Pk6DN9/lmO/2BVf/TWsKvBpBvRtZbk0X9psffp3v8t0Bgz9E21xzqch6/NLg8bJn4zVRcV/RNSsBMW8UBzfxm/lfeFa+kIdZUJ+/rtKj4IKRNP7zaS01beT5edMrSIf9T2G4HNcHGsdRhdEY++yV+l9deda3WpVnVUVI2RiS8OzWL4UgTgMrG4qh9yDKLl0eO0gZiEwpyv2kaV0a0m9ghQ914JHMZ7LUeItQ+psFaV+IwI1tWvaEB8gERy9LSgBPAkFVejeqYBemtbcAd7QePuPZxgh34DXa2AhQ7eeSvSCidFfWo42JP9YgquNsJNl90ARiw/QU4qZtt7TBBUqCfZvddIQ7nBpvEzcsq/g7QQRNi3ju5YzenkyvFszsDArnfkfs00BS8iW4C9nFBU9acSjUTIdjgYhF4MJMjGmQGZ6J9ki+qC1VeEE8CLusEHLTTkP7BTZD8P+ZUuF19eo/VlxQ8AmT0DQnZPBlYhA+qSGSKX0mqJI9KZZpXxGR8nbkPuXEC4as7lgMLvestcLZC6kiBTxoBfIXUWx/TwlSxnEDdKmdms5Qw5/xpyG4Gc0Rr+rXj9SVYqeyxDyGWc626j0y+qoDQPci2f1Rks7IOdRux/xDyv0bEOWOKJzTqgPYSyHuJ+Guml8+D6C7suC7DJwj7bFcNw9Fv/bh1/2L+DqSOEGx9X0Nf/9hu8vgRlzD5i0qFulHBfWnw1tkSLfrgKin4EdptGwoFgXZKYiySfh7Fcd7kRgmjE92r7iZs13CjKzgI65aLxEadYN2jHW5FyiYEEFPtNRI2FBF7egt9ZrZ8WvYfvOHIMH7QAGEE6elQQs6VDkj2yKUUIumZUy18iwBcaO5FRQwQioiOBGvEKK/Guj7KfyaUucJ5xlV6o6Tr+e29aYPCANi1SUsZFAn1P0bfOxLGn99ptN9GtZwHPfkSNc+ktCfdGyJ3LF5By74YY+6Ct/ShUUZesrcwLT3AlKuer9EjnHVAQp3rIZWczgX9Z8meIN08/Acaiu8Oor2cNIrJRlW+vz5flJfN4sK5fcVxvccRuUe7T2lq4nyXJg8sp1YVzxaJQc6jjH8KxJHrzo7rPH/zphDrX9xleT15w828JUdjqClnYSSrfTXHLNFb8fRznhQjri55YGk/Dakdi717nl4lpFpkwwqdT4FcZ3pxKuqOJCUj5k7z7zaUMcEK9mgr00/GCz3R9q+jqMr41wGQJy1sMKJUEUDc4q2CHboAiKNMubLnAJBkoQ+obD25DJomo++8evcW6E84OMmC9+fq3xHNajYCXnIYim1cLncP1O9Hc+iYEBmHyoPz1hea/mj5XCyBvU+I2TVBrPVAEB0LkG674pjgz8VahCMuhGCRke4vnPAKBT4kUyYpm2vj3J/sV27o0Vb3+U5D5DEmfL82iTs4xkO5l39O+VxgOz30v2vZXIkd+1g6llXFLKSUit1WmFiWOJxpKYa6pnZTdnSdbI+9CwM+J4/v498k1rX61xLVm2yb1SBC7ThqkBqxYs7m94srMvUoyDt9Av2+GsoS5ffBM5wQ2nLADBQNpC+9CFumWmVRXu3Q03OJha2gR9LaM9Tof2z//w1I15cgWTaxGtcETO2V2D5m6pxucU0hpN0NwPK1A8XixUVGyToJSNX6hkgxO59CblABD30fFDwrYQNNAkFziUP2HBotqeLP5SoHvh5JWuiJTzrcggQif3I66Yl+GJY9G39+8LABKz0QX41Zk61IV9UhlLkyw0QSbWpBwjuLR+kDu00uvgmQ8hlLhyPuqkLB3LzDjbYV2KA2bzzFI38AOQT812mO1HUsh5Zk9flhTg07u3+vRe2PyRxttPyz9UaJa65ChkjmPxVxrzNe8DKBytgxCemBLtGXbTsBYPU547vHTcF7URENV1+36fSR9mJp9D8lefE+nEdiZQVJZjrgBtPR+l1guY23WGhErhFyKpMeBewnhl2d7EA6ycI4M6tEDJEQYGEv44LPdldMss4fzGcLzzYnizwNZNc77xp/YbDnjgIYTELC1SLabJ6D6LWFedSw9kdRtr+R27yyB+GLkNIn0omlfuUKaqN8meIzh8n5WN2F8sxMSqg7f8YviOESr3cH/rx8VoGeXCcM4qZ88lOFA6bw5sCdXb4i9p625B5FlLDnBuTNToMtpQWr0sSrLZ9RNTnh5EqXMXa9r0HivTsU7HAMCW0oZa3TOmkEP8TVVB9Or+aUmyURybzjWz2yrHUHGBPQgI2+bSKlYXy0i326oJRVFOa01Nz/wyKVbQpEz8Mu34N6QzdV+eFIfJ2FXkyeyiwYj5t9mXH75SppeaV8arYabFzoB0y3We4XPBucDhHGqeS9WPQqCOQva42KsEfKXtb3DB2juAw89Gfq+RzsXt5MmKFRMuEnaehneeR+UsGSyHZzkTgS5sDdXbxCF1LsgkvdLMzxKFa0Ec/OV7dt8XJlb1D8M56m+OHXvJK3qK1Y/fQNyPPE+bed6D2/jpmUutm1fqbp5+9t7+tUP6ws6oqx4cRZxNoNRDsVuWM/tfmPKn3GKR9Dwf24Irj8TSKHr+99vItNu5taym4io9gvKNSdS+2+VTEPHvCH04biiX0pe1URJNIazmMMw1YSsj3EpJF7esenCGgLIPdwrSWMXNmTtqlYotLFeDwHDjrUEyYl9di77+fvExyZ7K7Fd23sn6Ltf12nUZQoZLf5Z37DKTIeJHDRUgLBjeoRB+IBKMou8Qt877/HHXQs6RlwpqUK0zXpg6g+aX8J0lxAiBpz3gqZZRaXnXphnuvOdlarD9PJ7LbC2IzusUFz7Dx9luOKt/pDAvy4cUXHv0XNTiMfyQBcdGigCBxEO3Xoh1Re18wjE6fFSeO/JGCZ+4uORbOZzC+kNsyqpMDyO7N4SbOFFxTwRNLR7HVygcUjXg6KjijbmjVEjsRhQJAQYr2QuuqmNKD+BHbPPJQ0xzGOIvUNK2g07QDP1KnJ6xeDsWIDntWdNs8vio2dSx+4WDp4ZMxVHS3Bxw5vROp3wicsJ2WwoJzBDLTLDEmnmD2RMa1s/+GZA2XDuxqm1HPEyCe63Gtxiyk/+UelypvJxWRgD+Je9MK0udBuyJGhM2afSKnbw9d2cNSnS3ZX7Tpr2x8vGGCDdRhMHwWRZBbrDnzfq3fL0aPWB8dbxcuLs+R+uTHa5P31lqwyhaKs2x+HzuHK09mCGpbcbeKoDfX88FbJwjI8ZY7yXVRPnQps2pzYno5fMi92xYRa60lVgOZntwvBgoOegHiGzTmtW6rY7q49xGpv0N03qtJGN05oCzSzCITbsz9nPxsM3gElmoJMy0LzwBBSaqqi/JpRvputZc+KswPxWPzjtCjDWuCZUjoaBcaEdfG3FF0hD/Dy6j+vKTwLU5tiPPEH3aIjA3CZjboTNBVAIbrcodgCvqcAkKW/N4Wdxcs/w/uYJYLsSq1my+jZ9AY+aiMWbWYGlEWbUetmJ7APAc69Zl9w22zpa514CFmeqsLvUbryTZZ0o3cnnkHDGErHVuhuScEumbVsG9o7/t0xDB0sHdZZI2TJ9Swi+APJJFwrJ483x2Edm7mw4DAV46mG2a/0WJr2hk8KxLfgyeuqnupMtP5t9q1O0cMTeP4sgMxLGOe9YD/9v1VJmHwdY6ujb3caTsDXSHgLBttpIdH7fxIqib1PRn0dyjrr/nna6AgjS0L823+95oGG3RwkrSYuh69VzQWeswKDYlESjyc31mvJEdRnJtaAckKDQdO27riS5/Pwn4mDvf5tu03arBGXBQHbvgXQsobm2QlxJnJKC+Ssmkyi6kuQLbxZBsiqFS/+gwE0SMi7mWXL58yHq9Xk6iyckkumPSj+5MQDrdjiINYGd9eydS8u0lTY7ldaTc/fG832yIRjNVjiY5LZC07PpXgPITiVbi1M4sqeIiNYPaapICSyWBDmG1ECgWhkXcP5SjqXqVKzQDPjHsKnpaXTQg0hBUopi+EOm5nonaTUlJJVQWMxRJtZkaZdiX4Y1eOPQl/fxi16T/S/sj7qBYwRyq1rgBpBAgJHHr69hfmdaQmn1ry928F+gPgNkjsv9QbX5N9OYOPeAMMDpC8Wqiwg4bMFp4rlHyZNSr/eNH0AIw+AqBBB/sYSUWse8QNC+iVLnBZkBNlkVjxC9Tk3lhCl4t2Z9Uni4KG6fVQmcClPteZbosa+uiAHTDJqUbXBlEEhkoosPAyto1/HLERGTrbAsOw1THOyejI0x2td0tgmnYRszsbk7AgkUl1rf7NdndfSdqlP376ENl77i/z1ayDoPuEFZ+WL/8QmHOtBtwW5zstNTIOH0VZ75rrllLGpFrfZSPtVkPLTf7rpjAxV3kXzFhnnYdqJ5FTEif5aBaHYdnLrroTDoWjv2JDSyqLLOPlJB8jFhHrkT4aBnSUoMU4zckDi2ixhb1x518waudBAYBFY74c/GY7mnNGnBncTWkgCAel5jhro4EUf6bg9ZcjZp9yQeFqgVnfG7nRg4okD2qk1GLaJ1HLkkEWHSwHwmhcdCbF0oRPaxrwyYZvKwW1TKoHXx2/dr13vsIXuO7c7Akh1WaX/5pnyQRt1Ei+SMUORK3m71WD5R+6Ffr49BaCEfklvwiiisxLvzaHqHutCiFTnfLL+0JgCzMiI2I5UVh1VitVpVrrdx3kDg6lgczSevCGsWId8XoMcKyyfBbNJWZc2G0e19UKAKlu0ssPG6TtHnqZRgcaBoxE+vYqnSiAzQCmZtyj02X5Zfgp779fSWhIwHSLu8MA94dBOF3YLTksu5j3IL3/ACWv4kavaM1ZKel56QOfQ0rUbxwTPtFqJTQRDAEvoShaSd5TqurvRh+xMB4f4UL+1oIRoOju4W+xP9JsoESZYPc0VRe3fxh9wDWPe4WnlZf5GRS/xmal4L8RnmJOcrxq5+9QEMkwkBomQ05GcG8ftVHJAPnrUFFx8y9Iff0Wys0Taq1d+h+TEbyg010VzWMu72DpuJOGM5h+QC6JuzwXC+7yLAIZ9QALCEq46oEi1SDuYFrwgg3btWk7fLsCbJVAjxBA6PyyteydnDXav2FCLNJ/sn9h7zZqYrqlRxJkDWqZxUKDGuZYdYZZhIS+4IlqIMX04AjdiXXvcgUXQEWk28lsewJ5mBUGFD3229xuvH0r+tXgSPLbz+cbU3idszHPCdJNIDFC0vsnfSH9+gy7kt5pT3yjr0bu8qkHXT+h34vda8u0Ifu3qVkrVoCzLgIezmyre+Snrw7ilEJs85qxHJbhaA+b0pIpuMeF3NwCVzk3m1/2/E7jfaBlw4NM4IlMLOSz9GjMtBnNEfA0+6DPBbSyVYszrIiNc9Gs56nlcD+TK7GIW9vn1WDgmesms8jPOuL1b7vlMkvW+njrsumukuY7guVVJK2smv8jWpMXw4nzFuQo0oVYv6pguRsBXXVCEYMGBK+KulI0BnAAckRNRnxCcH9nlPthdubmpPEAZQPV0i1nHN2HDIpRm09ePdj7GcHgIQqhGhWIdZM3mzc/MBqwFjT9xZiehgdiVNj4KM5GV/p7fnB+qcZkvaBQXr5f6xc36a0aDyKC+8gaSzw3uzrAk4YAsVuzopjDgUD40mt7nEt8txo8RD9quy+h59HD+BgsouxkzCqP7ZKouFn5/SoY2r81d56q/zkRJYUVJN1+Z9pBZ0Ir4dzD8ynov6bm7liZR7CPhNnfkSaJha4xqwlmNsPyQIdTOVe2+MLl8Ax9FrlzDKR+e1vSFKTONeEKj4h67QrSY7+cCvy03oeI909OQ/4hmtMWIHuyWEW+RmAiM4RtHTxsk9NheMJ8QYmV/rnD8TkncqyfEcPhYId+Xo+LP2i0/UMd0idIzyeuLIk1VGGVTX/ZYTjf9MVreUYgSnT5LkXyrCdSnG0WnccG8mu75P39RVmrqKR+9pQ3DTHdJ0+Z8gbpLH/jfgo94dSc6xCPUrFbwOiIGoo6bhSh/lJzfNxRI8SIIHCWnxwUMmfiiV9wP5/w1H1u9eCTOTcx71aZK2eq8YuO4wAkvwpPh5YqYXbSovS3AmyZzj1ZpdglQbArGnJNZecHf+vqRZu5avGtYKjFtQ/n2KqHF2FkxsirugTs8VoGSO/c8R2WEv9b9f1ixsmf6RAIn3uqphKLk6u7NYlvXlAj/CnSokdqd1lzOFNg8V86tF9VVmRktEhr/jW87zvRiiID8qPOI22bv/I4hTTp60T2gnst3RogpROKYsiIhNaEfS22a274ijl7m/h0bn4Dr9uPp9OxfRf1oheTZ41TVjQO7iS3Cc/vSfwrus+gN+tMvAxT6RliBCXotya/RfudPFlw/9kJ/NTgLe6RWgJ97VNP6LFZO2W/OJN6O4YwSUcWYVVOzfJ5wt/rezlnS7C8cZW5PUiIXcGHTDV9nq9fY7MpFCrum+wkyfniY8iwb2vtTG3t6tQdKhw4hsykWY0rwZvfO3IVsKuP2wLeZwopLe7t08INPQ675QjK09iaRzlfY5JOWK/+6JRr5HNBGGkXW8NthVMeIm101uXX4wrRSPpDUxhyKRyKGlADQufcbAnnks637hg3rlQ/O0FCDqu03RnDjgVimeObwbosq9MGDR8p2e3gK5xSPMNwqpkibaFZHfC/TjFTGSyGJYjmkiHKKWmQeD7KBvPUn7ZyaMmDS8sRzsMrWg9msr3yj6OMcSayAi5jZG1qrp53UCM0haXYm8qlxq4kigC7QftfotBDbDI2ds3F8oe1A1mnPwx5DzjlmfgCFwfNnnkuCKX77FSmp2/B7dHfrvHwfV0YnZ7fB1yDtEQAyKOl1HvdbpVRA8438bVwUmDSXLoe/+fh+FbGqUR4VhoFrfQ4uS6/VNH+FAbPYT7Jgo0svYZ5N20ZuYGWnR6jjyoTMKkegDLNaMkbmKyeJ+umWc3cE0HiXOnUQEjnHR/jMXJgnvKurmB4RD3kFRDCOb1MjqRN3LFj0pYlfI/iukeVo5JrBVSPBoykenuy3K7a4ZCERVEIAraB86tkBN7DUHsUIfO7DHjEB9N1pqMCO2TCy4KB59/vkUo5614F6PBT2zrQW3YZ11kWs1FmjTlw3Pa1tQTAMaBtuuswXmucLvGc02e/BWXB/Dg2gI+uw7BAs32w3PrWdN9uqqbjWQkic2Ll+GoJPsrd2xn3XXlwSkyPkTs71zmbLIPPnHX7ocRukKlUgsUoeKc+BE0C8Q73QVboSYUL4QoNIHQKr68XXG/x9PT6KRwqrKzGO6zEiwjO9d/NlaUaYJt1JKlBxWKR3mjvdSO1pcq53y7RvEoDp2uWmslm8nnMvH305l68Jg09lBvSQThuv21AZS1bob43f3reutz1wshqlWhI/qcVx3wRBfsNytb7L4l/OMTJn4ajl/AOrDB+xSpOZ+HFQYsFEPxU1iaNHkDjC0/gZHO7K3ae0V1ZHgiwW9Wr5OCrf/M3C9engqjZnjkvFQnRIw1ZN5JJqwJL5XU1UVhdMBLJO5rMvxzVQeO9Q2el0XhpLoStIImo3iOtBJWXI7ew0UDZPJrtu7C2KkmQt292uB9KMoxh4QQ2NEwaQ/kDJYP2niZ0fLz2+WiMH9c/nbnbFYDfvzPZQCWSfydMm+sQb56gYNSsK/7Io8JvTbCNsAYpBA3wYvm3b+Msmts4zN7tmMZquPMlLskJdKxKTFMHwEqYRAzzNHteAxV77qS4zk1uEGs29XGodg0Qqx/bwHUKwV/m9ym5F3Qy3YOmJjMGySG2zwddIKHsateFSV3/i3v9kEJPwau+/LmcZBMnWv066nh5XJ8WRhqqs0I4IWjlbIgiW9aAggrKoiQekubvsQCSXritCBdtzLSvHaoB6ojK3nMuYS1tboQCX9x3TQ4I8QjJQtPcjCgIabok0U05PCsN0pnGLBf/Ud8zyDGTANmgAMQQg9GxB+CsRJNijMCYT/pc8ShcC9Mwrv/UMdfQlqBaPrcrkXW3mjbkOca9lnAz7niTn36OECvq2j7m6N6/4sO2bLkSR3gkdZMr5wzJjmqRLoZQa1MUISzASlHIdNtOp7C9JI6DXqFjAaUvmsy0WKRaxywjy2mTR+ITyz0d/Az551GBZhFDL8G5FnRrf/FF0BNrspXodSyBnKhC8Z0mWPjk7y3g89hXMf67sgx8WAPHcosd09PjWVI/rLt8QclLvsaQ84yHBVLP9iW1AnNWVtT2aCSrSkPUJmG3cdGnuqCZ9mz3IQzQheLOByCgpTzIWRVhvVw+Lj+pRgo+JboMB2jnM7d8lxh0Lh77lZZ8nmbUHeGl8kJ3pZ8GXYLyWEWYAkhnEBNqL6FPIPnv7sJyLB7e1q3YAku95c68nWR+BLwnO1HAwUy6Ceb5H10keFnq46sU1QjGyVI1hhdUUjNnQhl5gH5Yy59EElM2UOKVoo9mmyAODj1+y9VBl4TawjCaE0IT/qC8VmmX3amFAlyyYAp25UEqE1exc5L8S6+gb8U5/9+KsGmMWIDxX3D6YxZ8smied6UOyu9FrvBXYgqawzpWYTqd8gldOlkQCHCg6ggP8KgLcjrEkeSBaj4hvxxAzUKNr4KWakuZQJO+LAYJxNGYHqErFFbqHE2LYodHeArtjM3Tn5N2MolbLrBeTNumGuebcaBX6wUm3euxEFU2qESeY9lMSeeQenq7LqJfdERguT/CKfEKMtWccTZwGx7lu1F0RVQccZdHsAjYugEWcvwEP6FiNNltSJ0iUAvp3p7sCdeI4L779Si54QP0Is7NNcALjhXrtiIsg5YjBctJCuL3xeQ77W96Et3OXTFNXfTn11J0O0az5eCk30jDxPL6szARUg9Hssc6YLtVDHB+Em9M6EcZzAj3n1OKdbSYcxi49gAXPWXdUsW8mPs9vThndOff8qH9BC5qCQSG92TM+GEonxUmWsdeBfcAGWrAbp5QCxSTV1aHvt5dB8xqUUHyjhEzbfkvTIzxu8H2QNdnnH7bkSihFPPYtcTRLV35ecV5DJOCCAM5DAT7OenNa+9C3QxOhqQ9eED84054NDCD0mb3Jx1Umeh0hNsLpUEqVcrxJWcsF6h+++XpxBqzvn6DGmSXHGPygSTYEUgRRT3fpdZzReYzy2en958xt6bE+bg3x0CpXJBJ81zWFmSI5nf66tuVwaK3XPmN3Db0r5bGrGxkTTUbSAWGu/l/FMzWA+97NzkE0OWLBZ1LG5nrxvdR3oS9544wt2jDew1sT2BqAPRhozV/h3Ss5ki6+IdrTaILxXBXiUyBFPVydIPS5f37aOW+etTIvkXcdpTON1eDoOKep1LYBVjemVdvmj0qfkvgtvZVBd7QSwpkhKJXu61vdr/wmLq5FHYMcAlA6+uy+D/j3/kgMMVgLic9nGtF/HymaS7RzP8Bk7zSilgZC9jmOfIzF++39v27zyokfRB7xDcPYa1a4sZ/u4Um8T3hZ6WCAykOpgjUsfsmqS5r3BeVBMh+oTBfgBnF4tsIcN1w+eyTC2nDCT8gSoLJNz3FZbDkcu1euok3+oY7G7GdN1yM9+8kBRmRyVhG6DMq8EEv7kz9828Nln+bJHWyuSQqcwCbuv7y174LC+guwZe0VDJLU8FgSTvTbYpVZ3l23/H1Z+9JgFsYmzl0nj+fL7h6hoX3U3ntIT1iMM+cDXW2Iy4pCPDykbIqVAgl9R+wzJa/zORcwk1rpTr5QkZmxoxUwp+DzOv3HJQYQRwpsnFhzOLUYl0EHl52dNerm4I0cy4xyE/U2MJwteYBe1LZgtpVAWzmtiKIJsLqdqf4wTSWcrzE+tIKDxVzck4Dix4PSSbk6cc3SRYaPssVEz3DBAcQEG59wKiKJ4AeNfqswkBI0AYGRlI01wE31z7QHEX5lzX18FGJbsNJCNJKMwdgFp04BFf1qg19S/E6NkGG3EBK1To1XLi2C/YWAnSVdwNilDsKrRw5Pthj4Xm5xG1Ra62vrVf9GfM4SFjeADGkyQ7eqAFTlW5PsQniR3jMa73w+j58+yvXKnkxR6evQoz4Xrk8yEbRV9J3BLJTYELcuJF0gvEFL6YSuYMeJ8LaaBuoLquynVXOZwkvDfQCU9dleS493wxFFMpiM5Ys3R5zJaSIbjS1Yb7e+MPw6aU5deQPKrKjsLd2A7/Q9mEwT84Vaw2+UOgyaMan9nAtVp2ALvRNEwfcNX9CvE6uMXoaXpFRYSV0ceWNG6yrOagIQme4IwFT7EojCEPsEPSxjbwzpLPf3qMPKk0u3+huhTxCtoRhd7IhZZP8J0h7y+3rCAibpchJ0MnDiikJ+LnL04TZphTsfmYabZm9ARW2qY7pwo33ZFCesLGSkzIWcssUeuCNnHCBs+bcFoyKm/Vj6FEgCHYjmVn2YaVnPp+6Q/c9dcl1VHa6mGTI3ftK9z17wkWcwc0Iipqk5VrKqbElQxTgL6Mh4xQvf9w2Pk97Lel7Tt0lQt8HufWJe2jCVn3CPRlnfWKJr0Dkl4IMidfovHbFwt7Wuqe8wbH4R56Hp9w1dR7D/eYXlnct9FPsUd8TqvST5jBX6c0fK34UFo/vKSkgu3rReTeQG9TokQj9IUr9excFEU2tZZCIV4o8LPH7h7c/STu2UvFmD/4a3AII6yciML/V3lCzAXlSyLTM5toEqU1g1uX4rNMuCF/42NZxyJY2Nwi2WpW13zmogdbQqbPhwYQahbYjG0lK7EzK2EXTXHhYtXIopO1sV5tGfmwjFAD3GoAZC7Tl8JQBUcK6wTjs7C4i1IcIVtjH2/AZPaAH/IlJZxdNIJzAC/xxSVuj5k5pxy0pXNGCRhguXf30dMnRl+q5Yk3vqSEYrmzHNty5TWzhQkiSfAXUgcFnatuoPAAVD5lp93Oseie+iQKugytYVTwV4WRkdnX6GSv72FrpgN/LysW8UPpvLFy7sXQcvJc2+WT2Ib2iI6pdil5zu7mg30dL8RDvMfcNMV4nQeEaQOd+CLy2SzawrPQxeZHVI1snq8nBV+lzK4VQgZStN5eri/z6zBhW10xmI/XtLkoF4yLaYgpig9hvV4C1Q9k6naV+hyYoJfK+MGEbVv/x7hwzG2B7q0HYlH75+5Ddnzc4+s5t8A551Co2y/e7O9l8IfqLedYuBULHQ2nKgTVzPpDgXmWWkKgmLH44hRZjVF98bc8JDt1YSRzr9B659kzWIaNbaNqjznyBypUNCUUanlflHdDcsPqbjF6MoNQ93G+vkLRjB8wlvJtD4qXuC8AW9nGcZhGhxmqQvL3Zu2ifjMTqccj2NIvxN0eq8QHMVH3B6rDX9dAiJ0fSWododJ87fPf/wL8njZfeuOrCT1bIFZ0aJX7+xAnKacbKJHKf8cIKTB7WSVfGL1DC6EPFQRbUj1kfvNyza4JkiVAzj5IERpMO9w7h1Z63SEh+37xdF056Xrui6FMWIGm8JgM+kTRA7M/+928MVDIxXGwfHlLqTVm9kh0m6mf52zIv6IXYYzkb5WR7fF0xcoC27XqDE0fGc5bKfryK+rpGSZ4ESRiNgZ0Ag+zclCngf3/q6FGYywz+IHI6m5/ao1m8mYQSzAxDnmBzoSECG53mYzgwgtmeIPO3aTy7z3/fgvEIIFoKpMfIWzUmnFd/j3SKJGrlTpm+t4isixia22sZydI+Or8FpH3fApuFAOewBYR1TFLGZLW6Ahwo/DiaVyzuIbNb4j8udH1bIoKCVrhTJmN8O2RjgIrRrvSWfTONGqANuloKjY4ZqpWrJiJGUN7qRYugvpMT94qSg2GosNbK01sGUeXmZCQDvvDZDqpuZGBl5PDQkVX22Zk8aoxplPj8PCD9CV7kirKOj0VePIC/bywYnjXyMW1jIjN8SNDNVwHp8DT0iL2w3FxpuqFdvMVA4burJLgJb7gqjX4l35v/dE/FrfWLBqIQFEsuadg4WN6AGosw50tCXu17sQH5CjIyiHeFUtL3X14D+/TZSoIH9AAgywVBKQaplhvH/tpdvnJFP3c+3rFlCiXnfrR/cMq+DBNx5WWeXNDokYkBZg2psbmL9ocyM5zW4O5zCoZqKYIEdGb6JcS3Otpl8QICcq5BSYlm91suO2ZyMCCAbXUGsDDrsGLIBZ093UqIXE2DUqI9wD6Pg0EmSyCN3RTXAp7pqO29hSDTbehXegdTq9XSjMCUD76J7jRBtrOBa/6LlxzJzkCbdrVvmj/ealWfRsmrLKC6K+RdaF56bTE8c40StK7+CrT2OxEvNOB+N7Dj7bA9PYFzUWq9NYt1cSiuvpsDeNGCSvxK5rm3cFlU8UsHoYnTIq39m+JtE0kdi5fxZRNjtQrfkb6RSIdO9RXRUJN8CZyrCj9oruop4lzX78VrzKQyGAo3aq+vV1kYJxvEtsfm2Ch8hksvcHI0/VW5EtZKx0+ShFrFwEPgs4NAPZuw6/wQ4lmv0f/WBE67EFBKMeWIKAZtZh72iwcVYD9+PQnGA8z7++7HYwpJUoWAhVtOSr+OmtwMpbbgsnEGPVLLj4i71dcIvDo325Y+d0HUpQ/UjR/dvfEs+NllMz6GhRFhwOtNpspvo8dMsxPpuqSUiA6WlcsJrCPYNy8PpkUvKNmSrZR5Pmu03+3tUZddLhRVThPhZBb/HSABUYnimGZoZnxeb7CQdB1Zl6b6VZzBNMyVes+BG0QeZQCcu1Jp4kIqXNCc1wbTLCprbWGplhbXBkAmx11daGh+f33OL8SHKua7XhOdNQWihNCfcbgbnJd6epkwtLhxL82PPgB1/FIBc5MiSAfO3EED5UnNluzcfNggvycN+lqviFtW7DyXAF7U7orGJHm8lNO7WCbDDtZwg6WsZyyk43uuIVMw7IJxIyQP9z1CIkF9aWFhFkjVM8Q0zCqSqW3SdFS75U+ZyQfKEdcoJUdEj/tgLDCFg7/mMz1TBr3Ujh5GRzrzH7LHswqUZ+CrSr0BuXSea3u1pS9VSC2dCUxBTg1+tOFWXRGDpQU6QlrRLKcB0t3A6HH3TQVlaWgjfGQYOKttsmpYTKBt7F87eLxggGcdwzyb2LmlbgTaGINZSQm4O1s1PeJllh73jW717WqeZcbLQpvY8vvctpAUk0BAzHzuciJJ0mQBD2bGB+ixUC8roDLV1JW6/6JvM3Hv5j0UwjZDtCBdDb6KD9vpyFQ5VDmuOI1fHMjOJKapO8iBJQE9npyZhXfnE2VS+AUTpXto+6Inqo/g4d5P69+9fdG5rR8w2F0HNgH8ZNvgKpqN6ELYByBzCunZWjOfIfUpVmRGGW33UoCzAUDgJwIkSLDVO47qDD6z3RCCHEHCiXe/Oj+EefG4zFJTAskq+TVDylB7EBbw+kklWs3JHo5BU4QDIYbe0+7ACsKZLu/Yta9uHL1m2M7xp+dSc6Pp/+vlDafBwv+YL2VnTZWt3JpEjZ/+2r/sJA9FvzBjI+dqZmMpBznrQl32buoVoPjAeb5sbCWlFGOnm35qid04z2SV7l0XUGJ42ET0vU+s6ep8HIpx+Ob2slmqZH4jehbV2klFGu1umiIxyHwsJRkg4DFb6J7DDPwEDOe4WToXts/MT2vZOqdFA5p3z9eJ/TRgtzNukqNUkzcnVt2+ZrL/StEwnv1R1DQrk6S+CrBvNoZk6XziAPYCCtct0ktqfsGdrMHLoJnnp3/rQZ27QWg77xkQlEs8YzG4hEtvp4YBZkvg/Hvru7BsMT8xMV1PMrtbVoMMMXmgyKaisPN3Wf7DyTfVArbo2AtfaOE59AhHAnd7p3F8eZ/z2wyHVBUXTbyr5HqNU+tFSIVCH4ljzpKmTiBm+idrag5N71sToftxCPiR3TxCdNcev7Hogend+KaVDUeck/K+0kF6873jC7nrT2EWDZdZ/Q824+CvpE6Vl11qvAAumyMV4fzDPh0CsHtXO+zQaCFv1VPXs/1Oono2d++dHBn17n6rJUecu9VCCd13jvRuADpKlLHQ9dWJD1BcxzwH8TXgVOFj21GitfwZQS5o/oq1n84pA3KI8u5DJyqddPKFDuU5UITQH9turv+VDK2GnQrc9ZnzfQmOgh7GsMNTQXkJzLwrWWojHA7AL96h+bZu0ib2oWzhMvvC5gYHflluFNN437zMX4Z+Apxj2n7jwcMJhRaZ4Cgt+Bc6HftAwT8cHlW/Ye+GJKtQfkKRV86O2qtkf2WTwXzSike47ldDawex6LZgU6UwbigaFNQZJDdM1sOGmPCWhSZNGWkQNl0zdIPgHAk1fkd+AS/6TVBPZvX3aMOH/Zhp4EthpYvhZhyfEKj4pIcTpEESF57Ho9vY7/cQjL6oWPv0JLHQwvhT9fMKspZbvn3EpP7e4udNleTzyaMQwm0/lpEfM8kGpsD+r8l7QGqsJ+IiJS0hhmxMPgHH0vv3OMAI5PpBqtgcfGfPWD7P5Z+XiHNFQO2MDjtXCHCOjvRERZtubS8Cl0QQE23YTvUINICkmCnXK9oBRw3mDADi+0Dg139K+iRl0OAOvy8K41NebsP/hGdHlyQeHBX0czsTj4lVVal7qiO+NA76GSgivSVVZE78Ahgw2jGBASbDcdlVpwFIQRLzz1OZ8Qjuz6gNnjxSLs4dkaFEsKIP+U7UE0vy2vfgpxnY8M0rIK2ti3Qb78F2/PSoIdxknk8VQ3JV8SYHLxXT5KzZ+hRphyhLaOSdxM8YzVTp40BX4mzzn1OQzswuldKUbBmpQUSVuloWvaFnYKlNPR0KuN7ZJtL7SK88NfiqL+C0QEGTDiQXSyLSs/RRwwVCeURVc+NJ7kyqsYvM/nWru9E1Q/KIVS6X8OupN+w3c14Mlwsew7pCUvIrOFtqqaSMA9Bm9LQtgWQLB5sjZwI3t79dMogZL/vZa7Ir8MXiJjiDnACP6hgpe1bmD5NalC2giNDkVG/PezwPBaV+UDm57OSludPlTAtjNKpbM7pxv1+mszJjIcPrLqJHx2YREWjUHTh5OVqBAFuFwNZ3WKJpVTe9+MfF3J3lR5FzY+qdk8NSylxFdH7FUX2L3+k9cuphORsV1fKtqXADUgD5rImcwW7xuF+PQ9TFVXGy8BCO6AplVZKHOyU+ECO3VhaCj0q5Wj8iste/OQ7v2LRwzyZEXeWBChcdYaGzUgC40Fc8HzaInMrm9eX2xKHOqUhej0pgeLuP/WDzEyQ4gbE5KW5ztAVhFL55rrTALGmdbGZNVszU1aLve31pFbWcGOX8tdKOsiG1JCXAFSiN+55bkB/6LG5CSBvzrU0KRSdilKhQIQLyKIZ+QlpG9cUzhOLyJ83rdRDga6fUsjHToNpz6K9Lv1QVTgVJcetzU0WEkQ3d/pqlWUa+WyVbYfYLhTnBL1uoBnl2s/CUX3QtPG667qYZGF66JdoVTb3ZzhtZSkvj4EvCVMaPP87O9G/3zZwoV42S6jIunZpvhKhlPLw2viWxtKqN4H15OtILkqHim9Xkw4P03e4nCPE2TCEzGQS9njxvHqneVpSJ4YA/wihJX0icXVmJFmbTDbVkiMlzbgtFq1pY8jeulSl2SGTGhKfw7V0NPj9EW/VjACAbI5oyTHoE2nEmC51nhMfqlwbudNEq1DryL8YCoagJhaYuC47399gd534s8nMSfdmiDwSK9lixfIiHOz5fZzNY6Ka7hzY7Ik1DETj4dKsmgAAv063vPSd3xAw18v/KUCO+NXZYpWoL0/SuN5FasL569/SyBXdbCZJA9LAWPMuPl2H0y+y1k++r+yhsQfDje1cjm3C4LgISvCTVypycqsMKC9OE9EZDeibVebVbJuhDCNUpJIuN0UdVHYuHSJsmR8Px729jWStUgacTczHZ/GlEl5wM+sllSem9L0zlUCjBDbPkeVeEDIoAUn+GTa0lbvw0xZ8t9v0QeMc4uqLCc4hr5ulVHCyV9gdEKEPCDtr4RSWucDKa0XMmw5X55xUjGyuJdFK4WH2a3Js/OWL+3t+cVsCdZYvlBopH7ewqr3oKO7ETEnjyYNdgQWMFLrDgCnZbTsuAvoDD1vJBXiCbjEvQtfLuHY8Kp687xG8gSyrNRSHJjbXFZplM4sxI4o7AJ4jzGATMwsDHabAKtklO1+TNsIpN87WArBjZhpzuXAlwgcyr/1KnD0CvrCy6W6CzU5r6v/Zp+H4dK19GyVSQGnPGhvDh2lcbiRYmSiK9S00ytLwgFvdVsu8wCz4uFQ0lmpyxaA7HXqmxConbe99lLwvN5HDjn0zlSEKR19XYOJ3OlylndrORd+zCvUGHK+WmpSB7VZzcEBPrbU4s1neghtl5dosfl9DwJEtl34bcH5+ITQMkd0Tz9WAkRG5kkA4eJoEhEddi2bO/kN+UY6HW/zVOTvjQiiLFRyyCKbVVj7YqA3vQZVEiADroKNUOjCZAlMU96jVN1P3vnh+wSWAsWz/KClTqjWjFJzvsfqRB/Hxq1hzmY6T8xEemdVyDe165rnrEc+ds5uzHaRKNWGlt2xqrGGZ98uzKtztl6pbrKp/n/jb6ssHNVz9aD7SgvmhePhn/RcxBBVVsJ+7ZdskSBUJovCJ+kNiRMHQckIVnivJpKrIEMlfAfdO2SAkeiZihJxsdeNtQliAuFcTcta7HFCi4d3tBT0UBPsHsINVtibHqMr0B7OyTyJQzWR7Qfl14UnDGXfivXtQPWnwnqSMDhMWrRlMpQfLkrHiZs3iSOga5cDoBB2kjxAlEu4hz8xCDnqsS50zkQfyf82vH9GKiaShuTPejY4AxZWH9kh+VIFObiyuUo6Nhu/0jVZkhO03NnLOLIgKUirowSUXoAn5AINX/+TItZlwk/omizJrcoUw/sb+ZVQfa6Yl7aJbs6dd/KDg3tYBW9/94sIV0xt+lUBGhrF7DToALKWeDTfpLZz0A4uspB+k52EADIAdpc/ZGDR7MDbHgrr9Uqt/GumeenYoayrRme4XMekTUT77CNf6LQAsOhpV8axpsew9l4viWPjHH5qax5EA7tdpltR9m6oTmXIy+CCd6Q9Fi6gz7Xp3IvBaF05m1tQYRVHHCWXbq+Zy3hzS6BevOaTlMIYz+M2un2wlnnUz8RGCYw8YPIrQMmU8eyiBLXQJMdEhWGxFyu0Gn8lgjTnD9b0HwZMcg4TqKzFZp2eOiy9gxnQlS/w4b6+lbUrFbtNONCf7A9zPn8US4sn+6LzitbjnGLrtdA16naieakcGvnviQfpx3VcclpP55n2e6YNayOcb6opKqdON+CiKobc8AA5xm/pvlCxPKjmJyh4OfbldWp4S7DgUoj6ReQ5RWUwyZVeivljkpBZDh0R2Qo9ii7s8w1hEJ9gJYPz2F2odq1zuevoh2C44iA+1LwVRQyTWEMp1nLhHBhYaqg6afZNCmM3SP8YeGKUHD7bxLYe/oDLfnt6PTCQNOmyiIsEYd3DK08uqtluEBw2W0egC3hu5Ij+BRICGmkKBeq5JZEyZ9LQPoRKYLpyfWhYmc4zSqGB8VEcoz/5cRgURqaqiAXes8YeDJoV5s134fmNFfLcy6p9LemthbXi1dj8xnaa/6WfKjOkU55TPEQKKWhntDyET1LZrkqYaAATKG7xseur5/p6EMOJxjA1pX2bgk3gP/2nRX3E4w3Ta/obgYTAYGJRjgjxinNkxNRf3PKGx2ESXCHQqFksrCque2a+T1cp9kazhSIK7cokRHPSnXHkYOIjlekSPMkguqyqAKbJRnUUCWtUl+St25U7hXjAVC8akQekZiAChy9fbKJaKmBtkUV7YTpx9qh4mlCuS3eh++UmkBPQZgOUj3rZgDtSX8fct+dsxfKyXuBXQ4qqI9L5m+Wf6a5EJncrX+veQBXZjWdpbfqGRfDJrDe05coJ8Ruo8O6h6E0Ikoe3jEqeG0PE7Ohh41x0O+BcB8tVUqeBxSuUovYrjdV1q8dNt5LiXGtwYb8bRz92Ys2AaKfy5dLpuorC51nll55BwrM6wrceO0RI14YHTZIYZJbqBirAC0zgnW1L6DRgAPJCA2Hhrk7mRAoYZYtN/W1WEhtFe8asy/iQp0f/Ty/H0mqC+o3NdGN4HGIoQ24nNVREkVMtYsVbU/aU8XtoAt/yog8pl73xv+/Yu7MqqgtOwQ6gEY/GN8ivARVnHtScdDBlDPWHCYqOJ3SaX6yG2nMj+vDpIbFC6s4VQqOBRcDnzQ1gcy4N92GR7/9g2iBx+OJnD3A7zcd3EzcH5xjy8/O1Ox/TjIjcKBvjmY7fexYpJVjpX3D7euOnHf92t9hiFeYoQpl3hpFGyfNrMMQ/RzgmMYYX4goxQm/m26hH5Lu2pOj7+aF6ioFGMjUnUYPjgZn703BZssyJzoAefvPflpFXsdZ/OGjytbyrftljnq+q0KuqRKT0Z0MEZ0E9PBwkOHw50OgfnwYsEqIxtv2TPCAD3rz4UHsK+p/pH/GjkmzURaZ0dewUapgTMDKPrqWk1USjdILnndHE0aXvb8r0YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Wp2V4fd1Ecf2SKWUpwXYxo",
+    "name": "search",
+    "input": {
+     "path": "docs",
+     "pattern": "screenSpaceReflections|reflectiveFloor|softbox|lights\\.rect"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 17,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Wp2V4fd1Ecf2SKWUpwXYxo",
+    "content": "docs/agents/prompt-to-3d-workflow.md:46:  lighting: { preset: \"studio-softbox\" },\ndocs/agents/prompt-to-3d-workflow.md:87:- **Materials:** `prefabs.materialSwatches()` with `material.metal`, `glass`, `rubber`, `emissive`, `clearcoat`; keep contrast wall and softboxes in frame.\ndocs/agents/benchmark-recipes.md:243:a plinth or stage, contact shadow, studio softboxes, material readability cues,\ndocs/agents/api-signatures.md:104:| `material.reflectiveFloor(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |\ndocs/agents/api-signatures.md:152:[Omitted long matching line]\ndocs/agents/api-signatures.md:153:| `lights.rectArea(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | same as `lights.rect` |\ndocs/agents/api-signatures.md:154:| `lights.softbox(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | same as `lights.rect` |\ndocs/agents/api-signatures.md:264:| `effects.screenSpaceReflections(options?: AuraScreenSpaceReflectionsOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\ndocs/agents/templates.md:9:| `product-viewer` | Product pages, asset viewers, configurators, hero objects (typed asset, plinth, softboxes, orbit). |\ndocs/agents/skills-examples/aura3d-scene-authoring.md:37:                       \"studio-softbox lighting\", \"bloom effect\"],\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 18,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm weighing whether to use a mirrored-duplicate reflection trick or a true screen-space reflection for the platform surface—SSR feels more natural and avoids extra geometry, even if controlling its faintness is trickier. I'll default to SSR and accept some risk of streaking artifacts rather than combining both approaches.\n\nActually the duplicate approach has safer failure modes: if opacity is ignored the opaque platform just hides it, and if honored it works fine, whereas SSR could visibly break the frame. So I'm leaning toward the duplicate plus a translucent glossy top, but now I need to make sure the opaque floor plane and ring/base geometry below don't accidentally occlude the mirrored duplicate sitting underneath.\n\nI'll simplify the platform to just a thin translucent top disc plus an outer ring band, with a dark floor pushed down to around y=-2.5 so it stays below the duplicate's lowest point and doesn't clip it, giving the illusion of the platform floating with a faint reflection fading out through opacity and material tweaks.\n\nFor the mirrored duplicate, I'll skip the chrome flakes and keep only the core geometry (body, cabin, roof, glass, trims, wheels), building a car function with flip and withFlakes flags. For the disc material, I'm using a physical material with a dark color, low metalness, slight clearcoat, and partial opacity so it reads like a reflective surface without being fully mirrored, while thinking through how the overhead key light will catch the duplicate's downward-facing surfaces.\n\nI'm disabling cast/receive shadows on the duplicate's parts so it doesn't throw shadows onto the floor, and setting up a flip helper to mirror y-coordinates for the mirrored geometry. I'm sketching the group structure so each car variant nests inside the turntable group with unique names, and working out an ellipsoid helper that builds spheres with position and material based on the flip state.\n\nNow I'm scattering snowflake particles across the ellipsoid surface using spherical coordinates with a simple RNG, filtering out points that fall too close to the bottom so they don't clutter the underside, and considering whether flakes near the chrome belt region need to be excluded too.\n\nI'm setting the camera position and target so the whole car and platform fit comfortably in frame given the field of view, checking that the platform ellipse and car height both stay within the vertical bounds, and weighing whether to pull the camera in closer for a tighter composition.\n\nI'm also adding a global TypeScript declaration for the task-state window object, wiring the turntable rotation into the frame loop, and setting up the eval-ready flag to trigger after the app is ready and a couple animation frames have passed, while making sure the build target supports top-level await.\n\nActually, since there's no existing vite.config and the default target may not support top-level await safely, I'm avoiding it altogether and wrapping the entry logic in an async main function instead.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LHAUnjXHRcmuu9aRoia8nV",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import {\n  camera,\n  createAuraApp,\n  effects,\n  environments,\n  group,\n  instances,\n  lights,\n  material,\n  primitives,\n  scene,\n  type AuraTransformSpec\n} from \"@aura3d/engine\";\n\ndeclare global {\n  interface Window {\n    __TASK_STATE__?: { turntableAngleDeg: number; paintFinish: string };\n    __EVAL_READY__?: boolean;\n  }\n}\n\ntype V3 = [number, number, number];\n\nconst SPIN_DEG_PER_SEC = 20;\n\n// ---------------------------------------------------------------- materials\n// Candy-red base coat (deep coloured, semi-metallic) under a glossy clear coat.\nconst paint = material.physical({\n  color: \"#a3000f\",\n  metallic: 0.45,\n  roughness: 0.32,\n  clearcoat: 1,\n  clearcoatRoughness: 0.03\n});\n// Black glass: very glossy, dark.\nconst glass = material.physical({\n  color: \"#04060a\",\n  metallic: 0.1,\n  roughness: 0.04,\n  clearcoat: 1,\n  clearcoatRoughness: 0.02\n});\nconst chrome = material.physical({ color: \"#f4f6fa\", metallic: 1, roughness: 0.04 });\nconst tire = material.pbr({ color: \"#0b0b0d\", roughness: 0.85, metallic: 0 });\nconst hubDark = material.pbr({ color: \"#15161a\", roughness: 0.4, metallic: 0.6 });\n// Metallic flake: white-ish instance colours multiply this base.\nconst flakeBase = material.physical({ color: \"#ffffff\", metallic: 1, roughness: 0.18 });\n// Platform top: dark, glossy, partly see-through so the mirrored car shows faintly.\nconst platformTop = material.physical({\n  color: \"#07090d\",\n  metallic: 0.2,\n  roughness: 0.1,\n  clearcoat: 1,\n  clearcoatRoughness: 0.04,\n  opacity: 0.8\n});\nconst ringLight = material.emissive({ color: \"#bfe4ff\", emissive: \"#6cc4ff\", emissiveIntensity: 1.6 });\nconst floorMat = material.pbr({ color: \"#050609\", roughness: 0.6, metallic: 0 });\n\n// ---------------------------------------------------------------- geometry\nlet seed = 20240611;\nconst rand = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);\n\nconst flakeColors = [\"#ff8f80\", \"#ffc7a8\", \"#ff5f55\", \"#ffd9c4\", \"#ff7a6a\"];\n\n/** Tiny metallic flakes scattered on the outside of an ellipsoid (centre c, full size s). */\nfunction flakesOn(c: V3, s: V3, count: number, minNy: number): { transforms: AuraTransformSpec[]; colors: string[] } {\n  const transforms: AuraTransformSpec[] = [];\n  const colors: string[] = [];\n  while (transforms.length < count) {\n    const u = rand() * 2 - 1;\n    if (u < minNy) continue;\n    const phi = rand() * Math.PI * 2;\n    const r = Math.sqrt(1 - u * u);\n    const nx = r * Math.cos(phi);\n    const nz = r * Math.sin(phi);\n    const d = 0.02 + rand() * 0.018;\n    transforms.push({\n      position: [c[0] + (s[0] / 2) * nx, c[1] + (s[1] / 2) * u, c[2] + (s[2] / 2) * nz],\n      scale: [d, d, d]\n    });\n    colors.push(flakeColors[Math.floor(rand() * flakeColors.length)] ?? \"#ff8f80\");\n  }\n  return { transforms, colors };\n}\n\nconst BODY_C: V3 = [0, 0.85, 0];\nconst BODY_S: V3 = [4.0, 1.15, 1.9];\nconst ROOF_C: V3 = [-0.2, 1.56, 0];\nconst ROOF_S: V3 = [1.5, 0.42, 1.3];\n\n/** The car, built once upright (flip = false) and once mirrored below the platform (flip = true). */\nfunction buildCar(flip: boolean): ReturnType<typeof group> {\n  const sfx = flip ? \"-mirror\" : \"\";\n  const y = (v: number): number => (flip ? -v : v);\n  const shadow = !flip;\n\n  const ell = (name: string, size: V3, pos: V3, mat: ReturnType<typeof material.pbr>) =>\n    primitives\n      .sphere({ name: name + sfx, size, material: mat, castShadow: shadow, receiveShadow: shadow })\n      .position(pos[0], y(pos[1]), pos[2]);\n\n  const disc = (name: string, size: V3, pos: V3, mat: ReturnType<typeof material.pbr>) =>\n    primitives\n      .cylinder({ name: name + sfx, size, material: mat, castShadow: shadow, receiveShadow: shadow })\n      .position(pos[0], y(pos[1]), pos[2])\n      .rotate(Math.PI / 2, 0, 0);\n\n  const parts = [\n    // streamlined candy-red body and separate cabin bump\n    ell(\"body\", BODY_S, BODY_C, paint),\n    ell(\"cabin-glass\", [1.95, 0.85, 1.55], [-0.2, 1.3, 0], glass),\n    ell(\"roof\", ROOF_S, ROOF_C, paint),\n    // chrome trim: belt-line strip, window base ring, front and rear bumper bars\n    ell(\"belt-chrome\", [4.1, 0.07, 1.99], [0, 0.86, 0], chrome),\n    ell(\"window-chrome\", [2.0, 0.05, 1.6], [-0.2, 1.1, 0], chrome),\n    ell(\"bumper-front\", [0.14, 0.2, 1.1], [1.93, 0.62, 0], chrome),\n    ell(\"bumper-rear\", [0.14, 0.2, 1.1], [-1.93, 0.62, 0], chrome)\n  ];\n\n  for (const wx of [-1.3, 1.3]) {\n    for (const wz of [-1, 1]) {\n      const tag = `${wx < 0 ? \"r\" : \"f\"}${wz < 0 ? \"l\" : \"r\"}`;\n      parts.push(disc(`tire-${tag}`, [0.82, 0.36, 0.82], [wx, 0.41, wz * 0.86], tire));\n      parts.push(disc(`rim-${tag}`, [0.58, 0.04, 0.58], [wx, 0.41, wz * 1.04], chrome));\n      parts.push(disc(`cap-${tag}`, [0.22, 0.06, 0.22], [wx, 0.41, wz * 1.06], hubDark));\n    }\n  }\n\n  if (!flip) {\n    const b = flakesOn(BODY_C, BODY_S, 900, -0.15);\n    parts.push(\n      instances.sphere({ name: \"flakes-body\", transforms: b.transforms, colors: b.colors, material: flakeBase, castShadow: false })\n    );\n    const r = flakesOn(ROOF_C, ROOF_S, 220, 0.1);\n    parts.push(\n      instances.sphere({ name: \"flakes-roof\", transforms: r.transforms, colors: r.colors, material: flakeBase, castShadow: false })\n    );\n  }\n\n  return group(\"car\" + sfx, parts);\n}\n\n// Rim tick marks on the platform so the rotation reads clearly.\nconst ticks: AuraTransformSpec[] = [];\nfor (let i = 0; i < 48; i += 1) {\n  const a = (i / 48) * Math.PI * 2;\n  const big = i % 4 === 0;\n  ticks.push({\n    position: [Math.cos(a) * 3.12, 0.006, Math.sin(a) * 3.12],\n    rotation: [0, -a, 0],\n    scale: [big ? 0.3 : 0.14, 0.012, 0.035]\n  });\n}\n\n// ---------------------------------------------------------------- scene\nconst turntable = group(\"turntable\", [\n  // glowing ring light around the platform edge\n  primitives\n    .cylinder({ name: \"ring-light\", size: [7.2, 0.2, 7.2], material: ringLight, castShadow: false })\n    .position(0, -0.12, 0),\n  primitives\n    .cylinder({ name: \"platform-top\", size: [6.7, 0.2, 6.7], material: platformTop, castShadow: false })\n    .position(0, -0.1, 0),\n  instances.box({\n    name: \"platform-ticks\",\n    transforms: ticks,\n    material: material.pbr({ color: \"#d9dde4\", metallic: 0.9, roughness: 0.25 }),\n    castShadow: false\n  }),\n  buildCar(false),\n  buildCar(true)\n]).runtime({ id: \"turntable\", mutable: true });\n\nconst stage = scene({ background: \"#030408\" })\n  .add(environments.metalStudio({ intensity: 0.5, background: false }))\n  // key with soft shadow, faint cool rim, low cool fill\n  .add(lights.directional({ name: \"key\", position: [3, 7, 4], target: [0, 0.6, 0], intensity: 1.1, color: \"#fff2e2\", shadow: true }))\n  .add(lights.directional({ name: \"rim\", position: [-4, 3.2, -6], target: [0, 0.8, 0], intensity: 1.7, color: \"#6fa6ff\" }))\n  .add(lights.directional({ name: \"fill\", position: [6, 1.5, -3], target: [0, 0.8, 0], intensity: 0.5, color: \"#7a9dff\" }))\n  // long strip soft-boxes: two overhead, two at the sides\n  .add(lights.softbox({ name: \"strip-top-a\", position: [0, 5.2, -1.7], target: [0, 0.8, 0], intensity: 9, color: \"#ffffff\", width: 8, height: 0.5 }))\n  .add(lights.softbox({ name: \"strip-top-b\", position: [0, 5.2, 1.9], target: [0, 0.8, 0], intensity: 7, color: \"#fff4e6\", width: 8, height: 0.5 }))\n  .add(lights.softbox({ name: \"strip-left\", position: [-5.5, 2.8, 1.5], target: [0, 0.8, 0], intensity: 7, color: \"#ffffff\", width: 0.6, height: 5 }))\n  .add(lights.softbox({ name: \"strip-right\", position: [5.5, 2.8, -1.5], target: [0, 0.8, 0], intensity: 7, color: \"#e8f0ff\", width: 0.6, height: 5 }))\n  .add(primitives.cylinder({ name: \"showroom-floor\", size: [40, 0.1, 40], material: floorMat, castShadow: false, receiveShadow: false }).position(0, -2.6, 0))\n  .add(turntable)\n  .add(effects.bloom({ intensity: 0.45, threshold: 0.85, radius: 0.5 }))\n  .camera(camera.perspective({ position: [5.0, 1.4, 6.8], target: [0, 0.7, 0], fov: 36, near: 0.1, far: 100 }));\n\nasync function main(): Promise<void> {\n  const app = createAuraApp(\"#app\", { scene: stage });\n  const t0 = performance.now();\n\n  const update = (): void => {\n    const deg = ((performance.now() - t0) / 1000) * SPIN_DEG_PER_SEC;\n    app.nodes.require(\"turntable\").setRotation(0, (deg * Math.PI) / 180, 0);\n    window.__TASK_STATE__ = { turntableAngleDeg: deg, paintFinish: \"clearcoat\" };\n  };\n\n  window.__TASK_STATE__ = { turntableAngleDeg: 0, paintFinish: \"clearcoat\" };\n  app.onFrame(update);\n  await app.ready();\n\n  const loop = (): void => {\n    update();\n    requestAnimationFrame(loop);\n  };\n  requestAnimationFrame(loop);\n\n  await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));\n  window.__EVAL_READY__ = true;\n}\n\nvoid main();\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018RUGa8b39C4fbwDW8vnMMk",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 18,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LHAUnjXHRcmuu9aRoia8nV",
+    "content": "wrote src/main.ts (216 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018RUGa8b39C4fbwDW8vnMMk",
+    "content": "src/main.ts(13,8): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations."
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 19,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "The only real issue is the module-resolution error since the package isn't available in this sandbox, which makes everything else fall back to `any` types—so things like the transform spec and builder types should still work fine in practice. I'm now checking whether the parts array's inferred type will correctly accommodate the different builder instances being pushed into it.\n\nThe array mixes builder types consistently, and the group's method chaining should still resolve correctly, letting `scene.add` work as expected. This is good enough to finish, with a note about the environmental limitation.\n\n",
+    "signature": "CAQS4QoKEggTEAEYAjgBQgh0aGlua2luZxIMJPfPGfBxidOSr1FBGgzaKtuBQCHxlfTGQmUiMHngRdlvnsmQEprpBbjnXd9WrVtHs4U3HkEFj3NYVZ6qVRjMo+y6RlCZA+0QJLVWdCr8CZuxDf4lTf9Zesvlg5tHTfb06fiVXJJ9Qzp+1P3ifxs9S8sAZMyMsV1W2RI03UVCcE9Zvf0P0F8g58xQ//mG5B2qxJSwXCb2KFCRaReCED57a2sNnrNvqjaue0DzEap4UtBMkhVpCNMo7cYTGANnv9XfRtvJmjiN+cKPPJojqmu0+nTfcMQAEwvEagkQLKzkrFPAI63hms//paF44G9BXivLu1ofpwDTs2PK324aENX0jEtu0adKDKIVDvm9pgRIw7jM4+dysaKlDXy5Jyg/YzsqlFNIO6SaAZnO66eda8KN8/uUGmWkVIsexbXtCO2WUFe2weexXt3qPU+e282rqadJj7B8nzItJ4kdhUTSJgQHvaW0N5wLX+KC+IsgZhL0w71mJUHRY23Am65W7FaK56pZs9E6jmqLGOKZCR28Zj57/cHpSXPaaBwbcjrDB20mT4CExaDc2gB12YPsQGZ0fb+ApDE4RSf8O9fcUCZFpVJaBD4voHYI2AX1/1XXAZiKxYCuts3gKv9LyYD+1woBRmmdpxb+tgMVhJvjj94q91OHpGaOxRSjHmT/e9Xi4YnypM44mcIQ2SjTgNG42R5JM8EBnmNl9B9EdaVRAF3yh/iGrPtcVwAkaZxLU8k5VgoFADs1j8tFojWmJ94ktC7Z0M4MeqxOJVl0ON15Is9YtvsfcejsZ/TS74eTSlPrneONlebOJwgc1r9al+zW/XDUHQ1b5PrNOnsYycr748QnHYWqwWXOk0NhPjk3TEOfdEDOJXfLqAFDZT/scIUkGvB+Ou1wK8MC0edWVtSgHczaQkuHpCbQvoFC39lY6sFYnsOny3pvBC+9A6fiJatIcsPrbFKMfuGkp6y8JzFBPxsxcgrQJXw8fobzUbAnBvTYyoxBtr32OykclM+QOkAfvAQe/Ki4YrrnZaoAP5yeVf6OXCPVPDE0lRYFrEMrQJex1Z0fgelsz1sMUrrb+kZ/Ppt0xl9aM/ymPCE9Wl+QDflJ8FgUbQkjRG7vkPecpJNixSRPIY50+9+kNlN4d52KXmAQTGDBkY8/6Twj0zNYIhIY4ScKpcuxWK8TfEY0wFA+6yOWJikHdUUkQj13QIGae32IQ8shk8hIHR2DgLjKMj2flNUWylrPVsGUzwXWUmiIoiLHdri+9KlVV+sYD655JdZiqvln/XFDg+ueEsVaBGBil/RNjXSA7DsIG9/QWCURRAIMo6LhdvoscpgBxuJdnH5MWgATZz/H8B+J3mitDQaBQuVFTemvCnv+zHgVES8DNsqSmR87KUJTDJq4KglHiw5B5qhKBa4tJITOruJWG3PTN6tukcz9Kw+cKOJmxzE7otQO2Gt/RN4QIsnP5A8bT7zRQ7IT3mtFLXRINuHmVxUbyHL0gqAiX89518Ctn/dgGpMRwbqmo4lY70D2NrAIds/m3cqp8ib49DzH3YZF7DIuFHhEpI3Ln6Y1Pwv7O2SDppEIqflQ2rGC2WuwomM9TFDliNcVSbNvmt8zAjn1ZUvc9+lvF5jQx3PHvDE6m0pfihTCj/bZjNmn9hr/ADBmjS2VB6sBE5PbU7X1x12BFPd4IJqSZX2smikvDTcyh+vrLM8jcDaBSLnfw1bphie3vMKj59WjjHsICY6tVxh7P/a7WIdtmupgAnaqgj0n6aXourLYOmD7H0iYkCF5kjzSqcJtUsveoqpD3nNtm30ylX4YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01VqzfJJZ7FJfgDC8DjNBbhG",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote `src/main.ts`, but I couldn't compile it against the engine or see a render. `node_modules/@aura3d` is empty in this sandbox, so `typecheck` only reports \"Cannot find module '@aura3d/engine'\" and the rest of the file went unchecked. I wrote against the API in `docs/agents/api-signatures.md` and the recipe sources, and I didn't use any option keys that those docs don't mention. I did not use `vite build` or any screenshot. Light intensities, the strip-light orientation and the paint look are untuned guesses.\n\n- **Car:** a stretched-sphere body, a separate black-glass cabin with a red roof cap, and chrome trim (belt strip, window-base ring, front and rear bumper bars). It has four black tires with chrome rims and dark hub caps.\n- **Paint:** `material.physical` in candy red with clearcoat 1 and clearcoat roughness 0.03. About 1,100 tiny metallic flakes, instanced and tinted, sit on the body and roof as the sparkle layer.\n- **Platform:** a glossy dark top disc at 80% opacity, a glowing ring-light band around the edge, and tick marks so the spin is visible. A flipped copy of the car sits under the disc and shows through as the faint mirror image. If `opacity` is ignored, the disc is opaque and the mirror simply disappears.\n- **Lighting:** the `environments.metalStudio` environment at low intensity, plus four long softbox strips (two overhead, two at the sides). A warm key light with shadow, a cool rim light and a faint cool fill complete it. Bloom is on, the background is near-black, and the camera is fixed at a low front-three-quarter angle.\n- **Motion and state:** the `turntable` group is rotated at 20°/s from `performance.now()`. `window.__TASK_STATE__ = { turntableAngleDeg, paintFinish: 'clearcoat' }` is updated every frame from both `app.onFrame` and a `requestAnimationFrame` loop. `__EVAL_READY__` is set after `app.ready()` and two animation frames.\n- **Top-level await:** I avoided it, so `vite build` works with the default target.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 19,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01VqzfJJZ7FJfgDC8DjNBbhG",
+    "content": "ok"
+   }
+  ]
+ }
+]

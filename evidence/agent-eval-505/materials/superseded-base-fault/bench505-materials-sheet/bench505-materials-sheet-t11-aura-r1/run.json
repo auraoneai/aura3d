@@ -1,0 +1,190 @@
+{
+  "runId": "bench505-materials-sheet-t11-aura-r1",
+  "batch": "bench505-materials-sheet",
+  "arm": "aura",
+  "task": 11,
+  "idx": 1,
+  "order": 2,
+  "seed": 20261106002,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:11:22.202Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "wallMs": 293537,
+  "usage": {
+    "input": 259040,
+    "uncachedInput": 259040,
+    "output": 2971,
+    "turns": 11,
+    "perTurnInput": [
+      3334,
+      11740,
+      14279,
+      14617,
+      20435,
+      20599,
+      21229,
+      35455,
+      44895,
+      48355,
+      24102
+    ],
+    "perTurnOutput": [
+      20,
+      59,
+      30,
+      19,
+      91,
+      37,
+      106,
+      1893,
+      82,
+      42,
+      592
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1578,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1578,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1578,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4206,
+      "type": "search",
+      "pattern": "clearcoat|sheen|flake|environments\\.|lights\\.(rect|area|strip)"
+    },
+    {
+      "i": 4,
+      "t": 4206,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 5801,
+      "type": "search",
+      "pattern": "material\\.|lights\\.|environments|group\\(|textures|AuraMaterialSpec"
+    },
+    {
+      "i": 6,
+      "t": 7285,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 90
+    },
+    {
+      "i": 7,
+      "t": 12525,
+      "type": "search",
+      "pattern": "carPaint|flake"
+    },
+    {
+      "i": 8,
+      "t": 14489,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 9,
+      "t": 14498,
+      "type": "search",
+      "pattern": "carPaint|environments\\.capture|dataTexture|texture\\.(canvas|data|generate)"
+    },
+    {
+      "i": 10,
+      "t": 17636,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 60
+    },
+    {
+      "i": 11,
+      "t": 17645,
+      "type": "search",
+      "pattern": "clearcoatRoughness|material\\.carPaint|sparkle|texture\\.data|geometry\\.(lathe|sph"
+    },
+    {
+      "i": 12,
+      "t": 112573,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 120
+    },
+    {
+      "i": 13,
+      "t": 112588,
+      "type": "search",
+      "pattern": "torus|material\\.custom|side: \"double\"|effects\\.bloom"
+    },
+    {
+      "i": 14,
+      "t": 239962,
+      "type": "search",
+      "pattern": "material\\.custom|modelMatrix|normalMatrix|gl_FrontFacing|side"
+    },
+    {
+      "i": 15,
+      "t": 243609,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md",
+      "lines": 60
+    },
+    {
+      "i": 16,
+      "t": 243609,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 45
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md",
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-materials-runs/bench505-materials-sheet/bench505-materials-sheet-t11-aura-r1/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}
