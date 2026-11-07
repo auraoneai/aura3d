@@ -621,7 +621,7 @@ export async function createProductionRuntimeSceneRenderer(
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     // Direct path: nothing tone-maps the clear (the canvas is written as-is), so the authored display colour is the clear.
-    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas) ? colorToClearColor(snapshot.background) : colorToAcesInputClearColor(snapshot.background)),
+    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas) ? colorToClearColor(snapshot.background ?? "#070b12") : colorToAcesInputClearColor(snapshot.background ?? "#070b12")),
     // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
     // background; alpha carries `background(c, { toneMapped })` coverage.
     outputClearColor: withPrd01ColorParsing(runtimeOwner, () => outputClearColor(snapshot)),
@@ -1956,7 +1956,8 @@ export function explicitMountQualityTier(rendererOptions?: AuraCreateAppRenderer
  * passed through untouched (three r185's raw clear).
  */
 export function outputClearColor(snapshot: Pick<AuraSceneSnapshot, "background" | "backgroundToneMapped">): readonly [number, number, number, number] {
-  const [red, green, blue] = colorToLinearRgba(snapshot.background);
+  // Absent background (hand-built snapshot) is not an invalid colour: scene()'s default #070b12, as the clear colour uses.
+  const [red, green, blue] = colorToLinearRgba(snapshot.background ?? "#070b12");
   return [red, green, blue, snapshot.backgroundToneMapped === false ? 0 : 1];
 }
 
