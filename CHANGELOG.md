@@ -1,8 +1,34 @@
 # Changelog
 
-Version: 5.0.3
+Version: 5.1.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.1.0 (2026-11-07)
+
+A minor release: new additive authoring helpers, an agent verify loop and a colour-parser fix. Nothing in the 5.0.x public API is removed or narrowed.
+
+### Added
+
+- `aura3d verify`: one JSON report from typecheck, assets, lint, build, serve and a Chrome/CDP render-and-inspect pass. A seeded benchmark of 10 broken scenes ships with it; the repair results are n=1 runs and are not a general success-rate claim.
+- First-screen cheat sheet: `llms.txt` now opens with eight type-checked, GPU-rendered general pattern blocks.
+- `@aura3d/engine/procedural` subpath: seeded noise, `path2d`, curves, lathe, sweep, parametric surfaces, heightfield terrain and part composition, each returning a custom geometry spec.
+- `camera.frame`, `camera.frameScene`, `camera.framePose` and `camera.worldBounds` auto-framing helpers.
+- `effects.godRays`, `effects.volumetricBeam`, `material.strata`, `material.caustics` and `material.lightBeam` helpers.
+- A4 portable shader-graph pilots for Last Train (cloud sea) and Silt and Signal (water), behind `?portable=1`, default off.
+- Tools only: the E6 spatial benchmark harness (`tools/spatial-bench`, Aura3D vs three.js viewers) and a diagnosis of streamed points. Aura3D streamed points are JS-bound today (about 10 fps at 100K points); the fix is planned for 5.1.x.
+- `@aura3d/mcp` phase 1 (stdio MCP server: symbols, docs search, recipes, scaffold, asset and deploy wrappers, error explanations). The package is private and not published.
+
+### Fixes and behaviour changes
+
+- Static scenes whose only motion is a time-reading custom shader (`uTime`) or `world.water` now keep drawing; before, they drew one frame and looked frozen.
+- Colours: every CSS colour form (`#rgb`, `#rrggbbaa`, `rgb()`, `hsl()`, `oklch()`, named colours) now parses. Behaviour change: an invalid colour string now throws `COLOR_INVALID` naming the option; before, it silently rendered near-black.
+- Looks: an HDRI that fails to load falls back to a procedural probe and reports `LOOK_HDRI_MISSING` in `app.diagnostics().warnings`; `check-deploy` warns when a look's HDRI file is missing.
+
+### Known limits
+
+- Deferred to 5.1.x: look defaults, typed mutable buffers, picking, React embedding, zero-install physics, materials, contact-shadow visibility and the guessable-API pass.
+- Browser acceptance round 3 and WebGPU evidence have not been run for this release.
 
 ## 5.0.3 (2026-11-07)
 
