@@ -1,10 +1,10 @@
 # lane/511 general first-screen sheet: results
 
-Source: `docs/agents/first-screen.md` (11 pattern blocks), inlined as the first screen of `llms.txt` by `marketing/scripts/gen-seo.mjs`. Gate: `tools/docs/check-cheatsheet-render.mjs` (typecheck against the published `@aura3d/engine` 5.0.2, then two frames 3 s apart on the real GPU over loopback CDP, `evidence/cheatsheet-511/report.json` and `frames/`), verified by `tools/agent-docs` against the block hashes.
+Source: `docs/agents/first-screen.md` (8 pattern blocks after the 5.0.3 review fix: the lights, materials and sky/sun/water blocks were removed), inlined as the first screen of `llms.txt` by `marketing/scripts/gen-seo.mjs`. Gate: `tools/docs/check-cheatsheet-render.mjs` (typecheck against the published `@aura3d/engine` 5.0.2, then two frames 3 s apart on the real GPU over loopback CDP, `evidence/cheatsheet-511/report.json` and `frames/`), verified by `tools/agent-docs` against the block hashes.
 
 ## 1. Render gate (measured)
 
-11 of 11 blocks typecheck and render non-black on `ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max)`; the 8 animated blocks differ between frames by 0.27 to 16.2 (mean absolute RGB, 0 to 255; threshold 0.2), the 3 static blocks are lit and non-flat. Longest block is 17 lines. Defects the gate found and the fixes made in the sheet before it went in:
+8 of 8 blocks typecheck (re-run after the cut) and render non-black on `ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max)`; the 6 animated blocks differ between frames by 0.25 to 16.3 (mean absolute RGB, 0 to 255; threshold 0.2), the 2 static blocks are lit and non-flat. Longest block is 17 lines. Defects the gate found and the fixes made in the sheet before it went in:
 
 - `material.custom` time: `uTime` does not advance on 5.0.x; the block uses its own uniform plus `setUniform` (diff 16.2).
 - Physics: throws `@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat`; the gotcha line says so. The eval base installs it for both arms.
@@ -16,17 +16,40 @@ Source: `docs/agents/first-screen.md` (11 pattern blocks), inlined as the first 
 
 Remaining visual weakness: with the bright looks the instancing tiles are still pale and the sea/sky block has a white horizon; the gate proves "renders, animates", not "looks good".
 
-## 2. Size (measured with `tools/agent-eval/count-tokens.mjs`, Prism, calibrated against a 2-character file that costs 1,905 tokens)
+## 2. Size (review fix; `tools/agent-eval/count-tokens.mjs` through Prism, whole-file input tokens, repeat counts vary by about 40)
 
-| file | tokens (net of the 1,905 overhead) |
+| file | tokens |
 |---|---|
-| `docs/agents/first-screen.md` | about 7,300 |
-| `llms.txt` before (origin/main) | about 5,730 |
-| `llms.txt` after | about 11,840 |
+| `llms.txt` origin/main | 7,537 |
+| `llms.txt` before the fix (11 blocks) | 13,464 |
+| `llms.txt` after the fix (8 blocks) | about 11,460 to 11,500 |
 
-Net growth of the first screen about +6,100 tokens: the 4,000-token net target is NOT met. Code-heavy text costs about 2.15 characters per token, so 11 blocks of 8 to 17 lines cost about 600 tokens each. `llms.txt` is 24,928 bytes (budget 25,000); to fit, three marketing paragraphs and the pitfalls list in `llms-core.txt` were shortened (the pitfalls are now covered by the block gotchas).
+Net growth about +3,950 tokens, inside the 4,000 target (margin under 2% and inside counter noise: treat as "at the budget", not comfortably under). To get there: blocks "Lights and environment", "Materials" and "Sky, sun and a water plane" were removed (their gotchas that matter, environment light, plane size, bloom, are folded into the skeleton block's gotchas; full signatures are already in `docs/agents/api-signatures.md`, scenes in `recipes.md`), several gotcha sentences were trimmed, and three redundant lines in `llms-core.txt` were cut. The Hello world snippet stays because `tools/agent-docs/simulation.ts` reads it.
 
-## 3. Unseen-task trial (6 tasks of my own design, n=3, Aura arm, docs only, claude-sonnet-5.5 through Prism, engine 5.0.2, seed 20261107)
+No remaining block is a solution of any benchmark task: the blocks are minimal API patterns (skeleton, instancing, shader uniform, revolve geometry, rigged clip crossfade, fixed-step input, bound physics, built-in particles). I did not read the benchmark prompts, so "resembles no task" is by construction from the category list only, not checked against the prompts.
+
+## 3. Unseen-task trial, final 8-block sheet (tasks 31-36, n=3, Aura arm docs only, claude-sonnet-5.5 through Prism, engine 5.0.2, seed 20261107, harness of exp/turn-gap-504)
+
+Baseline = the earlier `b511-base` batch (docs of origin/main, not re-run; same harness, model and seed). Sheet = batch `b511-sheet2` plus `b511-sheet2r34`, merged as `b511-sheet2-final`. The first `b511-sheet2` task 34 runs executed with the rapier peer accidentally pruned from the eval base (the runner reinstalls the base from package.json; `AGENT_EVAL_EXTRA_AURA_DEPS=@dimforge/rapier3d-compat@0.20.0` is required): they all threw at runtime, are kept in `agent-eval/superseded-b511-sheet2-t34-no-rapier/` and are not counted. Task 34 was rerun as `b511-sheet2r34` with the peer installed, as in the baseline. Full tables: `agent-eval/REPORT-5.0.3-fix.md`.
+
+| | baseline | final sheet |
+|---|---|---|
+| runs finished / hit 40-turn cap | 16/18, 2 | 18/18, 0 |
+| turns median (range) | 16 (8-40) | 10.5 (7-36) |
+| input tokens, median | 656K | 255K |
+| first-try typecheck | 14/18 | 17/18 |
+| judged checklist, mean | 0.94 | 1.00 |
+| docs files opened, median | 6 | 4 |
+| build and render probe clean | 16/18 | 17/18 |
+| agent wall median | 79s | 46s |
+
+Per task median turns (baseline then sheet): 31 16 / 10, 32 29 / 12, 33 13 / 7, 34 40 / 28, 35 16 / 18, 36 15 / 9.
+
+Honest reading: turns fall on 5 of 6 tasks (32, 33, 36 by 40 to 60%); task 35 (crystals + particles) is flat to slightly worse (18 vs 16, tokens equal) and task 34 (physics) is better than baseline (28 vs 40 median, no cap hits) but much worse than the 11-block sheet's 22: the sheet's bound-bodies physics pattern is not what every run takes, and one run needed 36 turns. The checklist judge scored 1.0 almost everywhere and cannot separate quality. Probe pixel checks are heuristics (they flag dark scenes), identical across arms. n=3 per cell, one model, one seed, a single baseline batch: directional, not a claim. Overall input tokens are lower than the 11-block sheet's (255K vs 472K median) with turns lower too, but the two sheet runs are different samples and the difference is not attributable to the cut alone.
+
+## 4. Earlier trial with the 11-block sheet (superseded by section 3)
+
+### Superseded: unseen-task trial (6 tasks of my own design, n=3, Aura arm, docs only, claude-sonnet-5.5 through Prism, engine 5.0.2, seed 20261107)
 
 Tasks 31 orrery, 32 64-bar instanced ring, 33 hologram shader, 34 pyramid with physics, 35 crystal cluster in custom geometry plus particles, 36 soldier walking a circle (`tools/agent-eval/tasks/31-36`). They were written without reading the 505 prompts and are not tasks 1-9. Baseline docs = `origin/main`; sheet docs = commit 907a25413. Full tables: `agent-eval/REPORT.md`; per-run records, transcripts, snapshots and frames are under `agent-eval/`.
 

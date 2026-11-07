@@ -1,0 +1,74 @@
+[
+  {
+    "id": "b511-sheet2r34-t34-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.9997916666666666,
+        "std": 18.883053404929804,
+        "diff": 1.8178602430555555
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.5
+    },
+    "readyMs": 736
+  },
+  {
+    "id": "b511-sheet2r34-t34-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 0.9998046875,
+        "std": 21.616349340038926,
+        "diff": 1.0748524305555556
+      }
+    },
+    "bundle": {
+      "rawKB": 9273.7
+    },
+    "readyMs": 722
+  },
+  {
+    "id": "b511-sheet2r34-t34-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "nonblack": 1,
+        "std": 19.357473562945604,
+        "diff": 0.2749320023148148
+      }
+    },
+    "bundle": {
+      "rawKB": 9272.3
+    },
+    "readyMs": 509
+  }
+]
