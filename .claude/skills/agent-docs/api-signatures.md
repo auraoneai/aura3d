@@ -60,7 +60,7 @@ const stage = scene({ background: "#101418" }).add(primitives.box({ name: "crate
 
 ## `looks`
 
-Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options.
+Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options. `looks.heroStage({ target, radius, background })` is studio IBL + key/fill/rim + a floor that fades into `background`; `looks.heroRig` is the lights alone; `looks.fogForExtent({ extent })` sizes fog by distance. A scene with NO look, light, environment or effect gets the hero stage automatically at mount (any authored look/light/environment/effect, or a scene kit, turns it off; `?a3d-cold-start-look=0` forces it off).
 
 ```ts
 void looks.preset("product-studio");
@@ -68,7 +68,11 @@ void looks.preset("product-studio");
 
 | Call | Returns | Options |
 |---|---|---|
-| `looks.preset(id: AuraLookId, overrides: AuraLookOverrides \| undefined)` (+1 overloads) | `AuraNodeBuilder<AuraGroupNode>` | overrides: sun?: { readonly azimuthDeg?: n…; exposureEv?: number \| undefined; fogDensityScale?: number \| undefined; accent?: string \| undefined; background?: string \| undefined; hdri?: AuraHdriId \| AuraAssetRef…; environmentIntensity?: number \| undefined; environmentRotationDeg?: number \| undefined; key?: { readonly color?: AuraCo…; rim?: false \| { readonly color?…; fog?: { readonly color?: AuraCo…; grade?: { readonly contrast?: num…; post?: AuraPostPresetId \| { read… |
+| `looks.heroRig(options?: AuraHeroRigOptions)` | `AuraNodeBuilder<AuraGroupNode>` | options: target?: AuraVec3 \| undefined; radius?: number \| undefined; intensity?: number \| undefined; keyColor?: string \| undefined; fillColor?: string \| undefined; rimColor?: string \| undefined; shadow?: boolean \| undefined; name?: string \| undefined |
+| `looks.heroStage(options?: AuraHeroStageOptions)` | `AuraNodeBuilder<AuraGroupNode>` | options: environment?: "none" \| "studio" \| "neut…; environmentIntensity?: number \| undefined; background?: string \| undefined; floor?: false \| { readonly color?…; target?: AuraVec3 \| undefined; radius?: number \| undefined; intensity?: number \| undefined; keyColor?: string \| undefined; fillColor?: string \| undefined; rimColor?: string \| undefined; shadow?: boolean \| undefined; name?: string \| undefined |
+| `looks.fogForExtent(options: AuraFogForExtentOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: extent: number; color?: string \| undefined; haze?: number \| undefined; mode?: "exp" \| "exp2" \| undefined; name?: string \| undefined |
+| `looks.fogDensityForExtent(extent: number, haze?: number, mode?: "exp" \| "exp2")` | `number` |  |
+| `looks.preset(id: AuraLookId, overrides: AuraLookOverrides \| undefined)` (+1 overloads) | `AuraNodeBuilder<AuraGroupNode>` | overrides: sun?: { readonly azimuthDeg?: n…; exposureEv?: number \| undefined; fogDensityScale?: number \| undefined; accent?: string \| undefined; background?: string \| undefined; hdri?: AuraAssetRef<"texture"> \|…; environmentIntensity?: number \| undefined; environmentRotationDeg?: number \| undefined; key?: { readonly color?: AuraCo…; rim?: false \| { readonly color?…; fog?: { readonly color?: AuraCo…; grade?: { readonly contrast?: num…; post?: AuraPostPresetId \| { read… |
 | `looks.nodes(id: AuraLookId, overrides: AuraLookOverrides \| undefined)` | `readonly AuraNodeBuilder<AuraSceneNode>[]` | same as `looks.preset` |
 | `looks.appOptions(id: AuraLookId, options: AuraLookBuildOptions \| undefined)` | `Pick<AuraCreateAppOptions, "pixelRatio" \| "renderer">` | options: expansion?: "auto" \| "v0" \| "v1" \| un…; flags?: QrFlags \| undefined |
 | `looks.list()` | `readonly AuraLookId[]` |  |
@@ -85,7 +89,7 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 
 | Call | Returns | Options |
 |---|---|---|
-| `material.custom(spec: AuraCustomMaterialSpec)` | `AuraMaterialSpec` | spec: glsl: { readonly vertex?: strin…; wgsl?: { readonly vertex?: strin…; uniforms?: Readonly<Record<string, A…; uniformAliases?: Readonly<Record<string, s…; defines?: Readonly<Record<string, s…; transparent?: boolean \| undefined; depthWrite?: boolean \| undefined; depthTest?: boolean \| undefined; side?: "front" \| "back" \| "doubl…; blending?: "custom" \| "normal" \| "ad…; fog?: boolean \| undefined; patch?: Readonly<Record<string, s…; receiveShadow?: boolean \| undefined; castShadow?: boolean \| undefined |
+| `material.custom(spec: AuraCustomMaterialSpec)` | `AuraMaterialSpec` | spec: glsl: { readonly vertex?: strin…; wgsl?: { readonly vertex?: strin…; uniforms?: Readonly<Record<string, A…; uniformAliases?: Readonly<Record<string, s…; defines?: Readonly<Record<string, s…; transparent?: boolean \| undefined; depthWrite?: boolean \| undefined; depthTest?: boolean \| undefined; side?: "front" \| "back" \| "doubl…; blending?: "additive" \| "multiply" \|…; fog?: boolean \| undefined; patch?: Readonly<Record<string, s…; receiveShadow?: boolean \| undefined; castShadow?: boolean \| undefined |
 | `material.toon(options?: AuraToonMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \| undefined; steps?: number \| undefined; ramp?: AuraAssetRef<"texture", s…; shadowColor?: string \| undefined; rim?: AuraMaterialRimSpec \| und… |
 | `material.matcap(options: AuraMatcapMaterialOptions)` | `AuraMaterialSpec` | options: map: AuraAssetRef<"texture"> \|…; color?: string \| undefined; opacity?: number \| undefined; transparent?: boolean \| undefined; side?: "front" \| "back" \| "doubl… |
 | `material.depth(options?: AuraDepthPreviewMaterialOptions)` | `AuraMaterialSpec` | options: near?: number \| undefined; far?: number \| undefined; side?: "front" \| "back" \| "doubl… |
@@ -121,7 +125,7 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 | `material.carPaint(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.planet(preset?: AuraSolarPlanetMaterialPreset, options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.atmosphere(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
-| `material.proceduralTexture(texture: AuraProceduralTextureKind, options?: Partial<Omit<AuraProceduralTextureSpec, "texture" \| "kind">>)` | `AuraProceduralTextureSpec` | options: scale?: number \| undefined; strength?: number \| undefined; contrast?: number \| undefined; direction?: AuraVec3 \| undefined; colorA?: string \| undefined; colorB?: string \| undefined |
+| `material.proceduralTexture(texture: AuraProceduralTextureKind, options?: Partial<Omit<AuraProceduralTextureSpec, "kind" \| "texture">>)` | `AuraProceduralTextureSpec` | options: strength?: number \| undefined; contrast?: number \| undefined; scale?: number \| undefined; direction?: AuraVec3 \| undefined; colorA?: string \| undefined; colorB?: string \| undefined |
 | `material.proceduralTextures` | `value` |  |
 | `material.parameters(name: string, spec: AuraMaterialSpec)` | `AuraEditableMaterialParameters` |  |
 | `material.fromParameters(parameters: AuraEditableMaterialParameters)` | `AuraMaterialSpec` | parameters: kind: "aura-material-parameters"; name: string; material: AuraMaterialSpec; roughness: number; metallic: number; metalness: number; transmission: number; clearcoat: number; clearcoatRoughness: number; thickness: number; ior: number; sheen: number; iridescence: number; anisotropy: number; envMapIntensity: number; emissiveIntensity: number |
@@ -165,10 +169,10 @@ void environments.neutral({ intensity: 0.8, background: false });
 
 | Call | Returns | Options |
 |---|---|---|
-| `environments.outdoor(options?: {…})` | `WorldEnvBuilderOut` | options: texture?: AuraAssetRef<"texture", s…; name?: string \| undefined; intensity?: number \| undefined; color?: string \| undefined; reflectionTexture?: AuraAssetRef<"texture", s…; rotation?: number \| undefined; biome?: OutdoorBiome \| undefined |
-| `environments.room(options?: {…})` | `WorldEnvBuilderOut` | options: texture?: AuraAssetRef<"texture", s…; name?: string \| undefined; intensity?: number \| undefined; color?: string \| undefined; reflectionTexture?: AuraAssetRef<"texture", s…; rotation?: number \| undefined; colorTemperatureK?: number \| undefined |
-| `environments.space(options?: Partial<Omit<AuraEnvironmentNode, "environment" \| "kind">>)` | `WorldEnvBuilderOut` | options: texture?: AuraAssetRef<"texture", s…; name?: string \| undefined; intensity?: number \| undefined; color?: string \| undefined; reflectionTexture?: AuraAssetRef<"texture", s…; rotation?: number \| undefined |
-| `environments.underwater(options?: Partial<Omit<AuraEnvironmentNode, "environment" \| "kind">>)` | `WorldEnvBuilderOut` | same as `environments.space` |
+| `environments.outdoor(options?: {…})` | `WorldEnvBuilderOut` | options: name?: string \| undefined; intensity?: number \| undefined; texture?: AuraAssetRef<"texture", s…; color?: string \| undefined; rotation?: number \| undefined; reflectionTexture?: AuraAssetRef<"texture", s…; biome?: OutdoorBiome \| undefined |
+| `environments.room(options?: {…})` | `WorldEnvBuilderOut` | options: name?: string \| undefined; intensity?: number \| undefined; texture?: AuraAssetRef<"texture", s…; color?: string \| undefined; rotation?: number \| undefined; reflectionTexture?: AuraAssetRef<"texture", s…; colorTemperatureK?: number \| undefined |
+| `environments.space(options?: Partial<Omit<AuraEnvironmentNode, "kind" \| "environment">>)` | `WorldEnvBuilderOut` | options: name?: string \| undefined; intensity?: number \| undefined; texture?: AuraAssetRef<"texture", s…; color?: string \| undefined; rotation?: number \| undefined; reflectionTexture?: AuraAssetRef<"texture", s… |
+| `environments.underwater(options?: Partial<Omit<AuraEnvironmentNode, "kind" \| "environment">>)` | `WorldEnvBuilderOut` | same as `environments.space` |
 | `environments.preset(name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | options: name?: string \| undefined; intensity?: number \| undefined; diffuseIntensity?: number \| undefined; specularIntensity?: number \| undefined; rotation?: number \| undefined; background?: boolean \| AuraEnvironment…; color?: string \| undefined |
 | `environments.neutral(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.none(options?: {…})` | `AuraNodeBuilder<AuraEnvironmentNode>` | options: name?: string \| undefined |
@@ -181,7 +185,7 @@ void environments.neutral({ intensity: 0.8, background: false });
 | `environments.metalStudio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.glassStudio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.presets()` | `readonly AuraEnvironmentMapPreset[]` |  |
-| `environments.forMaterial(materialClass: "metal" \| "glass" \| "studio" \| "product")` | `AuraNodeBuilder<AuraEnvironmentNode>` |  |
+| `environments.forMaterial(materialClass: "studio" \| "metal" \| "glass" \| "product")` | `AuraNodeBuilder<AuraEnvironmentNode>` |  |
 
 ## `sky`
 
@@ -193,9 +197,9 @@ void sky.preetham({ sun: { elevationDeg: 35, azimuthDeg: 120 } });
 
 | Call | Returns | Options |
 |---|---|---|
-| `sky.preetham(options: AuraSkyPreethamOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: moon?: unknown; groundColor?: string \| undefined; sun: AuraSkySunSpec; turbidity?: number \| undefined; rayleigh?: number \| undefined; mieCoefficient?: number \| undefined; mieDirectionalG?: number \| undefined; exposure?: number \| undefined; stars?: AuraSkyStarsOptions \| und…; clouds?: AuraSkyCloudsOptions \| un…; name?: string \| undefined; captureEnvironment?: boolean \| undefined; affectsFog?: boolean \| undefined |
-| `sky.gradient(options: AuraSkyGradientOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: moon?: unknown; intensity?: number \| undefined; clouds?: AuraSkyCloudsOptions \| un…; sun?: AuraSkySunSpec \| undefined; zenith: string; horizon: string; ground?: string \| undefined; exponent?: number \| undefined; horizonGlow?: number \| undefined; bands?: readonly AuraSkyBand[] \| …; stars?: AuraSkyStarsOptions \| und…; name?: string \| undefined; captureEnvironment?: boolean \| undefined; affectsFog?: boolean \| undefined |
-| `sky.hdri(options: {…})` | `AuraNodeBuilder<AuraSceneNode>` | options: texture: AuraAssetRef<"texture">; intensity?: number \| undefined; rotation?: number \| undefined; blurriness?: number \| undefined; name?: string \| undefined; captureEnvironment?: boolean \| undefined; affectsFog?: boolean \| undefined |
+| `sky.preetham(options: AuraSkyPreethamOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: exposure?: number \| undefined; moon?: unknown; groundColor?: string \| undefined; sun: AuraSkySunSpec; turbidity?: number \| undefined; rayleigh?: number \| undefined; mieCoefficient?: number \| undefined; mieDirectionalG?: number \| undefined; stars?: AuraSkyStarsOptions \| und…; clouds?: AuraSkyCloudsOptions \| un…; name?: string \| undefined; captureEnvironment?: boolean \| undefined; affectsFog?: boolean \| undefined |
+| `sky.gradient(options: AuraSkyGradientOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: intensity?: number \| undefined; moon?: unknown; clouds?: AuraSkyCloudsOptions \| un…; sun?: AuraSkySunSpec \| undefined; zenith: string; horizon: string; ground?: string \| undefined; exponent?: number \| undefined; horizonGlow?: number \| undefined; bands?: readonly AuraSkyBand[] \| …; stars?: AuraSkyStarsOptions \| und…; name?: string \| undefined; captureEnvironment?: boolean \| undefined; affectsFog?: boolean \| undefined |
+| `sky.hdri(options: {…})` | `AuraNodeBuilder<AuraSceneNode>` | options: intensity?: number \| undefined; texture: AuraAssetRef<"texture">; rotation?: number \| undefined; blurriness?: number \| undefined; name?: string \| undefined; captureEnvironment?: boolean \| undefined; affectsFog?: boolean \| undefined |
 | `sky.dayNight(options?: {…})` | `{ readonly nodes: readonly AuraSceneNode[]; readonly background: stri…` | options: hour?: number \| undefined; seed?: number \| undefined; starCount?: number \| undefined; cloudCellCount?: number \| undefined; starLimit?: number \| undefined; cloudLimit?: number \| undefined; model?: "preetham" \| "gradient" \|… |
 
 ## `primitives`
@@ -255,7 +259,7 @@ void effects.bloom({ intensity: 0.7, threshold: 0.75, radius: 0.55 });
 | `effects.vignette(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.filmGrain(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.chromaticAberration(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
-| `effects.shaderPass(options: AuraShaderPassOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; glsl?: string \| undefined; wgsl?: string \| undefined; fragment?: { readonly glsl?: string;…; uniforms?: Readonly<Record<string, n…; inputs?: readonly ("normal" \| "col…; insertAt?: PostInsertAt \| undefined; order?: AuraPostPassOrder \| undef…; enabled?: boolean \| undefined |
+| `effects.shaderPass(options: AuraShaderPassOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; glsl?: string \| undefined; wgsl?: string \| undefined; fragment?: { readonly glsl?: string;…; uniforms?: Readonly<Record<string, n…; inputs?: readonly ("color" \| "norm…; insertAt?: PostInsertAt \| undefined; order?: AuraPostPassOrder \| undef…; enabled?: boolean \| undefined |
 | `effects.fog(options?: FogNodeOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.cinematicBloom(options?: Omit<AuraEffectNode, "kind" \| "effect">)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.volumetricFog(options?: AuraVolumetricFogOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
