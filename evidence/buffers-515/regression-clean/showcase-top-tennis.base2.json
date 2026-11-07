@@ -1,0 +1,24 @@
+{
+ "href": "http://127.0.0.1:8611/apps/showcase-top-tennis/",
+ "title": "Aura Slam 3D — Championship 3D Tennis on Aura3D",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 84.17703497842783,
+ "sd": 43.474290243982736,
+ "centerMean": 127.59181339245421,
+ "centerSd": 36.55976565449247,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-top-tennis",
+ "label": "base2",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state; an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the surface behind them.",
+  "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state; an unverified material or geometry participant are outside the contact shadow depth and receive the mask of the surface behind them."
+ ],
+ "real": true
+}

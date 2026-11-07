@@ -1,0 +1,28 @@
+{
+ "href": "http://127.0.0.1:8612/apps/showcase-smart-city-control/",
+ "title": "Aura3D Showcase - Smart City Control",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 31.470413898730722,
+ "sd": 39.12507198798212,
+ "centerMean": 47.332655276150085,
+ "centerSd": 61.51791611823467,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-smart-city-control",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-319:red northbound windshield:red northbound windshield\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+  "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the surface behind them.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-red northbound windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-yellow crosstown taxi windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-white crosstown van windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-blue southbound windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission."
+ ],
+ "real": true
+}
