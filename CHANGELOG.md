@@ -40,11 +40,13 @@ Template and game fixes plus a first real-GPU look at every template. The public
 - `?backend=auto` on a scene whose post-processing needs depth textures falls back to WebGL2 before a WebGPU device is created (Cross Hop mounted with `RENDERER_MOUNT_FAILED` before).
 - Templates: all 20 rendered in a real browser for the first time. Fixed scale/camera/fog defects in `architecture-interior`, `cinematic-scene`, `custom-scene`, `large-scene`, `mini-game`, `racing-starter`, `product-viewer` and `postprocess-scene`.
 - Games: 20 of the 25 games show a determinate loading progress bar instead of a black canvas or plain text while they load; Slingshot Siege's projectile parking workaround is removed (the 5.0.2 engine draws hidden-created models).
+- The Bellkeeper's Walk: the hero gets stride bob, lean and roll, footfall dust, grass that lies down near the hero and a wider see-through fade.
+- Docs: `uTime` in custom shaders only advances while the app redraws every frame (give the node `.runtime({ id, mutable: true })` or register `app.onFrame`); 5.1 removes that precondition (uTime redraw fix).
 - Acceptance harness specs for pointer coordinates and transparency reworked (not yet run through browser acceptance).
 
 ### Not fixed / unconfirmed
 
-- The Bellkeeper's Walk hero "slides instead of showing leg movement" report did not reproduce on a real GPU at 60 Hz; a 120 to 165 Hz display could not be emulated.
+- The Bellkeeper's Walk "hero slides" report: the walk animation was verified correct at 30 to 240 Hz on a virtual clock and the legs were hidden by foliage; not confirmed on the reporter's display.
 - `character-viewer` fails the render gate's texture heuristic although its frame is fine.
 - Browser acceptance round 3, WebGPU evidence and a device-lost/restored browser run have not been run.
 
