@@ -68,8 +68,7 @@ import {
   roadTileLayout,
   sodiumPointIds,
   tailLampMaterial,
-  windowGlowOverride,
-  skyOutput
+  windowGlowOverride
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, TRAFFIC_SPECS, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
@@ -244,14 +243,16 @@ async function bootGridDispatch(): Promise<void> {
   let lowTier = false;
   let presentClock = 0;
   /**
-   * GD-08: tone mapping and exposure per sky, set after every setScene (AgX on Marine dusk). AgX is in the renderer's
-   * operator set; where setOutput cannot reach the output pass (direct render path) the default ACES applies: that is
-   * the fallback. The engine's A/B query (`?aura3d-tonemap=` / `?tm=`) keeps its operator: only the exposure is set then.
+   * GD-08 / lane 521: set after every setScene. The per-sky `output` in look.ts (AgX at exposure 3.8 on Marine dusk,
+   * ACES 1.15-2.3 elsewhere) never reached the post chain through 4.7.18 (app.setOutput did not feed the LegacyPost
+   * route), so every sky shipped and was judged at the engine default: ACES, exposure 1. 5.0 forwards setOutput to the
+   * post chain, which washed the street out (5.0.3 mean 34 -> 84 once AgX rendered correctly). The output stays pinned
+   * to the 4.x frames; the look table keeps the per-sky values for a deliberate re-tune. The engine's A/B query
+   * (`?aura3d-tonemap=` / `?tm=`) keeps its operator: only the exposure is set then.
    */
   const tonemapQuery = params.has("aura3d-tonemap") || params.has("tm");
   const applySkyOutput = (): void => {
-    const out = skyOutput(SKY_LOOKS[weather]);
-    auraApp.setOutput?.(tonemapQuery ? { exposure: out.exposure } : out);
+    auraApp.setOutput?.(tonemapQuery ? { exposure: 1 } : { toneMapping: "aces", exposure: 1 });
   };
   applySkyOutput();
 

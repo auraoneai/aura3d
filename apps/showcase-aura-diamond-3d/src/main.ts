@@ -420,7 +420,10 @@ function boot(): void {
     document.documentElement.style.setProperty("--amber", hudAccent(id, sceneCtx.variant));
     if (!plan.output) return;
     try {
-      (app as any).setOutput?.(plan.output);
+      // Lane 521: the plan's output (preset, operator, exposure) never reached the post chain through 4.7.18, so every
+      // park shipped at the engine default (ACES, exposure 1, no preset stages). 5.0 forwards setOutput to the post
+      // chain, which turned the parks murky (AgX) or hazy. Pin the output the parks were tuned and judged under.
+      (app as any).setOutput?.({ toneMapping: "aces", exposure: 1 });
       (app as any).post?.setEffectEnabled?.("depth-of-field", false);
     } catch {
       /* output is presentation only; a missing surface keeps the default output */
