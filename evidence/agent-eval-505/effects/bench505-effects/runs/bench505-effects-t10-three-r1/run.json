@@ -1,0 +1,182 @@
+{
+  "runId": "bench505-effects-t10-three-r1",
+  "batch": "bench505-effects",
+  "arm": "three",
+  "task": 10,
+  "idx": 1,
+  "order": 0,
+  "seed": 20261106000,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:08:24.765Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 582190,
+  "usage": {
+    "input": 267112,
+    "uncachedInput": 267112,
+    "output": 17840,
+    "turns": 9,
+    "perTurnInput": [
+      3226,
+      4151,
+      15262,
+      30176,
+      30461,
+      42683,
+      43514,
+      48298,
+      49341
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      2205,
+      4615,
+      105,
+      9160,
+      232,
+      1048,
+      446
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2289,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2289,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 3779,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 3779,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 3779,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 346501,
+      "type": "search",
+      "pattern": "outputColorSpace|getTransfer|toneMapping|renderToScreen"
+    },
+    {
+      "i": 6,
+      "t": 346506,
+      "type": "search",
+      "pattern": "renderToScreen|setRenderTarget|constructor"
+    },
+    {
+      "i": 7,
+      "t": 459857,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/shaders.ts",
+      "bytes": 5477
+    },
+    {
+      "i": 8,
+      "t": 463594,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/shaders.ts"
+    },
+    {
+      "i": 9,
+      "t": 526616,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 22554
+    },
+    {
+      "i": 10,
+      "t": 534107,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 11,
+      "t": 534107,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 12,
+      "t": 534467,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 13,
+      "t": 574190,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 14,
+      "t": 574190,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 15,
+      "t": 574546,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 16,
+      "t": 582190,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "src/shaders.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the fireworks scene in `src/main.ts` and `src/shaders.ts`. It passes `typecheck`, but I couldn't run it, so I haven't seen a rendered frame. I also haven't run `vite build`, and the GLSL shaders are uncompiled. If something fails, a shader compile error is the most likely cause.\n\n- **Scene:** a star-dusted night sky with a faint horizon haze, a calm rippled harbor, and a dark far shore. The shore has buildings with small lit windows, a lighthouse, a pier with lamps, container stacks and five bobbing boats with lanterns.\n- **Rockets:** they launch from the shoreline at irregular intervals, with occasional quick pairs. Each rises with a glowing ember trail and explodes at its apex.\n- **Bursts:** each burst is a sphere of sparks with a flash. There are three types: single-color shells, trailing-streak bursts whose sparks shed embers, and two-tone shells with an inner and outer sphere. Colors cycle through gold, red, blue, green, violet, silver and pink. Sparks start hot-white, fade, flicker and fall under gravity over about 1.7 to 3 seconds.\n- **Lighting:** active bursts light the sky and water. They also tint the tops of the silhouettes slightly.\n- **Water:** it reflects the sky and glow through ripples. Mirrored sparks and lamps appear as shimmering vertical dashes.\n- **Look:** bloom post-processing gives the glow. The camera drifts slowly.\n- **Contract:** `window.__TASK_STATE__` holds `bursts` and `activeParticles`. It updates every frame, and `__EVAL_READY__` is set after the first frame.\n- **Particle count:** `activeParticles` counts every live particle, including trail embers, rocket trails and flashes, not just the main burst sparks.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

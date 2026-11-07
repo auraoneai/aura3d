@@ -1,0 +1,912 @@
+{
+  "model": "claude-sonnet-5.5",
+  "callsPerPair": 3,
+  "results": [
+    {
+      "task": "effects-1",
+      "idx": 1,
+      "subject": "aura",
+      "vs": "three",
+      "calls": [],
+      "error": "missing frames"
+    },
+    {
+      "task": "effects-1",
+      "idx": 1,
+      "subject": "aura-sheet",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 20,
+            "three": 13
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 2
+            },
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows dense, saturated blue and green bursts with soft halos, a readable harbor with lit buildings, a pier and water reflections, and no blown-out artifacts, while A has a white-out blob, faint sparse bursts, and a murky, barely readable shoreline."
+        },
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 19,
+            "three": 15
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 2
+            }
+          },
+          "why": "A shows two crisp, saturated bursts in blue and green with visible trails, a readable harbor with lit windows and water reflections; B has a blown-out white core in both frames, dim murky shoreline and weaker saturated sparks."
+        },
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 19,
+            "three": 14
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 2
+            }
+          },
+          "why": "A shows two distinct, crisp, colorful bursts with trails over a readable harbor with lit windows and reflections, while B has overexposed white-out blobs, dim murky shoreline, and weaker spark definition."
+        }
+      ],
+      "tally": {
+        "aura-sheet": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura-sheet"
+    },
+    {
+      "task": "effects-1",
+      "idx": 2,
+      "subject": "aura",
+      "vs": "three",
+      "calls": [],
+      "error": "missing frames"
+    },
+    {
+      "task": "effects-1",
+      "idx": 2,
+      "subject": "aura-sheet",
+      "vs": "three",
+      "calls": [],
+      "error": "missing frames"
+    },
+    {
+      "task": "effects-1",
+      "idx": 3,
+      "subject": "aura",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura": 17,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "why": "A shows crisp, dense spherical bursts in distinct colors (white-blue, red, purple) with convincing reflections, a believable harbor and tasteful sky glow; B's bursts are more streaky or sparse and its sky glow looks banded and murky."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura": 16,
+            "three": 21
+          },
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows well-formed spherical bursts in distinct colors (white-blue, red, purple) with soft halos, subtle sky and water tinting, and a believable harbor with reflections, while A's magenta burst is a drooping vertical streak mass, its green burst is small and sparse, and its sky has murky color band"
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura": 15,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "why": "A has dense spherical bursts in clearly different colors (white-blue, red, purple) with soft halos, lit water reflections, and a believable harbor, while B's bursts are sparser or collapsed into drooping streaks, its sky tinting has visible banded contours, and its sparks are less luminous."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": "effects-1",
+      "idx": 3,
+      "subject": "aura-sheet",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 16,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 2,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "why": "A has a convincing harbor with houses, boats, a pier and wavy water that picks up the burst colors, with bloom tinting the sky, while B's bursts are more varied and dense but its shoreline and water are nearly black, its halos are weak, and one burst is close to white-out."
+        },
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 17,
+            "three": 21
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 2,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "why": "A has a believable harbor with houses, boats, a pier, wavy reflections and sky and water tinted by the bursts, while B's shoreline and water are nearly black and its sparks look less integrated, even though B has vivid, varied colors."
+        },
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 15,
+            "three": 21
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 4,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a much more believable harbor with houses, boats, a pier, rippled water and visible bounce light from the bursts, plus well-formed spherical bursts with halos, while A's shoreline is a flat silhouette over near-black water and one burst is blown out to white."
+        }
+      ],
+      "tally": {
+        "aura-sheet": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": "effects-2",
+      "idx": 1,
+      "subject": "aura",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 16,
+            "three": 14
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "B shows a readable swirling vortex with a bright core and a clean, centered composition with a dark dusk surround, while A's glow blows out the disc and hides the vortex and most of the stone ring detail, even though A has a more visible ring and sky gradient."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 16,
+            "three": 14
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "B shows a readable swirling vortex with a bright core and a clean, centered, dark-surround composition, while A's bloom blows out the portal so the swirl and cyan-violet color are lost, even though A has a better-defined stone ring and a dusk sky."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura": 13,
+            "three": 19
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows a readable runed stone ring, a dusk gradient sky, abundant varied particles and colored light on textured stones, while A's stone ring is hidden behind a blown-out opaque orb ringed by cartoonish glyph icons and its dark scene is flat."
+        }
+      ],
+      "tally": {
+        "aura": 2,
+        "three": 1,
+        "tie": 0
+      },
+      "majority": "aura"
+    },
+    {
+      "task": "effects-2",
+      "idx": 1,
+      "subject": "aura-sheet",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 13,
+            "three": 18
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a readable runed stone ring on a tiered platform, a dusk sky with haze and pillars arranged around it, and a strong bloom with a centered focal portal, though its core is nearly blown out; A has a big foreground pillar blocking the portal, a flat washed-out disc, and a flatter, blockier look."
+        },
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 18,
+            "three": 14
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura-sheet": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 3
+            }
+          },
+          "why": "B keeps a readable swirling cyan-violet vortex with a visible core and abundant varied particles against a darker dusk, whereas A's portal is blown out to a white blob that hides the vortex and ring detail, even though A has the nicer stone texture and sky gradient."
+        },
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 13,
+            "three": 19
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a clearer stone ring with runes, a readable tiered platform, a dusk sky gradient, and a strong bloom with soft particles. A's portal is mostly hidden by a large foreground pillar in frame one, and its vortex reads as a flat pale blob."
+        }
+      ],
+      "tally": {
+        "aura-sheet": 1,
+        "three": 2,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": "effects-2",
+      "idx": 2,
+      "subject": "aura",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura": 13,
+            "three": 17
+          },
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 4,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "B shows a readable stone ring with runes on a carved platform and a swirling, glowing disc against a dusk sky, while A's portal looks like a glowing orb with a faint rune ring, little visible stone frame, and flat lighting on the ruins, though A has more abundant particles."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 18,
+            "three": 15
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a darker dusk setting, abundant varied glowing particles, and a bloom halo that keeps the portal as the focal point, while A is washed out and blown to white with sparse particles and a flat pink sky, even though its ring and platform runes are better modeled."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 18,
+            "three": 15
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has abundant varied glowing particles, a darker dusk mood with colored light on the stones, and a clear focal portal, while A's portal is blown out to near-white with sparse particles and a washed-out pastel scene."
+        }
+      ],
+      "tally": {
+        "aura": 2,
+        "three": 1,
+        "tie": 0
+      },
+      "majority": "aura"
+    },
+    {
+      "task": "effects-2",
+      "idx": 2,
+      "subject": "aura-sheet",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 15,
+            "three": 17
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 2,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "B has a detailed runic stone ring, a carved platform and broken ruins with a clear focal point, but its core is blown out and the dusk is bright pink rather than dark. A's vortex swirl is more readable and its scene is darker, but its portal looks like a flat glowing disc with a plain thin ring, and"
+        },
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "three",
+          "totals": {
+            "aura-sheet": 14,
+            "three": 17
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 2,
+              "c2": 4,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "B has a far more detailed stone ring with runes, a runic platform and ruined pillars, though its core is blown out and the sky is pink rather than dusk; A has a nicer readable swirl and a darker mood, but its ring is a flat disc with placeholder-looking geometry and little light spill."
+        },
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 17,
+            "three": 15
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 2,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "aura-sheet": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "B shows a readable swirling cyan-violet vortex with a visible bright core, a darker dusk surround and the portal as a clear focal point, while A's vortex is blown out to near-white with no readable swirl and a washed-out pastel scene, despite its more detailed runic frame and platform."
+        }
+      ],
+      "tally": {
+        "aura-sheet": 1,
+        "three": 2,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "task": "effects-2",
+      "idx": 3,
+      "subject": "aura",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 20,
+            "three": 8
+          },
+          "scores": {
+            "three": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "A's bloom blows out the frame into a white blob that hides the ring and vortex and washes out the dusk contrast, while B shows a readable stone ring, a cyan-violet swirl with a bright core, spiraling particles, and a dark moody surround."
+        },
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 19,
+            "three": 10
+          },
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            }
+          },
+          "why": "A has a readable stone ring, a visible cyan-violet spiral vortex with a bright core, and a dark dusk mood with a good glow, while B's bloom blows out the whole frame, hiding the portal ring and vortex and washing out contrast."
+        },
+        {
+          "order": [
+            "three",
+            "aura"
+          ],
+          "winner": "aura",
+          "totals": {
+            "aura": 20,
+            "three": 8
+          },
+          "scores": {
+            "three": {
+              "c1": 1,
+              "c2": 1,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "Candidate A is blown out by bloom, so the ring and vortex are unreadable and the dusk atmosphere is lost, while B shows a readable stone ring with a cyan-violet vortex, a bright core, particles, and colored light on a dark surround."
+        }
+      ],
+      "tally": {
+        "aura": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura"
+    },
+    {
+      "task": "effects-2",
+      "idx": 3,
+      "subject": "aura-sheet",
+      "vs": "three",
+      "calls": [
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 20,
+            "three": 9
+          },
+          "scores": {
+            "three": {
+              "c1": 2,
+              "c2": 1,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "Candidate A is blown out into a white blob that hides the ring, vortex and particles in a washed-out pale sky, while B shows a readable stone ring, a swirling cyan-violet vortex with a bright core, abundant glowing motes, and a darker dusk setting with colored light on the stones."
+        },
+        {
+          "order": [
+            "three",
+            "aura-sheet"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 20,
+            "three": 9
+          },
+          "scores": {
+            "three": {
+              "c1": 2,
+              "c2": 1,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "Candidate A is blown out into a white blob that hides the ring, vortex and particles in a washed-out pale scene, while Candidate B shows a readable stone ring, a swirling cyan-violet vortex with a bright core, abundant particles, and a dark dusk setting with colored light on the stones."
+        },
+        {
+          "order": [
+            "aura-sheet",
+            "three"
+          ],
+          "winner": "aura-sheet",
+          "totals": {
+            "aura-sheet": 19,
+            "three": 11
+          },
+          "scores": {
+            "aura-sheet": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 3,
+              "c5": 2
+            }
+          },
+          "why": "A shows a readable stone ring with a visible swirling vortex, a bright core and abundant varied particles against a dark dusk, while B's bloom blows out the whole frame, hiding the ring and swirl and leaving few visible particles."
+        }
+      ],
+      "tally": {
+        "aura-sheet": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura-sheet"
+    }
+  ]
+}

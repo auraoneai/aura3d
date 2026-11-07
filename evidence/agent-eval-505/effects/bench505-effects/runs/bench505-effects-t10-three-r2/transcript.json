@@ -1,0 +1,105 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0121Hb14rJxgUWJzGqKKWVPH",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01K524AP2jRDmJH7Kb8Vmk7F",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0121Hb14rJxgUWJzGqKKWVPH",
+    "content": "1\t# Task 10: Fireworks display over a night harbor\n2\t\n3\tBuild a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The scene is a fireworks display at night over a calm harbor. Show a dark star-dusted night sky, a water surface that faintly reflects the light of the bursts, and a low dark silhouette of a shoreline or pier with a few small buildings or boats. Rockets launch from the shoreline one after another at irregular intervals, rise with a short glowing trail, and burst into spherical shells of many glowing sparks. Use at least three clearly different burst colors (for example gold, red, and blue or green), and make each burst fade and fall under gravity over a second or two before it disappears. Some bursts should leave trailing streaks. The sky and water should be lit subtly by the active bursts. The scene must animate continuously without user input, with a slow gentle camera drift or a fixed camera framing the sky and harbor. Aim for a polished, cinematic look: strong glow on the sparks against a dark background, no flat or washed-out colors, no visible geometry artifacts. Keep it smooth at interactive frame rates. Also expose window.__TASK_STATE__ = { bursts: <total number of bursts that have exploded so far>, activeParticles: <current number of live spark particles> } and update it every frame.\n4\t\n5\t## Rendering contract (all tasks)\n6\t\n7\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01K524AP2jRDmJH7Kb8Vmk7F",
+    "content": "TASK.md\nindex.html\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01C8AzoE9xy2HdL7Xjd9z9X4",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01UqcZXuQDa57XVcXn1fkLYA",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018mFfFc1yrtGZAKEmeZSZi3",
+    "name": "read_file",
+    "input": {
+     "path": "tsconfig.json"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01C8AzoE9xy2HdL7Xjd9z9X4",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01UqcZXuQDa57XVcXn1fkLYA",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018mFfFc1yrtGZAKEmeZSZi3",
+    "content": "1\t{\n2\t  \"compilerOptions\": {\n3\t    \"target\": \"ES2022\",\n4\t    \"module\": \"ESNext\",\n5\t    \"moduleResolution\": \"bundler\",\n6\t    \"lib\": [\"ES2022\", \"DOM\", \"DOM.Iterable\"],\n7\t    \"strict\": true,\n8\t    \"noEmit\": true,\n9\t    \"skipLibCheck\": true,\n10\t    \"types\": []\n11\t  },\n12\t  \"include\": [\"src\"]\n13\t}\n14\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since this will run in headless Chromium with software WebGL, I want to keep things light—using additive point sprites with a soft canvas-generated texture instead of heavy post-processing. I'm sketching the scene setup: a small 640x360 renderer, a near-black blue background, and a sky layer built from stars.\n\nI'm now working out how reflections should work: the sky shader and water shader share uniforms for recent burst lights, and for the water's glittering reflection of sparks, I plan to render a second mirrored Points object (scale.y=-1) with lower alpha, additive blending, and depth test disabled so it renders cleanly above the opaque water plane without being occluded.\n\nTo keep shoreline silhouettes visible over the reflected sparks, I'll control draw order explicitly via renderOrder rather than relying on depth testing: sky, then water and stars, then sparks and their reflections, then the opaque silhouettes drawn last on top. I'm now sketching the actual scene layout — water plane at y=0 stretching from z=+20 to z=-150, firework bursts clustered around z=-60 to -90 at height 30-60, a shoreline with low hills around z=-70 where rockets launch from, and a pier placed in the foreground.\n\nI'm working out the camera geometry so the horizon lands roughly 30% up from the bottom of the frame, leaving most of the screen for sky; this means tuning the camera's pitch and field of view so water occupies the bottom third and the shoreline silhouette sits right near that horizon line.\n\nFor the shoreline itself, I'm sketching a flat silhouette profile at z=-70 with hills, buildings, and a lighthouse, plus a separate foreground layer with a pier and boats closer to the camera. I'm deciding to skip mirroring the shoreline silhouette in the water reflection since the water is already dark, but I do want the water shader to reflect the glowing sky lights for each burst light source.\n\nFor the water reflections, I'm computing a mirrored light position for each burst and using a perturbed normal with the view vector to create sparkly specular streaks stretching along z, combined with a softer inverse-square falloff glow and a fresnel-blended gradient so the water color shifts toward the sky hue near the horizon.\n\nNow I'm thinking through the sky dome: a backside-rendered sphere with a gradient from near-black at zenith to dark blue near horizon, plus angular falloff glow terms for each light based on the dot product between view direction and light direction, with brightness decaying over the burst's lifetime and a bit of horizon haze. I'm also setting up a pool of six light slots that get populated as new bursts spawn.\n\nFor particles, I'm planning one large Points object with preallocated buffers for position, color, size, and alpha across roughly 6000 particles, simulated on the CPU and rendered with a custom additive shader that gives soft round glows with distance-based size attenuation, plus a trail system where streaking sparks spawn smaller short-lived particles behind them.\n\nNow I'm budgeting the particle pool: with bursts of ~140-220 sparks each spawning trail particles every ~0.04s, a single burst could need ~1700 particles, so with a few overlapping bursts I'm sizing the pool around 12000-14000 using a free-list approach to recycle slots efficiently.\n\nFor rendering, I'm planning to keep live particles compacted via swap-remove so I only upload the active range of position/color/size arrays, and I'm mirroring the particle system by sharing the same geometry with a flipped scale and a reflection-tuned material for the underwater reflection effect.\n\nSparks should die once they'd fall near the water surface so the mirror never shows them crossing above it, and I want to add a subtle wobble in the mirror vertex shader to simulate ripple distortion. For physics I'm applying exponential drag to velocity plus gravity, tuning burst speed and drag so the max spread radius stays visually reasonable relative to camera distance and field of view.\n\nI'm working out the visible frame height at the burst distance versus burst radius to make sure bursts fill a good portion of the view without looking tiny or overflowing, and figuring out camera pitch so the horizon line lands at a sensible spot in the frame to properly split water from sky.\n\nI'll place the shore silhouette at z=-65 with bursts and launches around z=-80 to -100, since the silhouette's render order hides the launch point until rockets rise above it. Water needs to extend behind the shore out toward the far horizon so the plane reads as continuous past the silhouette edge.\n\nI should cut the water plane just behind the silhouette so the sky dome takes over beyond it, and make sure the silhouette height is tall enough to cover the seam—anywhere from 2 to 6 units should work, as long as it spans the full width so camera drift never exposes an edge.\n\nI'm adding small warm lamp lights along the shore with a glow, plus a mirrored copy scaled by -1 on y to create their reflection streaks in the water. For the silhouette material, I'll keep it a very dark near-black blue, skipping any extra lighting tint for simplicity, and I'm considering adding a pier shape in the foreground near the camera.\n\nWorking out the camera geometry, I'm calculating where the water horizon and nearby pier structures should sit on screen based on pitch angle and distance, placing the pier deck around y=0.8 with posts descending below the waterline and a few lamp posts along it.\n\nNow I'm positioning distant sailboat silhouettes at z=-30 and z=-45, computing their hull and mast heights against the horizon angle so the mast tips roughly align with the horizon line, with all shapes rendered as flat dark triangles layered by depth order from far to near.\n\nFor the stars, I'm scattering 600 points across the upper hemisphere of a large sphere with a twinkling shader using additive blending, keeping them fixed relative to the dome since camera drift is minimal. I'm also setting up the sky dome shader to compute world direction vectors from the camera position for the gradient effect.\n\nFor the glow around light sources, I'm layering two cosine-power falloffs—a tight ~30 exponent plus a wider faint one at low weight—to get a soft burst roughly 10° wide, blended additively over the height-based gradient with dither noise to avoid banding, going from a near-black zenith to a warmer horizon tone.\n\nNow for the water shader, I'm computing world-space vertex positions and view direction, then building a rippled normal from the derivatives of summed sine waves in world coordinates, stretching frequencies anisotropically so distant waves don't alias, and damping amplitude with distance to keep far ripples subtle.\n\nSince pixels cover a large ground-plane distance at shallow viewing angles far away, I need to fade out the along-depth wave frequency with distance and rely mainly on horizontal variation to avoid flicker. For the glitter/specular highlight, I'm treating each light's reflection as a vertical streak beneath it whose brightness is modulated by noise bands running across depth, mimicking broken reflections on rippling water, computing the horizontal offset from the light position per fragment.\n\nThat gives z≈18, which confirms the physical intuition: reflections of high bursts land closer in the foreground rather than deep in the frame, since mirrored positions fold below the horizon into the near water, closer than the bursts themselves appear in the sky.\n\nFor the glitter effect, I'll use a physically-based reflection approach: reflect the view vector off the perturbed normal, then compute specular intensity against each light direction with a high shininess exponent (~300) to get tight sparkle highlights, with ripple slope variation (~0.1) spreading them into a glitter field around the main specular point.\n\nWriting water shader code...\n\nFor the base color, I'm blending deep water tone with a Fresnel-weighted sky reflection, reusing a shared skyColor function so the reflected direction picks up the same light glow as the sky itself, giving physically consistent illumination across the water surface.\n\nI'm making the lights share a glow function parameterized by direction and origin, so the water reflection computes glow vectors from each surface point rather than the camera, combining a tight specular-like term with a broader hemisphere falloff for ambient light bleed.\n\nFor particles, I'm setting up vertex attributes for position, premultiplied color, and size, then scaling point size based on screen height and camera distance so particles stay consistent across depth, with mirroring handled through the model-view transform.\n\nAdding ripple distortion...\n\nI'm sizing sparks and bursts appropriately (small sparks a few pixels, flashes much larger, rocket heads slightly bigger), then writing the fragment shader for a soft radial glow with a bright white-hot core blended additively for that fiery look.\n\nI'm deciding to skip color-space conversion and tone mapping, working directly in display space, and picking a clean palette of gold, red, blue, green, magenta, and white for the particle colors.\n\nFor color-shifting bursts I'll store two colors per particle and lerp between them over its lifetime. I'm laying out the particle data as flat typed arrays (position, velocity, life, size, both colors, trail info) packed with a stride so swap-remove deletion stays efficient at capacity 12000.\n\nDefining particle update logic...\n\nStill tuning particle visuals...\n\n"
+   }
+  ]
+ }
+]

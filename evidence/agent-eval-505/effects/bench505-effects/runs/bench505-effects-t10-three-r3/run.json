@@ -1,0 +1,140 @@
+{
+  "runId": "bench505-effects-t10-three-r3",
+  "batch": "bench505-effects",
+  "arm": "three",
+  "task": 10,
+  "idx": 3,
+  "order": 3,
+  "seed": 20261106003,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:08:25.133Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 582316,
+  "usage": {
+    "input": 121959,
+    "uncachedInput": 121959,
+    "output": 13095,
+    "turns": 6,
+    "perTurnInput": [
+      3226,
+      4151,
+      16568,
+      31990,
+      32341,
+      33683
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      2177,
+      10243,
+      112,
+      534
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1900,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1900,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 3398,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 3398,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 3398,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 487573,
+      "type": "search",
+      "pattern": "\"./addons|\"./examples"
+    },
+    {
+      "i": 6,
+      "t": 487577,
+      "type": "list",
+      "path": "node_modules/@types/three/examples/jsm/postprocessing"
+    },
+    {
+      "i": 7,
+      "t": 567700,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 25369
+    },
+    {
+      "i": 8,
+      "t": 571764,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 9,
+      "t": 571765,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 10,
+      "t": 572131,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 11,
+      "t": 582316,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the fireworks scene in `src/main.ts`. It passes `typecheck`, but I haven't run it in a browser or run `vite build`, because I had no shell. So I haven't seen how it looks or how fast it runs.\n\n- **Scene:** a gradient night sky with about 1,600 twinkling stars. The water is a shader that shimmers and picks up streaky reflections of active bursts. The shoreline is a dark silhouette with houses, a lighthouse, a pier with a lamp, and bobbing boats. A few small warm lights show in windows and on the pier and boats.\n- **Fireworks:** rockets launch from the shore at irregular intervals, sometimes two at once. Each leaves a short glowing trail and then bursts into a spherical shell of sparks.\n- **Burst types:** the styles are peony, trailing-streak, two-tone and golden willow. Colors come from a shuffled bag of gold, red, blue, green, violet, pink and silver-blue, so each color appears before any repeats. Sparks fade and fall under gravity and drag over roughly 1.5 to 3.5 seconds.\n- **Lighting:** each burst lights the sky and water (up to 6 at once) and slightly tints the silhouettes. A mirrored copy of the sparks adds a faint rippling reflection in the water.\n- **Glow and camera:** the sparks are additive soft sprites with a bloom pass for the glow. The camera drifts slowly.\n- **Contract:** it renders to `#app` at 640x360, sets `window.__EVAL_READY__` after the first frame, and updates `window.__TASK_STATE__` (`bursts`, `activeParticles`) every frame. `activeParticles` includes the short trail particles as well as the sparks.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

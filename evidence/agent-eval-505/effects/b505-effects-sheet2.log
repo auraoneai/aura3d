@@ -1,0 +1,6 @@
+[agent-eval] bench505-effects-sheet-t11-aura-r1 finished turns=11 tsc=true
+[agent-eval] bench505-effects-sheet-t11-aura-r3 finished turns=11 tsc=true
+[agent-eval] bench505-effects-sheet-t10-aura-r3 finished turns=14 tsc=true
+[agent-eval] bench505-effects-sheet-t11-aura-r2 finished turns=21 tsc=true
+[agent-eval] bench505-effects-sheet-t10-aura-r2 finished turns=24 tsc=true
+[agent-eval] bench505-effects-sheet-t10-aura-r1 infra_error turns=undefined tsc=false

@@ -1,0 +1,107 @@
+{
+ "bench505-effects-sheet-t10-aura-r1": {
+  "motionOk": false,
+  "diffPct": 4.88,
+  "meanLum": 25.1,
+  "p99": 152,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-sheet-t10-aura-r2": {
+  "motionOk": false,
+  "diffPct": 1.83,
+  "meanLum": 9.4,
+  "p99": 111,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-sheet-t10-aura-r3": {
+  "motionOk": true,
+  "diffPct": 7.68,
+  "meanLum": 25.1,
+  "p99": 230,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-sheet-t11-aura-r1": {
+  "motionOk": true,
+  "diffPct": 7.39,
+  "meanLum": 62.0,
+  "centerOverBorder": 2.87,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-sheet-t11-aura-r2": {
+  "motionOk": true,
+  "diffPct": 3.71,
+  "meanLum": 54.2,
+  "centerOverBorder": 3.85,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-sheet-t11-aura-r3": {
+  "motionOk": true,
+  "diffPct": 4.5,
+  "meanLum": 83.0,
+  "centerOverBorder": 2.35,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t10-aura-r3": {
+  "motionOk": false,
+  "diffPct": 4.13,
+  "meanLum": 23.3,
+  "p99": 84,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t10-three-r1": {
+  "motionOk": false,
+  "diffPct": 3.09,
+  "meanLum": 18.9,
+  "p99": 198,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t10-three-r3": {
+  "motionOk": false,
+  "diffPct": 3.55,
+  "meanLum": 44.0,
+  "p99": 128,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t11-aura-r1": {
+  "motionOk": true,
+  "diffPct": 1.89,
+  "meanLum": 84.8,
+  "centerOverBorder": 3.03,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t11-aura-r2": {
+  "motionOk": true,
+  "diffPct": 4.17,
+  "meanLum": 63.0,
+  "centerOverBorder": 3.08,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t11-aura-r3": {
+  "motionOk": true,
+  "diffPct": 3.13,
+  "meanLum": 49.2,
+  "centerOverBorder": 4.67,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t11-three-r1": {
+  "motionOk": false,
+  "diffPct": 8.4,
+  "meanLum": 122.7,
+  "centerOverBorder": 1.93,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t11-three-r2": {
+  "motionOk": false,
+  "diffPct": 3.33,
+  "meanLum": 140.4,
+  "centerOverBorder": 1.74,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ },
+ "bench505-effects-t11-three-r3": {
+  "motionOk": false,
+  "diffPct": 3.68,
+  "meanLum": 173.7,
+  "centerOverBorder": 1.45,
+  "note": "2-frame variant of protocol probe (REA has no frame-stream/evaluate action)"
+ }
+}

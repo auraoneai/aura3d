@@ -1,0 +1,1242 @@
+[
+  {
+    "runId": "bench505-effects-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_output_tokens",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.3333333333333333,
+    "turns": 29,
+    "agentWallSec": 303.5,
+    "tokensIn": 1556422,
+    "tokensOut": 19494,
+    "docsFilesOpened": 8,
+    "typesFilesOpened": 8,
+    "readCalls": 21,
+    "searchCalls": 19,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "Build failed and src/main.ts is missing; nothing renders to #app."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No scene source exists."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No launch timer code exists."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No rocket, trail or burst code exists."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No burst colors are defined."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No particle or gravity code exists."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No glow or bloom code exists."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No __TASK_STATE__ is defined and the probes are empty."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No water or sky response code exists."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "The referenced entry file does not exist, so the module fails to load and the app never runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No application source was written; only the HTML shell and tsconfig exist."
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.3333333333333333,
+    "turns": 40,
+    "agentWallSec": 727.3,
+    "tokensIn": 2869167,
+    "tokensOut": 8644,
+    "docsFilesOpened": 8,
+    "typesFilesOpened": 12,
+    "readCalls": 28,
+    "searchCalls": 27,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635",
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "Build failed and src/main.ts is missing, so nothing renders to #app."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No scene source exists: no sky, water or shoreline."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No launch timer code exists."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No rocket, trail or burst code exists."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No burst colors are defined."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No particle system exists, so no gravity or lifetime handling."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No glow or bloom is applied."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "No __TASK_STATE__ is defined, and the probes are empty."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No reaction of water or sky to bursts exists."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "It references a module that does not exist, so the build fails and nothing runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "No application source was written. Only the HTML scaffold and tsconfig exist, and they are not counted."
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 40,
+    "agentWallSec": 1875.1,
+    "tokensIn": 4054907,
+    "tokensOut": 22546,
+    "docsFilesOpened": 11,
+    "typesFilesOpened": 10,
+    "readCalls": 32,
+    "searchCalls": 28,
+    "writeCalls": 2,
+    "srcLines": 656,
+    "srcTokens": 6264,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6537,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 135,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build is ok, there are no page or console errors, and the app is created on #app."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A sky dome shader with stars, a water plane, a land and shore silhouette, and a pier with posts, buildings and boats are all in the source."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "stepShow launches shells automatically on a nextLaunch timer with randomized intervals, and no input is needed."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each shell has a rocket ribbon with a glowing trail that rises to the burst point, then 380 spark ribbons explode from it."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "PALETTES defines six color pairs (gold, red, blue, green, violet, silver) and launch() picks from them."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The shader applies GRAV and DRAG to sparks, which fade and are discarded after their life. The pool is fixed at 7 shells, so particle count stays bounded."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "effects.bloom is added, and the sparks use additive blending with HDR-bright colors."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is updated every frame; bursts increments when a shell reaches burstAt, and activeParticles is capped at 7×380. The first burst comes about 1.1 s into the show, so at least 3 within 20 s is very likely."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The sky shader adds glow and the water shader adds glints and a light pool, both driven by the burst uniforms uP and uC. The water also gets mirrored spark reflections and a flash quad."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 115,
+        "rulesLines": 60,
+        "glueLines": 135,
+        "notes": "Glue covers the manual flat-buffer geometry construction (positions, indices, ribbon vertices, attribute packing), the mulberry32 RNG, the uniform handle map and safe setUniform helper, the camera drift try/catch, the frame loop and ready flags, the typed vec4 uniform helpers, and the per-shell ligh"
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t10-three-r1",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 9,
+    "agentWallSec": 582.2,
+    "tokensIn": 267112,
+    "tokensOut": 17840,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 2,
+    "writeCalls": 7,
+    "srcLines": 774,
+    "srcTokens": 6540,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 561.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeded, the page rendered to canvas #app with no page errors and no console errors, and the probes show the frame is not blank and is animated."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The source has a procedural star-sky dome, a reflective water plane, and a shoreline strip with hills, buildings, a lighthouse, a pier, and boats, all drawn as silhouettes. The frame has 68.6% non-black pixels."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "frame() calls launch() on a timer. The interval is reset to 0.5 + random^1.4 * 2.0 s, with occasional salvos, and no input handlers exist."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Rockets spawn ember particles and a flash at each step as a trail. They call burst() when their flight time ends, and a burst spawns 150 to 500 sparks (peony 380+, streak 150+, two-tone 470)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "PALETTE defines 7 colors: gold, red, blue, green, violet, silver, and pink. pickColor() draws from them."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Each particle has a gravity term (grav) and drag, and is removed by swap-removal once age reaches life. The pool is capped at CAP = 24000, so growth is bounded."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "UnrealBloomPass runs in the EffectComposer. The sparks are additive-blended point sprites with a core and halo, and the frame shows bright content against a dark scene."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__.bursts is set from totalBursts and activeParticles from count on every frame. Launches come every 0.5 to 2.5 s with a rocket flight of 1.2 to 1.7 s, so at least 3 bursts occur within 20 s and particles are active most of the "
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Each burst sets a light (uLP, uLC) that tints the sky glow and the water wash and lights the silhouettes. The sparks also have mirrored reflections on the water."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 230,
+        "rulesLines": 260,
+        "glueLines": 150,
+        "notes": "Glue is the renderer, uniform and composer setup, the seeded RNG, the addMesh and addLamp helpers, the GlowPoints buffer class, the manual structure-of-arrays particle pool with swap-remove, the randDir sphere sampling, the frame loop, and the boat lamp world-space transform. The `void COMMON` line "
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t10-three-r2",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "stopped_without_finish",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": false,
+    "typechecked": false,
+    "editsToGreen": null,
+    "firstTryBuild": false,
+    "firstTryRender": false,
+    "finalBuild": false,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": false,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.3333333333333333,
+    "turns": 3,
+    "agentWallSec": 339.9,
+    "tokensIn": 9054,
+    "tokensOut": 1931,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 0,
+    "srcLines": 0,
+    "srcTokens": 0,
+    "srcTokensEstimated": true,
+    "bundleRawKB": null,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 0,
+    "silentNoOps": 1,
+    "glueLines": 0,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": false,
+          "why": "Build failed (ok:false); src/main.ts is missing, so nothing renders to #app."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "No scene code exists: no sky, water or shoreline."
+        },
+        {
+          "id": "c3",
+          "pass": false,
+          "why": "No rocket launch logic in the source."
+        },
+        {
+          "id": "c4",
+          "pass": false,
+          "why": "No rockets, trails or sparks in the source."
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "No burst colors defined."
+        },
+        {
+          "id": "c6",
+          "pass": false,
+          "why": "No particle system, gravity or lifetime logic."
+        },
+        {
+          "id": "c7",
+          "pass": false,
+          "why": "No glow or bloom is applied."
+        },
+        {
+          "id": "c8",
+          "pass": false,
+          "why": "window.__TASK_STATE__ is never defined and the probes are empty."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "No reaction of water or sky to bursts is implemented."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "index.html script tag /src/main.ts",
+          "why": "The referenced entry file does not exist, so the build fails and nothing runs."
+        }
+      ],
+      "glue": {
+        "sceneLines": 0,
+        "rulesLines": 0,
+        "glueLines": 0,
+        "notes": "Only the HTML and tsconfig boilerplate exist. There is no application source."
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t10-three-r3",
+    "arm": "three",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 582.3,
+    "tokensIn": 121959,
+    "tokensOut": 13095,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 1,
+    "writeCalls": 3,
+    "srcLines": 669,
+    "srcTokens": 6118,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 562.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 110,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build succeeded, there were no page errors or console errors, and the app renders into canvas #app. The probes report the frame as non-blank and animated."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A sky dome shader and a star field provide the night sky. A water plane with a ripple shader sits below it. The shoreline is built from a land strip, houses, a lighthouse, a pier and boats, all as dark silhouettes."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "frame() counts down nextLaunch and calls launch() when it expires, with no input needed. The next interval is random (0.5 s plus a random term, sometimes +1.5 s), and 30% of launches fire a second rocket."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each rocket follows an eased path to its apex and emits trail particles (kind 2) along it. At the apex explode() spawns 150 to 480 sparks depending on style, well above 50."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The palette defines 7 colors (gold, red, blue, green, violet, pink, silver-blue). They are drawn from a shuffled bag so colors cycle through all of them."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "updateParticles applies gravity (grav) and drag to velocity, and alpha and size fade with remaining life. Particles are removed when life reaches 0 or they fall below y=0.3. The pool is fixed at MAX_P = 24000 and reuses slots when full."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "An EffectComposer runs an UnrealBloomPass on a half-float target. Sparks use additive blending with HDR color values and a core/halo falloff."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "explode() increments window.__TASK_STATE__.bursts, and frame() writes the active-particle count each frame. Rocket flight takes 1.2 to 1.8 s with launches every ~0.5 to 4 s, so at least 3 bursts in 20 s is very likely. The pool is capped, s"
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "Each burst adds a light (up to 6) that feeds shader uniforms. The water gets streak and broad glints, the sky gets a glow, and the silhouette materials get a tint. A mirrored, rippled copy of the particles also appears as a reflection in th"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 300,
+        "rulesLines": 150,
+        "glueLines": 110,
+        "notes": "Glue is the renderer, composer, render-target and light-uniform setup. It also includes the manual particle pool (typed arrays, BufferAttribute setup, spawn slot search, per-frame needsUpdate), the sphere-sampling and shuffle-bag helpers, the box() helper, and the rAF loop with dt clamping and the r"
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "max_turns",
+    "hitTurnCap": true,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 40,
+    "agentWallSec": 371.8,
+    "tokensIn": 3199161,
+    "tokensOut": 14494,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 18,
+    "readCalls": 33,
+    "searchCalls": 26,
+    "writeCalls": 1,
+    "srcLines": 455,
+    "srcTokens": 5232,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6539,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635",
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build ok, no page errors, 0 console errors, no ready timeout. createAuraApp targets the #app canvas and the probes show a non-blank frame."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A ring of 22 instanced stone blocks plus a rim of 56 segments forms the frame. The platform is three stacked cylinders over a ground plane, with a plinth, so it is distinct geometry and not a single quad."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The custom fragment shader swirls with a spiral, fbm noise and filaments driven by the portalClock uniform, which is set every frame. The probes report animated true (changedFrac 0.16). The camera auto-rotates, so the probes cannot isolate "
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Three pools (72 cyan, 72 violet, 64 motes, 208 slots) run at about 15, 15 and 10 spawns/s with 3 to 7.5 s lifetimes. That gives roughly 180 live particles, pre-warmed. Cyan and violet particles spiral inward toward the portal and shrink out"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Cyan, violet and blue point lights sit at the portal and light the PBR geometry. The front and floor light intensities are multiplied by a sinusoidal pulse each frame through setLight. The back light does not actually pulse (see silentNoOps"
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "effects.bloom is applied with threshold 0.55. The portal also has an additive halo sphere, a bright emissive rim, and emissive particles at intensity 3.4 to 4."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "camera.orbit has autoRotate 0.07, and the probes show frame-to-frame change. Nine ruined pillars with caps and broken chunks, fallen columns and 46 rubble pieces surround the portal."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A state object is assigned to window.__TASK_STATE__ and updated in onFrame with portalActive true, particleCount from liveCount() (about 180 steady state) and time in seconds from performance.now(). The probes show a running animation and n"
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "light-back intensity expression: 34*(2-pulse)*0.5 + 34*0.5*pulse",
+          "why": "This algebraically equals 34 for every pulse value, so the violet back light never pulses despite the setLight call."
+        },
+        {
+          "where": "disc.setUniform?.(\"portalPulse\", 0.92 + 0.2*(pulse-1)/0.28*0.5 + 0.08)",
+          "why": "The pulse is rescaled to roughly 1.0 ± 0.08, so the disc brightness modulation is very small. It is also called through optional chaining, so it would silently do nothing if setUniform were missing."
+        }
+      ],
+      "glue": {
+        "sceneLines": 200,
+        "rulesLines": 90,
+        "glueLines": 55,
+        "notes": "About 100 more lines are GLSL and are not counted. Scene covers the procedural ring, rune, pillar and rubble transform generation plus the scene chain. Rules covers particle spawn/step logic and the pulse. Glue is the seeded rand/range/clamp/smoothstep helpers, the global type declaration, the manua"
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 24,
+    "agentWallSec": 233.4,
+    "tokensIn": 1381407,
+    "tokensOut": 11052,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 6,
+    "readCalls": 18,
+    "searchCalls": 13,
+    "writeCalls": 1,
+    "srcLines": 418,
+    "srcTokens": 4353,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6536.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 100,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build is ok, there are no page errors and consoleErrorCount is 0. createAuraApp targets #app and the probes show a non-blank frame (nonblack 0.997)."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The ring is 24 instanced boxes. The platform is two cylinders plus a kerb and a plinth, standing on a separate ground plane. These are all distinct geometry."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The portal disc is a custom polar mesh with a swirling noise and spiral-arm fragment shader driven by the portalClock uniform. The animated probe is true. The uniform is set with an optional call (setUniform?.), and the probes cannot isolat"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Two spiral pools (cap 200, rate 36/s, life about 5 s) hold roughly 180 live particles each. They spiral inward toward the portal and shrink out at the end of their life. A separate mote pool rises and fades out."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Cyan, violet and blue point lights sit at the portal and their intensities are modulated with sin(t) each frame. The pulse is applied via setLight?.(), so the probes do not confirm it directly. The light falls on stone materials."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "effects.bloom (threshold 0.55, intensity 1.35) is applied. The disc outputs HDR values above 1, and the particles and runes use emissive intensities of 3 to 4, so they bloom."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The camera sways via setPose with sinusoidal azimuth, distance and height. Seven pillars (several broken), fallen drums, rubble and a kerb surround the portal. The frame diff probe shows motion."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is rewritten every frame in onFrame with portalActive true, particleCount equal to the sum of the three pools (about 400 at steady state, well above 100) and time t in seconds, which increases."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 150,
+        "glueLines": 100,
+        "notes": "Estimates. Scene lines cover ring, pillar, rubble and kerb layout, the scene builder chain, and materials. Rules lines cover particle spawn and step logic, light pulsing and camera sway. Glue lines cover the RNG and smoothstep helpers, the hand-built polar disc mesh, Pool structs and makePool, hidde"
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 25,
+    "agentWallSec": 227.2,
+    "tokensIn": 1373167,
+    "tokensOut": 11523,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 7,
+    "readCalls": 20,
+    "searchCalls": 15,
+    "writeCalls": 1,
+    "srcLines": 398,
+    "srcTokens": 4437,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6537.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 100,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeded, there were no page errors or console errors, and the app is created on the #app canvas with createAuraApp. The probes show the frame is not blank and is animated."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The ring is 36 instanced stone blocks plus rune and glyph meshes. The platform is made of stacked cylinders (step and platform), inlay boxes and footings, and the ground is a separate large plane."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The vortex disc uses a custom shader with spiral arms, fine arms and rings that move with the clock uniform. Two additive halo discs are animated the same way. The probes report animated true and changedFrac of about 0.30."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Three instanced pools have capacities of 110, 90 and 70. The spiral pools move inward toward the portal and shrink to zero scale at the end of their life. The motes rise and fade out. At the steady rates the live count should be well over 1"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Three colored point lights (cyan, violet and blue-violet) sit around the portal. Each frame their intensities are set from a sine pulse through setLight. Nothing in the probes contradicts this."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "effects.bloom is applied to the whole scene. The portal disc has bright core and rim output, the halos are additive, and the particles use emissive materials at intensity 3.5 to 4, so the bloom picks them up."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The camera pose is set each frame with a slow sway in angle, distance and height. Six pillars (two of them broken), capitals, rubble boxes and fallen drums surround the portal."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The onFrame callback writes window.__TASK_STATE__ every frame with portalActive true, the summed live particleCount and the elapsed time t. The ready flag was set (readyTimeout false)."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 85,
+        "glueLines": 100,
+        "notes": "Glue is mostly the hand-written disc mesh generator, the particle Pool class with its manual 4x4 matrix writes, the seeded RNG helpers, the pool node seeding, the handle binding and the onFrame bookkeeping. Roughly 55 shader lines are not counted in the three categories. All the engine calls I check"
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t11-three-r1",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 629,
+    "tokensIn": 51989,
+    "tokensOut": 10476,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 1,
+    "srcLines": 592,
+    "srcTokens": 5599,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 548,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 4,
+    "glueLines": 110,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeds, there are no page errors and no console errors, and the code renders to the #app canvas through a WebGLRenderer. The first frame sets __EVAL_READY__, and the probes show a non-blank, animated frame."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The portal frame is a ring of 20 stone box blocks with a torus lip. The platform is two stacked cylinders, and the ground is a separate CircleGeometry, so none of it is a single flat quad."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The portal disc uses a ShaderMaterial with a swirling fbm and spiral-arm pattern driven by the uTime uniform, which is updated every frame. The probes report diff 21.43 and changedFrac 0.79, so the frame is animating."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "There are 650 spiral particles that move inward toward the portal and respawn, plus 170 motes that rise from the platform and fade out with a sin(PI*f) alpha. That is 820 particles in total."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Cyan and violet point lights sit in front of and behind the portal, with a third light at floor level. Their intensity (90*k and 20*k) pulses with a sine, and the lights are positioned to fall on the platform and pillars."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "UnrealBloomPass runs in an EffectComposer with strength modulated by the pulse. HDR-valued colors on the disc, lip, runes and particles, plus additive halo sprites, give the portal and particles a glow."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The camera sways in position and distance over time. Eight pillars, a fallen pillar, rubble and wall blocks surround the platform."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The frame loop sets portalActive true, sets particleCount to the number of particles with alpha above 0.001, and sets time to the elapsed seconds. Most of the 820 particles have positive alpha, so the count is well above 100, and the animat"
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "sun.shadow.camera left/right/top/bottom/near/far (sc.*)",
+          "why": "The values are set without calling shadow.camera.updateProjectionMatrix(). The shadow camera keeps its default projection (about ±5 and near 0.5), so the custom 28-unit frustum never takes effect."
+        },
+        {
+          "where": "WebGLRenderer({ antialias: true })",
+          "why": "The scene is rendered through EffectComposer, whose render targets have no MSAA samples. The canvas antialias setting therefore does not smooth the final image."
+        },
+        {
+          "where": "ShaderMaterial `fog: false` on the sky material",
+          "why": "ShaderMaterial does not apply fog unless the fog property is true and the shader includes the fog chunks. The option is already the default, so it does nothing."
+        },
+        {
+          "where": "blocks array in the wall-block loop (destructure `[x, z, w, h, , d, ry]`)",
+          "why": "The fifth value in each entry is skipped by the destructuring, so those numbers are dead data that has no effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 270,
+        "rulesLines": 90,
+        "glueLines": 110,
+        "notes": "Glue is the renderer, composer and pixel-ratio setup, the seeded rnd/rr helpers, canvas-2D procedural texture boilerplate, and the manual particle buffer plumbing (typed arrays, BufferAttribute usage, needsUpdate flags, respawn bookkeeping). It also includes the per-frame uniform and opacity updates"
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t11-three-r2",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 485.1,
+    "tokensIn": 176617,
+    "tokensOut": 14653,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 2,
+    "writeCalls": 3,
+    "srcLines": 775,
+    "srcTokens": 6864,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 547,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build is ok, there are no page errors and consoleErrorCount is 0. The renderer is bound to canvas #app and the frame is not blank."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The portal ring is 22 stone blocks plus a keystone, and the platform is two stacked cylinders. The ground is a separate large CircleGeometry, with pillars, drums and rubble as additional geometry."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The disc is a ShaderMaterial with an fbm swirl whose angle depends on uTime. uTime is updated every frame, and the probes report animated: true with changedFrac 0.267."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "There are 780 particles. 640 spiral inward toward the portal and 140 motes rise and fade by sin(pi*k) alpha. Respawn on age >= 1 keeps them cycling."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Cyan, violet and blue PointLights sit at the portal and floor, and their intensities are scaled each frame by a sinusoidal pulse factor k. Stone materials are lit by them."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "EffectComposer runs RenderPass, UnrealBloomPass and OutputPass. The portal, particles, halo sprite and rune materials use additive blending and HDR colors above 1, so they bloom."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The camera sways in azimuth, height and radius over time, and lookAt is called each frame. Ten pillars, several broken, plus fallen drums and rubble surround the portal."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Every frame sets __TASK_STATE__.portalActive = true, particleCount = 780 and time = t, which increases. The probes show the scene is animating, so the loop is running."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 330,
+        "rulesLines": 115,
+        "glueLines": 95,
+        "notes": "Glue is the renderer/composer/vignette setup, the rAF loop and __TASK_STATE__ bookkeeping, manual particle buffer-attribute management, the smooth() helper, and the hash/value-noise/PRNG helpers in textures.ts. Procedural canvas textures, sky, disc and particle shaders are counted as scene/asset or "
+      }
+    }
+  },
+  {
+    "runId": "bench505-effects-t11-three-r3",
+    "arm": "three",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 482.7,
+    "tokensIn": 70065,
+    "tokensOut": 9789,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 3,
+    "srcLines": 557,
+    "srcTokens": 5264,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 546.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 150,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build ok, readyTimeout false, no page errors or console errors. The renderer is bound to canvas #app and the probes show a non-blank frame."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A TorusGeometry ring forms the portal frame. The platform is a CylinderGeometry, with a step cylinder, a CircleGeometry ground, base blocks, pillars and rubble, so these are distinct geometries."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The disc is a ShaderMaterial with a swirling spiral pattern driven by the uTime uniform, updated every frame. The probes report animated true, diff 9.37 and changedFrac 0.38."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "There are 650 spiral particles that orbit inward and fade near the center, plus 130 motes that rise and fade out, 780 in total. They are drawn as additive Points with per-particle alpha."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Cyan, violet and ground PointLights sit at the portal and light the MeshStandardMaterial platform, pillars and ground. Their intensities are pulsed each frame with sine functions, and the cyan light's color also shifts."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "EffectComposer runs RenderPass, UnrealBloomPass and OutputPass. HDR-valued portal, particle and rune colors drive the bloom, and an additive halo sprite adds to it."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The camera sways and bobs automatically (ang, rad and height are driven by sine of time) and looks at the portal. Seven pillars (broken and intact), a fallen column and 26 rubble rocks surround the platform."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is set at startup and updated every frame with portalActive true, particleCount 780 (the live count) and time set to the elapsed seconds. The probes show the scene animating, so the loop is running."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "runeRing2.rotation.z = t * 0.1",
+          "why": "The ring is flat-lying (rotation.x = -PI/2) and is circularly symmetric. Spinning it about its own axis changes nothing visible, so the intended rotating rune ring effect never appears."
+        }
+      ],
+      "glue": {
+        "sceneLines": 230,
+        "rulesLines": 110,
+        "glueLines": 150,
+        "notes": "Glue is mostly renderer, composer and clock setup, the seeded RNG and smooth helpers, the canvas-based procedural stone and glow texture generators, and the manual particle buffer-attribute setup and per-frame needsUpdate flags. The respawn and update loops for the particles are counted as rules. Sh"
+      }
+    }
+  }
+]

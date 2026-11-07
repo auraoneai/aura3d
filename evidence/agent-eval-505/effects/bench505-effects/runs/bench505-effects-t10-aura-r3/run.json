@@ -1,0 +1,595 @@
+{
+  "runId": "bench505-effects-t10-aura-r3",
+  "batch": "bench505-effects",
+  "arm": "aura",
+  "task": 10,
+  "idx": 3,
+  "order": 6,
+  "seed": 20261106006,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T00:23:49.477Z",
+  "docsCommit": "0014559039444cb824016d9e6f257d097e0a1bb2",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 1875119,
+  "usage": {
+    "input": 4054907,
+    "uncachedInput": 4054907,
+    "output": 22546,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      13847,
+      16710,
+      28553,
+      37774,
+      46604,
+      52229,
+      55655,
+      56664,
+      61657,
+      64693,
+      77315,
+      78016,
+      84327,
+      91923,
+      94655,
+      95580,
+      101910,
+      102137,
+      102997,
+      103162,
+      116715,
+      119184,
+      120436,
+      121474,
+      121726,
+      132707,
+      133334,
+      136650,
+      137668,
+      138980,
+      139836,
+      142892,
+      145741,
+      146415,
+      150881,
+      151188,
+      169749,
+      179771,
+      179818
+    ],
+    "perTurnOutput": [
+      20,
+      15,
+      34,
+      87,
+      32,
+      92,
+      141,
+      109,
+      41,
+      66,
+      28,
+      1086,
+      51,
+      160,
+      848,
+      170,
+      37,
+      603,
+      24,
+      39,
+      19,
+      2001,
+      49,
+      27,
+      70,
+      37,
+      1798,
+      43,
+      79,
+      47,
+      66,
+      48,
+      205,
+      659,
+      83,
+      474,
+      28,
+      6389,
+      6740,
+      1
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1889,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1889,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1889,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 3497,
+      "type": "read",
+      "path": "docs/agents/README.md",
+      "lines": 60
+    },
+    {
+      "i": 4,
+      "t": 3497,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6613,
+      "type": "read",
+      "path": "docs/agents/benchmark-recipes.md",
+      "lines": 268
+    },
+    {
+      "i": 6,
+      "t": 6613,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 7,
+      "t": 6613,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 6613,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 9,
+      "t": 12373,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 10,
+      "t": 12383,
+      "type": "search",
+      "pattern": "[Pp]article"
+    },
+    {
+      "i": 11,
+      "t": 14005,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 12,
+      "t": 14005,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 13,
+      "t": 17687,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 14,
+      "t": 17697,
+      "type": "search",
+      "pattern": "instances\\.mesh|AuraInstancedMeshHandle|geometry\\.dynamic|onFrame"
+    },
+    {
+      "i": 15,
+      "t": 23993,
+      "type": "search",
+      "pattern": "AuraInstancedMeshHandle"
+    },
+    {
+      "i": 16,
+      "t": 23993,
+      "type": "read",
+      "path": "docs/agents/recipes-src/water-custom-shader/main.ts",
+      "lines": 67
+    },
+    {
+      "i": 17,
+      "t": 28972,
+      "type": "search",
+      "pattern": "AuraCustomGeometrySpec\\b.*=|interface AuraCustomGeometrySpec|AuraGeometryAttribu"
+    },
+    {
+      "i": 18,
+      "t": 28975,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 19,
+      "t": 30981,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts",
+      "lines": 185
+    },
+    {
+      "i": 20,
+      "t": 30993,
+      "type": "search",
+      "pattern": "attributes:|a_[a-z]+|custom attribute"
+    },
+    {
+      "i": 21,
+      "t": 33879,
+      "type": "search",
+      "pattern": "R-23"
+    },
+    {
+      "i": 22,
+      "t": 33932,
+      "type": "search",
+      "pattern": "gl_PointSize|in vec[234] a[A-Z]"
+    },
+    {
+      "i": 23,
+      "t": 35605,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 251
+    },
+    {
+      "i": 24,
+      "t": 93472,
+      "type": "search",
+      "pattern": "bloom|setUniform|^### "
+    },
+    {
+      "i": 25,
+      "t": 93477,
+      "type": "search",
+      "pattern": "AuraCustomUniform|setUniform|blending\\?|AuraCustomMaterialSpec"
+    },
+    {
+      "i": 26,
+      "t": 97681,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 180
+    },
+    {
+      "i": 27,
+      "t": 97694,
+      "type": "search",
+      "pattern": "setUniform"
+    },
+    {
+      "i": 28,
+      "t": 103363,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 149
+    },
+    {
+      "i": 29,
+      "t": 103363,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+      "lines": 40
+    },
+    {
+      "i": 30,
+      "t": 133760,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.js",
+      "lines": 60
+    },
+    {
+      "i": 31,
+      "t": 133768,
+      "type": "search",
+      "pattern": "AuraFrameCallback|interface AuraFrame|readonly (dt|time|elapsed)"
+    },
+    {
+      "i": 32,
+      "t": 140172,
+      "type": "search",
+      "pattern": "bloom|appOptions|renderer"
+    },
+    {
+      "i": 33,
+      "t": 140172,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 20
+    },
+    {
+      "i": 34,
+      "t": 141775,
+      "type": "read",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+      "lines": 41
+    },
+    {
+      "i": 35,
+      "t": 141775,
+      "type": "read",
+      "path": "docs/agents/recipes-src/sky-day-night/main.ts",
+      "lines": 52
+    },
+    {
+      "i": 36,
+      "t": 428676,
+      "type": "search",
+      "pattern": "interface AuraCameraController"
+    },
+    {
+      "i": 37,
+      "t": 432077,
+      "type": "search",
+      "pattern": "AuraCameraController\\b"
+    },
+    {
+      "i": 38,
+      "t": 435213,
+      "type": "search",
+      "pattern": "^\\s+(readonly )?\\w+\\??[(:<].*"
+    },
+    {
+      "i": 39,
+      "t": 436673,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 203
+    },
+    {
+      "i": 40,
+      "t": 529873,
+      "type": "search",
+      "pattern": "additive"
+    },
+    {
+      "i": 41,
+      "t": 532081,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 50
+    },
+    {
+      "i": 42,
+      "t": 532121,
+      "type": "search",
+      "pattern": "case \"additive\""
+    },
+    {
+      "i": 43,
+      "t": 533831,
+      "type": "read",
+      "path": "node_modules/@aura3d/rendering/dist/vfx/BlendFallback.js",
+      "lines": 34
+    },
+    {
+      "i": 44,
+      "t": 536947,
+      "type": "search",
+      "pattern": "\"additive\"|ONE_MINUS_SRC_ALPHA"
+    },
+    {
+      "i": 45,
+      "t": 542091,
+      "type": "search",
+      "pattern": "additive.*(srcFactor|src|one)|HONOURED_ADDITIVE =|ADDITIVE.*="
+    },
+    {
+      "i": 46,
+      "t": 752424,
+      "type": "search",
+      "pattern": "colorspace_encode|tone ?map|linear"
+    },
+    {
+      "i": 47,
+      "t": 755035,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md",
+      "lines": 60
+    },
+    {
+      "i": 48,
+      "t": 755035,
+      "type": "read",
+      "path": ".agents/skills/aura3d-core/references/pitfalls.md",
+      "lines": 63
+    },
+    {
+      "i": 49,
+      "t": 761769,
+      "type": "search",
+      "pattern": "toneMapping"
+    },
+    {
+      "i": 50,
+      "t": 763762,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/colorManagement.js",
+      "lines": 38
+    },
+    {
+      "i": 51,
+      "t": 763765,
+      "type": "search",
+      "pattern": "output"
+    },
+    {
+      "i": 52,
+      "t": 889281,
+      "type": "search",
+      "pattern": "readonly output\\??:|output\\?: "
+    },
+    {
+      "i": 53,
+      "t": 891468,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/output.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 54,
+      "t": 891468,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 55,
+      "t": 901194,
+      "type": "search",
+      "pattern": "AuraToneMappingOperatorLike"
+    },
+    {
+      "i": 56,
+      "t": 901197,
+      "type": "search",
+      "pattern": "interface BloomBuilderOptions|BloomBuilderOptions"
+    },
+    {
+      "i": 57,
+      "t": 924018,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 58,
+      "t": 924018,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 59,
+      "t": 924018,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 60,
+      "t": 928341,
+      "type": "search",
+      "pattern": "HTMLCanvasElement"
+    },
+    {
+      "i": 61,
+      "t": 1199437,
+      "type": "search",
+      "pattern": "type UniformDataValue ="
+    },
+    {
+      "i": 62,
+      "t": 1199440,
+      "type": "search",
+      "pattern": "function normalizeCustomUniformValue|const numericArray"
+    },
+    {
+      "i": 63,
+      "t": 1201164,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 80
+    },
+    {
+      "i": 64,
+      "t": 1817538,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/shaders.ts",
+      "bytes": 12391
+    },
+    {
+      "i": 65,
+      "t": 1872426,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 16387
+    },
+    {
+      "i": 66,
+      "t": 1875119,
+      "type": "typecheck",
+      "pass": true
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-core/references/pitfalls.md",
+    ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md",
+    "AGENTS.md",
+    "docs/agents/README.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/benchmark-recipes.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+    "docs/agents/recipes-src/sky-day-night/main.ts",
+    "docs/agents/recipes-src/water-custom-shader/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/colorManagement.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/output.d.ts",
+    "node_modules/@aura3d/rendering/dist/vfx/BlendFallback.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "src/shaders.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

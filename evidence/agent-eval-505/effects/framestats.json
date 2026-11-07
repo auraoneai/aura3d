@@ -1,0 +1,107 @@
+{
+ "bench505-effects-sheet-t10-aura-r1": {
+  "mean": 25.1,
+  "std": 14.1,
+  "nonblack": 0.912,
+  "diff": 12.43,
+  "changedFrac": 0.442
+ },
+ "bench505-effects-sheet-t10-aura-r2": {
+  "mean": 9.4,
+  "std": 16.7,
+  "nonblack": 0.336,
+  "diff": 4.66,
+  "changedFrac": 0.1016
+ },
+ "bench505-effects-sheet-t10-aura-r3": {
+  "mean": 25.1,
+  "std": 40.7,
+  "nonblack": 0.652,
+  "diff": 19.58,
+  "changedFrac": 0.4728
+ },
+ "bench505-effects-sheet-t11-aura-r1": {
+  "mean": 62.0,
+  "std": 58.0,
+  "nonblack": 1.0,
+  "diff": 18.84,
+  "changedFrac": 0.4047
+ },
+ "bench505-effects-sheet-t11-aura-r2": {
+  "mean": 54.2,
+  "std": 59.0,
+  "nonblack": 0.87,
+  "diff": 9.47,
+  "changedFrac": 0.3102
+ },
+ "bench505-effects-sheet-t11-aura-r3": {
+  "mean": 83.0,
+  "std": 58.3,
+  "nonblack": 1.0,
+  "diff": 11.47,
+  "changedFrac": 0.3276
+ },
+ "bench505-effects-t10-aura-r3": {
+  "mean": 23.3,
+  "std": 16.1,
+  "nonblack": 0.927,
+  "diff": 10.52,
+  "changedFrac": 0.4277
+ },
+ "bench505-effects-t10-three-r1": {
+  "mean": 18.9,
+  "std": 30.5,
+  "nonblack": 0.686,
+  "diff": 7.87,
+  "changedFrac": 0.2062
+ },
+ "bench505-effects-t10-three-r3": {
+  "mean": 44.0,
+  "std": 18.9,
+  "nonblack": 1.0,
+  "diff": 9.04,
+  "changedFrac": 0.3156
+ },
+ "bench505-effects-t11-aura-r1": {
+  "mean": 84.8,
+  "std": 68.6,
+  "nonblack": 0.985,
+  "diff": 4.83,
+  "changedFrac": 0.1621
+ },
+ "bench505-effects-t11-aura-r2": {
+  "mean": 63.0,
+  "std": 55.4,
+  "nonblack": 0.997,
+  "diff": 10.63,
+  "changedFrac": 0.3316
+ },
+ "bench505-effects-t11-aura-r3": {
+  "mean": 49.2,
+  "std": 59.4,
+  "nonblack": 0.727,
+  "diff": 7.98,
+  "changedFrac": 0.2997
+ },
+ "bench505-effects-t11-three-r1": {
+  "mean": 122.7,
+  "std": 61.0,
+  "nonblack": 1.0,
+  "diff": 21.43,
+  "changedFrac": 0.7901
+ },
+ "bench505-effects-t11-three-r2": {
+  "mean": 140.4,
+  "std": 61.8,
+  "nonblack": 1.0,
+  "diff": 8.5,
+  "changedFrac": 0.267
+ },
+ "bench505-effects-t11-three-r3": {
+  "mean": 173.7,
+  "std": 47.7,
+  "nonblack": 1.0,
+  "diff": 9.37,
+  "changedFrac": 0.3812
+ }
+}

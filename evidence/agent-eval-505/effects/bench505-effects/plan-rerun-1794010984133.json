@@ -1,0 +1,70 @@
+{
+  "args": {
+    "arm": "both",
+    "task": "10,11",
+    "runs": 3,
+    "seed": 20261106,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "base",
+    "batch": "bench505-effects",
+    "docsRef": "0014559039444cb824016d9e6f257d097e0a1bb2",
+    "only": [
+      "bench505-effects-t10-aura-r1",
+      "bench505-effects-t10-aura-r2",
+      "bench505-effects-t10-aura-r3"
+    ],
+    "docsRoot": "/tmp/b505-effects-runs/bench505-effects/docs"
+  },
+  "plan": [
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 3,
+      "order": 6,
+      "runId": "bench505-effects-t10-aura-r3",
+      "seed": 20261106006
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 2,
+      "order": 8,
+      "runId": "bench505-effects-t10-aura-r2",
+      "seed": 20261106008
+    },
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 1,
+      "order": 11,
+      "runId": "bench505-effects-t10-aura-r1",
+      "seed": 20261106011
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/agent-eval-base/aura",
+      "patch": "not-needed",
+      "versions": {
+        "engine": null,
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/agent-eval-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

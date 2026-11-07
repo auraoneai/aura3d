@@ -1,0 +1,296 @@
+{
+  "runId": "bench505-effects-sheet-t10-aura-r2",
+  "batch": "bench505-effects-sheet",
+  "arm": "aura",
+  "task": 10,
+  "idx": 2,
+  "order": 1,
+  "seed": 20261106001,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:29:59.710Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 603217,
+  "usage": {
+    "input": 729025,
+    "uncachedInput": 729025,
+    "output": 13725,
+    "turns": 19,
+    "perTurnInput": [
+      3334,
+      11605,
+      14954,
+      16677,
+      16828,
+      18766,
+      22666,
+      26540,
+      40558,
+      40956,
+      41621,
+      48842,
+      59939,
+      60029,
+      60215,
+      60620,
+      61238,
+      61373,
+      62264
+    ],
+    "perTurnOutput": [
+      20,
+      46,
+      136,
+      63,
+      29,
+      40,
+      292,
+      693,
+      2189,
+      77,
+      19,
+      801,
+      8476,
+      25,
+      34,
+      59,
+      182,
+      1,
+      543
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 7017,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 7017,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 7017,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 9352,
+      "type": "search",
+      "pattern": "particle|points|billboard|additive|blend"
+    },
+    {
+      "i": 4,
+      "t": 9352,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 15171,
+      "type": "search",
+      "pattern": "setInstances|instances\\.|material\\.emissive|effects\\.(bloom|particles)|points\\(|"
+    },
+    {
+      "i": 6,
+      "t": 15171,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 7,
+      "t": 18058,
+      "type": "search",
+      "pattern": "setInstances|emissiveIntensity|blend\\??:|interface AuraMaterialSpec"
+    },
+    {
+      "i": 8,
+      "t": 19631,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 9,
+      "t": 19642,
+      "type": "search",
+      "pattern": "setInstances|emissiveIntensity|blend"
+    },
+    {
+      "i": 10,
+      "t": 25341,
+      "type": "read",
+      "path": "docs/agents/troubleshooting.md",
+      "lines": 40
+    },
+    {
+      "i": 11,
+      "t": 25341,
+      "type": "read",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+      "lines": 41
+    },
+    {
+      "i": 12,
+      "t": 38021,
+      "type": "search",
+      "pattern": "type: \"(vec|f32|v)"
+    },
+    {
+      "i": 13,
+      "t": 38025,
+      "type": "search",
+      "pattern": "setUniform|uniforms|camera\\.perspective|lights\\.point|effects\\.bloom|sky\\.gradie"
+    },
+    {
+      "i": 14,
+      "t": 69824,
+      "type": "search",
+      "pattern": "widthSegments|segments:|Segments"
+    },
+    {
+      "i": 15,
+      "t": 69827,
+      "type": "search",
+      "pattern": "instances"
+    },
+    {
+      "i": 16,
+      "t": 460483,
+      "type": "search",
+      "pattern": "setInstances"
+    },
+    {
+      "i": 17,
+      "t": 460483,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 18,
+      "t": 463957,
+      "type": "search",
+      "pattern": "[Ii]nstance(d)? (pool|count|capacity)|setInstance|instanceCount|\\.setTransforms|"
+    },
+    {
+      "i": 19,
+      "t": 467124,
+      "type": "read",
+      "path": "docs/agents/troubleshooting.md",
+      "lines": 30
+    },
+    {
+      "i": 20,
+      "t": 512636,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 21,
+      "t": 512636,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 22,
+      "t": 570058,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 20285
+    },
+    {
+      "i": 23,
+      "t": 573109,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 24,
+      "t": 579428,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 25,
+      "t": 584146,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 26,
+      "t": 591039,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 27,
+      "t": 591040,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 28,
+      "t": 591040,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 29,
+      "t": 592793,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 30,
+      "t": 603217,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+    "docs/agents/troubleshooting.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the fireworks scene in `src/main.ts`, but I couldn't compile or run it. `@aura3d/engine` isn't installed in the sandbox: `node_modules/@aura3d/` is empty and `node_modules/@aura3d/engine` doesn't exist. The only `typecheck` error is `TS2307: Cannot find module '@aura3d/engine'`. Because the types are missing, nothing else was checked against the real API, and I haven't seen a rendered frame. I wrote the engine calls from `llms.txt` and the recipes. Some are unverified guesses: `setInstances` without a colors argument, the `params: { widthSegments, heightSegments }` option on `instances.sphere`, `castShadow` on instance pools, and `setLight`/`setUniform` at runtime. If the package is installed, run `typecheck` and `vite build` first.\n\nWhat the code does:\n- **Sky:** a custom-shader sky quad with a night gradient and two layers of twinkling stars. Active bursts add a soft colored glow.\n- **Water:** a custom-shader water plane with ripples and a fresnel term. It shows streaky, glittering reflections of each burst along the line of sight.\n- **Shoreline:** a dark far shore with hills, small buildings with roofs and a few warm windows, a lighthouse, a pier with lamps, and five boats.\n- **Fireworks:** rockets launch from the shoreline at irregular intervals and rise with a glowing trail. Each bursts into a spherical shell of 90–150 sparks in gold, red, blue, green or violet, and some shells are two-tone. The sparks drag, fall under gravity and shrink away over about two to three seconds. Willow and comet shells leave trailing streaks.\n- **Lighting and glow:** each burst also drives three real point lights that light the shoreline. A bloom effect adds the glow.\n- **Camera:** it is fixed, not drifting.\n- **State and ready flag:** `window.__TASK_STATE__` is updated every frame with the burst count and live particle count. `window.__EVAL_READY__` is set after `app.ready()`.\n\nI didn't tune any of the visual values (glow strengths, light intensity, burst sizes) because I ",
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(4,8): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

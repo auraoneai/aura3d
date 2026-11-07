@@ -1,0 +1,213 @@
+{
+  "runId": "bench505-effects-sheet-t11-aura-r3",
+  "batch": "bench505-effects-sheet",
+  "arm": "aura",
+  "task": 11,
+  "idx": 3,
+  "order": 2,
+  "seed": 20261106002,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-07T00:23:51.041Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 124610,
+  "usage": {
+    "input": 275686,
+    "uncachedInput": 275686,
+    "output": 7854,
+    "turns": 11,
+    "perTurnInput": [
+      3334,
+      11662,
+      15562,
+      19745,
+      20079,
+      24158,
+      28537,
+      31980,
+      32375,
+      43719,
+      44535
+    ],
+    "perTurnOutput": [
+      20,
+      63,
+      85,
+      112,
+      33,
+      85,
+      89,
+      215,
+      88,
+      6660,
+      404
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 3052,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 3052,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 3052,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 5688,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 4,
+      "t": 5689,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 5699,
+      "type": "search",
+      "pattern": "bloom|particles|__EVAL_READY__|pointLight|lights\\.point|lights\\.spot"
+    },
+    {
+      "i": 6,
+      "t": 10308,
+      "type": "read",
+      "path": "docs/agents/benchmark-recipes.md",
+      "lines": 110
+    },
+    {
+      "i": 7,
+      "t": 10308,
+      "type": "read",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+      "lines": 41
+    },
+    {
+      "i": 8,
+      "t": 15927,
+      "type": "search",
+      "pattern": "interface (AuraCustomMaterialOptions|CustomMaterial\\w*|AuraParticle\\w*|ParticleE"
+    },
+    {
+      "i": 9,
+      "t": 17423,
+      "type": "search",
+      "pattern": "doubleSided|transparent\\??:|blending\\??:|depthWrite"
+    },
+    {
+      "i": 10,
+      "t": 19972,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 11,
+      "t": 19973,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 12,
+      "t": 19973,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/effects.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 13,
+      "t": 24972,
+      "type": "search",
+      "pattern": "setInstances\\??\\(|setLight\\??\\(|setUniform\\??\\(|setScale\\??\\("
+    },
+    {
+      "i": 14,
+      "t": 42022,
+      "type": "search",
+      "pattern": "sky\\.|gradient|primitives\\.torus|lights\\.hemisphere|effects\\.fog|vignette|colorG"
+    },
+    {
+      "i": 15,
+      "t": 44366,
+      "type": "search",
+      "pattern": "export (declare )?(function|const) (gradient|vignette|fog|bloom|colorGrade)\\b.*"
+    },
+    {
+      "i": 16,
+      "t": 44372,
+      "type": "search",
+      "pattern": "interface Aura(Bloom|Fog|Vignette|ColorGrade)\\w*"
+    },
+    {
+      "i": 17,
+      "t": 117908,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 14091
+    },
+    {
+      "i": 18,
+      "t": 118413,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 19,
+      "t": 124610,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/benchmark-recipes.md",
+    "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/effects.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts. It passes the typechecker, but I couldn't run it or build it, so the look and frame rate are untested.\n\n**Scene:**\n- **Portal:** a ring of 24 weathered stone blocks with glowing cyan runes, standing on a two-tier stone platform. The platform has a violet dashed circle on top.\n- **Surroundings:** seven ruined pillars (some broken, with fallen chunks), scattered rubble, a dark ground plane, dusk lighting with a low orange sun and fog.\n- **Vortex disc:** a custom shader on a disc of real geometry. It swirls in cyan and violet around a bright core and animates every frame. It is drawn on both sides, so it should read from any camera angle.\n- **Glow:** a bloom effect, plus cyan, violet and low blue point lights. All three pulse slowly and light the stones and platform.\n- **Particles:** I simulate these on the CPU and draw them as glowing instanced spheres. 220 spiral inward toward the portal, in cyan and violet. 70 pale motes rise from the platform and shrink to nothing as they fade out.\n- **Camera:** it orbits slowly (0.07 rad/s, a full lap in about 90 seconds), so it also shows the back of the portal for part of each lap.\n- **Contract:** `window.__TASK_STATE__` is updated every frame with `portalActive: true`, `particleCount` (particles currently visible) and `time`. `window.__EVAL_READY__` is set once `app.ready()` resolves.\n\nI used a full orbit rather than a gentle sway because the docs only describe orbiting cameras. If a front-on view matters, that's the thing to change.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

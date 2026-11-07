@@ -1,0 +1,40 @@
+{
+  "args": {
+    "arm": "aura",
+    "task": "10,11",
+    "runs": 3,
+    "seed": 20261106,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "A",
+    "batch": "bench505-effects-sheet",
+    "only": [
+      "bench505-effects-sheet-t10-aura-r2"
+    ]
+  },
+  "plan": [
+    {
+      "task": 10,
+      "arm": "aura",
+      "idx": 2,
+      "order": 1,
+      "runId": "bench505-effects-sheet-t10-aura-r2",
+      "seed": 20261106001
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/agent-eval-base/aura",
+      "patch": "not-needed",
+      "versions": {
+        "engine": null,
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

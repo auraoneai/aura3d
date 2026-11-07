@@ -1,0 +1,158 @@
+[
+  {
+    "id": "bench505-effects-sheet-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 25.1,
+        "std": 14.1,
+        "nonblack": 0.912,
+        "diff": 12.43,
+        "changedFrac": 0.442
+      }
+    },
+    "bundle": {
+      "rawKB": 6494.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-sheet-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 9.4,
+        "std": 16.7,
+        "nonblack": 0.336,
+        "diff": 4.66,
+        "changedFrac": 0.1016
+      }
+    },
+    "bundle": {
+      "rawKB": 6500.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-sheet-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 25.1,
+        "std": 40.7,
+        "nonblack": 0.652,
+        "diff": 19.58,
+        "changedFrac": 0.4728
+      }
+    },
+    "bundle": {
+      "rawKB": 6491
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-sheet-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 62,
+        "std": 58,
+        "nonblack": 1,
+        "diff": 18.84,
+        "changedFrac": 0.4047
+      }
+    },
+    "bundle": {
+      "rawKB": 6491
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-sheet-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 54.2,
+        "std": 59,
+        "nonblack": 0.87,
+        "diff": 9.47,
+        "changedFrac": 0.3102
+      }
+    },
+    "bundle": {
+      "rawKB": 6500.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-sheet-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 83,
+        "std": 58.3,
+        "nonblack": 1,
+        "diff": 11.47,
+        "changedFrac": 0.3276
+      }
+    },
+    "bundle": {
+      "rawKB": 6528.2
+    },
+    "readyMs": null
+  }
+]

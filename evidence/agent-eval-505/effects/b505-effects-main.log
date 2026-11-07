@@ -1,0 +1,12 @@
+[agent-eval] bench505-effects-t10-three-r2 stopped_without_finish turns=3 tsc=false
+[agent-eval] bench505-effects-t11-aura-r3 stopped_without_finish turns=25 tsc=false
+[agent-eval] bench505-effects-t10-three-r1 finished turns=9 tsc=true
+[agent-eval] bench505-effects-t10-three-r3 finished turns=6 tsc=true
+[agent-eval] bench505-effects-t11-three-r2 finished turns=8 tsc=true
+[agent-eval] bench505-effects-t11-aura-r1 finished turns=24 tsc=false
+[agent-eval] bench505-effects-t11-three-r3 infra_error turns=undefined tsc=false
+[agent-eval] bench505-effects-t11-aura-r2 finished turns=21 tsc=false
+[agent-eval] bench505-effects-t10-aura-r3 infra_error turns=undefined tsc=false
+[agent-eval] bench505-effects-t10-aura-r2 infra_error turns=undefined tsc=false
+[agent-eval] bench505-effects-t11-three-r1 infra_error turns=undefined tsc=false
+[agent-eval] bench505-effects-t10-aura-r1 infra_error turns=undefined tsc=false

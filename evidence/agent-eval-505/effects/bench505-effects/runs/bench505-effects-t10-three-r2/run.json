@@ -1,0 +1,88 @@
+{
+  "runId": "bench505-effects-t10-three-r2",
+  "batch": "bench505-effects",
+  "arm": "three",
+  "task": 10,
+  "idx": 2,
+  "order": 1,
+  "seed": 20261106001,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:08:24.878Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "wallMs": 339942,
+  "usage": {
+    "input": 9054,
+    "uncachedInput": 9054,
+    "output": 1931,
+    "turns": 3,
+    "perTurnInput": [
+      3226,
+      4151,
+      1677
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      1902
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2123,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2123,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 3694,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 3695,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 3695,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-effects-runs/bench505-effects/bench505-effects-t10-three-r2/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

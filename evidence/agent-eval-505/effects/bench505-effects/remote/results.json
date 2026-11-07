@@ -1,0 +1,281 @@
+[
+  {
+    "id": "bench505-effects-t10-aura-r1-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t10-aura-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 23.3,
+        "std": 16.1,
+        "nonblack": 0.927,
+        "diff": 10.52,
+        "changedFrac": 0.4277
+      }
+    },
+    "bundle": {
+      "rawKB": 6537
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t10-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 18.9,
+        "std": 30.5,
+        "nonblack": 0.686,
+        "diff": 7.87,
+        "changedFrac": 0.2062
+      }
+    },
+    "bundle": {
+      "rawKB": 561.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t10-three-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t10-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 44,
+        "std": 18.9,
+        "nonblack": 1,
+        "diff": 9.04,
+        "changedFrac": 0.3156
+      }
+    },
+    "bundle": {
+      "rawKB": 562.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 84.8,
+        "std": 68.6,
+        "nonblack": 0.985,
+        "diff": 4.83,
+        "changedFrac": 0.1621
+      }
+    },
+    "bundle": {
+      "rawKB": 6539
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 63,
+        "std": 55.4,
+        "nonblack": 0.997,
+        "diff": 10.63,
+        "changedFrac": 0.3316
+      }
+    },
+    "bundle": {
+      "rawKB": 6536.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 49.2,
+        "std": 59.4,
+        "nonblack": 0.727,
+        "diff": 7.98,
+        "changedFrac": 0.2997
+      }
+    },
+    "bundle": {
+      "rawKB": 6537.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 122.7,
+        "std": 61,
+        "nonblack": 1,
+        "diff": 21.43,
+        "changedFrac": 0.7901
+      }
+    },
+    "bundle": {
+      "rawKB": 548
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t11-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 140.4,
+        "std": 61.8,
+        "nonblack": 1,
+        "diff": 8.5,
+        "changedFrac": 0.267
+      }
+    },
+    "bundle": {
+      "rawKB": 547
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-effects-t11-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 173.7,
+        "std": 47.7,
+        "nonblack": 1,
+        "diff": 9.37,
+        "changedFrac": 0.3812
+      }
+    },
+    "bundle": {
+      "rawKB": 546.6
+    },
+    "readyMs": null
+  }
+]

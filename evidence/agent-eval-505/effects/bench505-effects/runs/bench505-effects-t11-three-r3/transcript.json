@@ -1,0 +1,233 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LGwZVdVaVpNrUyw2pNPZxR",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Y7NGobNhVpWbZUtoENMduN",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LGwZVdVaVpNrUyw2pNPZxR",
+    "content": "1\t# Task 11: Magic portal with swirling particles and glow\n2\t\n3\tBuild a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The scene is a magic portal standing in an ancient stone ruin at dusk. Build a tall ring portal (a standing circular frame of weathered stone or runic metal) on a stone platform, with moody dusk lighting and a few ruined pillars around it. The disc inside the ring is a swirling, glowing energy surface, such as a rotating vortex in cyan and violet with a bright core, animated continuously. Glowing particles spiral around and into the portal, and a few motes rise from the platform and drift upward, fading out. The portal casts colored light onto the nearby stones and platform, and the light should pulse slowly. Add a subtle slow orbiting camera or gentle camera sway so depth is apparent. Aim for a polished, atmospheric look: strong bloom-like glow around the portal, high contrast against a darker surround, a coherent color palette, and soft haze. Keep it smooth at interactive frame rates. Also expose window.__TASK_STATE__ = { portalActive: true, particleCount: <number of live particles>, time: <elapsed seconds> } and update it every frame.\n4\t\n5\t## Rendering contract (all tasks)\n6\t\n7\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n8\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn s"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Y7NGobNhVpWbZUtoENMduN",
+    "content": "TASK.md\nindex.html\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01StRLKBZ47XVHgaaZ212cLq",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KTwXuZt1BJxkeSfVubAijS",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NawwHiMQwniBE6xZtHqK4T",
+    "name": "list_dir",
+    "input": {
+     "path": "public"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0141ysM4vZR5dhPyGB9L9g8X",
+    "name": "read_file",
+    "input": {
+     "path": "tsconfig.json"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01StRLKBZ47XVHgaaZ212cLq",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KTwXuZt1BJxkeSfVubAijS",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NawwHiMQwniBE6xZtHqK4T",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0141ysM4vZR5dhPyGB9L9g8X",
+    "content": "1\t{\n2\t  \"compilerOptions\": {\n3\t    \"target\": \"ES2022\",\n4\t    \"module\": \"ESNext\",\n5\t    \"moduleResolution\": \"bundler\",\n6\t    \"lib\": [\"ES2022\", \"DOM\", \"DOM.Iterable\"],\n7\t    \"strict\": true,\n8\t    \"noEmit\": true,\n9\t    \"skipLibCheck\": true,\n10\t    \"types\": []\n11\t  },\n12\t  \"include\": [\"src\"]\n13\t}\n14\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since there are no external assets, I'll keep everything procedural and lightweight for software rendering, using EffectComposer with bloom, a low-res canvas, fog, a gradient sky dome, and a stone cylindrical platform with steps.\n\nFor the portal itself, I'm building a stone ring with glowing rune segments, a swirling vortex disc shader, and two particle systems—a shrinking spiral of ~600 particles orbiting the portal axis and ~120 rising motes with fading alpha—all driven by CPU-updated position/alpha attributes.\n\nLighting-wise I'm adding pulsing cyan/violet point lights at the portal, a dim hemisphere light, and a weak warm directional light with no shadows for cheapness, alongside broken pillar geometry, scattered box fragments, and a dark stone-textured ground plane. I'm layering fog plus soft additive fog sprites for ground mist, running everything through a bloom pass at low resolution with a swaying orbital camera, and writing a canvas-based stone texture helper along with the portal's swirl shader math.\n\nWriting particle shader code...\n\nFor the ring itself I'm planning small pulsing emissive cyan boxes along the front face to catch the bloom, built from a stone torus with an inner thin glowing torus layered inside, and working out the vertical offset so the ring's base sits flush on the pedestal without clipping into the platform.\n\nI'm also placing broken stone pillars of varying heights around the scene, including a fallen one lying on the ground, then constructing the central platform with a stepped ring and a glowing rune circle layered on top for the lighting effect.\n\nNow I'm setting up the sky dome with a dusk gradient shader shifting from warm orange-magenta at the horizon to deep indigo above, matching fog color and density, plus scattering a couple hundred simple star points. For the ground I'm laying down a large dark stone-textured circle, and writing a canvas-based noise function to generate that stone texture procedurally.\n\nI'm detailing the ground texture as a flagstone grid with tinted fbm noise and darker grout lines, applying sRGB color space, repeat wrapping, and anisotropic filtering. I'm also planning mist sprites using radial-gradient canvas textures with low opacity and slow drift, tuning bloom pass parameters, and setting particle counts for the spiral and floating motes systems.\n\nI'm defining how motes rise and drift with sine-based noise, fade in and out over their lifespan, and respawn once they exceed their life cycle, while orbiting the camera slowly around the portal so both sides of the double-sided disc stay visible. I'm also sketching out the disc shader's polar coordinate math from UV space to drive its radial effects.\n\nWorking out spiral arm equations...\n\nWriting shader code...\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TrxscUckF13fjnw2u4i3oX",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import * as THREE from 'three';\nimport { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';\nimport { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';\nimport { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';\nimport { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n    __TASK_STATE__?: { portalActive: boolean; particleCount: number; time: number };\n  }\n}\n\nconst W = 640;\nconst H = 360;\nconst canvas = document.getElementById('app') as HTMLCanvasElement;\n\nconst renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });\nrenderer.setPixelRatio(1);\nrenderer.setSize(W, H, false);\nrenderer.toneMapping = THREE.ACESFilmicToneMapping;\nrenderer.toneMappingExposure = 1.0;\n\nconst scene = new THREE.Scene();\nscene.fog = new THREE.FogExp2(0x15102a, 0.032);\n\nconst camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 200);\n\n// ---------- seeded random ----------\nlet seed = 1337;\nfunction rnd(): number {\n  seed = (seed * 1664525 + 1013904223) >>> 0;\n  return seed / 4294967296;\n}\nfunction rr(a: number, b: number): number {\n  return a + (b - a) * rnd();\n}\n\n// ---------- procedural textures ----------\nfunction makeStoneTexture(base: [number, number, number], tiles: number, repeat: number): THREE.CanvasTexture {\n  const S = 256;\n  const c = document.createElement('canvas');\n  c.width = S;\n  c.height = S;\n  const g = c.getContext('2d') as CanvasRenderingContext2D;\n  const img = g.createImageData(S, S);\n  const grid = 32;\n  const lat: number[] = [];\n  for (let i = 0; i < grid * grid; i++) lat.push(rnd());\n  const vnoise = (x: number, y: number, f: number): number => {\n    const gx = (x / S) * f;\n    const gy = (y / S) * f;\n    const x0 = Math.floor(gx);\n    const y0 = Math.floor(gy);\n    const fx = gx - x0;\n    const fy = gy - y0;\n    const sx = fx * fx * (3 - 2 * fx);\n    const sy = fy * fy * (3 - 2 * fy);\n    const p = (ix: number, iy: number): number => lat[(((iy % f) + f) % f) * grid + (((ix % f) + f) % f)];\n    const a = p(x0, y0) * (1 - sx) + p(x0 + 1, y0) * sx;\n    const b = p(x0, y0 + 1) * (1 - sx) + p(x0 + 1, y0 + 1) * sx;\n    return a * (1 - sy) + b * sy;\n  };\n  const cell = S / tiles;\n  for (let y = 0; y < S; y++) {\n    for (let x = 0; x < S; x++) {\n      let n = vnoise(x, y, 4) * 0.45 + vnoise(x, y, 8) * 0.3 + vnoise(x, y, 16) * 0.15 + vnoise(x, y, 32) * 0.1;\n      // block mortar lines\n      const row = Math.floor(y / cell);\n      const ox = (row % 2) * cell * 0.5;\n      const mx = (x + ox) % cell;\n      const my = y % cell;\n      let line = 1;\n      if (mx < 2 || my < 2) line = 0.45;\n      n = (0.45 + n * 0.8) * line;\n      const i = (y * S + x) * 4;\n      img.data[i] = Math.min(255, base[0] * n * 1.6);\n      img.data[i + 1] = Math.min(255, base[1] * n * 1.6);\n      img.data[i + 2] = Math.min(255, base[2] * n * 1.6);\n      img.data[i + 3] = 255;\n    }\n  }\n  g.putImageData(img, 0, 0);\n  const t = new THREE.CanvasTexture(c);\n  t.wrapS = t.wrapT = THREE.RepeatWrapping;\n  t.repeat.set(repeat, repeat);\n  t.colorSpace = THREE.SRGBColorSpace;\n  t.anisotropy = 4;\n  return t;\n}\n\nfunction makeGlowTexture(): THREE.CanvasTexture {\n  const c = document.createElement('canvas');\n  c.width = c.height = 128;\n  const g = c.getContext('2d') as CanvasRenderingContext2D;\n  const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);\n  grad.addColorStop(0, 'rgba(255,255,255,1)');\n  grad.addColorStop(0.35, 'rgba(255,255,255,0.35)');\n  grad.addColorStop(1, 'rgba(255,255,255,0)');\n  g.fillStyle = grad;\n  g.fillRect(0, 0, 128, 128);\n  const t = new THREE.CanvasTexture(c);\n  t.colorSpace = THREE.SRGBColorSpace;\n  return t;\n}\n\nconst stoneTex = makeStoneTexture([120, 122, 135], 4, 1);\nconst stoneTexRing = makeStoneTexture([110, 108, 125], 2, 1);\nstoneTexRing.repeat.set(12, 1);\nconst groundTex = makeStoneTexture([90, 92, 105], 8, 14);\n\nconst stoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9, metalness: 0.05 });\nconst darkStoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, color: 0x9a96aa, roughness: 0.95, metalness: 0.0 });\nconst ringMat = new THREE.MeshStandardMaterial({ map: stoneTexRing, roughness: 0.8, metalness: 0.25 });\nconst groundMat = new THREE.MeshStandardMaterial({ map: groundTex, color: 0x777788, roughness: 1 });\n\n// ---------- sky ----------\nconst sky = new THREE.Mesh(\n  new THREE.SphereGeometry(120, 32, 16),\n  new THREE.ShaderMaterial({\n    side: THREE.BackSide,\n    depthWrite: false,\n    fog: false,\n    vertexShader: /* glsl */ `\n      varying vec3 vDir;\n      void main() {\n        vDir = normalize(position);\n        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n      }`,\n    fragmentShader: /* glsl */ `\n      varying vec3 vDir;\n      void main() {\n        float h = clamp(vDir.y, -0.1, 1.0);\n        vec3 horizon = vec3(0.55, 0.20, 0.32);\n        vec3 mid = vec3(0.14, 0.08, 0.26);\n        vec3 top = vec3(0.012, 0.016, 0.06);\n        vec3 col = mix(horizon, mid, smoothstep(0.0, 0.25, h));\n        col = mix(col, top, smoothstep(0.2, 0.8, h));\n        col = mix(col, vec3(0.06,0.04,0.1), smoothstep(0.0, -0.1, vDir.y));\n        gl_FragColor = vec4(col * 0.8, 1.0);\n      }`,\n  }),\n);\nscene.add(sky);\n\n// stars\n{\n  const n = 250;\n  const pos = new Float32Array(n * 3);\n  for (let i = 0; i < n; i++) {\n    const th = rnd() * Math.PI * 2;\n    const ph = Math.acos(rr(0.15, 1));\n    pos[i * 3] = Math.sin(ph) * Math.cos(th) * 110;\n    pos[i * 3 + 1] = Math.cos(ph) * 110;\n    pos[i * 3 + 2] = Math.sin(ph) * Math.sin(th) * 110;\n  }\n  const geo = new THREE.BufferGeometry();\n  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));\n  const stars = new THREE.Points(\n    geo,\n    new THREE.PointsMaterial({ color: 0xbfc8ff, size: 1.2, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.7, depthWrite: false }),\n  );\n  scene.add(stars);\n}\n\n// ---------- ground & platform ----------\nconst ground = new THREE.Mesh(new THREE.CircleGeometry(60, 48), groundMat);\nground.rotation.x = -Math.PI / 2;\nscene.add(ground);\n\nconst PLAT_TOP = 0.6;\nconst platform = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.5, PLAT_TOP, 48), stoneMat);\nplatform.position.y = PLAT_TOP / 2;\nscene.add(platform);\n\nconst step = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.4, 0.3, 48), darkStoneMat);\nstep.position.y = 0.15;\nscene.add(step);\n\n// glowing runic circle on platform\nconst runeRingMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.2, 1.2, 1.6), transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false });\nconst runeRing = new THREE.Mesh(new THREE.RingGeometry(3.5, 3.58, 96), runeRingMat);\nruneRing.rotation.x = -Math.PI / 2;\nruneRing.position.y = PLAT_TOP + 0.01;\nscene.add(runeRing);\nconst runeRing2 = new THREE.Mesh(new THREE.RingGeometry(2.9, 2.94, 96), runeRingMat);\nruneRing2.rotation.x = -Math.PI / 2;\nruneRing2.position.y = PLAT_TOP + 0.01;\nscene.add(runeRing2);\nconst runeMarks = new THREE.Group();\n{\n  const markGeo = new THREE.BoxGeometry(0.12, 0.01, 0.4);\n  for (let i = 0; i < 24; i++) {\n    const m = new THREE.Mesh(markGeo, runeRingMat);\n    const a = (i / 24) * Math.PI * 2;\n    m.position.set(Math.cos(a) * 3.2, PLAT_TOP + 0.01, Math.sin(a) * 3.2);\n    m.rotation.y = -a;\n    runeMarks.add(m);\n  }\n}\nscene.add(runeMarks);\n\n// ---------- portal ring ----------\nconst PORTAL_Y = PLAT_TOP + 2.55;\nconst RING_R = 2.3;\nconst portal = new THREE.Group();\nportal.position.set(0, PORTAL_Y, 0);\nscene.add(portal);\n\nconst ring = new THREE.Mesh(new THREE.TorusGeometry(RING_R, 0.34, 16, 72), ringMat);\nportal.add(ring);\n\n// inner glowing lip\nconst lipMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 1.6, 2.4) });\nconst lip = new THREE.Mesh(new THREE.TorusGeometry(RING_R - 0.3, 0.05, 8, 96), lipMat);\nportal.add(lip);\n\n// rune blocks on the ring face\nconst runeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.4, 1.8, 2.6) });\nconst runeMatV = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.6, 2.8) });\nconst runes: THREE.Mesh[] = [];\n{\n  const geoA = new THREE.BoxGeometry(0.07, 0.2, 0.04);\n  const geoB = new THREE.BoxGeometry(0.2, 0.06, 0.04);\n  for (let i = 0; i < 20; i++) {\n    const a = (i / 20) * Math.PI * 2;\n    const m = new THREE.Mesh(i % 2 ? geoA : geoB, i % 3 === 0 ? runeMatV : runeMat);\n    m.position.set(Math.cos(a) * RING_R, Math.sin(a) * RING_R, 0.33);\n    m.rotation.z = a + (i % 4) * 0.4;\n    portal.add(m);\n    runes.push(m);\n    const m2 = m.clone();\n    m2.position.z = -0.33;\n    portal.add(m2);\n  }\n}\n\n// ring supports: base blocks\n{\n  const base = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 1.2), stoneMat);\n  base.position.set(0, PLAT_TOP + 0.25, 0);\n  scene.add(base);\n  const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.9, 0.9), darkStoneMat);\n  sideL.position.set(-1.6, PLAT_TOP + 0.45, 0);\n  sideL.rotation.y = 0.15;\n  scene.add(sideL);\n  const sideR = sideL.clone();\n  sideR.position.set(1.6, PLAT_TOP + 0.35, 0.1);\n  sideR.scale.set(1, 0.7, 1);\n  sideR.rotation.y = -0.2;\n  scene.add(sideR);\n}\n\n// swirling disc\nconst discMat = new THREE.ShaderMaterial({\n  side: THREE.DoubleSide,\n  uniforms: { uTime: { value: 0 }, uPulse: { value: 1 } },\n  vertexShader: /* glsl */ `\n    varying vec2 vUv;\n    void main() {\n      vUv = uv;\n      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n    }`,\n  fragmentShader: /* glsl */ `\n    varying vec2 vUv;\n    uniform float uTime;\n    uniform float uPulse;\n    void main() {\n      vec2 p = (vUv - 0.5) * 2.0;\n      float r = length(p);\n      float a = atan(p.y, p.x);\n      float ph1 = 4.0 * a - 7.0 * log(r + 0.08) + uTime * 1.6;\n      float ph2 = 3.0 * a + 13.0 * r - uTime * 2.2;\n      float ph3 = 6.0 * a - 11.0 * sqrt(r) - uTime * 0.9;\n      float arms = 0.5 + 0.5 * sin(ph1);\n      float fine = 0.5 + 0.5 * sin(ph2);\n      float streak = pow(0.5 + 0.5 * sin(ph3), 3.0);\n      vec3 cyan = vec3(0.05, 0.85, 1.25);\n      vec3 violet = vec3(0.65, 0.18, 1.2);\n      vec3 deep = vec3(0.04, 0.02, 0.18);\n      float mixv = clamp(0.5 + 0.5 * sin(ph1 * 0.5 + r * 3.0 - uTime * 0.5), 0.0, 1.0);\n      vec3 body = mix(violet, cyan, mixv);\n      vec3 col = deep + body * (0.25 + 1.0 * arms) * (0.6 + 0.5 * fine);\n      col += cyan * streak * 0.8;\n      float core = exp(-r * r * 14.0);\n      col += vec3(0.8, 1.2, 1.5) * core * 3.2 * uPulse;\n      col += vec3(0.4, 0.6, 1.0) * exp(-r * 3.0) * 0.5;\n      // bright rim\n      float rim = smoothstep(0.72, 0.97, r);\n      col += mix(cyan, violet, 0.3) * rim * 0.9;\n      col *= smoothstep(1.0, 0.94, r);\n      gl_FragColor = vec4(col, 1.0);\n    }`,\n});\nconst disc = new THREE.Mesh(new THREE.CircleGeometry(RING_R - 0.28, 96), discMat);\nportal.add(disc);\n\n// ---------- pillars & rubble ----------\nfunction addPillar(x: number, z: number, h: number, r: number, broken: boolean, tilt = 0): void {\n  const g = new THREE.Group();\n  const baseBlock = new THREE.Mesh(new THREE.BoxGeometry(r * 2.8, 0.35, r * 2.8), darkStoneMat);\n  baseBlock.position.y = 0.175;\n  g.add(baseBlock);\n  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.88, r, h, 12), stoneMat);\n  shaft.position.y = 0.35 + h / 2;\n  g.add(shaft);\n  if (!broken) {\n    const cap = new THREE.Mesh(new THREE.BoxGeometry(r * 2.6, 0.3, r * 2.6), darkStoneMat);\n    cap.position.y = 0.35 + h + 0.15;\n    g.add(cap);\n  } else {\n    const chunk = new THREE.Mesh(new THREE.DodecahedronGeometry(r * 0.9, 0), darkStoneMat);\n    chunk.position.set(r * 1.6, 0.35 + r * 0.6, r * 1.4);\n    chunk.rotation.set(rr(0, 3), rr(0, 3), 0);\n    g.add(chunk);\n  }\n  g.position.set(x, 0, z);\n  g.rotation.z = tilt;\n  scene.add(g);\n}\naddPillar(-6.2, -1.5, 5.2, 0.5, false);\naddPillar(6.5, -2.5, 3.6, 0.52, true);\naddPillar(-4.5, -5.5, 6.4, 0.55, false);\naddPillar(4.8, -6.2, 2.2, 0.5, true);\naddPillar(-7.5, 3.2, 2.6, 0.48, true);\naddPillar(7.4, 3.8, 4.6, 0.5, false, 0.04);\naddPillar(0.5, -9.5, 7.2, 0.6, false);\n\n// fallen pillar\n{\n  const fallen = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.46, 4.2, 12), stoneMat);\n  fallen.rotation.set(0, 0.7, Math.PI / 2);\n  fallen.position.set(-3.6, 0.46, 6.2);\n  scene.add(fallen);\n}\n// rubble\nfor (let i = 0; i < 26; i++) {\n  const s = rr(0.15, 0.55);\n  const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), i % 2 ? stoneMat : darkStoneMat);\n  const a = rnd() * Math.PI * 2;\n  const d = rr(5.6, 11);\n  rock.position.set(Math.cos(a) * d, s * 0.4, Math.sin(a) * d);\n  rock.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3);\n  rock.scale.y = 0.7;\n  scene.add(rock);\n}\n// broken arch lintel block\n{\n  const lintel = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.6, 0.9), darkStoneMat);\n  lintel.position.set(-5.5, 5.5, -1.5);\n  lintel.rotation.z = -0.1;\n  lintel.visible = false;\n  scene.add(lintel);\n}\n\n// ---------- lights ----------\nscene.add(new THREE.HemisphereLight(0x54508a, 0x120a1e, 0.55));\nconst dusk = new THREE.DirectionalLight(0xff8a70, 0.9);\ndusk.position.set(-14, 5, -18);\nscene.add(dusk);\nconst fill = new THREE.DirectionalLight(0x4a58b8, 0.35);\nfill.position.set(10, 12, 12);\nscene.add(fill);\n\nconst lightCyan = new THREE.PointLight(0x30d8ff, 60, 0, 2);\nlightCyan.position.set(0, PORTAL_Y, 1.4);\nscene.add(lightCyan);\nconst lightViolet = new THREE.PointLight(0x9a40ff, 50, 0, 2);\nlightViolet.position.set(0, PORTAL_Y, -1.4);\nscene.add(lightViolet);\nconst lightGround = new THREE.PointLight(0x6a70ff, 25, 0, 2);\nlightGround.position.set(0, PLAT_TOP + 0.9, 0.5);\nscene.add(lightGround);\n\n// ---------- mist ----------\nconst glowTex = makeGlowTexture();\nconst mist: { s: THREE.Sprite; a: number; d: number; sp: number; y: number }[] = [];\nfor (let i = 0; i < 16; i++) {\n  const m = new THREE.SpriteMaterial({\n    map: glowTex,\n    color: i % 3 === 0 ? 0x6a3f9a : 0x34508a,\n    transparent: true,\n    opacity: rr(0.1, 0.2),\n    depthWrite: false,\n    fog: false,\n  });\n  const s = new THREE.Sprite(m);\n  const sc = rr(7, 12);\n  s.scale.set(sc, sc * 0.35, 1);\n  const o = { s, a: rnd() * Math.PI * 2, d: rr(3, 10), sp: rr(0.01, 0.04) * (rnd() > 0.5 ? 1 : -1), y: rr(0.7, 1.8) };\n  scene.add(s);\n  mist.push(o);\n}\n// portal halo sprite\nconst haloMat = new THREE.SpriteMaterial({\n  map: glowTex,\n  color: new THREE.Color(0.3, 0.7, 1.4),\n  transparent: true,\n  opacity: 0.55,\n  blending: THREE.AdditiveBlending,\n  depthWrite: false,\n  fog: false,\n});\nconst halo = new THREE.Sprite(haloMat);\nhalo.scale.set(8.5, 8.5, 1);\nhalo.position.copy(portal.position);\nscene.add(halo);\n\n// ---------- particles ----------\nconst SPIRAL_N = 650;\nconst MOTE_N = 130;\nconst TOTAL = SPIRAL_N + MOTE_N;\n\nconst pPos = new Float32Array(TOTAL * 3);\nconst pCol = new Float32Array(TOTAL * 3);\nconst pSize = new Float32Array(TOTAL);\nconst pAlpha = new Float32Array(TOTAL);\n\nconst sR = new Float32Array(SPIRAL_N);\nconst sTh = new Float32Array(SPIRAL_N);\nconst sZ = new Float32Array(SPIRAL_N);\nconst sSpd = new Float32Array(SPIRAL_N);\nconst sSeed = new Float32Array(SPIRAL_N);\nconst sBaseSize = new Float32Array(SPIRAL_N);\nconst cyanC = new THREE.Color(0.3, 1.2, 1.8);\nconst violetC = new THREE.Color(1.1, 0.4, 2.0);\nconst tmpC = new THREE.Color();\n\nfunction respawnSpiral(i: number, initial: boolean): void {\n  sR[i] = initial ? rr(0.3, 4.2) : rr(3.2, 4.4);\n  sTh[i] = rnd() * Math.PI * 2;\n  sSeed[i] = rnd() * 100;\n  sSpd[i] = rr(0.25, 0.7);\n  sZ[i] = rr(-1.0, 1.0);\n  sBaseSize[i] = rr(0.6, 1.6);\n  tmpC.copy(cyanC).lerp(violetC, rnd());\n  pCol[i * 3] = tmpC.r;\n  pCol[i * 3 + 1] = tmpC.g;\n  pCol[i * 3 + 2] = tmpC.b;\n}\nfor (let i = 0; i < SPIRAL_N; i++) respawnSpiral(i, true);\n\nconst mX = new Float32Array(MOTE_N);\nconst mZ = new Float32Array(MOTE_N);\nconst mY = new Float32Array(MOTE_N);\nconst mSpd = new Float32Array(MOTE_N);\nconst mSeed = new Float32Array(MOTE_N);\nconst MOTE_H = 6;\nfunction respawnMote(i: number, initial: boolean): void {\n  const a = rnd() * Math.PI * 2;\n  const d = Math.sqrt(rnd()) * 3.8;\n  mX[i] = Math.cos(a) * d;\n  mZ[i] = Math.sin(a) * d;\n  mY[i] = PLAT_TOP + (initial ? rnd() * MOTE_H : 0);\n  mSpd[i] = rr(0.25, 0.7);\n  mSeed[i] = rnd() * 100;\n  const k = SPIRAL_N + i;\n  tmpC.copy(rnd() > 0.5 ? cyanC : violetC).multiplyScalar(0.8);\n  pCol[k * 3] = tmpC.r;\n  pCol[k * 3 + 1] = tmpC.g;\n  pCol[k * 3 + 2] = tmpC.b;\n}\nfor (let i = 0; i < MOTE_N; i++) respawnMote(i, true);\n\nconst pGeo = new THREE.BufferGeometry();\nconst posAttr = new THREE.BufferAttribute(pPos, 3);\nconst colAttr = new THREE.BufferAttribute(pCol, 3);\nconst sizeAttr = new THREE.BufferAttribute(pSize, 1);\nconst alphaAttr = new THREE.BufferAttribute(pAlpha, 1);\nposAttr.setUsage(THREE.DynamicDrawUsage);\ncolAttr.setUsage(THREE.DynamicDrawUsage);\nsizeAttr.setUsage(THREE.DynamicDrawUsage);\nalphaAttr.setUsage(THREE.DynamicDrawUsage);\npGeo.setAttribute('position', posAttr);\npGeo.setAttribute('aColor', colAttr);\npGeo.setAttribute('aSize', sizeAttr);\npGeo.setAttribute('aAlpha', alphaAttr);\n\nconst pMat = new THREE.ShaderMaterial({\n  transparent: true,\n  depthWrite: false,\n  blending: THREE.AdditiveBlending,\n  uniforms: { uScale: { value: H * 0.5 } },\n  vertexShader: /* glsl */ `\n    attribute vec3 aColor;\n    attribute float aSize;\n    attribute float aAlpha;\n    uniform float uScale;\n    varying vec3 vColor;\n    varying float vAlpha;\n    void main() {\n      vColor = aColor;\n      vAlpha = aAlpha;\n      vec4 mv = modelViewMatrix * vec4(position, 1.0);\n      gl_PointSize = max(1.0, aSize * uScale / -mv.z);\n      gl_Position = projectionMatrix * mv;\n    }`,\n  fragmentShader: /* glsl */ `\n    varying vec3 vColor;\n    varying float vAlpha;\n    void main() {\n      vec2 d = gl_PointCoord - 0.5;\n      float r = length(d) * 2.0;\n      float f = smoothstep(1.0, 0.0, r);\n      f = f * f;\n      gl_FragColor = vec4(vColor * f * vAlpha, 1.0);\n    }`,\n});\nconst points = new THREE.Points(pGeo, pMat);\npoints.frustumCulled = false;\nscene.add(points);\n\nfunction smooth(a: number, b: number, x: number): number {\n  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));\n  return t * t * (3 - 2 * t);\n}\n\nfunction updateParticles(dt: number, t: number): number {\n  let live = 0;\n  for (let i = 0; i < SPIRAL_N; i++) {\n    let r = sR[i];\n    r -= dt * sSpd[i] * (0.35 + 0.5 * r / 4);\n    if (r < 0.15) {\n      respawnSpiral(i, false);\n      r = sR[i];\n    }\n    sR[i] = r;\n    sTh[i] += dt * (0.5 + 2.6 / (r + 0.5));\n    const th = sTh[i];\n    const squeeze = Math.min(1, r / 1.5);\n    const z = sZ[i] * (0.15 + 0.85 * smooth(0.2, 3, r)) + Math.sin(t * 0.8 + sSeed[i]) * 0.08;\n    const x = Math.cos(th) * r;\n    const y = PORTAL_Y + Math.sin(th) * r;\n    pPos[i * 3] = x;\n    pPos[i * 3 + 1] = y;\n    pPos[i * 3 + 2] = z * squeeze;\n    const fadeIn = smooth(4.4, 3.4, r);\n    const fadeOut = smooth(0.1, 0.7, r);\n    const ground = smooth(PLAT_TOP, PLAT_TOP + 0.5, y);\n    const tw = 0.75 + 0.25 * Math.sin(t * 5 + sSeed[i]);\n    const a = fadeIn * fadeOut * ground * tw;\n    pAlpha[i] = a;\n    pSize[i] = sBaseSize[i] * 0.09 * (0.6 + 0.6 * fadeOut);\n    if (a > 0.01) live++;\n    else live++;\n  }\n  for (let j = 0; j < MOTE_N; j++) {\n    const k = SPIRAL_N + j;\n    mY[j] += dt * mSpd[j];\n    const life = (mY[j] - PLAT_TOP) / MOTE_H;\n    if (life >= 1) respawnMote(j, false);\n    const l = Math.min(1, (mY[j] - PLAT_TOP) / MOTE_H);\n    const sw = Math.sin(t * 0.6 + mSeed[j]);\n    pPos[k * 3] = mX[j] + sw * 0.3 * l * 3 + Math.sin(t * 1.3 + mSeed[j] * 2) * 0.05;\n    pPos[k * 3 + 1] = mY[j];\n    pPos[k * 3 + 2] = mZ[j] + Math.cos(t * 0.5 + mSeed[j]) * 0.3 * l * 3;\n    pAlpha[k] = smooth(0, 0.12, l) * (1 - smooth(0.55, 1, l)) * (0.7 + 0.3 * Math.sin(t * 4 + mSeed[j]));\n    pSize[k] = 0.07;\n    live++;\n  }\n  posAttr.needsUpdate = true;\n  colAttr.needsUpdate = true;\n  sizeAttr.needsUpdate = true;\n  alphaAttr.needsUpdate = true;\n  return live;\n}\n\n// ---------- post processing ----------\nconst composer = new EffectComposer(renderer);\ncomposer.setPixelRatio(1);\ncomposer.setSize(W, H);\ncomposer.addPass(new RenderPass(scene, camera));\nconst bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 1.0, 0.7, 0.62);\ncomposer.addPass(bloom);\ncomposer.addPass(new OutputPass());\n\n// ---------- loop ----------\nconst clock = new THREE.Clock();\nlet elapsed = 0;\nlet first = true;\nconst camTarget = new THREE.Vector3(0, PORTAL_Y - 0.3, 0);\nconst cyanLight = new THREE.Color(0x30d8ff);\nconst violetLight = new THREE.Color(0x9a40ff);\n\nwindow.__TASK_STATE__ = { portalActive: true, particleCount: TOTAL, time: 0 };\n\nfunction frame(): void {\n  requestAnimationFrame(frame);\n  const dt = Math.min(0.05, clock.getDelta());\n  elapsed += dt;\n  const t = elapsed;\n\n  // pulse\n  const pulse = 0.5 + 0.5 * Math.sin(t * 1.1);\n  const pulse2 = 0.5 + 0.5 * Math.sin(t * 0.8 + 2.0);\n  discMat.uniforms.uTime.value = t;\n  discMat.uniforms.uPulse.value = 0.85 + 0.25 * pulse;\n  lightCyan.intensity = 45 + 40 * pulse;\n  lightViolet.intensity = 40 + 35 * pulse2;\n  lightGround.intensity = 18 + 14 * pulse;\n  lightCyan.color.copy(cyanLight).lerp(violetLight, 0.2 * pulse2);\n  runeRingMat.opacity = 0.35 + 0.4 * pulse;\n  haloMat.opacity = 0.4 + 0.2 * pulse;\n  lipMat.color.setRGB(0.4 + 0.3 * pulse, 1.3 + 0.5 * pulse, 2.0 + 0.5 * pulse);\n  runeMat.color.setRGB(0.3, 1.2 + 0.8 * pulse, 2.0 + 0.6 * pulse);\n  runeMatV.color.setRGB(1.2 + 0.5 * pulse2, 0.4, 2.2 + 0.5 * pulse2);\n  runeMarks.rotation.y = t * 0.05;\n  runeRing2.rotation.z = t * 0.1;\n\n  // mist drift\n  for (const m of mist) {\n    m.a += m.sp * dt;\n    m.s.position.set(Math.cos(m.a) * m.d, m.y, Math.sin(m.a) * m.d);\n  }\n\n  const live = updateParticles(dt, t);\n\n  // camera sway / orbit\n  const ang = Math.sin(t * 0.15) * 0.55;\n  const rad = 10.5 + Math.sin(t * 0.1) * 0.6;\n  camera.position.set(Math.sin(ang) * rad, 3.3 + Math.sin(t * 0.22) * 0.5, Math.cos(ang) * rad);\n  camera.lookAt(camTarget);\n\n  composer.render();\n\n  const st = window.__TASK_STATE__;\n  if (st) {\n    st.portalActive = true;\n    st.particleCount = live;\n    st.time = elapsed;\n  }\n  if (first) {\n    first = false;\n    window.__EVAL_READY__ = true;\n  }\n}\nrequestAnimationFrame(frame);\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TZaiJA6jkEHnhqrFL15gi9",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TrxscUckF13fjnw2u4i3oX",
+    "content": "wrote src/main.ts (638 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TZaiJA6jkEHnhqrFL15gi9",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should clean up the odd duplicate logic in both branches and fix that invisible lintel, plus tweak the stone texture so tiles wrap properly around the cylinder with repeating patterns.\n\n",
+    "signature": "CAQS7wUKEggTEAEYAjgBQgh0aGlua2luZxIMkJTtuR55H9HkwDqhGgzlOxxvUrNquwE4b1ciMF59lTju0tP987aimdTP32TpqeXUJjuGb7lUw5gXWhdDCRofBjO6mKkML+aEnL2r5CqKBUxzaDPluz6qEDXZ8Oxm2e0tmbz3FE6Ybd2feWg35RNgmrr3zEJGJMJYHmGlU4ZVz82RLpABgThTdLM+4tArO6WoEQEAN/14VHM4brzzZSLSxImSv9RAXdm/LuvAJiSjcW8u/7fR4e1PZvb/wvY8KDFTD2dbVkmH8VkuehClsGHIhGbP47XK3oHvtw5RQEtWkalU9klQKP57+urG0ZnXJeEp+VIVjZJF5uoEzXuymAoVjXuNwQi8FF6ltjG5AyXkkB9Y7fCfRMxuQS7cF3y/uapnxf8DoQs1OOTUb66UaGKuBbSz4pCiNu9s4hqAwn/TFRAqzvLRTgj+w3DY7/ybsw5wAbTUvSrwaR6V/hBK0oh+PFgaJOOe81YFa2tgY5+yLsqcJClhAxr5EhHlwj+iYSJFzDCS52z6A5OdQIX5MzPnABY8mMHY5vH8vNn9mcZKX7zdDIU6OlDStNTHMrveDSe8/w81G+2mb+huX+vgd2wsSUWJFC4XNCYP43jfRJbfJyNzx1faPl/p6eaVymfMLM08VNBLzR9rtwTFXfWuoNRb19ZnHeE+28IHM+s6jc3xqvMcsmkg4tXAHWr0BsUN77A+ZsfrYADWO22of11zFVIZswXpDSdCuNi/Vuk7QtrmPfK8oCfJ9J79AwiXnllpDiA0ts5t41HfsLaTjgfuK2gh99wzRNG51NqddOpN8OyVJmrZj7Am6aU0X/nauABwq3fdj2+XAhbp6T0m9qz6lX+d+2Ua+xacoa7LRFO6s7XAeGHqI0pEcpUWS2RN4fGS/vxgwuBuQ/IS1dH7lAHwXY1w54WMX+O/H2wIjr1rkl0mACSQRjSZUebVbhF+wSy6WR9viSdkPNx+GZsjGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0189a64sg9jw37xAMFFsprDr",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "    if (a > 0.01) live++;\n    else live++;",
+     "new_string": "    live++;"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012Z4K1snmhcqBbxh9yoasMd",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "// broken arch lintel block\n{\n  const lintel = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.6, 0.9), darkStoneMat);\n  lintel.position.set(-5.5, 5.5, -1.5);\n  lintel.rotation.z = -0.1;\n  lintel.visible = false;\n  scene.add(lintel);\n}\n",
+     "new_string": ""
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01D2xA5Fm2d1XWCUPhXfAdpZ",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0189a64sg9jw37xAMFFsprDr",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012Z4K1snmhcqBbxh9yoasMd",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01D2xA5Fm2d1XWCUPhXfAdpZ",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01DUaa32Ljdfmermo1qmf1RY",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts, a procedural three.js scene of a stone ring portal on a round platform at dusk. It passes `typecheck`. I couldn't run `vite build` or view the result in a browser, so the look and frame rate are untested.\n\n- **Scene:** The ring has glowing runes. Around it are ruined pillars, a fallen column, rubble, drifting mist sprites, a dusk sky gradient and stars. All textures are generated at runtime, so nothing loads from `/assets`.\n- **Portal disc:** A shader draws a spiral vortex in cyan and violet with a bright core. It animates continuously, and a bloom pass gives the glow.\n- **Particles:** 650 particles spiral into the portal and 130 motes rise from the platform and fade out.\n- **Lighting:** Cyan and violet point lights pulse slowly and colour the platform and nearby stones.\n- **Camera:** It sways slowly around the front of the portal.\n- **Contract:** `window.__TASK_STATE__` holds `portalActive`, `particleCount` and `time` and is updated every frame. `particleCount` is 780, because every particle respawns instead of dying. `window.__EVAL_READY__` is set after the first frame.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01DUaa32Ljdfmermo1qmf1RY",
+    "content": "ok"
+   }
+  ]
+ }
+]

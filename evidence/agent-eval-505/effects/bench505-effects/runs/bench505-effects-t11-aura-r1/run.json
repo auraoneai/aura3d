@@ -1,0 +1,596 @@
+{
+  "runId": "bench505-effects-t11-aura-r1",
+  "batch": "bench505-effects",
+  "arm": "aura",
+  "task": 11,
+  "idx": 1,
+  "order": 5,
+  "seed": 20261106005,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T00:23:49.347Z",
+  "docsCommit": "0014559039444cb824016d9e6f257d097e0a1bb2",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 371790,
+  "usage": {
+    "input": 3199161,
+    "uncachedInput": 3199161,
+    "output": 14494,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      13870,
+      14450,
+      27679,
+      34495,
+      41913,
+      42180,
+      42399,
+      45787,
+      50566,
+      53306,
+      56790,
+      60772,
+      63930,
+      64664,
+      70198,
+      71844,
+      75547,
+      78728,
+      81539,
+      89915,
+      95358,
+      96420,
+      97996,
+      98318,
+      100096,
+      100371,
+      100619,
+      102298,
+      104924,
+      105284,
+      108625,
+      112118,
+      112282,
+      112960,
+      126970,
+      127729,
+      132902,
+      133164,
+      146821
+    ],
+    "perTurnOutput": [
+      20,
+      41,
+      26,
+      64,
+      34,
+      36,
+      34,
+      38,
+      75,
+      24,
+      71,
+      89,
+      58,
+      68,
+      29,
+      71,
+      62,
+      101,
+      115,
+      66,
+      1436,
+      108,
+      29,
+      57,
+      57,
+      62,
+      53,
+      38,
+      45,
+      101,
+      54,
+      141,
+      196,
+      52,
+      75,
+      1163,
+      73,
+      313,
+      30,
+      9289
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1787,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1787,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1787,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4805,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4805,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6546,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 6546,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 212
+    },
+    {
+      "i": 7,
+      "t": 6546,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 9411,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 9417,
+      "type": "search",
+      "pattern": "^## 1[2-5]\\."
+    },
+    {
+      "i": 10,
+      "t": 11200,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 11,
+      "t": 11339,
+      "type": "search",
+      "pattern": "^## "
+    },
+    {
+      "i": 12,
+      "t": 14397,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 13,
+      "t": 16937,
+      "type": "list",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks"
+    },
+    {
+      "i": 14,
+      "t": 16937,
+      "type": "list",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom"
+    },
+    {
+      "i": 15,
+      "t": 18505,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 16,
+      "t": 18505,
+      "type": "read",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+      "lines": 41
+    },
+    {
+      "i": 17,
+      "t": 23339,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 18,
+      "t": 23372,
+      "type": "search",
+      "pattern": "AuraInstancedMeshHandle"
+    },
+    {
+      "i": 19,
+      "t": 24905,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts",
+      "lines": 97
+    },
+    {
+      "i": 20,
+      "t": 27881,
+      "type": "search",
+      "pattern": "setMatrixAt|instances\\.mesh\\("
+    },
+    {
+      "i": 21,
+      "t": 27881,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js",
+      "lines": 158
+    },
+    {
+      "i": 22,
+      "t": 34417,
+      "type": "search",
+      "pattern": "setScale\\(|setUniform\\??\\(|setVisible\\(|setPosition\\(|setRotation\\(|setMaterial\\"
+    },
+    {
+      "i": 23,
+      "t": 38259,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RuntimeNodeHandle.d.ts",
+      "lines": 82
+    },
+    {
+      "i": 24,
+      "t": 38260,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/lights.d.ts",
+      "lines": 29
+    },
+    {
+      "i": 25,
+      "t": 41432,
+      "type": "search",
+      "pattern": "setLight\\(|setUniform\\??\\(|setMaterial\\(|setEmissive|setFrameState"
+    },
+    {
+      "i": 26,
+      "t": 43006,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+      "lines": 276
+    },
+    {
+      "i": 27,
+      "t": 47333,
+      "type": "search",
+      "pattern": "setInstances\\(|setInstanceMatrices\\(|setLight\\(|setUniform\\("
+    },
+    {
+      "i": 28,
+      "t": 49416,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 120
+    },
+    {
+      "i": 29,
+      "t": 49423,
+      "type": "search",
+      "pattern": "setLight|setUniform|intensity"
+    },
+    {
+      "i": 30,
+      "t": 54475,
+      "type": "search",
+      "pattern": "setLight|A3D_QR_LIGHTING"
+    },
+    {
+      "i": 31,
+      "t": 58331,
+      "type": "search",
+      "pattern": "setLight|queueRuntimeLight|attach"
+    },
+    {
+      "i": 32,
+      "t": 58331,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/lights.js",
+      "lines": 130
+    },
+    {
+      "i": 33,
+      "t": 63419,
+      "type": "search",
+      "pattern": "queueRuntimeLightPatch"
+    },
+    {
+      "i": 34,
+      "t": 135833,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/game/instanceTransforms.js",
+      "lines": 223
+    },
+    {
+      "i": 35,
+      "t": 135837,
+      "type": "search",
+      "pattern": "function assertMutableInstanceBuffer"
+    },
+    {
+      "i": 36,
+      "t": 147341,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+      "lines": 30
+    },
+    {
+      "i": 37,
+      "t": 147350,
+      "type": "search",
+      "pattern": "interface AuraPrimitiveParams|AuraPrimitiveParams ="
+    },
+    {
+      "i": 38,
+      "t": 149578,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 39,
+      "t": 152808,
+      "type": "search",
+      "pattern": "interface AuraCameraController"
+    },
+    {
+      "i": 40,
+      "t": 154961,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts",
+      "lines": 61
+    },
+    {
+      "i": 41,
+      "t": 154974,
+      "type": "search",
+      "pattern": "export interface AuraCameraController\\b|export type AuraCameraController\\b"
+    },
+    {
+      "i": 42,
+      "t": 159983,
+      "type": "search",
+      "pattern": "autoRotate|app\\.camera\\??\\.(set|move|orbit|pose)"
+    },
+    {
+      "i": 43,
+      "t": 162063,
+      "type": "search",
+      "pattern": ".{0,300}autoRotate.{0,400}"
+    },
+    {
+      "i": 44,
+      "t": 162068,
+      "type": "search",
+      "pattern": ".{0,300}autoRotate.{0,400}"
+    },
+    {
+      "i": 45,
+      "t": 165073,
+      "type": "search",
+      "pattern": "autoRotate"
+    },
+    {
+      "i": 46,
+      "t": 165082,
+      "type": "search",
+      "pattern": "autoRotate"
+    },
+    {
+      "i": 47,
+      "t": 166934,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/interactions.d.ts",
+      "lines": 62
+    },
+    {
+      "i": 48,
+      "t": 166934,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/orbitInteraction.js",
+      "lines": 52
+    },
+    {
+      "i": 49,
+      "t": 172160,
+      "type": "search",
+      "pattern": "^export interface AuraCameraController|^\\s+(set|snap|cut|pose|spec|orbit|static|"
+    },
+    {
+      "i": 50,
+      "t": 174508,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 90
+    },
+    {
+      "i": 51,
+      "t": 174508,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 52,
+      "t": 181210,
+      "type": "search",
+      "pattern": "\\.autoRotate|setPose\\b"
+    },
+    {
+      "i": 53,
+      "t": 191418,
+      "type": "search",
+      "pattern": "interface AuraSkyGradientOptions|interface AuraSkyStarsOptions|interface FogNode"
+    },
+    {
+      "i": 54,
+      "t": 193395,
+      "type": "search",
+      "pattern": "(interface|type) (AuraSkyGradientOptions|AuraSkyStarsOptions|FogNodeOptions|Bloo"
+    },
+    {
+      "i": 55,
+      "t": 199736,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+      "lines": 120
+    },
+    {
+      "i": 56,
+      "t": 199736,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.post.d.ts",
+      "lines": 110
+    },
+    {
+      "i": 57,
+      "t": 199736,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 58,
+      "t": 266487,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 59,
+      "t": 266487,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 60,
+      "t": 266491,
+      "type": "search",
+      "pattern": "orbit"
+    },
+    {
+      "i": 61,
+      "t": 269412,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.js",
+      "lines": 60
+    },
+    {
+      "i": 62,
+      "t": 269412,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/camera.js",
+      "lines": 40
+    },
+    {
+      "i": 63,
+      "t": 294712,
+      "type": "search",
+      "pattern": "interface AuraFrameInfo|type AuraFrameCallback|interface AuraFrame\\b"
+    },
+    {
+      "i": 64,
+      "t": 296550,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 15
+    },
+    {
+      "i": 65,
+      "t": 371247,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 23530
+    },
+    {
+      "i": 66,
+      "t": 371790,
+      "type": "typecheck",
+      "pass": true
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/RuntimeNodeHandle.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/camera.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/lights.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/lights.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.post.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/game/instanceTransforms.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/interactions.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/orbitInteraction.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

@@ -1,0 +1,228 @@
+{
+  "runId": "bench505-effects-t10-aura-r3",
+  "batch": "bench505-effects",
+  "arm": "aura",
+  "task": 10,
+  "idx": 3,
+  "order": 6,
+  "seed": 20261106006,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:59:56.257Z",
+  "docsCommit": "0014559039444cb824016d9e6f257d097e0a1bb2",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 6819,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 6820,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 6820,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 11898,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 4,
+      "t": 11898,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 5,
+      "t": 11898,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 6,
+      "t": 13522,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 7,
+      "t": 13522,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 13522,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 9,
+      "t": 19557,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 10,
+      "t": 21275,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 11,
+      "t": 30606,
+      "type": "search",
+      "pattern": "instances\\.mesh|AuraInstancedMeshHandle|effects\\.particles|onFrame"
+    },
+    {
+      "i": 12,
+      "t": 34118,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 13,
+      "t": 34118,
+      "type": "read",
+      "path": "docs/agents/recipes-src/water-custom-shader/main.ts",
+      "lines": 67
+    },
+    {
+      "i": 14,
+      "t": 34119,
+      "type": "read",
+      "path": "docs/agents/recipes-src/sky-day-night/main.ts",
+      "lines": 52
+    },
+    {
+      "i": 15,
+      "t": 39129,
+      "type": "search",
+      "pattern": "interface AuraInstancedMeshHandle|AuraInstancedMeshHandle ="
+    },
+    {
+      "i": 16,
+      "t": 39129,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 17,
+      "t": 43540,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 18,
+      "t": 43540,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 19,
+      "t": 46104,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 20,
+      "t": 46104,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 21,
+      "t": 49113,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 22,
+      "t": 49136,
+      "type": "search",
+      "pattern": "particles"
+    },
+    {
+      "i": 23,
+      "t": 51564,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 24,
+      "t": 56053,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 142
+    },
+    {
+      "i": 25,
+      "t": 61129,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 26,
+      "t": 466283,
+      "type": "search",
+      "pattern": "createAuraApp"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/sky-day-night/main.ts",
+    "docs/agents/recipes-src/water-custom-shader/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(1,38): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

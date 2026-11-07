@@ -1,0 +1,318 @@
+{
+  "runId": "bench505-effects-t10-aura-r1",
+  "batch": "bench505-effects",
+  "arm": "aura",
+  "task": 10,
+  "idx": 1,
+  "order": 11,
+  "seed": 20261106011,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:34:02.268Z",
+  "docsCommit": "0014559039444cb824016d9e6f257d097e0a1bb2",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 1458,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1458,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1458,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 3775,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 3775,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 5363,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 5363,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 121
+    },
+    {
+      "i": 7,
+      "t": 5363,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 8550,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 100
+    },
+    {
+      "i": 9,
+      "t": 8558,
+      "type": "search",
+      "pattern": "particle"
+    },
+    {
+      "i": 10,
+      "t": 13458,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 11,
+      "t": 13458,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 200
+    },
+    {
+      "i": 12,
+      "t": 15484,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 117
+    },
+    {
+      "i": 13,
+      "t": 15484,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 14,
+      "t": 21617,
+      "type": "search",
+      "pattern": "geometry\\.dynamic|updateGeometry|setPositions|updateAttribute|setInstances|setTr"
+    },
+    {
+      "i": 15,
+      "t": 21618,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 16,
+      "t": 23197,
+      "type": "search",
+      "pattern": "dynamic"
+    },
+    {
+      "i": 17,
+      "t": 23197,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 18,
+      "t": 24980,
+      "type": "read",
+      "path": "docs/agents/threejs-to-aura3d.md",
+      "lines": 31
+    },
+    {
+      "i": 19,
+      "t": 24980,
+      "type": "list",
+      "path": "node_modules/@aura3d/"
+    },
+    {
+      "i": 20,
+      "t": 27976,
+      "type": "search",
+      "pattern": "setUniform"
+    },
+    {
+      "i": 21,
+      "t": 27976,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 22,
+      "t": 27976,
+      "type": "list",
+      "path": ".agents"
+    },
+    {
+      "i": 23,
+      "t": 29641,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 24,
+      "t": 29641,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 25,
+      "t": 33360,
+      "type": "search",
+      "pattern": "dynamic: true|\\.dynamic\\(|setGeometry|updatePositions|setInstanceTransform|setIn"
+    },
+    {
+      "i": 26,
+      "t": 35430,
+      "type": "search",
+      "pattern": "geometry\\.dynamic|AuraInstancedMeshHandle|instances\\.mesh"
+    },
+    {
+      "i": 27,
+      "t": 35436,
+      "type": "search",
+      "pattern": "setScale|setVisible|setColor|setOpacity|setMaterial"
+    },
+    {
+      "i": 28,
+      "t": 38564,
+      "type": "search",
+      "pattern": "instances\\.mesh|setMatrixAt|setTransform|dynamic|particles"
+    },
+    {
+      "i": 29,
+      "t": 38573,
+      "type": "search",
+      "pattern": "AuraRuntimeNodeHandle|setVisible|setOpacity|setColor\\b|setEmissive"
+    },
+    {
+      "i": 30,
+      "t": 40373,
+      "type": "read",
+      "path": ".agents/skills/aura3d-performance/SKILL.md",
+      "lines": 122
+    },
+    {
+      "i": 31,
+      "t": 40373,
+      "type": "read",
+      "path": ".agents/skills/aura3d-game-art/SKILL.md",
+      "lines": 60
+    },
+    {
+      "i": 32,
+      "t": 43295,
+      "type": "search",
+      "pattern": "effects\\.burst|effects\\?\\.burst|registerPreset"
+    },
+    {
+      "i": 33,
+      "t": 46632,
+      "type": "search",
+      "pattern": "burst\\(|AuraAppEffects|\\.diagnostics"
+    },
+    {
+      "i": 34,
+      "t": 46641,
+      "type": "search",
+      "pattern": "burst|AuraAppEffects"
+    },
+    {
+      "i": 35,
+      "t": 105142,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 477
+    },
+    {
+      "i": 36,
+      "t": 105332,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 37,
+      "t": 108821,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 38,
+      "t": 108821,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 39,
+      "t": 116936,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 40,
+      "t": 116936,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-game-art/SKILL.md",
+    ".agents/skills/aura3d-performance/SKILL.md",
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes.md",
+    "docs/agents/threejs-to-aura3d.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(1,56): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

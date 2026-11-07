@@ -1,0 +1,396 @@
+{
+  "runId": "bench505-effects-t11-aura-r3",
+  "batch": "bench505-effects",
+  "arm": "aura",
+  "task": 11,
+  "idx": 3,
+  "order": 2,
+  "seed": 20261106002,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:08:25.097Z",
+  "docsCommit": "0014559039444cb824016d9e6f257d097e0a1bb2",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "wallMs": 530823,
+  "usage": {
+    "input": 1384147,
+    "uncachedInput": 1384147,
+    "output": 2756,
+    "turns": 25,
+    "perTurnInput": [
+      3334,
+      13814,
+      14443,
+      25584,
+      39011,
+      46418,
+      46986,
+      54027,
+      60716,
+      60842,
+      61023,
+      61343,
+      61974,
+      62409,
+      63171,
+      63533,
+      63812,
+      67472,
+      74448,
+      74858,
+      77639,
+      78313,
+      78706,
+      81421,
+      48850
+    ],
+    "perTurnOutput": [
+      20,
+      12,
+      34,
+      56,
+      87,
+      83,
+      18,
+      18,
+      78,
+      11,
+      16,
+      36,
+      93,
+      52,
+      205,
+      80,
+      16,
+      93,
+      528,
+      27,
+      94,
+      136,
+      44,
+      142,
+      777
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2954,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2954,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 2954,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4675,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4676,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6740,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 6740,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 121
+    },
+    {
+      "i": 7,
+      "t": 6741,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 6741,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 9,
+      "t": 10012,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 10,
+      "t": 10013,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 11,
+      "t": 10013,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 212
+    },
+    {
+      "i": 12,
+      "t": 13382,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 13,
+      "t": 13386,
+      "type": "search",
+      "pattern": "^## (8|9|10|11|12|13|14|15)\\."
+    },
+    {
+      "i": 14,
+      "t": 17309,
+      "type": "search",
+      "pattern": "particles|bloom|setInstance|setUniform|setScale|setColor"
+    },
+    {
+      "i": 15,
+      "t": 17309,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 16,
+      "t": 19184,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 203
+    },
+    {
+      "i": 17,
+      "t": 23902,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 164
+    },
+    {
+      "i": 18,
+      "t": 28029,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 19,
+      "t": 29236,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 20,
+      "t": 30828,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 21,
+      "t": 30828,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 22,
+      "t": 33424,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 23,
+      "t": 33424,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 24,
+      "t": 37340,
+      "type": "search",
+      "pattern": "setInstanceTransforms|setInstanceMatrix|setInstance|updateInstances|setTransform"
+    },
+    {
+      "i": 25,
+      "t": 39565,
+      "type": "search",
+      "pattern": "AuraInstancedMeshHandle|setMatrixAt|setInstanceAt|instanceTransform"
+    },
+    {
+      "i": 26,
+      "t": 39569,
+      "type": "search",
+      "pattern": "nstance|runtime|setScale|setUniform|setVisible|setOpacity"
+    },
+    {
+      "i": 27,
+      "t": 45470,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 271
+    },
+    {
+      "i": 28,
+      "t": 45633,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 29,
+      "t": 50906,
+      "type": "search",
+      "pattern": "setOpacity|setScale|setVisible|setEmissive|setMaterial"
+    },
+    {
+      "i": 30,
+      "t": 50906,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 31,
+      "t": 52545,
+      "type": "search",
+      "pattern": "setScale\\(|setPosition\\(|setVisible\\("
+    },
+    {
+      "i": 32,
+      "t": 56567,
+      "type": "read",
+      "path": "docs/agents/recipes-src/translation-table.check.ts",
+      "lines": 90
+    },
+    {
+      "i": 33,
+      "t": 56567,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 34,
+      "t": 84926,
+      "type": "search",
+      "pattern": "setIntensity|setLight|intensity\\(|setColor|setEmissive|setOpacity|setMaterialPro"
+    },
+    {
+      "i": 35,
+      "t": 84932,
+      "type": "search",
+      "pattern": "setIntensity|setLightIntensity|\\.setColor\\(|setOpacity|setEmissive"
+    },
+    {
+      "i": 36,
+      "t": 86496,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/references/look-overrides-4.7.md",
+      "lines": 94
+    },
+    {
+      "i": 37,
+      "t": 92218,
+      "type": "search",
+      "pattern": "setLight"
+    },
+    {
+      "i": 38,
+      "t": 92218,
+      "type": "error",
+      "tool": "read_file"
+    },
+    {
+      "i": 39,
+      "t": 99858,
+      "type": "search",
+      "pattern": "setPose"
+    },
+    {
+      "i": 40,
+      "t": 99865,
+      "type": "search",
+      "pattern": "setPose|app\\.camera"
+    },
+    {
+      "i": 41,
+      "t": 101818,
+      "type": "search",
+      "pattern": "camera\\??\\.(setPose|set|lookAt|setPosition|orbit)\\w*\\("
+    },
+    {
+      "i": 42,
+      "t": 101822,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 43,
+      "t": 111496,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 78
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-materials-environments/references/look-overrides-4.7.md",
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "docs/agents/recipes-src/translation-table.check.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(1,50): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

@@ -1,0 +1,1115 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01LADopFqnFMQtu9VzLdtqbb",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01PFpym7jVVxvtsELk5TVgLy",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_018LBH9JbC8djn4D7oHSNaPy",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01LADopFqnFMQtu9VzLdtqbb",
+    "content": "1\t# Task 10: Fireworks display over a night harbor\n2\t\n3\tBuild a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The scene is a fireworks display at night over a calm harbor. Show a dark star-dusted night sky, a water surface that faintly reflects the light of the bursts, and a low dark silhouette of a shoreline or pier with a few small buildings or boats. Rockets launch from the shoreline one after another at irregular intervals, rise with a short glowing trail, and burst into spherical shells of many glowing sparks. Use at least three clearly different burst colors (for example gold, red, and blue or green), and make each burst fade and fall under gravity over a second or two before it disappears. Some bursts should leave trailing streaks. The sky and water should be lit subtly by the active bursts. The scene must animate continuously without user input, with a slow gentle camera drift or a fixed camera framing the sky and harbor. Aim for a polished, cinematic look: strong glow on the sparks against a dark background, no flat or washed-out colors, no visible geometry artifacts. Keep it smooth at interactive frame rates. Also expose window.__TASK_STATE__ = { bursts: <total number of bursts that have exploded so far>, activeParticles: <current number of live spark particles> } and update it every frame.\n4\t\n5\t## Rendering contract (all tasks)\n6\t\n7\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01PFpym7jVVxvtsELk5TVgLy",
+    "content": "1\t# Aura3D\n2\t\n3\t> Aura3D 5.0.2: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai\n4\t\n5\t## Read first\n6\t\n7\t1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked); the full table is in https://aura3d.auraone.ai/llms-full.txt under \"three.js to Aura3D\". Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.\n8\t2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`.\n9\t3. Do not open `node_modules` or `dist` to find an API: signatures are in `docs/agents/api-signatures.md`.\n10\t\n11\t## Pitfalls that cost the most turns (one-line fixes)\n12\t\n13\t- Dark or flat frame: authored lights with no environment get no image-based light. Add `environments.neutral({ intensity })` or a `looks.preset(id)`; metals need it to reflect anything.\n14\t- Colour applied twice: instance `colors` multiply the material colour. Use a `#ffffff` base material when you pass `colors`.\n15\t- Moving a node: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_018LBH9JbC8djn4D7oHSNaPy",
+    "content": "1\t<!-- AURAONE-POLICY-POINTER:START -->\n2\t# AuraOne AI Coding Agent Policy (repository pointer)\n3\t\n4\tCanonical machine-wide policy: `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` (already loaded globally by Codex, Claude Code, Qwen, Kiro, Gemini, Grok, and OpenCode; any other agent **MUST** read `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` before starting work).\n5\tDomain reference files in `/Users/gurbakshchahal/.config/agent-policy/reference/` (`INDEX.md`, `cloud-cost-and-ephemeral-lifecycle.md`, `gitlab-ci-cost-and-lifecycle.md`, `remote-execution.md`, `ci-selection.md`, `parallelism.md`, `shared-service-access.md`, `cloud-contexts.md`, `cloudflare.md`, `vercel-neon.md`, `github-npm.md`, `gitlab-mirror.md`, `ui-typography-density.md`, `linkedin-outreach-research-gate.md`, `room-communication-playbook.md`) are mandatory on-demand reading **only** when triggered by §2 of the canonical policy (never load all reference files unconditionally).\n6\tCloud & GitLab CI Cost, Pre-Authorized Cheapest-Denominator Testing & Mandatory Teardown: **Agents are pre-authorized to run CI/CD, builds, E2E/Playwright suites, and infrastructure tests across AWS, Azure, Cloudflare, GCP, and GitLab CI/CD WITHOUT waiting for Gurbaksh's approval**, provided they **(1) use the cheapest denominator option from the 5-tier hierarchy** via `~/.local/bin/auraone-cost-guard` (existing infra → serverless `$0`-idle Azure ACR Tasks / Container Apps Jobs, AWS CodeBuild, Cloudfla"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_0191h36Juon18LxJTwo5TQLi",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01HUZ3Dw8TYUioeUAqFpWgm1",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_0191h36Juon18LxJTwo5TQLi",
+    "content": "README.md\nagent-context.md\nagent-quickstart.md\nanti-hallucination-rules.md\napi-signatures.md\napi-surface.md\nart-direction.md\nasset-selection.md\nasset-workflow.md\nbenchmark-recipes.md\nbuild-a-game.md\nbuild-playbook.md\ncinematic-scene-quality.md\nclaims-and-boundaries.md\ncodebase-map.md\ndeployment.md\neffects-and-scene-kits.md\ngame-example-standards.md\ngame-showcase-build.md\ngenre-kits.md\nlessons-learned.md\nnative-capability-recipes.md\nnew-game-checklist.md\nno-hackjob-rules.md\nprompt-to-3d-workflow.md\nrecipes-src/\nrecipes.md\nrendering-proof-required.md\nskills-examples/\ntemplates.md\nthreejs-to-aura3d.md\ntrial-502-protocol.md\ntroubleshooting.md\nverification.md"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01HUZ3Dw8TYUioeUAqFpWgm1",
+    "content": ".agents/\nAGENTS.md\nTASK.md\ndocs/\nindex.html\nllms.txt\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_018drteWJ9MD8XBnvbxS9CEU",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_0172ps5gCcVcvTxTKX8iyzE7",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/agent-quickstart.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01UzXDTfvhiEbF5u4Eir9VUe",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01SfQaemPK3Vt6bdLppyF5ZD",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents/recipes-src"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_018drteWJ9MD8XBnvbxS9CEU",
+    "content": "1\t# API signatures (answer-first)\n2\t\n3\tGenerated by `node tools/docs/gen-api-signatures.mjs --write` from the real `@aura3d/engine` root types (`packages/engine/src/public/index.ts`). Do not edit by hand: without `--write` the same command fails when this file is stale. Read this instead of opening `node_modules/@aura3d/engine` type files; every example line is type-checked in [`recipes-src/signature-examples.check.ts`](recipes-src/signature-examples.check.ts). The complete export list is [`docs/api/root-exports.md`](../api/root-exports.md); this page covers the roots agents look up most.\n4\t\n5\tColumns: Call (parameters, `?` = optional), Returns, Options (the keys of the first options object, `?` = optional). Colours are CSS strings, vectors are `[x, y, z]` tuples, angles are radians unless the name says `Deg`.\n6\t\n7\tDefaults the types do not carry (read from `agent-api/nodes/lights.ts`):\n8\t\n9\t| Call | Defaults |\n10\t|---|---|\n11\t| `lights.ambient` | intensity 0.28, color #ffffff |\n12\t| `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |\n13\t| `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |\n14\t| `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |\n15\t| `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |\n16\t\n17\t## `createAuraApp`\n18\t\n19\tMounts the scene, owns renderer, resize, loop and disposal. `await app.ready()` before the first frame is judged.\n20\t\n21\t```ts\n22\tconst app = cre"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_0172ps5gCcVcvTxTKX8iyzE7",
+    "content": "1\t# Agent quickstart: zero to a rendering Aura3D scene\n2\t\n3\t**Why Aura3D.** A lit, framed, orbitable product is 10 lines of TypeScript ([tagline check](../../evidence/vs-threejs/tagline-check/)), and `model(assets.x)` is a typed reference to a hashed, licensed model.\n4\tHUD, touch, audio, a fixed-step loop and a safety net ship in the same install, so a game needs no extra libraries.\n5\tThe `llms.txt`, skills and recipes in this project are written for coding agents, which is why the rules below are short.\n6\t\n7\tAura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.\n8\t\n9\tRead first: [`threejs-to-aura3d.md`](threejs-to-aura3d.md) (if you would write X in three.js, write Y; every line type-checked), then this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).\n10\t\n11\t## 1. Scaffold and run\n12\t\n13\t```bash\n14\tnpx create-aura3d@latest my-scene --template product-viewer   # 21 templates: docs/agents/templates.md\n15\tcd my-scene && npm install\n16\tnpm run dev        # vite dev server\n17\tnpm run build      # typecheck + vite build\n18\t```\n19\t\n20\tGames: start from `mini-game`, `racing-starter`,"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01UzXDTfvhiEbF5u4Eir9VUe",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01SfQaemPK3Vt6bdLppyF5ZD",
+    "content": ".gitignore\nfire-smoke-sparks/\nnight-lights-emissive-bloom/\npbr-product-viewer/\nprocedural-humanoid/\nprops-kit-instances/\nsignature-examples.check.ts\nsky-day-night/\nterrain-water-fog/\ntranslation-table.check.ts\ntsconfig.json\nvite.config.ts\nwater-custom-shader/"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "For the spark particles, I'm weighing whether to use instanced spheres with per-frame transform updates or custom geometry, and checking similar fire-smoke-sparks and glowing night-light setups for reference.\n\n",
+    "signature": "CAQS1gUKEggTEAEYAjgBQgh0aGlua2luZxIMIVH62ka+eC+aA7oHGgygZOHcMGXXYvY0XZsiMBp8x/iT6JXaVJ+1i4IYcwo7UIC6AuPbK9U9JI/u/vS9U/U1fvkfYxvBLP3kWEp5birxBLvVirLO/2PRO6uo07xUMuf9Pi9kVl5FpXA2I0OZCV6vsByXnxV360h4121dR4A5JR1Pkyvc23LIoT/kItV8IaTmY4eKiqahLDHSQ2Xk0MDGABbdVwh7uRUCH9Elgj1hxHxY5U/rLeqJOLeHDpW2tQvOCTA88c3VRKSN8sCL6ziQIDXRemw9V0muvr+tkqdktSdis2yF4huWNGcul56VCXabAfNpxEUHXX1RuP5Jjhcj52MZhHYIhmexMxVt4dylY/t/8jXjFTqsry2UhwIrKN02RuaSxp+tPCoCx126U9gjLrpKPWEeX+HL/kIssCnPq5T/Q2N/cNyhFyzBFcyImJg2kBgUFry3hfJ67oSGtwn2Jm2O842F5xW+CKHl3dUOK84jHRBE8Jq60is8qQamvtY6E90I7m24HiGutjaRMKYFABNSynKbUcmx0UK1G6cObVebK8Xsm6+dxHExVZdpI4tAKe/uAAddlbL9Gn2EGxv4sKeEKzDlE4aXb1friyXlb7WWb0Hk8qjd5jAjrZ2maxLNbpw9eMxVzob5AFQYGUav6WgfBVg7Dls9jS3fUb/PGZB6XEjtlstFDVdNsfyyAt0c0JWeIcSaUjbe2Sx8Axoqr+7y9xduwqZOhMgwerb56iBigCuVlRE4cQO+8/3skdUB6N91P/vO7YjN090m02kEvTijUrO3/W6o2f5A617uyIt/Kezy+pZByQm/xRNoX5mI/Tk3HXqR0qn0PXcaRmqmlgv2O7xTlsdZI3dAlDnEAFSEYc6ZyTWVBQDmmjqi8W2UCDZHXBZEqPbKJIJyMxDGU04UPuj2+DNMD7/Ib1n+4M0YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014eRQcjgJr4UHggUNbidfZu",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents/recipes-src/fire-smoke-sparks"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01BFL9Q6t3jWBZ8WGPFXH3CP",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents/recipes-src/night-lights-emissive-bloom"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014eRQcjgJr4UHggUNbidfZu",
+    "content": "index.html\nmain.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01BFL9Q6t3jWBZ8WGPFXH3CP",
+    "content": "index.html\nmain.ts"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016yxziAqSmdz6joSePfdpa9",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01W2SAKHvNkmnUXfsLjkd2da",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016yxziAqSmdz6joSePfdpa9",
+    "content": "1\timport { camera, createAuraApp, effects, environments, instances, lights, material, primitives, scene, type AuraTransformSpec } from \"@aura3d/engine\";\n2\t\n3\t// A campfire with no sprite art: three effects.particles emitters (flames, smoke, sparks) that use the engine's\n4\t// built-in sprite atlas (\"flame-loop\", \"smoke-a\", \"spark-streak\"), logs and stones from primitives, a warm point light.\n5\tconst stones: AuraTransformSpec[] = Array.from({ length: 10 }, (_, i) => {\n6\t  const a = (i / 10) * Math.PI * 2;\n7\t  return { position: [Math.cos(a) * 1.05, 0.12, Math.sin(a) * 1.05], rotation: [0, a, 0], scale: [0.42, 0.26, 0.34] };\n8\t});\n9\tconst wood = material.pbr({ color: \"#4a3020\", roughness: 0.95 });\n10\t\n11\tconst app = createAuraApp(\"#app\", {\n12\t  scene: scene({ background: \"#07090f\" })\n13\t    .add(environments.neutral({ intensity: 0.12, background: false }))\n14\t    .add(lights.directional({ name: \"moon\", position: [-8, 10, -6], target: [0, 0, 0], intensity: 0.7, color: \"#6f8fe0\", shadow: true }))\n15\t    .add(lights.point({ name: \"firelight\", position: [0, 1.0, 0], intensity: 26, color: \"#ff9a3c\", distance: 14, decay: 2, shadow: false }))\n16\t    .add(primitives.plane({ name: \"ground\", size: [30, 1, 30], material: material.pbr({ color: \"#2a2f24\", roughness: 1 }) }))\n17\t    .add(instances.sphere({ name: \"stones\", transforms: stones, material: material.pbr({ color: \"#6b6b70\", roughness: 0.95 }) }))\n18\t    .add(primitives.cylinder({ name: \"log-a\", size: [0.24, 1.6, 0.24], material: woo"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01W2SAKHvNkmnUXfsLjkd2da",
+    "content": "1\timport { camera, createAuraApp, effects, environments, instances, lights, material, primitives, scene, type AuraTransformSpec } from \"@aura3d/engine\";\n2\t\n3\t// A night street: lantern posts with real point lights, glowing windows, a moon, fog and bloom.\n4\t// Emissive materials only look like light sources when bloom and fog give them a halo and depth.\n5\tconst lampSpots: Array<[number, number]> = [[-4, 6], [-4, -2], [-4, -10], [4, 2], [4, -6], [4, -14]];\n6\tconst warmWindows: AuraTransformSpec[] = [];\n7\tconst coolWindows: AuraTransformSpec[] = [];\n8\tconst towers: AuraTransformSpec[] = [];\n9\tlet seed = 99;\n10\tconst rand = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);\n11\t\n12\tfor (const side of [-1, 1]) for (let i = 0; i < 6; i += 1) {\n13\t  const x = side * 9.5, z = 8 - i * 6.5, h = 6 + rand() * 7;\n14\t  towers.push({ position: [x, h / 2, z], scale: [4.6, h, 5] });\n15\t  for (let row = 0; row < Math.floor(h / 1.6); row += 1) for (let col = 0; col < 2; col += 1) {\n16\t    if (rand() < 0.35) continue; // dark windows\n17\t    (rand() < 0.7 ? warmWindows : coolWindows).push({ position: [x - side * 2.33, 1.2 + row * 1.5, z - 1.1 + col * 2.2], scale: [0.04, 0.7, 0.9] });\n18\t  }\n19\t}\n20\t\n21\tconst stage = scene({ background: \"#05070d\" })\n22\t  .add(environments.neutral({ intensity: 0.25, background: false }))\n23\t  .add(lights.directional({ name: \"moonlight\", position: [-10, 16, -10], target: [0, 0, -4], intensity: 1.1, color: \"#7d9bff\", shadow: true }))\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to check whether the particle emitter supports burst mode rather than just a continuous rate, so I'm searching the type definitions for burst-related options.\n\n",
+    "signature": "CAQShwYKEggTEAEYAjgBQgh0aGlua2luZxIMXWj4Rv9GPe6cALGIGgywAZY0drlPFsx+jvwiMDuKsLv42RpIsjypCleyY0sDHC6AHInezIJgPQVW7kY+NtmDFFz+ptro/HX3BxEO+iqiBf6/+103JneM6XQfUkQlUyfOONmvUNRCXkLTvyR1QqxLmO012hR0AiT+VAmV9RtU5cQR38eKVt6Tko9GVYuZSfVd0d4mhXInP8suwoc2Xv/XF4pbsFV6rR7p2Uu8mXJZLwl5hG5YKJbwdUDyIt0YAbN3WDbyuzE53GTFQ3aIU4x0Znu0cz/bBXECWcSNzHyrWEPZadivu0ec3Ji9NG4VvrZ2+uPiQX2KKjov8Ve3NBJXKOJXZUWWbFoifax9XS/1bEPywtACO+ygHbUtBNgu62cor2DNZJ8vwU6jvWgbZMJkY3GZR1NrlVv+vYc4YxUjCFGsbpJZPzm9GPp47OTqAzAgUMQotnmrsw0fxLc+I07ww72TWbL3LbkBi3fZ2NAe2nLavi7IGElqnNoSiJsBfr72BR/ZTXKTPDCEbgzZeMiBp5kBRyQzKmZhQU85EvenZvT8L7W/fjrkNPtaUYmC2lZ+N7x/2bRxLO/I5rVCu2NeN4de5PkawcO0ZH4GIORbENaX1ec6f4TYJYtK935tem9Ml9qchakz8bLV+qEpnVlVb0JBSIHIz8zRzUxxjoU1PxIl3obUIp0Du6mgnbahUhorAfjXxNLsuxvmRU+6istyJOuu5bFgpfykszj3vPkWUcBzQdxMxnrNLz2/b7Z0oebAXCBmJUc4YScBi2B54aiEmKBYKsUw3Hrp2Dwg92Ge5Lvph2qUhUVbIImaIPcVTbJqwwbXwSO1xPxvBsNTb3ROXY+1dUeQ+sU0jfTudp3UjzKbUMtnf+Ot1GAM9aiLbgj3dlK//DX/5Ca2MgRgB9aGGo5XjIwSRUWkwSEPspcvl/1MhGJf3hHGMmKMmxguQ1rdPTCqK4IO9Gnu95e/m2XUgjdqw9NEPLACC7vEVe8g57wzGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01UNjciiM6Dhpg7NyaU1SfQj",
+    "name": "search",
+    "input": {
+     "pattern": "burst|AuraParticle",
+     "path": "docs/agents"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01MywpBzZUz84v1w1o7Roxc5",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 143,
+     "limit": 270
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01UNjciiM6Dhpg7NyaU1SfQj",
+    "content": "docs/agents/lessons-learned.md:23:[Omitted long matching line]\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01MywpBzZUz84v1w1o7Roxc5",
+    "content": "143\t|---|---|---|\n144\t| `lights.lensFlare(options?: AuraLensFlareOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: name?: string \\| undefined; position?: AuraVec3 \\| undefined; light?: string \\| undefined; elements?: readonly AuraLensFlareEle…; occlusion?: AuraLensFlareOcclusion \\| …; edgeFade?: number \\| undefined; intensity?: number \\| undefined; runtime?: AuraRuntimeNodeSpec \\| und… |\n145\t| `lights.ambient(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; intensity?: number \\| undefined; color?: string \\| undefined |\n146\t| `lights.hemisphere(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; skyColor?: string \\| undefined; groundColor?: string \\| undefined; intensity?: number \\| undefined; position?: AuraVec3 \\| undefined |\n147\t| `lights.lightProbe(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; sh?: readonly number[] \\| undef…; skyColor?: string \\| undefined; groundColor?: string \\| undefined; intensity?: number \\| undefined; position?: AuraVec3 \\| undefined |\n148\t| `lights.directional(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; position?: AuraVec3 \\| undefined; target?: AuraVec3 \\| undefined; intensity?: number \\| undefined; color?: string \\| undefined; shadow?: boolean \\| AuraDirectional… |\n149\t| `lights.point(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; p"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm considering using sphere instances with per-frame transform and color updates, but I need to check whether the runtime node API actually supports updating instances that way before committing to this approach.\n\n",
+    "signature": "CAQSgwcKEggTEAEYAjgBQgh0aGlua2luZxIMQT9FchSj7wbrSB0wGgyWuRNdwqkdYM73LBciMN2/lnB91yicaOtNl2VvRVZV8f12hmk/Wdth8xwANEyP3gt2LtwcbcEJuM7KeFl6pSqeBupWS3rUUZn795uv6JyF58/XhmvINcg0dTQnEse8apPn/xJqSJDI91LxNy11qsMHL/FG4lrM/zQtO6TrzDsIHsGel2F4UGZk/IbU3zSbLcSrSONktqRenr82JxqGOQwKVi04zRRVVuBTtpQWxRoIKzJmKaNyHt9b0urwJEwzT0LyZ1Wyi+oFxxJrnN5NA5SfaJJryPCaMRN3qgoHHp+cnE071VFXjsUI5oVFxIOaEH9yrOOBOZzoNDA91aPeVuRty4Wn3aNTrnQIyWLd2OzTuBMtsZP2SPRMcls5J4A/DZyo9p/xSCoTwQHKgYbQZPFTBfcbflbu7a0pvX6KsjM3bswQJRy7S0Rr9mPBsVxETbHPhCRLrXbYNqKF3sCseLhj502DpIvC18euI0cGpHHarYf9PSxLdcSJ/6KDGtDEJEpvN2jkg0MgnszPTCYK6fZ5fBywQ0Ghxk+owxzz8sdo2aFRGZ3dqikeSAk33zq2cJLfY6zDvNcVSdq9H6e/KRBdPJaXgxqpFkFo4y91P/4qvNyyj3hvUEPUvLmbBTfgkhmih7q0ZJbBrOJbSLmtjvvSXzqIZwlwopdXjRZnLzbj1CkjILHYv1ma+2uHeTvKlaCQFL4VrWyCf/T/4EZEaegaRYCUYQ4rFvK2JpAMLLLvHeyOVO6vWb991xC09pO8yrz0LC7CYsVPW/p7uBj6yz8Lmd69g8ZT4n9KBwh0K9TN5t7bKojafHaWROeHOAjEzFLS88pS5zho9SFD+z3E+h2077WzeO+OYG4eDYJAbJVQUt+FNCzuCYYV6rkg0YC1kdflK2Xv9/DO/XGnsM9QnijUS6a7UrtZGpn7tC6NXgKdeB+5V7Pwa/l+nT529NV/f9SbMU58nQZ+HgTiD7zL+lCg+Mzxbd3vdW7gpeNlFqAdg1JmRqVWx0tbRxRp9r3WJLoJ0QAn99q01GLEzoQg29g2J8zXFfrfc+7JiAlqltTb3YgixMYEnUQaZJsVIyoDb1re5fYLUuNOtjN9VCsVCWeWcybTXFxpO1mtFNITbsYVwiqD5ExETWt9NdXglX9cWBgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0194mNwrxnTnAwmEtoiHg7Zk",
+    "name": "read_file",
+    "input": {
+     "offset": 244,
+     "path": "docs/agents/api-signatures.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0194mNwrxnTnAwmEtoiHg7Zk",
+    "content": "244\t| `effects.transition(options: AuraTransitionOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; progress?: number \\| undefined; name?: string \\| undefined |\n245\t| `effects.lensDirt(options: AuraLensDirtOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; intensity?: number \\| undefined; name?: string \\| undefined |\n246\t| `effects.mask(options: AuraPostMaskOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; invert?: boolean \\| undefined; opacity?: number \\| undefined; name?: string \\| undefined |\n247\t| `effects.clearMask(options?: AuraNativePostBaseOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: name?: string \\| undefined |\n248\t| `effects.afterimage(options?: AuraAfterimageOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: decay?: number \\| undefined; name?: string \\| undefined |\n249\t| `effects.bloom(options?: BloomBuilderOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n250\t| `effects.neonBloom(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n251\t| `effects.ambientOcclusion(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n252\t| `effects.contactOcclusion(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n253\t| `effects.colorGrade(options?: AuraColorGradeOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n254\t| `effects.antiAlias(options?: "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "The tricky part is handling dynamic per-frame particles. I'm weighing options like effects.meshParticles versus rate-based effects.particles, and checking how instances.mesh returns a handle for setting matrices and colors per instance, so I should dig into the recipes docs on that and dynamic geometry updates.\n\n",
+    "signature": "CAQS6gcKEggTEAEYAjgBQgh0aGlua2luZxIMQfsrrd/MwcR2DADJGgzUKP/U6OANW+PTmrQiMJn1DCG3mW1vs3Z4DNR/IhcdfLzRQuiOEvkEoyGOZfo0L4CYbCQP3JOKlUDP4GiahiqFB+l5ILrEuEVneaiZwpDNYEm9sPJqn1M0NanHV658cdrFMf/VkQF299w29tx0en7X6g8TDi9YxiSMIaaoq/Iemr/wIoUC+tQ5RtHiuugZ26P311j4crhasXI87AZZO67Fg1MlJK90SLFIM/l/48KYLjjW8n4AafyvEYT0uPBsF8DgEvl7H2i47JljsR9bTzuq4N2+W8+LaPlSRANXxFi6Tx/Vl/+NAURkEOPg1MkFXZi7QSCacNbRtxUZs8+Imr+2SqrFvdRFtU6TyTTVqzgo1sxhDo+qW2tLeL1bzVWH9tLXqAxOCM4ibJpLQtd2s+z2UAsxlj6Ym7A/nC7I06jzVzv340P9AoErjDyzjONjL2TlSy2qkm5H1tC/YaJH30DF9I8AcGz/UrNQrMFrd0TLq9KbMrLiF8B4zbCdqIouEWiI7ZYAaf3yK03OF1C6AMvCRo0t9kXqunAU7vGKKAR9sRySM0fM+4cI7n28hBC7ZCuxOH0xK1bFHQJALjE1vyBbsXSKtocWWeDlWSVfxNYEz5Y6wRxKCJhs42VANVzmQfIDiRwUb4vUv7s2O2yYH9NsNsstV5/lnnPDQOXVghKgoEFHbVM7+cpgbjzig3F0YoG0pjNEYbMxZKGwqzSQdFmb1cgxVC69ZJ/HqXTCdycLnLQzhgKM547Y/dt8w19jYDaHNm1a81O48Yy+GgpEuthwzFeU8pk9/OYzACpwzDhte4jSdoDih9GE9r6B1E34ta9W0vrQfzqFW1sGDHqX+pwlWCC082Hsy4BrKAsHvga2Fokiau0UhydpMJ9Os1RQ7xnMJLKdijIKKiRN48KhrJZRcD67UJjTbV6eVnINbLzH9fxJWHzTzHYKg/U3ysjURDMOYKIgSsr0jduTmYA57ZDiWpqDFeIFMyeDFrqXqCZ2IY23+3XmzPqr2PL4zNBuWSPpni2kQZnQv8tHvG/y1sbaDEkDklDb52kJ9Y++6sLfooFmeJD38JEvsXB+U/Dp61ec1drcpa1b57SIhVSwhuowvd3yggzjvpMJ3HoyK9e29fx12iuz3yvTdWlwXl99qlBhyvLvBgBA92bpbholtwBxvC7XkcWvciLlBbv1321ODb3VY+k9ZQS5tgTzSdAliK0R008jmyhibtv8g4PcTMYYXSLrJqb/4vpsS7VVDFYNp22QRQ6k5444EKfVFvT5Dlp7hdrXvDkYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PNxb5ijpgmKGXvMQvnFFqs",
+    "name": "search",
+    "input": {
+     "pattern": "instances\\.mesh|setMatrixAt|setColorAt|emitBurst|\\.burst\\(|updatePositions|geometry\\.dynamic",
+     "path": "docs"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PNxb5ijpgmKGXvMQvnFFqs",
+    "content": "docs/agents/agent-quickstart.md:102:[Omitted long matching line]\ndocs/agents/api-signatures.md:304:| `instances.mesh(geometry: AuraBatchedGeometryInput, material: AuraMaterialSpec \\| undefined, count: number)` | `AuraInstancedMeshHandle` |  |\ndocs/agents/api-signatures.md:320:[Omitted long matching line]\ndocs/agents/troubleshooting.md:45:- If you need a subdivided plane, build the grid with `geometry.dynamic` and confirm the vertex count in the frame rather than relying on `params` segment counts.\ndocs/agents/troubleshooting.md:111:**Textured model drawn through `instances.mesh` or `batched.mesh` is white** - fixed in 4.1; upgrade and give the texture `colorSpace: \"srgb\"`.\ndocs/agents/build-a-game.md:247:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:11:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:18:[Omitted long matching line]\ndocs/agents/recipes.md:385:- Replaces in three.js: Five `InstancedMesh` nodes with `setMatrixAt` and `setColorAt`.\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "content": [
+   {
+    "type": "text",
+    "text": "Let me check the type declarations."
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JXDciy2ovmFgmd95LxYoDp",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d",
+     "pattern": "AuraInstancedMeshHandle"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01L9C9jLhUd5zW4WrPip9jLG",
+    "name": "list_dir",
+    "input": {
+     "path": "node_modules/@aura3d/engine"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JXDciy2ovmFgmd95LxYoDp",
+    "content": "node_modules/@aura3d/engine/dist/engine/public/index.d.ts:12:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/isolated-index.d.ts:259:export type { AuraInstancedBufferView, AuraInstancedGeometryInput, AuraInstancedMeshBoundingSphere, AuraInstancedMeshHandle } from \"./nodes/instancedMesh.js\";\nnode_modules/@aura3d/engine/dist/engine/agent-api/index.d.ts:228:export { instancedMesh, AuraInstancedMeshHandle } from \"./nodes/instancedMesh.js\";\nnode_modules/@aura3d/engine/dist/engine/agent-api/index.js:249:export { instancedMesh, AuraInstancedMeshHandle } from \"./nodes/instancedMesh.js\";\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instances.d.ts:123:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts:33:export declare class AuraInstancedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts:96:export declare function instancedMesh(geometry: AuraBatchedGeometryInput, material: AuraMaterialSpec | undefined, count: number): AuraInstancedMeshHandle;\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/batchedState.d.ts:113:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js:22:export class AuraInstancedMeshHandle extends AuraNodeBuilder {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js:42:        return new AuraInstancedMeshHandle(builder.toJSON("
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01L9C9jLhUd5zW4WrPip9jLG",
+    "content": "README.md\ndist/\npackage.json\ntemplates/"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01S9TrS4631G63NscZhYNvm3",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01S9TrS4631G63NscZhYNvm3",
+    "content": "1\t/**\n2\t * SG-01 / parity-L5 — `instances.mesh(geometry, material, count)`: three.js\n3\t * `InstancedMesh` parity over the L5 dense-instance store.\n4\t *\n5\t * The node is `kind:\"batched\"` with `instanced: true`: all `count` slots are\n6\t * alive at creation and `count` acts as the draw bound, matching three.js\n7\t * `InstancedMesh.count`. `setMatrixAt`/`setColorAt` write the same flat\n8\t * `matrices`/`colors` arrays the renderer uploads through the C-07\n9\t * `InstanceBufferLike` contract — writes are the real GPU path (L5-01), not\n10\t * a decompose-to-spec fallback. `computeBoundingSphere` unions the geometry\n11\t * bounds transformed by every live instance matrix.\n12\t */\n13\timport { AuraNodeBuilder } from \"./builder.js\";\n14\timport { BatchedMeshState, type AuraBatchedGeometryInput } from \"./batchedState.js\";\n15\timport type { AuraBatchedNode, AuraColor, AuraMaterialSpec } from \"./types.js\";\n16\t/** `instances.mesh` geometry input: pooled `Geometry`, builtin name, or custom spec. */\n17\texport type AuraInstancedGeometryInput = AuraBatchedGeometryInput;\n18\texport interface AuraInstancedMeshBoundingSphere {\n19\t    readonly center: readonly [number, number, number];\n20\t    readonly radius: number;\n21\t}\n22\t/** Buffer view matching three.js `mesh.instanceMatrix`/`instanceColor`. */\n23\texport interface AuraInstancedBufferView {\n24\t    /** Backing dense store — mutate through `setMatrixAt`/`setColorAt` or flip `needsUpdate`. */\n25\t    readonly array: Float32Array;\n26\t    needsUpdate: boolean"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 11,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm weighing whether per-instance colors will properly multiply against an emissive material, since that seems uncertain, so I want to check how instancedMesh and batched geometry inputs are documented elsewhere for reference.\n\n",
+    "signature": "CAQSuwgKEggTEAEYAjgBQgh0aGlua2luZxIMOmZw/J8n7Aw0aRhIGgw4xPr9Uq2Ndv2xTsciMK0fBiL27bZ83VoSXoPdE/W39ErrFl+Caw9mgGM+tz8rCZF4OwjddvPKaEAIL0qUqirWBzijP84FWbiq14lChiVzTWYIjRuIzpszlnVLQGllCKFpQrwRqBWdglDQhESogGMpVT7Accld8Be34QYb0RLXHp6v2rvPAjROGdGHPxgDQRt8R1uMAPFbw/4h+QuBR08U+yZM9syrWJrKtwHogsEOevAEcTMFkNo32dse8jnLWyHJYnbZZ63OdhU0QYfoySL482k+tA1U22x3Vj7+WJYh/d7TLsMvRoq61x+7LNmEgvbxj8ktkyxvXPjBIOyYEFgxBaqVpw0cFNcVUxVWoP+dpvaUFQXN5HUHLc3a+CBc9nZsZ5VMVX+VGxp2Zgh/hSGzu2tovs6KxJozLw6Db89IqZ0+CzTNxzpsffH3eGqF0j2et+ufthoLFgnzYIcapD7Ai/Emn+PuvgUzwhVyC6C6FWHrR7hA9ujsD97azETPIdGvjqriEdQ8cEnsAETBlBdnOKOvdEMLC+Dv6FcVWYyUk8ryTUHzFka1439gIKy0GLP1Ll0OeyV34p8Sd1eJRIY2ndw+1AjzN+wgZZfec2TsTs6McM5kO8n7pIgHNh+TgI3JXfJJKeFKjDH3IFPUDANxNcPh/9y7Sheu8vRz1CMYDBdn5tum8qhLR7Zqbhq8a/etAAdQTG+BhL4WTUhlDxa3NHoCI3+78lZU3OwGmg4fWAYtlEz/c2jB8eAS7U4m6zKxSrK5pCihTLbt+BBH2x33BWI9KnDvcwQu3AoZ60eYnAYyQt6o/PXIrgunxhMrun1UbaSF56gqkzMiHvmQwfFORRNvolJHa/fCbpzbflffAMJUgPgIDkg3N1M/HjiOe3O5AxYdfTUtidInSvCJvw5BIB+5HHfHo6droOv4Mg3yTNNFA5ZaN5iKLrM3SqRlCBAAvpuXmpH2shJVR5VWz+eX2xZ5HZvJVtYFWN5g/Gndz+afagLRQBBABaK2QJh7hrwyS/ogQiyKkrTzrZACSoZUDwrAfGv0W13aS/UKXKEL36H3k4de9grZbjkbApVBzHCSB07IJiqzQS4v3FXK8jfeJcs8LWdy1e7pYinHK1idbU92Dl5FMk9/Mcu9ooqd2FFrgaCt4mEKRxGdA+rM9kHNcznLYGK8cParNeqI0ydGtdNAyvjWY4So7BFZndhYnZ+PaYxWeSo/EXV4LD53WNyiO+jL1ywtGi+znCOK4KT0jhj6+dDfy8S+sSxmwaQG7eyK0Ij4LvEZQ4hbvhSlBGF/iUnxRNNLUdBkOfq6EaWVfP+xrE88YXzJqs2n6k/0HYIw81MaqY0f+OcNIyco8LYFLhxpQstMpGtQ9S15t+DR/0+kHa19JhQYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018ThHK37QjfTCdmZMiaSwgV",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "pattern": "instances\\.mesh|instancedMesh|emissive"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014qbWrhf2tmkcPeDDLMWZPt",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/batchedState.d.ts",
+     "pattern": "AuraBatchedGeometryInput"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018ThHK37QjfTCdmZMiaSwgV",
+    "content": "251:const glow = material.emissive({ color: \"#8fefff\", emissive: \"#46dcff\", emissiveIntensity: 2.4 });\n671:### 15. Night street with point lights, emissive windows and bloom\n673:- Goal: Instanced towers and emissive window quads (two nodes: warm and cool), six lantern posts each with a real `point` light, a moon, dark fog, `effects.bloom`.\n675:- Replaces in three.js: `EffectComposer` + `UnrealBloomPass` + `PointLight`s + emissive `MeshStandardMaterial`.\n677:- Capture: `recipes-src/night-lights-emissive-bloom/frame.png`; source: `recipes-src/night-lights-emissive-bloom/main.ts`.\n705:[Omitted long matching line]\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014qbWrhf2tmkcPeDDLMWZPt",
+    "content": "5:export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;\n92:export type BatchedGeometryResolver = (input: AuraBatchedGeometryInput) => Geometry;\n113:[Omitted long matching line]\n207:    addGeometry(input: AuraBatchedGeometryInput): number;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 12,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should check what builtin primitive names are expected, like \"sphere\" or \"box\", by looking at AuraBuiltinPrimitive.\n\n",
+    "signature": "CAQS4AUKEggTEAEYAjgBQgh0aGlua2luZxIM/W/HvgzTxSToZ2KQGgwlt/M+/J2XLhSRoUkiMI9kcOtsGOFb3clSlZV+BrA5/f+Kagbtz2PbsNQGKrB+ujXacsYIUYRLBOhj28CJ5Cr7BGPMIa6It64sZyaQAOGMb81aZ5QEzo6JbP+1D0GxBaj0IYztevolCajhqk8w9EJXNmGuFprxFtrj54Mnnu7LzA0Bsm9DBBqLffffaVc+apGofimtFzeYP+gHK0I4qMxTyff6O8i+enGixbjYW/gBticw354cxucq8N1/xZpgDzGvyWZpSSBCxsUUWuoXXTI4pqqjYvUcpzrZ4QgsDQIkiu57N8boA/I8HUX2an665HJSUAfymMYfqatf8tsUCa2na+moBdoAjs5ounuVKHhIAZyriz+SV5sv3tgFk1hi43mUeN0dw0aHgDZtioKjpSYx07zPtnUrBWaKawfoGL6noDnkf21hQbnCc3ezI6PxR3n7n+7+v6gbQ2200XfGKpgwgtifw8ojXVDx2TjAnYyewQde3Dgs3cGwqQnzHzB7tJM1MqGkqN9E4iWQDkMnukQuR+Y+EtI5sq8nQufHrhUl4xyAzp9Wuo6HFozl1dTrEg1SpTvDuPC5X121BZnBc6HB9chxJGVOSwMwDIT2eWxk0GREEj6zu8VPys7C1zMthYdM0myJcwLU9zitOznZQHPks1vNddhDvmexRfxKiBnbg9GoSBrmYY3wUPz/xt04XXp7ktxNvE2FNL8u6Rk3AhQ0VFvBQO1WqLCSV7jeo12rqkvlnXSuVT+LgBkFx4RITLDMxd/QuKWgtfYa2+61CiMnUsLQKzdSgMOmegwCM7lG+Iar9qH4F/nYQiFfNYIpQ9iz7/Fz7bB7XOLhJab5txXFAaQqa1Rq22SLA1htcUN6Vl4vLhIkNaAFwuK4iOoxn4KtpgOzSgsiATynthse7/Xm4Vwq2C790wM4k5oCGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_011XAV1g4jcsre3KitKKthf8",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes",
+     "pattern": "type AuraBuiltinPrimitive\\b"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QpY2d8zE5rU4XFCLL7oC7j",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 12,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_011XAV1g4jcsre3KitKKthf8",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:468:[Omitted long matching line]\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QpY2d8zE5rU4XFCLL7oC7j",
+    "content": "1\t/**\n2\t * SG-01 / parity-L5 — `instances.mesh(geometry, material, count)`: three.js\n3\t * `InstancedMesh` parity over the L5 dense-instance store.\n4\t *\n5\t * The node is `kind:\"batched\"` with `instanced: true`: all `count` slots are\n6\t * alive at creation and `count` acts as the draw bound, matching three.js\n7\t * `InstancedMesh.count`. `setMatrixAt`/`setColorAt` write the same flat\n8\t * `matrices`/`colors` arrays the renderer uploads through the C-07\n9\t * `InstanceBufferLike` contract — writes are the real GPU path (L5-01), not\n10\t * a decompose-to-spec fallback. `computeBoundingSphere` unions the geometry\n11\t * bounds transformed by every live instance matrix.\n12\t */\n13\timport { AuraNodeBuilder } from \"./builder.js\";\n14\timport { BatchedMeshState, registerBatchedState, registerBatchedColorConverter, registerBatchedGeometryResolver, registerInstancedMeshFactory } from \"./batchedState.js\";\n15\timport { createProductionPrimitiveGeometry } from \"../compiler/primitives.js\";\n16\timport { colorToRgba } from \"../colorUtils.js\";\n17\t/**\n18\t * `instances.mesh` handle — an `AuraNodeBuilder` (scene-addable) plus the\n19\t * three.js `InstancedMesh` API. The builder's spread-clone keeps the same\n20\t * `batchedId`, so chained handles share one dense state.\n21\t */\n22\texport class AuraInstancedMeshHandle extends AuraNodeBuilder {\n23\t    state;\n24\t    instanceMatrix;\n25\t    instanceColor;\n26\t    constructor(node, state) {\n27\t        super(node);\n28\t        this.state = state;\n29\t        const self "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 13,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm weighing how to handle fading and dimming with instance colors—unsure if emissive or custom shaders actually respond to per-instance color changes, so I want to check how existing examples handle this.\n\n",
+    "signature": "CAQSrgkKEggTEAEYAjgBQgh0aGlua2luZxIMLheV5Ho/IVvmBDU9GgycXrcFdoH1Z0j77kYiMPThnQu7jlaaexrtOCu+OiAMenPM+1GQAzoz38q4B6WzWsLpn19yLlhDNveRikauzirJCDwQGYNygQxT1U8c3o3EL8CvB95KN3RKMdJeJaODnx7Z5qaEo+4XPkJ5i2JK8Sg+nTTFtLtmK2ggYu9KoQj05ZIZh8PMuHk7Uc4Y+H3XyUlrHf8aLCChrJYQhprNh1bn3Np69zQj/fCvT5OzRJlvdNRt/gTuXBNyxmHGdbXWB+f8imd4Ez4gYcuu4Cyi/Cwp5JcF5JbdQ0Xv5eBmuc4NqK8wzhwuH4vVX09i2pJGTRB6HpEqC+p9LeDxtezFpPZscGsLpHEsqmnM9bbAuHkrFs76BD8KvBD3FyiqXQLu8KmQkL2V9McWmFj18GgwFrw/8Wn6/vQN4KHCM+RLK2MWTmSDGmlE+yO+dNsnxIwQm4UVebur+7G+vQq+xyK4TifflpTRuodr9wRAl9lA6IqSbzRDmeRn4do92B5pO0klGFZomKbpws0NRrEXztxpWLEvZBcFhA+BQ3lIKKyY5YbA5qz+UpV9hZF6YpG6rckzVQrjDuk3ilnj3sxcDRDgq+lj0KmwoIJYYNID7s0CAwoLCQbciqMAkgDcUp+e0+nzaXer8PF2DWdljTJ4gtQx5tTwHGxhNCaw2sFoBCZNohy/pvuY0VxPmdxmFeGmfRm16Z8ik4sM2//aGk2zPWCw61aQJeuzSuHAxrzNgp+dMmVB3I5F0+iPfNVbYhtauSwPDUgzmrM5WYWNdiE2MKUxoTTgqQBjnvgpA4q1gmCx/i7yyG44fU0Hb2D/GHf4aUtA79BqndasY4loWkGRpitgthgZ0TNIkP4aOEo4AhM4lqE3DmP2RG16K1mW408VX4sVGMX5hTkXaHiPTIHqAbGiO86bx9GgC31XiTHm/j4pyCW/Jxl1AO8sBSMJ19czLUFMUDSkd85UBejZVmQmdwCRIdIO7Mv1s2Wh+rre7O9kZ0sXEFu+0vtIOhr3nV/ZPtoj57lvS+pnxeKTu9zZ9E6eRLW1QEfsvJzwq9BtN/nX8JVAUxLmU0UKmGhajq0PEJonkXMOWw8FYXl72mqQK8ZA9b2Bpond7tBeEfbh7JbSNwmra1jAyqzb5DxsGllukehkE6Oy0/OTfAc1gsvBNd1hxfVNTeJnEAj5yVG8p4b0rnZyZZpWgr8SZcNbBy86Mgd9fXcp+ojuCwd9rg571Q87UDRwHIZbPVHjx6L+1HaIR85xdOEZXlSwzUd+gkAMeqJRu3Ss0h4vgltiJJ5ZaC286sy6dBsY0x3PQXnxTIPbkhZhLW8Tgfps7i26lzhmA4HelYea2M78wKk2XypbynRBP9tNV4SeIBVWkBdiaV9cw/8oA8qKzwbNpUOnbJ5ZTNM3SHsBTb4bqRZufsPr/Nk7Qg6HTXEDklCK/F4cc26qRZinkQtxmwuoDCFNkt04mBvTLRmqxggPhzXxLmMC7AoaY70eblYCzs+HSwH7Wbc1xN3Q/ccK4O5NeZoYKJNz/iXjLCfcReIlTO0CV01+GAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01WY8ZeAJK7xh8zkXkQ327w1",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist",
+     "pattern": "attribute vec3 instanceColor|instanceColor;|vInstanceColor"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 13,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01WY8ZeAJK7xh8zkXkQ327w1",
+    "content": "node_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js:276:layout(location = 12) in vec4 a_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js:291:    v_vertexColor = a_color * a_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js:338:layout(location = 12) in vec4 a_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js:363:    v_vertexColor = a_color * a_instanceColor;\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:529:        lines.push(\"uniform float u_a3dInstanceColors;\", \"in vec4 a_instanceColor;\");\nnode_modules/@aura3d/engine/dist/rendering/webgpu/GeneratedPbrProgram.js:953:  ${f.instancing?.color ? \"output.instanceColor = instanceColor;\" : \"\"}\nnode_modules/@aura3d/engine/dist/rendering/webgpu/GeneratedUnlitProgram.js:196:  ${f.vertexColors ? \"output.color = color;\" : \"\"} ${f.instancing?.color ? \"output.instanceColor = instanceColor;\" : \"\"}\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibrary.js:30:layout(location = 12) in vec4 a_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibrary.js:36:  v_vertexColor = a_color * a_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibrary.js:75:layout(location = 12) in vec4 a_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibrary.js:80:out vec4 v_instanceColor;\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibrary.js:90:  v_instanceColor = a_instanceColor;\nnode_mo"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 14,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KooXLpUWsiBq8KgiNEqmo4",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+     "offset": 440,
+     "limit": 200
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 14,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KooXLpUWsiBq8KgiNEqmo4",
+    "content": "440\t    \"uniform mat4 u_projectionMatrix;\",\n441\t    \"uniform vec3 u_cameraPosition;\",\n442\t    \"uniform float u_time;\",\n443\t    \"uniform vec2 u_resolution;\"\n444\t];\n445\tlet builtinLoweredNames;\n446\t/** `u_*` names declared by BUILTIN_DECLS — the single source for the lowered-name collision check. */\n447\tfunction builtinLoweredUniformNames() {\n448\t    builtinLoweredNames ??= new Set(BUILTIN_DECLS.map((decl) => /\\b(u_\\w+)\\s*;/.exec(decl)?.[1]).filter((name) => name !== undefined));\n449\t    return builtinLoweredNames;\n450\t}\n451\tfunction uniformDeclLines(uniforms) {\n452\t    // The fragment-stage default integer precision can be mediump. Explicit highp\n453\t    // preserves all 32 bits of integer uniforms before any author precision line.\n454\t    // Graph-generated GLSL already declares aggregates after their struct types.\n455\t    // Hand-authored data uniforms must likewise supply their own declaration.\n456\t    return uniforms.filter((uniform) => uniform.auraType !== \"data\").map((uniform) => `uniform ${uniform.auraType === \"u32\" || uniform.auraType === \"i32\" || uniform.auraType === \"texture3d\" || uniform.auraType === \"depth2d\" ? \"highp \" : \"\"}${uniform.glslType} ${uniform.name};`);\n457\t}\n458\t/**\n459\t * three-style aliases. Object-like macros — emitted only when the authored\n460\t * source does not itself declare the identifier, so authored declarations win.\n461\t * Type-carrying aliases keep authored semantics (`mat3` reads a padded slot).\n462\t */\n463\tfunction aliasLines(uniforms, sta"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 15,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm setting up a custom unlit shader material using instance colors, with additive blending and depth write disabled, computing vertex positions through the model-view-projection and instance matrices while passing color through to the fragment stage.\n\nI'm now worried whether batched instance nodes actually support custom materials with instancing attributes in this renderer -- that seems risky. I'm considering alternatives like CPU-driven billboard quads with dynamic geometry and custom per-vertex attributes instead, so I need to check how dynamic geometry updates work at runtime.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XwYKE4dLw9kWGZT1bzsXcf",
+    "name": "search",
+    "input": {
+     "path": "docs",
+     "pattern": "dynamic"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 15,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XwYKE4dLw9kWGZT1bzsXcf",
+    "content": "docs/agents/native-capability-recipes.md:102:[Omitted long matching line]\ndocs/agents/native-capability-recipes.md:207:composition is intended: it replaces dynamic diffuse under covered texels and\ndocs/agents/native-capability-recipes.md:208:retains dynamic specular. Bake positions and normals must be in world space,\ndocs/agents/agent-quickstart.md:102:[Omitted long matching line]\ndocs/agents/api-signatures.md:305:[Omitted long matching line]\ndocs/agents/api-signatures.md:318:[Omitted long matching line]\ndocs/agents/api-signatures.md:319:[Omitted long matching line]\ndocs/agents/api-signatures.md:320:[Omitted long matching line]\ndocs/agents/api-signatures.md:324:[Omitted long matching line]\ndocs/agents/api-signatures.md:325:[Omitted long matching line]\ndocs/agents/claims-and-boundaries.md:65:[Omitted long matching line]\ndocs/agents/claims-and-boundaries.md:79:[Omitted long matching line]\ndocs/agents/troubleshooting.md:45:- If you need a subdivided plane, build the grid with `geometry.dynamic` and confirm the vertex count in the frame rather than relying on `params` segment counts.\ndocs/agents/threejs-to-aura3d.md:11:[Omitted long matching line]\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Dh5E645XTXSwcsTEJi65qx",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "pattern": "^#{2,3} "
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01BU7Me5BGkqpWfTg3vN4Bx6",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/threejs-to-aura3d.md",
+     "pattern": "dynamic|instances\\.mesh|BufferAttribute"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Dh5E645XTXSwcsTEJi65qx",
+    "content": "16:## 1. Rotating PBR cube with orbit control\n39:## 2. A forest of thousands of instances (fog, shadows, per-instance colour)\n74:## 3. A skinned character with clips and a crossfade\n104:## 4. A deterministic fixed-step game loop with restart\n132:## 5. Custom GLSL (animated water on a subdivided grid)\n181:## 6. A ball dribbled by hand (hand and floor contact, handoffs, proof)\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01BU7Me5BGkqpWfTg3vN4Bx6",
+    "content": "11:[Omitted long matching line]\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 17,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01SuQDVo4ixDcbVXs4YkhHFd",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "offset": 39,
+     "limit": 145
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01EhEtXMipogfEVvswVBhSMb",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/threejs-to-aura3d.md",
+     "offset": 11,
+     "limit": 1
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 17,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01SuQDVo4ixDcbVXs4YkhHFd",
+    "content": "39\t## 2. A forest of thousands of instances (fog, shadows, per-instance colour)\n40\t\n41\t```ts\n42\timport { createAuraApp, effects, instances, lights, material, primitives, scene, type AuraTransformSpec } from \"@aura3d/engine\";\n43\t\n44\tlet seed = 12345; // any seeded RNG: same forest every load\n45\tconst rand = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);\n46\t\n47\tconst trunks: AuraTransformSpec[] = [];\n48\tconst canopies: AuraTransformSpec[] = [];\n49\tconst canopyColors: string[] = [];\n50\tfor (let i = 0; i < 8000; i += 1) {\n51\t  const a = rand() * Math.PI * 2;\n52\t  const r = 75 * Math.sqrt(rand());\n53\t  const x = Math.cos(a) * r;\n54\t  const z = Math.sin(a) * r;\n55\t  const s = 0.8 + rand() * 0.8;\n56\t  trunks.push({ position: [x, 0.8 * s, z], scale: [0.34 * s, 1.6 * s, 0.34 * s] }); // unit shapes: scale sets the size\n57\t  canopies.push({ position: [x, 1.3 * s + 2, z], scale: [2.4 * s, 4 * s, 2.4 * s] });\n58\t  canopyColors.push(`hsl(${100 + Math.floor(rand() * 40)}, 55%, ${25 + Math.floor(rand() * 15)}%)`);\n59\t}\n60\t\n61\tcreateAuraApp(\"#app\", {\n62\t  scene: scene({ background: \"#b4c8d8\", camera: { mode: \"perspective\", position: [0, 80, 125], target: [0, 2, 0], fov: 45, near: 20, far: 450 } })\n63\t    .add(lights.hemisphere({ skyColor: \"#cfe0f2\", groundColor: \"#5d6b45\", intensity: 1.1 }))\n64\t    .add(lights.directional({ position: [90, 130, 60], target: [0, 0, 0], intensity: 3, shadow: true }))\n65\t    .add(effects.fog({ color: \"#b4c8d8\", density: 0.00"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01EhEtXMipogfEVvswVBhSMb",
+    "content": "11\t| `BufferGeometry` + `setAttribute` + `setIndex` | `geometry.custom(geometry.define({ positions, normals, uvs, colors, indices, bounds }), { name, material })` | Typed arrays in; `bounds` required; `colors` are per-vertex RGBA. `geometry.dynamic` for geometry you rewrite. |\n[showing lines 11-11 of 31; pass offset=12 to continue]"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 18,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm realizing I could drive the spark particles with a GPU shader that computes position analytically from per-vertex burst center, velocity, and birth time against a time uniform, letting the CPU just track which particles are alive by counting elapsed time. That raises the question of how to pre-allocate burst geometry for dynamically spawned bursts.\n\nI'm sketching a pool of around 8 reusable burst nodes, each holding billboard quad geometry for roughly 250 sparks, with mutable uniforms (origin, start time, color) and per-vertex attributes for random spark directions and speeds, using the view matrix's columns to build camera-facing right/up vectors for billboarding. For trailing streak effects, I'm considering rendering each spark as several fading ghost copies offset slightly earlier in time, encoded as extra per-vertex attributes.\n\nNow I'm working out spark motion physics -- drag-adjusted velocity, gravity pulling sparks downward, randomized lifespans around 1.6-2.4 seconds, and fading alpha with a flicker effect plus shrinking size over the spark's life, while also accounting for rockets that rise before bursting.\n\nFor the rocket itself, I'm considering whether to fold it into the burst node system or give it a separate pool with its own trailing ghost quads tracing the ascent path, reusing the same shader structure as the burst ghosts but driving the position with an eased interpolation from launch point to apex.\n\nI'm figuring out the per-vertex attributes needed—direction vector, life/ghost/size/phase info, and reusing the uv coordinate as the corner offset for the particle quad so I can compute radial falloff in the fragment shader. I also need to make sure the geometry's bounding box covers the full burst area so it doesn't get frustum-culled incorrectly.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016JHUBau8sAfDx3YhCcbxsY",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes",
+     "pattern": "interface AuraCustomGeometrySpec|AuraGeometryAttributeSpec|AuraVec3Attribute =|AuraCustomAttribute"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 18,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016JHUBau8sAfDx3YhCcbxsY",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 19,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01SQRWC1HaFrR7Kc9etpGRYo",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "interface AuraCustomGeometrySpec"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KLKZpy8bpNXi6Mr3MRX1hW",
+    "name": "search",
+    "input": {
+     "path": "docs",
+     "pattern": "attributes: \\{|itemSize|custom attribute"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 19,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01SQRWC1HaFrR7Kc9etpGRYo",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts:43:export interface AuraCustomGeometrySpec {\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KLKZpy8bpNXi6Mr3MRX1hW",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 20,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01EDPBQnKcWiG5hGgmjqLtSE",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts",
+     "limit": 130
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 20,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01EDPBQnKcWiG5hGgmjqLtSE",
+    "content": "1\timport type { SdfTextStyle } from \"../../rendering/index.js\";\n2\timport type { AuraColor } from \"./nodes/types.js\";\n3\texport type AuraRootVec3 = readonly [number, number, number];\n4\t/**\n5\t * SG-05 (threejs-parity L2): vertex data accepts the legacy tuple layout or a\n6\t * flat packed array (Float32Array or plain number[]). Tuple input keeps the\n7\t * pre-L2 `defineAuraCustomGeometry` shape bit-for-bit; flat input is the\n8\t * typed-array `geometry.dynamic` / `handle.setGeometry` path.\n9\t */\n10\texport type AuraVec3Attribute = readonly AuraRootVec3[] | Float32Array | readonly number[];\n11\texport type AuraVec2Attribute = readonly (readonly [number, number])[] | Float32Array | readonly number[];\n12\texport type AuraIndexAttribute = readonly number[] | Uint16Array | Uint32Array;\n13\texport interface AuraGeometryGroupSpec {\n14\t    readonly start: number;\n15\t    readonly count: number;\n16\t    readonly materialIndex?: number;\n17\t}\n18\texport interface AuraGeometryDrawRangeSpec {\n19\t    readonly start: number;\n20\t    readonly count: number;\n21\t}\n22\texport interface AuraGeometryMorphTargetSpec {\n23\t    readonly name?: string;\n24\t    readonly positions: Float32Array | readonly number[];\n25\t    /** Optional per-vertex normal deltas, packed as xyz components. */\n26\t    readonly normals?: Float32Array | readonly number[];\n27\t    /** Optional per-vertex tangent deltas, packed as xyz components. */\n28\t    readonly tangents?: Float32Array | readonly number[];\n29\t}\n30\t/** Typed components accepted "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 21,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should also check the rules around assertCustomAttributeName to see which names are disallowed.\n\n",
+    "signature": "CAQS7QUKEggTEAEYAjgBQgh0aGlua2luZxIMvPHzOCNEMnqCTaZCGgz4m+buAoR9msuAjxwiMA7oowQMYcYApsg/GfgiVaNh2yp05FuG8JJioUZbWczmqU9LCFl875VnqsC8umB4piqIBTJUH2PzMJRx4pblAv1GqkoZRmFhN4x8CrJhMJ0xtYye+Jal1Z+iiFzLGAopkgF4GDVRnXhtrlYMXTeSJcxXiBb+6eD91pc7st0K9x8poba8F39eW+7KA0bYxiKr0/hbLxGjIXMvI9NV8/EZ6HcEb1m0zKJ9L9Ll//cvqXdqrHO6cJRqrGY+UWRe0dUjulk2T3J0zyIxFUMW3ppGM0jlxUmIFTxA+sUPrhcK3RDI/ctygq4q9Xob44/LMNPLKcFGDNAnH/TGvGU3F0Ta7PlRN2x4mywd6Ax96pTzOzoVQSCAk6iFfIbmNg/cDpxOmKwsItP1VTVjoT3z1HC8PjcZfj6rrrBOa6vmO2Pk6raLCRIUbdw3VGQgpSKTgYhWoJX41hdrLsvDQSPHMchvv7f74zwsPsu9g5I2V9MhFsGipEEdu6a//9rzzb8hfzUsL59nuVA+LNKKbnvWFf1PCM8dUNjYB/1t+Fbqtu2VZz5wspOl6OXznYv/pjpsuGNNYyOss40+mDAMiPmH7bofGKoUnLwija2JYHRbYfm8Eb9I0lO/km8lFrRsKj/eWBkLN/zUrtYbwmmCO5QL027i3C6QSTbbXdsEHgqy+bdhjHJbeLFhnbptGzIsOUIrnf27BFOgcYzZr1oXVYw1KRT+pqYIQDOiVmtcpW17a/BrrHU8TjQ9QUiFcDKOQlt1n/QS2eqbmLEkeLhFPXq9eFT4MhHrPbLxa7fn1YuWxQotoeJjW1GAIpaiPy8KlibjI5dJYZsi/YXU6k03LBwTv/Xr8fQV4dKHSCQb6PtkKcqfO5JEdGsBpuIXz/j6LWjqO5LwbAEnkv12c3VsqikpEQ9zqbg/PpVrpyR2Q1B5BBgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FcqGHhNMBzndLRc7jeytBh",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.js",
+     "pattern": "assertCustomAttributeName"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 21,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FcqGHhNMBzndLRc7jeytBh",
+    "content": "89:export function assertCustomAttributeName(name) {\n109:        assertCustomAttributeName(name);\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 22,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017zxqR1KVDtoAGpyFneSKKX",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.js",
+     "limit": 70,
+     "offset": 60
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01CmwU72RokD7g922uq5Mmsf",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+     "pattern": "blending|transparent|depthWrite"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 22,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017zxqR1KVDtoAGpyFneSKKX",
+    "content": "60\t        ...(spec.normals ? { normals: spec.normals } : {}),\n61\t        ...(spec.uvs ? { uvs: spec.uvs } : {}),\n62\t        ...(spec.uv1s ? { uv1s: spec.uv1s } : {}),\n63\t        ...(spec.colors ? { colors: spec.colors } : {}),\n64\t        indices: spec.indices,\n65\t        ...(spec.attributes ? { attributes: cloneCustomAttributes(spec.attributes) } : {}),\n66\t        ...(spec.groups ? { groups: [...spec.groups] } : {}),\n67\t        ...(spec.drawRange ? { drawRange: { ...spec.drawRange } } : {}),\n68\t        ...(spec.morphTargets ? { morphTargets: spec.morphTargets.map((target) => ({ ...target })) } : {}),\n69\t        ...(spec.topology ? { topology: spec.topology } : {}),\n70\t        ...(spec.dynamic === true ? { dynamic: true } : {}),\n71\t        ...(spec.bounds ? { bounds: { min: [...spec.bounds.min], max: [...spec.bounds.max] } } : {})\n72\t    };\n73\t}\n74\tfunction cloneCustomAttributes(attributes) {\n75\t    return Object.fromEntries(Object.entries(attributes).map(([name, entry]) => [name, {\n76\t            ...entry,\n77\t            data: Array.isArray(entry.data) && entry.stride === undefined && entry.offset === undefined\n78\t                ? Float32Array.from(entry.data)\n79\t                : entry.data\n80\t        }]));\n81\t}\n82\t/** R-23: names a custom attribute may not take — engine semantics, their updateAttribute aliases, and the `a_` engine prefix. */\n83\tconst RESERVED_CUSTOM_ATTRIBUTE_NAMES = new Set([\n84\t    \"position\", \"positions\", \"normal\", \"normals\", \"uv\", \"uv0\", \"uvs\", \"uv1\","
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01CmwU72RokD7g922uq5Mmsf",
+    "content": "216:    if (spec.blending !== undefined && (typeof spec.blending !== \"string\" || ![\"normal\", \"additive\", \"subtractive\", \"multiply\", \"custom\"].includes(spec.blending))) {\n217:        invalidSpec(owner, `blending \"${String(spec.blending)}\" is unsupported`);\n219:    if (spec.blending === \"custom\") {\n220:        invalidSpec(owner, \"blending \\\"custom\\\" needs a blend-factor channel that does not exist yet — use normal/additive/subtractive/multiply\");\n222:    const transparent = spec.transparent === true || (spec.blending !== undefined && spec.blending !== \"normal\");\n223:    if (transparent && spec.depthWrite === true) {\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 23,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm adding a vertex attribute for direction in the shader, and now checking what uniform types are available to use for passing data in.\n\n",
+    "signature": "CAQShAcKEggTEAEYAjgBQgh0aGlua2luZxIMLGGAbknr/A/JWj+PGgyxuuvR0CJprzx1OyIiMBCN0db+tHUxSh4YMzpwcm+zoKTIc7l4nBwg7Glk0/zl/Vq2QtrZZ+FY/UPAyoeEpCqfBlPqFfEB5cofnYI5md4tpcn2G0i8LzBGgN4jwksNwYhTbeSoyHq1rDvx0JXLn/el4oAov0cqUgXwSvds2geV75EDJEKA11RhYjxmpXzUszp4WMr61CiYZM35R4BLdi169DEuRAeeBJDbh7I9yEY9ll6Y4DImQIH1JfIezHIZd+tVPUGp3lIIPkLTFZaMfg5wSBIbIfueVOWLB9BZlLnLnqO6VHqC7IK+eC+aPOVyWfl5sU3/lvtz8EOWvIWQKL5IzaDafSvVWy+JVmfl51uPfu4t6iDvwxd4eDDMBO89Q9cSkffWJBq2A+mYkUnQISmATdgbHPs/dh3XgQdrO3i+tZbJJt1Nq1tIrjiRtx/nECUe5ioRfKp2Qz+kT9rnbtpAwd0nULVViA+tQKFBK2niOat9T8zZYzHEUbPOO80ef4My/kmoF+dRFusEcnaBkBAVOk49cmOQkRpIVQjy8mZz6abLLsYcF/SR+hblRmLCuZETPUXJOkdy6HbIrtxpa6xMKk5N1o1gJt63mt311YIW3JZQwOyffdN8QqY3GeExKLSMRq6gwjFp7FdGJou0nkZorwocFFIt9A56SSZcULTATHw8Vdlm/wJyHk8pTUW0AJ31S4s2rm5TteAmwULNFALOHRqzSIJ1Z/e+gY5/wv5VEkh8Ma7HZnxIejN4l8UPVjPsnEQKk39rcc+FsDsojYhePefGMt+huFOGhzgvzlh+T58XXj/yKQ68hFsw7KCLzBErE7eMUZio6V/3xLfuLdx7sRFFAyPOGV65x/hkjpaBXET6AlkjsW6K1a8Vrc0ZP/wO1de8xRs5VkwQUpGK/igo2es9ZIp2R+CtaRZcz9vjVzbKJxpZ2XFcXcQ4T77+HMMOeRf4uGIdFq+7X+aT2t4pA77Woj0opeHs3Y5qFLR6eruU+5dmHDn1ttaG9ZOF3o+BPkPo0QpPZEH5le/0XPF59I2xA+eOoXAtUdnh5f1e32OkjyHVgzJ89SSi+jin3qYhHJKJGZJhe/Yx+ndzTjd23Xkr8NU1uISgWURLyI18lE8EeptLmvPQE35oNRQqCvEYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Y7F4HXS9S2k5W4YzbAgKpd",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+     "pattern": "\"vec3\"|\"f32\"|case \"vec"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01RwpztHQtxPBBGqXaJdnCdt",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "setUniform"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 23,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Y7F4HXS9S2k5W4YzbAgKpd",
+    "content": "58:    \"f32\", \"i32\", \"u32\", \"bool\", \"vec2\", \"vec3\", \"vec4\", \"color3\", \"mat3\", \"mat4\", \"texture2d\", \"texture3d\", \"depth2d\"\n277:const scalarCount = (type) => type === \"f32\" || type === \"i32\" || type === \"u32\" || type === \"bool\" ? 1\n279:        : type === \"vec3\" || type === \"color3\" ? 3\n366:    vec3: { kind: \"vec3\", glsl: \"vec3\" },\n368:    color3: { kind: \"vec3\", glsl: \"vec3\" },\n1404:        case 3: return \"vec3\";\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01RwpztHQtxPBBGqXaJdnCdt",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.d.ts:145: * Validates a `handle.setUniform(name, value)` call against the node's\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/primitives.js:554:    // parity:L1 (SH-02): staged `handle.setUniform` writes land on the compiled\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:2087:        // region parity:L1 — SH-02 `setUniform(name, value)`: write into the\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:2094:        setUniform(name, value) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:2422:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:801:/** material → authored-name → lowered uniform descriptor (runtime setUniform lookup). */\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:1376:/* Runtime uniform writes (SH-02 handle.setUniform)                           */\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:1501: * Validates a `handle.setUniform(name, value)` call against the node's\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:1507:        throw new AuraRuntimeError(\"invalid-material-spec\", \"setUniform requires a node material created by material.custom(spec)\");\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:1515:        throw new AuraRuntimeError(\""
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 24,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01U3ccwvpSa7xuFmtiZc1rVJ",
+    "name": "read_file",
+    "input": {
+     "limit": 40,
+     "offset": 2080,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NfVbYY5tYHDqm6BFZGmXNW",
+    "name": "read_file",
+    "input": {
+     "limit": 80,
+     "offset": 1495,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 24,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01U3ccwvpSa7xuFmtiZc1rVJ",
+    "content": "2080\t            if (weight === undefined) {\n2081\t                return morphTargetWeights.get(normalizedName) ?? 0;\n2082\t            }\n2083\t            morphTargetWeights.set(normalizedName, sanitizeMorphWeight(weight));\n2084\t            bumpVersion();\n2085\t            return this;\n2086\t        },\n2087\t        // region parity:L1 — SH-02 `setUniform(name, value)`: write into the\n2088\t        // material's uniform block without recompiling (frozen in\n2089\t        // nodes/types/runtime.ts; owner lane L1, do not edit outside this region).\n2090\t        // The write is staged in `customMaterial.ts`'s per-runtime store; the\n2091\t        // production compiler applies it to the live `PortableShaderMaterial` each\n2092\t        // frame via `Material.setParameter` — the shader key never changes, so no\n2093\t        // program is recompiled (program count stays flat across updates).\n2094\t        setUniform(name, value) {\n2095\t            // A GLB model node has no authored custom material to write into. Ports used to wrap every call in try/catch;\n2096\t            // it is now a documented, once-per-uniform diagnostic no-op (a model with `material: material.custom(...)` still writes).\n2097\t            if (node.kind === \"model\" && ((\"material\" in node ? node.material : undefined)?.kind !== \"custom\")) {\n2098\t                warnModelSetUniformNoop(name);\n2099\t                return this;\n2100\t            }\n2101\t            assertCustomUniformWrite((\"material\" in node ? node.material : un"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NfVbYY5tYHDqm6BFZGmXNW",
+    "content": "1495\t        return a === b;\n1496\t    const av = numericArray(a);\n1497\t    const bv = numericArray(b);\n1498\t    return Boolean(av && bv && av.length === bv.length && av.every((entry, index) => entry === bv[index]));\n1499\t};\n1500\t/**\n1501\t * Validates a `handle.setUniform(name, value)` call against the node's\n1502\t * material spec — throws `invalid-material-spec` when the node is not a custom\n1503\t * material, the uniform is undeclared, or the value fails arity/type checks.\n1504\t */\n1505\texport function assertCustomUniformWrite(material, name, value) {\n1506\t    if (material?.kind !== \"custom\" || !material.custom) {\n1507\t        throw new AuraRuntimeError(\"invalid-material-spec\", \"setUniform requires a node material created by material.custom(spec)\");\n1508\t    }\n1509\t    const aliases = material.custom.uniformAliases;\n1510\t    const target = aliases && Object.prototype.hasOwnProperty.call(aliases, name) ? aliases[name] : name;\n1511\t    const entry = material.custom.uniforms && Object.prototype.hasOwnProperty.call(material.custom.uniforms, target)\n1512\t        ? material.custom.uniforms[target]\n1513\t        : undefined;\n1514\t    if (entry === undefined) {\n1515\t        throw new AuraRuntimeError(\"invalid-material-spec\", `setUniform: custom material has no declared uniform \"${name}\"`);\n1516\t    }\n1517\t    if (typeof entry !== \"string\" && entry.type === \"data\") {\n1518\t        normalizeCustomDataValue(entry.dataType, value, name);\n1519\t        return;\n1520\t    }\n1521\t    const type "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 25,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm considering keying uniforms by each pool node's runtime id so every node gets its own material instance, though a simpler alternative would be writing all bursts into a single node to avoid per-node uniform complexity.\n\nWorking out the pool sizing: a burst pool of 10 nodes with sparks and ghost copies, keeping inactive nodes cheap by pushing their geometry outside clip space rather than toggling draw calls, plus a smaller rocket pool. For lighting, I'm planning to pass active burst positions and colors as uniforms into custom sky and water shaders so they can subtly reflect nearby explosions instead of relying on real scene lights.\n\nI'm also sketching the sky dome itself — a large unlit sphere with a gradient-plus-stars material that brightens near burst positions, feeding it the same packed light uniforms as the water, and relying on bloom alone for glow since there's no tonemapping preset in play.\n\nFor the stars, I'm converting the view direction into spherical coordinates and hashing grid cells to scatter twinkling points, sizing the cells so each star reads as roughly a single pixel at the target resolution.\n\nFor the water, I'm starting a large plane (200×200 units) positioned relative to the camera with a custom fragment shader for the base surface color.\n\nThe specular highlight compares the reflected view vector against the direction to the mirrored light, raised to a high power for a tight sparkly streak, plus a softer falloff glow term for cohesion. I'm also considering just drawing a mirrored copy of the burst nodes flipped below the water line for a more literal reflection effect.\n\nFor occlusion, I realize an opaque depth-writing water plane would naturally hide the mirrored sparks beneath it, but transparent water complicates draw-order sorting. The simpler fix is rendering mirrored sparks with depth testing disabled and slightly dimmed/wobbled, letting the shoreline silhouette layer draw over them to sell the illusion.\n\nIf the sky dome sits far behind everything with depth write off, mirrored sparks should stay occluded correctly by nearer silhouettes like the shoreline and pier. This adds complexity since I'm combining light-based reflections with mirrored sparks, but the visual payoff seems worth it, so I'll implement the mirror pass by duplicating the spark particles below the waterline.\n\nEach burst now needs paired real and mirror nodes sharing the same geometry spec, doubling the node pool from 8 to 16, and I'm weighing whether to update each node's time uniform per frame individually or rely on a shared engine clock to avoid that overhead, settling on only updating uNow for active nodes each frame.\n\nAlive-sparks counts per burst can just be computed on the CPU from the lifetime array, which is cheap even across 220 sparks per burst. For the mirror effect, I'll give it its own fixed uMirror uniform at material creation, and add a subtle sine-based horizontal ripple to the mirror sparks' world position to mimic water shimmer.\n\nFor the rocket, I'm using the same particle shader but modeling position as an exponential drag curve rather than constant velocity plus gravity -- solving for the launch velocity so the rocket decelerates naturally and reaches a target apex height within a chosen fuse time, with a slight horizontal lean added to the launch direction.\n\nNow I'm defining the ghost-trail behavior (sampling earlier ages for shrinking, fading echoes) and the shared particle attributes/uniforms -- direction vector, life/ghost index/size variation packed into a vec4, and uniforms for age, origin, color, drag, gravity, and ghost spacing.\n\nWriting the vertex shader logic to compute each particle's age offset by ghost index, decide aliveness based on life and trail spacing, then integrate position under drag and gravity falloff for the sparks.\n\nI'm handling mirroring by flipping y across the waterline, hiding sparks once they sink below the surface, and fading intensity over the particle's lifetime with ghost trails dimming progressively further back.\n\nNow for twinkle, size shrinking slightly for trailing ghosts, and billboard orientation — I'm deriving right/up vectors directly from the view matrix columns so particles always face the camera, confirming the shader's built-in alias exposes the view matrix correctly.\n\nPositioning each quad is just the center point offset by right/up scaled by size, then projected through the camera matrices, with a fallback to push vertices off-screen if the matrix alias isn't available. I'm also sanity-checking that sparks render as a constant pixel size at typical viewing distance, working out the projected radius in pixels given the field of view and camera distance so they stay visually consistent regardless of depth.\n\nFor the burst radius, I'm estimating how far particles travel under drag over about two seconds, then checking that against screen width in pixels to make sure the explosion reads as a satisfying size -- leaning toward bumping initial speed up a bit for a bigger burst. For the fragment shader, I'm defining the glow falloff from the fragment center, blending the spark's base color toward white in the hot core, and working out how to pack color and alpha into the output so additive blending looks right without double-weighting brightness.\n\nI'm also thinking about whether the render target is HDR with bloom, since that affects how bright I should push the core colors to trigger glow without just desaturating to white under tone mapping -- settling on peak intensities around 2x normal brightness. Finally I'm making sure the particle system's bounding box is set generously so these effects don't get frustum-culled unexpectedly.\n\nFor transparent ordering, additive blending is commutative so draw order doesn't matter there, but water needs special handling—making it opaque with depth write disabled so sparks beneath the surface stay visible, pending a check against the material validation rules to confirm that combination is allowed.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PSJCVSPEto4297V3SEzsFH",
+    "name": "read_file",
+    "input": {
+     "limit": 70,
+     "offset": 195,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 25,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PSJCVSPEto4297V3SEzsFH",
+    "content": "195\t    const defines = spec.defines ?? {};\n196\t    if (!isRecord(defines))\n197\t        invalidSpec(owner, \"spec.defines must be a record\");\n198\t    for (const [key, value] of Object.entries(defines)) {\n199\t        if (!/^[A-Za-z_]\\w*$/.test(key))\n200\t            invalidSpec(owner, `define name \"${key}\" is not a valid identifier`);\n201\t        if (![\"string\", \"number\", \"boolean\"].includes(typeof value))\n202\t            invalidSpec(owner, `define \"${key}\" must be a string, number, or boolean`);\n203\t    }\n204\t    if (spec.patch !== undefined) {\n205\t        if (!isRecord(spec.patch))\n206\t            invalidSpec(owner, \"spec.patch must be a record of chunk name → GLSL source\");\n207\t        for (const [name, source] of Object.entries(spec.patch)) {\n208\t            if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(name))\n209\t                invalidSpec(owner, `patch chunk name \"${name}\" is invalid`);\n210\t            if (typeof source !== \"string\")\n211\t                invalidSpec(owner, `patch chunk \"${name}\" must be a string`);\n212\t        }\n213\t    }\n214\t    if (spec.side !== undefined && (typeof spec.side !== \"string\" || ![\"front\", \"back\", \"double\"].includes(spec.side)))\n215\t        invalidSpec(owner, `side \"${String(spec.side)}\" is unsupported`);\n216\t    if (spec.blending !== undefined && (typeof spec.blending !== \"string\" || ![\"normal\", \"additive\", \"subtractive\", \"multiply\", \"custom\"].includes(spec.blending))) {\n217\t        invalidSpec(owner, `blending \"${String(spec.blending)}\" is unsuppo"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 26,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQSpp4BChAIExgCOAFCCHRoaW5raW5nEgzzh3AeuKFVDVKB4woaDPzjMNbPsfjvte3rySIwCPQ99h2ZJ55HaSsi+ArQAcgpWBJCaotk0Y2XksCGwg/4jK4PJWob76GFPEllmsSIKsKdAVP310ki+vjX0PENf469rhjHMiZdFpzDhQ7yVlHfE2jMuWDzVsP+QwJp6KJwvKgaRbthjNfMLEaAA8MInhaCcObxbOl3TsWizxCYA93Mmtbh+WPt+Jy2c9e0CSy4WMk21S8nrLNMDwJRUkh3XXaKhtlzeUUsdT/K3b3h5dDto5KbyWRge0q9r9J3n4PuEMdT8vo6zRvBlYRF7a3jVaaqjV5Axkswa8rAF0BZgvvIGBU72eDjtSj3kVXGzlFrkTlOM+p072zO6OLNlVBi4cXH2oXyaYzPF+ZzLTnCyX+8LK+0c+rRZIF0XNMvpRmsptWB/EpayF8wvh99I4tQVHi0x+Qdgv2JWH/0bmgJl1XL69jAKmP4xDJ58K+uzT209mCho/k1QFch4toXjl4aYii5ORGkwSxnBwfU9qninb/W938LBbpaOQ7lI+EVQnJv+lfMPbPtGmGwQmwInfvv+aZAqXXb3QkkArNU4lJCFocYB88hDRBx1nWSusdgR1xiSkTdESuFz0gI6N1ixYIuk1gHxgmAtktwk2z9NT75DXooqOwoHBGlN0m9csDRfziGnseC1AzPtAJdZU5Do2mK/wLf2Jg7HdQ/0jY5MPKYlEJ2xTroeMN1gKnOo2AgZISwiqRRS9MHvb0p/kyGsgeIkUJF8QhUc/kaFqjBb+TeQiitGwwxEQFbUlz+Nx9gyDfAbg0dUAPgZ4E26DeF+lzdlNbnNnmeFWZVcj+m0HMS05IVottajxZhp42qXdrLu61HBwnyDq3sJV6bhBoF/9VoYrQkmPOqL9gGRhqA1/dwkWaOzKBRKTZNRpGRsPc78qQWNrawXVbalHqHx2wOGYztURbxLcyZAM927jXmkALcix2Nfw5bh6p2qv6UHxmi5vtKvxycNaCtFDazHnGrr1vlK2FARcMvz14XD/CbTR3VYItc7PoFAlQ0K1pfPjIwy0tYmWaC7tpckoDy0mGOioE3w8mmxSgB/rQ7YTRJPZCl05HNfUhooTD+vLPOTyleXDeBZXJI+8CQmws5thQYE2emgCSS2roY7oAytGFq+coTBrmF+WCgJIa8UVYnTvEFFlluhVuZkoiIPRvYpSij8XqOX6owjeB+CT2O3Ynvd496MhyBQOV/tB09hchTpP+ki0K3Jf1EFzKbFc5IfDa1vqOsiLLANae0sesakpDTuKUHAbJz3wfxAg9UIXpob89iaJWgWy52B74ylltx1rYn3tJ69SP+7pxTMTuPFlWnnmsC0+cLjt5JdFS1ohEhG628qPMhZyhq43csrljP74dqZu21jl9SaI917FZUitZs2TwVRiSC5zvvjGANwLOGUbkXIVjgOoZ392T9oBEE1ylAYbmwo41cFEv9JIKmoQBTSBWaOdopv/ikbfR1iGyQ6Uf0sBb+e+X6RfRYlwwLL0/sUCxZ7sMnBdr9PGWyaIZA41ScNTsReZ619waYTlV3Xq9w1rja66demE0Dnv8H1VxqcsJ3AyFKRfCuUhnuy34MMfv3EMFeBYo8qWJ7/KhEFywAIRLnQ7eDdkfVvcU82xvPOf4MKtcrpoWbQRJmEzobjG5WSeJJ1T6/yt49CgZDHqPsImeas6FLCWWZ3MZBabfd1fvXw3kDtBOKA6Hx0E/2BdsEjuDOE3zZGMG7beZzwZFNz5njWWM1BahImmjCDN2FAOi1uL3/EPmUaD45qMQ9hDjDA0IpADBzVFvRTeEwoPmaloi7SPFj6epesDCxlkxhwpo1Yx9k/M1omEBdLrSWceXZ8wG9h1C0rqrkEVQ4+IwxN6FlaiFb5M0zX9/tMoB5CxOlUAiq8emhpam80YN+++uJZkKS+b0MYa9bpDC5ix6S75M//CawCeJFDoaDzRlTYKiNF0v//K6U52Q3b6Z8yPRKNRkiiKf6gcZHFUh9yILn33Rf6yV/XCa4bUkMnzEy9rcCKvYHKih8ziiG1jRE9A85MRMDl4cI/Vin7Nl+4ssndfFIjbTE396WE5ekZ3c5yWTHZuLV/ak5YcLu7UxeuOPwc0L4y81QYqEandMYe4JNcbOPYcUHdr95/XAjCxQKJM0GhCTfn/Xplyq8AhwKmN77rNHJtBhJP8A2yCvJtwD4JljpfgzXw5sdycqJybmMqWUbRQP9gnuWlptyeJ6UicbvLxPl0jH1ZbW+eod0pEd88Kh1MLKKAabTarqqSEfP674nfiLVDakdgXMj/19Pzo+YG2zNn2d081l7QJ/4XbPsXiQpUetF5P2gjK0vyfUnbYy2BrA8FaAXiS4b28zlZy9pExZn/v5ZxNLciL2ulXlMv1eiHL44cndEFtxio5j+FvzuvXdVBQIesJU9JA68A37NIBcYyT3AesqNZb1NMk6RfBXYFleMZXIj3u1mRzIkBQyV6FRK4qdqTiw445e6iGGWqYdxI2u/NU2nqxjVf9qpi/LvBEYpxS9pL8HTIlQPEggjT4n3wB/JihdMRyaNwC8CKv8aFUnny2XhDq7dhRL0LXw3MfKQHVugRk+6PwWAM9Y2psBQDksUImqmbi0qOHFVJHHVMsty//GluP1mRnYnaUdcgcmWX/VEji1sQUjDzTDbEECEqfzoiIbqmZFaBdktzoyqmrkXdswyi4bryf6ZSf6Sp3LmOmmihXO4JCD2nodoNLTfDzYM7jjfZuEoRQD/oQtlf7lXcqQtCyLY2FqWFyYiErLZPj9e5a0NrIaC1nxyRanNj9vUxRy6ehjGCxzFvrNypxSgmy0U/sWvNFlfjbbqmVOYa41+Z2UFJkHU1YxLNFbtSsQR/CvJwcvn2FKpZM99RIwttRFlS9bJAOfsOMH7ssoBrBHAPpkXnPvCS5u1CExrVrxeG7feCN0x3IYiQlhGxSvEe0BkIpTjoiGWj0AUYCI7GquLu0FIAg8VpOeY7vwO4aZYBNf0eJHKwNiQlg8ajo1NH3hOvsCwKwNMcwLcvkOWgGPj0uFpB8rjM7pHzI3AELUbPrNvLqmRA4dc2ksz0MiMw881or5exWcic1Q0JOxZH0fWRt0Xv1IhB2xlCtUqfL22qlFZ+y6P1mjvC7tTVc6cwPaDipIh89sFFfLncvuTpVAH/2Q3vruE2IzhwiyvLVJwbGJlVp1Rb3c7jleNsVNUV5CJJ+srQoCtf4tgslTaSJcjZNkYwWun4pqapmsKX5lFV+LDdDYKOgi7w9J2c0fKsFh5RFz1GY1UnE9c9jtXIH9jx6afK+yx2aiCpFeCHVWX/ETXylGkD43ErrUNmN2mQsi0LxgYno+PqF0ObjJvjUoyX3RnOmW9mUt7ZW4Fr9y2/jimHnyqWCbt8AjnfOJArnYxjYSsDKwaQOzr7yACWGv2I1Pm/Vy/x4O4IhpWYjCWTT/lxLi/zACzwZs/AY5Pk4k0HhyTRkJPzx07cg1f3KrL8R3NnMbWc38tX7BSpi0gqMKOx2SXAbyZxqbvtX+KESwY41HnBHRHasB4cpLfiTm2RW7oqunCPQsCEhcWOnkrB/RnbRVmQSbRYGseuB59+kF87JcfpUVKfqxBYYYbfADCIfbm9nmydcr61JQJaDiwk6wmVTgWUZJVg48LdtoihSr20V0s2m8rWc+R522Q8x2FhZIyG+azLYn1SdYsokRD1PNGSwcKGwQwbA8M+4QU34FWoE06tkfHxKTozyY/702VKXJwDSxvsFSfgJWdpnsAZ9sO8SLPE6O0H+zhPDPfV/bntxnAZkvrF/6g47/HPpsdbOZNBHUQVZzp1YClJSEJHCWKlI+X3RronMucPl5WD0nk0Xno8LzHjMNnGu1jsEAKxcdpL4tTsWUVm9q22mmY6YUsruaK2XPoBZp5jybcgvtDJykE4j8yZ6RHvNPa05dzTqE8Komq/MdnPZPKnl73l2QLYzTUurYQ5NIqLiOTVZjf12gEmZgLHRSo/3ymHAEI2lRo4ZClI5vN91YMQw76OQLXOgJalFvlwxmlwhMDZHDChlDR6bKEf7aI/7zIb5edy9Yjw2A996S6niC89G8V1Zvr4/2tliyzB7IwjbWEIT24rYx74X5wj78JhChAMkkiCe+4HZQ13GdJp8SKKdpf95KZFxiVQCsH00ntFIBGg4OOcmmDTBj8CLPgJP61DkF6HTINVEOZF3iOAWXf6jQ6KO/eMG0PSAei3BgCjfCTc/M/e2exDZW1mRVxLL6MwfxcR2x7UD+Eczqc8W6gXrVQiZ4LW165/loalSJhC8MZl8Lq/vzzTKIJGAUqwVrhmFTy2SuX+C+PvuVoXkRJ7EtI7VZHzEDoOyvFPCifw6DP1JKJduwk/NmXVIIQoWdc4dmYTYGRerHljzsvHVUZQvH/oBjmWys6BKKEJjtfNfbU2f1WSK4EXNGKLypcmfo5x1oGFQYKaFNHeNuoFi7UyXh2iDlckbRLBcd/h0zq5UPs1xHk0V7FQS1U2dsZg5wqna1/6u1fXIkrZIVOLNcerpbLWrVP89sauc911WAQfGFNHQuOs62Bcf5a5fx+FySSTk4aBFJskkv9ERAyAiCOqFb8HddMI3yfc6jMhqnx3uQd0vKbkm1OelnmJc1jdot3pAhCvkBQVT6LzGDR5fBbO6+voai2GYYXmbaT6sTm+avaIw6hGwIBR8o4JTeF7TtWM7TboY9UIr6PibQLpDIVj7hFLfEcNBkHXcslJBr7y3qIY+bkZPU8RljNVhGRNDPHP7bEZlOyILyTaf5OQF7Y9j2ghsF4vlGOJvfSqL/8BdPPuhvjdHFW7rYDGdtCyDYkl6FgMp1/ffTsCPZBnPGhAgEzHDZnpQTV5ib8aBR4ASJhyXZNiI1LDk7MfVmAmF9j8s7EuYPeVTryhsYH/Oys2Nz3qjycVNJQxLgLlVRUqrbV5MspfT5lUocL0J202cLwwdfyKLzpMvT+hS9tRaZxobtOjwoo53pKEGU/zXMkb1LwpTWdb2T5YmhGO7rGMaE0n5fpmLto6c3VsgsdEfS5qQjHZQGnBo5IQIUWkSZHfB2+X7EV6K43oHi3u3jGcoa8RJFjkeo5rT8CxwEwcMh6mlJlfv0R3JYqZr5afuwvXVwvIyc+/21k50c3qRXTxIxiCrvCP5js9aXsYzSklCIP5kqLONnXxXj/JnpWr4Hd6WEFXA2EtQ8/Zr4UHOhEIgA1K7BhCwvCexxq+UTrPE4FmPp/S3clZ0JVfb7QK5qlOftipV1LyzWyFSKBcS8QcF8/aOY5fK12U4DldDTXmQetSZap7XJaqNVrS05IURitwXb/hTO3ur2l6cqwcp52Zkk1m38FkqwI/FnNtPF6+B4JdK3xL2QDSShHmRYOpIXTUGM1iQ/6PXUdWUA8xmNgEKxbO+hL4QaQiE2I9ylqGPlw9vdvfAJpdv4YYY7NVlTZhd6gutX9U+GE3CkFaSMVbqn9GAQU2r490feuqVupfI9ouAtJm6duWvKVflz5YG1fqBM8aQTb8rqX5x/5SPO71qotAu/jF0WhC/6bGDfZpBgEQG4omULN979+QlSIq7RtQ7oBwqYYu/yApjsGI2O0UtYjx36MosV53r25unUMOl3Z1p4ROkpcJy/q87iu4Asb9EjHGzGn3hWIo+S9WA027Y0FwdxjcGYocyuMWH2ifZpi8/1BaEB683pD2pEdBxmtFnoaeBCXWFRnBN6OIMy8K0OZVUG9dHFFwvwgguwFKhCJeFLiS0a77b0GVzxCW/ef9cbwXYv3PJuKgIrHgpAw5T2S6z5pnGbCEKwQmncz2oXT2q6eBuA6qgJiPtsxo+X3uucLWEZQ2BTMiTdwdttJNv+oZvWB7u1zZU2B5T3I17v4Q3BTyirynkFFQPW6XFIzz603Z1ANbmIqbIMFXJmYi+15dquwQsd52Tup2f+AZUtNbbqon0rKRzJPNbzXmP6p2susduVjzdv06NevOC/Bxp4tlQHz5+e+fWoCldFuAhfs6Q5fjBJesa98t5gMPo7zukHxdaW/Ng5vETJgVgnwytcdguvWFsLs4tX3xNIHhgugOwCWzZjBFVvstnudRlneGzoBrsma23M7lLXKl6IZqyi4oDEGYmw0Xn5qelCaZb27F9xztjFv9vb1otWe80dc9klaZ8ZqgKAvXhKL0ZSaN2AS9dj7tynoxnZE78w/X2m3hz82w/bi2pCEt9CbVR9ZnuJV8z8CproulmD9HrUpV2v9sQPVeGpVxaDaEyYollaBd/eLvrh+o41FoeRvDnFqO+I5JptB+5q2yqi2JTLGUDLsuKPNcL92dVt+NIj9H2FNKIcPvl4UWkGXN2nuFHxbVaRku9T5mqfdIMVujLHWdxr/g4PXzHeyrDrnyN62Eu6s7Snn4/v74J7KZPghwUIXVyoeKIXR+ord52CVDah0xgUL29wdsQarN5NEcANGyXISyRr8p9wFbfXdaAW4DbS8w4Q8/jiTUms+5ocM29uFoKYjZT70CxI79+Nlic+1Lhr3KPTHaZdx+7Wl8hUnMSoZ3PLnu/LEkU2/1QrCSP56tL8I48OrfWm8UwX9fP76ymaXlYn/EZiTZsSkvhTC/Jyo0pofKGT7wWcha0fFrzpZ8IPFPXdscXctuBHJyOczBW+1XvGDtK0xKvRWr4eVRDPqSOg/bjGvxGDc27f5r+YEFYosAiRdpy80wlYKYnM1/kQUAPqMXfS+5z/O2qt1l7MwDgktqmxBtvfQ+vUNEXiVsNljncrMGzDA/5ty2qJM1WRRvawSsz0kC5GerGT9CiZ1/IOHzgA3UGwaXchdXGFChTC87f6+qFTOjmwdLa335dlmpWpfqFkhi149JARRemSjDS2NcICIYVFHrsoLOLPNLjEp65phetqANoXjVucS3quDgc8VeE5B+mGo9/r3pt7/2ZRAKcg0IcV/TVwjRWaRcjMze2Lxl24++nRIfdOuLa/lhhCi/YtTVFPNi0Ha97FuepipDy1ELjRcjlouI+gkUmUnAY6BCxPW7BTqeIuvsjj4jhgF2/JSiRyyP05ZHUGDUaE3CF/+aHkdxJ+72uIJ3B+tOVlHUgc5zmpGsyGH0BZnfKyPpfsST7P4DLaDXi0y6rYQOp0kl1Ewxh28zxrf2NL/MJ5GQGq82WYAqOzX7Su9VV0r//rFWYwUflWKqR5W376IXc2R0TUG/dJxPzC/Cft8XXLEbR7mn+gJyg7uBZvA5gy91FkS6JZnkfKWcdrG0UDIg2YrliwL7LcATZgGvVi/q+hZkUfLl4XKqnC05Hh3pGV/IlKMTG7pf864HAFrIvyvuIiT3qSPom5zj8llVAxr0SgMDKItYT81VxUyRRqjT9o2NMPJvP8/3J8EFdRjvSmFX853WoNjZ7o4QGBUZcY3rOZlHWkWpZ0cwiUT7x2vAjmCwdaYys75SDUctF7P2WYBc983QjexLU2UY0+SFy1sYO3Crc2Q50VxgeuewbXJXzplBOSz/fJvFhajCpvUmicENzGDSdWzDSmjlijMufGZuRHZ6Oo3/vZnkYoqW4BHwGdDOpoiZf5lGCppuGTNG4RJn6DfUTSQ9rK/0jkrStOouqkTNfzoc/MJHwaTBqrd+7QzLupm2vMdjb+LAeob1aEp9NJaPveAv8xIj7eL6s518r61cSa2Tp7Oxkftvf1vrenD3UfgsWpZ7vKAa/QRsSu6XYmSFYz72ur1LqO2n8svUu/qpzrWrpXRItZwE5Q0Ghe9V+nGhW++EpZ0lrtp+UdS9j5nd8QKUFgkqXoo2PeBzmJKcMvtq0CSBh4CYp4L27uHKCfzOdf+7o36WGjPwbPJnPN4EYJY7Umr1ipfgT7L78ryHT7FWB1WP4xGm201UH0qRNiTn32YCJFXsUwUULnSz7YzR0/DK15UxCipr9r8rJ1xcaMx1H3CXmqbPOw8r8w0Ru9X0V+87PKsJcLwFfPXdTTpoxrVqSfVTSWI7henxnJqb2e2GYj/mwGOyi74LR+p8kbgEtfvIi/ekShdtkZY+WjW74Cev/wv6K4cCE7gs+QtpFGnpvC55ZEnA0jyMD3GlAIi5Fe2YPb8OkwNGA6WtUj/cxCGsHXcn/OgqVEOa6hlnB1qt0x+DgZuKKxg57hDvMwSPVHISXb81eSFm1JB0jTDjC/lLqrNn3byd/b4IsOyezLf4qq0g04mLM0dyJmWasTaTD/2Frmcthe8sSImOzNFESShUOoNaLwQ8yb2Q3y9YTc9NewNu+paFCgwIoAbVI0zvx5dh4haQymEF2KQFqbaTVQyQ+u9J6/jTumD2i9heTTTxrTCOaB2ByPoDfR/jWLEFn0gk1mZGdftQLL8Gbq6HlbBJNkNYDSh/EJaGXF2sN4F5QJuJ6WhLkW24jOC86H/Gql6thoNJNvutFWRvOhm1fRV7pdTJLtLuEevsqd2tmUisoCQkpyCv3jPi9anUygbJ7ncx0EvH25sthpzmhzE5MqHwb0Mgg186ZwCF0zm42YAsOjK33cqG9IIgqoxXOcqI7O+DK6VhEKDOYbCyRUCKuv+s9JbwBYSaqceD9o4lXGUNcR4rtS+yRnyO5ZDqA12YD3mSuWwa+RQCUjX+/JQ4AxK9Hhxz/BNZUcijgal4w7GlzQkMiGrLsJttOIe4jI4mZN1iacbJFrstJfHiAl8wdT44dp7qTpLLf4OksnwKTFd9hhukvuCTNPjAgnKdkA0JIbHwwbqLzTev+E7uSb/pMpTu7rMbDnwr+C9ozEtsst1FGZnGMeiKVRZngumBVwv/3i+k6vv1eZMJKuiwWbufe6d9GzdxfRezzh4h7HJgmAn/cWa4i6dz8nqo6lUJdTqw2GxHNboQW8fmrxGEOJ0gAdBOvpZv+SZjUHcgaJIovXjS8c4x6y5vWEjFX+1JWBv+wJ7pELsLCcqDlfAkHetOO1xeisHQ7iZhEFwAPrVUIhE2clw6zt5WtioKk7VLuAm0VQd869Z2trGOZXDDBkKDWVr9WiqEMxUUHNajYlwOcjK4hmGsfSpApaGo7AWmmBHOSfkNhYEXr41sk6xv7rd8t9rxB8MXgjRk2PuyshU0vYxhyI8THMnb1FwGkNDjzwM1xD0D+jIfYO0CPBXNlqTCXJiZ1sGXCxq3x/bgi3LV3MhumfHrPOfCqjQG7qDbIDBsDNYXF9yTmW8kVCDMj5+ST9g7BtQ2iJHvzQDaVhJgY7szJR8n7s3ciiyNoRukffgy9GspXqEU1C0+RF0iTU1JsmDE3gaWJ0ccOwqYsNlAKJw75TiwC5WHz4Gk/twik6GgnPz3RnKQxV9oWiab/rf1atiltKY05Wy9zcp1X/wMSO3R09f6AENY24RqlwlEXpzJ6KU7UqoxTBNJ/U/4PVCoTBTGDxO9xwwiOhqalemtSrWOzu34x0T5vlrDhGLn63s0hukdjXPsKJmPATj2TyPSq/2cjxZ92Cg9jByIBxbbVD6ExfQQOnn7C4wsaD4+5TAooAfgDsUjvpfmsXHz6SsXL1Bstljpj8ymnEkeofwABEtSmPlq5pD3qV3c8OrPtz0gV8KD7B7o/3r+7wLG8Y0VCVsqdu4R8pWhEWp8dQhYmrOw13FgSG7LdLOSDMlb6k4X4kRyPoHEjBoABwNsgeyAOcO2QyTwbPfMFwkZrEHVage2ReGUHPVGhuPu1/oibF5Ylvk1bJ+KDVsU5R8norPL5C7MjCQOBkpcX14LEQK5po4aDazX/cv8DTFgEBxMDZIf3P+EjZ08BhGfXCdAtt3ehn4ynVA+sH7FSs7OgvndSA5vJ5yRoJgBfQAR+OYs1XOcuJ5N9ftKB2SEuLuLZuj3p4v5Wa/aGfxOwA1MpHfoNq8puGbJJBb57/IF7zAIK/mbdiwY6yzLQ09m4ZSg/Y9e/39Cws6RE/NrYS+R+9HzkIqpASQEzwIW43stXVpoJI9UpvZm6aqXbKYdi2xXm97f60WJCZmGYn8XoMK07HK/4h4OtzofQxvqnhlJcGv68rqDmlOtD6tSYg4Rwo0w2IFYTl42veAQi0a7npGzTt83p7MvCj+vmCE1wXsvqf2xFWj87J/jmk7vmel+YG20g4MGrGqmjsCwXvUqIWv/mfR+rg25Ig1WoXLQChswJHMgg45GLXKR/CXQKpVUKBxGIPvaNrp1LBHwVM58gwcH3C2qaM9G/3AEqdSD9ZIEc5/aN9jYn6q6xC5isTH95cD9S4RHW6X/mvbL2cm4FGuo9U+0UXZYI0eoclIp+nN2lj6fWmcaNEFqJkrdKm6gqiNgjmNqgzWEsdjJPRcFThc/5zQuVlsvj8/hEgHX1buTwjQe54mMK89IgBxvJix+c1k2ykfQbTJyFxaTNN6Id2obvPDzjsLpB2OK22HNEjYCFEjX0SWy/v2foX6uGF3umilFAT25Wgag3VwvI/LVwqdANPSO6vdr9hSBVluguh9h4mSVczgAuvS3uzIFjLTTrrX0y83YUR2ZOvPFixND7UYQqAnGbwJ59EcaJ/4UDvEV9MyldhcaZDYLdrAUVMaetjXMv2iNu5V9Lj3ixue2XKpB9n8J3ksQ0RMXupDfNTrDgsa96okXGb69th6akAyXyH4D5Z9vgsZgZtXUsEoPGeULCiXbSLNCHB/mQXC9gKRW8pSdtPnjDv7h3QjVZujhlZG2itfdUP4eBXAQYmJUzHRtQ0DZ2y0vRPyB4Sl19lUphGkn0YbZfJSfyGkvr/+bPo8sECpbFaT1AJIfEEZTytEYzzZs5j+U1b6aYVy7eGqPonwkvCzTQjD+BYvh1H96VBhNDtqm4xuNF62qg2H13Cbk2AWpOD0Bfg+7yOfo2RYOOLCUHwMeb/DXEjQMCO0VqEdyyWh6tVwr8nb3tCJxBQtB6K+eVVi7W3XZwvABdxiLBJyCZkHWSjpARwqCZsT8w1N0PQGTuaDbEkEG1liyQW/aSqTWQMYfQZQJN8JIJT5BF9I6YwEozlE1T1vwPvkwlmjMrCVOTNNKC2mzF8lDAomB4PZ7Amc+UdfXOpuZg2I7hMESLd/9ah2yololl57/fTPhFYzG2tiN/f6ClomiMt7bnwPQvYexFeKOtwyIBpxL78HJaNgWW7UN6P8A1wb6EGdTXTWGcpsP9Y3Mup+oGjad/spefsD89vz+MrKfN3znYwaIZc4CPxAXHYasgTB3Sx4IMJ6pHnoc+0Fdz9/Kf1ZALsLIegMt0OwLYacQZ7m+wGUJ5Q3/aARDCZJ+KYVO90xU7f5txH3GCDWsKyG80et3LtS3BpvzhjCnwEdlmVmWggpCnPu6VJCACRPmDVPZ5Gc9owRDuz+e3SooKY+UHuYOIHDYTeDNrJX/dtndbzLuG6Snyjf75KgHCw2RPReWjnQndvpzNf6roHUeSqevz9vU0dHlbwsO9AwndsmBBnTCaCbBaph9A/WNW2giAHqCpo345S650PaC/wKt6hkRkKEil03uaBOCYMikfrbFASeK8Jip3fw/QqqXUuUaW3ju9ikk+qzh4Ow5gqO7ABSQ+QXF/M3PAUdU2WiEs+UBf3sNImAuK1YMJVh8RxcxFsIFKGslT2CFrbzpyPzRvJmS6FFthwg3ICdHM+smnDX/ZC4DO28EWctHy6jv797IuquBVkA4hGas37V7NHzC+IS8Ir4peSdkjNI0OvRZ9jOMLTdth/F0xZ38viBoj0ngTk5ykS3CTnM4JalSwY59IlYz+26KmTRDNR+iP6OOvsSRmw9WvXJ9XEBgI2DT57bElrctI7q5Wv+qS4hxyIzkX+oIp0ABgFSD1eonxhm2TwE7SNxYBSWq71FYCE/s0RnwhFw8ijt5UiEkR2TNB2RaiFHEkGDNCl7eeCuvisskpeQiCwEovO5uhjB7GEJIDBqOFh0jjLUPC/yzAK/LXck1p6E7kbOZALXQywwh3oKa/RaPuGZNaKgYqnjQBDmt97gHrboEeMW9MYQaXbMTFUiij/OCN2Z2uluAj80KCIoCLRexGnmzgGCSzUlw9R66YvvHR+HBLwqF+uM/kLKjheFExKRBVa/xT7dLK8Wp9FzS3waPcAZO2981KHQJR5tHZsdBeQIQM2E9RZO0LC02ntE9fCYW+FxrFY0R1ogcwYHJjbAXco4AoAruoq1UWaPQnp3FPEJxetSNr2u9WO1I/4n5KnFG52l8Xc9ebV2ilDTG6YCaLCQ5za0VqdIuemX+AeuuG9hUiZKfQcGCZiduHbtBtdxVBmHiL5mL2pxijKpU3sihHYMRHDTgjFdj2Vv+j3l6WjyaVg4lGEalx6MipSY9IPdJTEJPSNWSHva+Vp2k3wvFpH8YLGn2o5veIXub5fcHOgHzjd1L5g2z/WpedSKpQQJ2FtbRWzb8DJD2rN33ibXdVcc5FoSvbEPpgDQI9vlMHMZnz9QmK4caC5TqlnqYJced4AQ+sNgqQR9GX7RuVPd09LxNrNioLKet47f2BBE1A2hOZInu3TjMAJTfTtJahmoqPRBFcaysmnsdpLC/Q1p9yM4AaCHxXcMs5K1bwEEi1q4ahMB+zv7KT4A+soxT1HjQ7di16eovl38rFjHf6HqlST8DXHI7oLgnCV5vCPViE7ds/HyBY0kgpAbzei5Mt0MDXp0e5Lcv0C5cCDU7VC9ykBZAMiZqWQqcoQzBuBZZoE8v8C8GAmv3bp5nCAxBBFd0ZNiMZJNySTtJlEq8G/XtgYgsPg3XvliUVcqZlaqOgVET7Azp8yx2Bj2JVBwuCDNEPlkHoFoXehb5EYnsP8OZshEmpumPnYYxjhBH4gSYD+rVolOUSDlAvpw+bA93tgFtN3dGEJH/qObYabvSHOM8xlmXl9khGrN115x9CjSUIcBfH5dLHaoT3raadF1xqJzMDcZWeGtF2RsAszi/zbsMjirhTu7eVQaU21avFothodLYf2qeEVAvsd9xnIQIj6ki17fCWHC+qU8a2MNm5tQ84m/q2m/ivb72DEpCHh2kiv7jRI1dDjTHLW22KJWeHQlP/j4WQGR+hQc9ucmD7Cm5kNWN1vToeSNVuoDViuhzowpkyf3uBaMra+mlLWhgTLyL4Zr5PxpAV7mLoAQeC97ZcRJ4mrfzgJmtxqFhp+E3CFQqonHNN1URhMztbkht6BWhsJwaz/Cs5GRWna42BSWv92BoVC9wv22VU0EOhFYKkYTp1uBBwx/+2HcBV7LJpqHIlTpnf6z9j9DR8k8eIY4Ss8yFC797AZcNne9vJaVt4HnjGDXuNkGZmT0Yo5NAjLAgqJK9YiSh+awFYBdSBG1jGJTwZvOac3ydYyXTfQoBObUGbr57FW068MQfomamh/Gw5mvIADFV4rMzz+jISUZ3Uy90DvfaKn8OIG9gVK0GUZrkQ29Id194+75X6/l32AtK7Xk+V1KxB7AH6ojD5wJr96veOm3/gsue9T3E7WbP5deWY7Be/mqpnC7ClBipaBC+LrS5w1AsABoR7ZxRAO5jBnikCv6MetUVFqIslqZLAU3VKawWanKE0Z9Hwp3h5nIogwSzlmrkt/ov26ubW3DIAC/iq4VILnySTA9byaO/cvrz458Evq9CXxklsEsZZRo0T1Fa4l4hMZKdOnZe5VMm4SI+20MFiIW/zwGLqbRc5J/31vI3fbBY0xsuB5lk311Z2pphGRsgBuyFiYT+62NX8Yn2UQHW43ouVsjD/JBLo/+kb8sdp3K6vMuQBVMoJS+GvEUekZ1z4SYRB+zHgtDdpfi0DHg6BybeVnHTEtwjcHADmR7GgVTU+6cYQTOTPH/HON85tBPtlBuIyPv6DOcPtXhR8hAs6U35DCI/U9quxzTa9w3twbTQyQ1AXWHJRn7Zw/2zEVX52rd+phO4UhF1QBSZAdxO6ncsV5kGmkUiD0OAvMIkItrdjjFyS4sSDris2po1d3shcsnWhZwhMppO4aLmZjbXNoN1b5Y21/CwQTiUO6BinbqOg2MWE3gMS/7o1uRPy9+X1O3+FIZHAkNI9tLCUK15UrV9CYIkvdQuYbwb5Ip7ZaUOnOQ7D0MesPAODZZZc6SFWMGszRNP+RmyizUcZYU57UpgPsyYwdCEObMTfSbUIIJcHwCs7e3PwpEqoLKfpfMoQJntmuK9Nb/aWvwCkQJeWtlK5OCRyWtrhlB2HMdks7vR3Dn3CfO51KERpPApp/6zxczXKNDxlI/MTDqSLgu/jqh7zJLTFHhtZi86/JzpFnmPC5KmNUpkr8txxJsgEZ2HWbmJm4MfZMIZ1H2jw2RqcC9kzbvcObUgkgq+i32UY3PKI1qjSCM4JZ/Z8c8mCVlc9h83ik9HcEVVN7AGjbDQDhiTqYEowOzgFmJPBbIr1a8XK7A+LIeae+77DLno5VDHh8WtnMQgyxQoXIhDUQA5cvw11SrsHFjvl3MKyUxHEed63pZ9VCzNlDd5kmT6pD94i6Jzuoaw3CYKsNUcAYy9Vqqf4W3VwFmaGLObyJ2hb2Xzmo6A218p7KhKiwcY7T0cYHFcy9xiNyOxc9ixhWu0KisLqxkIlLnJJq7EdA6+j+02D72N/qp/nRpix9DkKnvUt5pynALpz68nQq0fmG3XL6qqg4FVxyhQT52a6BfU6s7E4AsJsCpWMNLVp6+XYD7+HvR991OpHZmXU8UgzvwaGBHQhtwZ92Rz8I6WZRUIzhqvdstStmEw7j2cIZabwUTdNg08Mgl8Dc3E9HsUf4KgKjDj+y0bo1VKUvNoEYcILB4qD1kXNlGH7tXTi6Q50bvFRcQMzIaZ8kysnO58ONEr+0WQLZeZjHIszQPOaSsTyz8ieS+aMbvxsxmXqxpVQWAz37oKW0gIQ4oIsUwUaq7BEUMdnn9GAyQd0/geUGmNq+QE4Qzl6/0HD4m4gHlC1Y0XBEweOzBNJJXDl6HmHjTbh7LM+4pyYvNBWsWAGV1gTibdjzezqv4t1HSISAIXekHPjZEuybzUhWkCTQ6hRzkZvPHh3/cX121IErfDMPApbU8y3jclGd0YQaJZNeMIWlLAKKBNfW27HzGmcX1ti/rFYIkWjxGqiPqENWLAa5lLlOm/m0xLN+ne54cx3Vqko+RxxDuokwL82n1zcgmxJ3L9HNbI/xiJEm9vyFpswa83+DyvyEmRH6AwxhSwXsq1qevD43MseScxO36ycUvUHBFOpTWEr2CszjwPAYSOB8oCTNOD/OTVjOS+LOJnL7wIuT+c0/9rXmPrEbNeRwH4yvbJ2F6ZSMK8wOWOTcQkq9rq92A4+G16jVm796gJCJw53yxILY3sQM9Mf6DTOU2icwAwCax/z0K9zl72rzkyLqnK+TOUG5aXQ7fMXiWXOGCSns46O1hxEyiEvnylrYpdxGwa1ozicWw4cC8bIF9P6idqv+x5iY/M8szv0ZyK8rjvqOz/m/yf1M5tisAHvIsccLkp70xD0DC2sjoxkBYn3a+dnkf2TAc7daKEPglr0D1oZnD2OxlhmFmEOqTACOPcQlhGoDt7gq+EMRkJZiX/Hddtm5Dl7F0HujNzolMOG+OosmiLr/5PQ4Eo6uieW9IfLZO3zNVbtyfan3Rf2UIzV5KYlEWdbK4IEZD4dx/vGu/yQm6CDMV/5eAto6AaugknXhAABZVpCchQVUlP5GjofjaUbMWbpog8Ln4eZ5YrD3pktAG9fDDCfTonYDy3UiLuY7qvJcu8KhdD8k2dnO92mfQ2s5K6Z7zThI9WFEy2j8V7nv/WSbOyHzz1EPJk8fXaM64pDixuyFC8uVm+synuEv3U2O20+EtNRATWsxCQg/4/rVRLnuCAKOujyMC4UZZp8YjR+g1Grhl+seHKDnEck43l5OzcfWGM39HkcMFPaQKtSmDk1GQnGBG7K+jmlSydWp2bGPG03xOdZaI/7xerq3yDU7CapETW+LvhdTy8H0WgJWA5Y4ehnoKO4F0KoqT+Ea/EDIxiG4o6adhO5IvZ1W8/fPvPBCi9OOAmeNTs3iQY6o+LRjSRLLskWDtRrfJYZ/tLcB5xj7sHReIuBLNW8n3LdIwIoJj08g9FJZHqS4kfPuvSh7QD1P4RMJUkJCmyghKJB5t2Z4tZOMqwFmg1u5JRvCoqRAjJQZ+fZ5AKffmOfghH+NMMtDpEeVpeeHv+2NS9b6cnWK05QotvmFLd0Ys8B0mNdPxRmGA6WVrfdyOJHrjpg8LEHIIkZ8fFI1R9K/4Kr4ksrCttAsA3lYaZ3J+j/WwgsQRFQgY7oVzzDOCm6KuUhf4lvr5VRzSOr3g6MVMr+RfjLumqu0sFj+L6ITglXvIGIY7kOYKlKJ7uYdZLPTsih1vmcgsipUxs1OWnRTgfIyK6Tl2/36wPCuTny7vz8dhdChebSxdntVs93zMcTWIqc9/njv3tAqN5qP4xpDzXciwvLvVYsQIElkgIxBvME/h6ltO0VNZ10k0WPGVZdbAdrEZwAgXQx6Pp6RpLvX0deibZxOKntL+eAs/mZgzt+D+YWV73AfDBI+hUbw7SoNZpf1X+YLtjy5Vl2f7bznCRPP0x02eSv/M6oLn/Nix0mxKyMWDL2AHVJCT4rvQx7LVgi4uIJF0qDXzhHrOQXOyBfGdq4Tx59d72pIRcnMadZn0ZdNPoQkC5DJ8JT5SD78/ZoUxJ5Tk6Mr+JD274w3HJ7rIVd0ssgfPlXsau1y6Hm6Oltu2GTXpv8ddMmTpeVBzmxGTf0I3fmHu3yU94M+rWHL/X1Gmzyj64DWFIKhJqbV8C5v+fO8Fbf5jVpyg7pdTsvntaaXYhboCeE9gq3ZUnkJ1Fctp8QCUgcc/7C0VvNT1pva5D9kgISmApD+TZFckGwjdkodwdvwWihrukHUCb/1N4CSnc0bISS/GCdfwKnLwzUEz8iIM5Nw/DkjcW3gR4qa0zyI5ivnIerVqUKQdRBh0AS4gnKwFyTOYkl7+RgzFL/8YWyav8FFx1ws27B+MOJdRWpfooDhL5VbJwUbywTtLAV/rMj/r8Y7knQJqeLWZNqbISjFfjA4E2OAnBJN7pbAzjiHhw9nH7RqczQrLu15T/xou7yEcU1YXOXSmpo+EgUbS1RPs0qcqDecvJ6OL80/21gnLEX3XsoKHTlmQOBDEtEnYE6pwWOrNUDZ7BxSDWukdrDPfKE6eyBp6/M/CvUu+C42NbfQrQxXx63MSJvvEBEjlfNdxvYGB/Va8F9z0rmCGfQxqBdjxTb1ZUMW6rWSKBNERJNexC5XD2js/irBucdztcMauHptb9P+uFM1MvC/VyGzBh2XPvxC2gJAqiJOHvT7MmG3/BixQCR4IE/3Bj0GQFeKrFi4C0i1RJBZhTDlVCbRbln8S5bnW/IKvNjC+BHXzERCE2pzA/1nxXiRRicyxF2JThmnSNKpQ9HCmTAX5fAaIdSJgCFrKZOYGyg5HpIITUCLPbJQcIMVhdjrB/laPayQ+m0Gso6ucxh9jl4IVtNqq0YCR1AUNuOnJRUnnDtXvzKWGFhpDbuF0bIz0sdXILo0tr6hFCFYt8/W3v9W3oAcL6NIq72R5OR5EWTJ/X57WScpWMlvx7mX372S8qJr2UpqpCvvK71VY9rjotXsRwnbW9UzTW4JM2v6Fqt6EoVoNU93qSsMEA0gmVRiwtgrw8mWyCuFnxhAyFEIll3eEAGAltbQ/DMVTRIl5cr7XCm6YCQsfMrLpLsKQ5K0eaALs3zbNMp1WNL2n7S2DhfScU9nyBeNJkS0t4aHrlLeVgYafywuPLJLC8oYF7vYL/fQUlzyf1IYZy9yLSI7IcoGEJjFWKrLF/Q6apabxJ1t/T2LUBFdigPNK7Ny7J5sHsqbxVg3RO9woMEmyvpYjzf0j5pUp7kko3rYkrOdac64DVQVyGGsagtkCFJLzzmdPZ9SNwTNtvwVL8jd5vQJAaCy+xSQUHDtpfWaw9rJAaTmrLkmmq+a81MtvTV0akuRGH5Um9PLlHwsW7WZKLGfO1qKxig9bg8XpMYyrjPkjMF9qRJRsnOYLno17kbLBlvbituVKFOs9t8e1n+JmAI5738DjN7ZfZxJQELExMsKkSBqHBr7fXhhv3hApStg6doxGEZzbp2flXTqT3Uutm42GMQC42R9sHlEIX8zVUadPvVAB0r7tPzfwjDD0eNJLVZ5R/6reZHm7InF1sVq8xV5n5Uw4rUdiFZftKhH4BmM6y7KDdWoBj8h3cZDEr2QxogscXpdwSOb682LGn3dDdexmOWNcdk2SpN8VbhfzVSdFoeWpmjv0pZ2zArhf3a4qSsGrCYz+uJ3Bzzio0iKfqATkbh0SH2/JF4wnxV4j3t9HsHS6lkXnHEdywNoOge4JSLv/4zEnXLMIP5xYmVpB7xz7ZttquH+Jjpi3l/2ZBzAqkgQaRIfYxeP8JjmQ6oyjAL632XbUeAYo+Kh5nKfw1K2e2cdKqpLfobylnts213K7NgyhwdAuz/FBQpCAKCNuA89cV+CXgxj3IJC9VAawF5qVP431XGw7SGSEmlu51Vkd6Ef9JsmCylFvPKN3+aVbOb7rASjW6YgwyRFRzLDiNOdA+juM5fStLTyH1Q0oo4sxrPU2HwFHDBkWySl2Hh7iq6NOAo+UyFjexk2Y+H355hHOHuGUeFzzNVqIJ1HrUC2mqIpghQAyovU7f2x+tRH/zzm20Ay9hzDoqOEaPeCY3BzY7g2k1Im+MuHM0GIm6D/g9cnir+Hh8aGUAJ72KSpeSJ9DDFSpDsq4hX2mEZ9GaGx3N+BLZLcexh8weArS6bEWLnPBB6FxvZERNnZM4Mbgo81FD9cy4zE3RKl+GAM7jWAZ3CnOKoUNnX9gZgpb9uKB0satMu7rrz9/a7ULDkbNPJrB77f5RtIw3vCeTMoY3poKSs5BbiyMhnFYk66tOQIMAjDRuBO+sFdMX8dXjLNuHPLXK4XC6Xbfr8ifiCrr4jiJ8gmwiohvh3q6GUUUiNAiLO05B4NuwKNno9oomuWkIpjLm+mPkSUpTaENd4GgMCpAV3jAKPQZsBi+YJWt5tLNdkN+LNLTLCsjaptFrXFkB0f+VFnmoSFiz9RU1P73Q42xE3HhUPgwi+HUfXkJI/pzRQVucNMV6CJN14adIMkrxhP8YhWjtCUR38fA5LadMApit31vyyothqRGezNRuM7nq+yAEdqnUPUSX4unl8nLwgKG/S5ZdT1k1rCQuUdEuaz6KtAxQdM6v4Qeh6WKl7B83jruF7TGAT0giDkaI8E6TjensLZHrVQlb7NAM6H64CAliJiJAQ8KPEZ2PQvOqdoYL6moCpqAMD25USFawfg8b09Z+UnL0ra4SY+ZGln1Kxfek04gquuLpZsihUgdrW+dyItijAi8687eq7+sQ5+f/bQB4/wa92uiDQQHPu9AOnN/N8L1O7N3BrmvcS07dwfLvOH4vhf+clhJiCjes3u5kbF/iAOBCpI0llXjbiwkWGy3bAfQ939fKLJH04Z4CKCxMOS5wRn/bxWMvWHloNTkkd1fAS3thN1un6e6CPq2ILbynS0YgwrMODEk/FkAVhFNPe6rfLDQHiXlGAw6HI4mXq1mcqVaYzoH8+AEG31C3OlTpsUgc4zOiHeiekMzJ67kuLHMe9BjCbFsZ9aPOt0skyvfv2I4AyYn3qLRSHZsiVWkxtCpFuEMIWvQGMUDRmI2j/mGQ7VIOTobBiaENtAPJZ6HmZRj4QFxreaS5LkjmwuyQz0MluKAZtk3uGBRIAO0nJh1AeQH2EVRulap1+csCulDKeNQtA8ZGDjRoHoUGQSsxsr0DGOyC5QGwFXK+XVoTDv3LTuZBypgRpFIgrewZfbtXbBFoGF2P36EBiS91LvghhtDttLAQ8rp+bquT+GrI2cIIBiC6m3103KBZVyj8RUP6HzkES3pyu8PjkrIqnzhwvwEy7A++10jccJ73wZu+7XNiVKhNHoZhF+mHPrOnxXn85nF2fJ7Z5fKApuz5QqaPBlLZWqIYCvZU3U+8h2OgMP9LqKFVyvEzbejJZlH0Of7Ri+PWRTyasKY0tN8eJBXlnW8R+F1PWzeu+OzgewmDJjSqy+sb+kKdpYexdSEqbyGFPhDmagGeIDUZ0JXFvfNGuD/w3mAv9y1WhLE4KfkfdaowlRmnSPw4KOKLWLctn3H0I+LnxcBh1q7DTbo/gaF2hct8Lx+ZiVgDJkefDjUPZUvcevEo3smTUfgvv5qcLc6Yz84y/WvH8cbkbo8/jl+4N6Uq/dPlEtTjmhjbuqVlK6LhQpqV7govNM6IjzNzUWE6quS5nXlVFiMrHwwokjulW5sDgcnkFtQUAXOhhBC8a/crMMOIPFeJweidT19fTynWel7keoO0JpbuOwPAXQZa3/P4AMQPEU+gBXZX17feMQg55bR4bWRgJpjQnwm3m5QrwJGDHMtBPntomRvgxd4NDrmKM753vpTWJ6Zz1X1LqCtGhsxLAA2/tLNTzszYDjlSKQ5lglX6u+tWvJTz3arq5LjZBBeuGVj8Ge2WNZArxUXtWmKedp//qFntN87OCfGZNAcKaf8CdUkRktqVgFwnST4ubHRFOhXDw8xUS3OcERAWlpa+2qblY/Cqs3EN53S7w9/z4EHOj/7ujk/dFJYoRjFYLvWoEf3uMS+ZRcCo2b4WbnCiCFLKjKRxFrvElR5n7eVZVKMvoEa+x/1pzyoWmoG2VG46nAdJGHk0iImjlr7XKl/O0upMl/RSWH7wLme7kqjfoqNqNDF/63c80IyQInUf3H60W1/1oSuphSb4OOln4GLmbG76hM5/1e+xQjYismEHRmAId6y4/Mfj8pEjDkRVc1cJQQofHqsHoWeA6Skixnv/HBCFNnKyQ9HrCKuZO1sAUrIKn8JIGlDjumfAJI79o4YT6Nxa28w4Ylt99ifGXyMDi6H8JwyEqbdvg5TpWBasoHSXWLqwkoM7lkKPcnL3OYBQipkzXnpfKVHjAw+J30goooh4xTwT01mFI02qMs380AtGfaooU9GU0v7Monwk4QNhE3kKNGhY8G0LamE+F2H5M9aKDX73sjmZ0VbQa5t/3S5UTnx/PwvI6U8Jvy6ffx8R+McalZQ3B7g8K5poo+d0QBgpcmpRwzVypYjg2+rhePEJCGuz1X24M0sM+5zEF58pZMOhPyMtzBnaQ3klcfvkVv/ORuCp3Rast4IzrkO/jbGXH/Ds3FG4UFHTUgLz8xh3jsuE2SU+984jYRtGv7U06pH1XSOAcVFSuUUeOQp8LyUauXfkOAZBNQoJcqvQ68QbDEKY1XArRCw8NvzlIdXrw80UN6Z0i8BeT0GrLHCsBSYuSao+cECfZXvFSzI+rKaIymoPyC3VtnAmUXPe+xckrqLVuA6UVl1WStZ7KazBSphkTvd6tzxf8SvJNDyIYTsfHHI2KicTEZTX4zvAXO8aw28BSGqGJToShKGLL2VsVPqPDapoc3pTNB1W8MxOqN1rhlxVvAtwCTgQ2zpL9Vt1CfWPJ3YGr/KXITsMJ4QI2oWRoMcAdPR8/sIURlD+UbX0VKmWMibHFEn+XOjUeyNgpCtwmLTzLSk2+nH4rHlMkwnYhzVN4NfoYyNQaN/suGVy2goVo7PPMeePyIyjuvS2Z0Ndr2I/8blVEqCSNwoXe/+7IggqEpRHokXOorGzUMaJIwi1Wgm1B7qRPn8pWV5qBdS05zXErL2yeA77WcEsqAMrZwK23kujfJiRpk6xd+eA19zOvdrw/Sb7I0RtWczp1bBH2uq5F+kT5b313JN3b5YHw9DXQXPZDAKIHHZxEHF3jMHykbipl9xmk7J+ornZ3Nn3OliOSqPPC85mHvp5rwQ3ed/q37/vFwIZjmfTFD1PChnpIECU9G2LWDO7VWrCkc+IbxZ3GwhNEII9qc1F7q6Go6Ofialh/ctv+Zm9FHAWI3FGxpXwWymO0nyVGMnD5mBN+xqJ1MjwZ3ZucDk7vypMys9KqIrs6MuskFktccOyvWKjRcoRvmqXmHqAzFpBS2ndjk8XsNH6u9j00nFTc5VXgU9TyELeQReRi+SQADVgGYvv9DiHgf3dAfJ1clHyUF6EzWSU780uLAifEjRzb5h9wE0aC8cAjfvyyqEwvS8X1CrIMqH3GamHoS+NGLLe886oX33eKosgPSD/OVj3TGuhEc+0a3ONfAFLzeIm/67zNRa8zkwPqYtsP5O3XSOXFJvr5zVOle2C1EWm5VZHlVdmG0zfOS7Z1EjH6BbfHzX8IUDmceQyjYikVD3sZ/DCCAosATZE6wEHS5/55a/EMJc9MyrftblBUYP2/WpxN/yZ8LMmE87kK0c0RZGpep/hYyGxUteP+DJ+94fB7g7JMsiL1GkmtO2294PBCUs9sT+r1GOmrtzHwukikDtePDV61DlSrMuQxB+F3E35HjmGoVlVo28nwDYeVyqx6uINVcswmNf/OAOO7zxKlZmKJcDbXjmkDh2kEZukGtSIOsgep/aMgVY7aOEVMaEDtsLwuR+pA8RyRfccVE1Bu99lDuJMAONKw0qzpNTuWtgu80DK9axVafd8WiID6zAZdWJW+4n9XCdDQOp8l+XLgI33DD6oak9Z/Qpg1BcCMAJ9nMOghICQvrEzFAXNRJLx56KWQ+sj7MgIxYYk92CpuM0fPR6l1D514LRp17kdBOzO9M9x96H45VbE/ONid51Ax8a49meTRcF4/UeG8tTPIqQnQJhQesfLcRMGRMtIA6DjaE+qVhA/3tLPvk9rTV1wb2a30csuuK5QWK8GmaTGc5Ueo6DaZmZCvn2z4Mr+B10HrmWdzxn07ThkLba+7piLLCWVPvYJCF+0j/oAV4ER13ToPgk9dOW3q9rIgH7HHtgI5iCEisuvtEtgzG972xXay1NjVb2pWQoLrWYVsJ9/0bai0EnziuB46Cmiz36c25GsoHH1A3GW11col3eqkBX7tIEdyhb67HAd7E8tAqm3AO4oJcH9NX9Y2yU0HkrHt+llv893Ir19ea+Btgw1KQoMx1qeJOGuX9g3dTAhSGNhpWbEiDtXyhuAB1qwJ6+UpTgY0aWZHQgZ+xPcd62lRKU8gk51fiMUlLtQd5xBnASB6rtukv7dMACjTn5CAdz+s4ADT9YcLW9yYcDHWTBnl0rF1HDWS+owdjaF/adGtiTVnyxTzf9H2X2jaKnk67Sf9Bd/R9OK/sFMrHzFn0Usmz3em0O1Ap7g/q/6YfqXleoFyxM5gkmu8uQVBLNjTKIkR6D1h0PXsWhN0+ghOYlU/GRBb87DZIk9sGbExBIQ/Ub2p1yNB8IEFEJqoCxBG9o2oJw2Hyu8rygLXvgQtB8Y+gfpA5Ybvwc4bdBEWWm+YlEodZPiGD6RZb1Lg+M2EkvNMf6aV66ySOaWO10OYfcDVtGz6CRSa69lj0VXV2rOF4vRg4kzQXtpzseemGDfZY1gvDEpuJJ21I9YUIAsOvHX0SFcjjC2g/SmWEgs2wQYuhQjYsZFDO/QGzt+CyrpT5UJdXWALpDV+okTIOgSPi8Y1UMGfWPhvRvA/n5RpS/0uTxO73LJTzrWIgO2jFovox2gcrSRCEMxzch0XpKxlYs14zYyAxgU425BVDFt0HN6WqC7fcBy2LldvbFy0CK+cKsPzRELDDKMztiJkGE5jNLrvtkBaLUVIk550/mlvWtCZeJcEf03cT7Zu49YC4iW21QqnG71j0h3QamHIULuFLKi1Fgy6T0cxOq57CWTeD2AIqrWT4DZFD1F3/IM3rho+FbTOAugvFzzmPBqVmE17JrLNjBmvDVIqK1Wyu/Vt2nRe1nZZYZ8iUVaVLDBCxKNN/Mfjlh4sf8z9n91yIxmUm4fqKc47gHcI9fW/STbBCBhMcKu5ZnrBAlFLiVw5CZbKWi/WVxaZtU/cxS+gTdiGR/lIy95+IC+DB+d/TfVf8EIYqCREoQ0YjWA292hYv0SNBp6Ztt6W90LxSrB0+VzlopZ1okcMO7VvgLTUxyLHBVeuS2dUPyPsmTu+epiJcCUg76pRgGnX9z2pnqjpn4o0PIWjl3R4ANca1M0QfSbfLYvn8QQnRP2hmNMJ8zdh6UoL8LA2gIUX6tprSbXiOmvaU4Ms+fXlLKUkCFvmEOkiV8PAAftX9t639eBa9X7S2b5hOtbnzCrL30lgbYWbKGzFr3hwA+HvfI6g4yqXFbeIUG8CFCNmeSkioThKbPAo/7PU0p7Q1qIPLwx9W7cDZ++xx7/gXP5ZjYpAtsb9BavImjjbrK5mi0gMj8d7aX1Vg+lT0Y2do8DNdin6Y4f/qAb5F7rLh/kwaTwzsijnZFEZR8qWFHZ5RXMcr+klBWdJbAp7J2r/zt76qX1ny76l+P6iVOSDLTGVKmsLhDAwDLLmpVj5amZn1R+t3uPlmSLOLLqT+XLZk5scB5eafwWNFtkK4F/6tXMGDyAJ6oR22C8SRhbX+bLrpt7uoYq5Iad/aKhY46lPJa7Q3zWfUXDu7l+cA2FsUdm4tPO0dOCj20/JxvUJ4GS8xg3CAfG8pnEJugNzaeZLl6AvJjpHe/TLKEmHpeRU9mUjm+upsvw5HzT95mi1UFoYHFuX1ElrJ6AcHVzDvvGbZydr6dpTmWg7WdFU6kYdEfJMVaNSGpTA4t4P+8QZQyubQl+soxylO56fWdmO0OF7kks2t9kbDO0O/1J5blPM4s53MDXID6aV2FqtSdUKAQtx9pwSC2BQpH/KJaCPwRI7Rk2DFgzr6vK5E6XoAQBSYrP0/lyIMXHNU+OJ8lfMlqdlC2PWwbHRnsWz5jZ0d9SnQw30nMrxLt8EjKre0Fb2PI2aLr92FnQodIoOwi/7Hi7oNmxzTuCAiqNMf8Axecnmue1BrtPKmdbdExJpeQgMH8K23cv6vKoh6ej4HBH6L04+nRAsDp9jz4SQpAcqLdEcjRsfL7NO/xsvm0hH3T0SK15AEt41v0fIqS4m97T8Ejiege+YWJK/Ry2wp6IOQvn4j2voiWerZhZ64N80RQUTgFrXrR6MOd/vaVXqR/bC+lo/G+Nhg46SNpYEIQ6kujf8uvBqsLKbg0cMwK/TwGDU0bOHYcj7+UWe09vl/XN+dhN2trkVUGtszMMeRK0j27EYpaxGE+oib17/LHKzoh6rBL7XdTGDuBb1ZMtu6BpPy3DZE2OUDIKAjCnOjUTU45t1Rt/7RXkra+nGdAK7Ix0n+fIX5pvP4TaOG3VSbmGI5ReK9ZSRmfO6JW1O4mVlOSQsslWk29SlFkKFsHW+Vdr7BlUWLw2sRxGwjuigOsaei0vFPxe6ywZbmfz9KCJQX2e2tSFMtgrxHnH3S/aTua3/CyvQJfitYoS7vZLjwwH3pu4nKNohIsXzpd8g8zGsF9OFt/FqeNPC2pJN+ilFD3tKbwBXgEdjk3C+2kxrspJIElG1qEMjesjw07OuvAItqky/myh/Ewq1rZd9tFU/QIJu4Ku0zI3xs1Fn2NdG4htvajho0vzXG30fUVNs4HkO2B+G7cumlPrwcsja64B6biqM+trcOm9iL4MPXz827oZ95XHoE+HhtyVcqhTgivPQ/H6yiybmkoJGrSANDadnwpFTksbBKlvALV6b9aayfBzOkFUjuxLk/2664WpQj2Zy6buRMfm6cgZK6oYsVnWHuAm8zSfBD56sSnekqy3CZg1kJpDanFJ41uY5wQHZPDWjZCrad2yGG8lOupi1cokxj4fj0Kl9og/8afyyvivb9uL23WLCTi82SxWKJb5jpKZcDknoPAy482qSp04MA/b2PyZoczpF+yNcC1qo7lak4IAYCd/BzlftoxKQRvC5gnI5rSu39JiWAzU5QbwndBPsGHAVvMjstfu7Z8RtnSqV+WyDA5NAJo6ghAcFVyyWeL7FCvxZ+pwOVaDXlG84MCcJRC2/pS/qA9S0NX68wBmrNRCUBhLHv/yMldYWX7xlkeK9tGCDx9KTOk3iBoA8JMb5jBOZ30U2biFGh1HT+z27gymzbVWqrHvU2by4v9RFctxYCZNltQpXmFMrv96d+IPB6JQUU+YLo3KVNi8Mt4l6UX9bvu49ya6P56TBAQrZvs/6sMhUhypz14/QZKbYMqz8j9pb7XDnY4NlzNeGe9DjGomIRLXBuEjsKcMNqUk7GsE3PVrv6kcwnnxLctPTQXvfN2YmtIgXzBIQ/dkHHXh2GMbYIAUYZi6lWTtnIrflGL8vwBcISiNQ2Yph5P+eQ1nwgoE0iDu/aAUhjglyGMEL9jiWhb/a1V1HPnw5BGzqeCFdJUYx4/JFaiqGwu1wsYs9E+L5ICWe8vCkHwWQQaJnnYhrfhG5u3s9PsDkU3IusVBhcM4SSqZWPpHFY4RozitHfi/Q1wQTradpAlw/l3ZwSo39f3F18dQM668R6ODm3+ywMTI0IhOJDih605TORzybDl/TbGY1jtFN2ZY1bUoZONvtOVWdKNDFFLJgprHjrjM3oHOzrr6S2joO0mRaZdaH3MfwN4K0Md0IQt62c04dZZY4KlWJYQea7fm9MMAc3NU9deZsUOXMl3d7P4BNxKHUcZLV8DPSiF0K1Qw5m3fjN8CGXsXmcPtnv9n7QZ2M3ZqrcUmPw0AfuOzncHsSAHebI2PBtHfO8lD2ROPt5ya7sZLtKmxruC9Lpa98jOMMVSgBODADK8QPa572a75F8SFYeCggYv4daPZg+j7p/utK7W987zC2TDOUGQ1y/qgfPoktBQz/bqkT9Q84Z1gP7lG8iLTDtACqfzr2zFvVzZ/BIMpPr3+wWx4dO6VB1/DQbSr52J6ix3h2sQsJ7J9i6M2ykHYZ3Uq7m4ujMJZpYL4uw6lOriCvFKExVxch+auG596DVSAwlFaHZjFD9nvPsl7TdgYij8Om44Mn3wWHtO5kd5OpWAO6UMSZQOzfYJ0/I2v1Okt/kbwDyt1TQWglsPmwV9eNzN2MHoycYlkRVsqWe6bpJPXAdI/MH6VefiXXSX5UWatAvN1545aV3hmC1hf4T0qKduOWGhOurPeB22v5zLarp+G/mcgsiLp9BilWN6XEsyqbh4QNQQJNoUsAUkBxF+GhuNwr/V5BPEkpugdgdR7zDq8PgNwDodJCa0sSSj2liKRvVAzamj2ZxYOedKdiozt1o8lyzNZtgdyyKJNzxlwmxeGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_012drstdcsyg9RcgzftY18Z6",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "interface AuraCameraController|type AuraFrameCallback|interface AuraFrameInfo"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 26,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_012drstdcsyg9RcgzftY18Z6",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts:4:export interface AuraCameraControllerDeps {\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts:30:export interface AuraCameraControllerImpl extends AuraCameraController {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts:61:export interface AuraFrameInfo {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts:72:export type AuraFrameCallback = (frame: AuraFrameInfo) => void;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 27,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01KFD861G3cLjX9YwXsyrFkb",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+     "limit": 260
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 27,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01KFD861G3cLjX9YwXsyrFkb",
+    "content": "1\timport type { AnimationPose } from \"../../../../animation/index.js\";\n2\timport type { AuraCollisionLayers, AuraPhysicsRuntime } from \"../../PhysicsRuntime.js\";\n3\timport type { AuraNodeBuilder } from \"../builder.js\";\n4\timport type { AuraPerformanceQuality } from \"../../RootRuntimeSupport.js\";\n5\timport type { AuraRuntimeNodeAnimationPoseBindingMetadata, AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeBounds, AuraRuntimeNodeEffectAttachment, RuntimeNodeBoundsInput, RuntimeNodeMorphTargetWeights } from \"../../RuntimeNodeHandle.js\";\n6\timport type { AuraSceneBuilder } from \"../scene.js\";\n7\timport type { PhysicsContinuousCollisionDescriptor } from \"../../../../physics/solverless.js\";\n8\timport type { GameAppRuntimeOptions } from \"../../GameAppRuntime.js\";\n9\timport type { createGameInput, GameInputOptions } from \"../../GameRuntimeCore.js\";\n10\timport type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, PortableShaderMaterial, TexturedPBRMaterial, TexturedUnlitMaterial, UnlitMaterial, CollectedLight } from \"../../../../rendering/index.js\";\n11\timport type { TypedGLBActor, TypedGLBActorEvidence } from \"../../../production-runtime/TypedGLBActor.js\";\n12\timport type { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105, GameRuntimeEvidence, GameRuntimeEvidenceOptions } from \"../../GameEvidence.js\";\n13\timport type { AuraAnimationSpec, AuraAssetProvenance, AuraAttributeUpdate, AuraBackend, AuraCameraMode, AuraColor, AuraCreateApp"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 28,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQSigsKEAgTGAI4AUIIdGhpbmtpbmcSDLx6gJTVf2swI92bkxoMqfYgfvY8RvJXK3Y5IjBg7qbBJRNp56Td/VCUK3IO1XLIp44kSrIvSYMH2AfdUyhdKZEbBqa6qLRM8j9Va+AqpwrPBBij9eUytXUHVhX+6JnH87aq/Ksgf3/kL/csIGA6MSnRVGkDgj/QkBhTbnqc7amV0JWX1riAZsCbYxMP7xyA6tpRIa1CPnIzCBVT60U40UiOW3QHIQTVBshjt2lN8jGXqn3ciKiYCQMOMdwvzNZkIxJKx7YiNkucNnNUDe/V2Voy03m3B9pOhpV8ngD+NQkASKWlvU4iSq7va48ITDiEigAEGnOgYzSjFPscM59DRqtNPISsbTsCdn6JOIzF6hyKj4Jm4SHzi43gHOSKYm+zfrTP1eryLguqkziOZ0smG7HQJwGT1RLhW3SM71Na1nkO9zazpxi6V+W/gLFTgaMAOmYcbhi+IaRxQnkjAeVZ7qdRCx9VsXsfLVlCXosxyVyvGkMz2lYmXjvFCpLC3g+cgISLUaMwU3PDPCAWYYbeYYqNR7yS0aeac/Y7wKvAdt3LmIZnp9Sqo6/M6tOi1ok2mhQAkzEnQfLODzDBX2fZa+B1aVIda9VNXU31kmx2Qnw29A3dh4aq7rOGrG4IFCLW8wP8Avqc92+uThDxz6QxSUqAtFHoxWvKWhLdBRyLpTwNtd1rFY3aHFsiPUMZuR2QDmmXZeOsyB4+AFXwp5Eiyx0oHpes+eWWcT2OEMtHHdKCjdmyll2a1A0x2uTrXoN7v7DHa7/Lqsbqcin8DSydsX/4VELYsnI6OssyC3z7KR6hSpChfsOa1dLx/w82sYHPx8SGJSqjxoZlz/dFhMlzUE7f6o+mxqLvBkTSCmNfJUSfLReln8qkmJw1MgMS0ZYj57ypGiFTIRiEz/uz5TYi2eeEvdAF+VH44etTw1QxmCYF6PUNRIgmRG2GINJTsL8pBuyhQvdnrS5U+MsIN3auc4xQF8wW27VRo8R4mWYUbMWBTp55xg2bVNa2v+NYow5HQ8k9VyfaXtuCEtlj62rT//jn8aGF8CReHDGdCWnZXrx8MlRveM+o0kanvA0UFYBonyhmUvGBc8n5xETOe57CDBtUz8Sp8wmQM1Mxs+NIzwOOH+fxk+CAE6gt2sh+IaZhFa5J23zh+AJ0FPEztJsD3qMOpNsGJfzLgzBNSkbWF9R+ogJWvEzx9NNzrn4qFmiQCowjnReGaBYQ6acOQaPsDgvOyqbvCz0YQohy5AipND48dEd4i8MWs8vY2yuUMkax3uJrxnFEGHX4cWM3freGzrKl/9obu2pK+ic42TYrYC+d9cNmuN2c/pefWsaFgmRBckPPRRQIgWokKhBwNoBhKn/yV2whLsOBzktPYHxbgAinBck08G6rHiU33qICD+/1G808M7gXDqIMFGgPjfnuoNdVTwra1Ob3wDXlGe2U1+xOsZRyHfrtDNbNdDFD6szvlkssGcMRMdy43yHNBG55x/EV/drP1TScOUaYYBlGx2eFM1gHV+j6sQzL72DmGewDi4wwyrsMmtYFV3IW9FvagVxPyx7KwdSZZWR3+jyjWt6bF3Mdk6ESJbuf0Bz2xoHN0Kg53wQh5+mdCTl1BrfnMd9FcHVn9Vhpea6xgYLIxAw41R9Mj7Ajbd1azTvvB0Jvkvzk/YAULvTVg5271RzbGR7PeQLN6qCkOZu9ATRs1w0Mxz9BecFFddiJJX2fapcC5uiYQliIp5IqghCZ+X+BHdGveiZPmws3E4qMbke/PPbm0r1xhEx4HKs0Ip7Pt7Rz5DW2Fz0YkfrkbaqLeMcArdFWTrgeGa4wp6RU2qA56Grm40raQQJiariUe3+8srl4C6VF6dnOMxgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01YG76y8p6uhVox91kPMCxid",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_015YuizvD3YQCDcJYikddSDc",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes",
+     "pattern": "interface AuraCameraController "
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 28,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01YG76y8p6uhVox91kPMCxid",
+    "content": "1\timport type { AuraCameraController, AuraCameraLayer, AuraCameraPose, AuraCameraProbe, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSubject } from \"../../contracts/camera.js\";\n2\timport { type AuraLookAtLayer } from \"./layers/index.js\";\n3\timport type { LegacyCameraSpec, LegacySpecRigDeps } from \"./rigs/fromSpec.js\";\n4\texport interface AuraCameraControllerDeps {\n5\t    /** Full subject resolution (runtime handle + scene-node fallback). Default: none. */\n6\t    readonly resolveSubject?: (ref: string | object) => AuraCameraSubject | undefined;\n7\t    /** Camera collision probe; default never hits. */\n8\t    readonly probe?: AuraCameraProbe;\n9\t    /** Viewport aspect (w/h); default 16/9. */\n10\t    readonly aspect?: () => number;\n11\t    /** Write-through hook: extension presents each pose to the camera node. */\n12\t    readonly applyPose?: (pose: AuraCameraPose) => void;\n13\t    /** C-14 hook: `app.cutCamera()` → resetTemporalHistory(\"camera-cut\"). */\n14\t    readonly onCut?: () => void;\n15\t    /** Reduced-motion source; default false. */\n16\t    readonly reducedMotion?: () => boolean;\n17\t    /** Initial pose / spec the controller starts on (static or fromSpec). */\n18\t    readonly initial?: {\n19\t        readonly pose?: Partial<AuraCameraPose>;\n20\t        readonly spec?: LegacyCameraSpec;\n21\t    };\n22\t    /** LegacySpecRig deps used when `initial.spec` is set (and by `spec()`). */\n23\t    readonly specDeps?: LegacySpecRigDeps;\n24\t    /**\n25\t     * Q-3: factory for the bars layer "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_015YuizvD3YQCDcJYikddSDc",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 29,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "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"
+   }
+  ]
+ }
+]

@@ -1,0 +1,212 @@
+{
+  "runId": "bench505-effects-sheet-t10-aura-r1",
+  "batch": "bench505-effects-sheet",
+  "arm": "aura",
+  "task": 10,
+  "idx": 1,
+  "order": 5,
+  "seed": 20261106005,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:13:59.625Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "wallMs": 196044,
+  "usage": {
+    "input": 319448,
+    "uncachedInput": 319448,
+    "output": 3179,
+    "turns": 12,
+    "perTurnInput": [
+      3334,
+      11641,
+      15216,
+      17072,
+      24030,
+      24290,
+      28393,
+      36318,
+      45218,
+      45426,
+      45648,
+      22862
+    ],
+    "perTurnOutput": [
+      20,
+      69,
+      104,
+      85,
+      110,
+      29,
+      74,
+      251,
+      1102,
+      39,
+      19,
+      1277
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1550,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1550,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1550,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4455,
+      "type": "search",
+      "pattern": "particle|setInstances|emissive|bloom|additive|blend"
+    },
+    {
+      "i": 4,
+      "t": 4456,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 5,
+      "t": 14760,
+      "type": "search",
+      "pattern": "setInstances|interface ParticleOptions|ParticlesBuilderOptions|unlit"
+    },
+    {
+      "i": 6,
+      "t": 14760,
+      "type": "read",
+      "path": "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+      "lines": 41
+    },
+    {
+      "i": 7,
+      "t": 18651,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 116
+    },
+    {
+      "i": 8,
+      "t": 27996,
+      "type": "search",
+      "pattern": "setInstances\\??\\("
+    },
+    {
+      "i": 9,
+      "t": 28005,
+      "type": "search",
+      "pattern": "setInstances"
+    },
+    {
+      "i": 10,
+      "t": 31240,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 11,
+      "t": 31249,
+      "type": "search",
+      "pattern": "instances\\.|\\.setPosition|nodes\\.require"
+    },
+    {
+      "i": 12,
+      "t": 34989,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 13,
+      "t": 34989,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 80
+    },
+    {
+      "i": 14,
+      "t": 56832,
+      "type": "search",
+      "pattern": "type: \"(vec|f32|v)"
+    },
+    {
+      "i": 15,
+      "t": 56832,
+      "type": "read",
+      "path": "docs/agents/recipes-src/water-custom-shader/main.ts",
+      "lines": 67
+    },
+    {
+      "i": 16,
+      "t": 116302,
+      "type": "search",
+      "pattern": "widthSegments|segments:|heightSegments"
+    },
+    {
+      "i": 17,
+      "t": 118202,
+      "type": "search",
+      "pattern": "Segments"
+    },
+    {
+      "i": 18,
+      "t": 118208,
+      "type": "search",
+      "pattern": "PrimitiveParams|sphere\\(\\{[^}]*params"
+    },
+    {
+      "i": 19,
+      "t": 119914,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 8
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/night-lights-emissive-bloom/main.ts",
+    "docs/agents/recipes-src/water-custom-shader/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-effects-runs/bench505-effects-sheet/bench505-effects-sheet-t10-aura-r1/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}
