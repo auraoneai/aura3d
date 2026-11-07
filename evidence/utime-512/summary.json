@@ -1,0 +1,272 @@
+{
+  "schema": "aura3d-utime-512/1",
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max)",
+  "frames": "960x540, 64x36 luma grid mean-abs-diff, frame B 3000 ms after frame A",
+  "baseCommit": "e5387f3b0 (origin/main)",
+  "rows": {
+    "fx-clouds-loop-base": {
+      "page": "effects-static/index.html?e=clouds&loop=1",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 60.65,
+      "drawCallsPerSecond": 242.6,
+      "pageCpuMsPerSecond": 97.19,
+      "gpuProcessCpuMsPerSecond": 75,
+      "exceptions": 0
+    },
+    "fx-clouds-loop-fix": {
+      "page": "effects-static/index.html?e=clouds&loop=1",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 59.99,
+      "drawCallsPerSecond": 241.3,
+      "pageCpuMsPerSecond": 87.65,
+      "gpuProcessCpuMsPerSecond": 68.5,
+      "exceptions": 0
+    },
+    "fx-clouds-static-base": {
+      "page": "effects-static/index.html?e=clouds",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 59.9,
+      "drawCallsPerSecond": 239.6,
+      "pageCpuMsPerSecond": 122.51,
+      "gpuProcessCpuMsPerSecond": 95,
+      "exceptions": 0
+    },
+    "fx-clouds-static-fix": {
+      "page": "effects-static/index.html?e=clouds",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 60.23,
+      "drawCallsPerSecond": 240.9,
+      "pageCpuMsPerSecond": 89.82,
+      "gpuProcessCpuMsPerSecond": 71.3,
+      "exceptions": 0
+    },
+    "fx-clouds0-loop-base": {
+      "page": "effects-static/index.html?e=clouds0&loop=1",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 60.03,
+      "drawCallsPerSecond": 240.1,
+      "pageCpuMsPerSecond": 91.86,
+      "gpuProcessCpuMsPerSecond": 68.1,
+      "exceptions": 0
+    },
+    "fx-clouds0-loop-fix": {
+      "page": "effects-static/index.html?e=clouds0&loop=1",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 60.24,
+      "drawCallsPerSecond": 241,
+      "pageCpuMsPerSecond": 93.23,
+      "gpuProcessCpuMsPerSecond": 71.6,
+      "exceptions": 0
+    },
+    "fx-clouds0-static-base": {
+      "page": "effects-static/index.html?e=clouds0",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.22,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-clouds0-static-fix": {
+      "page": "effects-static/index.html?e=clouds0",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.23,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-fog-loop-base": {
+      "page": "effects-static/index.html?e=fog&loop=1",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 60.45,
+      "drawCallsPerSecond": 604.5,
+      "pageCpuMsPerSecond": 130.1,
+      "gpuProcessCpuMsPerSecond": 107.2,
+      "exceptions": 0
+    },
+    "fx-fog-loop-fix": {
+      "page": "effects-static/index.html?e=fog&loop=1",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 59.2,
+      "drawCallsPerSecond": 592,
+      "pageCpuMsPerSecond": 104.62,
+      "gpuProcessCpuMsPerSecond": 86.4,
+      "exceptions": 0
+    },
+    "fx-fog-static-base": {
+      "page": "effects-static/index.html?e=fog",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.23,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-fog-static-fix": {
+      "page": "effects-static/index.html?e=fog",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.22,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-none-static-base": {
+      "page": "effects-static/index.html?e=none",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.34,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-none-static-fix": {
+      "page": "effects-static/index.html?e=none",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.24,
+      "gpuProcessCpuMsPerSecond": 2,
+      "exceptions": 0
+    },
+    "fx-utime-loop-base": {
+      "page": "effects-static/index.html?e=utime&loop=1",
+      "diff": 0.097,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 60.24,
+      "drawCallsPerSecond": 240.9,
+      "pageCpuMsPerSecond": 147.04,
+      "gpuProcessCpuMsPerSecond": 121.8,
+      "exceptions": 0
+    },
+    "fx-utime-loop-fix": {
+      "page": "effects-static/index.html?e=utime&loop=1",
+      "diff": 0.069,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 64.44,
+      "drawCallsPerSecond": 257.8,
+      "pageCpuMsPerSecond": 165.96,
+      "gpuProcessCpuMsPerSecond": 133.3,
+      "exceptions": 0
+    },
+    "fx-utime-static-base": {
+      "page": "effects-static/index.html?e=utime",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.24,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-utime-static-fix": {
+      "page": "effects-static/index.html?e=utime",
+      "diff": 0.07,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 59.85,
+      "drawCallsPerSecond": 239.4,
+      "pageCpuMsPerSecond": 96.5,
+      "gpuProcessCpuMsPerSecond": 76.5,
+      "exceptions": 0
+    },
+    "fx-water-loop-base": {
+      "page": "effects-static/index.html?e=water&loop=1",
+      "diff": 7.064,
+      "moving": true,
+      "ready": "true",
+      "rafPerSecond": 60.79,
+      "drawCallsPerSecond": 304,
+      "pageCpuMsPerSecond": 113.49,
+      "gpuProcessCpuMsPerSecond": 87.8,
+      "exceptions": 0
+    },
+    "fx-water-loop-fix": {
+      "page": "effects-static/index.html?e=water&loop=1",
+      "diff": 7.351,
+      "moving": true,
+      "ready": "true",
+      "rafPerSecond": 59.33,
+      "drawCallsPerSecond": 296.7,
+      "pageCpuMsPerSecond": 112.23,
+      "gpuProcessCpuMsPerSecond": 86.1,
+      "exceptions": 0
+    },
+    "fx-water-static-base": {
+      "page": "effects-static/index.html?e=water",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 0.26,
+      "gpuProcessCpuMsPerSecond": 0,
+      "exceptions": 0
+    },
+    "fx-water-static-fix": {
+      "page": "effects-static/index.html?e=water",
+      "diff": 7.323,
+      "moving": true,
+      "ready": "true",
+      "rafPerSecond": 59.09,
+      "drawCallsPerSecond": 295.5,
+      "pageCpuMsPerSecond": 127.82,
+      "gpuProcessCpuMsPerSecond": 103.6,
+      "exceptions": 0
+    },
+    "utime-base": {
+      "page": "utime-static/index.html",
+      "diff": 0,
+      "moving": false,
+      "ready": "true",
+      "rafPerSecond": 0,
+      "drawCallsPerSecond": 0,
+      "pageCpuMsPerSecond": 1.09,
+      "gpuProcessCpuMsPerSecond": 2.5,
+      "exceptions": 0
+    },
+    "utime-fix": {
+      "page": "utime-static/index.html",
+      "diff": 34.991,
+      "moving": true,
+      "ready": "true",
+      "rafPerSecond": 60.55,
+      "drawCallsPerSecond": 121.1,
+      "pageCpuMsPerSecond": 89.9,
+      "gpuProcessCpuMsPerSecond": 83.4,
+      "exceptions": 0
+    }
+  }
+}

@@ -175,4 +175,20 @@ describe("frame-loop scheduling for static scenes", () => {
     const snapshot = scene().add(primitives.plane({ material: custom(FRAG_STATIC) })).toJSON();
     expect(await mountAndCountSchedules(snapshot)).toBe(0);
   });
+  it("leaves app.step()-style explicit capture alone: autoStart:false never schedules a loop for a uTime scene, explicit renders still draw", async () => {
+    const snapshot = scene().add(primitives.plane({ material: custom(FRAG_TIME) })).toJSON();
+    const renderer = fakeRenderer(snapshot);
+    state.renderers.push(renderer);
+    const controller = await startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false },
+      undefined, undefined, undefined, {} as AuraRuntimeNodeRegistry);
+    for (let i = 0; i < 24; i += 1) await Promise.resolve();
+    expect(rafCalls).toBe(0);
+    const before = renderer.render.mock.calls.length;
+    controller.render(1000);
+    controller.render(2000);
+    expect(renderer.render.mock.calls.length - before).toBe(2);
+    expect(rafCalls).toBe(0);
+    controller.dispose();
+  });
 });
