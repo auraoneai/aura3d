@@ -1,0 +1,9 @@
+{
+  "name": "agent-loop-seeded-black-frame-no-light",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}

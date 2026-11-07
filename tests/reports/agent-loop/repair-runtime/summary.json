@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.verify-repair/1",
+  "model": "claude-sonnet-5.5",
+  "runsPerScene": 1,
+  "maxTurns": 5,
+  "browser": true,
+  "attempts": 2,
+  "repairedWithinBudget": 2,
+  "rows": [
+    {
+      "id": "black-frame-no-light",
+      "run": 1,
+      "expected": [
+        "FRAME_BLACK"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "RUNTIME_NO_LIGHTS",
+        "RUNTIME_NO_INTERACTIONS",
+        "FRAME_BLACK"
+      ],
+      "finalCodes": [
+        "RUNTIME_NO_INTERACTIONS",
+        "FRAME_EMPTY"
+      ],
+      "seconds": 291
+    },
+    {
+      "id": "fog-hides-scene",
+      "run": 1,
+      "expected": [
+        "FRAME_FLAT"
+      ],
+      "repaired": true,
+      "repairedAtTurn": 1,
+      "turns": 1,
+      "apiCalls": 3,
+      "initialCodes": [
+        "RUNTIME_NO_INTERACTIONS",
+        "FRAME_FLAT"
+      ],
+      "finalCodes": [
+        "RUNTIME_NO_INTERACTIONS",
+        "FRAME_EMPTY"
+      ],
+      "seconds": 493
+    }
+  ]
+}

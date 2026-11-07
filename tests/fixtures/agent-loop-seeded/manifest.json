@@ -1,0 +1,65 @@
+{
+  "schema": "aura3d.verify-seeded/1",
+  "scenes": [
+    {
+      "id": "frozen-utime-water",
+      "description": "frozen uTime water",
+      "expectedStatic": "LINT_UTIME_NOT_ANIMATED",
+      "expectedRuntime": "MOTION_NONE"
+    },
+    {
+      "id": "black-frame-no-light",
+      "description": "black frame from missing light",
+      "expectedStatic": null,
+      "expectedRuntime": "FRAME_BLACK"
+    },
+    {
+      "id": "invented-asset-path",
+      "description": "invented asset path",
+      "expectedStatic": "ASSET_PATH_INVENTED",
+      "expectedRuntime": null
+    },
+    {
+      "id": "shadow-no-receiver",
+      "description": "shadow flag without receiver",
+      "expectedStatic": "LINT_SHADOW_NO_RECEIVER",
+      "expectedRuntime": null
+    },
+    {
+      "id": "fog-hides-scene",
+      "description": "fog hiding scene",
+      "expectedStatic": null,
+      "expectedRuntime": "FRAME_FLAT"
+    },
+    {
+      "id": "ignored-effect-option",
+      "description": "ignored effects option (effects.fog particleCount)",
+      "expectedStatic": "LINT_EFFECT_OPTION_IGNORED",
+      "expectedRuntime": "RUNTIME_OPTION_IGNORED"
+    },
+    {
+      "id": "scale-off-by-100x",
+      "description": "scale off by 100x",
+      "expectedStatic": "LINT_SCALE_EXTREME",
+      "expectedRuntime": null
+    },
+    {
+      "id": "camera-inside-model",
+      "description": "camera inside the model",
+      "expectedStatic": "LINT_CAMERA_INSIDE_OBJECT",
+      "expectedRuntime": null
+    },
+    {
+      "id": "missing-await-ready",
+      "description": "missing await ready",
+      "expectedStatic": "LINT_READY_NOT_AWAITED",
+      "expectedRuntime": null
+    },
+    {
+      "id": "reserved-uniform-name",
+      "description": "reserved uniform name",
+      "expectedStatic": "LINT_UNIFORM_RESERVED",
+      "expectedRuntime": null
+    }
+  ]
+}

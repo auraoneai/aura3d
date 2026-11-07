@@ -1,0 +1,9 @@
+{
+  "name": "agent-loop-seeded-shadow-no-receiver",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}

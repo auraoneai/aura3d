@@ -1,0 +1,114 @@
+{
+  "schema": "aura3d.verify/1",
+  "ok": false,
+  "project": "fog-hides-scene",
+  "startedAt": "2026-11-07T02:34:51.075Z",
+  "durationMs": 3907,
+  "steps": [
+    {
+      "id": "typecheck",
+      "status": "skipped",
+      "durationMs": 0,
+      "detail": "skipped by option"
+    },
+    {
+      "id": "assets",
+      "status": "pass",
+      "durationMs": 6,
+      "detail": "no aura.assets.json"
+    },
+    {
+      "id": "lint",
+      "status": "pass",
+      "durationMs": 2,
+      "detail": "0 finding(s)"
+    },
+    {
+      "id": "build",
+      "status": "skipped",
+      "durationMs": 0,
+      "detail": "skipped by option"
+    },
+    {
+      "id": "serve",
+      "status": "pass",
+      "durationMs": 5,
+      "detail": "http://127.0.0.1:50447"
+    },
+    {
+      "id": "render",
+      "status": "pass",
+      "durationMs": 3658,
+      "detail": "chrome-cdp, ready=true"
+    },
+    {
+      "id": "inspect",
+      "status": "fail",
+      "durationMs": 42,
+      "detail": "flat frame (2 distinct colours); no scene texture (1.5% textured blocks)"
+    }
+  ],
+  "findings": [
+    {
+      "code": "RUNTIME_NO_INTERACTIONS",
+      "severity": "info",
+      "step": "inspect",
+      "message": "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+      "cause": "The engine notes that the scene has no camera interaction. Fine for a fixed shot.",
+      "fix": "Add `interactions.orbit()` if a viewer should be able to move the camera."
+    },
+    {
+      "code": "FRAME_FLAT",
+      "severity": "error",
+      "step": "inspect",
+      "message": "The frame is one flat colour (2 distinct colours).",
+      "cause": "The frame has almost no distinct colours, i.e. only the clear colour or one fullscreen surface. Typical causes: a fog density that swallows the scene, a background or sky covering everything, the camera inside an object.",
+      "fix": "Lower fog density or move `near`/`far`, check the camera position against object sizes and scales, and check LINT_* findings.",
+      "evidence": {
+        "p99Luma": 149,
+        "meanLuma": 144.17,
+        "distinctColors": 2,
+        "texturedBlockFraction": 0.0146
+      }
+    }
+  ],
+  "counts": {
+    "error": 1,
+    "warning": 0,
+    "info": 1
+  },
+  "render": {
+    "driver": "chrome-cdp",
+    "viewport": {
+      "width": 960,
+      "height": 540
+    },
+    "backend": "webgl2",
+    "drawCalls": 0,
+    "degradeCodes": [],
+    "frame": {
+      "width": 960,
+      "height": 540,
+      "meanLuma": 144.17,
+      "lumaStddev": 6.61,
+      "p1Luma": 135,
+      "p99Luma": 149,
+      "gain": 1,
+      "distinctColors": 2,
+      "texturedBlockFraction": 0.0146,
+      "drawn": false,
+      "reasons": [
+        "flat frame (2 distinct colours)",
+        "no scene texture (1.5% textured blocks)"
+      ],
+      "black": false,
+      "flat": true,
+      "empty": true,
+      "dim": false
+    },
+    "frames": [
+      "fog-hides-scene-frame1.png",
+      "fog-hides-scene-frame2.png"
+    ]
+  }
+}
