@@ -1,8 +1,35 @@
 # Changelog
 
-Version: 5.1.0
+Version: 5.2.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.2.0 (2026-11-07)
+
+A minor release: the 5.1.x lanes that were held back from 5.1.0 (typed point and instance streams, picking, React embedding, guessable-API aliases, a cold-start look, studio materials, physics setup errors, contact-shadow participants and template fixes). Everything is additive; nothing in the 5.1.0 public API is removed or narrowed.
+
+### Added
+
+- Typed mutable buffers: `points.stream({ capacity, colors })` with `pointStreamOf(handle).write(positions, { colors })` (in-place dirty-range upload, packed u8 colours), typed static `points()` input (`Float32Array` positions, packed RGBA8 colours) and dense matrices on `instances.model`. On one M4 Max machine under load, 100K streamed points at 20 Hz render at 60 fps on the typed path versus 11.6 fps on the old path; this is a single-machine measurement, not a public benchmark claim. See `docs/agents/streaming-buffers.md`.
+- Picking for points and instances: `PointCloudIndex`, `InstanceIndex`, `createSpatialPicker` and `bindSpatialPicking` (hover and click), `worldToCss` / `cssToNdc`, a DOM label overlay (`planLabelOverlay`, `createLabelOverlay`) and measurement / `AnnotationRecord` helpers. Picking is CPU-side (grid indices); a GPU id-buffer path is later work.
+- React embedding: `AuraCanvas` gains an imperative handle (`handleRef` / `AuraCanvasWithRef`: `update`, `writeInstances`, `onFrame`, `input`, `nodes`), `canvasRef`, `onAppChange`, a scene-builder prop, `useAuraNodeUpdate` and `routeState` / `allowUrlFlags` / `tabIndex`. `createAuraApp` gains an additive `routeState` option. Embedded apps no longer leave page globals on the host page: compile evidence is per app (`app.compileEvidence()`), and page globals are cleared when the last publishing app is disposed.
+- Guessable-API aliases for common three.js spellings: light `castShadow` (same as `shadow: true`), hemisphere `color`, plane `size: [w, d]`, material `side: "double"`, builder `.rotation(x, y, z)` (same as `.rotate`). Lights now report unknown options as `OPTION_IGNORED`, and option warnings suggest the nearest valid name ("did you mean"). Table in `docs/agents/guessable-api.md`.
+- Cold-start look: a plain WebGL2 scene with no authored look, light, environment, effect or scene kit gets `looks.heroStage` (studio light, key/fill/rim, fading floor) at mount; `?a3d-cold-start-look=0` or `A3D_COLD_START_LOOK=0` turns it off. New `looks.heroStage`, `looks.heroRig` and `looks.fogForExtent`. In a blind judge the gain was small and three.js was still preferred.
+- Studio materials: `environments.studio({ preset: "softbox" })` (embedded probe, no fetch), `material.studioMetal` and `material.studioGlass` (wrapping `material.metal` / `material.glass`); a scene using them without an environment binds the softbox itself, and studio glass turns transmission on. In a blind judge three.js was still preferred on the materials scenes.
+- Physics: a missing Rapier backend now throws a typed `PHYSICS_BACKEND_MISSING` error (with an install command), listed in `app.diagnostics().errors`, shown on the canvas and flagged by `aura3d doctor`; new physics-basics recipe.
+- Templates: the `procedural-scene` starter template is back (the `create-aura3d` template union is widened), plus richer first frames for `falling-blocks-starter`, `character-viewer`, `animation-studio` and `postprocess-scene`.
+
+### Fixes and behaviour changes
+
+- Contact shadows: skinned, morphed and custom-depth participants are now drawn into the contact-shadow mask depth, and `CONTACT_SHADOW_PARTIAL` names the participants still excluded. No clearly visible gain has been confirmed in game frames yet.
+- Physics cost, stated honestly: once the Rapier backend is installed, every app that imports the engine downloads and initialises the Rapier chunk at startup (2.85 MB, 1.08 MB gzip), whether or not it uses physics. An on-demand mode is in progress and is not part of this release.
+
+### Known limits
+
+- Not in this release: the engine API gap pass and on-demand physics loading (both still in review).
+- Picking is CPU only; GPU id-buffer picking is not implemented.
+- Streaming and picking numbers come from one machine under load and are not public benchmark claims.
+- Browser acceptance round 3 and WebGPU evidence have not been run for this release.
 
 ## 5.1.0 (2026-11-07)
 
