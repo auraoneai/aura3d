@@ -1,0 +1,248 @@
+{
+ "tag": "ladder.pts-100K.fix47.rep2",
+ "cfg": {
+  "points": 100000,
+  "instances": 0,
+  "segments": 0,
+  "rateHz": 10,
+  "fps": 60,
+  "labels": 0,
+  "orbit": true,
+  "probe": null,
+  "variant": null,
+  "shot": false,
+  "id": "pts-100K-10hz-60fps",
+  "warmupMs": 2000,
+  "measureMs": 9000
+ },
+ "viewer": "aura",
+ "dbg": "phases",
+ "chrome": "Chrome/156.0.8078.80",
+ "loadavg": [
+  49.17138671875,
+  26.91259765625,
+  22.775390625
+ ],
+ "profiled": false,
+ "traced": false,
+ "result": {
+  "cfg": {
+   "points": 100000,
+   "instances": 0,
+   "segments": 0,
+   "rateHz": 10,
+   "fps": 60,
+   "labels": 0,
+   "orbit": true,
+   "probe": null,
+   "variant": null,
+   "shot": false,
+   "id": "pts-100K-10hz-60fps",
+   "warmupMs": 2000,
+   "measureMs": 9000,
+   "viewer": "aura"
+  },
+  "viewer": "aura",
+  "failed": false,
+  "errors": [],
+  "size": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "generateMs": 28.399999976158142,
+  "library": "aura3d",
+  "libraryVersion": "workspace@29c32c819320",
+  "notes": [
+   "streamed points: geometry.dynamic points + updateAttribute (position, color); colors need float RGBA"
+  ],
+  "mount": {
+   "buildMs": 214.5,
+   "points": {
+    "path": "geometry.dynamic(topology points) + updateAttribute",
+    "initialColorConvertMs": 2
+   }
+  },
+  "gl": {
+   "webgl2": true,
+   "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+   "vendor": "Google Inc. (Apple)",
+   "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+   "timerQuery": true,
+   "drawingBuffer": [
+    1280,
+    720
+   ],
+   "maxPointSize": {
+    "0": 1,
+    "1": 511
+   }
+  },
+  "canvasContexts": [
+   "webgl2",
+   "webgl2",
+   "webgl2"
+  ],
+  "gpuTimerAvailable": true,
+  "gpuTimerSource": "viewer-reported (renderer-owned timer queries; an external query nests and raises GL errors)",
+  "labelSample": [],
+  "measure": {
+   "measuredMs": 9033.299999982119,
+   "renderedFrames": 449,
+   "rafCallbacks": 449,
+   "effectiveFps": 49.70498046128091,
+   "frameTime": {
+    "n": 448,
+    "mean": 20.088392857142853,
+    "p50": 16.699999999999818,
+    "p95": 33.399999999999636,
+    "p99": 33.40000000000009,
+    "max": 50
+   },
+   "rafTime": {
+    "n": 448,
+    "mean": 20.088392857142853,
+    "p50": 16.699999999999818,
+    "p95": 33.399999999999636,
+    "p99": 33.40000000000009,
+    "max": 50
+   },
+   "droppedRule": "rendered-frame interval > 2x target period (33.3 ms)",
+   "droppedFrames": 33,
+   "cpuPerFrame": {
+    "n": 449,
+    "mean": 9.323385302035474,
+    "p50": 1.4000000059604645,
+    "p95": 41.10000002384186,
+    "p99": 43.80000001192093,
+    "max": 57.099999994039536
+   },
+   "cpuTick": {
+    "n": 91,
+    "mean": 1.546153846022847,
+    "p50": 1.5,
+    "p95": 1.600000023841858,
+    "p99": 7,
+    "max": 7
+   },
+   "cpuConvert": {
+    "n": 91,
+    "mean": 0.440659340266343,
+    "p50": 0.4000000059604645,
+    "p95": 0.5,
+    "p99": 2.199999988079071,
+    "max": 2.199999988079071
+   },
+   "cpuCamera": {
+    "n": 449,
+    "mean": 0.00868596896562385,
+    "p50": 0,
+    "p95": 0.09999999403953552,
+    "p99": 0.10000002384185791,
+    "max": 0.10000002384185791
+   },
+   "cpuRender": {
+    "n": 449,
+    "mean": 8.999554566989232,
+    "p50": 1.4000000059604645,
+    "p95": 39.599999994039536,
+    "p99": 42.30000001192093,
+    "max": 50.099999994039536
+   },
+   "cpuLabels": {
+    "n": 449,
+    "mean": 0.0002227171359455134,
+    "p50": 0,
+    "p95": 0,
+    "p99": 0,
+    "max": 0.09999999403953552
+   },
+   "cpuRenderTickFrames": {
+    "n": 91,
+    "mean": 39.47252747285497,
+    "p50": 39.10000002384186,
+    "p95": 42.30000001192093,
+    "p99": 50.099999994039536,
+    "max": 50.099999994039536
+   },
+   "cpuRenderNoTickFrames": {
+    "n": 358,
+    "mean": 1.2536312864479406,
+    "p50": 1.300000011920929,
+    "p95": 1.699999988079071,
+    "p99": 1.7999999821186066,
+    "max": 1.9000000059604645
+   },
+   "glCallsPerFrame": {},
+   "glCallMsPerFrame": {},
+   "phases": {
+    "pack": {
+     "n": 91,
+     "mean": 0.440659340266343,
+     "p50": 0.4000000059604645,
+     "p95": 0.5,
+     "p99": 2.199999988079071,
+     "max": 2.199999988079071
+    },
+    "updatePosition": {
+     "n": 91,
+     "mean": 0.5362637370497316,
+     "p50": 0.5,
+     "p95": 0.6000000238418579,
+     "p99": 3.7000000178813934,
+     "max": 3.7000000178813934
+    },
+    "updateColor": {
+     "n": 91,
+     "mean": 0.5615384611454639,
+     "p50": 0.5999999940395355,
+     "p95": 0.699999988079071,
+     "p99": 1,
+     "max": 1
+    }
+   },
+   "ticksApplied": 91,
+   "ticksSkipped": 0,
+   "heap": {
+    "startMB": 133.3685302734375,
+    "endMB": 94.27252578735352,
+    "maxMB": 136.28443908691406
+   },
+   "gl": {
+    "bufferDataCallsPerFrame": 0,
+    "bufferDataBytesPerFrame": 0,
+    "bufferSubDataCallsPerFrame": 1.2026726057906458,
+    "bufferSubDataBytesPerFrame": 810994.4231625835,
+    "drawCallsPerFrame": 1,
+    "drawVerticesPerFrame": 100000,
+    "texUploadCallsPerFrame": 0,
+    "totals": {
+     "bufferDataCalls": 0,
+     "bufferDataBytes": 0,
+     "bufferSubDataCalls": 540,
+     "bufferSubDataBytes": 364136496,
+     "drawCalls": 449,
+     "drawVertices": 44900000,
+     "texUploadCalls": 0
+    }
+   },
+   "gpu": {
+    "available": true,
+    "source": "viewer-reported",
+    "unavailableReasons": {},
+    "frameTime": {
+     "n": 30,
+     "mean": 1.1614690666666665,
+     "p50": 0.807958,
+     "p95": 3.201208,
+     "p99": 3.400916,
+     "max": 3.400916
+    }
+   }
+  },
+  "nonBlank": {
+   "litPixels": 146549,
+   "fraction": 0.15901584201388888
+  }
+ }
+}

@@ -30,6 +30,7 @@ function createViewer(): Viewer {
   let size = { width: 1, height: 1 };
   let pointsMode: "static" | "dynamic" | "none" = "none";
   let rgbaScratch: Float32Array | null = null;
+  const phases = (window as unknown as { __SB_PHASES__?: Record<string, number[]> }).__SB_PHASES__;
   const pointsMaterial = () => material.pbr({ color: "#ffffff", roughness: 1, metalness: 0 });
 
   return {
@@ -99,8 +100,12 @@ function createViewer(): Viewer {
         const out = rgbaScratch!;
         for (let i = 0; i < out.length; i++) out[i] = pk[i]! / 255;
         convertMs = performance.now() - t0;
+        const t1 = performance.now();
         pointsHandle.updateAttribute!("position", { array: data.pointPositions[slot]! });
+        const t2 = performance.now();
         pointsHandle.updateAttribute!("color", { array: out });
+        const t3 = performance.now();
+        if (phases) { (phases.pack ??= []).push(convertMs); (phases.updatePosition ??= []).push(t2 - t1); (phases.updateColor ??= []).push(t3 - t2); }
       }
       if (instHandle) instHandle.setInstanceMatrices!(data.instanceMatrices[slot]!, cfg.instances);
       if (segHandle) segHandle.updateAttribute!("position", { array: data.segmentPositions[slot]! });
@@ -138,4 +143,6 @@ function createViewer(): Viewer {
 }
 
 declare const __AURA_COMMIT__: string | undefined;
+if ((new URLSearchParams(location.search).get("dbg") ?? "").includes("phases")) (window as unknown as { __SB_PHASES__: Record<string, number[]> }).__SB_PHASES__ = {};
+{ const fx = new URLSearchParams(location.search).get("fix"); if (fx) (window as unknown as { __SB_FIX__?: number }).__SB_FIX__ = Number(fx); }
 void runBench(createViewer, "aura");
