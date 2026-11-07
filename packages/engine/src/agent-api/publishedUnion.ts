@@ -313,8 +313,8 @@ export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFiel
 // GU47 (4.7.0): runtime environment swap options (E-B) and the look HDRI catalogue id (E-A).
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 // 5.0 (2026-11-02): contract names reachable from public signatures

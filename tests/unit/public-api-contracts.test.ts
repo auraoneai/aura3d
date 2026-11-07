@@ -64,6 +64,7 @@ describe("public package API contracts", () => {
       ...rootExportSpecifiers
     ]);
     const exampleSources = collectSourceFiles("examples");
+    // invariant: the React host allowance follows packages/react peerDependencies, so a new peer is allowed without editing this test.
     const reactPeers = Object.keys((JSON.parse(readFileSync("packages/react/package.json", "utf8")) as { peerDependencies?: Record<string, string> }).peerDependencies ?? {})
       .filter((name) => !name.startsWith("@aura3d/"));
     const reactHostPeers = new Set(reactPeers.flatMap((name) => name === "react" ? ["react", "react-dom/client"] : [name]));

@@ -45,6 +45,8 @@ export { sprite } from "./nodes/sprites.js";
 export { texture } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "./nodes/types/runtime.js";
+// 5.2.0 additive (engine API gap pass): the renderer counters type `app.info` returns and the `app.precompile()` result.
+export type { AuraRendererInfo, AuraPrecompileResult } from "./nodes/types/runtime.js";
 export { AuraClipGroup, clipping } from "./nodes/clipping.js";
 export { postPresets } from "../contracts/post.js";
 export { shadows } from "./nodes/shadows.js";
