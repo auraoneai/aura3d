@@ -1,0 +1,212 @@
+{
+ "bench505-environments-sheet-t10-aura-r1": {
+  "mean": 94.1,
+  "std": 54.5,
+  "nonblack": 0.997,
+  "diff": 12.22,
+  "changedFrac": 0.3051
+ },
+ "bench505-environments-sheet-t10-aura-r2": {
+  "mean": 40.4,
+  "std": 40.8,
+  "nonblack": 0.963,
+  "diff": 15.89,
+  "changedFrac": 0.3453
+ },
+ "bench505-environments-sheet-t10-aura-r3": {
+  "mean": 159.6,
+  "std": 27.9,
+  "nonblack": 1.0,
+  "diff": 17.15,
+  "changedFrac": 0.5378
+ },
+ "bench505-environments-sheet-t11-aura-r1": {
+  "mean": 181.7,
+  "std": 32.1,
+  "nonblack": 1.0,
+  "diff": 16.24,
+  "changedFrac": 0.4645
+ },
+ "bench505-environments-sheet-t11-aura-r2": {
+  "mean": 186.7,
+  "std": 32.1,
+  "nonblack": 1.0,
+  "diff": 7.4,
+  "changedFrac": 0.1634
+ },
+ "bench505-environments-sheet-t11-aura-r3": {
+  "mean": 190.4,
+  "std": 43.1,
+  "nonblack": 1.0,
+  "diff": 17.39,
+  "changedFrac": 0.3139
+ },
+ "bench505-environments-sheet-t12-aura-r1": {
+  "mean": 208.7,
+  "std": 49.5,
+  "nonblack": 1.0,
+  "diff": 19.52,
+  "changedFrac": 0.2951
+ },
+ "bench505-environments-sheet-t12-aura-r2": {
+  "mean": 176.3,
+  "std": 70.0,
+  "nonblack": 1.0,
+  "diff": 42.47,
+  "changedFrac": 0.6795
+ },
+ "bench505-environments-sheet-t12-aura-r3": {
+  "mean": 162.0,
+  "std": 54.0,
+  "nonblack": 1.0,
+  "diff": 21.36,
+  "changedFrac": 0.3213
+ },
+ "bench505-environments-sheet-t13-aura-r1": {
+  "mean": 119.4,
+  "std": 63.9,
+  "nonblack": 1.0,
+  "diff": 16.08,
+  "changedFrac": 0.2436
+ },
+ "bench505-environments-sheet-t13-aura-r2": {
+  "mean": 112.2,
+  "std": 53.7,
+  "nonblack": 1.0,
+  "diff": 20.85,
+  "changedFrac": 0.4446
+ },
+ "bench505-environments-sheet-t13-aura-r3": {
+  "mean": 111.7,
+  "std": 38.0,
+  "nonblack": 1.0,
+  "diff": 24.42,
+  "changedFrac": 0.6092
+ },
+ "bench505-environments-t10-aura-r1": {
+  "mean": 122.8,
+  "std": 40.2,
+  "nonblack": 0.995,
+  "diff": 16.09,
+  "changedFrac": 0.3588
+ },
+ "bench505-environments-t10-aura-r2": {
+  "mean": 72.6,
+  "std": 57.3,
+  "nonblack": 1.0,
+  "diff": 12.77,
+  "changedFrac": 0.2654
+ },
+ "bench505-environments-t10-aura-r3": {
+  "mean": 62.7,
+  "std": 52.9,
+  "nonblack": 0.998,
+  "diff": 26.18,
+  "changedFrac": 0.4119
+ },
+ "bench505-environments-t10-three-r1": {
+  "mean": 62.1,
+  "std": 24.2,
+  "nonblack": 0.996,
+  "diff": 11.48,
+  "changedFrac": 0.3537
+ },
+ "bench505-environments-t10-three-r2": {
+  "mean": 83.7,
+  "std": 33.2,
+  "nonblack": 1.0,
+  "diff": 36.4,
+  "changedFrac": 0.7331
+ },
+ "bench505-environments-t10-three-r3": {
+  "mean": 57.4,
+  "std": 29.1,
+  "nonblack": 1.0,
+  "diff": 14.09,
+  "changedFrac": 0.4296
+ },
+ "bench505-environments-t11-aura-r1": {
+  "mean": 202.3,
+  "std": 28.5,
+  "nonblack": 1.0,
+  "diff": 11.28,
+  "changedFrac": 0.241
+ },
+ "bench505-environments-t11-aura-r2": {
+  "mean": 180.5,
+  "std": 21.3,
+  "nonblack": 1.0,
+  "diff": 5.2,
+  "changedFrac": 0.1579
+ },
+ "bench505-environments-t11-aura-r3": {
+  "mean": 138.1,
+  "std": 31.7,
+  "nonblack": 1.0,
+  "diff": 13.62,
+  "changedFrac": 0.3935
+ },
+ "bench505-environments-t11-three-r1": {
+  "mean": 159.0,
+  "std": 32.9,
+  "nonblack": 1.0,
+  "diff": 14.43,
+  "changedFrac": 0.3443
+ },
+ "bench505-environments-t12-aura-r2": {
+  "mean": 194.4,
+  "std": 40.4,
+  "nonblack": 1.0,
+  "diff": 20.25,
+  "changedFrac": 0.2662
+ },
+ "bench505-environments-t12-three-r1": {
+  "mean": 166.9,
+  "std": 56.0,
+  "nonblack": 1.0,
+  "diff": 20.51,
+  "changedFrac": 0.383
+ },
+ "bench505-environments-t12-three-r3": {
+  "mean": 143.7,
+  "std": 58.8,
+  "nonblack": 1.0,
+  "diff": 35.74,
+  "changedFrac": 0.6657
+ },
+ "bench505-environments-t13-aura-r1": {
+  "mean": 140.6,
+  "std": 65.2,
+  "nonblack": 1.0,
+  "diff": 37.94,
+  "changedFrac": 0.5414
+ },
+ "bench505-environments-t13-aura-r2": {
+  "mean": 142.1,
+  "std": 61.9,
+  "nonblack": 1.0,
+  "diff": 17.28,
+  "changedFrac": 0.4028
+ },
+ "bench505-environments-t13-aura-r3": {
+  "mean": 140.7,
+  "std": 49.8,
+  "nonblack": 1.0,
+  "diff": 21.32,
+  "changedFrac": 0.5817
+ },
+ "bench505-environments-t13-three-r1": {
+  "mean": 121.5,
+  "std": 57.9,
+  "nonblack": 1.0,
+  "diff": 26.19,
+  "changedFrac": 0.4867
+ },
+ "bench505-environments-t13-three-r2": {
+  "mean": 119.5,
+  "std": 36.3,
+  "nonblack": 1.0,
+  "diff": 22.41,
+  "changedFrac": 0.508
+ }
+}

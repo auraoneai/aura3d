@@ -1,0 +1,598 @@
+{
+  "runId": "bench505-environments-t12-aura-r1",
+  "batch": "bench505-environments",
+  "arm": "aura",
+  "task": 12,
+  "idx": 1,
+  "order": 12,
+  "seed": 20261106012,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:47:46.195Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 214826,
+  "usage": {
+    "input": 3084616,
+    "uncachedInput": 3084616,
+    "output": 4461,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      13813,
+      14394,
+      21427,
+      28219,
+      37242,
+      43657,
+      47620,
+      49393,
+      50726,
+      55482,
+      55821,
+      57255,
+      63139,
+      67682,
+      68514,
+      71893,
+      74255,
+      80278,
+      80615,
+      80895,
+      84167,
+      84834,
+      90257,
+      92773,
+      96200,
+      99341,
+      99837,
+      103501,
+      103712,
+      103894,
+      106518,
+      107340,
+      113407,
+      114254,
+      121772,
+      123117,
+      123854,
+      124552,
+      125632
+    ],
+    "perTurnOutput": [
+      20,
+      45,
+      26,
+      34,
+      32,
+      113,
+      137,
+      53,
+      37,
+      81,
+      102,
+      36,
+      21,
+      83,
+      139,
+      44,
+      113,
+      81,
+      102,
+      98,
+      30,
+      161,
+      47,
+      98,
+      103,
+      38,
+      97,
+      30,
+      105,
+      22,
+      28,
+      155,
+      60,
+      723,
+      58,
+      930,
+      49,
+      75,
+      178,
+      77
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1584,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1584,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1584,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4445,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4446,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6308,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 6308,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 7,
+      "t": 6308,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 8304,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 8304,
+      "type": "list",
+      "path": "docs/agents/recipes-src/terrain-water-fog"
+    },
+    {
+      "i": 10,
+      "t": 10097,
+      "type": "read",
+      "path": "docs/agents/recipes-src/terrain-water-fog/main.ts",
+      "lines": 48
+    },
+    {
+      "i": 11,
+      "t": 10097,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 12,
+      "t": 15038,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 13,
+      "t": 15049,
+      "type": "search",
+      "pattern": "effects\\.(snow|particles)|onFrame|app\\.camera|setPosition|instances\\.mesh"
+    },
+    {
+      "i": 14,
+      "t": 19935,
+      "type": "read",
+      "path": "docs/agents/recipes-src/water-custom-shader/main.ts",
+      "lines": 67
+    },
+    {
+      "i": 15,
+      "t": 19935,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 16,
+      "t": 20009,
+      "type": "search",
+      "pattern": "interface AuraCameraController|AuraInstancedMeshHandle =|interface AuraInstanced"
+    },
+    {
+      "i": 17,
+      "t": 22116,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 18,
+      "t": 22129,
+      "type": "search",
+      "pattern": "instances\\.mesh\\(|AuraInstancedMeshHandle|setMatrixAt|setTransformAt"
+    },
+    {
+      "i": 19,
+      "t": 23951,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 20,
+      "t": 23959,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 21,
+      "t": 26957,
+      "type": "read",
+      "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 22,
+      "t": 27002,
+      "type": "search",
+      "pattern": "setCameraPose|camera\\??:\\s*AuraCameraController|readonly camera"
+    },
+    {
+      "i": 23,
+      "t": 32131,
+      "type": "search",
+      "pattern": "camera\\.rail|camera\\.dolly|app\\.camera|setPose|QR_CAMERA"
+    },
+    {
+      "i": 24,
+      "t": 32146,
+      "type": "search",
+      "pattern": "camera\\??: AuraCameraController|get camera\\("
+    },
+    {
+      "i": 25,
+      "t": 33876,
+      "type": "search",
+      "pattern": "AuraCameraController"
+    },
+    {
+      "i": 26,
+      "t": 33879,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 27,
+      "t": 35318,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+      "lines": 299
+    },
+    {
+      "i": 28,
+      "t": 40247,
+      "type": "search",
+      "pattern": "createStubCameraController|createAuraCameraController\\(|A3D_QR_CAMERA"
+    },
+    {
+      "i": 29,
+      "t": 44823,
+      "type": "search",
+      "pattern": "prd08\\.camera|extension\\(s\\)?\\b.*camera|\\.camera = "
+    },
+    {
+      "i": 30,
+      "t": 44837,
+      "type": "search",
+      "pattern": "export declare function resolveQrFlags"
+    },
+    {
+      "i": 31,
+      "t": 46792,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/flags.d.ts",
+      "lines": 25
+    },
+    {
+      "i": 32,
+      "t": 46792,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+      "lines": 115
+    },
+    {
+      "i": 33,
+      "t": 50882,
+      "type": "search",
+      "pattern": "setCamera|updateCamera|camera\\.rail|rail\\("
+    },
+    {
+      "i": 34,
+      "t": 50882,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/AuraAppHandle.d.ts",
+      "lines": 61
+    },
+    {
+      "i": 35,
+      "t": 55414,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.js",
+      "lines": 262
+    },
+    {
+      "i": 36,
+      "t": 61126,
+      "type": "search",
+      "pattern": "A3D_QR_CAMERA\\b"
+    },
+    {
+      "i": 37,
+      "t": 65565,
+      "type": "search",
+      "pattern": "setPose|isActive|halflife"
+    },
+    {
+      "i": 38,
+      "t": 67121,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+      "lines": 170
+    },
+    {
+      "i": 39,
+      "t": 75254,
+      "type": "search",
+      "pattern": "AuraWeatherEffectOptions"
+    },
+    {
+      "i": 40,
+      "t": 77082,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+      "lines": 185
+    },
+    {
+      "i": 41,
+      "t": 77086,
+      "type": "search",
+      "pattern": "snow|rain"
+    },
+    {
+      "i": 42,
+      "t": 80922,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.js",
+      "lines": 80
+    },
+    {
+      "i": 43,
+      "t": 80932,
+      "type": "search",
+      "pattern": "interface AuraEffectNode"
+    },
+    {
+      "i": 44,
+      "t": 86426,
+      "type": "search",
+      "pattern": "particleCount"
+    },
+    {
+      "i": 45,
+      "t": 86426,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 46,
+      "t": 88702,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/production-runtime/effects/EffectNodeLowering.js",
+      "lines": 100
+    },
+    {
+      "i": 47,
+      "t": 98589,
+      "type": "search",
+      "pattern": "set[A-Z]\\w*\\("
+    },
+    {
+      "i": 48,
+      "t": 100308,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 130
+    },
+    {
+      "i": 49,
+      "t": 105400,
+      "type": "search",
+      "pattern": "^\\s+(set|get|[a-z]+)\\w*\\(.*|export interface|export type"
+    },
+    {
+      "i": 50,
+      "t": 106864,
+      "type": "search",
+      "pattern": "interface AuraAppAtmosphere"
+    },
+    {
+      "i": 51,
+      "t": 108757,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 120
+    },
+    {
+      "i": 52,
+      "t": 115658,
+      "type": "search",
+      "pattern": "\"overcast\""
+    },
+    {
+      "i": 53,
+      "t": 117842,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/world/biomes.js",
+      "lines": 60
+    },
+    {
+      "i": 54,
+      "t": 117842,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+      "lines": 50
+    },
+    {
+      "i": 55,
+      "t": 148000,
+      "type": "search",
+      "pattern": "polyhedron|interface AuraPrimitiveParams|interface AuraTransformSpec"
+    },
+    {
+      "i": 56,
+      "t": 150617,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 57,
+      "t": 150617,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 50
+    },
+    {
+      "i": 58,
+      "t": 197571,
+      "type": "search",
+      "pattern": "puresky|hdri.*(url|path|fetch)"
+    },
+    {
+      "i": 59,
+      "t": 200504,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 60,
+      "t": 200504,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 61,
+      "t": 200504,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 62,
+      "t": 205014,
+      "type": "search",
+      "pattern": "target|build"
+    },
+    {
+      "i": 63,
+      "t": 205014,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 64,
+      "t": 212046,
+      "type": "search",
+      "pattern": "VOLUME_PRESETS|VOLUME_SPRITE_LIMITS|function particleSizeRange|function assertWe"
+    },
+    {
+      "i": 65,
+      "t": 214826,
+      "type": "search",
+      "pattern": "VOLUME_PRESETS\\s*=|VOLUME_SPRITE_LIMITS\\s*="
+    },
+    {
+      "i": 66,
+      "t": 214826,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/production-runtime/effects/WeatherVolume.js",
+      "lines": 126
+    },
+    {
+      "i": 67,
+      "t": 214826,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/production-runtime/effects/WeatherTransform.js",
+      "lines": 91
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+    "docs/agents/recipes-src/terrain-water-fog/main.ts",
+    "docs/agents/recipes-src/water-custom-shader/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/AuraAppHandle.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/world/biomes.js",
+    "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/flags.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/production-runtime/effects/EffectNodeLowering.js",
+    "node_modules/@aura3d/engine/dist/engine/production-runtime/effects/WeatherTransform.js",
+    "node_modules/@aura3d/engine/dist/engine/production-runtime/effects/WeatherVolume.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/agent-eval-runs-505-env/bench505-environments/bench505-environments-t12-aura-r1/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

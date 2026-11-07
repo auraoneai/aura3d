@@ -16,7 +16,7 @@ n = 0
 for step in data["normalized_result"]["steps"]:
     sid = step.get("step_id") or ""
     value = ((step.get("artifacts") or {}).get("screenshot") or {}).get("value") or {}
-    if re.search(r"-[12]$", sid) and value.get("data_base64"):
+    if re.search(r"-[123]$", sid) and value.get("data_base64"):
         open(os.path.join(out, sid + ".png"), "wb").write(base64.b64decode(value["data_base64"]))
         n += 1
 print(f"{n} frames -> {out}")

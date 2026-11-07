@@ -1,0 +1,5 @@
+# Task 11: Floating islands in a sunset sky
+
+Build a single-page browser app with the provided framework, served by vite. It must render one full-viewport canvas with id #app. The scene is a sky full of floating rock islands at sunset. Show at least 6 islands of different sizes, each a chunky rock underside tapering downward (cone or inverted-lump shapes) topped with a grassy surface and a few simple trees or crystals. Islands bob gently up and down at different speeds and phases. A warm orange to pink gradient sky fills the background with a large low sun, and 8 or more soft cloud banks drift slowly past at different depths. A thin waterfall or particle stream falls from the largest island. Distance haze makes far islands paler and bluer. The camera slowly drifts in a wide arc, looping every 40 to 60 seconds, with no user input. Do not rely on external downloads; build everything procedurally. Keep it above 30 fps on a mid-range laptop.
+
+The rendering contract in the next section applies.

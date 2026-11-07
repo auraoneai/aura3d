@@ -1,0 +1,314 @@
+[
+  {
+    "id": "bench505-environments-sheet-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 94.1,
+        "std": 54.5,
+        "nonblack": 0.997,
+        "diff": 12.22,
+        "changedFrac": 0.3051
+      }
+    },
+    "bundle": {
+      "rawKB": 6532.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 40.4,
+        "std": 40.8,
+        "nonblack": 0.963,
+        "diff": 15.89,
+        "changedFrac": 0.3453
+      }
+    },
+    "bundle": {
+      "rawKB": 6494.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 159.6,
+        "std": 27.9,
+        "nonblack": 1,
+        "diff": 17.15,
+        "changedFrac": 0.5378
+      }
+    },
+    "bundle": {
+      "rawKB": 6531.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 181.7,
+        "std": 32.1,
+        "nonblack": 1,
+        "diff": 16.24,
+        "changedFrac": 0.4645
+      }
+    },
+    "bundle": {
+      "rawKB": 6493.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 186.7,
+        "std": 32.1,
+        "nonblack": 1,
+        "diff": 7.4,
+        "changedFrac": 0.1634
+      }
+    },
+    "bundle": {
+      "rawKB": 6497.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 190.4,
+        "std": 43.1,
+        "nonblack": 1,
+        "diff": 17.39,
+        "changedFrac": 0.3139
+      }
+    },
+    "bundle": {
+      "rawKB": 6530.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 208.7,
+        "std": 49.5,
+        "nonblack": 1,
+        "diff": 19.52,
+        "changedFrac": 0.2951
+      }
+    },
+    "bundle": {
+      "rawKB": 6529.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 176.3,
+        "std": 70,
+        "nonblack": 1,
+        "diff": 42.47,
+        "changedFrac": 0.6795
+      }
+    },
+    "bundle": {
+      "rawKB": 6527.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 162,
+        "std": 54,
+        "nonblack": 1,
+        "diff": 21.36,
+        "changedFrac": 0.3213
+      }
+    },
+    "bundle": {
+      "rawKB": 6528.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t13-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 119.4,
+        "std": 63.9,
+        "nonblack": 1,
+        "diff": 16.08,
+        "changedFrac": 0.2436
+      }
+    },
+    "bundle": {
+      "rawKB": 6529
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t13-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 112.2,
+        "std": 53.7,
+        "nonblack": 1,
+        "diff": 20.85,
+        "changedFrac": 0.4446
+      }
+    },
+    "bundle": {
+      "rawKB": 6531.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-sheet-t13-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 111.7,
+        "std": 38,
+        "nonblack": 1,
+        "diff": 24.42,
+        "changedFrac": 0.6092
+      }
+    },
+    "bundle": {
+      "rawKB": 6532
+    },
+    "readyMs": null
+  }
+]

@@ -1,0 +1,4 @@
+[agent-eval] bench505-environments-t13-three-r2 finished turns=10 tsc=true
+[agent-eval] bench505-environments-t12-three-r1 finished turns=7 tsc=true
+[agent-eval] bench505-environments-t12-three-r2 infra_error turns=undefined tsc=false
+[agent-eval] bench505-environments-t12-three-r3 finished turns=9 tsc=true

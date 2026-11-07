@@ -1,0 +1,201 @@
+{
+  "runId": "bench505-environments-sheet-t13-aura-r2",
+  "batch": "bench505-environments-sheet",
+  "arm": "aura",
+  "task": 13,
+  "idx": 2,
+  "order": 7,
+  "seed": 20261106007,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:16:31.156Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 342591,
+  "usage": {
+    "input": 394739,
+    "uncachedInput": 394739,
+    "output": 12536,
+    "turns": 12,
+    "perTurnInput": [
+      3334,
+      11554,
+      11860,
+      18798,
+      20375,
+      26294,
+      26642,
+      33368,
+      46656,
+      64799,
+      65130,
+      65929
+    ],
+    "perTurnOutput": [
+      20,
+      68,
+      11,
+      77,
+      100,
+      384,
+      35,
+      57,
+      1183,
+      9964,
+      193,
+      444
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1591,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1591,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1591,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 5452,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 5457,
+      "type": "search",
+      "pattern": "camera|setCamera"
+    },
+    {
+      "i": 5,
+      "t": 6654,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 10722,
+      "type": "search",
+      "pattern": "AuraCameraController\\b"
+    },
+    {
+      "i": 7,
+      "t": 10726,
+      "type": "search",
+      "pattern": "orbit"
+    },
+    {
+      "i": 8,
+      "t": 15018,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 200
+    },
+    {
+      "i": 9,
+      "t": 38470,
+      "type": "search",
+      "pattern": "group|rotate|setInstances|instances\\.|effects\\.|environments\\.|primitives\\."
+    },
+    {
+      "i": 10,
+      "t": 41908,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 100
+    },
+    {
+      "i": 11,
+      "t": 45284,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 12,
+      "t": 101754,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 13,
+      "t": 101759,
+      "type": "search",
+      "pattern": "blending|additive|transparent"
+    },
+    {
+      "i": 14,
+      "t": 333021,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 20496
+    },
+    {
+      "i": 15,
+      "t": 335744,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 16,
+      "t": 336286,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 17,
+      "t": 342591,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the reef scene in `src/main.ts`. It passes `typecheck`, but I couldn't run it or build it, so none of it has been checked in a browser. The shaders and the camera override are the parts most likely to need adjusting.\n\n- **Seabed:** a 130-unit sand mesh with real ripple geometry and dunes. A custom shader adds sand grain, drifting caustics and a depth fade to the water colour.\n- **Water:** teal background, matching exponential fog, a hemisphere light plus a shadowed sun from above, and seven additive light shafts from the surface.\n- **Corals** (instanced shapes):\n  - 5 branching corals, built as recursive chains of spheres.\n  - 4 brain corals, as bumpy domes.\n  - 3 tube-coral clusters.\n  - 4 fan corals.\n  - 2 table corals.\n  - Rocks around the base.\n- **Swaying life:** 70 seaweed strands and 6 anemones with 16 tentacles each. They sway through per-frame instance updates.\n- **Fish:** a school of 40 small orange fish with tail wag, loosely following a moving centre. Three larger fish (red-orange, blue, yellow) swim their own elliptical paths at different heights, speeds and directions.\n- **Particles:** 36 bubbles rising from three vents, and 90 drifting plankton motes.\n- **Camera:** a custom rig orbits the reef centre at about 0.15 rad/s with a slight height bob. It is installed through `app.camera?.use`. If that is unavailable, the scene's `camera.orbit` auto-rotate takes over, without the bob.\n- **Contract:** it draws into `#app` and sets `window.__EVAL_READY__ = true` after `app.ready()`.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

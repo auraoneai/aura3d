@@ -1,0 +1,14 @@
+{
+  "10": {
+    "visualRubric": "A strong frame reads instantly as a canyon at dusk. Score each criterion 1-5. (1) Atmosphere and colour: warm low-sun palette against a cool sky, believable dusk mood. (2) Depth and haze: clear layering with distant walls fading into haze, strong sense of scale. (3) Form and detail: walls show strata, erosion and varied silhouettes rather than flat boxes. (4) Lighting and shadow: directional light with long soft shadows or convincing shading on rock faces. (5) Composition: the framing leads the eye down the riverbed, with clutter in the foreground and no clipping or empty black areas."
+  },
+  "11": {
+    "visualRubric": "A strong frame reads as a dreamy fantasy sky at sunset. Score each criterion 1-5. (1) Sky and colour: believable warm gradient with a readable sun. (2) Depth: islands at several distances with haze and clouds layered between them. (3) Island form: rock undersides and green tops with varied silhouettes, not plain spheres. (4) Lighting: warm rim or key light on the islands and soft shading. (5) Composition and polish: well-framed focal island, no clipping, empty black regions or popping."
+  },
+  "12": {
+    "visualRubric": "A strong frame feels cold, windy and white-out without losing legibility. Score each criterion 1-5. (1) Snow and weather: dense directional streaks with believable scale. (2) Depth: foreground slope and poles crisp, far peaks fading into fog. (3) Terrain form: slopes with snow drifts and dark rock accents, not flat planes. (4) Focal point: cabin with a warm window contrasting against the cold palette. (5) Composition and polish: trail leads the eye, no clipping, no blown-out or empty areas."
+  },
+  "13": {
+    "visualRubric": "A strong frame reads as a vibrant, sunlit reef. Score each criterion 1-5. (1) Water atmosphere: believable blue-green tint, depth-dependent fade and visibility falloff. (2) Light: sunbeams or caustics that move and give the seabed dimension. (3) Coral and flora variety: varied shapes and colours with organic silhouettes, not just spheres. (4) Life and motion: fish read as a coherent school with a few distinct individuals, along with swaying vegetation. (5) Composition: foreground, mid and far layers, with no empty or flat regions and no clipping through the seabed."
+  }
+}

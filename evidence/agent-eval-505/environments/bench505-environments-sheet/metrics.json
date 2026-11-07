@@ -1,0 +1,1209 @@
+[
+  {
+    "runId": "bench505-environments-sheet-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 23,
+    "agentWallSec": 317.1,
+    "tokensIn": 1265272,
+    "tokensOut": 12006,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 9,
+    "readCalls": 15,
+    "searchCalls": 14,
+    "writeCalls": 1,
+    "srcLines": 405,
+    "srcTokens": 3455,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6532.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.875,
+    "silentNoOps": 0,
+    "glueLines": 110,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has `<canvas id=\"app\">` and loads /src/main.ts as a module. The vite build reported ok."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "The canvas is fixed at 640x360 by CSS and attributes. The source has no resize listener and no renderer or camera aspect update, and nothing makes the canvas fill the viewport."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "A displaced custom terrain mesh is built with a talus slope and nine layered sandstone strata per wall, plus a mesa top and a riverbed. The strata vary in colour, thickness and shelf width along z."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "sky.gradient has a dusk palette with a low sun at 10° elevation and horizon bands. A warm directional light (#ff9a55) sits at the same low elevation, with a blue fill light and a hemisphere light."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "effects.fog uses #c88a90 with density 0.0062, and the scene background is the same colour. This is close to the sky horizon colour #e0937f, so the haze matches."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Instanced sphere boulders, box rocks, pebbles and cylinder-branch dead shrubs are each placed in many copies, repeated over 3 periods."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "app.onFrame advances z by dt*SPEED and wraps it with `% L`. All path functions are periodic in L, so the loop has no jump. The camera pose is set every frame, and the probes confirm the scene is animated."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The probes report zero console errors and zero page errors, and the frame is not blank."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 170,
+        "rulesLines": 30,
+        "glueLines": 110,
+        "notes": "Roughly 380 code lines in total. Glue is mostly manual math and mesh plumbing: the hash/rand/mix3/scale3/dirOf helpers, hand-written normal computation and index buffer building, bounds tracking, transform and branch helpers, and the ready flag. The canyon profile functions and clutter placement are"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 24,
+    "agentWallSec": 203.1,
+    "tokensIn": 929464,
+    "tokensOut": 7521,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 8,
+    "readCalls": 15,
+    "searchCalls": 15,
+    "writeCalls": 1,
+    "srcLines": 226,
+    "srcTokens": 2262,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6494.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.875,
+    "silentNoOps": 0,
+    "glueLines": 40,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app and loads /src/main.ts as a module; the build succeeded and the page ran under vite."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "The CSS fixes #app at 640x360px and the source has no window resize handler or explicit renderer/camera aspect update, so the canvas does not fill the viewport."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Walls are built from 5-7 stacked, differently coloured and offset box strata per side per segment, over 220 segments, via instanced boxes."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A sky.gradient with a low sun (11° elevation) and a warm orange band, plus a low warm directional light (#ff9048) and a dusk background colour."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "effects.fog uses #c0668a with density 0.0058, which matches the scene background and is close to the sky horizon colour #d4668c."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Instanced boulders (about 370), pebbles (420) and dead-shrub twig bundles (46 shrubs, 9 twigs each) are all placed in many copies."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "onFrame calls camAt(t), which is periodic in theta over a closed loop with PERIOD = 110s, and sets the pose every frame with no input. The probes show the frame animated."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The probes report 0 console errors and no page errors, and the build is ok."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 110,
+        "rulesLines": 85,
+        "glueLines": 40,
+        "notes": "Glue is the seeded RNG, hash and periodic-noise helpers, the frame/centreline math, the sun direction helper, createAuraApp, the onFrame loop, ready/EVAL_READY and the global declaration. Scene lines cover the procedural wall, bed, rock and twig placement plus sky, lights and fog. Rules lines are th"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 17,
+    "agentWallSec": 186.8,
+    "tokensIn": 598051,
+    "tokensOut": 7991,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 6,
+    "readCalls": 13,
+    "searchCalls": 11,
+    "writeCalls": 1,
+    "srcLines": 239,
+    "srcTokens": 2431,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6531.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.875,
+    "silentNoOps": 0,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas#app and loads /src/main.ts as a module; the vite build succeeded."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "The CSS fixes #app at 640x360 and the canvas has width/height 640x360. The source has no resize handling and no camera aspect update, so the canvas does not fill the viewport."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The canyon is a displaced heightfield built in chunked meshes, with terraced strata, per-face strata colours and a river channel."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "It uses sky.gradient with a dusk palette and a sun at 10° elevation. A warm directional light (#ff9e5a) sits low, and the hemisphere light adds fill."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "effects.fog uses #c58a8e, which is also the scene background. It is a warm pink haze close to the orange horizon, though not identical to the gradient horizon colour #f08a5c."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Instanced boulders (spheres) and dead shrub sticks (cylinders) are scattered over many copies and several periods."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "onFrame advances t modulo LOOP and moves the rig along the periodic canyon centreline. The follow camera tracks the rig. The canyon shape is periodic in z, so the loop has no hard jump, and no input is needed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The probes report zero page errors and zero console errors, and the frame is animated and non-blank."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 35,
+        "glueLines": 55,
+        "notes": "Glue is mostly the manual heightfield mesh buffer building (positions, normals, colours, indices, bounds), the smooth/mix/hex/sunPos math helpers, the seeded RNG, and the rig-based camera plumbing. Engine bootstrapping is minimal (createAuraApp). There is no resize handling."
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 27,
+    "agentWallSec": 590.3,
+    "tokensIn": 1270929,
+    "tokensOut": 12892,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 8,
+    "readCalls": 13,
+    "searchCalls": 16,
+    "writeCalls": 1,
+    "srcLines": 458,
+    "srcTokens": 4071,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6493.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 0,
+    "glueLines": 50,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has `<canvas id=\"app\">` and loads /src/main.ts as a module. The build succeeded."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "The CSS fixes #app at 640x360px and the source has no resize handling or viewport-sized layout. The canvas does not fill the viewport."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 11 islands with radii from 4 to 24, so many distinct sizes. Each has a grass cylinder and hill on top, and a soil layer plus inverted rock cones and lumps underneath."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The onFrame loop sets each island's y to `y + amp*sin(speed*t + phase)`. Speed, amplitude and phase differ per island."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A custom sky dome shader draws a sunset gradient and a sun disc. There is also a warm orange directional light (#ffb070) positioned low."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "14 cloud banks, each made of several puffs, move in x every frame and wrap at their limit. The probe shows the frame animating."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "`effects.fog({color:\"#c6b6d8\", density:0.0042})` is added, tinted toward the sky. Clouds are hazed manually in their shaders."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A waterfall cylinder with an animated shader and 90 instanced drops falls from the edge of the largest island (isl0), updated every frame."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "`camPose(t)` is a periodic sinusoidal orbit (period 50 s) applied each frame through `app.camera.setPose`. There are no page errors and no console errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 330,
+        "rulesLines": 60,
+        "glueLines": 50,
+        "notes": "Glue is the seeded RNG and string-format helpers, the camera path math, the manual per-frame node updates, the instance transform math, the ready flag, and the global declaration. Most of the rest is scene description and custom shader code. The fixed canvas size means there is no resize plumbing."
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 24,
+    "agentWallSec": 244.9,
+    "tokensIn": 734414,
+    "tokensOut": 9557,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 6,
+    "readCalls": 16,
+    "searchCalls": 15,
+    "writeCalls": 3,
+    "srcLines": 253,
+    "srcTokens": 2992,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6497.6,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.7777777777777778,
+    "silentNoOps": 0,
+    "glueLines": 35,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has `<canvas id=\"app\">` and loads /src/main.ts as a module. The build succeeded, so vite serves it."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "The CSS fixes the canvas at 640x360px, and nothing in the source handles window resizing or sets the canvas to fill the viewport."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 9 islands with radii 5 to 17, so many distinct sizes. Each has a grass cylinder top, a rim, a rock lump, an inverted cone underside and stalactites."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each island is bobbed every frame with `bobAmp * sin(t * bobSpeed + phase)`, and amplitude, speed and phase differ per island."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The scene has `sky.gradient` with sunset colours, a warm orange directional light (#ff9d5c) positioned low, and a visible sun mesh."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "12 clouds are built from 5 puffs each, and their x position advances every frame and wraps at a bound."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "`effects.fog` is added with colour #b8b0e0 and density 0.0055. The colour is a lavender-pink close to the sky tones."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A waterfall ribbon box with an animated shader hangs below the main island, along with 40 drop spheres that fall every frame. The probes show the frame animating."
+        },
+        {
+          "id": "c9",
+          "pass": false,
+          "why": "The camera is declared once at [0,18,40] and never moved. The islands and clouds are rotated about the origin instead, while the sky, sun and lights stay fixed. The movement is therefore not a true camera path. There are no console errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 30,
+        "glueLines": 35,
+        "notes": "Glue is the seeded RNG, the manual `place` rotation helper that stands in for camera motion, the per-frame loops, the node lookups and the ready flag. The scene description is large because of the island, tree and cloud builders and the custom shaders."
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 20,
+    "agentWallSec": 293.6,
+    "tokensIn": 902565,
+    "tokensOut": 13467,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 8,
+    "readCalls": 15,
+    "searchCalls": 9,
+    "writeCalls": 3,
+    "srcLines": 419,
+    "srcTokens": 4661,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6530.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.8888888888888888,
+    "silentNoOps": 0,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and the build succeeds under vite with src/main.ts as the module entry."
+        },
+        {
+          "id": "c2",
+          "pass": false,
+          "why": "The CSS fixes #app at 640x360px and the canvas has width/height 640x360. No resize handling is in the source, so the canvas does not fill the viewport."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 10 islands with radii from 8 to 30, so well over 3 distinct sizes. Each has a procedural faceted rock underside tapering to a tip, plus a green top surface with trees and crystals."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "onFrame sets each island's y to y + bobAmp*sin(t*bobSpeed+phase). Amplitude, speed and phase all differ per island."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "A custom sky-dome shader draws a sunset gradient and a sun disk. The scene also has a warm low-angle directional light (#ffad66) and a warm background colour."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "There are 14 cloud groups of puff spheres. Each frame their x position is advanced by a per-cloud drift speed, with wraparound."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "effects.fog is added with colour #b9a6cf, which is tinted toward the sky. The code also applies manual vertex-colour haze to islands and cloud haze uniforms."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A waterfall plane with an animated shader hangs from the lip of the main island and extends 110 units down. 48 falling droplet spheres are animated along it."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "app.camera.setPose runs every frame along a sinusoidal arc with a 50 s period and no user input. The probes show zero page errors and zero console errors, and frames change between snapshots."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 210,
+        "rulesLines": 45,
+        "glueLines": 75,
+        "notes": "Glue is mostly hand-written colour helpers (hexRgb, mixRgb, css), the seeded RNG, manual haze math, and a hand-rolled flat-shaded mesh builder (face normals and winding). Add the matCache/glowCache helpers and the per-frame node lookups. Scene description is the island, tree and crystal placement, t"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t12-aura-r1",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 18,
+    "agentWallSec": 522.6,
+    "tokensIn": 840949,
+    "tokensOut": 12488,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 5,
+    "readCalls": 12,
+    "searchCalls": 10,
+    "writeCalls": 2,
+    "srcLines": 367,
+    "srcTokens": 4582,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6529.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and loads /src/main.ts as a module. Build succeeded, which implies Vite."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The terrain is one displaced grid mesh. Its height function has a V profile, 0.45*sqrt(dx²+4) plus a quadratic term, so slopes rise on both sides of the trail valley."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "12 poles are placed at z = -9 - i*12 with x = trailX(z) - 2.4, so they follow the sinusoidal winding trail."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The cabin has log walls and a dark wood roof with a separate white snow cap. The windows use an emissive amber material (#ffb347, intensity 3.2) and warm point lights."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "2200 small and 900 large flakes (3100 total) have their instance matrices rewritten every frame. Positions wrap with the modulo-based wrap() function."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "gustAt(t) varies over time. It drives drift speed, the visible flake fraction (vis) and the flake streak length."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "effects.fog uses #c2c8ce, a pale grey-blue, and the scene background is the same colour. Fog density is also updated at runtime."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The camera pose is set every frame along the trail with dist = (t*SPEED) % PATH_LEN, so it loops. The probes show an animated frame and zero console or page errors."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "environments.neutral({ intensity: 0.45, background: false })",
+          "why": "It may add little visible effect, but nothing shows it failing; marginal, not confirmed."
+        },
+        {
+          "where": "castShadow: false options and the directional light",
+          "why": "No shadows are enabled, so these flags are redundant. This is a minor no-op."
+        }
+      ],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 40,
+        "glueLines": 85,
+        "notes": "Glue is mostly the hand-rolled noise and fbm helpers, the terrain grid and per-face colour mesh building, the manual flake instance-matrix math (rotation and wrap), the custom gable triangle geometry, and the camera pose and fog update plumbing. The renderer and loop bootstrapping is small (createAu"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t12-aura-r2",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 20,
+    "agentWallSec": 276.5,
+    "tokensIn": 904208,
+    "tokensOut": 10879,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 6,
+    "readCalls": 11,
+    "searchCalls": 14,
+    "writeCalls": 2,
+    "srcLines": 276,
+    "srcTokens": 3787,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6527.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and loads /src/main.ts as a module. The build succeeded, which is consistent with Vite."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "One displaced terrain mesh has a V profile: sqrt(dx²+9) around the trail plus noise and ridges rising on both sides. It is a heightfield, not a flat plane."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "18 poles are placed at z = -3 - k*6.2, each offset from trailX(z), which is a sinusoidal winding path."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The cabin has dark wood roof slabs under white snow slabs, so the roof colour differs from the wood walls. The window uses an emissive warm material (#ffb04a), and a warm point light sits next to it."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "There are 5200 small and 1700 large flakes, all rewritten each frame through setInstances. Positions wrap with modulo inside a box around the camera. Active count varies between 3500 and 6900, still above 1500."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "gustAt(time) varies the active flake count, drift speed, streak size, camera sway and fog density over time."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Fog colour #c8cdd3 is a pale grey-blue, enabled through effects.fog and updated each frame with setFog. The scene background uses the same colour."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The camera is set each frame along the trail, with z interpolated over time % DURATION so the walk loops. The probes show animation, and there are 0 console errors and 0 page errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 45,
+        "glueLines": 85,
+        "notes": "Glue is the noise and hash helpers, the manual terrain mesh buffer building (positions, normals, colours, indices), the flake wrap and update plumbing, the modulo helper, and the camera pose and fog per-frame updates. Scene lines cover the cabin, poles, rocks and lights. Rules lines cover the gust f"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t12-aura-r3",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 17,
+    "agentWallSec": 260.9,
+    "tokensIn": 532290,
+    "tokensOut": 12196,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 3,
+    "readCalls": 9,
+    "searchCalls": 12,
+    "writeCalls": 1,
+    "srcLines": 297,
+    "srcTokens": 3997,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6528.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has canvas id=\"app\" and loads /src/main.ts as a module; the build succeeded, which indicates a vite setup."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A custom displaced terrain mesh uses side() slopes rising from the trail centre plus fbm and ridge noise, which forms a V-shaped valley."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Poles are placed every 8 units from z=14 to about -168, roughly 23 poles, and follow the winding trailX(z) path."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The cabin has dark-wood roof slabs with white snow caps, which differ in colour from the log walls. Its windows use an emissive amber material and a warm point light sits beside them."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "There are 3000 flake instances (2250+750), and setInstances is called every frame. Positions wrap via mod() over the BOX volume."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "A time-varying gust drives speedMul, streak length, extra gust-only flakes and fog density."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "effects.fog uses BG (#c6cbd0, pale grey-blue) and the scene background is the same BG."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The camera pose is set every frame along z = startZ - (t*SPEED % PATH_LEN), which loops. There are no page errors or console errors, and the frame probe shows animation."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 50,
+        "glueLines": 75,
+        "notes": "Glue is mostly the manual noise/hash/lerp helpers, hand-built terrain mesh with normals and colours, and the flake wrap and instance-update loops. The renderer bootstrapping is minimal."
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t13-aura-r1",
+    "arm": "aura",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 20,
+    "agentWallSec": 833.1,
+    "tokensIn": 468477,
+    "tokensOut": 10845,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 3,
+    "readCalls": 7,
+    "searchCalls": 11,
+    "writeCalls": 4,
+    "srcLines": 426,
+    "srcTokens": 4055,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6529,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 90,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and loads /src/main.ts as a module. The build succeeded, which is consistent with a vite setup."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Five coral shapes are built (branching, brain, fan, tubes, table) in many colours: orange, pink, purple, yellow, red, teal, lilac, cream. The frame is non-blank, with std 63.9."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The seabed is a 180x180 custom mesh displaced by the height function H. The fragment shader adds sand ripple colouring on top."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The scene sets a tinted background (#0f5a6e) and effects.fog. The sand shader also applies its own depth-based colour absorption and fog towards a blue-green colour."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "40 school fish are drawn as instanced body and tail spheres, updated every frame with setInstances. They share a moving school centre and individual offsets. Probes report animation (diff 16.08, changedFrac 0.24)."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Three large fish each follow their own elliptical path with different radii, centres, speeds and directions."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The sand shader computes two animated caustic layers driven by a clk uniform, which is updated each frame. There are no shader or console errors, and the frame is animated. Whether the uniform update takes effect is not directly measured."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "camera.orbit uses autoRotate 0.16. 48 bubbles rise from vents and 80 specks drift upward. There are no page errors and consoleErrorCount is 0."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "lights.directional({... shadow: true })",
+          "why": "The seabed uses a custom shader that does not sample any shadow map, the instanced fish and bubbles set castShadow:false, and the coral shadows are probably not visible. The requested shadows likely never show on the seabed."
+        }
+      ],
+      "glue": {
+        "sceneLines": 210,
+        "rulesLines": 70,
+        "glueLines": 90,
+        "notes": "Glue is the manual seabed mesh and normal generation (about 20 lines), the seeded RNG and name helpers, the instance bootstrapping (dummy and mkInst), the fishTransforms yaw and tail math, the per-frame bubble and speck array rebuilds, and the weed/anemone rotation updates through app.nodes. The rem"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t13-aura-r2",
+    "arm": "aura",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 12,
+    "agentWallSec": 342.6,
+    "tokensIn": 394739,
+    "tokensOut": 12536,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 1,
+    "readCalls": 8,
+    "searchCalls": 5,
+    "writeCalls": 2,
+    "srcLines": 509,
+    "srcTokens": 4868,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6531.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 75,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and loads /src/main.ts as a module. The build succeeded and the page rendered, so the vite setup works."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Five coral types are built: branching (recursive sphere chains), brain (dome with bumps), tube clusters, fan lattices and table (cylinder plates). HSL hues vary widely (reds, pinks, oranges, greens, blues, purples), giving well over 4 colou"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The seabed is a 240x240 displaced mesh from the height function H (ripples, dunes, a central mound). The fragment shader adds value-noise grain."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The scene has a water-coloured background and effects.fog with density 0.028. The sand shader also does its own exponential depth fade to a water colour."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "40 school fish are rendered as instanced bodies and tails. setInstances is called every frame, and all fish orbit a shared moving school centre with a tail wag. Probes show the frame is animated (changedFrac 0.44)."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Three larger fish (bodies, tails, fins) follow separate elliptical paths with different radii, speeds, phases and heights."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The sand shader computes animated caustics from the clk uniform, and 7 additive light-shaft boxes flicker via clk. The animated probe is consistent with this, though the probes cannot isolate the caustic effect itself."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "A continuous camera controller orbits at tAll*0.15 with no input. Bubbles rise from vents via instances and plankton motes drift upward. There are no page errors and consoleErrorCount is 0."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "camera.orbit({... autoRotate: 0.15}) in the scene definition",
+          "why": "app.camera.use() installs a continuous custom controller that returns the full camera state every frame. That controller most likely overrides the orbit camera's autoRotate, so the option is redundant or ignored."
+        }
+      ],
+      "glue": {
+        "sceneLines": 230,
+        "rulesLines": 90,
+        "glueLines": 75,
+        "notes": "Glue is mainly the manual sand mesh generation (grid, finite-difference normals, index buffer), the seeded RNG and hsl helpers, the ball/tube instance-push helpers, yawOf, the camera.use orbit controller, the per-frame onFrame setInstances/setUniform plumbing, the Window global declaration and the r"
+      }
+    }
+  },
+  {
+    "runId": "bench505-environments-sheet-t13-aura-r3",
+    "arm": "aura",
+    "task": 13,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 24,
+    "agentWallSec": 1289.7,
+    "tokensIn": 903879,
+    "tokensOut": 14916,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 9,
+    "readCalls": 15,
+    "searchCalls": 15,
+    "writeCalls": 1,
+    "srcLines": 489,
+    "srcTokens": 5581,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6532,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 130,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "index.html has <canvas id=\"app\"> and loads /src/main.ts as a module. The build succeeded, so the Vite setup works."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Four coral shapes are present: recursive branching corals, brain corals with instanced ridges, tube-coral clusters, and sea fans. Colours include orange, pink, purple, lime, red, green, gold and blue."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "The seabed is a 250x250 heightfield with layered sine ripples and computed normals, plus a custom sand shader."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The scene background is teal, effects.fog is applied with density 0.03, and the sand shader has per-channel exponential absorption plus a fog mix. The probe frame (mean 111.7, std 38) is non-blank."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Fish are instanced: 22 + 18 in two schools with shared centre paths and per-fish offsets. All matrices, including tail wag, are rewritten every frame, for 40 school fish in total. The probe shows animation (changedFrac 0.61)."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Three larger fish (grouper, angel, tang) each get their own solo elliptical path with different radii, speeds and phases."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The sand fragment shader computes a two-layer caustic pattern, and translucent emissive light-shaft cylinders are added. The caustic animation depends on the clk uniform being updated (see silentNoOps), but the pattern and shafts are presen"
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "The camera is moved every frame by setPose along a circle, and the probes show animation. 84 bubbles rise from vents and wrap at a height of 12. There are no page errors and no console errors."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "camera.orbit({ autoRotate: 0.14 })",
+          "why": "The onFrame handler calls app.camera.setPose with a position computed from time every frame. This overrides the rig's own auto-rotation, so autoRotate has no visible effect. The source comment admits the overlap."
+        },
+        {
+          "where": "(app.nodes.require(\"sand\") as {setUniform?...}).setUniform?.(\"clk\", t)",
+          "why": "The node is cast to a shape with an optional setUniform and called with ?.. If the node handle has no such method, the call silently does nothing and the caustics stay frozen at clk=0. The probes cannot confirm that the caustics animate."
+        }
+      ],
+      "glue": {
+        "sceneLines": 210,
+        "rulesLines": 110,
+        "glueLines": 130,
+        "notes": "Glue is mainly the manual vector and matrix helpers (cross, norm, mul, putMatrix, basisFromY), the per-frame instance-matrix writing in updateStrands and updateFish, the Strand/Fish bookkeeping interfaces and registries, the seed-transform placeholders, the heightfield mesh and normal generation loo"
+      }
+    }
+  }
+]

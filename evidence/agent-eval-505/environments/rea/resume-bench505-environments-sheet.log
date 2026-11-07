@@ -1,0 +1,5 @@
+[agent-eval] bench505-environments-sheet-t10-aura-r2 finished turns=24 tsc=true
+[agent-eval] bench505-environments-sheet-t10-aura-r1 finished turns=23 tsc=true
+[agent-eval] bench505-environments-sheet-t13-aura-r1 finished turns=20 tsc=true
+[agent-eval] bench505-environments-sheet-t13-aura-r3 infra_error turns=undefined tsc=false
+[agent-eval] bench505-environments-sheet-t13-aura-r3 finished turns=24 tsc=true

@@ -1,0 +1,5 @@
+# Task 12: Snowy mountain pass in a daytime blizzard
+
+Build a single-page browser app with the provided framework, served by vite. It must render one full-viewport canvas with id #app. The scene is a snowy mountain pass in a daytime blizzard. Show a V-shaped valley of white and blue-grey snow-covered slopes with exposed dark rock outcrops, a narrow trail winding up the middle marked by a line of 8 or more wooden poles, and a small wooden cabin with a snow-capped roof and a warm lit window halfway up the trail. Heavy wind-driven snow streaks across the scene at an angle with at least 1500 flakes in two sizes, gusts that periodically thicken the snow, and a flat pale-grey overcast sky. Distance fog turns far peaks into soft silhouettes. The camera slowly walks up the trail at about 1.7 m eye height with a slight sway and loops back to its start, with no user input. Do not rely on external downloads; build everything from simple shapes or procedural geometry.
+
+The rendering contract in the next section applies.

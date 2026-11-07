@@ -1,0 +1,557 @@
+{
+  "runId": "bench505-environments-t11-aura-r2",
+  "batch": "bench505-environments",
+  "arm": "aura",
+  "task": 11,
+  "idx": 2,
+  "order": 17,
+  "seed": 20261106017,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T00:06:31.122Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 328770,
+  "usage": {
+    "input": 3225081,
+    "uncachedInput": 3225081,
+    "output": 11400,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      13739,
+      14311,
+      21457,
+      34531,
+      42020,
+      42335,
+      47431,
+      54279,
+      56551,
+      58024,
+      59224,
+      62022,
+      62267,
+      64193,
+      67717,
+      72890,
+      77549,
+      77972,
+      85549,
+      85695,
+      89816,
+      90014,
+      90558,
+      96002,
+      96727,
+      108505,
+      109770,
+      111630,
+      112241,
+      112566,
+      115628,
+      115921,
+      118196,
+      118534,
+      118840,
+      119814,
+      120731,
+      134509,
+      141989
+    ],
+    "perTurnOutput": [
+      20,
+      12,
+      22,
+      29,
+      57,
+      44,
+      50,
+      99,
+      27,
+      78,
+      91,
+      49,
+      78,
+      30,
+      86,
+      98,
+      83,
+      110,
+      45,
+      65,
+      26,
+      268,
+      26,
+      30,
+      75,
+      17,
+      2060,
+      69,
+      402,
+      98,
+      33,
+      105,
+      33,
+      101,
+      46,
+      61,
+      81,
+      22,
+      1256,
+      5418
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1627,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1627,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1627,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 3203,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 4,
+      "t": 3203,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 5,
+      "t": 4772,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 4772,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 7,
+      "t": 4772,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 8,
+      "t": 6549,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 6549,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 212
+    },
+    {
+      "i": 10,
+      "t": 9791,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 11,
+      "t": 9791,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 12,
+      "t": 11848,
+      "type": "list",
+      "path": "docs/agents/recipes-src/sky-day-night"
+    },
+    {
+      "i": 13,
+      "t": 11848,
+      "type": "list",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks"
+    },
+    {
+      "i": 14,
+      "t": 11848,
+      "type": "list",
+      "path": "docs/agents/recipes-src/terrain-water-fog"
+    },
+    {
+      "i": 15,
+      "t": 13749,
+      "type": "read",
+      "path": "docs/agents/recipes-src/sky-day-night/main.ts",
+      "lines": 52
+    },
+    {
+      "i": 16,
+      "t": 13749,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 17,
+      "t": 13749,
+      "type": "read",
+      "path": "docs/agents/recipes-src/terrain-water-fog/main.ts",
+      "lines": 48
+    },
+    {
+      "i": 18,
+      "t": 17607,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 19,
+      "t": 17635,
+      "type": "search",
+      "pattern": "AuraCameraController|setSky|interface AuraAppAtmosphere"
+    },
+    {
+      "i": 20,
+      "t": 19339,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 114
+    },
+    {
+      "i": 21,
+      "t": 22423,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 22,
+      "t": 22430,
+      "type": "search",
+      "pattern": "camera\\.setPose|setPose\\("
+    },
+    {
+      "i": 23,
+      "t": 26598,
+      "type": "search",
+      "pattern": "rigs\\.rail|camera\\.rail|app\\.camera\\.use|rail\\("
+    },
+    {
+      "i": 24,
+      "t": 26603,
+      "type": "search",
+      "pattern": "rail|setPose|app\\.camera"
+    },
+    {
+      "i": 25,
+      "t": 28490,
+      "type": "read",
+      "path": ".agents/skills/aura3d-browser-game/SKILL.md",
+      "lines": 30
+    },
+    {
+      "i": 26,
+      "t": 28490,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts",
+      "lines": 61
+    },
+    {
+      "i": 27,
+      "t": 32170,
+      "type": "search",
+      "pattern": "setPose|overrides|poseOverride"
+    },
+    {
+      "i": 28,
+      "t": 33912,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+      "lines": 100
+    },
+    {
+      "i": 29,
+      "t": 38103,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+      "lines": 170
+    },
+    {
+      "i": 30,
+      "t": 42853,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+      "lines": 250
+    },
+    {
+      "i": 31,
+      "t": 48045,
+      "type": "search",
+      "pattern": "A3D_QR_CAMERA"
+    },
+    {
+      "i": 32,
+      "t": 53061,
+      "type": "search",
+      "pattern": "interface AuraSkySunSpec|interface AuraSkyGradientOptions|interface AuraSkyBand|"
+    },
+    {
+      "i": 33,
+      "t": 54989,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 125
+    },
+    {
+      "i": 34,
+      "t": 54989,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+      "lines": 185
+    },
+    {
+      "i": 35,
+      "t": 58497,
+      "type": "search",
+      "pattern": "export interface AuraParticleEmitterOptions"
+    },
+    {
+      "i": 36,
+      "t": 60026,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/effects.d.ts",
+      "lines": 163
+    },
+    {
+      "i": 37,
+      "t": 74532,
+      "type": "search",
+      "pattern": "instances\\.\\w+\\(.*runtime|setInstance|setTransforms|instanced.*mutable"
+    },
+    {
+      "i": 38,
+      "t": 74546,
+      "type": "search",
+      "pattern": "interface AuraRuntimeNodeHandle"
+    },
+    {
+      "i": 39,
+      "t": 76326,
+      "type": "search",
+      "pattern": "AuraRuntimeNodeHandle"
+    },
+    {
+      "i": 40,
+      "t": 78172,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 210
+    },
+    {
+      "i": 41,
+      "t": 82128,
+      "type": "search",
+      "pattern": "\\bgroup\\("
+    },
+    {
+      "i": 42,
+      "t": 82139,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 43,
+      "t": 83795,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 78
+    },
+    {
+      "i": 44,
+      "t": 169532,
+      "type": "search",
+      "pattern": "export declare function group|export declare const group|group:"
+    },
+    {
+      "i": 45,
+      "t": 169538,
+      "type": "search",
+      "pattern": "^\\s+(position|rotate|scale|runtime|rotation)\\("
+    },
+    {
+      "i": 46,
+      "t": 172294,
+      "type": "search",
+      "pattern": "AuraNodeInput"
+    },
+    {
+      "i": 47,
+      "t": 172306,
+      "type": "search",
+      "pattern": "AuraNodeInput"
+    },
+    {
+      "i": 48,
+      "t": 191108,
+      "type": "search",
+      "pattern": "discSize"
+    },
+    {
+      "i": 49,
+      "t": 195130,
+      "type": "search",
+      "pattern": "discRadius|spec\\.sun"
+    },
+    {
+      "i": 50,
+      "t": 197206,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/worker-assets/render.worker.bundle.js",
+      "lines": 90
+    },
+    {
+      "i": 51,
+      "t": 202085,
+      "type": "search",
+      "pattern": "gradientFrame|sunDirection\\(|function .*[Gg]radientSky|horizonGlow"
+    },
+    {
+      "i": 52,
+      "t": 204050,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/worker-assets/render.worker.bundle.js",
+      "lines": 80
+    },
+    {
+      "i": 53,
+      "t": 209094,
+      "type": "search",
+      "pattern": "0\\.9995|sunDirection"
+    },
+    {
+      "i": 54,
+      "t": 210888,
+      "type": "search",
+      "pattern": "uSunDir|u_sunDir|sunDir\\b|showSunDisc|discCos"
+    },
+    {
+      "i": 55,
+      "t": 214367,
+      "type": "search",
+      "pattern": "sunDirection\\("
+    },
+    {
+      "i": 56,
+      "t": 219520,
+      "type": "search",
+      "pattern": "gradientEvaluate\\(|preethamEvaluate\\(|evaluateSky\\("
+    },
+    {
+      "i": 57,
+      "t": 221130,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/rendering/atmosphere/SkyBackgroundPass.js",
+      "lines": 300
+    },
+    {
+      "i": 58,
+      "t": 291244,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 59,
+      "t": 291244,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 60,
+      "t": 328273,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 13204
+    },
+    {
+      "i": 61,
+      "t": 328770,
+      "type": "typecheck",
+      "pass": true
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-browser-game/SKILL.md",
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "docs/agents/recipes-src/sky-day-night/main.ts",
+    "docs/agents/recipes-src/terrain-water-fog/main.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/worker-assets/render.worker.bundle.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/effects.d.ts",
+    "node_modules/@aura3d/engine/dist/rendering/atmosphere/SkyBackgroundPass.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

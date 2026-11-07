@@ -1,0 +1,598 @@
+{
+  "runId": "bench505-environments-t12-aura-r3",
+  "batch": "bench505-environments",
+  "arm": "aura",
+  "task": 12,
+  "idx": 3,
+  "order": 1,
+  "seed": 20261106001,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:08:28.704Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 245304,
+  "usage": {
+    "input": 2737670,
+    "uncachedInput": 2737670,
+    "output": 4340,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      13799,
+      14380,
+      21413,
+      28227,
+      37281,
+      41810,
+      42217,
+      46365,
+      48183,
+      50587,
+      55313,
+      56964,
+      59970,
+      60304,
+      60879,
+      63315,
+      63855,
+      64836,
+      67807,
+      70618,
+      70907,
+      76200,
+      80742,
+      80995,
+      81296,
+      87928,
+      88613,
+      88783,
+      90948,
+      95173,
+      96420,
+      96739,
+      100330,
+      101860,
+      102040,
+      102557,
+      107073,
+      108358,
+      109251
+    ],
+    "perTurnOutput": [
+      20,
+      37,
+      26,
+      34,
+      36,
+      93,
+      73,
+      29,
+      78,
+      49,
+      47,
+      152,
+      29,
+      66,
+      57,
+      81,
+      125,
+      57,
+      29,
+      262,
+      157,
+      30,
+      79,
+      63,
+      44,
+      18,
+      1280,
+      35,
+      33,
+      82,
+      125,
+      69,
+      49,
+      134,
+      239,
+      27,
+      58,
+      239,
+      61,
+      138
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2146,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 2146,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 2146,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 5024,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 5024,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6706,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 6706,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 7,
+      "t": 6706,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 8678,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 8678,
+      "type": "list",
+      "path": "docs/agents/recipes-src/terrain-water-fog"
+    },
+    {
+      "i": 10,
+      "t": 10774,
+      "type": "read",
+      "path": "docs/agents/recipes-src/terrain-water-fog/main.ts",
+      "lines": 48
+    },
+    {
+      "i": 11,
+      "t": 10775,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 12,
+      "t": 15599,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 13,
+      "t": 15608,
+      "type": "search",
+      "pattern": "instances\\.mesh|setMatrixAt|setTransformAt|effects\\.snow|AuraWeatherEffectOption"
+    },
+    {
+      "i": 14,
+      "t": 19197,
+      "type": "search",
+      "pattern": "onFrame|particles|setPosition|app\\.camera|camera\\."
+    },
+    {
+      "i": 15,
+      "t": 19197,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 16,
+      "t": 25046,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 120
+    },
+    {
+      "i": 17,
+      "t": 25046,
+      "type": "list",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks"
+    },
+    {
+      "i": 18,
+      "t": 28362,
+      "type": "read",
+      "path": "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+      "lines": 35
+    },
+    {
+      "i": 19,
+      "t": 28393,
+      "type": "search",
+      "pattern": "interface AuraInstancedMeshHandle|interface AuraCameraController|interface AuraW"
+    },
+    {
+      "i": 20,
+      "t": 30484,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 21,
+      "t": 30513,
+      "type": "search",
+      "pattern": "AuraInstancedMeshHandle\\b"
+    },
+    {
+      "i": 22,
+      "t": 32458,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts",
+      "lines": 97
+    },
+    {
+      "i": 23,
+      "t": 32458,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 100
+    },
+    {
+      "i": 24,
+      "t": 38707,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/batchedState.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 25,
+      "t": 38714,
+      "type": "search",
+      "pattern": "interface AuraMaterialSpec "
+    },
+    {
+      "i": 26,
+      "t": 44509,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 130
+    },
+    {
+      "i": 27,
+      "t": 46707,
+      "type": "search",
+      "pattern": "^\\s+readonly (emissive|emissiveIntensity|opacity|transparent|unlit|fog|depthWrit"
+    },
+    {
+      "i": 28,
+      "t": 48866,
+      "type": "search",
+      "pattern": "AuraBuiltinPrimitive ="
+    },
+    {
+      "i": 29,
+      "t": 48869,
+      "type": "search",
+      "pattern": "transparent|unlit|toneMapped"
+    },
+    {
+      "i": 30,
+      "t": 51563,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 31,
+      "t": 51566,
+      "type": "search",
+      "pattern": "export type AuraBuiltinPrimitive"
+    },
+    {
+      "i": 32,
+      "t": 51574,
+      "type": "search",
+      "pattern": "snow"
+    },
+    {
+      "i": 33,
+      "t": 83439,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 3
+    },
+    {
+      "i": 34,
+      "t": 83447,
+      "type": "search",
+      "pattern": "interface FogNodeOptions|type FogNodeOptions"
+    },
+    {
+      "i": 35,
+      "t": 85593,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 36,
+      "t": 85596,
+      "type": "search",
+      "pattern": "interface AuraEffectNode"
+    },
+    {
+      "i": 37,
+      "t": 88571,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 38,
+      "t": 102675,
+      "type": "search",
+      "pattern": "type AuraIndexAttribute|type AuraVec3Attribute"
+    },
+    {
+      "i": 39,
+      "t": 102675,
+      "type": "read",
+      "path": "docs/agents/recipes-src/props-kit-instances/main.ts",
+      "lines": 57
+    },
+    {
+      "i": 40,
+      "t": 109547,
+      "type": "search",
+      "pattern": "setPose|cut"
+    },
+    {
+      "i": 41,
+      "t": 109560,
+      "type": "search",
+      "pattern": "app\\.camera\\??\\.(setPose|rail|use)|camera\\.rail"
+    },
+    {
+      "i": 42,
+      "t": 112663,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+      "lines": 315
+    },
+    {
+      "i": 43,
+      "t": 118130,
+      "type": "search",
+      "pattern": "A3D_QR_CAMERA"
+    },
+    {
+      "i": 44,
+      "t": 122093,
+      "type": "search",
+      "pattern": "app\\.camera"
+    },
+    {
+      "i": 45,
+      "t": 124236,
+      "type": "search",
+      "pattern": "app\\.camera.{0,300}"
+    },
+    {
+      "i": 46,
+      "t": 124241,
+      "type": "search",
+      "pattern": "camera|onFrame"
+    },
+    {
+      "i": 47,
+      "t": 125792,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 17
+    },
+    {
+      "i": 48,
+      "t": 181710,
+      "type": "search",
+      "pattern": "fogFactor|exp2\\(|exp\\(-.*fog"
+    },
+    {
+      "i": 49,
+      "t": 186421,
+      "type": "search",
+      "pattern": "float a3dEnvironmentFogFactor"
+    },
+    {
+      "i": 50,
+      "t": 190232,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/worker-assets/render.worker.bundle.js",
+      "lines": 70
+    },
+    {
+      "i": 51,
+      "t": 193935,
+      "type": "search",
+      "pattern": "fog:|near.*far.*fog|AuraHeightFogSpec"
+    },
+    {
+      "i": 52,
+      "t": 198057,
+      "type": "search",
+      "pattern": "fog"
+    },
+    {
+      "i": 53,
+      "t": 198057,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+      "lines": 40
+    },
+    {
+      "i": 54,
+      "t": 201791,
+      "type": "search",
+      "pattern": "mode|near|far|density"
+    },
+    {
+      "i": 55,
+      "t": 203752,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/fog.js",
+      "lines": 140
+    },
+    {
+      "i": 56,
+      "t": 203758,
+      "type": "search",
+      "pattern": "interface AuraHeightFogSpec"
+    },
+    {
+      "i": 57,
+      "t": 209103,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 50
+    },
+    {
+      "i": 58,
+      "t": 209112,
+      "type": "search",
+      "pattern": "A3D_QR_VFX_FOG: "
+    },
+    {
+      "i": 59,
+      "t": 216918,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 60,
+      "t": 219794,
+      "type": "search",
+      "pattern": "function packLegacy|function resolvePrd07FogSpec"
+    },
+    {
+      "i": 61,
+      "t": 222066,
+      "type": "read",
+      "path": "node_modules/@aura3d/rendering/dist/atmosphere/HeightFog.js",
+      "lines": 60
+    },
+    {
+      "i": 62,
+      "t": 222066,
+      "type": "read",
+      "path": "node_modules/@aura3d/rendering/dist/atmosphere/HeightFog.js",
+      "lines": 80
+    },
+    {
+      "i": 63,
+      "t": 235945,
+      "type": "search",
+      "pattern": "hdri|https?://"
+    },
+    {
+      "i": 64,
+      "t": 239395,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 65,
+      "t": 239395,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 66,
+      "t": 239395,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 67,
+      "t": 245302,
+      "type": "search",
+      "pattern": "type AuraFrameCallback|interface AuraFrameInfo|interface AuraFrame\\b"
+    },
+    {
+      "i": 68,
+      "t": 245304,
+      "type": "read",
+      "path": "docs/agents/recipes-src/vite.config.ts",
+      "lines": 29
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/fire-smoke-sparks/main.ts",
+    "docs/agents/recipes-src/props-kit-instances/main.ts",
+    "docs/agents/recipes-src/terrain-water-fog/main.ts",
+    "docs/agents/recipes-src/vite.config.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/worker-assets/render.worker.bundle.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/fog.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/batchedState.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/rendering/dist/atmosphere/HeightFog.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/agent-eval-runs-505-env/bench505-environments/bench505-environments-t12-aura-r3/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

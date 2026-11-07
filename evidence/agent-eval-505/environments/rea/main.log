@@ -1,0 +1,5 @@
+[agent-eval] bench505-environments-t12-aura-r3 max_turns turns=40 tsc=false
+[agent-eval] bench505-environments-t13-aura-r2 max_turns turns=40 tsc=true
+[agent-eval] bench505-environments-t13-aura-r1 finished turns=34 tsc=true
+[agent-eval] bench505-environments-t10-aura-r3 finished turns=31 tsc=true
+[agent-eval] bench505-environments-t13-three-r3 infra_error turns=undefined tsc=false

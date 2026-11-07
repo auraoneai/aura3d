@@ -1,0 +1,827 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261107,
+  "calls": 3,
+  "results": [
+    {
+      "task": 10,
+      "idx": 1,
+      "ids": {
+        "aura": "bench505-environments-sheet-t10-aura-r1",
+        "three": "bench505-environments-t10-three-r1"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a cool blue-violet sky against warm lit rock, walls with strata, erosion streaks and varied silhouettes, and foreground shrubs and boulders framing the canyon. A's sky is a flat pink, its walls are smooth, and its floor is a flat violet plane with a stray dark box."
+        },
+        {
+          "call": 1,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B shows a convincing dusk canyon with a cool violet sky, warm lit walls, eroded and stratified rock, haze fading toward the distance, and foreground shrubs and boulders leading down the riverbed, while A has a flat pink sky, smooth blobby walls, a blank purple floor, and floating dark boxes."
+        },
+        {
+          "call": 2,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 2,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a blue-violet sky against warm rim-lit walls, with eroded vertical streaking, layered depth, and foreground shrubs and boulders framing the canyon. A has a flat pink sky, a washed-out and sparse floor, and smooth, simple walls with floating dark boxes."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "validCalls": 3
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "ids": {
+        "aura": "bench505-environments-sheet-t10-aura-r2",
+        "three": "bench505-environments-t10-three-r2"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B shows a warm sunset glow against a blue-violet sky, smooth banded strata, dead shrubs and boulders, while A is a monochrome pink-magenta scene with blocky box-like walls and a flat sky."
+        },
+        {
+          "call": 1,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a warm sunset glow against a blue-violet sky, smooth striated walls, dead shrubs and boulders, and a clear path to the horizon, while A is a monochrome pink-red scene with blocky box-like walls and a flat pink sky that misses the cool-versus-warm dusk contrast."
+        },
+        {
+          "call": 2,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a warm low-sun glow against a cool violet sky, smooth banded strata, dead shrubs and boulders, and a clear view down the canyon, while A is a monotone pink-red with blocky boxy walls and little sense of dusk lighting."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "validCalls": 3
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "ids": {
+        "aura": "bench505-environments-sheet-t10-aura-r3",
+        "three": "bench505-environments-t10-three-r3"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 2,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            },
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a convincing dusk palette with a violet sky, a glowing horizon and hazy receding walls, while A is a flat pink low-poly scene with a daytime look, a white floor and faceted triangle walls."
+        },
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4,
+              "overall": 4
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            }
+          },
+          "winner": "three",
+          "why": "A reads as a canyon at dusk, with a violet-to-magenta sky, a warm glow at the horizon and walls fading into haze. B has a flat pink sky, faceted low-poly walls, a washed-out white floor and little dusk mood or depth."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4,
+              "overall": 4
+            },
+            "aura": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            }
+          },
+          "winner": "three",
+          "why": "A has a convincing dusk palette with a violet-to-magenta sky, glowing haze and layered receding walls, while B has a flat pink sky, a washed-out white floor and faceted low-poly walls with little dusk atmosphere."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "validCalls": 3
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "ids": {
+        "aura": "bench505-environments-sheet-t11-aura-r1",
+        "three": "bench505-environments-t11-three-r1"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has faceted rock undersides with warm rim light, lush green tops with trees and crystals, and a waterfall that visibly falls from the focal island. A has flatter, washed-out islands with weak lighting, and its waterfall is a rigid white line that cuts across the frame."
+        },
+        {
+          "call": 1,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has more varied faceted rock undersides, warmer rim lighting on the islands and a cleaner focal island with a waterfall flowing from it, whereas A's waterfall is a rigid vertical line that cuts through the scene and its islands are plainer, uniform cones."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has richer faceted rock forms, warmer rim lighting and a cleaner focal island with a natural waterfall, while B has better cloud and haze layering but its islands look flat and washed out and its waterfall reads as a rigid pole."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "validCalls": 3
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "error": "missing frames",
+      "ids": {
+        "aura": "bench505-environments-sheet-t11-aura-r2",
+        "three": "bench505-environments-t11-three-r2"
+      }
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "error": "missing frames",
+      "ids": {
+        "aura": "bench505-environments-sheet-t11-aura-r3",
+        "three": "bench505-environments-t11-three-r3"
+      }
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "ids": {
+        "aura": "bench505-environments-sheet-t12-aura-r1",
+        "three": "bench505-environments-t12-three-r1"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 2,
+              "c4": 1,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2,
+              "overall": 2
+            }
+          },
+          "winner": "aura",
+          "why": "A has denser directional streaks, a visible pole line leading up the trail, and a clearer fog gradient, while B's oversized rock slabs dominate the frame and its snow is sparse, though neither shows the cabin."
+        },
+        {
+          "call": 1,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 2,
+              "c4": 1,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 2,
+              "overall": 3
+            }
+          },
+          "winner": "aura",
+          "why": "A has denser directional streaks, a clearer trail with a line of poles, and a more readable white-out scene, while B's huge rock slabs dominate and clip the view; neither shows a cabin."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 1,
+              "c5": 3,
+              "overall": 3
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 1,
+              "c5": 3,
+              "overall": 3
+            }
+          },
+          "winner": "aura",
+          "why": "B has denser, more directional wind streaks, better fog fade on far peaks, and dark rock accents on the slopes, while neither shows a visible cabin with a warm window and A's large rock mass looks heavy and clipped."
+        }
+      ],
+      "tally": {
+        "aura": 3,
+        "three": 0,
+        "tie": 0
+      },
+      "majority": "aura",
+      "validCalls": 3
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "error": "missing frames",
+      "ids": {
+        "aura": "bench505-environments-sheet-t12-aura-r2",
+        "three": "bench505-environments-t12-three-r2"
+      }
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "ids": {
+        "aura": "bench505-environments-sheet-t12-aura-r3",
+        "three": "bench505-environments-t12-three-r3"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 1,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4,
+              "overall": 2
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3,
+              "overall": 4
+            }
+          },
+          "winner": "aura",
+          "why": "Candidate B delivers the dense directional blizzard streaks the brief centers on, while A has almost no visible snow and so reads as a calm day despite its nicer terrain and depth."
+        },
+        {
+          "call": 1,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2,
+              "overall": 3
+            },
+            "three": {
+              "c1": 2,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a clear cabin with a warm window, a trail with footprints, drifted slopes and fogged peaks, while A has strong snow streaks but flat faceted slopes, floating black blocks, a heavily tilted camera and a barely visible cabin."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 1,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4,
+              "overall": 2
+            },
+            "aura": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3,
+              "overall": 4
+            }
+          },
+          "winner": "aura",
+          "why": "Candidate B shows the dense, directional wind-driven snow streaks the blizzard needs, whereas A has almost no visible snow and reads as a calm day, even though A's terrain and depth are more polished."
+        }
+      ],
+      "tally": {
+        "aura": 2,
+        "three": 1,
+        "tie": 0
+      },
+      "majority": "aura",
+      "validCalls": 3
+    },
+    {
+      "task": 13,
+      "idx": 1,
+      "ids": {
+        "aura": "bench505-environments-sheet-t13-aura-r1",
+        "three": "bench505-environments-t13-three-r1"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a richer, more cohesive reef with a clear fish school, organic branching corals, seaweed, and soft depth fade and light on the sand, while B looks flatter with sparse tiny fish, weak caustics, and a large flat sand region."
+        },
+        {
+          "call": 1,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has richer, more organic flora, a clearly visible school with distinct larger fish, softer depth fade and light-streaked sand, and layered foreground, mid and far elements, while A looks flat with tiny scattered fish, sparse sand and weak light."
+        },
+        {
+          "call": 2,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3,
+              "overall": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has richer water depth fade, soft light on the sand, more varied organic coral and grass, and a clearly visible school of fish alongside individual fish, while A has flat-looking geometry, sparse tiny fish and weak caustics."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "validCalls": 3
+    },
+    {
+      "task": 13,
+      "idx": 2,
+      "ids": {
+        "aura": "bench505-environments-sheet-t13-aura-r2",
+        "three": "bench505-environments-t13-three-r2"
+      },
+      "calls": [
+        {
+          "call": 0,
+          "order": [
+            "aura",
+            "three"
+          ],
+          "scores": {
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 3,
+              "overall": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            }
+          },
+          "winner": "three",
+          "why": "B has a clear blue-green water gradient with visible sunbeams and caustic ripples on the sand, a readable fish school with distinct larger fish, and layered organic coral and seaweed. A has flat-colored water, no visible beams, boxy fish made of cubes and ellipsoids, and a sparse, flat composition."
+        },
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a convincing blue-green water tint with visible sunbeams, rippled sand with caustic-like light, and a dense school of fish, while B has flat dark water, almost no light effects, blocky fish tails, and a small, sparse school."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "aura"
+          ],
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4,
+              "overall": 4
+            },
+            "aura": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3,
+              "overall": 3
+            }
+          },
+          "winner": "three",
+          "why": "A has a more convincing blue-green water tint with visible sunbeams, caustics on the sand and a cohesive fish school, while B has a flat dark backdrop, little light variation, blocky fish fins and a sparse school."
+        }
+      ],
+      "tally": {
+        "aura": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three",
+      "validCalls": 3
+    },
+    {
+      "task": 13,
+      "idx": 3,
+      "error": "missing frames",
+      "ids": {
+        "aura": "bench505-environments-sheet-t13-aura-r3",
+        "three": "bench505-environments-t13-three-r3"
+      }
+    }
+  ]
+}

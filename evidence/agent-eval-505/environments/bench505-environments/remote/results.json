@@ -1,0 +1,560 @@
+[
+  {
+    "id": "bench505-environments-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 122.8,
+        "std": 40.2,
+        "nonblack": 0.995,
+        "diff": 16.09,
+        "changedFrac": 0.3588
+      }
+    },
+    "bundle": {
+      "rawKB": 6531.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 72.6,
+        "std": 57.3,
+        "nonblack": 1,
+        "diff": 12.77,
+        "changedFrac": 0.2654
+      }
+    },
+    "bundle": {
+      "rawKB": 6531.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 62.7,
+        "std": 52.9,
+        "nonblack": 0.998,
+        "diff": 26.18,
+        "changedFrac": 0.4119
+      }
+    },
+    "bundle": {
+      "rawKB": 6532
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t10-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 62.1,
+        "std": 24.2,
+        "nonblack": 0.996,
+        "diff": 11.48,
+        "changedFrac": 0.3537
+      }
+    },
+    "bundle": {
+      "rawKB": 513.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t10-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 83.7,
+        "std": 33.2,
+        "nonblack": 1,
+        "diff": 36.4,
+        "changedFrac": 0.7331
+      }
+    },
+    "bundle": {
+      "rawKB": 514.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t10-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 57.4,
+        "std": 29.1,
+        "nonblack": 1,
+        "diff": 14.09,
+        "changedFrac": 0.4296
+      }
+    },
+    "bundle": {
+      "rawKB": 517
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 202.3,
+        "std": 28.5,
+        "nonblack": 1,
+        "diff": 11.28,
+        "changedFrac": 0.241
+      }
+    },
+    "bundle": {
+      "rawKB": 6536.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 180.5,
+        "std": 21.3,
+        "nonblack": 1,
+        "diff": 5.2,
+        "changedFrac": 0.1579
+      }
+    },
+    "bundle": {
+      "rawKB": 6497.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 138.1,
+        "std": 31.7,
+        "nonblack": 1,
+        "diff": 13.62,
+        "changedFrac": 0.3935
+      }
+    },
+    "bundle": {
+      "rawKB": 6499.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 159,
+        "std": 32.9,
+        "nonblack": 1,
+        "diff": 14.43,
+        "changedFrac": 0.3443
+      }
+    },
+    "bundle": {
+      "rawKB": 527.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t11-three-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t11-three-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t12-aura-r1-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 194.4,
+        "std": 40.4,
+        "nonblack": 1,
+        "diff": 20.25,
+        "changedFrac": 0.2662
+      }
+    },
+    "bundle": {
+      "rawKB": 6531.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t12-aura-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t12-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 166.9,
+        "std": 56,
+        "nonblack": 1,
+        "diff": 20.51,
+        "changedFrac": 0.383
+      }
+    },
+    "bundle": {
+      "rawKB": 551.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t12-three-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t12-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 143.7,
+        "std": 58.8,
+        "nonblack": 1,
+        "diff": 35.74,
+        "changedFrac": 0.6657
+      }
+    },
+    "bundle": {
+      "rawKB": 555.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t13-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 140.6,
+        "std": 65.2,
+        "nonblack": 1,
+        "diff": 37.94,
+        "changedFrac": 0.5414
+      }
+    },
+    "bundle": {
+      "rawKB": 6539.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t13-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 142.1,
+        "std": 61.9,
+        "nonblack": 1,
+        "diff": 17.28,
+        "changedFrac": 0.4028
+      }
+    },
+    "bundle": {
+      "rawKB": 6537.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t13-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 140.7,
+        "std": 49.8,
+        "nonblack": 1,
+        "diff": 21.32,
+        "changedFrac": 0.5817
+      }
+    },
+    "bundle": {
+      "rawKB": 6535.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t13-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 121.5,
+        "std": 57.9,
+        "nonblack": 1,
+        "diff": 26.19,
+        "changedFrac": 0.4867
+      }
+    },
+    "bundle": {
+      "rawKB": 530.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t13-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 119.5,
+        "std": 36.3,
+        "nonblack": 1,
+        "diff": 22.41,
+        "changedFrac": 0.508
+      }
+    },
+    "bundle": {
+      "rawKB": 532.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-environments-t13-three-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  }
+]
