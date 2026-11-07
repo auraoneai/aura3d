@@ -1016,10 +1016,17 @@ export async function upgradeProductionPrimitiveResource(
     return binding;
   };
   const slotWarn = (w: string): void => { resource.textureWarnings.push(w); };
+  // Lane 521: a superseded job (the app replaced the material while its maps were loading) must not write the stage of
+  // the replacement's job. The scheduler marks the replacement pending/"queued" and its sweep adopts the resource only
+  // while it is still in that stage, so a stale "fetch"/"decode"/"decoded" left the replacement pending forever (the
+  // Aura FC pitch, re-tinted by applyVenue at boot, never got its turf textures).
+  const markOwnStage = (stage: string): void => {
+    if (resource.material === expectedMaterial && resource.materialSpec === spec && !expectedMaterial.disposed) markTextureStage(resource, stage);
+  };
   // GU47 e6: the stage lists every unsettled map load with its step (`fetch|decode|pixels <url>`).
   const loadSteps = new Map<string, string>();
   const showLoadSteps = (): void => {
-    if (loadSteps.size > 0) markTextureStage(resource, [...loadSteps].map(([url, step]) => `${step} ${url}`).join("; "));
+    if (loadSteps.size > 0) markOwnStage([...loadSteps].map(([url, step]) => `${step} ${url}`).join("; "));
   };
   const load = async (slot: NativeTextureSlot, url: string): Promise<ProductionTextureImage> => {
     const plan = bitmapPlans[slot] ?? prepareBitmapAssetLoad(url, undefined, nativeMaxTextureSize);
@@ -1136,7 +1143,7 @@ export async function upgradeProductionPrimitiveResource(
       intent.emissiveUrl ? load("emissive", intent.emissiveUrl) : Promise.resolve(undefined)
     ]), Promise.allSettled(nativeLoads)]);
     const settledExtensions = await extensionResults;
-    markTextureStage(resource, "decoded");
+    markOwnStage("decoded");
     const failure = [...baseResults, ...nativeResults, ...settledExtensions].find((result) => result.status === "rejected");
     if (failure?.status === "rejected") throw failure.reason;
     ensureCurrent();
