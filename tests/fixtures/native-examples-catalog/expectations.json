@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "8916c8d213d59488baf9f4b0f6fd1523fddb649eb1b6d653a6fe9bbeec6407c1" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "faf96bfbc016cafc24aba4710f99256a7fab615f2b7956716b01383369ff1c63" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -1034,7 +1034,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "872aae6e8ead42229d32f8fcca31b7115073418e31d3dd5990b1a5ec4d721bb0"
+          "sha256": "94fdc7ab11c1e7d4bbc1e95562efadebb63c18c28546c604202d4e1631c90b90"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1070,11 +1070,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
-          "sha256": "cfc58862fcac954db135e5d31d0f0af1968595abc31ae899c328d61b6121961a"
+          "sha256": "282838ed2d1c70cdfdc2b9de44a84d0e60389025c4c940a01b8acbf003eb3dad"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "734303c5168b2f6bf0d120fdb4cc87f2f6b27e93b7810b07035151a61ff04f7e"
+          "sha256": "a13c304b09f25c4c6d795f073c5b1923fd472be8f151130f41b74e55bf8ce92c"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
@@ -2861,7 +2861,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "734303c5168b2f6bf0d120fdb4cc87f2f6b27e93b7810b07035151a61ff04f7e"
+          "sha256": "a13c304b09f25c4c6d795f073c5b1923fd472be8f151130f41b74e55bf8ce92c"
         }
       ],
       "regions": [

@@ -1,0 +1,23 @@
+{
+ "href": "http://127.0.0.1:8602/apps/showcase-aura-hoops-3d/",
+ "title": "Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 7.912668446019892,
+ "sd": 21.54357245698318,
+ "centerMean": 5.234413684080386,
+ "centerSd": 7.8309187630291195,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-aura-hoops-3d",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/aura_hoops_3d_blacktopFanB.20b94d34.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+ ],
+ "real": true
+}

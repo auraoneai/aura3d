@@ -1,0 +1,28 @@
+{
+ "href": "http://127.0.0.1:8602/apps/showcase-teleoperator/",
+ "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ],
+  [
+   168,
+   168
+  ]
+ ],
+ "mean": 8.769230667962471,
+ "sd": 29.179779027753536,
+ "centerMean": 3.5830286499023365,
+ "centerSd": 18.023285332693792,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-teleoperator",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [grid-dispatch] building models unreachable, using box fallbacks: gridBldgVictorian, gridBldgNew1, gridBldgNew2",
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/meshy/models/teleoperator_dispatchPyramidTower.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+ ],
+ "real": false
+}

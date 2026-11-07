@@ -1,0 +1,21 @@
+{
+ "href": "http://127.0.0.1:8612/apps/showcase-data-galaxy/",
+ "title": "Aura3D Showcase - Data Galaxy Explorer",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 17.720474335287257,
+ "sd": 42.85882810241904,
+ "centerMean": 39.551971757001105,
+ "centerSd": 64.53485786868502,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-data-galaxy",
+ "label": "branch2",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [],
+ "real": true
+}

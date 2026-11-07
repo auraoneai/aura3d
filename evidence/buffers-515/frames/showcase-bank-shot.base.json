@@ -1,0 +1,21 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-bank-shot/",
+ "title": "Aura3D - Bank Shot",
+ "canvases": [
+  [
+   1246,
+   686
+  ]
+ ],
+ "mean": 47.713956631463994,
+ "sd": 47.77238715163071,
+ "centerMean": 66.81653789606422,
+ "centerSd": 63.04144720544209,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-bank-shot",
+ "label": "base",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [],
+ "real": true
+}

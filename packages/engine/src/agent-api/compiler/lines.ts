@@ -48,6 +48,7 @@ import { worldTransformOf } from "./sceneGraph.js";
 import { normalizeLinePositions, validateLineDashOptions } from "../nodes/lines.js";
 import { getMaterialClipping } from "../nodes/scene.js";
 import { AuraRuntimeError } from "./errors.js";
+import { createTypedPointsGeometry, disposePointStreamController, mountPointStreamController, pointStreamControllerFor } from "./pointStream.js";
 
 const L6_FLAG = "A3D_PARITY_LINES" as const;
 /** Any non-"prd15" owner runs: "prd15" is the C-36 bridge/skip sentinel. */
@@ -673,15 +674,34 @@ export const pointsNodeHandler: NodeHandler<{ readonly kind: "points" }> = {
     assertL6Flag(ctx, "points");
     const n = node as AuraPointsNode;
     const label = `l6.points.${runtimeIdOf(n)}`;
-    const positions = normalizeLinePositions(n.positions, 1, `points node "${label}"`);
-    if (positions.length === 0) {
-      ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(n), message: "GEOMETRY_EMPTY: points node has no positions; nothing is drawn" });
-      return;
+    // E6-00 P-02: a `points.stream` node mounts an engine-owned typed mirror; its data arrives through the handle.
+    // P-01: a Float32Array cloud with typed (or no) colors builds its vertex buffer directly, no per-point objects.
+    const typedColors = n.colors !== undefined && !Array.isArray(n.colors);
+    const typed = n.stream === undefined && n.positions instanceof Float32Array && (n.colors === undefined || typedColors);
+    let geometry: Geometry;
+    let hasColors: boolean;
+    if (n.stream) {
+      const backend = (ctx.renderer as { readonly device?: { readonly kind?: string } } | undefined)?.device?.kind;
+      geometry = mountPointStreamController(n.stream, { backend }).geometry;
+      hasColors = n.stream.colors !== undefined;
+    } else if (typed) {
+      if (n.positions.length === 0) {
+        ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(n), message: "GEOMETRY_EMPTY: points node has no positions; nothing is drawn" });
+        return;
+      }
+      geometry = createTypedPointsGeometry(n.positions as Float32Array, n.colors as never);
+      hasColors = n.colors !== undefined;
+    } else {
+      const positions = normalizeLinePositions(n.positions, 1, `points node "${label}"`);
+      if (positions.length === 0) {
+        ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(n), message: "GEOMETRY_EMPTY: points node has no positions; nothing is drawn" });
+        return;
+      }
+      hasColors = n.colors !== undefined;
+      geometry = hasColors
+        ? vertexColorsGeometry(positions, n.colors as readonly string[], "points", label)
+        : Geometry.points(positions);
     }
-    const hasColors = n.colors !== undefined;
-    const geometry = hasColors
-      ? vertexColorsGeometry(positions, n.colors!, "points", label)
-      : Geometry.points(positions);
     const map = resolveParityMapTexture(n.map, ctx, runtimeIdOf(n), "points.map");
     const rgba = materialRgba(n.material, [1, 1, 1, 1]);
     const material = new UnlitMaterial({
@@ -708,11 +728,15 @@ export const pointsNodeHandler: NodeHandler<{ readonly kind: "points" }> = {
     const attenuated = n.sizeAttenuation !== false;
     record.material.setParameter("u_pointSize", (n.size ?? 1) * (attenuated ? 1 : canvasDpr(ctx)));
     const materialClipping = materialClippingFor(n, handle);
+    // A stream draws only its committed prefix; zero points draws nothing (the range is a draw-count change, never a rebuild).
+    const streamCount = n.stream ? pointStreamControllerFor(n.stream)?.drawCount : undefined;
+    if (streamCount === 0) return;
     out.addItems([
       {
         geometry: record.geometry,
         material: record.material,
         ...(materialClipping ? { materialClipping } : {}),
+        ...(streamCount === undefined ? {} : { drawRange: { start: 0, count: streamCount } }),
         modelMatrix: modelMatrixFor(n, handle),
         label: record.label
       } satisfies RenderItem
@@ -721,7 +745,9 @@ export const pointsNodeHandler: NodeHandler<{ readonly kind: "points" }> = {
   dispose(node) {
     const record = pointsRecords.get(node);
     if (record) {
-      record.dispose();
+      const stream = (node as AuraPointsNode).stream;
+      if (stream) disposePointStreamController(stream);
+      else record.dispose();
       pointsRecords.delete(node);
     }
   }

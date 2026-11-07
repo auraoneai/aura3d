@@ -1,0 +1,27 @@
+{
+ "href": "http://127.0.0.1:8602/apps/showcase-blockfall-reactor/",
+ "title": "Aura3D Showcase - Blockfall Reactor",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 33.88439542218542,
+ "sd": 47.1156774604857,
+ "centerMean": 47.00098185220702,
+ "centerSd": 47.44367420026756,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-blockfall-reactor",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 3:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 0:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 1:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 2:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+  "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-cylinder-reactor charge glass tube\" needs a transmission lobe and frame capture this program lacks; it draws without transmission."
+ ],
+ "real": true
+}

@@ -1,0 +1,18 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-aura-hoops-3d/",
+ "title": "Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 7.912668446019892,
+ "sd": 21.54357245698318,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-aura-hoops-3d",
+ "label": "base2",
+ "frames": 240,
+ "hz": 60,
+ "real": true
+}

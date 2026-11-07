@@ -1,0 +1,23 @@
+{
+ "href": "http://127.0.0.1:8602/apps/showcase-aura-links-3d/",
+ "title": "Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 4.716932107857886,
+ "sd": 20.888746902654113,
+ "centerMean": 0,
+ "centerSd": 0,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-aura-links-3d",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/links_marram.1a43521b.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+ ],
+ "real": false
+}

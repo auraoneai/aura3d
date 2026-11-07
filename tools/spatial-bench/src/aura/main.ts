@@ -5,7 +5,7 @@
 //   trajectories    -> lines.segments({ positions }) + handle.updateAttribute("position", ...)
 //   picking         -> raycast({ camera, ndc }, { handles, mode: "mesh" })
 //   camera          -> app.camera.setPose; label projection from app.camera.evidence().viewProjection
-import { camera, createAuraApp, geometry, instances, lights, lines, material, points, raycast, scene } from "@aura3d/engine";
+import { camera, createAuraApp, geometry, instances, lights, lines, material, points, pointStreamOf, raycast, scene } from "@aura3d/engine";
 import { runBench, type Viewer } from "../common/harness";
 import type { Cfg, SpatialData } from "../common/data";
 
@@ -28,7 +28,8 @@ function createViewer(): Viewer {
   let instHandle: Handle | null = null;
   let segHandle: Handle | null = null;
   let size = { width: 1, height: 1 };
-  let pointsMode: "static" | "dynamic" | "none" = "none";
+  let pointsMode: "static" | "dynamic" | "stream" | "none" = "none";
+  let streamHandle: { write(p: Float32Array, o?: { colors?: Uint8Array }): void } | null = null;
   let rgbaScratch: Float32Array | null = null;
   const phases = (window as unknown as { __SB_PHASES__?: Record<string, number[]> }).__SB_PHASES__;
   const pointsMaterial = () => material.pbr({ color: "#ffffff", roughness: 1, metalness: 0 });
@@ -44,7 +45,21 @@ function createViewer(): Viewer {
         .add(lights.directional({ position: [10, 20, 8], intensity: 1.5 }));
 
       if (c.points > 0) {
-        if (c.rateHz === 0) {
+        if (c.variant === "typed" && c.rateHz === 0) {
+          // Typed static path (P-01): Float32Array positions + packed RGBA8, no per-point objects, no color-string parsing.
+          pointsMode = "static";
+          const t1 = performance.now();
+          const node = points({ positions: d.pointPositions[0]!, colors: d.pointColors[0]!, size: 1.5, sizeAttenuation: false });
+          details.points = { path: "points() typed (Float32Array + packed u8 colors)", colorConvertMs: 0, builderMs: performance.now() - t1 };
+          notes.push("points() typed: Float32Array positions + packed u8 RGBA, no color-string conversion");
+          stage.add(node);
+        } else if (c.variant === "typed") {
+          // Typed stream path (P-02): points.stream + handle.write, in-place dirty-range upload.
+          pointsMode = "stream";
+          details.points = { path: "points.stream + handle.write (u8x4n)", initialColorConvertMs: 0 };
+          notes.push("streamed points: points.stream({ capacity, colors: u8x4n }) + handle.write(positions, { colors })");
+          stage.add(points.stream({ capacity: c.points, colors: "u8x4n", size: 1.5, sizeAttenuation: false, runtime: { id: "pts" } }));
+        } else if (c.rateHz === 0) {
           pointsMode = "static";
           // points(): positions accept a Float32Array (converted internally to one JS [x,y,z] array per point, E6-00 P.1);
           // colors accept only AuraColor strings, one per point: pay the conversion here.
@@ -83,8 +98,12 @@ function createViewer(): Viewer {
       app = createAuraApp(canvas, { scene: stage, autoStart: false, resize: false, pixelRatio: 1 });
       await app.ready();
       if (c.points > 0 && pointsMode === "dynamic") pointsHandle = app.nodes.require("pts");
+      if (c.points > 0 && pointsMode === "stream") {
+        streamHandle = pointStreamOf(app.nodes.require("pts"));
+        streamHandle.write(d.pointPositions[0]!, { colors: d.pointColors[0]! });
+      }
       if (c.instances > 0) {
-        instHandle = app.nodes.require("inst");
+        instHandle = app.nodes.require("inst") as Handle;
         if (typeof instHandle.setInstanceMatrices !== "function") throw new Error("setInstanceMatrices not available on instance handle");
         instHandle.setInstanceMatrices(d.instanceMatrices[0]!, c.instances);
       }
@@ -94,6 +113,7 @@ function createViewer(): Viewer {
     },
     applyTick(slot) {
       let convertMs = 0;
+      if (streamHandle) streamHandle.write(data.pointPositions[slot]!, { colors: data.pointColors[slot]! });
       if (pointsHandle) {
         const t0 = performance.now();
         const pk = data.pointColors[slot]!;

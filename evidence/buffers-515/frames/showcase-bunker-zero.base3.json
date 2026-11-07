@@ -1,0 +1,27 @@
+{
+ "href": "http://127.0.0.1:8601/apps/showcase-bunker-zero/",
+ "title": "Bunker Zero — Retro Corridor FPS on Aura3D",
+ "canvases": [
+  [
+   1280,
+   720
+  ],
+  [
+   0,
+   0
+  ]
+ ],
+ "mean": 12.131458868604534,
+ "sd": 15.52093518969394,
+ "centerMean": 14.339433317079035,
+ "centerSd": 25.51826940271185,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-bunker-zero",
+ "label": "base3",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.010bba7b.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+ ],
+ "real": true
+}

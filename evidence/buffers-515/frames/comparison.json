@@ -1,0 +1,627 @@
+[
+ {
+  "slug": "showcase-aura-diamond-3d",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": 0,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": 0,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": false,
+   "base2": false,
+   "base3": false,
+   "branch": false
+  },
+  "centerStats": {
+   "base": {
+    "mean": 0.3234486599392341,
+    "sd": 5.543114140666486
+   },
+   "branch": {
+    "mean": 0.3234486599392341,
+    "sd": 5.543114140666486
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/ballpark_fanA.98745357.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 4.089870001957024,
+   "branch": 4.089870001957024
+  },
+  "sd": {
+   "base": 20.193735515028255,
+   "branch": 20.193735515028255
+  },
+  "title": "Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase"
+ },
+ {
+  "slug": "showcase-aura-hoops-3d",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": 0,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": 0,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": true,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 5.234413684080386,
+    "sd": 7.8309187630291195
+   },
+   "branch": {
+    "mean": 5.234413684080386,
+    "sd": 7.8309187630291195
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/aura_hoops_3d_blacktopFanB.20b94d34.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 7.912668446019892,
+   "branch": 7.912668446019892
+  },
+  "sd": {
+   "base": 21.54357245698318,
+   "branch": 21.54357245698318
+  },
+  "title": "Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase"
+ },
+ {
+  "slug": "showcase-aura-links-3d",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": 0,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": 0,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": false,
+   "base2": false,
+   "base3": false,
+   "branch": false
+  },
+  "centerStats": {
+   "base": {
+    "mean": 0,
+    "sd": 0
+   },
+   "branch": {
+    "mean": 0,
+    "sd": 0
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/links_marram.1a43521b.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 4.716932107857886,
+   "branch": 4.716932107857886
+  },
+  "sd": {
+   "base": 20.888746902654113,
+   "branch": 20.888746902654113
+  },
+  "title": "Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase"
+ },
+ {
+  "slug": "showcase-aurora-lander",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": null,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 59.32030740288061,
+    "sd": 43.89881588601212
+   },
+   "branch": {
+    "mean": 59.32030740288061,
+    "sd": 43.89881588601212
+   }
+  },
+  "branchConsoleErrors": [
+   "warning: [aura3d] camera spec 'smoothing' is deprecated under A3D_QR_CAMERA; it maps to a half-life of 0.000s (use rig halflife options on app.camera rigs instead).",
+   "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-61:sdf-text:custom\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster."
+  ],
+  "verifiedGameFrame": true,
+  "meanLuma": {
+   "base": 38.88850074489485,
+   "branch": 38.88850074489485
+  },
+  "sd": {
+   "base": 33.478769909771025,
+   "branch": 33.478769909771025
+  },
+  "title": "Aura3D - Aurora Lander"
+ },
+ {
+  "slug": "showcase-bank-shot",
+  "madBaseVsBase2": 0.010744719328703703,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 0.010750144675925926,
+  "madBase2VsBranch": 0.0006904658564814815,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 221,
+   "fracOver8": 0.00008029513888888889
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": null,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 66.81653789606422,
+    "sd": 63.04144720544209
+   },
+   "branch": {
+    "mean": 66.81672897950607,
+    "sd": 63.04143782295185
+   }
+  },
+  "branchConsoleErrors": [],
+  "verifiedGameFrame": true,
+  "meanLuma": {
+   "base": 47.713956631463994,
+   "branch": 47.708724647739714
+  },
+  "sd": {
+   "base": 47.77238715163071,
+   "branch": 47.7626388736217
+  },
+  "title": "Aura3D - Bank Shot"
+ },
+ {
+  "slug": "showcase-blockfall-reactor",
+  "madBaseVsBase2": 7.447332537615741,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 9.913557219328704,
+  "madBase2VsBranch": 10.354798900462963,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 255,
+   "fracOver8": 0.17307978877314814
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": null,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 45.825908452682455,
+    "sd": 46.557224703754706
+   },
+   "branch": {
+    "mean": 47.00098185220702,
+    "sd": 47.44367420026756
+   }
+  },
+  "branchConsoleErrors": [
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 3:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 0:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 1:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-ghost landing block 2:transparent ghost landing piece\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-cylinder-reactor charge glass tube\" needs a transmission lobe and frame capture this program lacks; it draws without transmission."
+  ],
+  "verifiedGameFrame": true,
+  "meanLuma": {
+   "base": 34.518856628350335,
+   "branch": 33.88439542218542
+  },
+  "sd": {
+   "base": 47.58032377990701,
+   "branch": 47.1156774604857
+  },
+  "title": "Aura3D Showcase - Blockfall Reactor"
+ },
+ {
+  "slug": "showcase-bunker-zero",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": 0,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": 0,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": true,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 14.339433317079035,
+    "sd": 25.51826940271185
+   },
+   "branch": {
+    "mean": 14.339433317079035,
+    "sd": 25.51826940271185
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.010bba7b.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 12.131458868604534,
+   "branch": 12.131458868604534
+  },
+  "sd": {
+   "base": 15.52093518969394,
+   "branch": 15.52093518969394
+  },
+  "title": "Bunker Zero — Retro Corridor FPS on Aura3D"
+ },
+ {
+  "slug": "showcase-cross-hop",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": false,
+   "base2": false,
+   "base3": null,
+   "branch": false
+  },
+  "centerStats": {
+   "base": {
+    "mean": 0.6888994032116368,
+    "sd": 3.82618195533103
+   },
+   "branch": {
+    "mean": 0.6888994032116368,
+    "sd": 3.82618195533103
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject.",
+   "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c9c3aaf.glb: HTTP 200\n    at readinessError (http://127.0.0.1:8602/packages/game/src/session/presented.ts:22:17)\n    at terminalError (http://127.0.0.1:8602/packages/game/src/session/presented.ts:27:40)\n    at handleTermination (http://127.0.0.1:8602/packages/game/src/session/presented.ts:75:13)\n    at awaitGamePresentedDraw (http://127.0.0.1:8602/packages/game/src/session/presented.ts:101:9)\n    at async http://127.0.0.1:8602/packages/game/src/"
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 4.64383329296141,
+   "branch": 4.64383329296141
+  },
+  "sd": {
+   "base": 23.406519237230466,
+   "branch": 23.406519237230466
+  },
+  "title": "Cross Hop — Aura3D Endless Lane Hopper"
+ },
+ {
+  "slug": "showcase-data-galaxy",
+  "madBaseVsBase2": 8.080988859953704,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 8.435091869212963,
+  "madBase2VsBranch": 7.788115596064815,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 237,
+   "fracOver8": 0.0887525318287037
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": null,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 41.77988768310203,
+    "sd": 65.64777363804434
+   },
+   "branch": {
+    "mean": 37.369283603250445,
+    "sd": 63.07782083421344
+   }
+  },
+  "branchConsoleErrors": [],
+  "verifiedGameFrame": true,
+  "meanLuma": {
+   "base": 17.70346135503964,
+   "branch": 17.435265537115242
+  },
+  "sd": {
+   "base": 43.03156902732816,
+   "branch": 42.59457065887315
+  },
+  "title": "Aura3D Showcase - Data Galaxy Explorer"
+ },
+ {
+  "slug": "showcase-dot-dash-3d",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": null,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 5.099779560004173,
+    "sd": 27.027241757627795
+   },
+   "branch": {
+    "mean": 5.099779560004173,
+    "sd": 27.027241757627795
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/dotdashCourierPod.ba46ab62.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 5.517758602434765,
+   "branch": 5.517758602434765
+  },
+  "sd": {
+   "base": 25.042445884413652,
+   "branch": 25.042445884413652
+  },
+  "title": "Glint Courier — circuit-board chase"
+ },
+ {
+  "slug": "showcase-pips-big-leap",
+  "madBaseVsBase2": 0,
+  "madBaseVsBase3": 0,
+  "madBaseVsBranch": 0,
+  "madBase2VsBranch": 0,
+  "madBase3VsBranch": 0,
+  "baseVsBranchDetail": {
+   "max": 0,
+   "fracOver8": 0
+  },
+  "realFrame": {
+   "base": false,
+   "base2": false,
+   "base3": false,
+   "branch": false
+  },
+  "centerStats": {
+   "base": {
+    "mean": 0,
+    "sd": 0
+   },
+   "branch": {
+    "mean": 0,
+    "sd": 0
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/leapBaseCanopy.1ac50631.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject.",
+   "exception: AuraGameReadinessError: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/leapBaseCanopy.1ac50631.glb: HTTP 200\n    at readinessError (http://127.0.0.1:8602/packages/game/src/session/presented.ts:22:17)\n    at terminalError (http://127.0.0.1:8602/packages/game/src/session/presented.ts:27:40)\n    at handleTermination (http://127.0.0.1:8602/packages/game/src/session/presented.ts:75:13)\n    at awaitGamePresentedDraw (http://127.0.0.1:8602/packages/game/src/session/presented.ts:101:9)\n    at async http://127.0.0.1:8602/packages/game/sr"
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 11.086271724396154,
+   "branch": 11.086271724396154
+  },
+  "sd": {
+   "base": 42.60607667338913,
+   "branch": 42.60607667338913
+  },
+  "title": "PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase"
+ },
+ {
+  "slug": "showcase-smart-city-control",
+  "madBaseVsBase2": 0.45472222222222225,
+  "madBaseVsBase3": 0.7690516493055556,
+  "madBaseVsBranch": 0.30737955729166666,
+  "madBase2VsBranch": 0.45060727719907406,
+  "madBase3VsBranch": 0.772607421875,
+  "baseVsBranchDetail": {
+   "max": 238,
+   "fracOver8": 0.00015046296296296297
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": true,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 47.00686161702515,
+    "sd": 61.19170914647815
+   },
+   "branch": {
+    "mean": 46.99845406222916,
+    "sd": 61.1901882150316
+   }
+  },
+  "branchConsoleErrors": [
+   "warning: DEPTH_ALPHA_HASH_DEGRADED: \"primitive-319:red northbound windshield:red northbound windshield\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+   "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the surface behind them.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-red northbound windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-yellow crosstown taxi windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-white crosstown van windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission.",
+   "warning: TRANSMISSION_DEGRADED: material \"a3d-production-primitive-box-blue southbound windshield\" needs a transmission lobe and frame capture this program lacks; it draws without transmission."
+  ],
+  "verifiedGameFrame": true,
+  "meanLuma": {
+   "base": 31.421918377247366,
+   "branch": 31.419339105762635
+  },
+  "sd": {
+   "base": 39.02615173938351,
+   "branch": 39.02372615436064
+  },
+  "title": "Aura3D Showcase - Smart City Control"
+ },
+ {
+  "slug": "showcase-teleoperator",
+  "madBaseVsBase2": 0.03133210358796296,
+  "madBaseVsBase3": 1.0510536024305555,
+  "madBaseVsBranch": 0.2934103732638889,
+  "madBase2VsBranch": 0.31492766203703704,
+  "madBase3VsBranch": 1.0441970486111112,
+  "baseVsBranchDetail": {
+   "max": 221,
+   "fracOver8": 0.009000289351851851
+  },
+  "realFrame": {
+   "base": false,
+   "base2": false,
+   "base3": false,
+   "branch": false
+  },
+  "centerStats": {
+   "base": {
+    "mean": 3.5941545369466024,
+    "sd": 17.89846137207576
+   },
+   "branch": {
+    "mean": 3.5830286499023365,
+    "sd": 18.023285332693792
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [grid-dispatch] building models unreachable, using box fallbacks: gridBldgVictorian, gridBldgNew1, gridBldgNew2",
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/meshy/models/teleoperator_dispatchPyramidTower.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 8.77308934981979,
+   "branch": 8.769230667962471
+  },
+  "sd": {
+   "base": 29.169570840744804,
+   "branch": 29.179779027753536
+  },
+  "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase"
+ },
+ {
+  "slug": "showcase-top-tennis",
+  "madBaseVsBase2": 0.37792607060185185,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 0.3753439670138889,
+  "madBase2VsBranch": 0.36884584780092594,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 113,
+   "fracOver8": 0.0004271556712962963
+  },
+  "realFrame": {
+   "base": true,
+   "base2": true,
+   "base3": null,
+   "branch": true
+  },
+  "centerStats": {
+   "base": {
+    "mean": 127.60141549342006,
+    "sd": 36.54273447265507
+   },
+   "branch": {
+    "mean": 127.58696036511043,
+    "sd": 36.568373646639934
+   }
+  },
+  "branchConsoleErrors": [
+   "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state; an unverified material or geometry participant; shader feature prd04.tangentFrame are outside the contact shadow depth and receive the mask of the surface behind them.",
+   "warning: [prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with a material depth or blend state; an unverified material or geometry participant are outside the contact shadow depth and receive the mask of the surface behind them."
+  ],
+  "verifiedGameFrame": true,
+  "meanLuma": {
+   "base": 84.17932548233345,
+   "branch": 84.17542737903453
+  },
+  "sd": {
+   "base": 43.47256903069785,
+   "branch": 43.4752765351978
+  },
+  "title": "Aura Slam 3D — Championship 3D Tennis on Aura3D"
+ },
+ {
+  "slug": "showcase-turbo-ball",
+  "madBaseVsBase2": 5.657471064814815,
+  "madBaseVsBase3": null,
+  "madBaseVsBranch": 0.18622757523148148,
+  "madBase2VsBranch": 5.5515776909722225,
+  "madBase3VsBranch": null,
+  "baseVsBranchDetail": {
+   "max": 247,
+   "fracOver8": 0.003881655092592593
+  },
+  "realFrame": {
+   "base": false,
+   "base2": false,
+   "base3": null,
+   "branch": false
+  },
+  "centerStats": {
+   "base": {
+    "mean": 0,
+    "sd": 0
+   },
+   "branch": {
+    "mean": 0,
+    "sd": 0
+   }
+  },
+  "branchConsoleErrors": [
+   "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/stadiumArena.40b48b71.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  ],
+  "verifiedGameFrame": false,
+  "meanLuma": {
+   "base": 2.6170278211831763,
+   "branch": 2.7617680431882845
+  },
+  "sd": {
+   "base": 14.310690050114973,
+   "branch": 15.022503319977147
+  },
+  "title": "Turbo Ball — Aura3D 2v2 Rocket Soccer Arena"
+ }
+]

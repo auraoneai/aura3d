@@ -1,0 +1,23 @@
+{
+ "href": "http://127.0.0.1:8602/apps/showcase-dot-dash-3d/",
+ "title": "Glint Courier — circuit-board chase",
+ "canvases": [
+  [
+   1280,
+   720
+  ]
+ ],
+ "mean": 5.517758602434765,
+ "sd": 25.042445884413652,
+ "centerMean": 5.099779560004173,
+ "centerSd": 27.027241757627795,
+ "vnow": 11666.6666666666,
+ "slug": "showcase-dot-dash-3d",
+ "label": "branch",
+ "frames": 240,
+ "hz": 60,
+ "consoleErrors": [
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/dotdashCourierPod.ba46ab62.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+ ],
+ "real": true
+}

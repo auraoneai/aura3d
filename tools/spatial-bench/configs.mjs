@@ -34,6 +34,11 @@ export function buildConfigs() {
   for (const n of [100000, 250000, 1000000]) for (const hz of [10, 20]) for (const fps of [30, 60]) {
     add(`pts-${k(n)}-${hz}hz-${fps}fps`, { points: n, rateHz: hz, fps, probe: hz === 20 && fps === 60 ? { kind: "points", n: 10 } : null, shot: hz === 20 && fps === 60 });
   }
+  // Typed mutable-buffer path (lane 515): `points.stream` + `handle.write` with packed u8 colors. Aura3D only.
+  for (const n of [100000, 250000, 1000000]) for (const hz of [10, 20]) for (const fps of [30, 60]) {
+    add(`pts-${k(n)}-${hz}hz-${fps}fps-typed`, { points: n, rateHz: hz, fps, variant: "typed", viewers: ["aura"], probe: hz === 20 && fps === 60 ? { kind: "points", n: 10 } : null, shot: hz === 20 && fps === 60 });
+  }
+  for (const n of [100000, 250000, 1000000]) add(`ctl-static-pts-${k(n)}-typed`, { points: n, rateHz: 0, variant: "typed", viewers: ["aura"] });
   // Instanced boxes re-posed every tick.
   for (const n of [1000, 5000, 10000]) for (const hz of [10, 20]) for (const fps of [30, 60]) {
     add(`inst-${k(n)}-${hz}hz-${fps}fps`, { instances: n, rateHz: hz, fps, probe: hz === 20 && fps === 60 ? { kind: "instances", n: 50 } : null, shot: hz === 20 && fps === 60 });
@@ -48,6 +53,9 @@ export function buildConfigs() {
   // Mixed scene: all three streams + labels, like a perception viewer.
   for (const hz of [10, 20]) for (const fps of [30, 60]) {
     add(`mixed-${hz}hz-${fps}fps`, { points: 250000, instances: 1000, segments: 20000, labels: 50, rateHz: hz, fps, shot: hz === 20 && fps === 60 });
+  }
+  for (const hz of [10, 20]) for (const fps of [30, 60]) {
+    add(`mixed-${hz}hz-${fps}fps-typed`, { points: 250000, instances: 1000, segments: 20000, labels: 50, rateHz: hz, fps, variant: "typed", viewers: ["aura"], shot: hz === 20 && fps === 60 });
   }
   return out;
 }
