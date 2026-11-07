@@ -52,6 +52,41 @@ Canvas pointer props are DOM events, not node picking;
 `useAuraFrame(callback, priority?)` shares one app frame subscription and
 releases it when its subscribers leave.
 
+## Embedding in a foreign React app
+
+`AuraCanvas` never owns routing, global state or the page. Its defaults for a host page:
+
+- No page globals: `routeState` is off, so `document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__` and
+  `globalThis.__AURA3D_LIVE_APPS__` are not written. Pass `routeState` to opt back in for route-health tooling.
+  With the engine default (`createAuraApp` without `routeState: false`) those globals are removed again when
+  the last publishing app is disposed.
+- No URL flags: `?a3d-qr=` in the host URL is ignored unless `allowUrlFlags` is passed.
+- The canvas has `tabIndex={-1}` (override with `tabIndex`). `handle.input({ actions })` listens on the canvas,
+  not on `window`, so keys typed elsewhere in the host never reach Aura input.
+- Pointer listeners are attached to the canvas only and removed on dispose; multiple canvases on one page keep
+  independent apps and handles; the engine resizes through `ResizeObserver` on the canvas parent.
+
+An imperative handle is published once the renderer is ready (`handleRef`, or `AuraCanvasWithRef` with a plain
+`ref`), and cleared to `null` on unmount. It is the same object for the life of the app, including `setScene`
+changes:
+
+```ts
+const handleRef = useRef<AuraCanvasHandle | null>(null);
+<AuraCanvas scene={builtScene} handleRef={handleRef} onAppChange={(app) => ...} />
+handleRef.current?.update("cube", { rotation: [0, angle, 0], position: [x, 0.5, 0] }); // no render, no setScene
+handleRef.current?.writeInstances("fleet", matrices, count);
+const off = handleRef.current?.onFrame((frame) => ...);
+```
+
+`scene` accepts a builder made with the engine API (nodes tagged `.runtime({ id })`), since declarative children
+can only describe models, cameras, lights and effects. From a child of the canvas,
+`useAuraNodeUpdate(id, patch)` applies a memoised patch whenever it changes. Live data bypasses props: declarative
+props are serialised on every render and a change calls `setScene`, so a development build warns when one holds
+more than 4096 elements. `AuraCanvas` keeps its function type; `AuraCanvasWithRef` is its `forwardRef` form. The
+bulk typed-array writes available today are node transforms, material, text, morph targets and
+`setInstanceMatrices`; there is no uniform or point-buffer write yet (register gaps P-02, U-06). A runnable host
+is in `examples/react-embedding-host`.
+
 ## Server rendering and hydration
 
 The module can be imported and `AuraCanvas` rendered on the server without a

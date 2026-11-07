@@ -6,6 +6,31 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { snapshotDiagnostics } from "../diagnostics.js";
 
+/*
+ * Apps that published the legacy page-global route state (body dataset + window.__AURA3D_ROUTE_READY__).
+ * Embedded instances opt out with `routeState: false`; the rest are tracked so the page globals are
+ * cleared when the last publisher is disposed instead of outliving every app.
+ */
+const routePublishers = new Set<MutableDiagnostics>();
+
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export function enrollRouteState(owner: MutableDiagnostics): void {
+  routePublishers.add(owner);
+}
+
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export function releaseRouteState(owner: MutableDiagnostics): void {
+  if (!routePublishers.delete(owner) || routePublishers.size > 0) return;
+  if (typeof document !== "undefined" && document.body) {
+    const dataset = document.body.dataset;
+    delete dataset.aura3dReady;
+    delete dataset.aura3dDrawCalls;
+    delete dataset.aura3dRuntimeBackend;
+    delete dataset.aura3dRendererMode;
+  }
+  if (typeof window !== "undefined") delete (window as unknown as { __AURA3D_ROUTE_READY__?: unknown }).__AURA3D_ROUTE_READY__;
+}
+
 export function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
   markRouteState("ready", snapshot, diagnostics);
 }
@@ -22,6 +47,7 @@ export function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: Mutable
  * diagnostics attributes always reflect the last real frame.
  */
 export function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void {
+  if (!routePublishers.has(diagnostics)) return;
   if (typeof document !== "undefined" && document.body.dataset.aura3dReady !== undefined) {
     // Backend and mode are constants of a mount and are written by markRouteState; reading them here
     // would force the full renderer report to be rebuilt every frame.
@@ -34,6 +60,8 @@ export function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void {
 }
 
 function markRouteState(status: "ready" | "error", snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
+  // An app that opted out (`routeState: false`) or was already disposed never writes the page globals.
+  if (!routePublishers.has(diagnostics)) return;
   if (typeof document !== "undefined") {
     document.body.dataset.aura3dReady = status === "ready" ? "true" : "error";
     document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);

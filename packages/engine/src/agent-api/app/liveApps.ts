@@ -22,15 +22,28 @@ import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
  */
 const liveAuraApps = new Set<AuraApp>();
 
-export function registerAuraApp(app: AuraApp): void {
+/** Apps that published the page-global registry handle; the global is removed with the last of them. */
+const publishedAuraApps = new Set<AuraApp>();
+const ENGINE_EVIDENCE_GLOBALS = ["__A3D_SHADOW_PROXIES__", "__A3D_DENSE_SHADOW_CAP__", "__A3D_SHADOW_TAP_TIER__"] as const;
+
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export function registerAuraApp(app: AuraApp, options: { readonly publish?: boolean } = {}): void {
   liveAuraApps.add(app);
-  if (typeof globalThis !== "undefined") {
-    (globalThis as { __AURA3D_LIVE_APPS__?: unknown }).__AURA3D_LIVE_APPS__ = auraAppRegistry;
+  if (options.publish !== false) {
+    publishedAuraApps.add(app);
+    if (typeof globalThis !== "undefined") {
+      (globalThis as { __AURA3D_LIVE_APPS__?: unknown }).__AURA3D_LIVE_APPS__ = auraAppRegistry;
+    }
   }
 }
 
 export function unregisterAuraApp(app: AuraApp): void {
   liveAuraApps.delete(app);
+  if (!publishedAuraApps.delete(app) || publishedAuraApps.size > 0 || typeof globalThis === "undefined") return;
+  const page = globalThis as Record<string, unknown>;
+  if (page.__AURA3D_LIVE_APPS__ === auraAppRegistry) delete page.__AURA3D_LIVE_APPS__;
+  // Compiler audit evidence is written per scene compile; do not leave it behind after the last app.
+  for (const key of ENGINE_EVIDENCE_GLOBALS) delete page[key];
 }
 
 /** Ownerless builder compatibility is valid only while one app is registered. */
