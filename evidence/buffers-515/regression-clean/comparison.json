@@ -1,0 +1,97 @@
+[
+ {
+  "slug": "showcase-aurora-lander",
+  "real": {
+   "base": true,
+   "base2": true,
+   "branch": true,
+   "branch2": true
+  },
+  "base_base2": 0,
+  "branch_branch2": 0,
+  "base_branch": 0,
+  "base_branch2": 0,
+  "base2_branch": 0,
+  "base2_branch2": 0,
+  "noiseFloor": 0,
+  "maxCross": 0,
+  "minCross": 0,
+  "withinNoise": true
+ },
+ {
+  "slug": "showcase-bank-shot",
+  "real": {
+   "base": true,
+   "base2": true,
+   "branch": true,
+   "branch2": true
+  },
+  "base_base2": 0.001,
+  "branch_branch2": 0.014,
+  "base_branch": 0.014,
+  "base_branch2": 0,
+  "base2_branch": 0.014,
+  "base2_branch2": 0.001,
+  "noiseFloor": 0.014,
+  "maxCross": 0.014,
+  "minCross": 0,
+  "withinNoise": true
+ },
+ {
+  "slug": "showcase-data-galaxy",
+  "real": {
+   "base": true,
+   "base2": true,
+   "branch": true,
+   "branch2": true
+  },
+  "base_base2": 6.754,
+  "branch_branch2": 6.732,
+  "base_branch": 6.97,
+  "base_branch2": 2.093,
+  "base2_branch": 2.084,
+  "base2_branch2": 6.484,
+  "noiseFloor": 6.754,
+  "maxCross": 6.97,
+  "minCross": 2.084,
+  "withinNoise": true
+ },
+ {
+  "slug": "showcase-smart-city-control",
+  "real": {
+   "base": true,
+   "base2": true,
+   "branch": true,
+   "branch2": true
+  },
+  "base_base2": 0.43,
+  "branch_branch2": 0.344,
+  "base_branch": 0.388,
+  "base_branch2": 0.342,
+  "base2_branch": 0.38,
+  "base2_branch2": 0.412,
+  "noiseFloor": 0.43,
+  "maxCross": 0.412,
+  "minCross": 0.342,
+  "withinNoise": true
+ },
+ {
+  "slug": "showcase-top-tennis",
+  "real": {
+   "base": true,
+   "base2": true,
+   "branch": true,
+   "branch2": true
+  },
+  "base_base2": 0.367,
+  "branch_branch2": 0.368,
+  "base_branch": 0.37,
+  "base_branch2": 0.369,
+  "base2_branch": 0.368,
+  "base2_branch2": 0.367,
+  "noiseFloor": 0.368,
+  "maxCross": 0.37,
+  "minCross": 0.367,
+  "withinNoise": true
+ }
+]
