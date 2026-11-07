@@ -1,0 +1,100 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "label": "m1-before",
+  "ourFrame": "/tmp/mat514/frames/m1-before.png",
+  "task": "10-materials-1.md",
+  "rubricMax": 25,
+  "results": [
+    {
+      "label": "m1-before",
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A shows three clearly different materials (tinted glass with highlights, brushed steel with stretched reflections, deep red woven fabric) with a visible curved floor and soft contact shadows, while B looks washed out, with a near-white glass sphere, a metal sphere with harsh vertical streaks, and a "
+    },
+    {
+      "label": "m1-before",
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 2
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 11,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B shows three clearly different materials (tinted glass with light reflections, brushed steel, red woven fabric) with soft contact shadows, while A's glass looks like a white opaque ball, its metal is striped, and its fabric is flat and dark."
+    },
+    {
+      "label": "m1-before",
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B's three spheres are larger and clearly distinct: a tinted glass sphere with visible light reflections, a brushed-looking metal sphere, and a red woven fabric sphere with a visible weave. In A the glass looks like a white opaque ball and the three spheres are small and unequal in size."
+    }
+  ]
+}

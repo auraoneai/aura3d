@@ -1,0 +1,100 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "label": "m1-after",
+  "ourFrame": "/tmp/mat514/frames/m1-after.png",
+  "task": "10-materials-1.md",
+  "rubricMax": 25,
+  "results": [
+    {
+      "label": "m1-after",
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "A has a visible curved floor-to-backdrop gradient, stronger contact shadows, a clearly brushed-metal streak pattern and a visible weave on the red sphere, while B is washed out with weak shadows, no visible backdrop curve and a more generic metal sphere."
+    },
+    {
+      "label": "m1-after",
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "B has stronger depth, with soft contact shadows, a curved floor-to-backdrop gradient, clearer reflections on the glass and metal, and a visible woven fabric pattern. A is flatter and washed out, its shadows are faint, and its spheres are unevenly sized and spaced, though its fabric sphere reads more"
+    },
+    {
+      "label": "m1-after",
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "B's spheres are larger and better framed, with stronger soft shadows and a visible woven fabric pattern. Its glass and metal read distinctly, although the metal shows banding and the fabric weave looks coarse. A's spheres are small and unevenly sized, with a flat, washed-out floor and weak shadows."
+    }
+  ]
+}
