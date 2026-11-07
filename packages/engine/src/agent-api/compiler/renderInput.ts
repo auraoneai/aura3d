@@ -429,6 +429,53 @@ function parentedModelMatrix(
   return world;
 }
 
+/** Reused per node across frames while the instance count is stable (steady-state dense writes allocate nothing). */
+const denseModelOutputs = new WeakMap<object, Float32Array>();
+
+/**
+ * I-07: dense counterpart of `createProductionModelInstanceTransforms`. A dense matrix is the instance's world T·R·S;
+ * the model's normalization/centering ("base placement", the matrix of an identity-transform instance) is applied
+ * inside it, so `instance = [parentWorld ·] dense · base`. Same contract as primitive dense writes, where the node size is folded in.
+ */
+export function denseModelInstanceTransforms(
+  key: object,
+  dense: Float32Array,
+  node: AuraModelNode,
+  bounds: { readonly min: AuraVec3; readonly max: AuraVec3 },
+  time: number,
+  parentWorld?: Float32Array
+): Float32Array {
+  assertValidPivot(node.pivot);
+  const identityNode = { ...node, position: [0, 0, 0], rotation: [0, 0, 0], scale: 1, pivot: undefined, quaternion: undefined, lookAt: undefined, rotationOrder: undefined } as unknown as AuraModelNode;
+  const base = createModelMatrix(identityNode, bounds, shouldNormalizeModelNode(node), time);
+  const previous = denseModelOutputs.get(key);
+  const out = previous !== undefined && previous.length === dense.length ? previous : new Float32Array(dense.length);
+  denseModelOutputs.set(key, out);
+  for (let o = 0; o < dense.length; o += 16) {
+    for (let col = 0; col < 4; col += 1) {
+      const b0 = base[col * 4]!, b1 = base[col * 4 + 1]!, b2 = base[col * 4 + 2]!, b3 = base[col * 4 + 3]!;
+      for (let row = 0; row < 4; row += 1) {
+        // (dense · base)[row, col] = sum_k dense[row, k] · base[k, col]; column-major index = col * 4 + row.
+        out[o + col * 4 + row] = dense[o + row]! * b0 + dense[o + 4 + row]! * b1 + dense[o + 8 + row]! * b2 + dense[o + 12 + row]! * b3;
+      }
+    }
+  }
+  if (parentWorld !== undefined) {
+    for (let o = 0; o < out.length; o += 16) {
+      let c0 = 0, c1 = 0, c2 = 0, c3 = 0;
+      for (let col = 0; col < 4; col += 1) {
+        const m0 = out[o + col * 4]!, m1 = out[o + col * 4 + 1]!, m2 = out[o + col * 4 + 2]!, m3 = out[o + col * 4 + 3]!;
+        for (let row = 0; row < 4; row += 1) {
+          const v = parentWorld[row]! * m0 + parentWorld[4 + row]! * m1 + parentWorld[8 + row]! * m2 + parentWorld[12 + row]! * m3;
+          if (row === 0) c0 = v; else if (row === 1) c1 = v; else if (row === 2) c2 = v; else c3 = v;
+        }
+        out[o + col * 4] = c0; out[o + col * 4 + 1] = c1; out[o + col * 4 + 2] = c2; out[o + col * 4 + 3] = c3;
+      }
+    }
+  }
+  return out;
+}
+
 function parentedModelInstanceTransforms(
   transforms: readonly AuraTransformSpec[],
   localNode: AuraModelNode,
@@ -622,6 +669,12 @@ function createProductionRuntimeRendererInputOwned(
     // nodes. Skinned actors cannot instance (D1 matrix) — warn once and draw
     // single instead of silently dropping copies.
     const modelInstances = currentNode.instances;
+    // I-07: dense matrices written by `handle.setInstanceMatrices` on an `instances.model` node.
+    const denseModelMatrices = modelInstances && modelInstances.length > 0 ? currentState.denseInstanceMatrices : undefined;
+    if (denseModelMatrices !== undefined && denseModelMatrices.length === 0) {
+      runtimeWarnings.add(`INSTANCES_EMPTY: instances.model "${currentNode.name ?? currentNode.asset.id}" has no instances this frame; nothing is drawn.`);
+      continue;
+    }
     let modelInstanceAttach: { readonly instanceTransforms?: Float32Array; readonly instanceColors?: Float32Array } = {};
     if (modelInstances && modelInstances.length > 0) {
       if (actorItems.some((item) => item.skinning)) {
@@ -636,14 +689,19 @@ function createProductionRuntimeRendererInputOwned(
       } else {
         const instanceBounds = productionActorModelBounds(currentNode.asset, entry.actor);
         modelInstanceAttach = {
-          instanceTransforms: parentedActor
+          instanceTransforms: denseModelMatrices
+            ? denseModelInstanceTransforms(entry.node, denseModelMatrices, currentNode, instanceBounds, time,
+                parentedActor ? parentedActor.parentWorldMatrix : staticActorParent && actorPivoted ? staticActorParent.parentWorldMatrix : undefined)
+            : parentedActor
             ? parentedModelInstanceTransforms(modelInstances, withParentedLocalTransform(currentNode, parentedActor), instanceBounds, time, parentedActor.parentWorldMatrix)
             : staticActorParent && actorPivoted
               ? parentedModelInstanceTransforms(modelInstances, withStaticLocalTransform(currentNode, staticActorParent.source), instanceBounds, time, staticActorParent.parentWorldMatrix)
               : prd01ModelInstanceTransforms(modelInstances, currentNode, instanceBounds, time),
-          ...(currentNode.instanceColors
-            ? { instanceColors: prd01InstanceColors(currentNode.instanceColors, modelInstances.length, cache) }
-            : {})
+          ...(denseModelMatrices && currentState.denseInstanceRgba && currentState.denseInstanceRgba.length === (denseModelMatrices.length / 16) * 4
+            ? { instanceColors: currentState.denseInstanceRgba }
+            : currentNode.instanceColors && !denseModelMatrices
+              ? { instanceColors: prd01InstanceColors(currentNode.instanceColors, modelInstances.length, cache) }
+              : {})
         };
         // GU47 E-D: what the instance colours multiply (`instances.model({ instanceColorTarget })`).
         for (const item of actorItems) {

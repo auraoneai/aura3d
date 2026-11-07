@@ -25,6 +25,10 @@ interface ProductionRuntimeActorState {
   readonly morphTargets?: RuntimeNodeMorphTargetWeights;
   /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
   readonly runtimeMaterial?: AuraModelNode["material"];
+  /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+  readonly denseInstanceMatrices?: Float32Array;
+  /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+  readonly denseInstanceRgba?: Float32Array;
 }
 
 export function resolveProductionActorRuntimeState(
@@ -37,6 +41,8 @@ export function resolveProductionActorRuntimeState(
     readonly instances?: AuraModelNode["instances"];
     readonly instanceColors?: AuraModelNode["instanceColors"];
     readonly material?: AuraModelNode["material"];
+    readonly instanceMatrices?: Float32Array;
+    readonly instanceRgba?: Float32Array;
   }) | undefined;
   if (!runtimeSnapshot) return { node: entry.node };
   const morphTargets = runtimeSnapshot.morphTargets ?? {};
@@ -74,7 +80,9 @@ export function resolveProductionActorRuntimeState(
     animationPose: runtimeSnapshot.animationPose,
     animationPoseTime: runtimeSnapshot.animationPoseBinding?.localTime ?? runtimeSnapshot.animationPoseBinding?.captureTime,
     ...(Object.keys(morphTargets).length > 0 ? { morphTargets } : {}),
-    ...(runtimeSnapshot.material !== undefined ? { runtimeMaterial: runtimeSnapshot.material } : {})
+    ...(runtimeSnapshot.material !== undefined ? { runtimeMaterial: runtimeSnapshot.material } : {}),
+    ...(runtimeSnapshot.instances && runtimeSnapshot.instanceMatrices ? { denseInstanceMatrices: runtimeSnapshot.instanceMatrices } : {}),
+    ...(runtimeSnapshot.instances && runtimeSnapshot.instanceMatrices && runtimeSnapshot.instanceRgba ? { denseInstanceRgba: runtimeSnapshot.instanceRgba } : {})
   };
 }
 

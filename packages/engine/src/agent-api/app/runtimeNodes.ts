@@ -1,5 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
+import { attachPointStreamControls } from "../compiler/pointStream.js";
 import type { AuraAnimationSpec, AuraApp, AuraCustomMaterialSpec, AuraLayerMask, AuraMaterialSpec, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, AuraRuntimeNodeSpec, AuraSceneNode, AuraSceneSnapshot, AuraTransformSpec, AuraUniformValue, AuraVec3 } from "../nodes/types.js";
 import { composeTRSInto, composeWorldMatrixWithLookAt, decomposeMatrix, eulerToQuaternion, identityMat4Into, localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";
 import type { AuraQuat } from "../../contracts/sceneGraph.js";
@@ -2318,6 +2319,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       };
     }
   };
+  if (node.kind === "points" && node.stream) attachPointStreamControls(handle, node.stream, bumpVersion);
   parityL7NodeSpecs.set(handle, node);
   runtimeNodeChanged.set(handle, () => { bumpVersion(); onSceneNodeChange?.(handle); });
   runtimeNodeVersionBump.set(handle, bumpVersion);

@@ -3036,7 +3036,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
   readonly kind: "points";
   readonly name?: string;
   readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-  readonly colors?: readonly AuraColor[];
+  /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+  readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+  /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+  readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
   readonly size?: number;
   readonly sizeAttenuation?: boolean;
   readonly map?: AuraMaterialTextureInput;
