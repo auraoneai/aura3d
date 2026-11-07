@@ -1,0 +1,57 @@
+{
+ "events": [
+  {
+   "sequence": 1,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58914/favicon.ico",
+    "origin": "http://127.0.0.1:58914",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 2,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "[prd01] material \"ToyCar\" (aura3d/pbr-textured) sets shaderVariant \"clearcoat-textures\" — the generated-program path does not model variants; the base feature record (a strict superset's complement) is used",
+   "url": {
+    "url": "http://127.0.0.1:58914/assets/aura3d-vendor-VOCypRRu.js",
+    "origin": "http://127.0.0.1:58914",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 3,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "[prd01] material \"ToyCar\" (aura3d/pbr-textured) sets shaderVariant \"clearcoat-textures\" — the generated-program path does not model variants; the base feature record (a strict superset's complement) is used",
+   "url": {
+    "url": "http://127.0.0.1:58914/assets/aura3d-vendor-VOCypRRu.js",
+    "origin": "http://127.0.0.1:58914",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 4,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "[prd01] material \"ToyCar\" (aura3d/pbr-textured) sets shaderVariant \"clearcoat-textures\" — the generated-program path does not model variants; the base feature record (a strict superset's complement) is used",
+   "url": {
+    "url": "http://127.0.0.1:58914/assets/aura3d-vendor-VOCypRRu.js",
+    "origin": "http://127.0.0.1:58914",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  }
+ ],
+ "completeness": "complete"
+}
