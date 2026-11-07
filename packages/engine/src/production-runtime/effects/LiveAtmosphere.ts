@@ -4,6 +4,7 @@
 
 import type { AuraHeightFogSpec, AuraSetFogOptions, AuraSetFogSpec, AuraSkySpec } from "../../contracts/atmosphere";
 import type { EffectNodeLike } from "./EffectNodeLowering";
+import { parseAuraColor } from "../../agent-api/color.js";
 
 export interface AtmosphereFrameState {
   readonly sky: AuraSkySpec | null;
@@ -268,6 +269,9 @@ function colorToLinear(color: unknown): [number, number, number] | null {
       const srgb = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
       return [srgb(((v >> 16) & 255) / 255), srgb(((v >> 8) & 255) / 255), srgb((v & 255) / 255)];
     }
+    // Any other CSS colour form (rgb(), hsl(), named, #rgb, ...); invalid values throw COLOR_INVALID.
+    const [r, g, b] = parseAuraColor(color);
+    return [r, g, b];
   }
   return null;
 }

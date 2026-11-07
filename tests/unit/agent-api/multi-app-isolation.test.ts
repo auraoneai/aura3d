@@ -236,7 +236,7 @@ describe("app-owned runtime isolation", () => {
     oldCleanup();
     withPrd01ColorParsing(ownerA, () => {
       expect(() => prd01ColorSrgb("not a color")).toThrow();
-      expect(withPrd01ColorParsing(ownerB, () => prd01ColorSrgb("not a color"))).toBeNull();
+      expect(() => withPrd01ColorParsing(ownerB, () => prd01ColorSrgb("not a color"))).toThrow(/COLOR_INVALID/);
       expect(() => prd01ColorSrgb("not a color")).toThrow();
     });
     const flagsA = resolveQrFlags({ options: { A3D_QR_WORLD: true } });

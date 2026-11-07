@@ -98,7 +98,7 @@ describe("worker render-input ownership", () => {
       const item = [...(source.collectRenderItems?.() ?? [])][0]!;
       expect(item.modelMatrix![0]).toBeCloseTo(core ? 0 : 1);
       expect(item.modelMatrix![2]).toBeCloseTo(core ? -1 : 0);
-      expect(item.instanceColors![0]).toBeCloseTo(core ? 1 : 0.00154799);
+      expect(item.instanceColors![0]).toBeCloseTo(1);
 
       await worker.setScene(snapshot("next", core));
       expect(owners).toHaveLength(2);

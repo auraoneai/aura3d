@@ -15,10 +15,8 @@ import {
   parseAuraColorSrgb
 } from "../../../../packages/engine/src/agent-api/color";
 import {
-  COLOR_PARSE_FAILED,
   prd01ColorParsingEnabled,
-  setPrd01ColorParsing,
-  type Prd01ColorParseWarning
+  setPrd01ColorParsing
 } from "../../../../packages/engine/src/agent-api/compiler/color";
 import {
   colorToAcesInputClearColor,
@@ -174,7 +172,7 @@ describe("01-S5 prd01-color 40-row table", () => {
   });
 });
 
-describe("01-S5 compiler/color.ts: colorUtils helpers delegate under A3D_QR_CORE", () => {
+describe("compiler/color.ts: colorUtils helpers always parse (no flag gate), invalid throws COLOR_INVALID", () => {
   afterEach(() => setPrd01ColorParsing(null));
 
   const helpers = {
@@ -186,59 +184,75 @@ describe("01-S5 compiler/color.ts: colorUtils helpers delegate under A3D_QR_CORE
     colorToAcesInputClearColor: (c: string) => colorToAcesInputClearColor(c)
   } as const;
 
-  it("flag off: helpers are the legacy bodies (CSS names fall back to navy)", () => {
+  it("no policy installed: CSS forms parse (no near-black fallback)", () => {
     expect(prd01ColorParsingEnabled()).toBe(false);
-    expect(colorToClearColor("orange")).toEqual(LEGACY_NAVY);
-    expect(colorToRgba("#f80")).toEqual(LEGACY_NAVY);
+    expect(colorToClearColor("orange")).toEqual(parseAuraColorSrgb("orange"));
+    expect(colorToRgba("#f80")).toEqual([1, h(0x88), 0, 1]);
+    expect(colorToClearColor("hsl(205, 65%, 58%)")).not.toEqual(LEGACY_NAVY);
   });
 
-  it("the 6 helpers return identical values flag on vs off for 20 valid #rrggbb inputs", () => {
+  it("hex colours are byte-identical to the legacy hex path in every policy state", () => {
     let seed = 7;
-    const inputs = Array.from({ length: 20 }, () => {
+    const inputs = Array.from({ length: 50 }, () => {
       seed = (seed * 1103515245 + 12345) & 0x7fffffff;
       return `#${(seed & 0xffffff).toString(16).padStart(6, "0")}`;
     });
-    for (const [name, helper] of Object.entries(helpers)) {
-      for (const input of inputs) {
-        setPrd01ColorParsing(null);
-        const off = helper(input);
-        setPrd01ColorParsing({ warn: () => undefined });
-        const on = helper(input);
-        expect(on.length, `${name}(${input})`).toBe(off.length);
-        for (let i = 0; i < on.length; i += 1) expect(on[i], `${name}(${input})[${i}]`).toBeCloseTo(off[i]!, 12);
+    const legacyHex = (c: string): readonly number[] => {
+      const v = Number.parseInt(c.slice(1), 16);
+      return [((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255, 1];
+    };
+    for (const input of inputs) {
+      for (const mode of [null, { warn: () => undefined }, { strict: true }] as const) {
+        setPrd01ColorParsing(mode);
+        expect(colorToClearColor(input)).toEqual(legacyHex(input));
+        expect(colorToRgba(input)).toEqual(legacyHex(input));
+        const lin = colorToLinearRgba(input);
+        for (let i = 0; i < 3; i += 1) expect(lin[i]).toBe(srgbToLinearChannel(legacyHex(input)[i]!));
       }
     }
+    for (const helper of Object.values(helpers)) expect(helper("#336699")).toBeDefined();
   });
 
-  it("flag on: every valid table row parses through the sRGB and linear helpers", () => {
-    setPrd01ColorParsing({ warn: () => undefined });
+  it("every valid table row parses through the sRGB and linear helpers", () => {
     for (const [input, expected] of COLOR_TABLE) {
       if (expected === "invalid" || typeof input !== "string") continue;
       expectRgba(colorToClearColor(input), expected);
       expectRgba(colorToLinearRgba(input), [srgbToLinearChannel(expected[0]), srgbToLinearChannel(expected[1]), srgbToLinearChannel(expected[2]), expected[3]]);
     }
-    expect(colorToClearColor("orange")).not.toEqual(LEGACY_NAVY);
   });
 
-  it("flag on, invalid: warns COLOR_PARSE_FAILED once per input and keeps the legacy fallback", () => {
-    const warnings: Prd01ColorParseWarning[] = [];
-    setPrd01ColorParsing({ warn: (w) => warnings.push(w) });
-    for (let frame = 0; frame < 5; frame += 1) {
-      expect(colorToClearColor("notacolor")).toEqual(LEGACY_NAVY);
-      expect(colorToLinearRgb("notacolor")).toHaveLength(3);
+  it("parses transparent and oklch", () => {
+    expect(parseAuraColorSrgb("transparent")).toEqual([0, 0, 0, 0]);
+    const white = parseAuraColorSrgb("oklch(1 0 0)");
+    for (let i = 0; i < 3; i += 1) expect(white[i]).toBeCloseTo(1, 2);
+    const red = parseAuraColorSrgb("oklch(62.8% 0.2577 29.23)");
+    expect(red[0]).toBeCloseTo(1, 1);
+    expect(red[1]).toBeLessThan(0.05);
+    expect(red[2]).toBeLessThan(0.05);
+    expect(parseAuraColorSrgb("oklch(0.5 0.1 120 / 0.3)")[3]).toBe(0.3);
+  });
+
+  it.each([[null], [{ warn: () => undefined }], [{ strict: true }]] as const)("invalid input throws COLOR_INVALID in every policy (%j)", (mode) => {
+    setPrd01ColorParsing(mode);
+    for (const helper of Object.values(helpers)) {
+      try {
+        helper("notacolor");
+        expect.unreachable("accepted");
+      } catch (error) {
+        expect(error).toBeInstanceOf(AuraColorParseError);
+        expect((error as AuraColorParseError).code).toBe("COLOR_INVALID");
+        expect((error as Error).message).toContain("notacolor");
+      }
     }
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]!.code).toBe(COLOR_PARSE_FAILED);
-    expect(warnings[0]!.kind).toBe("option-ignored");
-    expect(warnings[0]!.input).toBe("notacolor");
-    colorToClearColor("#12345");
-    expect(warnings.map((w) => w.input)).toEqual(["notacolor", "#12345"]);
   });
 
-  it("flag on + strict: invalid input throws AuraColorParseError", () => {
-    setPrd01ColorParsing({ strict: true, warn: () => undefined });
-    expect(() => colorToClearColor("notacolor")).toThrow(AuraColorParseError);
-    expect(() => colorToLinearRgba("notacolor")).toThrow(AuraColorParseError);
-    expect(colorToClearColor("orange")).toEqual(parseAuraColorSrgb("orange"));
+  it("entry-point validation names the option", async () => {
+    const { material } = await import("../../../../packages/engine/src/agent-api/nodes/material");
+    const { scene } = await import("../../../../packages/engine/src/agent-api/nodes/scene");
+    const { lights } = await import("../../../../packages/engine/src/agent-api/nodes/lights");
+    expect(() => material.pbr({ color: "hsl(banana)" })).toThrow(/material\.pbr\(\{ color \}\)/);
+    expect(() => scene().background("nope")).toThrow(/background/);
+    expect(() => lights.directional({ color: "nope" })).toThrow(/lights\.directional/);
+    expect(() => material.pbr({ color: "hsl(205, 65%, 58%)" })).not.toThrow();
   });
 });

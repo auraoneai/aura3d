@@ -5,6 +5,13 @@ import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions, AuraPhotomet
 import { AuraNodeBuilder } from "./builder.js";
 import { distance } from "../SpatialAnchoring.js";
 import { createLensFlareNode } from "./lensFlare.js";
+import { assertAuraColorOption } from "../color.js";
+
+/** Validate every colour option of a light at its API entry (throws COLOR_INVALID naming `where`); contributes no fields. */
+function checkedColors(where: string, options: { readonly color?: unknown; readonly skyColor?: unknown; readonly groundColor?: unknown }): Record<string, never> {
+  for (const key of ["color", "skyColor", "groundColor"] as const) assertAuraColorOption(options[key], `${where}({ ${key} })`);
+  return {};
+}
 
 function validateProfile(profile: AuraPhotometricProfile | undefined): void {
   if (!profile) return;
@@ -46,6 +53,7 @@ export const lights = {
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "ambient",
+      ...checkedColors("lights.ambient", options),
       name: options.name,
       intensity: options.intensity ?? 0.28,
       color: options.color ?? "#ffffff"
@@ -54,6 +62,7 @@ export const lights = {
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "hemisphere",
+      ...checkedColors("lights.hemisphere", options),
       name: options.name ?? "hemisphere light",
       position: options.position ?? [0, 1, 0],
       intensity: options.intensity ?? 1,
@@ -81,6 +90,7 @@ export const lights = {
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "directional",
+      ...checkedColors("lights.directional", options),
       name: options.name,
       position: options.position ?? [3, 4, 3],
       ...(options.target !== undefined ? { target: options.target } : {}),
@@ -93,6 +103,7 @@ export const lights = {
     return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "point",
+      ...checkedColors("lights.point", options),
       name: options.name,
       position: options.position ?? [2, 2.5, 1.5],
       ...(options.target !== undefined ? { target: options.target } : {}),
@@ -111,6 +122,7 @@ export const lights = {
     return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "spot",
+      ...checkedColors("lights.spot", options),
       name: options.name ?? "spot light",
       position: options.position ?? [0, 4, 0],
       target: options.target,
