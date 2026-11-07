@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Aura3D picking probe (lane 515)</title>
+<style>
+  html, body { margin: 0; background: #05070a; color: #cfd8e3; font: 12px/1.4 "SF Mono", Menlo, monospace; }
+  #stage { position: relative; width: 960px; height: 540px; }
+  #app { position: absolute; inset: 0; }
+  #app canvas { width: 960px; height: 540px; display: block; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  #labels div { background: rgba(10, 14, 20, 0.82); color: #ffd98a; padding: 1px 5px; border: 1px solid #ffd98a; white-space: nowrap; }
+  #marker { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border: 2px solid #ff4d6d; border-radius: 50%; display: none; pointer-events: none; }
+  #readout { padding: 6px 8px; height: 34px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="app"></div><div id="labels"></div><div id="marker"></div></div>
+<div id="readout">starting</div>
+<script type="module" src="./dist/main.js"></script>
+</body>
+</html>

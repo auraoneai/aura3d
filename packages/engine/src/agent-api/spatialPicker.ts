@@ -143,8 +143,10 @@ function sourceFor(node: AuraSceneNode, world: Float32Array, handle: AuraRuntime
     const data = flatPositions(node.positions);
     return { key: node, kind: "points", nodeId, nodeName: node.name, world, data, count: Math.floor(data.length / 3) };
   }
-  if (node.kind === "primitive" && (liveMatrices !== undefined || node.instances !== undefined)) {
-    const data = liveMatrices ?? instanceMatrices(node.instances!);
+  // A handle may publish an empty dense array before `setInstanceMatrices` is used; the spec transforms are the source then.
+  const live = liveMatrices !== undefined && liveMatrices.length >= 16 ? liveMatrices : undefined;
+  if (node.kind === "primitive" && (live !== undefined || node.instances !== undefined)) {
+    const data = live ?? instanceMatrices(node.instances!);
     const size = sizeOf(node);
     let min: AuraVec3 = [-0.5, -0.5, -0.5], max: AuraVec3 = [0.5, 0.5, 0.5];
     if (node.geometry) {
@@ -154,7 +156,7 @@ function sourceFor(node: AuraSceneNode, world: Float32Array, handle: AuraRuntime
       if (lo[0]! <= hi[0]!) { min = lo; max = hi; }
     }
     return {
-      key: liveMatrices ?? node, kind: "instances", nodeId, nodeName: node.name, world, data, count: Math.floor(data.length / 16),
+      key: live ?? node, kind: "instances", nodeId, nodeName: node.name, world, data, count: Math.floor(data.length / 16),
       boundsMin: [min[0] * size[0], min[1] * size[1], min[2] * size[2]], boundsMax: [max[0] * size[0], max[1] * size[1], max[2] * size[2]]
     };
   }
