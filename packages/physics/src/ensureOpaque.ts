@@ -4,7 +4,7 @@
 // peer, so a strict consumer (`skipLibCheck: false`) that has not installed it would otherwise fail on the solver's declarations.
 // The solver module is an implementation detail; callers get it as an opaque namespace object. Runtime behaviour is identical to
 // `ensure.ts` (the same functions).
-import { ensurePhysics as ensureSolver, physicsInitMode as solverInitMode } from "./ensure.js";
+import { ensurePhysics as ensureSolver, physicsInitMode as solverInitMode, physicsLoadMode as solverLoadMode } from "./ensure.js";
 
 /** The initialised solver module (Rapier's namespace), typed structurally so consumers need not have it installed. */
 export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
@@ -13,3 +13,5 @@ export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
 export const ensurePhysics: () => Promise<PhysicsSolverModule | null> = ensureSolver;
 /** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
 export const physicsInitMode: "top-level-await" | "lazy" = solverInitMode;
+/** How this build loads the solver: `eager` (default), `on-demand` (first `ensurePhysics()`), or `stripped` (removed at build time). */
+export const physicsLoadMode: "eager" | "on-demand" | "stripped" = solverLoadMode;

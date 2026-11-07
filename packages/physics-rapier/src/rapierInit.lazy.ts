@@ -9,6 +9,8 @@ let pending: Promise<RapierModule | null> | null = null;
 let initializationError: { readonly cause: unknown } | null = null;
 
 export const rapierInitMode: "top-level-await" | "lazy" = "lazy";
+/** How this build loads Rapier: `eager` here means in the background as soon as this module is evaluated. */
+export const rapierLoadMode: "eager" | "on-demand" | "stripped" = "eager";
 
 export function getRapierModule(): RapierModule | null {
   return loaded;

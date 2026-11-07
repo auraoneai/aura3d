@@ -19,6 +19,8 @@ if (loaded && init) {
 }
 
 export const rapierInitMode: "top-level-await" | "lazy" = "top-level-await";
+/** How this build loads Rapier: `eager` means at module evaluation (top-level await). */
+export const rapierLoadMode: "eager" | "on-demand" | "stripped" = "eager";
 
 export function getRapierModule(): RapierModule | null {
   return loaded;

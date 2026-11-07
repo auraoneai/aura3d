@@ -19,6 +19,7 @@
   },
   "imports": {
     "#aura3d/rapier-init": {
+      "aura3d-physics-on-demand": "./dist/rapierInit.ondemand.js",
       "aura3d-no-tla": "./dist/rapierInit.lazy.js",
       "default": "./dist/rapierInit.js"
     }
