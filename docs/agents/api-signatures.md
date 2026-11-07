@@ -58,6 +58,23 @@ const stage = scene({ background: "#101418" }).add(primitives.box({ name: "crate
 | `scene().physics(next: AuraPhysicsWorldController)` | `AuraSceneBuilder` |  |
 | `scene().diagnostics(enabled?: boolean)` | `AuraSceneBuilder` |  |
 
+## `camera`
+
+`camera.frame(subject | subjects | bounds, { fill, angle, azimuth, elevation, padding, fov, aspect })` returns an orbit camera spec placed so the subject fills `fill` (default 0.6) of the limiting frame axis; `camera.frameScene(scene)` frames a whole scene (ground planes ignored); `camera.framePose(...)` returns the pose for `app.camera.setPose` on resize. Solved for `aspect` (default 16/9).
+
+```ts
+void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 });
+```
+
+| Call | Returns | Options |
+|---|---|---|
+| `camera.perspective(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | options: position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; up?: AuraVec3 \| undefined; roll?: number \| undefined; offset?: AuraVec3 \| undefined; targetOffset?: AuraVec3 \| undefined; offsetMode?: "scene" \| "target-yaw" \| …; fov?: number \| undefined; focalLength?: number \| undefined; filmGauge?: number \| undefined; filmOffset?: number \| undefined; viewOffset?: { readonly fullWidth: num…; depth?: { readonly mode?: "standa…; near?: number \| undefined; far?: number \| undefined; layers?: number \| undefined; distance… |
+| `camera.orbit(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | same as `camera.perspective` |
+| `camera.frame(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | options: exclude?: ((node: AuraSceneNode) =>… |
+| `camera.frameScene(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | same as `camera.frame` |
+| `camera.framePose(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFramePose` | same as `camera.frame` |
+| `camera.frameAsset(asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions)` | `AuraCameraSpec` | asset: type: "model"; format: string; formatMetadata?: FormatMetadata \| undefined; url: string; hash?: string \| undefined; sha256?: string \| undefined; integrity?: AssetIntegrity \| undefined; request?: AssetRequestOptions \| und…; bounds?: AuraVec3 \| undefined; sizeBytes?: number \| undefined; optional?: boolean \| undefined; metadata?: AuraAssetMetadata \| undef…; variants?: AuraAssetVariants \| undef…; requiredDecoders?: readonly AuraAssetRequire…; lods?: readonly AuraAssetLodLeve…; colliderUrl?: string \| undefined; budget?… |
+
 ## `looks`
 
 Genre look presets: environment, key light, fog and grade in one unit. Spread `looks.appOptions(id)` into `createAuraApp` options.
@@ -181,7 +198,7 @@ void environments.neutral({ intensity: 0.8, background: false });
 | `environments.metalStudio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.glassStudio(options?: AuraEnvironmentOptionsV2)` | `AuraNodeBuilder<AuraEnvironmentNode>` | same as `environments.preset` |
 | `environments.presets()` | `readonly AuraEnvironmentMapPreset[]` |  |
-| `environments.forMaterial(materialClass: "metal" \| "glass" \| "studio" \| "product")` | `AuraNodeBuilder<AuraEnvironmentNode>` |  |
+| `environments.forMaterial(materialClass: "product" \| "metal" \| "glass" \| "studio")` | `AuraNodeBuilder<AuraEnvironmentNode>` |  |
 
 ## `sky`
 
@@ -255,7 +272,7 @@ void effects.bloom({ intensity: 0.7, threshold: 0.75, radius: 0.55 });
 | `effects.vignette(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.filmGrain(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.chromaticAberration(options?: PostV3EffectOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
-| `effects.shaderPass(options: AuraShaderPassOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; glsl?: string \| undefined; wgsl?: string \| undefined; fragment?: { readonly glsl?: string;…; uniforms?: Readonly<Record<string, n…; inputs?: readonly ("normal" \| "col…; insertAt?: PostInsertAt \| undefined; order?: AuraPostPassOrder \| undef…; enabled?: boolean \| undefined |
+| `effects.shaderPass(options: AuraShaderPassOptions)` | `AuraCustomPostPass` | options: name?: string \| undefined; glsl?: string \| undefined; wgsl?: string \| undefined; fragment?: { readonly glsl?: string;…; uniforms?: Readonly<Record<string, n…; inputs?: readonly ("depth" \| "norm…; insertAt?: PostInsertAt \| undefined; order?: AuraPostPassOrder \| undef…; enabled?: boolean \| undefined |
 | `effects.fog(options?: FogNodeOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.cinematicBloom(options?: Omit<AuraEffectNode, "kind" \| "effect">)` | `AuraNodeBuilder<AuraEffectNode>` |  |
 | `effects.volumetricFog(options?: AuraVolumetricFogOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |
