@@ -1,0 +1,310 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KR36B6yS9D4tDf2ezbiMQf",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KR36B6yS9D4tDf2ezbiMQf",
+    "content": "1\t# Task 5: custom shader water\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A water surface made with a custom GLSL shader (not a stock material): vertex displacement by animated waves (the surface must be a subdivided grid so the waves are geometry, not just colour), a fresnel term (more sky reflection at grazing angles), a procedural noise-based ripple detail and a sun specular glint.\n7\t2. A sky: a gradient sky dome or background that the water reflects (a colour gradient is fine; no external textures).\n8\t3. The water animates over time (time uniform), the camera sits above the water looking toward the horizon.\n9\t4. Tone mapping and colour output must be correct (not washed out or black).\n10\t\n11\tThe rendering contract in the next section applies.\n12\t\n13\t## Rendering contract (all tasks)\n14\t\n15\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n16\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n17\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n18\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n19\t- When you are done, call `finish`.\n20\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01SFdTxud85vrR88RHHtMAmX",
+    "name": "get_recipe",
+    "input": {
+     "task": "water with a custom shader"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01SFdTxud85vrR88RHHtMAmX",
+    "content": "[aura3d-mcp docs@5.0.2 | installed @aura3d/engine@5.0.2]\nWorking source [docs/agents/recipes-src/water-custom-shader/main.ts] (copy and adapt):\n```ts\nimport { camera, createAuraApp, effects, geometry, lights, material, primitives, scene } from \"@aura3d/engine\";\n\n// Water with a custom GLSL material: vertex waves, analytic normal, fresnel mix between deep colour and sky, sun glint.\n// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime.\nconst N = 200, SIZE = 80;\nconst positions = new Float32Array((N + 1) ** 2 * 3);\nconst normals = new Float32Array(positions.length);\nconst indices: number[] = [];\nfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n  const v = j * (N + 1) + i;\n  positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n  normals[v * 3 + 1] = 1;\n  if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n}\n\nconst water = material.custom({\n  glsl: {\n    vertex: /* glsl */ `\nout vec3 vPos;\nout vec3 vNormal;\nvec3 wave(vec2 p, float t, out vec2 slope) {\n  float a = sin(dot(p, vec2(0.21, 0.13)) * 3.0 + t * 1.1) * 0.35;\n  float b = sin(dot(p, vec2(-0.17, 0.25)) * 3.0 + t * 1.4) * 0.22;\n  float c = sin(dot(p, vec2(0.4, 0.31)) * 3.0 + t * 2.1) * 0.08;\n  slope = vec2(cos(dot(p, vec2(0.21, 0.13)) * 3.0 + t * 1.1) * 0.35 * 0.63 + cos(dot(p, vec2(-0.17, 0.25)) * 3.0 + t * 1.4) * 0.22 * -0.51 + cos(dot(p"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I also still need a sky dome and proper tone mapping, so I should check the docs to confirm whether custom material output actually gets tone-mapped.\n\n",
+    "signature": "CAQSjAUKEggTEAEYAjgBQgh0aGlua2luZxIMn3QBhYFb9zfO2BcLGgwY3b/5E13TFS3VCx8iMJY1MoY1ZbHDBDxZu9cFeW3TJNn1zehFOVQeKfumD7XDfuLaUWkVzeBut5aAab4auSqnBA+Ox7/sSjNRThCHoen9yfD5Zn95PLgmgwvueiIHXXBgw/bxUg0dvKbxQHh9sQybidmxIKJVrP9koFx0Hz7xTCzNttxMZmal8Ic7Vb3jicOjveX4KOJhY/UFZxS/QiXweXDouZM+1RmVSYqjNI87CTzGjAybPgjiNd8sSE9g8dAQCFF3D75tG62mVyag6poG8Cw/5WhfnGv4DzZMOVpN9EQMHmjLXz9/BZmIVwIx5YuTn9IWss61GQXPq+xYUsZcnMUHuv38HVACmsL4xXtgWTIqOR7OnWGDb/DXklzCf4bA2FzZvIIamg7Ixw2+NDy6BrPOGGGgcln1896C3cl+Nd+gVMmp3SMt9gFTQGzgabCo+zLghKRpsdzzOAS2Zrg3uvzirFOakAWgFghHQkXjbsTVsBEGrYwVzFXcI6pBAC4gw4tU3JlzC/C02z65+Vja+T/Di6Vr4pbL20aZqiJ9U1v0BCFIpJTPVw2pF6l8OAw3dObbTyEVfJaDtLVUj4jfByNFgdEXPLXGZ4Oud6BAV6uKZUxBuLkR4BVicZO9IEACgk3nYp9zoN564HKXX18MEHN5+lfTCMm3S5AWcHCMlx1jrsGVuBhwuoVPC4goDA6u8ij1TT0bJpHHolTc1uV3ari6jxQbenHzSoeTPyCBQP5oLHrNb1fbOfWEYRd5tXPp1tCcaddxNipmiGbYnBy9zrd41oicncy8Wrl8J4H7LhzSBd7vFFrJGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FsEtCjCfdxcz3bvemhMi1m",
+    "name": "search_docs",
+    "input": {
+     "query": "tone mapping color output custom material sRGB exposure"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01SMMMucK8KibmDszyDP4ZUR",
+    "name": "search_docs",
+    "input": {
+     "query": "sky gradient dome background custom material unlit"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FsEtCjCfdxcz3bvemhMi1m",
+    "content": "[aura3d-mcp docs@5.0.2 | installed @aura3d/engine@5.0.2]\n\n#1 [docs/agents/first-screen-cheatsheet.md :: Custom GLSL water: displaced grid, fresnel, noise ripple, sun glint, animated] score 16.7\n## Custom GLSL water: displaced grid, fresnel, noise ripple, sun glint, animated\nGLSL 3.00 (`in`/`out`, write `out vec4 outColor`). Prelude, do not declare: `position normal uv modelViewProjectionMatrix modelMatrix cameraPosition`. `clk` does NOT advance: drive time with your own uniform (`clk` below) via `setUniform` every frame, or the water is frozen. The engine tone-maps and sRGB-encodes: output linear colours, no manual gamma. Camera low over the water, e.g. `camera.perspective({ position: [0, 6, 22], target: [0, 1, -30], fov: 55, near: 0.5, far: 400 })` instead of the orbit camera.\n```ts\nconst N = 200, SIZE = 160; // subdivided grid: waves are real geometry\nconst positions = new Float32Array((N + 1) ** 2 * 3), normals = new Float32Array(positions.length), indices: number[] = [];\nfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n  const v = j * (N + 1) + i;\n  positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n  normals[v * 3 + 1] = 1;\n  if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n}\nconst water = material.custom({\n  glsl: {\n    vertex: `out vec3 vPos; out vec3 vN;\nvoid main() {\n  vec2 p = position.xz;\n  float ph = dot(p, vec2(0.21, 0.13)) * 3.0 + clk;\n  vPos = vec3(p.x, sin(ph) * 0.35 + sin(dot(p, vec2(-0.1"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01SMMMucK8KibmDszyDP4ZUR",
+    "content": "[aura3d-mcp docs@5.0.2 | installed @aura3d/engine@5.0.2]\n\n#1 [docs/agents/threejs-to-aura3d.md :: `scene.background = sky shader`, `Sky`] score 13.1\n| `scene.background = sky shader`, `Sky` | `sky.preetham({ sun: { elevationDeg, azimuthDeg } })`, `sky.gradient`, `sky.dayNight` | Move the sun live with `app.atmosphere.setSky({ sun })`. |\n\n#2 [docs/agents/recipes.md :: 9. Heightfield island with vertex colours, water and fog] score 11.9\n### 9. Heightfield island with vertex colours, water and fog\n\n- Goal: One `geometry.custom` mesh built from a height function, coloured per vertex by height (sand, grass, rock, snow), a glossy translucent water plane, `effects.fog` and `sky.preetham`.\n- Final frame: A snow-capped island with sand rim and green slopes in a blue sea under a pale sky, viewed from a corner of the bay.\n- Replaces in three.js: `PlaneGeometry` + displaced vertices + `vertexColors` + `MeshStandardMaterial` water + `FogExp2` + `Sky`.\n- Look and light values: `sky.preetham` sun 32 deg elevation, `hemisphere` 0.45, sun `directional` 2.4 with shadow, fog density 0.004.\n- Capture: `recipes-src/terrain-water-fog/frame.png`; source: `recipes-src/terrain-water-fog/main.ts`.\n\n```ts\nimport { camera, createAuraApp, effects, geometry, lights, material, primitives, scene, sky } from \"@aura3d/engine\";\n\n// Heightfield island: one custom mesh with per-vertex colour from height, a glossy water plane, fog and a procedural sky.\nconst CELLS = 120; // quads per side: vertex colours and norm"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Let me go through the full first-screen cheatsheet for the water details.\n\n",
+    "signature": "CAQS+gQKEggTEAEYAjgBQgh0aGlua2luZxIMUWadL2u+Kq4fxXWYGgxapIPMgAq+zPd0irQiMI6USLBlYn7f4Gcny1HmhGvo7tPW751tSCLP/bFEJI+ctylXnWoVHAFDO1sE/EHgaSqVBDSWAq/SxZB+foWd5rEwZI4ofMz8/X0z/GEUcH09I2qxI9rpC2Ey1Sf60LDh6kHvTyasJ0ktwuLkU8kUosZ8E5GtWorzOod0AyTR4L0wT5RAL9ChwTw6lTmur5fOqwDpekQPRcs99npFMqevU8vPR2of7b6fg/GFaRdy7OvYfihFYmvtC72qb7wkLCHJSuMZTDwR43MB42eb1yoajIvAZQXVxlm4WdYYNJ9V44vVxdfGhtrgOfyYtJI1weZb90AjdUVJHiniPXcNzW921ULFtVb4B+Ule3SVg5D60XSG4fqESxbDU2k9VNv9hjMguZiH6Sqy6stVKYSApsjZPOQmwcWTrS9sAMTdDYoTLBqWFj9x0P0yynZZTMn0Zq6sCI5KOsCxSIFP9icXl0hPk/MMqnU8hKk4CorS5UPO75Fz5Pj7WX8SYiTKjgDT1Jk/0EWSjCuSvCWEUyyYUJwSvUGxNioryEE5G0S7kZ4/bNxwwFwEWXR/CGJbvFN6NdUtdoxKvcoTE9mwcJ7zE2rMTkLYZTf7mO0XhOGOhndN+rTWq2bSvojfgBc+TMH2V0b6bAKXx9zbeqG/LJaC56u3zPVY0xgGyJtMCFMkJFj2LWDrb2eahJrwADH+BD9ZHBOFPev2OnSJVF6TbF2Rax6zokf1VXWJxQ9Jiq4rxB/Rct29+sGoTNd2FAbEa8vfAEqlXRRDLzAdW8CWGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NibYrebxR1Xd1t1HUpaAhV",
+    "name": "search",
+    "input": {
+     "pattern": "Custom GLSL water",
+     "path": "docs/agents/first-screen-cheatsheet.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NibYrebxR1Xd1t1HUpaAhV",
+    "content": "54:## Custom GLSL water: displaced grid, fresnel, noise ripple, sun glint, animated\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013AyN3MgxjkcK9eBQYQQnS3",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/first-screen-cheatsheet.md",
+     "offset": 54,
+     "limit": 60
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Qv7XULc7XhiLPBKmWipWwZ",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013AyN3MgxjkcK9eBQYQQnS3",
+    "content": "54\t## Custom GLSL water: displaced grid, fresnel, noise ripple, sun glint, animated\n55\tGLSL 3.00 (`in`/`out`, write `out vec4 outColor`). Prelude, do not declare: `position normal uv modelViewProjectionMatrix modelMatrix cameraPosition`. `clk` does NOT advance: drive time with your own uniform (`clk` below) via `setUniform` every frame, or the water is frozen. The engine tone-maps and sRGB-encodes: output linear colours, no manual gamma. Camera low over the water, e.g. `camera.perspective({ position: [0, 6, 22], target: [0, 1, -30], fov: 55, near: 0.5, far: 400 })` instead of the orbit camera.\n56\t```ts\n57\tconst N = 200, SIZE = 160; // subdivided grid: waves are real geometry\n58\tconst positions = new Float32Array((N + 1) ** 2 * 3), normals = new Float32Array(positions.length), indices: number[] = [];\n59\tfor (let j = 0; j <= N; j += 1) for (let i = 0; i <= N; i += 1) {\n60\t  const v = j * (N + 1) + i;\n61\t  positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n62\t  normals[v * 3 + 1] = 1;\n63\t  if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n64\t}\n65\tconst water = material.custom({\n66\t  glsl: {\n67\t    vertex: `out vec3 vPos; out vec3 vN;\n68\tvoid main() {\n69\t  vec2 p = position.xz;\n70\t  float ph = dot(p, vec2(0.21, 0.13)) * 3.0 + clk;\n71\t  vPos = vec3(p.x, sin(ph) * 0.35 + sin(dot(p, vec2(-0.17, 0.25)) * 3.0 + clk * 1.3) * 0.2, p.y);\n72\t  vN = normalize(vec3(-cos(ph) * 0.22, 1.0, -cos(ph) * 0.14));\n73\t  gl_Position = modelViewProj"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Qv7XULc7XhiLPBKmWipWwZ",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should use sky.gradient for the visible sky, but since the water shader computes its own gradient, I need to match those colors carefully, accounting for sRGB versus linear color space differences.\n\n",
+    "signature": "CAQS8AYKEggTEAEYAjgBQgh0aGlua2luZxIMiLkWrji5lRf1gyojGgwTNgJruwIF4cNZCm8iMCJiuv3Ej6vx1LULGZY1yB02aUt2LpbPedlgMs7BMkZU58zUdmAKwkNDZQBhL88kbiqLBj6wJBZ/wrGKZE6YNEmME/kFDQOqJwOp/vrap0pA3xpiZ5UA7ICuEB62+wGOFrylbYdeYTvogBz3W8LWkvM55UUx3wdBdpPa1QxjI+poOzF1bm8PdZK2i9udYyfk1OCLv4tq2QTx6N+LVZGGB4tdlVbKTZz/YIGyt5bISz0yq7rjS+NAzzXgwIIT+uQLwN9Z2j/NUg7Jbb7skJ1qZIc52jObqfq8deABb4PmYXbP+ahlpUUgpdwOOYxHEGz8A8MEBKkKBVOSXggD5lxiZ8wogn7yAZ5r5ftFCYbg1+m6IX1KJaS5E11xECRg6iY/cRD8BpnftuVKB14V5tYOsR6WGrTPSofJZvzY6mZU4J8fulWSSOMFzN8JWeOHAauHe2uBMbmR+C+Amlgv21Hkg680k0YJ4UkqPJ/NC7gQcYeunUOb8AEGdJfoAa9wiKY2rp7uXv0KpqgKSHO18R3jRLpFs36pUcsaXrpbHNl/4rUQPebCM6lOMlwQYFjneLogPzy1RGKALcRRFqRUdCPp2M6F5vniobH4NpYIrRtJHkxvABtyCqxI5lnH3lFDIST1jPUjh7AadE/LSy2qyKYuAHn9oEXIUefxU5NNlTdiSiMVvNyU0Wro2zknWTFHarJOB/qzoXbDByDDKRNAvoUiMnJkkSTrJ6ZvxWP4gh3+ffMD6+SmVt2MxkhA56xl8VMNw/X7NAWnFKDlu0C+HMxGVUI1hsXoTU/Czcbj6bNghhBjz4hmZjWoWLBdIGgqIw6Xowh1BWhMESWoKEEFiKJkjc4dajohmE5+1AKujVp95ye5OzCTWYO/xszM03DoOyMrmWUDCu6AiBDobr1nq/g+IYgs4KX1pEWk/YmfDvvexDVnru0DsG6MaTXMJvZ6lcxRH+u2l1ov9DqkxmByle6C2sLH+4NHZBf4TFzwUuIzzV1V1KslWKNho7fCiDJZHDf/LVO3o+bpWDtFPZ5kv/bi/LrLhqJXY6bhf+KLQu9pmCMk7xiGU3D0cfE+TXmYbuaC84RzqRnx+OSlVEzQwVAQGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016PsVCMwCwxfNyym8KGYpPd",
+    "name": "get_symbol",
+    "input": {
+     "name": "sky.gradient"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016PsVCMwCwxfNyym8KGYpPd",
+    "content": "[aura3d-mcp docs@5.0.2 | installed @aura3d/engine@5.0.2]\nconst sky.gradient (@aura3d/engine@5.0.2, dist/engine/public/index.d.ts)\n\nSignature:\n```ts\nreadonly gradient: typeof skyGradient;\n```\n\nExample:\n```ts\nvoid sky.preetham({ sun: { elevationDeg: 35, azimuthDeg: 120 } });\n```"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm setting the sky gradient using zenith and horizon hex colors converted to linear sRGB, and matching those same values in the water reflection shader so the two stay visually consistent.\n\nFor the waves, I'm computing an analytic normal using Gerstner-style sine sums, picking a grid size and spacing so the wavelength stays large enough relative to the mesh resolution, and fading the water color into the horizon color near the far edge for a seamless blend.\n\nFor timing, I'm accumulating delta time in the frame callback and figuring out the safest place to flag the scene as ready -- likely on the first onFrame call rather than right after app.ready(), since the engine drives its own render loop.\n\nFor the camera and lighting setup, I'm positioning the camera low and angled toward the horizon, choosing a sun direction that's low and slightly off-axis to create a glint on the water, and working out the matching elevation/azimuth values based on the direction convention the sky dome expects.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014qRNFoB2GdTx3s1oRH5xks",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import { camera, createAuraApp, geometry, lights, material, scene, sky } from \"@aura3d/engine\";\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n  }\n}\n\n// Subdivided grid: waves are real geometry displaced in the vertex shader.\nconst N = 400;\nconst SIZE = 360;\nconst positions = new Float32Array((N + 1) ** 2 * 3);\nconst normals = new Float32Array(positions.length);\nconst indices: number[] = [];\nfor (let j = 0; j <= N; j += 1) {\n  for (let i = 0; i <= N; i += 1) {\n    const v = j * (N + 1) + i;\n    positions.set([(i / N - 0.5) * SIZE, 0, (j / N - 0.5) * SIZE], v * 3);\n    normals[v * 3 + 1] = 1;\n    if (i < N && j < N) indices.push(v, v + N + 1, v + 1, v + 1, v + N + 1, v + N + 2);\n  }\n}\n\n// Sun direction (towards the sun): azimuth -17 deg from -Z, elevation 14 deg.\nconst SUN_AZ = -17;\nconst SUN_EL = 14;\n\nconst SKY_FN = /* glsl */ `\nconst vec3 SUN_DIR = vec3(-0.2332, 0.2419, -0.9418);\nvec3 skyColor(vec3 d) {\n  float h = clamp(d.y, 0.0, 1.0);\n  vec3 horizon = vec3(0.50, 0.69, 0.86);\n  vec3 zenith = vec3(0.03, 0.15, 0.46);\n  vec3 c = mix(horizon, zenith, pow(h, 0.5));\n  float s = max(dot(d, SUN_DIR), 0.0);\n  c += vec3(1.0, 0.8, 0.5) * (pow(s, 8.0) * 0.15 + pow(s, 256.0) * 2.0);\n  return c;\n}`;\n\nconst water = material.custom({\n  glsl: {\n    vertex: /* glsl */ `\nout vec3 vPos;\nout vec3 vNormal;\n// four directional sine waves: height + analytic slope\nvoid wave(vec2 p, float t, out float h, out vec2 slope) {\n  h = 0.0;\n  slope = vec2(0.0);\n  vec2 d0 = vec2(0.80, 0.60);  float k0 = 0.45; float a0 = 0.55; float s0 = 1.1;\n  vec2 d1 = vec2(-0.55, 0.83); float k1 = 0.80; float a1 = 0.28; float s1 = 1.5;\n  vec2 d2 = vec2(0.30, -0.95); float k2 = 1.30; float a2 = 0.13; float s2 = 1.9;\n  vec2 d3 = vec2(-0.95, -0.31); float k3 = 2.10; float a3 = 0.06; float s3 = 2.6;\n  float p0 = dot(p, d0) * k0 + t * s0;\n  float p1 = dot(p, d1) * k1 + t * s1;\n  float p2 = dot(p, d2) * k2 + t * s2;\n  float p3 = dot(p, d3) * k3 + t * s3;\n  h = sin(p0) * a0 + sin(p1) * a1 + sin(p2) * a2 + sin(p3) * a3;\n  slope = d0 * cos(p0) * a0 * k0 + d1 * cos(p1) * a1 * k1 + d2 * cos(p2) * a2 * k2 + d3 * cos(p3) * a3 * k3;\n}\nvoid main() {\n  float h;\n  vec2 slope;\n  wave(position.xz, waveClock, h, slope);\n  vec3 p = vec3(position.x, h, position.z);\n  vPos = p;\n  vNormal = normalize(vec3(-slope.x, 1.0, -slope.y));\n  gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);\n}`,\n    fragment: /* glsl */ `\nin vec3 vPos;\nin vec3 vNormal;\nout vec4 outColor;\n${SKY_FN}\nfloat hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat vnoise(vec2 p) {\n  vec2 i = floor(p);\n  vec2 f = fract(p);\n  f = f * f * (3.0 - 2.0 * f);\n  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);\n}\nfloat fbm(vec2 p) {\n  float a = 0.5;\n  float s = 0.0;\n  for (int i = 0; i < 4; i++) { s += a * vnoise(p); p = p * 2.03 + 11.7; a *= 0.5; }\n  return s;\n}\nvoid main() {\n  vec3 toCam = cameraPosition - vPos;\n  float dist = length(toCam);\n  vec3 v = toCam / dist;\n  // procedural ripple detail, fading with distance to avoid aliasing\n  float detail = 1.0 - smoothstep(30.0, 120.0, dist);\n  vec2 q = vPos.xz * 0.9;\n  float e = 0.05;\n  float r0 = fbm(q + vec2(waveClock * 0.35, waveClock * 0.2));\n  float rx = fbm(q + vec2(e, 0.0) + vec2(waveClock * 0.35, waveClock * 0.2));\n  float rz = fbm(q + vec2(0.0, e) + vec2(waveClock * 0.35, waveClock * 0.2));\n  vec2 rip = vec2(rx - r0, rz - r0) / e;\n  vec3 n = normalize(vNormal + vec3(-rip.x, 0.0, -rip.y) * 0.10 * detail);\n  float ndv = clamp(dot(n, v), 0.0, 1.0);\n  float fresnel = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);\n  vec3 r = reflect(-v, n);\n  r.y = abs(r.y);\n  vec3 reflection = skyColor(r);\n  vec3 deep = vec3(0.004, 0.035, 0.07);\n  vec3 shallow = vec3(0.02, 0.17, 0.20);\n  vec3 body = mix(deep, shallow, clamp(vPos.y * 0.9 + 0.4, 0.0, 1.0));\n  vec3 col = mix(body, reflection, clamp(fresnel, 0.0, 1.0));\n  float glint = pow(max(dot(reflect(-SUN_DIR, n), v), 0.0), 600.0);\n  col += vec3(1.0, 0.9, 0.7) * glint * 6.0;\n  // blend into the horizon colour with distance\n  float fog = smoothstep(80.0, 170.0, dist);\n  col = mix(col, skyColor(normalize(vec3(-v.x, 0.0, -v.z))), fog);\n  outColor = vec4(col, 1.0);\n}`\n  },\n  uniforms: { waveClock: { type: \"f32\", value: 0 } }\n});\n\nconst app = createAuraApp(\"#app\", {\n  scene: scene({ background: \"#bcd8ee\" })\n    .add(sky.gradient({ zenith: \"#2f6db5\", horizon: \"#bcd8ee\", sun: { elevationDeg: SUN_EL, azimuthDeg: SUN_AZ } }))\n    .add(lights.directional({ position: [-2.3, 2.4, -9.4], target: [0, 0, 0], intensity: 2.5 }))\n    .add(\n      geometry\n        .custom(\n          geometry.define({\n            positions,\n            normals,\n            indices,\n            bounds: { min: [-SIZE / 2, -2, -SIZE / 2], max: [SIZE / 2, 2, SIZE / 2] }\n          }),\n          { name: \"water\", material: water, castShadow: false }\n        )\n        .runtime({ id: \"water\", mutable: true })\n    )\n    .camera(camera.perspective({ position: [0, 3.2, 20], target: [0, 1.8, -60], fov: 55, near: 0.5, far: 600 }))\n});\n\nlet clock = 0;\nlet flagged = false;\napp.onFrame((f) => {\n  clock += f.dt;\n  app.nodes.require(\"water\").setUniform?.(\"waveClock\", clock);\n  if (!flagged) {\n    flagged = true;\n    requestAnimationFrame(() => {\n      window.__EVAL_READY__ = true;\n    });\n  }\n});\nawait app.ready();\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QDZKP8iPHxfqeGeGtLMyEW",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014qRNFoB2GdTx3s1oRH5xks",
+    "content": "wrote src/main.ts (153 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QDZKP8iPHxfqeGeGtLMyEW",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm recalculating the sun direction vector from azimuth and elevation angles, fixing the normalization so the components correctly sum to a unit length for the shader's lighting.\n\nChecking the fog and sky color logic too—verifying the view direction convention for horizon glow near the sun and making sure the TypeScript template literal syntax is valid.\n\n",
+    "signature": "CAQSgQkKEggTEAEYAjgBQgh0aGlua2luZxIMZDjZ/DQSdNEQhaO0GgyhRB2gWExoI08/bAYiMAxMn+cj6xll+yEP1jkCpTYoBcF6ftCAjNwHw06WYv8cudTvJ1WTFIVIjW73HEjWUSqcCLfIy6cdDb+70Js/j3A0EpcdRD5ST/Vqbgj1o6sQWFrdmTaFl8QBNQtBlsOKV0ymqtMtwkSpwGc/msaZhUdNxBOhLKYzhQJ1eKWkFQXcheaiEaUxs9xVX39407C8FfZgp4glu2W38xCRlsPXZ/kmWxtqxQrJ3l8VG+fG5Ks8YEAbEK0/WS09c4qks14yMApFkrR+u9gDbzPcLpTmAW19SCIYovuAq4tBhulYnz8k+lZzqEj/0vq0nluxsOO+AIfU/EFnlcfcEPQZO8Fcyzt12aDhQ7uq9zDqNN1mxBZKUVp7XsgAHBWwT2jcEYj7dYtoUe35PW9EWkTVeutTJFtmd1QOCB7qYohxcW8SsR3SzkvIRYXXawQIl3s80sM5exLsskWCJh/rYQ2VqqfGW1rj6IMr7VF+81HCH3bnA+tG1lkos+i9aXdFPEfmDQUJ7HuUtky3hbUZpFwOUkiYlS8qVMX0k0i4YCmRXLLgEFNWsAGsQMkdieyzBc1VdhhOXcMxm7NwWjBaNT4NosCZNAndYuXIfmrTwlNBDtE2lUCY5uRdIpYTXy3gaWhA7lxAW/yNuLxtb6vJ+S1VS7DxK09U8XRPwzwdNu7TE2IskKbKtHwB1BWZxh48NRYUY5walPFzWuVuSfCFEIHZdmLueiNxfpC6rWTD6wlBU0E4MnvkR9prbRPMSV/6RketKZfQ28CCMAXDmYOTlTN4MRrOJTkI+PkE1TPJQku+psma7c6e+s35Xt+qreNk+NH7vikPD2JB2gXyjot7XsZFP8GFk+Q0IZRu+ljkE4Fu+Vz2SS7SeqAR38NR6GbyXYdmE8TK03H4yY5LB2rPJPqf/8Nc8pIjf07Hylnkcn4KzMXvFm/+iCpmJfZzZXGVo0DGvMIzVFmzklFCLhUOsuoxjft9oQrxfn53Ws9IOu++qm7pMnxRTgrx+49qhsU0gb/CtyPEe96ILh2+XVqRHDh1oUbnwvXI1lFa5iZX6qA/LnvK6OKyq44up3JLcrDrTI/d3fFIYKUJV+QG25Xyxd+LJ8QhWaoY73pSvSS5GoEslCluXw/G/aM64VWEWB2+BB8sEXzw3O5Jfzf5r3HBB70h2nE5zdad1A6XIFmampB6JHwF3bfn1bSf3R05kWVONWwG1wIXF4kpZmGzrHEILoy5n1jHrwFVsaJOEdS5OP3a5Ztwm874lGFfR52oZHpomtJNVpKiQPE3HzkAdu0GTwYZdiKm1K7q9oVI6QBsCAiKM1ZmBCWOc6KMGYi3st7vTKv5pulNc5DBhIcR3gMqs6ZXXJDtKABHrYzlqrTYZXy33Rz7O+Fl7ux4osbSB1U15yV3qGPc4a/kwEmpXrmCIy9sfZPFq9Lm3N/Li+f7Q1Hu1nWHwjJMobDiS8vwO+fozLxSrYXfGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0181CbGEkNmWWymfc6YtBT75",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "vec3(-0.2332, 0.2419, -0.9418)",
+     "new_string": "vec3(-0.2837, 0.2419, -0.9279)"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01YTEQST6QLXEbryqiim6Ehp",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0181CbGEkNmWWymfc6YtBT75",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01YTEQST6QLXEbryqiim6Ehp",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019io56FtWvomVq1KN5gMbMY",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts, and it passes typecheck. I couldn't run it in a browser or run `vite build`, so the shader compile and the look of the frame are unchecked.\n\n- **Water:** the surface is a 400×400 subdivided grid, 360 units across, using `material.custom` with GLSL. The vertex shader sums four animated sine waves and computes the normal from their slopes. The fragment shader adds a noise-based ripple (4-octave fbm) that fades with distance. It also has a fresnel term that mixes deep-water colour with the reflected sky, and a sun glint. The surface fades into the horizon colour with distance. A `waveClock` uniform is advanced every frame from `f.dt`.\n- **Sky:** the visible sky is `sky.gradient` with a sun. The water shader reproduces the same horizon-to-zenith gradient and sun glow in GLSL so the reflection matches. I converted the hex colours to linear by hand, so the match is approximate.\n- **Camera and output:** the camera is at height 3.2 and looks toward the horizon. The shader outputs linear colour and leaves tone mapping and sRGB encoding to the engine, as the docs say it does.\n- **Rendering contract:** the engine owns the render loop. `window.__EVAL_READY__` is set on a `requestAnimationFrame` after the first `onFrame` callback.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019io56FtWvomVq1KN5gMbMY",
+    "content": "ok"
+   }
+  ]
+ }
+]

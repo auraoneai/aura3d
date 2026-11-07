@@ -1,0 +1,163 @@
+{
+  "runId": "m511-N-t5-aura-r1",
+  "batch": "m511-N",
+  "arm": "aura",
+  "task": 5,
+  "idx": 1,
+  "order": 0,
+  "seed": 20261106000,
+  "model": "claude-sonnet-5.5",
+  "condition": "N",
+  "startedAt": "2026-11-07T01:44:54.557Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 51305,
+  "usage": {
+    "input": 122162,
+    "uncachedInput": 122162,
+    "output": 3171,
+    "turns": 9,
+    "perTurnInput": [
+      4451,
+      5043,
+      8631,
+      13223,
+      13419,
+      15899,
+      19981,
+      20476,
+      21039
+    ],
+    "perTurnOutput": [
+      6,
+      9,
+      55,
+      36,
+      27,
+      44,
+      2570,
+      119,
+      305
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1229,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 6070,
+      "type": "mcp",
+      "tool": "get_recipe",
+      "chars": 6780,
+      "isError": false
+    },
+    {
+      "i": 2,
+      "t": 9089,
+      "type": "mcp",
+      "tool": "search_docs",
+      "chars": 4827,
+      "isError": false
+    },
+    {
+      "i": 3,
+      "t": 9090,
+      "type": "mcp",
+      "tool": "search_docs",
+      "chars": 4875,
+      "isError": false
+    },
+    {
+      "i": 4,
+      "t": 11448,
+      "type": "search",
+      "pattern": "Custom GLSL water"
+    },
+    {
+      "i": 5,
+      "t": 13012,
+      "type": "read",
+      "path": "docs/agents/first-screen-cheatsheet.md",
+      "lines": 60
+    },
+    {
+      "i": 6,
+      "t": 13012,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 7,
+      "t": 16166,
+      "type": "mcp",
+      "tool": "get_symbol",
+      "chars": 277,
+      "isError": false
+    },
+    {
+      "i": 8,
+      "t": 39949,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 5352
+    },
+    {
+      "i": 9,
+      "t": 40892,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 10,
+      "t": 46238,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 11,
+      "t": 46956,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 12,
+      "t": 51305,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "docs/agents/first-screen-cheatsheet.md"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts, and it passes typecheck. I couldn't run it in a browser or run `vite build`, so the shader compile and the look of the frame are unchecked.\n\n- **Water:** the surface is a 400×400 subdivided grid, 360 units across, using `material.custom` with GLSL. The vertex shader sums four animated sine waves and computes the normal from their slopes. The fragment shader adds a noise-based ripple (4-octave fbm) that fades with distance. It also has a fresnel term that mixes deep-water colour with the reflected sky, and a sun glint. The surface fades into the horizon colour with distance. A `waveClock` uniform is advanced every frame from `f.dt`.\n- **Sky:** the visible sky is `sky.gradient` with a sun. The water shader reproduces the same horizon-to-zenith gradient and sun glow in GLSL so the reflection matches. I converted the hex colours to linear by hand, so the match is approximate.\n- **Camera and output:** the camera is at height 3.2 and looks toward the horizon. The shader outputs linear colour and leaves tone mapping and sRGB encoding to the engine, as the docs say it does.\n- **Rendering contract:** the engine owns the render loop. `window.__EVAL_READY__` is set on a `requestAnimationFrame` after the first `onFrame` callback.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}
