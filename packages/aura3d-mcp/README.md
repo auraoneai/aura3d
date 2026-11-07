@@ -11,7 +11,7 @@ Every answer starts with a stamp such as `[aura3d-mcp docs@5.0.2 | installed @au
 | Tool | Input | Returns |
 | --- | --- | --- |
 | `get_symbol` | `name` (dotted for members), `subpath?`, `package?` | Signature, doc comment, default values, an example. Read from the installed `@aura3d/*` `.d.ts` through the package `exports` map only; modules outside the exports map are never opened. |
-| `search_docs` | `query`, `limit?` | BM25 over `llms.txt`, the agent quickstart, recipes, API signature tables, the three.js translation table, troubleshooting and the error-code table. |
+| `search_docs` | `query`, `limit?` | BM25 over `llms.txt`, the agent quickstart, recipes, API signature tables, the three.js translation table and the error-code table. Passages are whole chunks of at most 1,200 characters (sections split on paragraph boundaries with overlap), never clipped mid-fact. |
 | `get_recipe` | `task` | The best working scene source for the task plus one-line signatures of the engine exports it imports. |
 | `scaffold` | `template`, `dir?`, `agent?` | Creates a project with `create-aura3d` (installed copy, else `npx create-aura3d@latest`), including `llms.txt` and the Aura3D skills. Does not install dependencies. |
 | `assets_resolve` | `need`, `name?`, `role?`, `dryRun?` | `aura3d assets resolve --json` as structured data (dry run by default). |

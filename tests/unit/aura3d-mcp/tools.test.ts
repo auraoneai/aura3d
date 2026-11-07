@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { TOOLS, lookupError, type ToolResult } from "../../../packages/aura3d-mcp/src/tools.js";
 import { parseErrorTable } from "../../../packages/aura3d-mcp/src/docs.js";
-import { buildDocsBundle } from "../../../packages/aura3d-mcp/src/bundle/build.js";
+import { buildDocsBundle, isPublicBundlePath } from "../../../packages/aura3d-mcp/src/bundle/build.js";
 import { context, estimateTokens, makeProject, repoRoot } from "./helpers.js";
 
 let project: string;
@@ -73,12 +73,48 @@ describe("search_docs", () => {
     expect(r.text).toMatch(/instances/);
   });
 
-  it("never serves repository-internal docs", () => {
+  it("bundles only allow-listed public files", () => {
     const paths = buildDocsBundle(repoRoot).files.map((f) => f.path);
-    expect(paths).not.toContain("docs/agents/codebase-map.md");
+    const outside = paths.filter((p) => !isPublicBundlePath(p));
+    expect(outside).toEqual([]);
+    for (const internal of ["lessons-learned", "new-game-checklist", "build-a-game", "verification", "rendering-proof-required", "no-hackjob-rules", "codebase-map", "troubleshooting"]) {
+      expect(paths.some((p) => p.includes(internal)), internal).toBe(false);
+    }
     expect(paths).toContain("docs/agents/error-codes.md");
+    expect(paths).toContain("docs/agents/api-signatures.md");
     expect(paths).toContain("llms.txt");
   });
+
+  it("the allow-list check rejects an internal doc", () => {
+    expect(isPublicBundlePath("docs/agents/lessons-learned.md")).toBe(false);
+    expect(isPublicBundlePath("docs/agents/../../README.md")).toBe(false);
+    expect(isPublicBundlePath("docs/agents/recipes.md")).toBe(true);
+  });
+
+  it("keeps every chunk at or under 1,200 characters", () => {
+    const k = context(makeProject()).knowledge;
+    for (const doc of k.index.docs) if (doc.kind !== "recipe") expect(doc.text.length, `${doc.path} :: ${doc.title}`).toBeLessThanOrEqual(1200);
+  });
+
+  const facts: Array<[string, string, RegExp]> = [
+    ["which lights cast shadows, how many local shadow casters", "single-shadow", /localShadowLights/],
+    ["lights.point default intensity", "point", /intensity 8/],
+    ["lights.spot default angle penumbra distance", "spot", /penumbra 0\.4/],
+    ["lights.ambient default intensity", "ambient", /intensity 0\.28/],
+    ["lights.hemisphere default skyColor", "hemisphere", /#bcd7ff/],
+    ["how to restart a scene, mutate node handles instead of setScene again", "ready", /mutate node handles on restart/],
+    ["valid look preset ids outdoor-day golden-hour", "preset", /polar-/],
+    ["three.js DirectionalLight castShadow equivalent", "dirlight", /lights\.directional/],
+    ["KTX2_CSP_BLOCKED transcoder unsafe-eval content security policy", "ktx2", /wasm-unsafe-eval/],
+    ["createGame root import CREATE_GAME_ROOT_UNAVAILABLE_V1", "creategame", /@aura3d\/engine\/game/]
+  ];
+  for (const [query, label, expected] of facts) {
+    it(`returns the specific fact for: ${label}`, async () => {
+      const r = await call("search_docs", { query });
+      expect(r.text).toMatch(expected);
+      expect(r.text).not.toContain("[clipped to stay");
+    });
+  }
 });
 
 describe("get_recipe", () => {
@@ -176,23 +212,33 @@ describe("explain_error", () => {
   });
 });
 
-describe("token size", () => {
-  it("keeps every answer under 2,500 tokens (chars / 3.6)", async () => {
+describe("token size and version stamp", () => {
+  it("keeps every tool answer under 2,500 tokens (chars / 3.6) and stamps it with the version", async () => {
     const answers: Array<[string, Record<string, unknown>]> = [
       ["get_symbol", { name: "createAuraApp" }],
       ["get_symbol", { name: "AuraCreateAppOptions" }],
+      ["get_symbol", { name: "NoSuchSymbol" }],
       ["search_docs", { query: "camera orbit autoRotate", limit: 8 }],
       ["search_docs", { query: "material custom shader uniform water", limit: 8 }],
+      ["search_docs", { query: "lights shadow directional point spot intensity", limit: 8 }],
+      ["search_docs", { query: "zzzz nothing matches this" }],
       ["get_recipe", { task: "procedural humanoid robot with walking" }],
       ["get_recipe", { task: "forest of 10000 instanced trees" }],
       ["get_recipe", { task: "low poly island with water and fog" }],
       ["explain_error", { code: "RENDERER_MOUNT_FAILED" }],
+      ["explain_error", { code: "NO_SUCH_CODE_AT_ALL" }],
+      ["scaffold", { template: "mini-game", dir: "size/game" }],
+      ["scaffold", { template: "nope", dir: "size/other" }],
       ["assets_resolve", { need: "robot" }],
-      ["check_deploy", {}]
+      ["assets_inspect", { file: "model.glb" }],
+      ["assets_inspect", { file: "missing.glb" }],
+      ["check_deploy", {}],
+      ["check_deploy", { dist: "nope" }]
     ];
     for (const [name, args] of answers) {
       const r = await call(name, args);
       expect(estimateTokens(r.text), `${name} ${JSON.stringify(args)}`).toBeLessThan(2500);
+      expect(r.text, `${name} ${JSON.stringify(args)} stamp`).toMatch(/aura3d-mcp docs@\d|docs@\d+\.\d+\.\d+/);
     }
   });
 });

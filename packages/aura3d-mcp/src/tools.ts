@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { getSymbol, findInstalledPackage, publicSubpaths, type SymbolAnswer } from "./dts.js";
-import type { DocsKnowledge, ErrorRow } from "./docs.js";
+import { type DocsKnowledge, type ErrorRow } from "./docs.js";
 import { run, runCli, findBin, type RunResult } from "./runner.js";
 
 export const MAX_ANSWER_CHARS = 8900;
@@ -130,7 +130,7 @@ const getSymbolTool: ToolDef = {
 
 const searchDocsTool: ToolDef = {
   name: "search_docs",
-  description: "BM25 search over the version-stamped Aura3D agent docs bundle (llms.txt, quickstart, recipes, api-signatures, three.js to Aura3D table, troubleshooting). Returns the best passages with file paths.",
+  description: "BM25 search over the version-stamped Aura3D agent docs bundle (llms.txt, quickstart, recipes, api-signatures, three.js to Aura3D table, error codes). Returns the best passages (each a complete chunk of at most 1,200 characters) with file paths.",
   inputSchema: {
     type: "object",
     properties: { query: { type: "string" }, limit: { type: "number", description: "1 to 8, default 4" }, projectDir: projectDirProp },
@@ -143,8 +143,15 @@ const searchDocsTool: ToolDef = {
     const hits = ctx.knowledge.query(query, ["doc", "recipe-doc", "sig", "gotcha"], limit);
     const header = stamp(ctx, projectDirOf(args, ctx));
     if (!hits.length) return { text: `${header}\nNo match for "${query}". Try API names such as instances, material.custom, sky, camera.orbit, group, setUniform.` };
-    const per = Math.floor((MAX_ANSWER_CHARS - 400) / hits.length);
-    const body = hits.map(({ chunk, score }, i) => `#${i + 1} [${chunk.path} :: ${chunk.title}] score ${score.toFixed(1)}\n${clip(chunk.text, Math.min(per - 80, 1600))}`);
+    // Whole chunks only: add hits while they fit the answer budget, so no fact is clipped away.
+    const body: string[] = [];
+    let used = header.length + 40;
+    for (const { chunk, score } of hits) {
+      const entry = `#${body.length + 1} [${chunk.path} :: ${chunk.title}] score ${score.toFixed(1)}\n${chunk.text}`;
+      if (body.length && used + entry.length > MAX_ANSWER_CHARS) break;
+      body.push(entry);
+      used += entry.length + 2;
+    }
     return { text: clip(`${header}\n\n${body.join("\n\n")}`) };
   }
 };
@@ -235,20 +242,20 @@ const scaffoldTool: ToolDef = {
     const projectDir = projectDirOf(args, ctx);
     const targetDir = resolve(projectDir, str(args, "dir") ?? "aura3d-app");
     const agent = str(args, "agent") ?? "all";
-    if (existsSync(targetDir) && readdirSync(targetDir).length > 0) return { text: JSON.stringify({ ok: false, error: `${targetDir} exists and is not empty.` }, null, 2), isError: true };
+    if (existsSync(targetDir) && readdirSync(targetDir).length > 0) return { text: JSON.stringify({ ok: false, version: stamp(ctx, projectDir), error: `${targetDir} exists and is not empty.` }, null, 2), isError: true };
     const mod = await loadCreateAura3d(projectDir);
     if (mod && typeof mod.createA3DProject === "function") {
       const templates = (mod.CREATE_AURA3D_TEMPLATES as readonly string[] | undefined) ?? [];
       const resolver = mod.resolveTemplateAlias as ((name: string) => { template: string } | null) | undefined;
       const resolved = resolver ? resolver(template)?.template : templates.includes(template) ? template : undefined;
-      if (!resolved) return { text: JSON.stringify({ ok: false, error: `Unknown template "${template}".`, templates }, null, 2), isError: true };
+      if (!resolved) return { text: JSON.stringify({ ok: false, version: stamp(ctx, projectDir), error: `Unknown template "${template}".`, templates }, null, 2), isError: true };
       const result = (mod.createA3DProject as (o: Record<string, unknown>) => { files?: string[]; missingAssets?: unknown[] })({ targetDir, template: resolved, agent, skills: "core" });
       const files = result.files ?? [];
-      return { text: clip(JSON.stringify({ ok: true, via: "installed create-aura3d", template: resolved, targetDir, fileCount: files.length, files: files.slice(0, 40), missingAssets: result.missingAssets?.length ?? 0, next: [`cd ${targetDir}`, "npm install", "npm run dev"] }, null, 2)) };
+      return { text: clip(JSON.stringify({ ok: true, version: stamp(ctx, projectDir), via: "installed create-aura3d", template: resolved, targetDir, fileCount: files.length, files: files.slice(0, 40), missingAssets: result.missingAssets?.length ?? 0, next: [`cd ${targetDir}`, "npm install", "npm run dev"] }, null, 2)) };
     }
-    if (process.env.AURA3D_MCP_NO_NPX === "1") return { text: JSON.stringify({ ok: false, error: "create-aura3d is not installed and npx fallback is disabled." }), isError: true };
+    if (process.env.AURA3D_MCP_NO_NPX === "1") return { text: JSON.stringify({ ok: false, version: stamp(ctx, projectDir), error: "create-aura3d is not installed and npx fallback is disabled." }), isError: true };
     const result = await run("npx", ["--yes", "create-aura3d@latest", targetDir, "--template", template, "--agent", agent], { cwd: projectDir, timeoutMs: 300_000 });
-    return { text: clip(JSON.stringify({ ok: result.ok, via: "npx create-aura3d@latest", template, targetDir, stdout: result.stdout.slice(-1500), stderr: result.stderr.slice(-1500) }, null, 2)), isError: !result.ok };
+    return { text: clip(JSON.stringify({ ok: result.ok, version: stamp(ctx, projectDir), via: "npx create-aura3d@latest", template, targetDir, stdout: result.stdout.slice(-1500), stderr: result.stderr.slice(-1500) }, null, 2)), isError: !result.ok };
   }
 };
 
@@ -309,7 +316,7 @@ const assetsInspectTool: ToolDef = {
     if (!file) return { text: "assets_inspect needs a file.", isError: true };
     const projectDir = projectDirOf(args, ctx);
     const abs = resolve(projectDir, file);
-    if (!existsSync(abs)) return { text: JSON.stringify({ ok: false, error: `${abs} does not exist.` }), isError: true };
+    if (!existsSync(abs)) return { text: JSON.stringify({ ok: false, version: stamp(ctx, projectDir), error: `${abs} does not exist.` }), isError: true };
     const cli = ["assets", "inspect", abs];
     for (const flag of ["animation", "skeleton", "morphs", "license"]) if (args[flag] === true) cli.push(`--${flag}`);
     return cliText(compactJson(await runCli(projectDir, cli, 120_000)), { version: stamp(ctx, projectDir) });
@@ -327,7 +334,7 @@ const checkDeployTool: ToolDef = {
   async call(args, ctx) {
     const projectDir = projectDirOf(args, ctx);
     const dist = str(args, "dist") ?? "dist";
-    if (!existsSync(resolve(projectDir, dist))) return { text: JSON.stringify({ ok: false, error: `${resolve(projectDir, dist)} does not exist. Run the build first (npm run build).` }), isError: true };
+    if (!existsSync(resolve(projectDir, dist))) return { text: JSON.stringify({ ok: false, version: stamp(ctx, projectDir), error: `${resolve(projectDir, dist)} does not exist. Run the build first (npm run build).` }), isError: true };
     const cli = ["check-deploy", "--dist", dist];
     if (args.release === true) cli.push("--release");
     return cliText(compactJson(await runCli(projectDir, cli, 180_000)), { version: stamp(ctx, projectDir) });

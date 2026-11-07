@@ -15,8 +15,27 @@ export interface DocsBundle {
   readonly files: readonly BundleFile[];
 }
 
-/** Repository-internal or process documents that must not be served as public Aura3D knowledge. */
-const EXCLUDED_DOCS = new Set(["codebase-map.md", "trial-502-protocol.md", "agent-context.md", "game-showcase-build.md", "game-example-standards.md", "benchmark-recipes.md", "turn-gap-findings.md"]);
+/**
+ * ALLOW-list of public agent docs. Anything not named here is never bundled, so a new repository-internal doc
+ * cannot leak into the shipped package by default. Add a file only when it is written for users of the SDK.
+ */
+export const PUBLIC_AGENT_DOCS: readonly string[] = [
+  "agent-quickstart.md",
+  "api-signatures.md",
+  "error-codes.md",
+  "first-screen-cheatsheet.md",
+  "procedural-humanoid.md",
+  "recipes.md",
+  "threejs-to-aura3d.md"
+];
+
+/** True for every bundle path that is allowed: llms.txt, the allow-listed docs and the recipe scene sources. */
+export function isPublicBundlePath(path: string): boolean {
+  if (path === "llms.txt") return true;
+  if (/^docs\/agents\/recipes-src\/[A-Za-z0-9_-]+\/main\.ts$/.test(path)) return true;
+  const m = /^docs\/agents\/([^/]+\.md)$/.exec(path);
+  return Boolean(m && PUBLIC_AGENT_DOCS.includes(m[1]!));
+}
 
 export function buildDocsBundle(repoRoot: string): DocsBundle {
   const version = (JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as { version: string }).version;
@@ -24,8 +43,7 @@ export function buildDocsBundle(repoRoot: string): DocsBundle {
   const llms = join(repoRoot, "llms.txt");
   if (existsSync(llms)) files.push({ path: "llms.txt", kind: "llms", text: readFileSync(llms, "utf8") });
   const docsDir = join(repoRoot, "docs", "agents");
-  for (const name of readdirSync(docsDir).filter((n) => n.endsWith(".md")).sort()) {
-    if (EXCLUDED_DOCS.has(name)) continue;
+  for (const name of readdirSync(docsDir).filter((n) => PUBLIC_AGENT_DOCS.includes(n)).sort()) {
     files.push({ path: `docs/agents/${name}`, kind: "doc", text: readFileSync(join(docsDir, name), "utf8") });
   }
   const recipes = join(docsDir, "recipes-src");

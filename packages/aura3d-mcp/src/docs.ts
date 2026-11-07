@@ -33,15 +33,83 @@ export function loadBundle(explicit?: string): DocsBundle {
   throw new Error("aura3d-mcp: docs bundle not found. Run `pnpm --filter @aura3d/mcp bundle-docs` after building, or set AURA3D_MCP_DOCS_BUNDLE.");
 }
 
-function chunkMarkdown(text: string, path: string, kind: Chunk["kind"]): Chunk[] {
+/** Largest chunk, in characters. search_docs returns whole chunks, so a fact is never clipped away. */
+export const MAX_CHUNK_CHARS = 1200;
+const OVERLAP_CHARS = 300;
+
+/** Split text into pieces of at most `max` characters, on blank lines first, then line by line, then by characters. */
+function splitPieces(body: string, max: number): string[] {
+  const pieces: string[] = [];
+  let inFence = false;
+  let cur: string[] = [];
+  const paragraphs: string[] = [];
+  for (const line of body.split("\n")) {
+    if (/^```/.test(line)) inFence = !inFence;
+    cur.push(line);
+    if (!inFence && line.trim() === "") {
+      paragraphs.push(cur.join("\n"));
+      cur = [];
+    }
+  }
+  if (cur.length) paragraphs.push(cur.join("\n"));
+  for (const para of paragraphs) {
+    if (para.length <= max) {
+      pieces.push(para);
+      continue;
+    }
+    let acc = "";
+    for (const line of para.split("\n")) {
+      for (let i = 0; i < Math.max(1, line.length); i += max - 1) {
+        const part = line.slice(i, i + max - 1);
+        if (acc && acc.length + part.length + 1 > max) {
+          pieces.push(acc);
+          acc = "";
+        }
+        acc = acc ? `${acc}\n${part}` : part;
+      }
+    }
+    if (acc) pieces.push(acc);
+  }
+  return pieces;
+}
+
+/** Group pieces into windows of at most `max` characters; each window repeats the previous tail as overlap. */
+function windows(pieces: readonly string[], max: number): string[] {
+  const out: string[] = [];
+  let cur: string[] = [];
+  let len = 0;
+  for (const piece of pieces) {
+    if (cur.length && len + piece.length > max) {
+      out.push(cur.join("\n"));
+      const tail = cur.at(-1)!;
+      cur = tail.length <= OVERLAP_CHARS && tail.length + piece.length <= max ? [tail] : [];
+      len = cur.reduce((n, c) => n + c.length + 1, 0);
+    }
+    cur.push(piece);
+    len += piece.length + 1;
+  }
+  if (cur.length) out.push(cur.join("\n"));
+  return out;
+}
+
+/** Chunk by heading, then split any section over MAX_CHUNK_CHARS into overlapping paragraph windows. */
+export function chunkMarkdown(text: string, path: string, kind: Chunk["kind"]): Chunk[] {
   const chunks: Chunk[] = [];
   let heading = path;
   let buf: string[] = [];
   let inFence = false;
   const flush = (): void => {
     const body = buf.join("\n").trim();
-    if (body.length > 40) chunks.push({ path, title: heading, kind, text: body });
     buf = [];
+    if (body.length <= 40) return;
+    if (body.length <= MAX_CHUNK_CHARS) {
+      chunks.push({ path, title: heading, kind, text: body });
+      return;
+    }
+    for (const win of windows(splitPieces(body, MAX_CHUNK_CHARS), MAX_CHUNK_CHARS)) {
+      const t = win.trim();
+      if (t.length > 40) chunks.push({ path, title: heading, kind, text: t });
+    }
   };
   for (const line of text.split("\n")) {
     if (/^```/.test(line)) inFence = !inFence;
@@ -50,7 +118,6 @@ function chunkMarkdown(text: string, path: string, kind: Chunk["kind"]): Chunk[]
       heading = line.replace(/^#+\s*/, "").slice(0, 100);
     }
     buf.push(line);
-    if (!inFence && buf.join("\n").length > 3800 && line.trim() === "") flush();
   }
   flush();
   return chunks;
