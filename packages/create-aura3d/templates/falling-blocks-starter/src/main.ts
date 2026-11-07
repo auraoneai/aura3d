@@ -6,6 +6,7 @@ import {
   looks,
   material,
   model,
+  primitives,
   scene,
   type AuraColor,
   type AuraNodeInput,
@@ -166,7 +167,6 @@ setupPracticeBoard();
 const blockfallGame = createGame({
   id: "falling-blocks-starter",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
   scene: () => buildScene(falling.snapshot().board),
   input: inputOptions,
   hud: { theme: "arcade-neon", widgets: [] },
@@ -299,6 +299,18 @@ function createPracticeBoard(): Cell[][] {
   board[boardHeight - 1] = board[boardHeight - 1].map((_, x) => (x >= 3 && x <= 6 ? null : "O"));
   board[boardHeight - 2][0] = "J";
   board[boardHeight - 2][9] = "L";
+  // A short mixed stack on both sides of the open well so the first frame reads as a game in progress.
+  // Columns 3 to 6 stay empty above the bottom row, so the prepared I drop still clears that line.
+  const stack: readonly (readonly [number, readonly Cell[], readonly Cell[]])[] = [
+    [2, ["J", "J", "S"], ["T", "L", "L"]],
+    [3, ["Z", "S", "S"], ["T", "T", "Z"]],
+    [4, ["Z", "Z", null], [null, "O", "O"]],
+    [5, [null, "I", null], [null, null, null]]
+  ];
+  for (const [fromBottom, left, right] of stack) {
+    left.forEach((cell, i) => { board[boardHeight - fromBottom][i] = cell; });
+    right.forEach((cell, i) => { board[boardHeight - fromBottom][7 + i] = cell; });
+  }
   return board;
 }
 
@@ -310,10 +322,11 @@ function buildScene(board: Board) {
       .position(1.9, 0.2, -0.7)
       .scale(0.2),
     // Dark glossy board backing sourced from the same typed block GLB.
-    model(assets.quaterniusCubeCrate, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }) })
+    model(assets.quaterniusCubeCrate, { name: "board glossy backplate", material: material.pbr({ color: "#141a30", roughness: 0.18, metalness: 0.55 }) })
       .position(0, boardCenterY, -0.16)
       .scale([bs(1.42), bs(2.5), bs(0.03)]),
     ...boardFrameNodes(),
+    ...skylineNodes(),
     ...settledCellsNode(board),
     ...activeCellNodes(),
     ...flashRowNodes(),
@@ -329,6 +342,26 @@ function buildScene(board: Board) {
     .add(looks.preset(LOOK_ID))
     .addMany(nodes)
     .camera(camera.orthographic({ position: [0.35, 0.75, 4.6], target: [0, boardCenterY, 0], orthographicSize: 2.9 }));
+}
+
+// A neon skyline behind and beside the well: tall emissive bars of varied height and hue. Pure set
+// dressing outside the board columns, it gives the dark arcade look colour and depth in the first frame.
+function skylineNodes(): AuraNodeInput[] {
+  const hues: AuraColor[] = ["#4de8ff", "#b987d0", "#ff5d7d", "#ffd166", "#4ce8b0", "#7d9dd4"];
+  const bars = Array.from({ length: 14 }, (_, i) => {
+    const side = i % 2 === 0 ? -1 : 1;
+    const x = side * (1.85 + Math.floor(i / 2) * 0.46);
+    const height = 0.9 + ((i * 53) % 17) / 6;
+    const color = hues[i % hues.length]!;
+    return primitives.box({
+      name: `skyline bar ${i}`,
+      size: [0.32, height, 0.2],
+      position: [x, boardOrigin.y + height / 2, -1.6 - (i % 3) * 0.4],
+      material: material.neon({ color, emissive: color, emissiveIntensity: 0.5 + (i % 3) * 0.2 })
+    });
+  });
+  const horizon = primitives.box({ name: "skyline baseline", size: [10, 0.04, 0.2], position: [0, boardOrigin.y - 0.03, -1.4], material: material.neon({ color: FRAME_ACCENT, emissive: FRAME_ACCENT, emissiveIntensity: 0.9 }) });
+  return [...bars, horizon];
 }
 
 function boardFrameNodes(): AuraNodeInput[] {

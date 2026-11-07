@@ -1,0 +1,139 @@
+{
+ "url": "http://127.0.0.1:56569/",
+ "final_url": "http://127.0.0.1:56569/",
+ "events": [
+  {
+   "sequence": 1,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:56569/favicon.ico",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 2,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 12 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 172 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 3,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 12 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 166 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 4,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 13 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 172 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 5,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 13 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 169 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 6,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 12 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 172 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 7,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 12 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 166 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 8,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 13 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 172 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 9,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "glTF mesh 13 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 169 rescaled to sum 1",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 10,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "DEPTH_ALPHA_HASH_DEGRADED: \"primitive-12:Aura3D blue robot contact shadow:Aura3D blue robot contact shadow\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+   "url": {
+    "url": "http://127.0.0.1:56569/assets/aura3d-vendor-Bhh16Rzz.js",
+    "origin": "http://127.0.0.1:56569",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  }
+ ],
+ "completeness": {
+  "status": "complete"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "url": "http://127.0.0.1:58339/",
+ "final_url": "http://127.0.0.1:58339/",
+ "events": [
+  {
+   "sequence": 1,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58339/favicon.ico",
+    "origin": "http://127.0.0.1:58339",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 2,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "DEPTH_ALPHA_HASH_DEGRADED: \"actor-0:mesh-0:luma:Object_7:Cyberpunk_Cyberpunk_MAT_0\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.",
+   "url": {
+    "url": "http://127.0.0.1:58339/assets/aura3d-vendor-BPat1_Q1.js",
+    "origin": "http://127.0.0.1:58339",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  }
+ ],
+ "completeness": {
+  "status": "complete"
+ }
+}

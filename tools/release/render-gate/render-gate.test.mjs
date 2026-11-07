@@ -130,6 +130,8 @@ test("function driver, scenario, targets and CLI parsing", async () => {
   assert.throws(() => parseArgs(["--bogus"]), /unknown argument/);
   assert.deepEqual(parseTemplateSource("registry:next"), { kind: "registry", spec: "next" });
   assert.throws(() => parseTemplateSource("archives:"), /plan path/);
+  assert.equal(parseTemplateSource("prebuilt:/tmp/tpl").kind, "prebuilt");
+  assert.throws(() => parseTemplateSource("prebuilt:"), /directory/);
 });
 
 test("template scaffold commands never use a shell and cover scaffold, install, build", () => {

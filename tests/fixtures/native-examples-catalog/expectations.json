@@ -354,7 +354,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/falling-blocks-starter/src/main.ts",
-        "sha256": "dc33e3c55a436e9930eb612437e63c038a85637c373878c72153ab69def29a74"
+        "sha256": "3a795289c2bcd335d7a36b0198a0de363bab167707a34b38b40928a88a898fad"
       },
       "sourceDependencies": [
         {
@@ -879,7 +879,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/postprocess-scene/src/main.ts",
-        "sha256": "d1199c2a6dd4dfb4ee242be6eeb9bb2e09407e42dff9d9ceec2f602e7816f720"
+        "sha256": "3e0940802f9c19042f36eae4370d63dfc21f392cf6b3068595cb36c12b7ba262"
       },
       "sourceDependencies": [
         {
@@ -1357,7 +1357,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/character-viewer/src/main.ts",
-        "sha256": "6870a1421ecdc35756281430924dfdb6fc3aa6227646dddb89747e41e09959bb"
+        "sha256": "84cbcac628e9ae53cc14aa92e3550958bb98bbcdadf66828681fe9d63155249d"
       },
       "sourceDependencies": [
         {
@@ -1466,6 +1466,68 @@
               "blue": [95, 180],
               "minFraction": 0.05,
               "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:procedural-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Estimated from the template's own authored orbit camera ([3, 1.5, 4.2] looking at [0, 1, 0], fov 36) and the robot torso and glow-core primitives (steel #b9c1ce, emissive #8fefff); the region sits inside the projected torso. No reference capture. Lighting, shadows, grade and rendered appearance remain unverified.",
+      "subject": "Primitive-built jointed robot torso (steel body and emissive core) under the character-showcase look",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/procedural-scene/src/main.ts",
+        "sha256": "0d11664f1c670658c85bc46cecc1ecca85f39d051100a10e1970470c282465b9"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/procedural-scene/src/aura-assets.ts",
+          "sha256": "5e9b8075af73ec3e3cf3f95b3dca3353baed801aa70bd2cdfc122185119e7cf9"
+        },
+        {
+          "path": "packages/create-aura3d/templates/procedural-scene/index.html",
+          "sha256": "b14c29f753f3b9fed5c2dbdd8025ec8d8767db5fd44dba3386c4a32b855787d2"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+        },
+        {
+          "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
+          "sha256": "c989fc7616ea489e4b0fc1bd1353e28b7ec470e7cc2c76a2f5527c3b54767c9e"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 600,
+          "y": 235,
+          "width": 80,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "steel torso",
+              "red": [
+                90,
+                218
+              ],
+              "green": [
+                100,
+                228
+              ],
+              "blue": [
+                110,
+                238
+              ],
+              "minFraction": 0.1,
+              "maxFraction": 0.95
             }
           ]
         }
@@ -1821,7 +1883,7 @@
       "sourceDependencies": [
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/empty-document.ts",
-          "sha256": "6e7aee36c8a8263889a34374cae3fb14ff0cce9d3fc6b5e09797ff6f979eefe8"
+          "sha256": "6e042fe15de115af3ae7340db5d8688ac5b75b392bdf4cc701d65cd9173a2888"
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",

@@ -1,0 +1,87 @@
+{
+ "url": "http://127.0.0.1:57285/",
+ "final_url": "http://127.0.0.1:57285/",
+ "events": [
+  {
+   "sequence": 1,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57285/favicon.ico",
+    "origin": "http://127.0.0.1:57285",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 2,
+   "step_index": 1,
+   "kind": "console",
+   "level": "warning",
+   "text": "No scene loaded — rendering the empty placeholder. Create one with `animation-scene new --prompt \"<your scene>\"`, or set AURA_DOCUMENT to a saved EpisodeDocument (e.g. a serialized copy of the moon-garden example).",
+   "url": {
+    "url": "http://127.0.0.1:57285/assets/index-COQEOGNZ.js",
+    "origin": "http://127.0.0.1:57285",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 3,
+   "step_index": 1,
+   "kind": "console",
+   "level": "info",
+   "text": "[animation-performance] extracted clips OFF → procedural baseline (clean rig; mocap distorts this rig).",
+   "url": {
+    "url": "http://127.0.0.1:57285/assets/index-COQEOGNZ.js",
+    "origin": "http://127.0.0.1:57285",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 4,
+   "step_index": 1,
+   "kind": "console",
+   "level": "info",
+   "text": "[scene-player] inShaderCel ON (stylized default): non-glow set pieces use AnimationToonMaterial.",
+   "url": {
+    "url": "http://127.0.0.1:57285/assets/index-COQEOGNZ.js",
+    "origin": "http://127.0.0.1:57285",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 5,
+   "step_index": 1,
+   "kind": "console",
+   "level": "info",
+   "text": "[scene-player] real shadow maps ON (studio key casts shadows); 3-point key/fill/rim lighting rig.",
+   "url": {
+    "url": "http://127.0.0.1:57285/assets/index-COQEOGNZ.js",
+    "origin": "http://127.0.0.1:57285",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 6,
+   "step_index": 1,
+   "kind": "console",
+   "level": "info",
+   "text": "[scene-player] IBL — procedural environment map only (no per-set HDRI bitmap).",
+   "url": {
+    "url": "http://127.0.0.1:57285/assets/index-COQEOGNZ.js",
+    "origin": "http://127.0.0.1:57285",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  }
+ ],
+ "completeness": {
+  "status": "complete"
+ }
+}

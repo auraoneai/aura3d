@@ -1,0 +1,113 @@
+{
+ "url": "http://127.0.0.1:58480/",
+ "final_url": "http://127.0.0.1:58480/",
+ "events": [
+  {
+   "sequence": 1,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/favicon.ico",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 2,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/probes/probe-20ms.opus.webm",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 3,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/probes/probe-20ms.m4a",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 4,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/packs/game-sfx-core/stinger.checkpoint.00.m4a",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 5,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/packs/game-sfx-core/ui.confirm.00.m4a",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 6,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/packs/game-sfx-core/stinger.win.00.m4a",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 7,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/packs/game-sfx-core/impact.rubber-ball.light.00.m4a",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 8,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:58480/packs/game-sfx-core/vehicle.boost.m4a",
+    "origin": "http://127.0.0.1:58480",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  }
+ ],
+ "completeness": {
+  "status": "complete"
+ }
+}

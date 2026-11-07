@@ -4,6 +4,7 @@
 //   node tools/release/render-gate/index.mjs --out <dir> --base https://aura3d.auraone.ai            # 25 live games, REA CLI
 //   node tools/release/render-gate/index.mjs --out <dir> --base http://127.0.0.1:8123 --games
 //   node tools/release/render-gate/index.mjs --out <dir> --templates --templates-source archives:<plan.json>
+//   node tools/release/render-gate/index.mjs --out <dir> --templates --templates-source prebuilt:<dir>   # <dir>/<template>/dist, e.g. build-templates-workspace.ts --out
 //   node tools/release/render-gate/index.mjs --out <dir> --driver saved --saved-dir <dir-with-id.json-and-id.png>
 //   node tools/release/render-gate/index.mjs --out <dir> --motion --base http://127.0.0.1:8123 --recipe-base http://127.0.0.1:4173 [--templates-source archives:<plan.json>]
 //       two frames N s apart per entry of motion-config.json flagged animated; --motion-threshold 0.2 --motion-grid 64x36 --interval-ms 1500
@@ -62,7 +63,8 @@ export function parseTemplateSource(spec) {
   const value = rest.join(":");
   if (kind === "registry") return { kind, spec: value || "latest" };
   if (kind === "archives") { if (!value) throw new Error("archives:<plan.json> needs a plan path"); return { kind, plan: resolve(value) }; }
-  throw new Error(`--templates-source must be registry:<tag|version> or archives:<plan.json>, got ${spec}`);
+  if (kind === "prebuilt") { if (!value) throw new Error("prebuilt:<dir> needs a directory of <template>/dist builds"); return { kind, root: resolve(value) }; }
+  throw new Error(`--templates-source must be registry:<tag|version>, archives:<plan.json> or prebuilt:<dir>, got ${spec}`);
 }
 
 /** Motion mode: two frames per animated entry; see motion.mjs for the method and thresholds. */

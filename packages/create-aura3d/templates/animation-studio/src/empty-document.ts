@@ -17,8 +17,8 @@ export const EMPTY_DOCUMENT_NOTICE =
   "No scene loaded — rendering the empty placeholder. Create one with `animation-scene new --prompt \"<your scene>\"`, " +
   "or set AURA_DOCUMENT to a saved EpisodeDocument (e.g. a serialized copy of the moon-garden example).";
 
-// A neutral, content-free "studio void": a flat grey floor, a self-lit stage mark and
-// a soft 3-point rig. No characters, no props, no themed set pieces — nothing tied to
+// A neutral, content-free studio: a flat grey floor, a self-lit stage mark, plain studio
+// architecture (cyclorama, flats, truss, accent outline) and a soft 3-point rig. No characters, no props, no themed set pieces — nothing tied to
 // any particular prompt.
 const NEUTRAL_ENVIRONMENT: EnvironmentSpec = {
   color: [0.5, 0.52, 0.55],
@@ -33,11 +33,30 @@ const NEUTRAL_ENVIRONMENT: EnvironmentSpec = {
   }
 };
 
+// A 6 x 6 chequer of low floor tiles around the stage mark (pure set dressing).
+const FLOOR_TILES: SetSpec["pieces"] = Array.from({ length: 36 }, (_, i) => {
+  const x = (i % 6) - 2.5;
+  const z = Math.floor(i / 6) - 2.5;
+  const light = (i + Math.floor(i / 6)) % 2 === 0;
+  const tone = light ? 0.3 : 0.12;
+  return {
+    id: `studio-tile-${i}`,
+    geometry: "cube" as const,
+    position: [x * 1.2, 0.005, z * 1.2 - 1] as const,
+    scale: [1.16, 0.01, 1.16] as const,
+    baseColor: [tone, tone + 0.01, tone + 0.03, 1] as const,
+    metallic: 0,
+    roughness: 0.85,
+    includeInAutoFrame: false
+  };
+});
+
 const NEUTRAL_SET: SetSpec = {
   clearColor: [0.06, 0.07, 0.09, 1],
   studioLightingScale: 0.5,
   environment: NEUTRAL_ENVIRONMENT,
   pieces: [
+    ...FLOOR_TILES,
     {
       id: "void-floor",
       geometry: "cube",
@@ -67,6 +86,115 @@ const NEUTRAL_SET: SetSpec = {
       // stylized (cel) and PBR render styles.
       glow: { dim: 0.6, full: 0.6 },
       includeInAutoFrame: false
+    },
+    // Neutral studio architecture so the first run reads as a lit stage instead of a void:
+    // a cyclorama wall, two side flats, a light-truss on each side and an accent outline
+    // around the stage mark. Pure set dressing; no cast, no props, no theme.
+    {
+      id: "studio-cyc-wall",
+      geometry: "cube",
+      position: [0, 3.2, -6],
+      scale: [26, 8, 0.3],
+      baseColor: [0.26, 0.3, 0.38, 1],
+      metallic: 0,
+      roughness: 0.95,
+      emissiveColor: [0.2, 0.26, 0.36],
+      emissiveStrength: 0.55
+    },
+    {
+      id: "studio-flat-left",
+      geometry: "cube",
+      position: [-4.6, 1.6, -2.6],
+      scale: [0.25, 3.2, 3.2],
+      baseColor: [0.22, 0.25, 0.31, 1],
+      metallic: 0,
+      roughness: 0.9,
+      emissiveColor: [0.12, 0.15, 0.2],
+      emissiveStrength: 0.35
+    },
+    {
+      id: "studio-flat-right",
+      geometry: "cube",
+      position: [4.6, 1.6, -2.6],
+      scale: [0.25, 3.2, 3.2],
+      baseColor: [0.22, 0.25, 0.31, 1],
+      metallic: 0,
+      roughness: 0.9,
+      emissiveColor: [0.12, 0.15, 0.2],
+      emissiveStrength: 0.35
+    },
+    {
+      id: "studio-truss-left",
+      geometry: "cylinder",
+      position: [-3.3, 1.9, -3.4],
+      scale: [0.12, 3.8, 0.12],
+      baseColor: [0.5, 0.53, 0.58, 1],
+      metallic: 0.6,
+      roughness: 0.4,
+      emissiveColor: [0.3, 0.32, 0.36],
+      emissiveStrength: 0.35
+    },
+    {
+      id: "studio-truss-right",
+      geometry: "cylinder",
+      position: [3.3, 1.9, -3.4],
+      scale: [0.12, 3.8, 0.12],
+      baseColor: [0.5, 0.53, 0.58, 1],
+      metallic: 0.6,
+      roughness: 0.4,
+      emissiveColor: [0.3, 0.32, 0.36],
+      emissiveStrength: 0.35
+    },
+    {
+      id: "studio-truss-bar",
+      geometry: "cube",
+      position: [0, 3.85, -3.4],
+      scale: [6.7, 0.1, 0.1],
+      baseColor: [0.5, 0.53, 0.58, 1],
+      metallic: 0.6,
+      roughness: 0.4,
+      emissiveColor: [0.3, 0.32, 0.36],
+      emissiveStrength: 0.35
+    },
+    {
+      id: "studio-accent-back",
+      geometry: "cube",
+      position: [0, 0.02, -0.9],
+      scale: [1.9, 0.02, 0.05],
+      baseColor: [0.35, 0.8, 0.95, 1],
+      emissiveColor: [0.35, 0.8, 0.95],
+      emissiveStrength: 1.4,
+      glow: { dim: 1.4, full: 1.4 }
+    },
+    {
+      id: "studio-accent-front",
+      geometry: "cube",
+      position: [0, 0.02, 0.9],
+      scale: [1.9, 0.02, 0.05],
+      baseColor: [0.35, 0.8, 0.95, 1],
+      emissiveColor: [0.35, 0.8, 0.95],
+      emissiveStrength: 1.4,
+      glow: { dim: 1.4, full: 1.4 }
+    },
+    {
+      id: "studio-accent-left",
+      geometry: "cube",
+      position: [-0.9, 0.02, 0],
+      scale: [0.05, 0.02, 1.9],
+      baseColor: [0.35, 0.8, 0.95, 1],
+      emissiveColor: [0.35, 0.8, 0.95],
+      emissiveStrength: 1.4,
+      glow: { dim: 1.4, full: 1.4 }
+    },
+    {
+      id: "studio-accent-right",
+      geometry: "cube",
+      position: [0.9, 0.02, 0],
+      scale: [0.05, 0.02, 1.9],
+      baseColor: [0.35, 0.8, 0.95, 1],
+      emissiveColor: [0.35, 0.8, 0.95],
+      emissiveStrength: 1.4,
+      glow: { dim: 1.4, full: 1.4 }
     }
   ],
   lights: [

@@ -1,0 +1,87 @@
+{
+ "url": "http://127.0.0.1:57708/",
+ "final_url": "http://127.0.0.1:57708/",
+ "events": [
+  {
+   "sequence": 1,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57708/favicon.ico",
+    "origin": "http://127.0.0.1:57708",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 2,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57708/probes/probe-20ms.opus.webm",
+    "origin": "http://127.0.0.1:57708",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 3,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57708/probes/probe-20ms.m4a",
+    "origin": "http://127.0.0.1:57708",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 4,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57708/packs/game-sfx-core/footsteps.grass.00.m4a",
+    "origin": "http://127.0.0.1:57708",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 5,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57708/packs/game-sfx-core/vehicle.boost.m4a",
+    "origin": "http://127.0.0.1:57708",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  },
+  {
+   "sequence": 6,
+   "step_index": 1,
+   "kind": "console",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "url": {
+    "url": "http://127.0.0.1:57708/packs/game-sfx-core/ui.toggle.00.m4a",
+    "origin": "http://127.0.0.1:57708",
+    "query_parameter_names": [],
+    "redacted": false
+   }
+  }
+ ],
+ "completeness": {
+  "status": "complete"
+ }
+}

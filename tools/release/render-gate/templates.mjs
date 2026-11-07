@@ -57,6 +57,8 @@ export function scaffoldCommands(source, template, dir, workDir) {
 
 /** Scaffold, install and build one template; returns the dist directory. Throws with the failing step on error. */
 export async function buildTemplate(source, template, workDir, run = execFileP) {
+  // prebuilt:<dir> - dists already built from the workspace tree (tools/agent-templates/build-templates-workspace.ts --out <dir>).
+  if (source.kind === "prebuilt") { const dist = join(source.root, template, "dist"); entryPage(dist); return dist; }
   const dir = `tpl-${template}`;
   for (const { cmd, args, cwd } of scaffoldCommands(source, template, dir, workDir)) {
     try { await run(cmd, args, { cwd, maxBuffer: 1 << 26, timeout: 15 * 60 * 1000 }); }
