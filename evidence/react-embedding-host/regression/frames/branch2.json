@@ -1,0 +1,162 @@
+[
+  {
+    "slug": "showcase-silt-and-signal-port",
+    "label": "branch2",
+    "file": "branch2-showcase-silt-and-signal-port.png",
+    "readyAfterPolls": 28,
+    "routeReady": true,
+    "page": {
+      "href": "http://127.0.0.1:8615/apps/showcase-silt-and-signal-port/",
+      "title": "Duneglide — Silt-World Flight",
+      "canvases": 1,
+      "ready": "true",
+      "drawCalls": "128",
+      "globals": [
+        "__A3D_SHADOW_FIT__",
+        "__A3D_SHADOW_TAP_TIER__",
+        "__AURA3D_LIVE_APPS__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA_QA__",
+        "__AURA_SILT__"
+      ],
+      "tapTier": {
+        "tier": 32,
+        "reason": "default",
+        "casterInstances": 32,
+        "quality": "high"
+      },
+      "denseCap": null,
+      "proxies": null
+    }
+  },
+  {
+    "slug": "showcase-teleoperator",
+    "label": "branch2",
+    "file": "branch2-showcase-teleoperator.png",
+    "readyAfterPolls": 24,
+    "routeReady": true,
+    "page": {
+      "href": "http://127.0.0.1:8615/apps/showcase-teleoperator/",
+      "title": "Grid Dispatch — San Francisco Robotaxi & Autonomous Fleet Showcase",
+      "canvases": 2,
+      "ready": "true",
+      "drawCalls": "345",
+      "globals": [
+        "__A3D_SHADOW_TAP_TIER__",
+        "__AURA3D_GAME_EVIDENCE__",
+        "__AURA3D_GAME__",
+        "__AURA3D_HEAL_INSTALLED__",
+        "__AURA3D_HEAL__",
+        "__AURA3D_LIVE_APPS__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA3D_SHOWCASE_TELEOPERATOR__",
+        "__AURA_GRID_DISPATCH__",
+        "__AURA_QA__",
+        "__AURA_SAFETY__"
+      ],
+      "tapTier": {
+        "tier": 32,
+        "reason": "default",
+        "casterInstances": 79,
+        "quality": "high"
+      },
+      "denseCap": null,
+      "proxies": null
+    }
+  },
+  {
+    "slug": "showcase-cross-hop",
+    "label": "branch2",
+    "file": "branch2-showcase-cross-hop.png",
+    "readyAfterPolls": 30,
+    "routeReady": true,
+    "page": {
+      "href": "http://127.0.0.1:8615/apps/showcase-cross-hop/",
+      "title": "Cross Hop — Aura3D Endless Lane Hopper",
+      "canvases": 1,
+      "ready": "true",
+      "drawCalls": "103",
+      "globals": [
+        "__A3D_SHADOW_TAP_TIER__",
+        "__AURA3D_CROSS_HOP__",
+        "__AURA3D_GAME_EVIDENCE__",
+        "__AURA3D_GAME_SOUND__",
+        "__AURA3D_GAME__",
+        "__AURA3D_HEAL_INSTALLED__",
+        "__AURA3D_HEAL__",
+        "__AURA3D_LIVE_APPS__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA_QA__"
+      ],
+      "tapTier": {
+        "tier": 32,
+        "reason": "default",
+        "casterInstances": 159,
+        "quality": "high"
+      },
+      "denseCap": null,
+      "proxies": null
+    }
+  },
+  {
+    "slug": "showcase-kart-havoc",
+    "label": "branch2",
+    "file": "branch2-showcase-kart-havoc.png",
+    "readyAfterPolls": 42,
+    "routeReady": true,
+    "page": {
+      "href": "http://127.0.0.1:8615/apps/showcase-kart-havoc/",
+      "title": "Kart Havoc — Desert Canyon Item Racing",
+      "canvases": 1,
+      "ready": "true",
+      "drawCalls": "708",
+      "globals": [
+        "__A3D_SHADOW_TAP_TIER__",
+        "__AURA3D_GAME_EVIDENCE__",
+        "__AURA3D_GAME_SOUND__",
+        "__AURA3D_GAME__",
+        "__AURA3D_KART_HAVOC__",
+        "__AURA3D_LIVE_APPS__",
+        "__AURA3D_RACING_STARTER__",
+        "__AURA3D_ROUTE_READY__"
+      ],
+      "tapTier": {
+        "tier": 32,
+        "reason": "default",
+        "casterInstances": 0,
+        "quality": "high"
+      },
+      "denseCap": null,
+      "proxies": null
+    }
+  },
+  {
+    "slug": "showcase-cloud-runner-port",
+    "label": "branch2",
+    "file": "branch2-showcase-cloud-runner-port.png",
+    "readyAfterPolls": 29,
+    "routeReady": true,
+    "page": {
+      "href": "http://127.0.0.1:8615/apps/showcase-cloud-runner-port/",
+      "title": "Cumulus Dash — Cloud Obstacle Runner",
+      "canvases": 1,
+      "ready": "true",
+      "drawCalls": "115",
+      "globals": [
+        "__A3D_SHADOW_TAP_TIER__",
+        "__AURA3D_LIVE_APPS__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA_CUMULUS_DASH__",
+        "__AURA_LAB_APP_OPTIONS__"
+      ],
+      "tapTier": {
+        "tier": 32,
+        "reason": "default",
+        "casterInstances": 0,
+        "quality": "high"
+      },
+      "denseCap": null,
+      "proxies": null
+    }
+  }
+]

@@ -1,0 +1,67 @@
+{
+  "url": "http://127.0.0.1:8615/examples/react-embedding-host/index.html?live=0&value=0.1&dense=1",
+  "live": {
+    "url": "http://127.0.0.1:8615/examples/react-embedding-host/index.html?live=0&value=0.1&dense=1",
+    "canvases": 2,
+    "pageGlobals": [],
+    "bodyAuraKeys": [],
+    "compileEvidence": {
+      "a": {
+        "__A3D_SHADOW_TAP_TIER__": {
+          "tier": 32,
+          "reason": "default",
+          "casterInstances": 0,
+          "quality": "high"
+        }
+      },
+      "b": {
+        "__A3D_SHADOW_PROXIES__": [
+          {
+            "node": "pebbles",
+            "primitive": "sphere",
+            "instances": 1200,
+            "cameraTriangles": 256,
+            "proxyTriangles": 64
+          }
+        ],
+        "__A3D_SHADOW_TAP_TIER__": {
+          "tier": 32,
+          "reason": "default",
+          "casterInstances": 1200,
+          "quality": "high"
+        }
+      }
+    },
+    "counters": {
+      "appsCreated": 2,
+      "appsDisposed": 0,
+      "hostRenders": 2,
+      "handleWrites": 0,
+      "setScene": 0
+    }
+  },
+  "disposed": {
+    "canvases": 0,
+    "pageGlobals": [],
+    "bodyAuraKeys": [],
+    "compileEvidence": {
+      "a": null,
+      "b": null
+    },
+    "counters": {
+      "appsCreated": 2,
+      "appsDisposed": 2,
+      "hostRenders": 2,
+      "handleWrites": 0,
+      "setScene": 0
+    }
+  },
+  "verdicts": {
+    "twoLiveApps": true,
+    "noPageGlobalsWhileLive": true,
+    "perAppEvidenceRecorded": true,
+    "perAppEvidenceDiffers": true,
+    "bothDisposed": true,
+    "noPageGlobalsAfterDispose": true
+  }
+}

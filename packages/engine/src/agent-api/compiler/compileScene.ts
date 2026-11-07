@@ -53,6 +53,7 @@ import { createAssetProvenance } from "../diagnostics.js";
 import { sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries } from "./primitives.js";
+import { withCompileEvidence } from "./compileEvidence.js";
 import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { assertFramePivotSupported, createProductionRuntimeRendererInput, frameUsesLegacyModelMatrix, inheritBuiltinGlyphFrame, releaseBuiltinGlyphFrameOwner } from "./renderInput.js";
 import { isBuiltinGlyphResource, retireBuiltinGlyphResource, type BuiltinGlyphAtlasScope } from "./BuiltinGlyphAtlas.js";
@@ -1216,7 +1217,7 @@ export class CompiledSceneImpl implements CompiledScene {
     let published = false;
     let notified = false;
     try {
-      extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx), ctx.builtinGlyphAtlas);
+      extraPrimitive = withCompileEvidence(ctx.runtimeOwner ?? ctx.canvas, () => createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx), ctx.builtinGlyphAtlas));
       for (const flatNode of flatNodes) {
         const kind = String((flatNode as { kind?: string }).kind ?? "");
         if (!isKnownNodeKind(kind)) {
@@ -1826,7 +1827,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
   const volumeCleanup = createVolumeCleanupTracker();
   const projectedSpots = new ProjectedSpotSceneResources(mount);
   try {
-    primitiveEntries = createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx), mount.builtinGlyphAtlas);
+    primitiveEntries = withCompileEvidence(mount.runtimeOwner ?? canvas, () => createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx), mount.builtinGlyphAtlas));
     for (const node of flattened) {
       if (node.kind === "gaussian-splat" && resolveNodeHandler(node.kind, ctx.flags) === nodeHandlers["gaussian-splat"]) splatLeases.set(node, createSplatLease(node, mount));
       if (node.kind === "scalar-volume" && resolveNodeHandler(node.kind, ctx.flags) === nodeHandlers["scalar-volume"]) volumeLeases.set(node, createVolumeLease(node, mount, volumeCleanup));

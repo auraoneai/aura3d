@@ -1,6 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
+import { COMPILE_EVIDENCE_GLOBALS } from "../compiler/compileEvidence.js";
 
 /**
  * Live apps on this page, so tooling can act on a scene it did not create.
@@ -22,15 +23,37 @@ import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
  */
 const liveAuraApps = new Set<AuraApp>();
 
-export function registerAuraApp(app: AuraApp): void {
+/** Apps that published the page-global registry handle; the global is removed with the last of them. */
+const publishedAuraApps = new Set<AuraApp>();
+
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export function registerAuraApp(app: AuraApp, options: { readonly publish?: boolean } = {}): void {
   liveAuraApps.add(app);
-  if (typeof globalThis !== "undefined") {
-    (globalThis as { __AURA3D_LIVE_APPS__?: unknown }).__AURA3D_LIVE_APPS__ = auraAppRegistry;
+  if (options.publish !== false) {
+    publishedAuraApps.add(app);
+    if (typeof globalThis !== "undefined") {
+      (globalThis as { __AURA3D_LIVE_APPS__?: unknown }).__AURA3D_LIVE_APPS__ = auraAppRegistry;
+    }
   }
 }
 
 export function unregisterAuraApp(app: AuraApp): void {
   liveAuraApps.delete(app);
+  if (!publishedAuraApps.delete(app) || publishedAuraApps.size > 0 || typeof globalThis === "undefined") return;
+  const page = globalThis as Record<string, unknown>;
+  if (page.__AURA3D_LIVE_APPS__ === auraAppRegistry) delete page.__AURA3D_LIVE_APPS__;
+  // Compiler audit evidence mirrored by publishing apps; do not leave it behind after the last of them.
+  for (const key of COMPILE_EVIDENCE_GLOBALS) delete page[key];
+}
+
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export function clearPageEvidenceWithoutPublishers(): void {
+  if (publishedAuraApps.size > 0 || typeof globalThis === "undefined") return;
+  const page = globalThis as Record<string, unknown>;
+  for (const key of COMPILE_EVIDENCE_GLOBALS) delete page[key];
 }
 
 /** Ownerless builder compatibility is valid only while one app is registered. */

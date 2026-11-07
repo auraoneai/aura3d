@@ -1,0 +1,86 @@
+{
+  "base": "http://127.0.0.1:6417",
+  "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "rects": [
+    {
+      "x": 50,
+      "y": 115,
+      "width": 444,
+      "height": 302
+    },
+    {
+      "x": 508,
+      "y": 115,
+      "width": 444,
+      "height": 302
+    }
+  ],
+  "pageState": {
+    "bodyAuraKeys": [],
+    "routeReady": "undefined",
+    "liveApps": "undefined",
+    "counters": {
+      "appsCreated": 2,
+      "appsDisposed": 0,
+      "hostRenders": 4,
+      "handleWrites": 1,
+      "setScene": 0
+    },
+    "canvases": 2,
+    "tabIndex": [
+      -1,
+      -1
+    ]
+  },
+  "regions": [
+    {
+      "canvas": "A (handle.update, props)",
+      "rect": {
+        "x": 50,
+        "y": 115,
+        "width": 444,
+        "height": 302
+      },
+      "frameA": {
+        "meanLuma": 18.71,
+        "min": 0,
+        "max": 53.666666666666664
+      },
+      "frameB": {
+        "meanLuma": 19.17,
+        "min": 11.333333333333334,
+        "max": 53.666666666666664
+      },
+      "meanAbsDiffAtoB": 3.5112,
+      "meanAbsDiffBtoBRepeat": 0
+    },
+    {
+      "canvas": "B (useAuraNodeUpdate)",
+      "rect": {
+        "x": 508,
+        "y": 115,
+        "width": 444,
+        "height": 302
+      },
+      "frameA": {
+        "meanLuma": 15.94,
+        "min": 0,
+        "max": 213
+      },
+      "frameB": {
+        "meanLuma": 16.27,
+        "min": 0,
+        "max": 219
+      },
+      "meanAbsDiffAtoB": 2.5972,
+      "meanAbsDiffBtoBRepeat": 0
+    }
+  ],
+  "verdicts": {
+    "notBlack": true,
+    "notMarketingPage": true,
+    "motion": true,
+    "noPageGlobals": true,
+    "noSetScene": true
+  }
+}

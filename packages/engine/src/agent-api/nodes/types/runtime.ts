@@ -440,6 +440,12 @@ export interface AuraApp {
   /** Current mount's terminal outcome, or the final disposal outcome. */
   renderTermination?(): AuraRenderTermination | undefined;
   /**
+   * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+   * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+   * here; publishing apps also mirror it to `globalThis` while they are alive.
+   */
+  compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+  /**
    * Subscribe to WebGL context loss. Returns an unsubscribe function.
    *
    * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -581,6 +587,13 @@ export interface AuraCreateAppOptions {
   readonly preserveDrawingBuffer?: boolean;
   readonly autoStart?: boolean;
   readonly resize?: boolean;
+  /**
+   * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+   * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+   * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+   * when the last publishing app is disposed.
+   */
+  readonly routeState?: boolean;
   // C-38 additions (PR 0a, all optional)
   readonly pixelRatio?: number | { readonly max?: number; readonly min?: number };
   /** `flags`: a flag list, `"all"` / `"none"`, or the record form (`{ A3D_QR_POST: true }`); see `resolveQrFlags`. */

@@ -25,8 +25,10 @@ import { AuraRuntimeError } from "./errors.js";
 import { AuraMigrationError } from "../compiler/errors.js";
 import { createFrameRateMeter, startProductionRender } from "./frameLoop.js";
 import { isDirectRenderPath, vetoDirectPath } from "./renderPath.js";
-import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
-import { markRouteError, markRouteReady } from "./routeState.js";
+import { clearPageEvidenceWithoutPublishers, registerAuraApp, unregisterAuraApp } from "./liveApps.js";
+import { registerCompileEvidence, type AuraCompileEvidence, type CompileEvidenceRegistration } from "../compiler/compileEvidence.js";
+import type { MutableDiagnostics } from "../diagnostics.js";
+import { enrollRouteState, markRouteError, markRouteReady, releaseRouteState } from "./routeState.js";
 import { AURA_APP_CANVAS, captureAuraScreenshot } from "./screenshot.js";
 import { attachErrorOverlay } from "./errorOverlay.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "../GameEvidence.js";
@@ -760,6 +762,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   let startupAssetScope: ReturnType<typeof createAppAssetEventScope> | undefined;
   let abortStartupMount: (() => void) | undefined;
   let startupApp: AuraApp | undefined;
+  let startupDiagnostics: MutableDiagnostics | undefined;
+  let startupCompileEvidence: CompileEvidenceRegistration | undefined;
   const extensionDisposers: Array<() => void> = [];
   try {
   const actorAnimationContext = createActorAnimationContext(qrFlags);
@@ -782,6 +786,10 @@ export function createAuraAppWithPhysicsWorldAccess(
   const releaseMatrixCache = setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache(modelMatrixFor(qrFlags)) : null, runtimeOwner);
   // 01-S5 (C-06): colorUtils helpers delegate to parseAuraColor under the flag.
   const releaseColorPolicy = setPrd01ColorParsing(qrFlags.on("A3D_QR_CORE") ? { strict: options.strict ?? qrFlags.on("A3D_QR_STRICT") } : null, runtimeOwner);
+  // R-02: compiler audit evidence (shadow tap tier, dense cap, shadow proxies) is recorded per app and
+  // mirrored to page globals only by apps that publish route state.
+  const compileEvidence = registerCompileEvidence(runtimeOwner, { publish: options.routeState !== false });
+  startupCompileEvidence = compileEvidence;
   // Custom-shader compile/link failures: a fresh app starts with a clean failure list; strict (or
   // renderer.materialStrictness "strict") fails the frame with AuraRuntimeError("custom-shader-compile-failed"),
   // otherwise the failing draw is skipped (magenta with ?diag=1) and the failure is reported in diagnostics.
@@ -794,6 +802,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   // TIER: the compile ctx's quality.tier resolves from renderer.quality at
   // mount (compiler/renderer.ts) — no app-side stub remains.
   const diagnosticsState = createInitialDiagnostics(renderSnapshot, options.renderer);
+  startupDiagnostics = diagnosticsState;
+  if (options.routeState !== false) enrollRouteState(diagnosticsState);
   if (canvas) {
     // PRD-01 §6.9 (Q-15-1): under A3D_QR_CORE the ratio is min(devicePixelRatio, tier cap), not the profile's 1.5.
     const coreDpr = qrFlags.on("A3D_QR_CORE");
@@ -2527,6 +2537,7 @@ export function createAuraAppWithPhysicsWorldAccess(
         cleanup(releaseAppWorldFlags);
         cleanup(releaseMatrixCache);
         cleanup(releaseColorPolicy);
+        cleanup(() => compileEvidence.release());
         for (const unsubscribe of [...deviceLostListeners.values(), ...deviceRestoredListeners.values()]) cleanup(unsubscribe);
         deviceLostListeners.clear();
         deviceRestoredListeners.clear();
@@ -2544,6 +2555,7 @@ export function createAuraAppWithPhysicsWorldAccess(
         cleanup(() => runtimeNodes.dispose());
         cleanup(() => overlay?.dispose());
         cleanup(() => unregisterAuraApp(app));
+        cleanup(() => releaseRouteState(diagnosticsState));
         for (const error of failures.slice(0, 32)) diagnosticsState.errors.push(`DISPOSE_FAILED: ${productionRenderErrorMessage(error)}`);
         if (canvasAdmissionExclusive && failures.length) canvasAdmissionQuarantined = true;
       } finally {
@@ -2660,7 +2672,10 @@ export function createAuraAppWithPhysicsWorldAccess(
   (app as { cutCamera?: () => void }).cutCamera = () => {
     productionController?.resetTemporalHistory?.("camera-cut");
   };
-  registerAuraApp(app);
+  // R-02: this app's compiler audit evidence, keyed by the historical global names (QA reads it here
+  // for embedded apps, which never write those globals).
+  (app as { compileEvidence?: () => AuraCompileEvidence }).compileEvidence = () => compileEvidence.read();
+  registerAuraApp(app, { publish: options.routeState !== false });
   // #1131: diagnostics read the canvas size through this slot, not screenshot().
   Object.defineProperty(app, AURA_APP_CANVAS, { value: canvas, enumerable: false });
   return app;
@@ -2668,6 +2683,8 @@ export function createAuraAppWithPhysicsWorldAccess(
     // No app was returned to own these worlds. Keep the original failure if
     // cleanup succeeds, while still attempting both independent disposals.
     const failures: unknown[] = [error];
+    try { if (startupDiagnostics) releaseRouteState(startupDiagnostics); } catch (cleanupError) { failures.push(cleanupError); }
+    try { startupCompileEvidence?.release(); clearPageEvidenceWithoutPublishers(); } catch (cleanupError) { failures.push(cleanupError); }
     try { rootAppRegistration?.release(); } catch (cleanupError) { failures.push(cleanupError); }
     try { startupAssetScope?.dispose(); } catch (cleanupError) { failures.push(cleanupError); }
     try { abortStartupMount?.(); } catch (cleanupError) { failures.push(cleanupError); }

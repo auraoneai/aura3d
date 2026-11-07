@@ -4,6 +4,7 @@ import {
   Suspense,
   createContext,
   createElement,
+  forwardRef,
   isValidElement,
   useContext,
   useEffect,
@@ -14,6 +15,7 @@ import {
   useSyncExternalStore,
   type CSSProperties,
   type ReactElement,
+  type Ref,
   type ReactNode
 } from "react";
 import {
@@ -70,6 +72,13 @@ export interface AuraTimelineSpec {
 
 export interface AuraCanvasProps {
   readonly children?: ReactNode;
+  /**
+   * A scene built with the engine API (`scene().add(primitives.box(...).runtime({ id }))`) used instead of the
+   * one described by `children`. Declarative children still render (overlays, hooks) but no longer describe the
+   * scene. Replacing the builder calls `setScene` on the live app; update nodes in place through the handle
+   * instead of rebuilding the scene for every change.
+   */
+  readonly scene?: AuraSceneBuilder;
   readonly diagnostics?: AuraCreateAppOptions["diagnostics"];
   readonly pixelRatio?: number;
   readonly autoStart?: boolean;
@@ -91,6 +100,70 @@ export interface AuraCanvasProps {
   readonly onPointerUp?: (event: PointerEvent) => void;
   /** Fires on canvas pointermove for hover-position tracking. */
   readonly onHover?: (event: PointerEvent) => void;
+  /**
+   * Receives the imperative {@link AuraCanvasHandle} once the renderer is ready, and `null` after the
+   * canvas unmounts or its app is disposed. Object refs and callback refs are both accepted. Use
+   * {@link AuraCanvasWithRef} to pass a plain `ref` instead.
+   */
+  readonly handleRef?: Ref<AuraCanvasHandle | null>;
+  /** Receives the underlying `<canvas>` element (callback or object ref). */
+  readonly canvasRef?: Ref<HTMLCanvasElement | null>;
+  /** Called with the live app when it becomes ready, and with `undefined` when that app is disposed. */
+  readonly onAppChange?: (app: AuraApp | undefined) => void;
+  /**
+   * Opt in to the legacy page-global route state (`document.body.dataset.aura3d*`,
+   * `window.__AURA3D_ROUTE_READY__`, `globalThis.__AURA3D_LIVE_APPS__`). Off by default for a canvas
+   * embedded in a host page. Read at mount; changing it does not recreate the app.
+   */
+  readonly routeState?: boolean;
+  /**
+   * Let the engine read `?a3d-qr=` quality flags from the host page URL. Off by default for an
+   * embedded canvas. Read at mount; changing it does not recreate the app.
+   */
+  readonly allowUrlFlags?: boolean;
+  /**
+   * `tabIndex` of the canvas. Defaults to `-1`: a click focuses the canvas so {@link AuraCanvasHandle.input}
+   * keyboard events are scoped to it, without adding a tab stop to the host page.
+   */
+  readonly tabIndex?: number;
+}
+
+/** A partial, absolute update to a mounted runtime node. Every field is optional. */
+export interface AuraNodePatch {
+  readonly position?: readonly [number, number, number];
+  readonly rotation?: readonly [number, number, number];
+  readonly scale?: number | readonly [number, number, number];
+  readonly visible?: boolean;
+  readonly material?: AuraMaterialSpec;
+  readonly text?: string;
+  readonly morphTargets?: Readonly<Record<string, number>>;
+  /** Dense per-frame instance write; see `AuraRuntimeNodeHandle.setInstanceMatrices`. */
+  readonly instances?: { readonly matrices: Float32Array; readonly count: number; readonly rgba?: Float32Array };
+}
+
+/**
+ * Imperative surface of a mounted {@link AuraCanvas}. It is created when the renderer is ready, is the
+ * same object for the life of that app (including `setScene` changes), and goes inert once the app is
+ * disposed. Live data written through it never renders React and never calls `setScene`.
+ */
+export interface AuraCanvasHandle {
+  readonly app: AuraApp;
+  readonly canvas: HTMLCanvasElement;
+  /** The app's live runtime-node registry (`nodes.require(id)`). Resolved at call time. */
+  readonly nodes: AuraApp["nodes"];
+  /** Apply `patch` to the node named `id`. Returns `false` when the node does not exist or the handle is disposed. */
+  update(id: string, patch: AuraNodePatch): boolean;
+  /** Dense instance write on node `id` (same as `update(id, { instances })`). */
+  writeInstances(id: string, matrices: Float32Array, count: number, rgba?: Float32Array): boolean;
+  /** Subscribe to the app frame loop. The returned function unsubscribes; subscriptions end with the handle. */
+  onFrame(callback: AuraFrameCallback): () => void;
+  /** A game-input controller whose keyboard target is this canvas, not the page `window`. */
+  input(options: Parameters<AuraApp["input"]>[0]): ReturnType<AuraApp["input"]>;
+  pause(): void;
+  resume(): void;
+  screenshot(): ReturnType<AuraApp["screenshot"]>;
+  /** `true` once the app has been disposed; every method is then a no-op. */
+  readonly disposed: boolean;
 }
 
 /** A renderer readiness outcome that did not produce a usable renderer. */
@@ -347,6 +420,7 @@ function propsKey(value: unknown): string {
     return JSON.stringify(value, (_key, entry: unknown) => {
       if (typeof entry === "function") return `fn:${identityFor(entry)}`;
       if (isValidElement(entry)) return "[element]";
+      warnLargeDeclarativeProp(entry);
       if (entry instanceof RegExp) return `re:${entry.source}/${entry.flags}`;
       return entry;
     }) ?? "undefined";
@@ -378,6 +452,91 @@ function optionMountKey(value: unknown): string {
   }
 }
 
+/** Apply an {@link AuraNodePatch} to a mounted app's node. Returns `false` when the node is missing. */
+export function applyAuraNodePatch(app: Pick<AuraApp, "nodes">, id: string, patch: AuraNodePatch): boolean {
+  const node = app.nodes.get(id);
+  if (!node) return false;
+  if (patch.position) node.setPosition(patch.position[0], patch.position[1], patch.position[2]);
+  if (patch.rotation) node.setRotation(patch.rotation[0], patch.rotation[1], patch.rotation[2]);
+  if (patch.scale !== undefined) node.setScale(typeof patch.scale === "number" ? patch.scale : [patch.scale[0], patch.scale[1], patch.scale[2]]);
+  if (patch.visible !== undefined) node.setVisible(patch.visible);
+  if (patch.material) node.setMaterial(patch.material);
+  if (patch.text !== undefined) node.setText(patch.text);
+  if (patch.morphTargets) node.setMorphTargets(patch.morphTargets);
+  if (patch.instances) node.setInstanceMatrices(patch.instances.matrices, patch.instances.count, patch.instances.rgba);
+  return true;
+}
+
+/**
+ * Build the imperative handle for a mounted app. Returns the handle and a `release` that makes it
+ * inert and drops its frame subscriptions. `AuraCanvas` calls this; it is exported for hosts that
+ * create the app themselves and for tests.
+ */
+export function createAuraCanvasHandle(app: AuraApp, canvas: HTMLCanvasElement): { readonly handle: AuraCanvasHandle; release(): void } {
+  let disposed = false;
+  const subscriptions = new Set<() => void>();
+  const handle: AuraCanvasHandle = {
+    app,
+    canvas,
+    get nodes() { return app.nodes; },
+    get disposed() { return disposed; },
+    update(id, patch) {
+      return disposed ? false : applyAuraNodePatch(app, id, patch);
+    },
+    writeInstances(id, matrices, count, rgba) {
+      return disposed ? false : applyAuraNodePatch(app, id, { instances: { matrices, count, ...(rgba ? { rgba } : {}) } });
+    },
+    onFrame(callback) {
+      if (disposed) return () => {};
+      const unsubscribe = app.onFrame(callback);
+      const release = (): void => { subscriptions.delete(release); unsubscribe(); };
+      subscriptions.add(release);
+      return release;
+    },
+    input(options) {
+      return app.input({ target: canvas, ...options });
+    },
+    pause() { if (!disposed) app.pause(); },
+    resume() { if (!disposed) app.resume(); },
+    screenshot() { return app.screenshot(); }
+  };
+  return {
+    handle,
+    release() {
+      disposed = true;
+      for (const unsubscribe of [...subscriptions]) unsubscribe();
+      subscriptions.clear();
+    }
+  };
+}
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T): void {
+  if (typeof ref === "function") ref(value);
+  else if (ref) (ref as { current: T }).current = value;
+}
+
+/**
+ * Push `patch` into node `id` of the enclosing {@link AuraCanvas} whenever `patch` changes identity.
+ * The write goes through the live app: no remount and no `setScene`. Memoise `patch` in the host.
+ */
+export function useAuraNodeUpdate(id: string, patch: AuraNodePatch | undefined): void {
+  const app = useAuraApp();
+  useEffect(() => {
+    if (app && patch) applyAuraNodePatch(app, id, patch);
+  }, [app, id, patch]);
+}
+
+const LARGE_PROP_ELEMENTS = 4096;
+let warnedLargeProp = false;
+function warnLargeDeclarativeProp(value: unknown): void {
+  if (warnedLargeProp || typeof console === "undefined") return;
+  const length = ArrayBuffer.isView(value) ? (value as unknown as { length?: number }).length : Array.isArray(value) ? value.length : 0;
+  if (typeof length !== "number" || length <= LARGE_PROP_ELEMENTS) return;
+  if (typeof process !== "undefined" && process.env?.NODE_ENV === "production") return;
+  warnedLargeProp = true;
+  console.warn(`[@aura3d/react] A declarative scene prop holds ${length} elements. Declarative props are serialised on every render and any change rebuilds the scene; push high-frequency or bulk data through the AuraCanvas handle (handle.update / handle.writeInstances) or useAuraNodeUpdate instead.`);
+}
+
 export function AuraCanvas(props: AuraCanvasProps): ReactElement {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const assetSecurityContext = useRef<object>({});
@@ -391,14 +550,15 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
   }>({});
   const live = useRef<{
     app: AuraApp;
+    handle?: { readonly handle: AuraCanvasHandle; release(): void };
     sceneKey: string;
     refreshReadiness(): void;
     fail(error: unknown): void;
   } | undefined>(undefined);
   // The scene is rebuilt only when the declarative children change, keyed without serializing it.
-  const sceneKey = sceneChildrenKey(props.children);
+  const sceneKey = props.scene ? `builder:${identityFor(props.scene)}` : sceneChildrenKey(props.children);
   // The key tracks the children's scene identity, not their object identity.
-  const builtScene = useMemo(() => buildSceneFromChildren(props.children), [sceneKey]);
+  const builtScene = useMemo(() => props.scene ?? buildSceneFromChildren(props.children), [sceneKey]);
   const diagnosticsKey = optionMountKey(props.diagnostics);
   // Publish only committed props. A concurrent render may be abandoned, so
   // writing this ref during render could expose callbacks from a discarded tree.
@@ -411,6 +571,8 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
     if (!ref.current) return undefined;
     const canvas = ref.current;
     const { props: mountProps, builtScene: mountScene } = latest.current;
+    const canvasRefTarget = mountProps.canvasRef;
+    assignRef(canvasRefTarget, canvas);
     let active = true;
     let revision = 0;
     let notified = false;
@@ -443,13 +605,16 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
         diagnostics: mountProps.diagnostics,
         pixelRatio: mountProps.pixelRatio,
         autoStart: mountProps.autoStart,
-        resize: mountProps.resize
+        resize: mountProps.resize,
+        // An embedded canvas must not write the host page's globals or read its URL for engine flags.
+        routeState: mountProps.routeState === true,
+        qualityRebuild: { allowUrlFlags: mountProps.allowUrlFlags === true }
       });
     } catch (error) {
       fail(error);
-      return () => { active = false; };
+      return () => { active = false; assignRef(canvasRefTarget, null); };
     }
-    const mount = {
+    const mount: NonNullable<typeof live.current> = {
       app: created,
       sceneKey: latest.current.sceneKey,
       fail,
@@ -499,6 +664,9 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
             if (!notified) {
               notified = true;
               try {
+                mount.handle = createAuraCanvasHandle(created, canvas);
+                assignRef(latest.current.props.handleRef, mount.handle.handle);
+                latest.current.props.onAppChange?.(created);
                 latest.current.props.onReady?.(created);
               } catch (error) {
                 fail(error);
@@ -527,12 +695,25 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
       ++revision;
       readinessController?.abort();
       if (live.current === mount) live.current = undefined;
+      if (mount.handle) {
+        mount.handle.release();
+        mount.handle = undefined;
+        assignRef(latest.current.props.handleRef, null);
+        try { latest.current.props.onAppChange?.(undefined); } catch { /* a host callback must not block disposal */ }
+      }
       canvas.removeEventListener("pointerdown", pointerDown);
       canvas.removeEventListener("pointermove", pointerMove);
       canvas.removeEventListener("pointerup", pointerUp);
       created.dispose();
+      assignRef(canvasRefTarget, null);
     };
   }, [diagnosticsKey, props.autoStart, props.pixelRatio, props.resize]);
+  // A replaced `handleRef` moves the live handle to the new ref; the old one is cleared.
+  useEffect(() => {
+    const target = props.handleRef;
+    assignRef(target, live.current?.handle?.handle ?? null);
+    return () => assignRef(target, null);
+  }, [props.handleRef]);
   // A changed scene goes to the live app through setScene; it no longer disposes and recreates the app.
   useEffect(() => {
     const mount = live.current;
@@ -561,6 +742,7 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
     { value: currentApp },
     createElement("canvas", {
       ref,
+      tabIndex: props.tabIndex ?? -1,
       className: props.className,
       style: {
         width: "100%",
@@ -572,6 +754,15 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
     createElement(AuraAssetSecurityContext.Provider, { value: assetSecurityContext.current }, props.children)
   );
 }
+
+/**
+ * `AuraCanvas` with a standard React `ref` that receives the {@link AuraCanvasHandle}
+ * (`null` until the renderer is ready and after unmount). `AuraCanvas` itself keeps its
+ * plain-function type; this wrapper is the `forwardRef` form for React 18 and 19.
+ */
+export const AuraCanvasWithRef = forwardRef<AuraCanvasHandle | null, AuraCanvasProps>(function AuraCanvasWithRef(props, ref) {
+  return AuraCanvas({ ...props, handleRef: ref });
+});
 
 export function Scene(props: SceneProps): ReactElement {
   return createElement(Fragment, null, props.children);

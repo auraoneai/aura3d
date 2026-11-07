@@ -757,6 +757,7 @@ import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
 import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, instancedShadowSegmentScale, INSTANCED_SHADOW_PROXY_MIN_INSTANCES, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
+import { appendCompileEvidence } from "./compileEvidence.js";
 
 /**
  * Build the production `PBRMaterial` for a primitive node.
@@ -1146,9 +1147,9 @@ export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: Q
       proxy.dispose();
       return undefined;
     }
-    // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): which nodes of a page got a proxy, and how much cheaper it is.
-    const record = (globalThis as { __A3D_SHADOW_PROXIES__?: unknown[] });
-    (record.__A3D_SHADOW_PROXIES__ ??= []).push({ node: node.name ?? node.primitive, primitive: node.primitive, instances: count, cameraTriangles: viewGeometry ? triangleCount(viewGeometry) : null, proxyTriangles: triangleCount(proxy) });
+    // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): which nodes of an app got a proxy, and how much cheaper it is.
+    // Recorded per app; mirrored to the page global only for apps that publish route state (compileEvidence.ts).
+    appendCompileEvidence("__A3D_SHADOW_PROXIES__", { node: node.name ?? node.primitive, primitive: node.primitive, instances: count, cameraTriangles: viewGeometry ? triangleCount(viewGeometry) : null, proxyTriangles: triangleCount(proxy) });
     return proxy;
   });
 }
