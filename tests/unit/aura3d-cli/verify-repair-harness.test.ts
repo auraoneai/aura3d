@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-// @ts-expect-error plain ESM tool without type declarations
+// @ts-ignore plain ESM module without types (tests/unit/agent-eval/modules.d.ts declares *.mjs in the check program)
 import { execTool, isRepaired, runRepair, safeSrcPath } from "../../../tools/agent-loop/repair-harness.mjs";
 
 const dirs: string[] = [];

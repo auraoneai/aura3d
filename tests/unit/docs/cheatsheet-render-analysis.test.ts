@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-// @ts-expect-error plain ESM helper without types
+// @ts-ignore plain ESM module without types (tests/unit/agent-eval/modules.d.ts declares *.mjs in the check program)
 import { analyzeFrames, extractBlocks, frameDifference, frameStats, verifyReport } from "../../../tools/docs/cheatsheet-lib.mjs";
 
 interface Frame { width: number; height: number; data: Uint8Array }

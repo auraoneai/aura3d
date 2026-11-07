@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:f
 import { basename, resolve } from "node:path";
 import { CREATE_AURA3D_TEMPLATES } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, noFileMatches, writeReport, type ReleaseCheck } from "../check-common";
-// @ts-expect-error plain ESM helper without type declarations
+// @ts-ignore plain ESM module without types (tests/unit/agent-eval/modules.d.ts declares *.mjs in the check program)
 import { extractBlocks, verifyReport } from "../docs/cheatsheet-lib.mjs";
 import { runAgentSimulation } from "./simulation";
 
