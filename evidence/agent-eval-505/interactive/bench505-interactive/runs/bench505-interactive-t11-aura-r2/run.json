@@ -1,0 +1,561 @@
+{
+  "runId": "bench505-interactive-t11-aura-r2",
+  "batch": "bench505-interactive",
+  "arm": "aura",
+  "task": 11,
+  "idx": 2,
+  "order": 4,
+  "seed": 20261106004,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T00:23:07.795Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 193677,
+  "usage": {
+    "input": 3287950,
+    "uncachedInput": 3287950,
+    "output": 3952,
+    "turns": 40,
+    "perTurnInput": [
+      3334,
+      14051,
+      14635,
+      25642,
+      32348,
+      39638,
+      44834,
+      45229,
+      49101,
+      52960,
+      57837,
+      58619,
+      69757,
+      71776,
+      72021,
+      77730,
+      78342,
+      87446,
+      88447,
+      90771,
+      92060,
+      95201,
+      96262,
+      102170,
+      102894,
+      104646,
+      105425,
+      106633,
+      107094,
+      108692,
+      108825,
+      114635,
+      114844,
+      115179,
+      119939,
+      120269,
+      122523,
+      123130,
+      126152,
+      126859
+    ],
+    "perTurnOutput": [
+      20,
+      41,
+      29,
+      60,
+      46,
+      38,
+      77,
+      19,
+      98,
+      49,
+      81,
+      43,
+      51,
+      217,
+      30,
+      104,
+      88,
+      90,
+      58,
+      57,
+      31,
+      59,
+      47,
+      155,
+      21,
+      94,
+      88,
+      169,
+      31,
+      118,
+      27,
+      1355,
+      38,
+      22,
+      87,
+      59,
+      105,
+      29,
+      61,
+      60
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1665,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 18
+    },
+    {
+      "i": 1,
+      "t": 1665,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1665,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 6881,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 6881,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 8635,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 8635,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 121
+    },
+    {
+      "i": 7,
+      "t": 8635,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 12103,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 15144,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 10,
+      "t": 17176,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 11,
+      "t": 17185,
+      "type": "search",
+      "pattern": "raycast|pick\\(|setPosition|app\\.camera|AuraCameraController"
+    },
+    {
+      "i": 12,
+      "t": 20368,
+      "type": "search",
+      "pattern": "interface AuraCameraController"
+    },
+    {
+      "i": 13,
+      "t": 20399,
+      "type": "search",
+      "pattern": "AuraSolarPlanetMaterialPreset ="
+    },
+    {
+      "i": 14,
+      "t": 21852,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 203
+    },
+    {
+      "i": 15,
+      "t": 25847,
+      "type": "search",
+      "pattern": "app\\.camera|camera\\.setPose|setPose"
+    },
+    {
+      "i": 16,
+      "t": 25897,
+      "type": "search",
+      "pattern": "readonly camera\\??:|camera: AuraCameraController|setCamera"
+    },
+    {
+      "i": 17,
+      "t": 27880,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 18,
+      "t": 27919,
+      "type": "search",
+      "pattern": "A3D_QR_CAMERA"
+    },
+    {
+      "i": 19,
+      "t": 32771,
+      "type": "list",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera"
+    },
+    {
+      "i": 20,
+      "t": 34465,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+      "lines": 300
+    },
+    {
+      "i": 21,
+      "t": 34465,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+      "lines": 299
+    },
+    {
+      "i": 22,
+      "t": 38731,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+      "lines": 95
+    },
+    {
+      "i": 23,
+      "t": 48357,
+      "type": "search",
+      "pattern": "^\\s+(set\\w+|readonly \\w+|\\w+)\\(.*\\)|interface"
+    },
+    {
+      "i": 24,
+      "t": 49997,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 220
+    },
+    {
+      "i": 25,
+      "t": 57523,
+      "type": "search",
+      "pattern": "export interface AuraMaterialSpec|export interface AuraPrimitiveOptions|export i"
+    },
+    {
+      "i": 26,
+      "t": 60337,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 200
+    },
+    {
+      "i": 27,
+      "t": 60337,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 120
+    },
+    {
+      "i": 28,
+      "t": 60337,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 29,
+      "t": 65066,
+      "type": "search",
+      "pattern": "solarSun|planet\\(|solarCorona"
+    },
+    {
+      "i": 30,
+      "t": 67319,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+      "lines": 80
+    },
+    {
+      "i": 31,
+      "t": 67323,
+      "type": "search",
+      "pattern": "planet:|atmosphere:"
+    },
+    {
+      "i": 32,
+      "t": 70897,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+      "lines": 40
+    },
+    {
+      "i": 33,
+      "t": 70906,
+      "type": "search",
+      "pattern": "solarSystem"
+    },
+    {
+      "i": 34,
+      "t": 72702,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/prefabs/index.js",
+      "lines": 70
+    },
+    {
+      "i": 35,
+      "t": 78795,
+      "type": "search",
+      "pattern": "innerRadius"
+    },
+    {
+      "i": 36,
+      "t": 80808,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/rendering/geometry/Primitives.js",
+      "lines": 190
+    },
+    {
+      "i": 37,
+      "t": 80808,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/rendering/geometry/Ring.js",
+      "lines": 40
+    },
+    {
+      "i": 38,
+      "t": 88864,
+      "type": "search",
+      "pattern": "solarPlanetMaterial"
+    },
+    {
+      "i": 39,
+      "t": 91701,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/solar.js",
+      "lines": 64
+    },
+    {
+      "i": 40,
+      "t": 95547,
+      "type": "search",
+      "pattern": "fromCanvas|textures\\.|AuraTextureRef|DataTexture|canvasTexture"
+    },
+    {
+      "i": 41,
+      "t": 95551,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 42,
+      "t": 100919,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 43,
+      "t": 100919,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 44,
+      "t": 100919,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 45,
+      "t": 100919,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 46,
+      "t": 108831,
+      "type": "search",
+      "pattern": "id: \"space\"|\"space\":"
+    },
+    {
+      "i": 47,
+      "t": 110671,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+      "lines": 70
+    },
+    {
+      "i": 48,
+      "t": 116530,
+      "type": "search",
+      "pattern": "interface AuraSkyStarsOptions|interface AuraSkyGradientOptions"
+    },
+    {
+      "i": 49,
+      "t": 118384,
+      "type": "search",
+      "pattern": "AuraSkyStarsOptions\\b"
+    },
+    {
+      "i": 50,
+      "t": 167097,
+      "type": "search",
+      "pattern": "[Tt]exture"
+    },
+    {
+      "i": 51,
+      "t": 168905,
+      "type": "search",
+      "pattern": "export declare (const|function) texture\\b|class TextureHandle|export declare con"
+    },
+    {
+      "i": 52,
+      "t": 171904,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/texture.d.ts",
+      "lines": 189
+    },
+    {
+      "i": 53,
+      "t": 176260,
+      "type": "search",
+      "pattern": "interface AuraTextureCanvasOptions"
+    },
+    {
+      "i": 54,
+      "t": 176265,
+      "type": "search",
+      "pattern": "canvas\\("
+    },
+    {
+      "i": 55,
+      "t": 178590,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 56,
+      "t": 178590,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/texture.js",
+      "lines": 70
+    },
+    {
+      "i": 57,
+      "t": 183741,
+      "type": "search",
+      "pattern": "texture\\.(canvas|data)|texture: tex|\\.canvas\\("
+    },
+    {
+      "i": 58,
+      "t": 183749,
+      "type": "search",
+      "pattern": "spec\\.texture|material\\.texture|\\.texture\\b.*baseColor"
+    },
+    {
+      "i": 59,
+      "t": 185544,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/textures.js",
+      "lines": 90
+    },
+    {
+      "i": 60,
+      "t": 191528,
+      "type": "search",
+      "pattern": "baseColorRef"
+    },
+    {
+      "i": 61,
+      "t": 193669,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/textures.js",
+      "lines": 80
+    },
+    {
+      "i": 62,
+      "t": 193677,
+      "type": "search",
+      "pattern": "resolveTextureIntent|materialTextureIntent|textureIntent\\("
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/textures.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/looks/lookPresets.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/prefabs/index.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/solar.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/texture.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/texture.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/rendering/geometry/Primitives.js",
+    "node_modules/@aura3d/engine/dist/rendering/geometry/Ring.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-interactive-runs/bench505-interactive/bench505-interactive-t11-aura-r2/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

@@ -1,0 +1,11 @@
+{
+  "rid": "bench505-interactive-t11-three-r3",
+  "task": 11,
+  "mode": "focus",
+  "checks": {},
+  "notes": [],
+  "errors": [],
+  "ready": true,
+  "focused": "Earth",
+  "textAtEnd": "Pause\nEarth\nOrbital period: 365.2 Earth days\nDistance from star: 149.6 million km\nClick a planet to focus. Esc: back to overview."
+}

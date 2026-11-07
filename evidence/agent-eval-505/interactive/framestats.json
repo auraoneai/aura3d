@@ -1,0 +1,114 @@
+{
+ "bench505-interactive-sheet-t10-aura-r1": {
+  "mean": 121.7,
+  "std": 27.1,
+  "nonblack": 1.0,
+  "diff": 0.94,
+  "changedFrac": 0.0185
+ },
+ "bench505-interactive-sheet-t10-aura-r2": {
+  "mean": 198.0,
+  "std": 17.1,
+  "nonblack": 1.0,
+  "diff": 0.62,
+  "changedFrac": 0.0164
+ },
+ "bench505-interactive-sheet-t10-aura-r3": {
+  "mean": 155.9,
+  "std": 37.7,
+  "nonblack": 1.0,
+  "diff": 3.66,
+  "changedFrac": 0.0681
+ },
+ "bench505-interactive-sheet-t11-aura-r1": {
+  "mean": 9.5,
+  "std": 25.5,
+  "nonblack": 0.077,
+  "diff": 2.96,
+  "changedFrac": 0.0258
+ },
+ "bench505-interactive-sheet-t11-aura-r2": {
+  "mean": 9.8,
+  "std": 28.8,
+  "nonblack": 0.07,
+  "diff": 1.42,
+  "changedFrac": 0.0164
+ },
+ "bench505-interactive-sheet-t11-aura-r3": {
+  "mean": 9.2,
+  "std": 26.6,
+  "nonblack": 0.07,
+  "diff": 0.25,
+  "changedFrac": 0.008
+ },
+ "bench505-interactive-t10-aura-r1": {
+  "mean": 155.2,
+  "std": 42.9,
+  "nonblack": 1.0,
+  "diff": 2.28,
+  "changedFrac": 0.0516
+ },
+ "bench505-interactive-t10-aura-r2": {
+  "mean": 191.6,
+  "std": 19.9,
+  "nonblack": 1.0,
+  "diff": 1.73,
+  "changedFrac": 0.0525
+ },
+ "bench505-interactive-t10-aura-r3": {
+  "mean": 212.9,
+  "std": 23.1,
+  "nonblack": 1.0,
+  "diff": 0.04,
+  "changedFrac": 0.0
+ },
+ "bench505-interactive-t10-three-r1": {
+  "mean": 140.5,
+  "std": 40.0,
+  "nonblack": 1.0,
+  "diff": 0.94,
+  "changedFrac": 0.0286
+ },
+ "bench505-interactive-t10-three-r2": {
+  "mean": 135.3,
+  "std": 46.6,
+  "nonblack": 1.0,
+  "diff": 2.91,
+  "changedFrac": 0.0826
+ },
+ "bench505-interactive-t10-three-r3": {
+  "mean": 123.7,
+  "std": 35.9,
+  "nonblack": 1.0,
+  "diff": 2.32,
+  "changedFrac": 0.0577
+ },
+ "bench505-interactive-t11-aura-r1": {
+  "mean": 10.2,
+  "std": 27.9,
+  "nonblack": 0.091,
+  "diff": 1.06,
+  "changedFrac": 0.0087
+ },
+ "bench505-interactive-t11-three-r1": {
+  "mean": 7.5,
+  "std": 20.9,
+  "nonblack": 0.082,
+  "diff": 0.77,
+  "changedFrac": 0.0115
+ },
+ "bench505-interactive-t11-three-r2": {
+  "mean": 6.1,
+  "std": 18.0,
+  "nonblack": 0.057,
+  "diff": 0.29,
+  "changedFrac": 0.005
+ },
+ "bench505-interactive-t11-three-r3": {
+  "mean": 7.1,
+  "std": 20.9,
+  "nonblack": 0.069,
+  "diff": 1.15,
+  "changedFrac": 0.0166
+ }
+}

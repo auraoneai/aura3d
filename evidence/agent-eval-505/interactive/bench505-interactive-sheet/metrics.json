@@ -1,0 +1,702 @@
+[
+  {
+    "runId": "bench505-interactive-sheet-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "stateExposed": true,
+      "plantAtExposed": true,
+      "zeroInitially": true,
+      "counterInitial": true,
+      "count8": true,
+      "counterText8": true,
+      "clickMapsToDistinctSpots": true,
+      "growthMonotonic": true,
+      "growthRange": true,
+      "growthReaches95": true,
+      "growthChanges": true,
+      "clearFound": true,
+      "clearZero": true,
+      "counterTextAfterClear": true,
+      "skyClickIgnored": true,
+      "laterSmaller": true,
+      "manyPlants": true
+    },
+    "probePassFraction": 1,
+    "turns": 16,
+    "agentWallSec": 137.2,
+    "tokensIn": 377388,
+    "tokensOut": 12194,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 2,
+    "readCalls": 8,
+    "searchCalls": 14,
+    "writeCalls": 2,
+    "srcLines": 205,
+    "srcTokens": 2138,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6494.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build ok, canvas #app exists, no page errors or console errors, and the plant count is zero initially."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The click handler casts a ray from the camera through the cursor and intersects y=0, and the probe confirms clicks map to distinct spots."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "GROW_MS is 8000 and growth is computed from performance.now() minus the birth time. Stem, leaf and petal sizes and colours change with growth. Probes show growth reaching 1 by 9s and ~0.54 at 4s."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each plant has its own born timestamp and growth, and the laterSmaller probe passed."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Size, rotation, petal hue, lightness and centre hue are randomized per plant."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The label is updated on plantAt and on Clear, the Clear button empties the plants array, and the counter probes passed."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "__TASK_STATE__ exposes ready, plantCount and plants with x, z and growth. __plantAt is defined, and the probes confirm both."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Sky clicks return early (skyClickIgnored passed). Rendering uses instanced meshes, and the manyPlants probe passed."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "leaves loop: `* (i < 2 ? 1 : 1)` and `i < 2 ? 1 : vis`",
+          "why": "The `(i < 2 ? 1 : 1)` multiplier always evaluates to 1 and does nothing. The `vis` ramp only applies to leaves i>=2, so the delay logic is partly redundant."
+        }
+      ],
+      "glue": {
+        "sceneLines": 28,
+        "rulesLines": 75,
+        "glueLines": 85,
+        "notes": "Glue includes the manual camera ray-picking math (norm, cross, basis vectors, unprojection), the DOM overlay and button creation, the __TASK_STATE__ property definitions, the parked-instance padding helpers, the full per-frame instance rebuild, and the seeded RNG and clamp/lerp helpers."
+      }
+    }
+  },
+  {
+    "runId": "bench505-interactive-sheet-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "stateExposed": true,
+      "plantAtExposed": true,
+      "zeroInitially": true,
+      "counterInitial": true,
+      "count8": true,
+      "counterText8": true,
+      "clickMapsToDistinctSpots": true,
+      "growthMonotonic": true,
+      "growthRange": true,
+      "growthReaches95": true,
+      "growthChanges": true,
+      "clearFound": true,
+      "clearZero": true,
+      "counterTextAfterClear": true,
+      "skyClickIgnored": true,
+      "laterSmaller": true,
+      "manyPlants": true
+    },
+    "probePassFraction": 1,
+    "turns": 11,
+    "agentWallSec": 100.5,
+    "tokensIn": 207383,
+    "tokensOut": 5093,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 1,
+    "readCalls": 6,
+    "searchCalls": 7,
+    "writeCalls": 1,
+    "srcLines": 197,
+    "srcTokens": 2229,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeds, the canvas has id #app, there are no page or console errors, and the plant count is zero initially."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "groundPoint() intersects a camera ray with the y=0 plane. The probe confirms clicks map to distinct spots."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Growth is (now - t0)/8000 with smoothing. Probes show about 0.10 at 0.5s, 0.54 at 4s and 1.0 at 9s. Stem height, leaf size, colour and petals all change with growth."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each plant has its own t0, and the laterSmaller probe passes."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Height, head size, yaw and petal hue are randomised per plant."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The label is set to 'Plants: N' in plantAt and on Clear. The counter and Clear probes pass."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "__TASK_STATE__ exposes ready, plantCount and plants with growth in 0..1, and __plantAt adds a plant. The probes confirm all of this."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "groundPoint returns null for rays that miss the ground, and the sky-click probe passes. Rendering uses instanced meshes, and the manyPlants probe passes."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 28,
+        "rulesLines": 85,
+        "glueLines": 85,
+        "notes": "Glue is the manual camera ray/plane unprojection (~25 lines), the DOM overlay and Clear button, the state/__plantAt exposure, the hidden-instance padding helpers, and the full-buffer rebuild bookkeeping. The rest is plant growth and appearance rules plus the scene setup."
+      }
+    }
+  },
+  {
+    "runId": "bench505-interactive-sheet-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true,
+      "stateExposed": true,
+      "plantAtExposed": true,
+      "zeroInitially": true,
+      "counterInitial": true,
+      "count8": true,
+      "counterText8": true,
+      "clickMapsToDistinctSpots": true,
+      "growthMonotonic": true,
+      "growthRange": true,
+      "growthReaches95": true,
+      "growthChanges": true,
+      "clearFound": true,
+      "clearZero": true,
+      "counterTextAfterClear": true,
+      "skyClickIgnored": true,
+      "laterSmaller": true,
+      "manyPlants": true
+    },
+    "probePassFraction": 1,
+    "turns": 15,
+    "agentWallSec": 140.6,
+    "tokensIn": 457081,
+    "tokensOut": 12082,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 2,
+    "readCalls": 8,
+    "searchCalls": 7,
+    "writeCalls": 3,
+    "srcLines": 207,
+    "srcTokens": 2330,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.3,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 115,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build is ok, the canvas is #app, there are no page or console errors, and zeroInitially is true."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "pickGround casts a ray from the camera and intersects it with the y=0 plane. The probe clickMapsToDistinctSpots is true."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Growth is (now-born)/8000 and drives stem height, leaf size and petal bloom. Probes show 0.106 at 0.5s, 0.54 at 4s and 1.0 at 9s."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Each plant has its own born timestamp, and the probe laterSmaller is true."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Each plant gets a random petal hue, flower size (fs) and height scale (hs)."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The overlay shows 'Plants: N' and updates in plantAt and in the Clear handler. Probes counterInitial, counterText8, clearFound, clearZero and counterTextAfterClear are all true."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "__TASK_STATE__ exposes ready, plantCount and plants[{x,z,growth}] with growth clamped to 0..1, and __plantAt works. The probes stateExposed, plantAtExposed and count8 are true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Clicks off the ground return null, and the probe skyClickIgnored is true. Plants are drawn with four instanced meshes, and the manyPlants probe is true."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 70,
+        "rulesLines": 55,
+        "glueLines": 115,
+        "notes": "Glue is mostly manual camera ray/plane picking (norm, cross, pickGround), the DOM overlay and Clear button, the window state getters, a hand-written LCG random, clamp/lerp/smooth helpers, and padding the instance arrays to a fixed maximum with hidden transforms. It also includes the dirty-flag rebui"
+      }
+    }
+  },
+  {
+    "runId": "bench505-interactive-sheet-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "animated": true,
+      "stateExposed": true,
+      "fnsExposed": true,
+      "planets6": true,
+      "planetsMove": true,
+      "innerFasterThanOuter": true,
+      "pauseBtnFound": true,
+      "pausedFreezes": true,
+      "pausedLabelPlay": true,
+      "resumeMoves": true,
+      "labelBackToPause": true,
+      "focusedName": true,
+      "camDistSmall": true,
+      "panelShown": true,
+      "followsKeepsClose": true,
+      "escapeUnfocuses": true,
+      "panelHiddenAfter": false,
+      "unfocusFn": true
+    },
+    "probePassFraction": 0.9047619047619048,
+    "turns": 24,
+    "agentWallSec": 300.8,
+    "tokensIn": 1556033,
+    "tokensOut": 14710,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 6,
+    "readCalls": 18,
+    "searchCalls": 16,
+    "writeCalls": 3,
+    "srcLines": 568,
+    "srcTokens": 5319,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6532.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 0.875,
+    "silentNoOps": 1,
+    "glueLines": 270,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build ok, canvas #app present, no page or console errors, readyTimeout false. The frame has content (std 25.5, 7.7% non-black) and animates. DEFS has 8 planets of different sizes and colours around a shader-lit sun. The probe's 'blank': tru"
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Probe angDisp shows angular displacement falling monotonically from Mercury (1.43) to Neptune (0.10), and innerFasterThanOuter and planetsMove are true. Spin is set each frame with node.setRotation(0, spin*simTime, 0), and the shaders use o"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each planet gets an annulus orbit-line mesh (alpha 0.5). Earth has a Moon sphere orbiting it, and Saturn has a banded ring mesh that follows it. The lines are only about 0.22 units wide, so they are roughly 1px at the overview distance and "
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Click handling uses a manual ray-sphere pick against the current camera pose. The transition is 1.5s with easeInOutCubic, and the focus pose is recomputed each frame so the camera tracks the planet. Probes focusedName, camDistSmall (8.8) an"
+        },
+        {
+          "id": "c5",
+          "pass": false,
+          "why": "Probe panelShown is true, but panelHiddenAfter is false: after unfocus the probe did not find the panel hidden. The source sets display:none in showPanel, but the measured result contradicts it, and probes win."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking empty space calls unfocus, and Escape is handled (probe escapeUnfocuses true). Drag changes yaw and pitch, with pitch clamped to 0.08..1.4. Wheel zoom is clamped to 50..260. Drag and zoom were not probed, but the code feeds them in"
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Probes pauseBtnFound, pausedFreezes, pausedLabelPlay, resumeMoves and labelBackToPause are all true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "Probes stateExposed and fnsExposed are true. State has ready, focused, paused, planets[{name,x,y,z}] and cameraDistanceToFocus (8.8 when focused). The planets array comes from the same positions that drive the nodes. __unfocus works (unfocu"
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "showPanel() / unfocus() hiding the #info-panel",
+          "why": "The code sets panel.style.display='none' when unfocused, but the probe reports panelHiddenAfter=false, so the hide is not observed at runtime. The panel's name and text content stay populated after unfocus."
+        }
+      ],
+      "glue": {
+        "sceneLines": 110,
+        "rulesLines": 70,
+        "glueLines": 270,
+        "notes": "Glue is mostly hand-rolled plumbing. That includes the camera pose lerp and easing, the manual ray-sphere picker with its own camera basis math, the pointer drag/wheel/Escape handling, the DOM overlay, panel and button construction, the Object.defineProperties state exposure, the per-frame node.setP"
+      }
+    }
+  },
+  {
+    "runId": "bench505-interactive-sheet-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "animated": true,
+      "stateExposed": true,
+      "fnsExposed": true,
+      "planets6": true,
+      "planetsMove": true,
+      "innerFasterThanOuter": true,
+      "pauseBtnFound": true,
+      "pausedFreezes": true,
+      "pausedLabelPlay": true,
+      "resumeMoves": true,
+      "labelBackToPause": true,
+      "focusedName": true,
+      "camDistSmall": true,
+      "panelShown": true,
+      "followsKeepsClose": true,
+      "escapeUnfocuses": true,
+      "panelHiddenAfter": true,
+      "unfocusFn": true
+    },
+    "probePassFraction": 0.9523809523809523,
+    "turns": 16,
+    "agentWallSec": 249.7,
+    "tokensIn": 698609,
+    "tokensOut": 13220,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 3,
+    "readCalls": 14,
+    "searchCalls": 10,
+    "writeCalls": 1,
+    "srcLines": 448,
+    "srcTokens": 5340,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6533.4,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 210,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build succeeds, there are no page or console errors, and the canvas is #app. The frame has content (std 28.8, nonblack 0.07, animated). The source defines a sun and 8 planets that differ in size and colour. The probe field \"blank\": true is "
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Probes show angular displacement falling from Mercury (0.576) to Neptune (0.022), so inner planets are faster (innerFasterThanOuter true). Each planet has its own spin via setRotation(0, spin*simT, 0), and the shader samples local-space pos"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Each planet has an orbit ribbon mesh. Earth and Jupiter have moons updated every frame, and Saturn has a tilted annulus ring. The orbit lines are thin, about 0.3 units wide and under 1px at overview distance. The nonblack fraction suggests "
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Click picking is a hand-built ray/sphere test against the camera pose and calls focusPlanet. The transition lasts 1500 ms with a cubic ease, and the target pose is recomputed each frame so the camera follows the moving planet. Probes confir"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The #info-panel shows the name, 'Orbital period: N Earth days' and 'Distance from star: N million km' on focus, and is display:none when unfocused. Probes panelShown and panelHiddenAfter are true."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking empty space calls unfocus, and Escape calls unfocus (escapeUnfocuses true). Pointer drag changes yaw and pitch, with pitch clamped to 0.08–1.45. Wheel zoom is clamped to 50–320. Both are active only when not focused and not transit"
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "Probes pauseBtnFound, pausedFreezes, pausedLabelPlay, resumeMoves and labelBackToPause are all true."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ exposes ready, focused, paused, planets[{name,x,y,z}] and cameraDistanceToFocus, and __focusPlanet and __unfocus exist. Probes stateExposed, fnsExposed, planetsMove, focusedName and unfocusFn are true. Positions come from the"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 95,
+        "rulesLines": 45,
+        "glueLines": 210,
+        "notes": "Glue is mostly: hand-written ray-picking and vec3 helpers (~45), manual pointer/wheel orbit and zoom controls (~35), DOM bootstrapping for button, panel and hint with absolute positioning (~40), camera transition and pose math (~35), procedural orbit-ribbon and annulus geometry builders (~45), and s"
+      }
+    }
+  },
+  {
+    "runId": "bench505-interactive-sheet-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true,
+      "animated": true,
+      "stateExposed": true,
+      "fnsExposed": true,
+      "planets6": true,
+      "planetsMove": true,
+      "innerFasterThanOuter": true,
+      "pauseBtnFound": true,
+      "pausedFreezes": true,
+      "pausedLabelPlay": true,
+      "resumeMoves": true,
+      "labelBackToPause": true,
+      "focusedName": true,
+      "camDistSmall": true,
+      "panelShown": true,
+      "followsKeepsClose": true,
+      "escapeUnfocuses": true,
+      "panelHiddenAfter": true,
+      "unfocusFn": true
+    },
+    "probePassFraction": 0.9523809523809523,
+    "turns": 32,
+    "agentWallSec": 395,
+    "tokensIn": 2177828,
+    "tokensOut": 15768,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 12,
+    "readCalls": 24,
+    "searchCalls": 18,
+    "writeCalls": 1,
+    "srcLines": 519,
+    "srcTokens": 5309,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6531.2,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 260,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeds with no page or console errors, and the canvas is #app. The probes report 8 planets with distinct radii and colours, plus a star. The 'blank' probe flag is ambiguous, but the frame stats (nonblack 0.07, std 26.6) and the "
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The angular displacements fall monotonically from Mercury (0.525) to Neptune (0.020), and the innerFasterThanOuter and planetsMove probes pass. Spin is applied each frame through setRotation(0, p.spin, 0) on the vertex-coloured planets. The"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Every planet gets an emissive annulus orbit line. Earth has one moon and Jupiter has two, both animated in onFrame. Saturn has a tilted ring annulus that follows the planet."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "Click picking projects planet centres to screen space with a camera basis (a ray-equivalent test), and the basis maths is correct. The transition is 1.5 s with cubic ease-in-out. After the transition the camera goal is recomputed every fram"
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The DOM panel shows the name, period in days and distance in million km. It is hidden by default and on unfocus. The panelShown and panelHiddenAfter probes pass."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Clicking empty space calls unfocus, and Escape also unfocuses (escapeUnfocuses probe passes). In the overview, drag changes yaw and pitch (pitch clamped to 0.12–1.45), and the wheel changes distance (clamped to 70–480). Click, drag and whee"
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The pause button toggles the paused flag and its label. The pauseBtnFound, pausedFreezes, pausedLabelPlay, resumeMoves and labelBackToPause probes all pass."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ exposes ready, focused, paused, planets and cameraDistanceToFocus through live getters. __focusPlanet and __unfocus exist. The stateExposed, fnsExposed, focusedName and unfocusFn probes pass."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 150,
+        "rulesLines": 60,
+        "glueLines": 260,
+        "notes": "Scene lines cover the procedural surface looks, planet data and scene construction. Rules lines cover focus and unfocus, the pause toggle, the panel text and the orbit and spin updates. Glue is the hand-written sphere and annulus mesh builders, value-noise and colour helpers, the manual picking proj"
+      }
+    }
+  }
+]

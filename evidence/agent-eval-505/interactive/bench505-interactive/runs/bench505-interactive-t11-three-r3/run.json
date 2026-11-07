@@ -1,0 +1,105 @@
+{
+  "runId": "bench505-interactive-t11-three-r3",
+  "batch": "bench505-interactive",
+  "arm": "three",
+  "task": 11,
+  "idx": 3,
+  "order": 4,
+  "seed": 20261106004,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:09:41.431Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "wallMs": 106394,
+  "usage": {
+    "input": 48378,
+    "uncachedInput": 48378,
+    "output": 9132,
+    "turns": 4,
+    "perTurnInput": [
+      3226,
+      4315,
+      19901,
+      20936
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      8598,
+      505
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1369,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 18
+    },
+    {
+      "i": 1,
+      "t": 1369,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2735,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2735,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2735,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 97975,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 20323
+    },
+    {
+      "i": 6,
+      "t": 98348,
+      "type": "typecheck",
+      "pass": true
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

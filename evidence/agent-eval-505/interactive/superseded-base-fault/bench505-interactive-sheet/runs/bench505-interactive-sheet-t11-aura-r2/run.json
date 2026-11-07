@@ -1,0 +1,326 @@
+{
+  "runId": "bench505-interactive-sheet-t11-aura-r2",
+  "batch": "bench505-interactive-sheet",
+  "arm": "aura",
+  "task": 11,
+  "idx": 2,
+  "order": 4,
+  "seed": 20261106004,
+  "model": "claude-sonnet-5.5",
+  "condition": "A",
+  "startedAt": "2026-11-06T23:29:40.070Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 254644,
+  "usage": {
+    "input": 909536,
+    "uncachedInput": 909536,
+    "output": 13063,
+    "turns": 21,
+    "perTurnInput": [
+      3334,
+      11749,
+      18974,
+      27103,
+      34488,
+      34912,
+      34979,
+      35163,
+      35586,
+      39543,
+      40269,
+      40702,
+      42466,
+      45317,
+      48445,
+      48492,
+      60728,
+      76162,
+      76524,
+      76832,
+      77768
+    ],
+    "perTurnOutput": [
+      20,
+      40,
+      43,
+      15,
+      87,
+      18,
+      10,
+      53,
+      62,
+      63,
+      59,
+      50,
+      45,
+      90,
+      162,
+      1,
+      2314,
+      9168,
+      70,
+      98,
+      595
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1897,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 18
+    },
+    {
+      "i": 1,
+      "t": 1897,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 172
+    },
+    {
+      "i": 2,
+      "t": 1897,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 4
+    },
+    {
+      "i": 3,
+      "t": 4530,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 4,
+      "t": 4530,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 5,
+      "t": 6654,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 6,
+      "t": 6662,
+      "type": "search",
+      "pattern": "solar|pick|raycast|screenToWorld|project\\("
+    },
+    {
+      "i": 7,
+      "t": 8362,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 8,
+      "t": 11993,
+      "type": "search",
+      "pattern": "interface AuraCameraController|type AuraCameraController"
+    },
+    {
+      "i": 9,
+      "t": 11996,
+      "type": "search",
+      "pattern": "camera|setCamera|raycast"
+    },
+    {
+      "i": 10,
+      "t": 13505,
+      "type": "search",
+      "pattern": "AuraCameraController\\b"
+    },
+    {
+      "i": 11,
+      "t": 14894,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 12,
+      "t": 17385,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 13,
+      "t": 17394,
+      "type": "search",
+      "pattern": "app\\.camera|setCamera|AuraCameraController"
+    },
+    {
+      "i": 14,
+      "t": 20267,
+      "type": "search",
+      "pattern": "camera\\.(set|move|animate|fly|lookAt|follow|transition)|cameraRig|camera\\.[a-zA-"
+    },
+    {
+      "i": 15,
+      "t": 22888,
+      "type": "search",
+      "pattern": "app\\.camera|AuraCameraController|\\.camera\\??\\.(set|move|look)"
+    },
+    {
+      "i": 16,
+      "t": 22888,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 17,
+      "t": 22888,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 18,
+      "t": 26021,
+      "type": "search",
+      "pattern": "app\\.camera"
+    },
+    {
+      "i": 19,
+      "t": 26021,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 20,
+      "t": 26021,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 21,
+      "t": 28519,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 12
+    },
+    {
+      "i": 22,
+      "t": 28525,
+      "type": "search",
+      "pattern": "raycast\\(|raycastFirst|screenToRay|pointerRay|onClick|\\.on\\(\"click|pick"
+    },
+    {
+      "i": 23,
+      "t": 31002,
+      "type": "search",
+      "pattern": "setPose"
+    },
+    {
+      "i": 24,
+      "t": 31003,
+      "type": "read",
+      "path": "docs/agents/recipes-src/translation-table.check.ts",
+      "lines": 90
+    },
+    {
+      "i": 25,
+      "t": 36533,
+      "type": "search",
+      "pattern": "[pP]ose\\b"
+    },
+    {
+      "i": 26,
+      "t": 36598,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 27,
+      "t": 40985,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 276
+    },
+    {
+      "i": 28,
+      "t": 42436,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 29,
+      "t": 146863,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 30,
+      "t": 146863,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 31,
+      "t": 237831,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 20421
+    },
+    {
+      "i": 32,
+      "t": 243508,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 33,
+      "t": 247494,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 34,
+      "t": 254644,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/translation-table.check.ts",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the whole app in src/main.ts, but I could not run or verify any of it. `@aura3d/engine` is missing from node_modules in this sandbox, so `typecheck` reports \"Cannot find module '@aura3d/engine'\" and nothing from the library is type-checked. I didn't try `vite build` or a browser run either (no shell tool).\n\nI wrote the library calls from `llms.txt` and the docs, without checking them against real types. Treat the engine-facing parts as unverified.\n\n**What the app has:**\n- **Scene:** a glowing sun (emissive core, halo, point light, bloom) on a dark starfield of about 900 instanced emissive boxes in three tints. There are 8 planets, Mercury to Neptune, each with its own orbit radius, size, colour and speed (inner faster).\n- **Planet look:** each planet has a procedural vertex-colour texture (bands, noise, land and ocean, polar caps), and each spins on its own axis.\n- **Extras:** Saturn has a banded ring. Earth has one moon and Jupiter has two. Every planet has a thin circular orbit line.\n- **Camera:** it is fixed. I move the world instead, using nested groups for pitch, yaw and focus offset, because I couldn't confirm the camera-control API (`app.camera?.setPose`). Orbit-drag and scroll-zoom (25 to 150) work in the overview only.\n- **Focus:** clicking a planet, or calling `__focusPlanet(name)`, moves the camera over 1.5 s with cubic ease-in-out. It then follows the planet from the sun-facing side and shows a DOM panel with name, orbital period in Earth days and distance in million km. Clicking empty space, pressing Escape, or calling `__unfocus()` eases back to the overview and hides the panel.\n- **Picking:** it uses my own projection math. A planet's click radius is at least 10 px, so small planets are still easy to hit.\n- **Controls and state:** the Pause button switches to \"Play\" while paused. `window.__TASK_STATE__` is a read-only getter with `ready`, `focused`, `paused`, `planets` and `cameraDistanceToFocus`. `__EVAL_READY__` is set after the first frame.",
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(4,8): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

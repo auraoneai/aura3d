@@ -1,0 +1,482 @@
+{
+  "runId": "bench505-interactive-t11-aura-r3",
+  "batch": "bench505-interactive",
+  "arm": "aura",
+  "task": 11,
+  "idx": 3,
+  "order": 2,
+  "seed": 20261106002,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:55:33.855Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 1205199,
+  "usage": {
+    "input": 1787692,
+    "uncachedInput": 1787692,
+    "output": 14145,
+    "turns": 30,
+    "perTurnInput": [
+      3334,
+      14062,
+      14646,
+      25607,
+      32271,
+      39611,
+      43654,
+      43998,
+      44829,
+      45346,
+      45819,
+      47549,
+      56413,
+      58835,
+      59301,
+      60149,
+      60951,
+      61367,
+      62418,
+      62927,
+      68338,
+      70094,
+      73559,
+      81299,
+      82835,
+      89072,
+      95622,
+      113837,
+      114321,
+      115628
+    ],
+    "perTurnOutput": [
+      20,
+      37,
+      29,
+      19,
+      15,
+      59,
+      34,
+      48,
+      19,
+      69,
+      100,
+      29,
+      114,
+      60,
+      42,
+      39,
+      130,
+      80,
+      260,
+      19,
+      141,
+      103,
+      32,
+      587,
+      36,
+      880,
+      1329,
+      8947,
+      95,
+      773
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1809,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 18
+    },
+    {
+      "i": 1,
+      "t": 1809,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1809,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 4743,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4743,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 6485,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 6,
+      "t": 6485,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 121
+    },
+    {
+      "i": 7,
+      "t": 6485,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 7968,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 9,
+      "t": 9579,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 10,
+      "t": 12438,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 11,
+      "t": 12444,
+      "type": "search",
+      "pattern": "AuraCameraController"
+    },
+    {
+      "i": 12,
+      "t": 14229,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 13,
+      "t": 14237,
+      "type": "search",
+      "pattern": "app\\.camera|camera\\.(set|lookAt|move)"
+    },
+    {
+      "i": 14,
+      "t": 17021,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 15,
+      "t": 17021,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 16,
+      "t": 17021,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 17,
+      "t": 17021,
+      "type": "list",
+      "path": ".agents"
+    },
+    {
+      "i": 18,
+      "t": 18755,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 19,
+      "t": 18755,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 20,
+      "t": 22216,
+      "type": "search",
+      "pattern": "camera\\.(focus|flyTo|moveTo|setPosition|lookAt|set)\\b|AuraCameraController"
+    },
+    {
+      "i": 21,
+      "t": 22280,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 22,
+      "t": 24988,
+      "type": "search",
+      "pattern": "app\\.camera|\\.pick\\(|onPointer|onClick|raycast|screenToWorld|worldToScreen|proje"
+    },
+    {
+      "i": 23,
+      "t": 24999,
+      "type": "search",
+      "pattern": "app\\.camera|\\.pick\\(|onPointer|onClick|screenToWorld|worldToScreen|nodes\\.(requi"
+    },
+    {
+      "i": 24,
+      "t": 26667,
+      "type": "read",
+      "path": "docs/agents/api-surface.md",
+      "lines": 104
+    },
+    {
+      "i": 25,
+      "t": 26667,
+      "type": "read",
+      "path": ".agents/skills/aura3d-browser-game/SKILL.md",
+      "lines": 151
+    },
+    {
+      "i": 26,
+      "t": 31013,
+      "type": "search",
+      "pattern": "camera\\.(orbit|perspective|rigs|follow|chase|set|update)|setCamera|app\\.camera"
+    },
+    {
+      "i": 27,
+      "t": 31016,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 28,
+      "t": 36239,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 29,
+      "t": 38477,
+      "type": "search",
+      "pattern": "\\.camera\\??\\.[a-zA-Z]+\\("
+    },
+    {
+      "i": 30,
+      "t": 38497,
+      "type": "search",
+      "pattern": "raycastFirst|screenToRay|pointerRay|pickNode|\\.pick"
+    },
+    {
+      "i": 31,
+      "t": 40397,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 4
+    },
+    {
+      "i": 32,
+      "t": 40397,
+      "type": "read",
+      "path": "docs/agents/native-capability-recipes.md",
+      "lines": 1
+    },
+    {
+      "i": 33,
+      "t": 43540,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 221
+    },
+    {
+      "i": 34,
+      "t": 43738,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 35,
+      "t": 48805,
+      "type": "search",
+      "pattern": "setPose"
+    },
+    {
+      "i": 36,
+      "t": 48805,
+      "type": "error",
+      "tool": "list_dir"
+    },
+    {
+      "i": 37,
+      "t": 48805,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 38,
+      "t": 48842,
+      "type": "search",
+      "pattern": "setPose"
+    },
+    {
+      "i": 39,
+      "t": 60333,
+      "type": "search",
+      "pattern": "CameraPose|cameraPose|camera pose|camera rig|camera\\.rigs|rigs\\."
+    },
+    {
+      "i": 40,
+      "t": 60346,
+      "type": "search",
+      "pattern": "AuraCameraSpec|mode: \"perspective\"|mode: \"orbit\""
+    },
+    {
+      "i": 41,
+      "t": 62005,
+      "type": "read",
+      "path": "docs/agents/build-a-game.md",
+      "lines": 150
+    },
+    {
+      "i": 42,
+      "t": 74338,
+      "type": "search",
+      "pattern": "camera\\??\\.(\\w+)"
+    },
+    {
+      "i": 43,
+      "t": 74351,
+      "type": "search",
+      "pattern": "ui\\.(html|onClick|setText|toggle)|solarSystem|sceneKits\\.solar"
+    },
+    {
+      "i": 44,
+      "t": 81500,
+      "type": "search",
+      "pattern": "group\\(|groups\\.|\\.rotate\\(|\\.runtime\\(|setRotation|setScale|\\.scale\\(|\\.positio"
+    },
+    {
+      "i": 45,
+      "t": 83087,
+      "type": "read",
+      "path": "docs/agents/recipes-src/translation-table.check.ts",
+      "lines": 90
+    },
+    {
+      "i": 46,
+      "t": 83087,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 78
+    },
+    {
+      "i": 47,
+      "t": 110394,
+      "type": "search",
+      "pattern": "innerRadius|tubeRadius|primitives\\.(ring|torus|circle)|radialSegments|widthSegme"
+    },
+    {
+      "i": 48,
+      "t": 622408,
+      "type": "read",
+      "path": "docs/agents/troubleshooting.md",
+      "lines": 40
+    },
+    {
+      "i": 49,
+      "t": 622409,
+      "type": "read",
+      "path": "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+      "lines": 29
+    },
+    {
+      "i": 50,
+      "t": 780895,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/references/look-overrides-4.7.md",
+      "lines": 40
+    },
+    {
+      "i": 51,
+      "t": 1075420,
+      "type": "search",
+      "pattern": "decay"
+    },
+    {
+      "i": 52,
+      "t": 1188067,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 21689
+    },
+    {
+      "i": 53,
+      "t": 1195009,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 54,
+      "t": 1205199,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-browser-game/SKILL.md",
+    ".agents/skills/aura3d-materials-environments/references/look-overrides-4.7.md",
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/api-surface.md",
+    "docs/agents/build-a-game.md",
+    "docs/agents/native-capability-recipes.md",
+    "docs/agents/recipes-src/pbr-product-viewer/main.ts",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "docs/agents/recipes-src/translation-table.check.ts",
+    "docs/agents/recipes.md",
+    "docs/agents/troubleshooting.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote the solar-system explorer in `src/main.ts`, but none of it has run, and `@aura3d/engine` is not installed in this sandbox. Typecheck reports only `TS2307: Cannot find module '@aura3d/engine'`, so every Aura3D call is unchecked against the real types. `vite build` will also fail here until the package is installed. I wrote it only against the signatures in `docs/agents` and the recipe sources. Treat the first real build and a run in the browser as the actual test.\n\n**What it contains**\n- A glowing emissive star with bloom, a point light at its centre, and about 380 instanced emissive stars on a dark background.\n- Eight planets (Mercury to Neptune) with different sizes, colours and orbital distances. Inner planets orbit faster, with period scaled as the square root of the real period (Mercury 8 s, Neptune about 209 s).\n- Each planet has a thin orbit line, spins on its axis, and carries spots and bands so the spin is visible. Earth has one moon and Jupiter has two. Saturn has a two-band ring.\n- The star, planets, rings and moons are primitives and custom geometry. The orbit lines are a custom line-topology mesh. Nothing is loaded from the network.\n- Clicking a planet, `window.__focusPlanet(name)`, Escape, a click on empty space and `window.__unfocus()` all go through the same focus and unfocus functions.\n- The camera takes 1.5 s with cubic easing to a close view of the planet on its lit side. It keeps following the planet as it orbits, and it also returns to the overview in 1.5 s.\n- A DOM panel shows the planet's name, orbital period in Earth days and distance from the star in million km.\n- In the overview, dragging orbits the camera and the wheel zooms between 60 and 300 units.\n- The Pause/Play button stops orbits, spins and moons. Camera moves keep running while paused.\n- `window.__TASK_STATE__` is a read-only getter returning a frozen snapshot with `ready`, `focused`, `paused`, `planets` and `cameraDistanceToFocus`. `window.__EVAL_READY__` is set after two a",
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(14,8): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

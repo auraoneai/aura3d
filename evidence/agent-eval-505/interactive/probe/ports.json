@@ -1,0 +1,18 @@
+{
+  "bench505-interactive-t10-aura-r1": 48000,
+  "bench505-interactive-t10-aura-r2": 48001,
+  "bench505-interactive-t10-aura-r3": 48002,
+  "bench505-interactive-t10-three-r1": 48003,
+  "bench505-interactive-t10-three-r2": 48004,
+  "bench505-interactive-t10-three-r3": 48005,
+  "bench505-interactive-t11-aura-r1": 48006,
+  "bench505-interactive-t11-three-r1": 48007,
+  "bench505-interactive-t11-three-r2": 48008,
+  "bench505-interactive-t11-three-r3": 48009,
+  "bench505-interactive-sheet-t10-aura-r1": 48010,
+  "bench505-interactive-sheet-t10-aura-r2": 48011,
+  "bench505-interactive-sheet-t10-aura-r3": 48012,
+  "bench505-interactive-sheet-t11-aura-r1": 48013,
+  "bench505-interactive-sheet-t11-aura-r2": 48014,
+  "bench505-interactive-sheet-t11-aura-r3": 48015
+}

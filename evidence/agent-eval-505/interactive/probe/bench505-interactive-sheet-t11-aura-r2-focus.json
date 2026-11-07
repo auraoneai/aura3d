@@ -1,0 +1,11 @@
+{
+  "rid": "bench505-interactive-sheet-t11-aura-r2",
+  "task": 11,
+  "mode": "focus",
+  "checks": {},
+  "notes": [],
+  "errors": [],
+  "ready": true,
+  "focused": "Earth",
+  "textAtEnd": "Pause\nEarth\nOrbital period: 365 Earth days\nDistance from star: 149.6 million km\nClick a planet to focus · Esc / click empty space to return · drag to orbit · scroll to zoom"
+}

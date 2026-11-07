@@ -1,0 +1,961 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_011rJ2qytHpbdfYFyv5567rN",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01BZwbGsN631SDX41etVNEXA",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_012LmyNYyDA4o8biYNKnzSLx",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_011rJ2qytHpbdfYFyv5567rN",
+    "content": "1\t# Task 10: Click-to-plant garden that grows over time\n2\t\n3\tBuild a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The app is an interactive 3D garden. A flat ground plane (soil or grass) fills the lower part of the view, with a soft sky or background behind it and a camera looking down at it from an angle so the whole plot is visible.\n4\t\n5\tWhen the user clicks on the ground, a new plant must be planted at the exact spot that was clicked (the click must be mapped to the ground, not just to the screen centre). Each plant starts as a tiny sprout and grows smoothly over about 8 seconds into a mature plant (for example a stem with leaves and a flower or a small bush) that is visibly larger, with a different shape or colour from the sprout. Plants must keep growing independently, so a plant planted later is smaller than one planted earlier. Vary the flower colour or size between plants so a full garden does not look uniform. Support at least 40 plants at once without dropping below a smooth frame rate, and ignore clicks that do not hit the ground.\n6\t\n7\tAdd a small on-screen DOM overlay in a corner showing the text 'Plants: N' where N is the current plant count, and a 'Clear' button that removes all plants. The scene should have lighting and soft shadows so plants look grounded, and it should render correctly on first load with no console errors and with zero plants planted.\n8\t\n9\tExpose a read-only object on window named "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01BZwbGsN631SDX41etVNEXA",
+    "content": "1\t# Aura3D\n2\t\n3\t> Aura3D 5.0.2: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai\n4\t\n5\t## Read first\n6\t\n7\t1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked); the full table is in https://aura3d.auraone.ai/llms-full.txt under \"three.js to Aura3D\". Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.\n8\t2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`.\n9\t3. Do not open `node_modules` or `dist` to find an API: signatures are in `docs/agents/api-signatures.md`.\n10\t\n11\t## Pitfalls that cost the most turns (one-line fixes)\n12\t\n13\t- Dark or flat frame: authored lights with no environment get no image-based light. Add `environments.neutral({ intensity })` or a `looks.preset(id)`; metals need it to reflect anything.\n14\t- Colour applied twice: instance `colors` multiply the material colour. Use a `#ffffff` base material when you pass `colors`.\n15\t- Moving a node: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_012LmyNYyDA4o8biYNKnzSLx",
+    "content": "1\t<!-- AURAONE-POLICY-POINTER:START -->\n2\t# AuraOne AI Coding Agent Policy (repository pointer)\n3\t\n4\tCanonical machine-wide policy: `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` (already loaded globally by Codex, Claude Code, Qwen, Kiro, Gemini, Grok, and OpenCode; any other agent **MUST** read `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` before starting work).\n5\tDomain reference files in `/Users/gurbakshchahal/.config/agent-policy/reference/` (`INDEX.md`, `cloud-cost-and-ephemeral-lifecycle.md`, `gitlab-ci-cost-and-lifecycle.md`, `remote-execution.md`, `ci-selection.md`, `parallelism.md`, `shared-service-access.md`, `cloud-contexts.md`, `cloudflare.md`, `vercel-neon.md`, `github-npm.md`, `gitlab-mirror.md`, `ui-typography-density.md`, `linkedin-outreach-research-gate.md`, `room-communication-playbook.md`) are mandatory on-demand reading **only** when triggered by §2 of the canonical policy (never load all reference files unconditionally).\n6\tCloud & GitLab CI Cost, Pre-Authorized Cheapest-Denominator Testing & Mandatory Teardown: **Agents are pre-authorized to run CI/CD, builds, E2E/Playwright suites, and infrastructure tests across AWS, Azure, Cloudflare, GCP, and GitLab CI/CD WITHOUT waiting for Gurbaksh's approval**, provided they **(1) use the cheapest denominator option from the 5-tier hierarchy** via `~/.local/bin/auraone-cost-guard` (existing infra → serverless `$0`-idle Azure ACR Tasks / Container Apps Jobs, AWS CodeBuild, Cloudfla"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01N5uSQbxxJqZLqVe4C1QHpd",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_012DGj6KTCNg9JaYkF3SpBis",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01N5uSQbxxJqZLqVe4C1QHpd",
+    "content": "README.md\nagent-context.md\nagent-quickstart.md\nanti-hallucination-rules.md\napi-signatures.md\napi-surface.md\nart-direction.md\nasset-selection.md\nasset-workflow.md\nbenchmark-recipes.md\nbuild-a-game.md\nbuild-playbook.md\ncinematic-scene-quality.md\nclaims-and-boundaries.md\ncodebase-map.md\ndeployment.md\neffects-and-scene-kits.md\ngame-example-standards.md\ngame-showcase-build.md\ngenre-kits.md\nlessons-learned.md\nnative-capability-recipes.md\nnew-game-checklist.md\nno-hackjob-rules.md\nprompt-to-3d-workflow.md\nrecipes-src/\nrecipes.md\nrendering-proof-required.md\nskills-examples/\ntemplates.md\nthreejs-to-aura3d.md\ntrial-502-protocol.md\ntroubleshooting.md\nverification.md"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_012DGj6KTCNg9JaYkF3SpBis",
+    "content": ".agents/\nAGENTS.md\nTASK.md\ndocs/\nindex.html\nllms.txt\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01WPCTZ6VC1EdHDBCxKh5fhm",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01UvjMc6hEqJXrouSCe3uvbU",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/agent-quickstart.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01PcTPsoZGS5L3o6uFZwX12w",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01WPCTZ6VC1EdHDBCxKh5fhm",
+    "content": "1\t# API signatures (answer-first)\n2\t\n3\tGenerated by `node tools/docs/gen-api-signatures.mjs --write` from the real `@aura3d/engine` root types (`packages/engine/src/public/index.ts`). Do not edit by hand: without `--write` the same command fails when this file is stale. Read this instead of opening `node_modules/@aura3d/engine` type files; every example line is type-checked in [`recipes-src/signature-examples.check.ts`](recipes-src/signature-examples.check.ts). The complete export list is [`docs/api/root-exports.md`](../api/root-exports.md); this page covers the roots agents look up most.\n4\t\n5\tColumns: Call (parameters, `?` = optional), Returns, Options (the keys of the first options object, `?` = optional). Colours are CSS strings, vectors are `[x, y, z]` tuples, angles are radians unless the name says `Deg`.\n6\t\n7\tDefaults the types do not carry (read from `agent-api/nodes/lights.ts`):\n8\t\n9\t| Call | Defaults |\n10\t|---|---|\n11\t| `lights.ambient` | intensity 0.28, color #ffffff |\n12\t| `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |\n13\t| `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |\n14\t| `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |\n15\t| `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |\n16\t\n17\t## `createAuraApp`\n18\t\n19\tMounts the scene, owns renderer, resize, loop and disposal. `await app.ready()` before the first frame is judged.\n20\t\n21\t```ts\n22\tconst app = cre"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01UvjMc6hEqJXrouSCe3uvbU",
+    "content": "1\t# Agent quickstart: zero to a rendering Aura3D scene\n2\t\n3\t**Why Aura3D.** A lit, framed, orbitable product is 10 lines of TypeScript ([tagline check](../../evidence/vs-threejs/tagline-check/)), and `model(assets.x)` is a typed reference to a hashed, licensed model.\n4\tHUD, touch, audio, a fixed-step loop and a safety net ship in the same install, so a game needs no extra libraries.\n5\tThe `llms.txt`, skills and recipes in this project are written for coding agents, which is why the rules below are short.\n6\t\n7\tAura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.\n8\t\n9\tRead first: [`threejs-to-aura3d.md`](threejs-to-aura3d.md) (if you would write X in three.js, write Y; every line type-checked), then this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).\n10\t\n11\t## 1. Scaffold and run\n12\t\n13\t```bash\n14\tnpx create-aura3d@latest my-scene --template product-viewer   # 21 templates: docs/agents/templates.md\n15\tcd my-scene && npm install\n16\tnpm run dev        # vite dev server\n17\tnpm run build      # typecheck + vite build\n18\t```\n19\t\n20\tGames: start from `mini-game`, `racing-starter`,"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01PcTPsoZGS5L3o6uFZwX12w",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01H2Rk9NmJWSMEtQPYCkcGwp",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 143,
+     "limit": 270
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01JfEbE3qfYujGxRbDRpv1wV",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01H2Rk9NmJWSMEtQPYCkcGwp",
+    "content": "143\t|---|---|---|\n144\t| `lights.lensFlare(options?: AuraLensFlareOptions)` | `AuraNodeBuilder<AuraSceneNode>` | options: name?: string \\| undefined; position?: AuraVec3 \\| undefined; light?: string \\| undefined; elements?: readonly AuraLensFlareEle…; occlusion?: AuraLensFlareOcclusion \\| …; edgeFade?: number \\| undefined; intensity?: number \\| undefined; runtime?: AuraRuntimeNodeSpec \\| und… |\n145\t| `lights.ambient(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; intensity?: number \\| undefined; color?: string \\| undefined |\n146\t| `lights.hemisphere(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; skyColor?: string \\| undefined; groundColor?: string \\| undefined; intensity?: number \\| undefined; position?: AuraVec3 \\| undefined |\n147\t| `lights.lightProbe(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; sh?: readonly number[] \\| undef…; skyColor?: string \\| undefined; groundColor?: string \\| undefined; intensity?: number \\| undefined; position?: AuraVec3 \\| undefined |\n148\t| `lights.directional(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; position?: AuraVec3 \\| undefined; target?: AuraVec3 \\| undefined; intensity?: number \\| undefined; color?: string \\| undefined; shadow?: boolean \\| AuraDirectional… |\n149\t| `lights.point(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \\| undefined; p"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01JfEbE3qfYujGxRbDRpv1wV",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQS0AYKEAgTGAI4AUIIdGhpbmtpbmcSDAtWAHYvTuaMChgfzxoMDSCXzBGciP8MV1S9IjCNOZZktrOzP+9FUPDbGcD9zuI6cUWMXCy+/isP+oaNU2+MkBYay0KF/wnQqChhiNoq7QUPCeqMgpQ1OAJoro3YzTmnyl0b6RDi89QdMbBY9/3nc99PXX6nqI9oug2jAHV7Kwhh+KAyK6kUCMw1rU+pe9BNcvDO7Yyfqf1iNSbiu0Jpd9U4Eqfbbb0QwXyeVzgc0fsMHErUNU7a2JfJCQg+XJZH7qNklU4JSl0tPtfZHRBs+502aCCZlvLoSkVC5jpFWozg9lPVYGPkea5ZZ8Th2kiDw5ahYKpBOm9A9VsaWtS/BuWosD3l1lhBOSYYWx61UXGGT+quTOCUAUMBPFes8dUgI+lYe9BXGYoEMi66kx98bW8IJJlOq1ARUeDC71nve5VI+MUuB0vmH4NUrzGn0GZAR1U/dVMQagKpMBqtdn+41O8muAVar/pWg8TMi3L/Vqvfe6UVDKixLqhpzE6p7mjPpYI93pJlS+I+IHb2C5i2vbnhKbGEFhLBbmHsw1J8z0pDfBqap9OZ1XruSBEXirN1oQwHMe11flngoDaEKY9WsJo/fFlDMgmYJpCOZ1tKIuEAH7IzJi/Oz4M788rUkh3Pm+OhePMXUhhcI61yt28Af0+vIo8wewLocL6WPpJgHphryWQPssorTQdimEgi6tzzXjsDDVo53y4wuoQII4hOb8LoTmUiCUzRDJk5d7tN6F0ByfVBUCpZipcw+zq7VkVfBcwPxvAxEyKdJhAHcr8d6BMVIXyvLcdqcgSzJZfRk997naRRmCDvKoP9wvn4/rgW+14sIrFJaLszNbrcV7xG8LLn/i6z7bdnxDiy33cnITVaqCvXnC03g4OQWZUC5i8bMf0+CVij2doKuOjUY6LHUFvAXpzp4nwQSR1zI171r+FLsSBrpZOdaUXs9ZBvHiYT9Fg+Mqo67bQsg2C1/UIAVHAv74UoSesmb4CvB1n731HaTJ6+YKot6LomYxdIhQcpIfPK/bial7yXF1tAGAwUiee4o+Zg3X03SG7ckyaEtfwxp+HXs5IkxsGJv8NCueOMhEgC5MMbYaX6AterTBgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_013FURmhz9V9XiAVoR8YLCNR",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 244,
+     "limit": 170
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01WHigvLm1RNiVAtQ4wfgTv4",
+    "name": "search",
+    "input": {
+     "pattern": "raycast|pick|screenToWorld|unproject|setScale|setVisible|setRotation",
+     "path": "docs"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_013FURmhz9V9XiAVoR8YLCNR",
+    "content": "244\t| `effects.transition(options: AuraTransitionOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; progress?: number \\| undefined; name?: string \\| undefined |\n245\t| `effects.lensDirt(options: AuraLensDirtOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; intensity?: number \\| undefined; name?: string \\| undefined |\n246\t| `effects.mask(options: AuraPostMaskOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: texture: AuraTextureRef; invert?: boolean \\| undefined; opacity?: number \\| undefined; name?: string \\| undefined |\n247\t| `effects.clearMask(options?: AuraNativePostBaseOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: name?: string \\| undefined |\n248\t| `effects.afterimage(options?: AuraAfterimageOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: decay?: number \\| undefined; name?: string \\| undefined |\n249\t| `effects.bloom(options?: BloomBuilderOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n250\t| `effects.neonBloom(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n251\t| `effects.ambientOcclusion(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n252\t| `effects.contactOcclusion(options?: Omit<AuraEffectNode, \"kind\" \\| \"effect\">)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n253\t| `effects.colorGrade(options?: AuraColorGradeOptions)` | `AuraNodeBuilder<AuraEffectNode>` |  |\n254\t| `effects.antiAlias(options?: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01WHigvLm1RNiVAtQ4wfgTv4",
+    "content": "docs/agents/native-capability-recipes.md:100:[Omitted long matching line]\ndocs/agents/lessons-learned.md:30:[Omitted long matching line]\ndocs/agents/lessons-learned.md:56:[Omitted long matching line]\ndocs/agents/lessons-learned.md:91:[Omitted long matching line]\ndocs/agents/api-signatures.md:347:| `interactions.raycastHover(options?: {…})` | `InteractionBuilder` | same as `interactions.hover` |\ndocs/agents/api-signatures.md:372:[Omitted long matching line]\ndocs/agents/claims-and-boundaries.md:30:[Omitted long matching line]\ndocs/agents/claims-and-boundaries.md:78:[Omitted long matching line]\ndocs/agents/asset-workflow.md:39:[Omitted long matching line]\ndocs/agents/new-game-checklist.md:7:[Omitted long matching line]\ndocs/agents/art-direction.md:5:[Omitted long matching line]\ndocs/agents/api-surface.md:39:| Input and UI | `interactions`, `ui`, `labels`, `raycast`, `raycastFirst`, `bindGameTouchControls` |\ndocs/agents/build-a-game.md:166:      coin: { id: \"coin\", asset: { url: sfxUrl(\"pickup.coin.00\") }, volume: 0.7 },\ndocs/agents/threejs-to-aura3d.md:9:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:21:[Omitted long matching line]\ndocs/agents/skills-examples/aura3d-browser-game.md:59:   The single early jump did not pick up the coin at x=3 (score 0), which is\ndocs/agents/skills-examples/aura3d-character-animation.md:24:       \"interact-left\", \"interact-right\", \"jump\", \"pick-up\", \"sit\", \"sprint\", \"static\", \"walk\"],\ndocs/agents/recipes.md:34:  app.nodes.require(\"cu"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01FF1AyxnhdWrR3tQWisZy25",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-signatures.md",
+     "offset": 346,
+     "limit": 70
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01VExQm2xNDT75XaXZ7ohGB3",
+    "name": "search",
+    "input": {
+     "pattern": "setInstance|instances\\.mesh|setTransforms|updateInstances|setVisible|setScale",
+     "path": "node_modules/@aura3d"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01FF1AyxnhdWrR3tQWisZy25",
+    "content": "346\t| `interactions.hover(options?: {…})` | `InteractionBuilder` | options: target?: string \\| undefined; selected?: string \\| undefined |\n347\t| `interactions.raycastHover(options?: {…})` | `InteractionBuilder` | same as `interactions.hover` |\n348\t| `interactions.highlight(options?: {…})` | `InteractionBuilder` | same as `interactions.hover` |\n349\t| `interactions.dragVector(options?: {…})` | `InteractionBuilder` | options: target?: string \\| undefined; vector?: AuraVec3 \\| undefined |\n350\t| `interactions.clickImpulse(options?: {…})` | `InteractionBuilder` | options: target?: string \\| undefined; impulse?: number \\| undefined; vector?: AuraVec3 \\| undefined |\n351\t\n352\t## `physics`\n353\t\n354\tRapier-backed worlds, bodies and colliders; see `docs/api/` physics pages before use.\n355\t\n356\t```ts\n357\tvoid physics.box;\n358\t```\n359\t\n360\t| Call | Returns | Options |\n361\t|---|---|---|\n362\t| `physics.world(descriptor?: PhysicsWorldDescriptor)` | `AuraPhysicsWorldController` | descriptor: backend?: PhysicsBackendPreference …; gravity?: Vec3 \\| undefined; fixedDelta?: number \\| undefined; solverIterations?: number \\| undefined; enableSleeping?: boolean \\| undefined; seed?: number \\| undefined; sleepVelocityThreshold?: number \\| undefined; sleepDelay?: number \\| undefined; continuousCollision?: PhysicsContinuousCollisio… |\n363\t| `physics.worldFromScene(sceneValue: AuraSceneBuilder \\| AuraSceneSnapshot, descriptor?: PhysicsWorldDescriptor)` | `AuraPhysicsWorldController` | same as `physics.wor"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01VExQm2xNDT75XaXZ7ohGB3",
+    "content": "node_modules/@aura3d/engine/templates/mini-game/src/main.ts:204:  for (const [id, node] of coins) node.setVisible(!state.collected.includes(id));\nnode_modules/@aura3d/engine/templates/mini-game/src/main.ts:205:  checkpoint.setVisible(!state.activatedCheckpoints.includes(\"mid\"));\nnode_modules/@aura3d/engine/templates/mini-game/src/main.ts:206:  goal.setScale(state.status === \"completed\" ? [1.35, 1.35, 1.35] : 1);\nnode_modules/@aura3d/scene/dist/Object3D.js:73:    setInstanceTransforms(transforms) {\nnode_modules/@aura3d/scene/dist/Object3D.js:89:    setInstanceColors(colors) {\nnode_modules/@aura3d/scene/dist/TransformNode.js:71:    setScale(x, y, z) {\nnode_modules/@aura3d/animation/dist/SceneAnimationBridge.d.ts:27:    setScale?: (value: readonly [number, number, number]) => void;\nnode_modules/@aura3d/scene/dist/Object3D.d.ts:45:    setInstanceTransforms(transforms: Float32Array | readonly number[]): this;\nnode_modules/@aura3d/scene/dist/Object3D.d.ts:46:    setInstanceColors(colors: Float32Array | readonly number[]): this;\nnode_modules/@aura3d/scene/dist/SceneSerializer.js:934:    node.transform.setScale(...scale);\nnode_modules/@aura3d/assets/dist/SceneLoader.js:113:        node.transform.setScale(descriptor.scale[0], descriptor.scale[1], descriptor.scale[2]);\nnode_modules/@aura3d/engine/dist/debug/SceneHelpers.js:31:    setVisible(visible) {\nnode_modules/@aura3d/scene/dist/TransformNode.d.ts:30:    setScale(x: number, y: number, z: number): this;\nnode_modules/@aura3d/engine/d"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQSpwgKEAgTGAI4AUIIdGhpbmtpbmcSDDQK15RlC/43uMfUdBoMCrTKPbzihpYmUWVtIjB3D8QMrXyrGhHxYdPK8CDUGdJNXseyJDCreOH7bYNase3myeSWyBob6NB37ZbX28IqxAf1BTUufLki/hYQyFol8mjRTjEK40MdncMNbS0yFggO8LrMdkeEl0NWeLdcXc2fZQqt+7pVEpaGBGlkDiYabJhDFFf0TaicsTV4IRcPFOEJ2GfgFzhvyxHHJiguIeTuYX2UQAPerNncUcDhgf/MVfJWIgJVZdwoqp28MF9YPL+6DxDyjXj8UNufSTPoFdeWSD+clArB4ksWW4BNs+SlQMRcD0fRTAoGE3uh5QeQsm0c7PWpTOMVv3mTjOBan1Njzaw9hDfKYIs0ac3MVj26aEMpvu1lvmNHyqNpsWXVSMj2JDKDLwUesewlbCehZH4d2iKK77qYJTcaxDGKA8jLDqj5J4LRmQXPCoBcBsTmGGSythG9DBdX3zJIBPwwVDSKGpWnrTyE4vtuN4dyH/SJPVPjwJJhi4214r/iqrO+w428Xi6t+X1gEr7tgzwe3sIipKDtCm2RDf9pDkeuTwh8e7dtb+KDpkEiO5xKzTkBIFdX30/oGgUSda7fCee41+c9RXQIJw7UAZD/1dpJ0yhrklndp5SFyWliQvhnOJpVn4jZfXPJFJdp11AoIryr29xfNTbgqZAdV8Gv//PRUqrU+QUAo+hSEYeft52V0lluRioJA0aNi7rhHLZGF/QDP9L3lj86DI+chcENhR1SjCwaWUgMemt9wyREDaW9A+rE9lurgCXvLY2LU0aZcHcgoAszAluk0QvezCS+XlBTM5VJsyYBby7TDYu95HTlVVWHtMgbdIeU+uR0+GMkRHthKN080O9PO2xmbXEynO0WfNvvobPa+Br8HGd/8Emlx2ztsWf/tERB4H8GJIYgtdwl+arPRUkQHtS4bNWAVrc8QTScYhF66Y7rsYs5jOlV4ZCfj0pjq7Cny0dBsI0BxZUdre2NP9xcQs7YbngDJFnYFejK5d3J4uyv2IgBb1IUF40c9wDFB+9wGo1JxaRCVDR2ih5z96lsQNVtdREW4hv0UGTGPI80G88BgzW01b/5WEagJ5Ct2EnQjcgJTyja6Vi+ImVNXsap1yUvpqe4vFGoWLk9ij36x2jcb27DdjAcZODkXKdFWB32uQFQgHQC/BkqSI7QojE7vaCEim7I+3w3wdnGpVLckfEtHd0myaHvKGvc+7UlfqyFTITeDibeKpY5c1CsRHklibg1Qm4glT5ScQRGm4KAw5PyG8SALSjMitiX6Jz2gHzJpae1LYkOhtC1UOtb0xV/xL9iO9LCyUEab4BAeHIM+gJGCuFZOEGR0uBHJSf2fqYkRqiceBbVNQgYJ5/V95/hL7KuGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01P4vRZVNNmaxuL4pFMjPV3P",
+    "name": "search",
+    "input": {
+     "pattern": "setInstanceTransforms|setInstanceMatrices",
+     "path": "node_modules/@aura3d/engine/dist"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01P4vRZVNNmaxuL4pFMjPV3P",
+    "content": "node_modules/@aura3d/engine/dist/engine/instances-model/CrowdKit.js:458:                    handle.setInstanceMatrices(nodeMatrices[k], filled, nodeRgba[k]);\nnode_modules/@aura3d/engine/dist/engine/instances-model/CrowdKit.d.ts:16: * `update` writes dense instance matrices and colours through `setInstanceMatrices` with no\nnode_modules/@aura3d/engine/dist/engine/instances-model/CrowdKit.d.ts:170:/** What `setInstanceMatrices` / `setVisible` need from a runtime node handle. */\nnode_modules/@aura3d/engine/dist/engine/instances-model/CrowdKit.d.ts:172:    setInstanceMatrices(matrices: Float32Array, count: number, rgba?: Float32Array): unknown;\nnode_modules/@aura3d/engine/dist/engine/contracts/runtimeNodes.d.ts:36:    setInstanceTransforms: (matrices: Float32Array, count: number, colors?: Float32Array) => AuraRuntimeNodeHandle;\nnode_modules/@aura3d/engine/dist/game/juice/fxPoolLayerCore.d.ts:12:    setInstanceTransforms?: (matrices: Float32Array, count: number, colors?: Float32Array) => unknown;\nnode_modules/@aura3d/engine/dist/game/juice/fx.d.ts:27:    setInstanceTransforms(matrices: Float32Array, count: number, colors?: Float32Array): void;\nnode_modules/@aura3d/engine/dist/game/juice/fxPoolLayerCore.js:12: * - writes live matrices through the C-37 `setInstanceTransforms` member on\nnode_modules/@aura3d/engine/dist/game/juice/fxPoolLayerCore.js:62:            if (h && typeof h.setInstanceTransforms !== \"function\") {\nnode_modules/@aura3d/engine/dist/game/juice/fxPoolLayerCore.js:64"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01DtnFZikvutmrkm7XF2aztb",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+     "offset": 1960,
+     "limit": 80
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01GMnZX5RyKSZXeSADqZoy3U",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+     "offset": 60,
+     "limit": 130
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_018yrpu6p23ARRj4SbK7wQcb",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/game/instanceTransforms.js"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01DtnFZikvutmrkm7XF2aztb",
+    "content": "1960\t                if ((node.kind === \"primitive\" || node.kind === \"model\") && node.physics &&\n1961\t                    (hasNonzeroPivot(node.pivot) || hasNonzeroPivot(transform.pivot))) {\n1962\t                    throw new RangeError(\"PIVOT_PHYSICS_UNSUPPORTED: pivoted instances require a separate collider contract.\");\n1963\t                }\n1964\t                return copyLocalTransform(transform);\n1965\t            });\n1966\t            const pivoted = runtimeChainHasPivot(handle) || next.some((transform) => hasNonzeroPivot(transform.pivot));\n1967\t            if (pivoted && (runtimeChainHasLookAt(handle) || next.some((transform) => transform.lookAt !== undefined))) {\n1968\t                throw new RangeError(\"INSTANCE_PIVOT_LOOK_AT_UNSUPPORTED: pivoted instances cannot use lookAt.\");\n1969\t            }\n1970\t            if ((node.kind === \"primitive\" || node.kind === \"model\") && node.physics && hasNonzeroPivot(node.pivot)) {\n1971\t                throw new RangeError(\"PIVOT_PHYSICS_UNSUPPORTED: pivoted instances require a separate collider contract.\");\n1972\t            }\n1973\t            node.instances = next;\n1974\t            node.instanceColors = colors ? [...colors] : undefined;\n1975\t            denseInstanceMatrices = undefined;\n1976\t            denseInstanceRgba = undefined;\n1977\t            bumpVersion();\n1978\t            onSceneNodeChange?.(handle);\n1979\t            return this;\n1980\t        },\n1981\t        setInstanceMatrices(matrices, count, rgba) {\n1982\t           "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01GMnZX5RyKSZXeSADqZoy3U",
+    "content": "60\t}\n61\texport interface AuraFrameInfo {\n62\t    readonly dt: number;\n63\t    readonly fixedDt: number;\n64\t    readonly time: number;\n65\t    readonly frame: number;\n66\t    readonly alpha: number;\n67\t    readonly paused: boolean;\n68\t    readonly source: \"raf\" | \"manual\" | \"fixed\";\n69\t    readonly substep: number;\n70\t    readonly substeps: number;\n71\t}\n72\texport type AuraFrameCallback = (frame: AuraFrameInfo) => void;\n73\texport interface AuraRuntimeNodeSnapshot {\n74\t    readonly id: string;\n75\t    readonly kind: AuraSceneNode[\"kind\"];\n76\t    readonly name?: string;\n77\t    readonly tags: readonly string[];\n78\t    readonly position: AuraVec3;\n79\t    readonly pivot: AuraVec3;\n80\t    readonly rotation: AuraVec3;\n81\t    readonly scale: number | AuraVec3;\n82\t    readonly visible: boolean;\n83\t    readonly animation?: AuraAnimationSpec;\n84\t    readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata;\n85\t    readonly animationPose?: AnimationPose;\n86\t    readonly animationPoseBinding?: AuraRuntimeNodeAnimationPoseBindingMetadata;\n87\t    readonly importedAssetEvidence?: AuraRuntimeNodeImportedAssetEvidence;\n88\t    readonly morphTargets?: RuntimeNodeMorphTargetWeights;\n89\t    readonly bounds?: AuraRuntimeNodeBounds;\n90\t    readonly effects?: readonly AuraRuntimeNodeEffectAttachment[];\n91\t    /** Live per-instance transforms (`setInstances`) on instanced and batched nodes. */\n92\t    readonly instances?: readonly AuraTransformSpec[];\n93\t    /** Dense per-instance column-major mat4s"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_018yrpu6p23ARRj4SbK7wQcb",
+    "content": "1\timport { batchedStateForNode } from \"../batchedState.js\";\n2\timport { colorToLinearRgba } from \"../../colorUtils.js\";\n3\t/** Flag name the extension is gated under (its RegistryEntry.flag). */\n4\texport const INSTANCE_TRANSFORMS_FLAG = \"A3D_QR_GAME\";\n5\t/** Decompose a 4x4 column-major matrix into an AuraTransformSpec. */\n6\texport function decomposeInstanceMatrix(m, offset) {\n7\t    const px = m[offset + 12];\n8\t    const py = m[offset + 13];\n9\t    const pz = m[offset + 14];\n10\t    const c0 = [m[offset], m[offset + 1], m[offset + 2]];\n11\t    const c1 = [m[offset + 4], m[offset + 5], m[offset + 6]];\n12\t    const c2 = [m[offset + 8], m[offset + 9], m[offset + 10]];\n13\t    const sx = Math.hypot(c0[0], c0[1], c0[2]);\n14\t    const sy = Math.hypot(c1[0], c1[1], c1[2]);\n15\t    const sz = Math.hypot(c2[0], c2[1], c2[2]);\n16\t    // Handedness: negative determinant flips the x axis scale.\n17\t    const det = c0[0] * (c1[1] * c2[2] - c1[2] * c2[1]) -\n18\t        c1[0] * (c0[1] * c2[2] - c0[2] * c2[1]) +\n19\t        c2[0] * (c0[1] * c1[2] - c0[2] * c1[1]);\n20\t    const sxSigned = det < 0 ? -sx : sx;\n21\t    const r00 = c0[0] / sx, r01 = c1[0] / sy, r02 = c2[0] / sz;\n22\t    const r10 = c0[1] / sx, r11 = c1[1] / sy, r12 = c2[1] / sz;\n23\t    const r20 = c0[2] / sx, r21 = c1[2] / sy, r22 = c2[2] / sz;\n24\t    return {\n25\t        position: [px, py, pz],\n26\t        quaternion: matrixToQuat(r00, r01, r02, r10, r11, r12, r20, r21, r22),\n27\t        scale: [sxSigned, sy, sz]\n28\t    };\n29\t}\n30\t/** Rotation "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQSkx8KEAgTGAI4AUIIdGhpbmtpbmcSDCzKgsMQRhNuK0TNuRoMPqgGsHhyF8bMYhN6IjAFn6l/6rlZTX0NVROiTNJQREvMvgpCD4CWnjYu9hDidQT12mR5h3KSPbXF9zZc2HsqsB5wKoluNS8afZ/TfW1aiN9S9oGqF4PsnHRtOSG80onadUxysBWHoJyb1PES3EtoCoDwLnPcxRVK0R9bO6aNMMfrYK2SOkNT+RiVy9RDstl9yOJqrPJBVR6mfw4fE/1sq35JLciuPv4cmf5xXTHIx1m9y+6SSoCKwU+zDzZ5RML+UX4vv9JGMnSuU6/wQF7ybv2x0kNr/92GTaYK8ZEXUrQfqoR0vdW7PJAy0EcZo8Y7nxHJhXE/6OtbpEyI9YeXv5tsPC7Kn8ZhrWooMuMNxM2QqCpkIrhtB0ATkf1VEnLRPgd418feh2seY6qrTUZ6eC15lgi0XbA4FEEQs2/GOaubc4Wamdh/ndG2EHyltkjuxSukhoXHq2lVyAYW2fEPdaayqH+7hFa04Vjwr/swkezR9dNZJq5BBeDs+K2LEPRHsD58N8k6cALVJn4p0DHPdVSs/BEB9ozwnoiAeQYbjQKGOPjA37eqPwDCEMUR0TXhjRJCMSLFkV20B9E1QejErbYeP2w1h0LWYEk8AToVXQYrxbuxY+1RiZcYqEr9G+kywAUCQWDe32yLN8C5AZ4a1AU84J29vDRpJb0Y+QagVtCeDZVq0P5foIP6j004f6AjdY1UryDqmUdgTUZkCnhCp87uTZcK373XU0Jy5u17FuA/+phVyGJjC2Z8ATi4xzxQjE/6g1i+VN7asG9+c5qiAoe58Xc7/59vF+gcZPwq+LUEfN6Jy/zqyvHq1dZU/K9EnK3WAiz9AttZEu0m9bkyMbHmSr8pzmoPxAzIgmXW1/Ux+keCrqulvGn5LOFjEhWAH0KRxgVRoDJH6hheQm9VqWIR8/Fp0mnswPB8+mghmBQJt3ZOrM+zn3kzL4TdDN+Sh2CaoPywUIxIX64/yd0mmuSyeMHDThG9taeZJkkFtkw4jhF83qTH8mbyqHw4jtsho1E80mXT4rBOAw8YlNmLhXlRzJ622v+0oYdqk29PHlCaaZHAq5WxC+2r65yFdycMwuACgxfFwN1DcfILEo+lUmgLjefB8rghb1D1T9nrt4ae2U8tX0ajckAK1HBqTLpky7lP3NnBzYvizWr9qbA2Xi7aP9/eL7U8fyKdrmblI0holeyp5v1RS5gBpbUl7MX3ytHCphTWC/2Iu/Titl7Y/7ZEnTlnINyb8zy37JXGgBPKqbFX0wsZ0Y0QQnAmZnQzTOIpGMrQHTx/j6Qs4e5T5/fP9oStEibkWl/Fo59UBjx/f4t3n3jhSb0pRqXlohEMW4sqxJofBpJz742l/ijUplTDb6Pe7VCySNiKDFnNoVFdh+Pypw1jGqvy9fE/v6xqvozue4NuH6uFtsqYsuJYnduYPD6ZP1UAvAhl7Jv3TtZHjqy1OcqKqeMBn6EXNaEFajNpugB+ffP2OAP0yBBtIK00oIeKE167ARv1Hwu4bCWp8NBauNMr0YRjWJH9ooJ6sVDT7nLPBSIbRiRzy2u2b8OHUR2X8AFtZLufIxRSveWGSWjpWHiTFCXyOcha/4eD02ABGzfgoU34SS3TrzH5dlW6jHfULscQWyMH2ZYFRkIB2FOYYV/3HIo4/ZgK/uXKSsVL6MjoFEt7+NMHxypqqsi6O/M2fdczB2aGWHELg4gbQ7sfITYVgwQJ5XBcHTm5TFoNuDlRcdKJf7HY0GLN0g0zMfgbpAq+ijt+GwnTrnvfLE1dY27BDiQndC/8vnmmk6ueCBIgyg8HIn/P9CqhrAi7QixiGdyVW/FwWq5FaQ5agluwOSY7UyOBxEO6UwPjDEVfgXDnNf1n98P8SWMUeyRUWicUWYAhlZ3SgoGomIrfiNbHjJoWf9xVWhhqFr7OYb2FAQNlP9VTO1GLyz5T1r3yoi8eaIYwDItJjWTLdXKNn6vNQH9Cul7zQZpBcHMhnurVM4qmvIUlSZRXiYFaMIq83mLBM6d4TBoKSpyRtdXPnX/IXtrBNxSv8uA2y6BWApU3bRtFdipbgH9YX2ylFIrCZEXGMmjoXDyk+89OrijFdmoWqQ73JHPq74svyGpr+PjlBPIoK7hr9YhhGvJTYKCizZfkAZ4Y/v5PZBvfeAamYk7L8Fm0kGdbcwMAUkPyltim3XTvtUvOMbKrXd//AZYmaPWEwmGEiMkFAoHgFOy3ekYPuajSoFFk2U5q5X/+ZQqdcCVt4tWkUahYumKwH2FoRGpOnubRKGzpYXmMxP7CCvFOXWGKdlaxx9HYnHpZt45wFFP2f4sHCMzr5wIjkPcI+Ob4Fklqy6U+ClR62tShpxWHGR9jHbC1vr/IthGMaCPnPTyF5+8z7D2S2H+h1NseMGsylndISlW0kg9vNBzbLQ1S1hw2tJL/bXw8vAESBzdNVnaICite2AS1R48PP8/qYVIr6kuDkvnfV4jquRR2HFQ7OMXlnk3/Tk8nTHd5llrsIBhKZkB0+djG67c/3LXdRJqQ7d6RtIDH/hs50YccLTVHcZTC7PBQD2Y6/AlkcE9V91axQuxghMIll5dUZ6gSzuIpvZEm+wfYHYfvDO2W5sG2t5Dr81SfPuCL2/bUGMKmZwyh6bgq3Cb6eCiofm/t9MB4UV9CduAhG8Kv9ThE9RYJwR/AvabKR/V8RTJfv9I0Rr2XtJlbH+gmGb5BBTTUlnA3E5im8wsIAU2uX8Tz68KQrrT21XOJi7wG87b5/J2WxbwZIZaFxHRsZl5MDp1oDKMZXNCLfS2HwGtc1gI4hDYLUhDVFLCkzqx+DlAw4U//NmtAoLLX9y7eeJ0Xih3PdLEBYx8nchHk4mbH3gDBtH3E5wcAL+91yvQZw/oNowluR48A/w3SY80n+3e3H0IaiQjB8grwc1dfpNaH1S7yhopstDI8nVaURacQKn8OiryK0K0DsV5rKvFAUrD3H34HdagL/TXraS8Dx23F+mLq6L5NT6gVNQ+xngE3eD9y82Moe35HbR8pfRcDh/jRkpiTVRP3InOHgrp/pil7OxwXLqTYSP0OExPivOahBMlcAD/vbkLxLBL9X9ckcXaiPx3ysQqenyvlGAuujJgZ09shzPBTaBWTwZQxPgvz++P1M64KBpbm2fhKogqiAIc7gFtGoZlysuJwj40sWyQcTh2CHq4osy4871DNQg+g7TEMcmeJ5FhCvRckfgvbWlajoucpqEgHTHH9venzP0yed1OeeVRqi0FRifLVeVZpp13U8upahS9Q2fz0bLQ8AbL2b34AiBC85Fq7++E6elSNiHMqUw2rhs+Olkf9HqMQLCls2MxcIa6GegpyruSaZhSO8lkZDKAOPhnYtjOkIsVbFJMl+WwXNTlvLfF6YK7KxRRDXkW0ecSLeUbTTZGhvBPCmDesvt2vigkjnbQGsqK0QwCq4de14x5OADb4eb1RIyhaHFmIhePXiEQFfQqX/cFdCNRF38ZAHWMgA9ivlwJuHBzPTJnpgRi3E9itIfdHCl1pzjYKKXjNaToVKh+X5kM4YDqCxsMN9eCeRmxH0HPwlfxDVTCBRUwFYj/y2lu3rWfIs2wn4iTSquHElQ6otWRDjHqBDHh5jQAv9Pw9X23Xp4xfE6xR00pEcDmCzMpyUmYbYNXwFKjA+oPN0Lc1rByKdDFscMVlWdag+MaySUPxiJ7tNzzPtB5PUvI87NlheWVX1cOohROdoW55/x/LODMf2DAJUX0jQGQWszwB0d3GWNJ05Yw4p6s9wGEQsPDydwlVlyAHk8Q3iyLb0ZVkRsZWenX0PDWzxy4zxkMaXNWSDqd9m2Mwdmbm/uJcZF+LyW6YM4VZTg/T6g+Uo5C0LpQMZSqpGvkZa+LOplCbJUZiwBStokEtfl5KB3VHvlAn/oFeASTNcy6MEqqunLx8oYeqDFjEh9/BlBZI4Wcts9SBI7/q2+IVgRMhv6pJFnrODWbXVX2H81jPZoY/RRtBwsqPL66L8gKn0hQ3nBktr5wJAwMZwxhOmITGcmMQDa1zFAkfs+IzPVby7mpTlfx/Xm5MmI5zusdTk3N5RxuTk+aYZmutgJpOnNNsUh8e+hljm/jUp78lbPkjCDW3+mV3EO8+JLD0+6Yt5EbySRq6sfUJswKzMPg9pJdeARXSsRqCssuD7KHxTDcNcXwnWDy6HLit0BwPVukKdaCGvYs5G9Yo8E4tBq66DTHwNA541X1A0DDd/yfGQeRAsmXuFhlDJ4GKtrgfr/onlbeqFz+5u+uH3JynCci6M0/F/+m4aiDjUasHQo0wFBaWI5mENztnd/mRuXBoPAzFwI2H7Zf7QItA1V4cVusecQtBFRxC0T7qz5YGu2gNzZqXUVbvtoc1RqAz7fXgKtOmzbOqzk7mJAmLqXvqgLT+uBw9q9L5Ed6L1R6DkrSQiMRz0BPV3yaNyYMgAIYRvDbwEgKUspDqL3UM7K1IWhLuEWQPwmXnU7OWPxbUwZ2bl0UJY5aDwOb7U1/FYtQyffDquHzvBX4Q30boOgwMZFAE0fQXJMxruEypZhzcHMrzYi7kNjUuOGGB0JTHxX7p9VdcUdmjBCemTP/XFTruBRsRTA3ULc8rcfGfEqbc0Ki9KQ3XQf1e+Wr4aNwQ6ky55IKR8HlJg/UElPj1GLahzb1hCW64rRrmgnJBQFTLL7fZhg5kaCNhk7j5IPVuau7wFyd9ksnjaJfxNQUQ/Vp6M9SU5IA5PD9gedhknFjm8vXs8aAZZiqFezuU7ZJbTKWAhd/khjTkLQP7d9fAt4B8RbO361AQxzftydteeoqffq6reycmCJjE/LnfEusaD+a9dEqVG3wlUz7gtPCUkXlG22M5k2UbuJIla+KbRAjnoA8cnYx+/dmOUYfFdM41Qu8uj2zNvglCfjP+U8dL7BD09gBKGkOvdTSYUIAItFSuoX8IXQSjjYvkCrSRqVgcIFfuDPo1ppPaafZlAJk7REuFPA+45YF/3Ec4T5SdD5DoRe+P+2OmiBbcgOaR9RvrPVbHnb/u+GNEom3a39htxJqtdMa5wMITS2cMxzmcifqHGto7IkB1WVzKmdNHBWxCzAfyh34C4ZqdRGzxSp8e68jnswGt83kOEeiQ9DHor2JvdRSf+fkSVmVOICXTV2KWBMsqT7Q9JE7KQLDD9ppllYpTd0mnigA952NvYMN6YIepaJhFB3Jxwh4Sx1V0R0FcVZs5zjJ/og0NyECzMpdtC3rB/1JAmokoK+fWE2qGv8eLDr1Ub5PMlvUuOOjXI3Sc0jQYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01TmWEksZWAJxAGG366pbG4j",
+    "name": "search",
+    "input": {
+     "pattern": "AuraPrimitiveParams",
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_015bsLUi44yjmKkJqpsWJJBT",
+    "name": "search",
+    "input": {
+     "pattern": "raycast|screenToRay|unproject|pointerToGround|pickGround",
+     "path": "docs/agents/recipes.md"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01TmWEksZWAJxAGG366pbG4j",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:461:    readonly params?: AuraPrimitiveParams;\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:474:export interface AuraPrimitiveParams {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:762:    readonly params?: AuraPrimitiveParams;\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/geometry.d.ts:2:import type { AuraPrimitiveParams } from \"../nodes/types.js\";\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/geometry.d.ts:87:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/geometry.d.ts:95:export declare function qrPrimitiveParamsPoolable(params: AuraPrimitiveParams | undefined): boolean;\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/geometry.d.ts:121:[Omitted long matching line]\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_015bsLUi44yjmKkJqpsWJJBT",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01LpBJFmqKAsXc133RRZJyNm",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "offset": 380,
+     "limit": 150
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01W36effWSVaEZr789U9pFUp",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "offset": 1,
+     "limit": 120
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01LpBJFmqKAsXc133RRZJyNm",
+    "content": "380\t    readonly score: number;\n381\t    readonly classes: readonly string[];\n382\t    readonly plinths: number;\n383\t    readonly labels: number;\n384\t    readonly reflectionCards: number;\n385\t    readonly chromeReflectsEnvironment: boolean;\n386\t    readonly glassTransparent: boolean;\n387\t    readonly rubberNonReflective: boolean;\n388\t    readonly emissiveGlows: boolean;\n389\t    readonly clearcoatLayeredHighlight: boolean;\n390\t    readonly minimumMaterialDistance: number;\n391\t    readonly problems: readonly string[];\n392\t}\n393\texport type AuraMaterialCapabilityFeatureId = \"base-color\" | \"base-color-texture\" | \"metallic-roughness\" | \"normal-map\" | \"occlusion-map\" | \"emissive\" | \"alpha\" | \"double-sided\" | \"clearcoat\" | \"sheen\" | \"transmission\" | \"variants\" | \"hdr-ibl\" | \"shadow-maps\";\n394\texport type AuraMaterialCapabilitySupport = \"supported\" | \"partial\" | \"metadata-only\" | \"unsupported\" | \"internal\";\n395\texport interface AuraMaterialCapabilityFeature {\n396\t    readonly id: AuraMaterialCapabilityFeatureId;\n397\t    readonly label: string;\n398\t    readonly rootSafeApi: AuraMaterialCapabilitySupport;\n399\t    readonly productionRuntime: AuraMaterialCapabilitySupport;\n400\t    readonly requested: boolean;\n401\t    readonly evidence: string;\n402\t    readonly claimRule: string;\n403\t}\n404\texport interface AuraMaterialCapabilityDiagnostics {\n405\t    readonly kind: \"aura-material-capability-diagnostics\";\n406\t    readonly rendererPath: \"root-createAuraApp\";\n407\t    readonly requestedFeatures:"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01W36effWSVaEZr789U9pFUp",
+    "content": "1\t# Recipes: copy a working scene, then adapt it\n2\t\n3\tComing from three.js? Read [`threejs-to-aura3d.md`](threejs-to-aura3d.md) first; signatures are in [`api-signatures.md`](api-signatures.md). Recipes 8 to 15 build complete scenes with no admitted models. Start here when the task looks like one of these. Each recipe is a complete `src/main.ts` body that compiled against the engine types (`tsc`, strict) and uses only non-deprecated root exports. Copy it, change names and numbers, run `npm run build`. Do not read `node_modules/@aura3d/engine/dist` to discover the API first: that is the slowest path (in the cold-start trial, 8 of 15 runs spent all 40 turns reading `.d.ts` and `dist` files without writing a scene, while the game-loop runs, which had a complete sample to copy, finished in 11 to 17 turns).\n4\t\n5\tPage needs a `<div id=\"app\">` (or a `<canvas id=\"app\">`); `createAuraApp(\"#app\", { scene })` mounts into it. Background, camera, lights and fog are ordinary nodes or scene options. Animate inside `app.onFrame((frame) => ...)` using `frame.dt`. Await `app.ready()` when you need the first frame. With a HUD or other elements beside the canvas, give the canvas a wrapper of definite size (`<div id=\"stage\" style=\"width:640px;height:360px\"><canvas id=\"app\"></canvas></div>`), or pass `resize: false` and a `width`/`height` on the canvas; the app sizes itself to its parent, and an auto-height parent that also holds a HUD can make a canvas grow until it draws nothing on 4.1.3 and ear"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 11,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQSrggKEAgTGAI4AUIIdGhpbmtpbmcSDAVAbb1CpGpjycCYfxoMTxcwru0i3riCK1avIjB1uljYP9xu9VBFMZZ28Vxe5OZYv2czodRRphggEIfSQtd9AVIkZwUJ544PbeWrf0AqywcD0E7uRyJBuzljKtZzZD+lfw4EbsvyGNAIeoNkB7ei395GrwQeTKjb5R8RsBAQft/o7CW8VPccvYN1zQqBdNRvvHakgi03ODdiBCtsqjTSmYT8r/e/4v392p2MTDeAvpjL4qN9rOjLLIvkKQk6rVOy34PL76HFl3qveuXNA9/0Jeyla47hEYQpEV0nd4XLU8E9lbFALy0ddYL+YsY4+YEUUJlBk3hebKeT/EyCEmU8UH6VrbilqTTGPnDwOOGV1GpQPowlva9VyivQGLXKBtguza2RQKFwEtkadnUxfiW1kg7VfwyyGKIGESwlf+mKUXnvzkhBv/coY764sluZwbs5ENmgJVADXCoSApifHci92BTedaD3hwYZvVx0yLy0xF59KFnQZFCz9ADDe2PZWI0o6sG/HX88JohT/3+8ZcF8oN+PIg+yaD3UyJNSUHx1yxcz1KDUBzB8Tmy4kVLBdStNl6k+G3FllXS0qdncGQJYLuswDJY85aKs9fJ/RJAqWJ4MetP3veiensKvsXSQ/sjHPXSbnTItMhEhSjp+eVv0eiRrzUC2Z9Lz2l6qX7xF92BJquP9FizGUUn00cYyV1nl3/KDqcVb+NQA/XOkV/4ne3Vqtncv3/XnOcFpxQNOuzKcX+5lRdkv7aH+rSQaQS5mI873r0/t08orU/FAcpvf5y4lkTxvBqQIZhZs+MT1zorHAFG4hA4ri9bZtSISWBrccp5RSJwpi+LL6SxSQLy3K4LW6oXudCB7tZtjq7jI0teWcKa9izJKLdnLxeLIdtGCuQGheh5lgK2Kplx+k0eqQQAvlI/+9lZWzkmOjAUewJjUDL+H9pwSokGPvWJj56s16bhFQN4zhXVySNq0g3l3IAc6NcASam+XqxzK04AWDJql/AuULygdSPNOILBhQbeRJHlKPbFtZaM+zWZz89IcXPTZWvA2Ty4H/A+7+i/uxzJ+f46ZVl4Ee3+XSTEKUQKjBWSzrStDbC0UzAhszSKtUdXcf60+MXteLMsEYqwQeDcM/W+Go6N4ZiCSV95M+Tt3nc/35AFfmhY/1Igl5b0rNXQqIuICjNS+ZnzWrpqtSjN6Ou3bxi9u+CNpPDmYE8oq5e59cFdoH15yWBeA2XH3xc6g0c5xjba+4XEJqvThkCm9WCyKhN7hNwZYOUVFODdFX7WWxeVEXMdNsBPyCkvEkIYD3MIjlYckH1JCpeY48fAlX79ueSlGRLqYlQHtyFssTKdycKvcx1UnYvefF1dn2swObi6YoI+mhpxPgPBP8O2PNErrvTmJ7FVskhgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01Fon7Pa3pvRprQEgd6j1thE",
+    "name": "search",
+    "input": {
+     "pattern": "fov",
+     "path": "node_modules/@aura3d/scene/dist/PerspectiveCamera.js"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01QKk99FALEv45mV3ZyKKdJ1",
+    "name": "search",
+    "input": {
+     "pattern": "export (declare )?function raycast|export (declare )?const raycast",
+     "path": "node_modules/@aura3d/engine/dist"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01Fon7Pa3pvRprQEgd6j1thE",
+    "content": "14:        this.authoredFovYRadians = options.fovYRadians ?? Math.PI / 3;\n37:    get fovYRadians() {\n43:    set fovYRadians(value) {\n53:        const fovYRadians = this.fovYRadians;\n54:        validatePerspectiveProjection(fovYRadians, aspect, this.near, this.far, this.depth.mode);\n55:        const top = this.near * Math.tan(fovYRadians / 2);\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01QKk99FALEv45mV3ZyKKdJ1",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/SceneQueries.js:147:export function raycastSceneTargets(targets, ray) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/SceneQueries.js:151:export function raycastSceneTargetsAll(targets, ray) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/SceneQueries.js:213:export function raycastPhysicsWorld(world, ray) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/SceneQueries.js:320:export function raycast(input, options = {}) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/SceneQueries.js:388:export function raycastFirst(input, options = {}) {\nnode_modules/@aura3d/engine/dist/physics/Raycast.js:18:export function raycastCollider(origin, direction, collider, body, options = {}) {\nnode_modules/@aura3d/engine/dist/physics/MeshBVH.js:212:export function raycastMesh(bvh, origin, direction, options = {}) {\nnode_modules/@aura3d/engine/dist/physics/MeshBVH.js:249:export function raycastMeshBruteForce(bvh, origin, direction, options = {}) {\nnode_modules/@aura3d/engine/dist/physics/Raycast.d.ts:49:export declare function raycastCollider(origin: Vec3, direction: Vec3, collider: Collider, body: RigidBody, options?: RaycastOptions): RaycastHit | undefined;\nnode_modules/@aura3d/engine/dist/physics/MeshBVH.d.ts:69:export declare function raycastMesh(bvh: MeshBVH, origin: Vec3, direction: Vec3, options?: RaycastMeshOptions): MeshRayHit | undefined;\nnode_modules/@aura3d/engine/dist/physics/MeshBVH.d.ts:71:export declare function raycastM"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 12,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to work out the ray math myself using the camera's position, target, fov, and aspect ratio of 640/360, figuring out whether the fov is vertical in degrees and checking how the camera compile step uses it, plus making sure no scene override is clobbering my explicit camera setup.\n\n",
+    "signature": "CAQSiwgKEggTEAEYAjgBQgh0aGlua2luZxIM+7aF5oAIhvMzmaveGgyoho3B2RjilbzDzZYiMCGPVXqPolS0+iADo6xzLaToiHSTZl3b9MUlAY5cLx82e1T9AoF2Ne49019iUahRryqmB1fefpJaDnJvTitki3w+HRvpq3aPfXCoOOCEMsYlzs8KXamZA5hzHMq9w6d/n4vb8h6Sl1M8wTvRlX8mzaZADRPacubysorKkqVNTQwNpFy9zATNUceYeI8ZVoXgI8KdIhgMDHVvBV7ftalFYO6x9paJ2wav2fSq1YxJRUZciF2PTJvWsbWw/wcOpu7WBYCePXFIIlK7ScfiHTGkvzTfDIQqWH1sj5uqEJoIHbaws70c8DitWk8vyCs19zK0ByBntZqr22fkgzGRqhNAY4kdgNwL+3Bqos/qk1DoKBQ5tUo10Qb0l5vZnQM3Vpe6iRHAVjgyXN9uW0DpctsIf4hRWYjOkhM2qR3xweoue4qMl1ptN9W7l9Ac6tWINfr0M4aAf2DyX/t5dUmO+9fYCubD3qazwTMzYCzD+lMbGCIi1v7LOSnCHT4jDU6hw+BZchRM5g5gbg9xYc1NJf1xxtq1Votmct3nojsKrFWqIX7B4RbJTTLy6ZHWqVvenprn33B4u2nzLw3zMBCx9JClYvyQjXe2YcbWKHI8qKTL+cvyo0Sv1KM7MtDf0p3HObfdvuotex6R3ccm8IzaZpjW7SN6Ffod+jkcMfY/EIbaRHBIAmcX2gkg9wKjWhfLRejaUyTNM7zQO+yZ+QxOF8y5uAy3QQmnJ7GA7Az11R+ZID+6DXIpq6ufLQU6GLv56RLK5QwKN69T2gxmRvDtWla9GNLjPcBk/PEIvCaOT9TsczYA4xjvZvHGsztkwTKcCqt5Tpr5Rxp46IbCEiqyaHv8XupJQKGHjrIn4qJs0uEQ+xyWdmqY7WOo6guRGs8J4QD1aaABoEaiz3ekGSyVVNQKmgtPloJ2bKZ77/pImCmSkBJr5hVcppkqw+L5f7jWYPQkGZuUbuW4myNRQmxwSIZauaxw+RGieUWo2JsBjQeB6N3GTaPdtc9wxb/VFgzVrFbHs3yenu8h8E2eMyuz4J59coq1tGWsouwNfQzAG+80dILkJbJBdhDgIO4Kpc5PnLJwZPTBQqsxmVVbMw5bfBpfw0rKmdjNufBMzXpEYSdWsmfyq4MzPGxeZmPyGNzahgAc+RRger/IpJYWK5wWZzkpooyzeV89liY+WaD28sD7DItG78jCP9yxfUSfyVBJkdKWMMenylDMtiu/NV0t00yVfVgASb2PYR2BdOR+qsoaU79/0a9HjzrpYgaIBYjGwpLHgws9zjzDgk5JnfTUlECtWHG3AtIyzhwD1IoYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014BKXtYXH27xVZgaVsTLKeS",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "fov \\* Math\\.PI|fov\\)? ?\\* ?\\(?Math\\.PI|degToRad\\(.*fov|fovDeg"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01W8ySTaPSWmNxsFKV2NvRcX",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "pattern": "camera\\.perspective|canvas\\.addEventListener|pointerdown"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 12,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014BKXtYXH27xVZgaVsTLKeS",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/FocusSelection.js:231:    const vFov = (fov * Math.PI) / 180;\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.js:5: * `distanceForFraction(h, fovDeg, p) = h / (2·tan(fov/2)·p)` and the exact\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.js:6: * inverse `fractionForDistance(d, h, fovDeg)`. For portrait aspects the\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.js:16:export function distanceForFraction(h, fovDeg, p) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.js:17:    const half = Math.tan(toRadians(fovDeg) / 2);\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.js:23:export function fractionForDistance(d, h, fovDeg) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.js:24:    const half = Math.tan(toRadians(fovDeg) / 2);\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/altitude.js:33:            const vFov = (fov * Math.PI) / 180;\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/fighting.js:36:            const vFov = (fov * Math.PI) / 180;\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/prompt/promptPlanMappings.d.ts:38:    readonly fovDeg?: number;\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.d.ts:5: * `distanceForFraction(h, fovDeg, p) = h / (2·tan(fov/2)·p)` and the exact\nnode_modules/@aura3d/engine/dist/engine/agent-api/camera/framing.d.ts:6: * inverse `fractionF"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01W8ySTaPSWmNxsFKV2NvRcX",
+    "content": "90:    .camera(camera.perspective({ position: [0, 1.25, 4.6], target: [0, 0.9, 0], fov: 40 }))\n376:    .camera(camera.perspective({ position: [30, 13, 34], target: [0, 1, 0], fov: 45, near: 0.5, far: 400 }))\n443:    .camera(camera.perspective({ position: [26, 21, 30], target: [0, 1.5, 0], fov: 42, near: 1, far: 300 }))\n557:    .camera(camera.perspective({ position: [0, 6, 22], target: [0, 0, 0], fov: 50, near: 0.5, far: 300 }))\n612:    .camera(camera.perspective({ position: [13, 5.5, 15], target: [0, 1.8, 0], fov: 46, near: 0.5, far: 400 }))\n666:    .camera(camera.perspective({ position: [3.6, 1.9, 4.6], target: [0, 1.1, 0], fov: 44, near: 0.1, far: 80 }))\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 13,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm considering using the outdoor-day preset for lighting and sky, combined with an explicit ground plane, though I'm wary the preset's shadow framing might be tuned for a fixed scene setup rather than mine.\n\nFor the plants, I'm designing them with capped instance counts (say 400 max) built from stems, leaves, and flower heads, with sprouts rendered as small light-green shoots with cotyledons versus mature plants getting full stems, four leaves, and colored petal/center geometry. I'm thinking through how instance nodes handle a count smaller than their fixed capacity, since the node needs non-empty initial instances but should still render correctly when only a subset are active.\n\nTo avoid edge cases with empty dense matrices, I'll always write at least one zero-scaled instance as padding so clearing the plant count never breaks rendering. For color, I'm computing sRGB-to-linear myself per instance to vary stem/leaf tones from pale sprout green to deeper mature green, and capping total plant count (maybe around 256-300) to keep per-frame updates for hundreds of instances cheap.\n\nI'm deciding to cap plants at 300 and simply ignore further clicks beyond that limit rather than removing older ones. For shadows, I'll explicitly set castShadow true on instance nodes, and I'm sizing the ground plane larger than the clickable plot (so clicks outside a bounded region are ignored) while positioning the camera to frame the whole plot with the sky visible beyond its edges.\n\nI'm working through the camera geometry so the ground plane stays fully visible given the fov and pitch angle, calculating where the near and far view rays intersect the ground — settling on a roughly 12x12 clickable plot with a slightly larger 14-unit visual ground plane.\n\nI realize the ground plane would look too narrow at the sides with these numbers, so I should make the visual ground plane much larger (like 60x60) while keeping the clickable/accepted region smaller, so corner clicks on the canvas still register as hitting the ground rather than missing it.\n\nI'm sizing the ground plane to leave a thin strip of sky near the horizon—shrinking the z-extent so the far edge sits a few degrees below the top of the view, while widening it in x so the ground still fills the horizontal field at that depth.\n\nI'll set the ground plane centered at z=0 with size [80,1,18], accepting plant hits within that rectangle, keeping the far-edge plants small on screen which is fine visually. For the background I'm leaning toward a soft sky color like \"#bfe0f5\", though using a preset like \"outdoor-day\" might override it with its own fog and sky blend — appealing but uncertain in effect.\n\nSince I can't actually render or test this, I'll stay defensive and lean toward the preset over manually authored lights, since docs suggest authored-only lighting looks flat without an environment. I'll go with looks.preset(\"outdoor-day\") combined with scene background settings, though I'm unsure exactly how the preset handles the ground — worth a quick check of the docs for hints on how it treats sky and terrain.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014NcYDsTceFPdDWDuqLjLA1",
+    "name": "search",
+    "input": {
+     "path": "docs/agents",
+     "pattern": "outdoor-day"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 13,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014NcYDsTceFPdDWDuqLjLA1",
+    "content": "docs/agents/agent-quickstart.md:36:[Omitted long matching line]\ndocs/agents/art-direction.md:29:| platformer | `outdoor-day` | `follow` (side-on) fov 50 | `daylight-outdoor` | coin gold on saturated greens |\ndocs/agents/art-direction.md:36:| outdoor environment | `outdoor-day` | `follow` fov 55 | `daylight-outdoor` | greens + horizon fog |\ndocs/agents/art-direction.md:43:[Omitted long matching line]\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 14,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Let me check recipe 12 in recipes.md for the terrain/sky example to see how a scene with sky and ground uses a preset.\n\n",
+    "signature": "CAQS6QUKEggTEAEYAjgBQgh0aGlua2luZxIMszKXlu71tgh+VqxhGgx/XH6pHjMmmaOUpnkiMITJ2l/tQOnwlaGmPujKruzqjyZCEIFy4NskKRyV/XMo9uhVVs9k88yhMz4fx0vHvSqEBSH6CmBEDNinF6uBImB/u8jOxs9De5JSKQZJiwQHy458am8HALDPx8D0ghrRRAJnRilKn+U4gtdTKXRg6FUHrCtr8AZKIcfRJgaxtkipRfwNMdJo6JuafK/Lc4LZlqN5WorGJS4Z7aB6KoVa8NjZszMs/4ny4UY2nmt0OuBtSCrX7rir7ZTtOgmuZFbLNf+tDqmWFtKmiWLPWphQVpBndUQRz7j/IVXOx8/IJvTxYcMG9kwIAnNWMhijq9fiIdV/TbX9AItRiK2yKRqU3bfaJ92DLoPUIi6LiMknfeHRDs+eEQoVZmXWWeThYp9ayjf4xWNreHSF83QHeR2EGyB16I8CU+s42Nz2Sy3KJ2Gc19tKD/PqrGtrrWw0q9ACv8jwrsjXI/YJXqWWgW7n0Vd/cD4xAjqOGsLtu6FxhDbrFYwuIr7f/+8LaqeTskFrPAvCFOKPTn0m4Owwk9o626O1NannJtWv3F7jYWwD7pyUGrbrmNssCd6ynVq7uKpLlqP6VWqHiqiRKn5vfZwqPWwhVnDSG7aoDrCAlv4RxVW506XEHmyFq0O3yu3mkco5KZa63hrqiBEAdpK+ZufYWf6+PMSDmvLF82RB/sBofTS+T9WiS+pXNZcp8vEluiStc0e9uFLk4ptAZO/MdB4jsu54uGZA1PldFvP5IumNl8CIR/J0mxKjJW3NxM/K4nRkpbRbHWtF1X2eNZNR1b3VqgDuIpW0Wpv4LiP6i6Ewe2IrHI7ogczmsuaXM43Kc4rshnLAv8W8oj+6b9JpCqfscxIVO8xd9ePyh5DbtGOugwmsohb4LYslN/U7//eD+QtzySDzPgbKEEb4GBdXyCUuutkXaChFEEfnGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019JE2KJZpY7SdLirrSD1gqJ",
+    "name": "search",
+    "input": {
+     "path": "docs/agents/recipes.md",
+     "pattern": "^## |looks\\.preset|sky\\."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 14,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019JE2KJZpY7SdLirrSD1gqJ",
+    "content": "16:## 1. Rotating PBR cube with orbit control\n39:## 2. A forest of thousands of instances (fog, shadows, per-instance colour)\n74:## 3. A skinned character with clips and a crossfade\n104:## 4. A deterministic fixed-step game loop with restart\n132:## 5. Custom GLSL (animated water on a subdivided grid)\n181:## 6. A ball dribbled by hand (hand and floor contact, handoffs, proof)\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 15,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01Ln7yqiyNUJb164j5JKFE8j",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes",
+     "pattern": "interface AuraDirectionalShadow[A-Za-z]*"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 15,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01Ln7yqiyNUJb164j5JKFE8j",
+    "content": "(no matches)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01WtUzKmjkLjtN1AxYpoe9xw",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist",
+     "pattern": "AuraDirectionalShadow"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01WtUzKmjkLjtN1AxYpoe9xw",
+    "content": "node_modules/@aura3d/engine/dist/engine/public/index.d.ts:12:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/contracts/looks.d.ts:8:import type { AuraDirectionalShadowOptions } from \"./lighting.js\";\nnode_modules/@aura3d/engine/dist/engine/contracts/looks.d.ts:47:        readonly shadow?: AuraDirectionalShadowOptions;\nnode_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts:55:export interface AuraDirectionalShadowOptions extends AuraShadowOptions {\nnode_modules/@aura3d/engine/dist/engine/agent-api/isolated-index.d.ts:247:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/lights.d.ts:3:import type { AuraDirectionalShadowOptions, AuraLightingModel, AuraLocalShadowOptions } from \"../../contracts/lighting.js\";\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/lights.d.ts:22:    readonly shadowOptions?: AuraDirectionalShadowOptions | AuraLocalShadowOptions;\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:800:    readonly shadow?: boolean | import(\"../../contracts/lighting.js\").AuraLocalShadowOptions | import(\"../../contracts/lighting.js\").AuraDirectionalShadowOptions;\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/lights.d.ts:2:import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions, AuraPhotometricProfile, AuraProjectedLightImage } from \"../../contracts/lighting.js\";\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/lights.d.ts:43:        readonly shadow?: boolea"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 17,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01Kup367yHRbhgfnqs5KdY4q",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts",
+     "limit": 110
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 17,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01Kup367yHRbhgfnqs5KdY4q",
+    "content": "1\t/**\n2\t * C-10 — lighting model and lights API (engine side, CONTRACTS.md). Provider: PRD 02.\n3\t * Flag: A3D_QR_LIGHTING. AuraLightType gains \"hemisphere\" in PR 0a (index.ts:1542).\n4\t */\n5\timport type { AuraNodeBuilder } from \"../agent-api/nodes/builder.js\";\n6\timport type { AuraColor, AuraVec3, AuraLightNode, AuraAssetRef } from \"../agent-api/nodes/types.js\";\n7\timport type { AuraQualityTier } from \"../../rendering/contracts/index.js\";\n8\timport type { IESProfile } from \"../../assets/index.js\";\n9\timport type { NativeBakedLightmapRenderData, NativeLightProbeGrid, ProbeOutsidePolicy, VoxelIndirectLighting } from \"../../rendering/lighting/index.js\";\n10\t/**\n11\t * A parsed Type-C distribution. Its candelas replace the punctual light's\n12\t * scalar candela value; `scale` applies a linear dimmer. The local forward\n13\t * axis points from the light toward `target`, 0 degrees is along that axis,\n14\t * and `rotation` turns the profile around it in radians.\n15\t */\n16\texport interface AuraPhotometricProfile {\n17\t    readonly profile: IESProfile;\n18\t    readonly scale?: number;\n19\t    readonly rotation?: number;\n20\t}\n21\t/** Spot-light projection sampled in local light space and multiplied by shadow visibility. */\n22\texport interface AuraProjectedLightImage {\n23\t    readonly texture: AuraAssetRef<\"texture\">;\n24\t    /** UV offset, default [0, 0]. */\n25\t    readonly offset?: readonly [number, number];\n26\t    /** UV scale, default [1, 1]. */\n27\t    readonly scale?: readonly [number, number];\n28"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 18,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_018pUF4hnN1HFA2yqjcCqMvh",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/CameraController.js",
+     "offset": 120,
+     "limit": 60
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 18,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_018pUF4hnN1HFA2yqjcCqMvh",
+    "content": "120\t                vel = [\n121\t                    springDamp(tracked.vel[0], inst[0], 0.05, frameDt),\n122\t                    springDamp(tracked.vel[1], inst[1], 0.05, frameDt),\n123\t                    springDamp(tracked.vel[2], inst[2], 0.05, frameDt)\n124\t                ];\n125\t            }\n126\t            else if (tracked) {\n127\t                vel = tracked.vel;\n128\t            }\n129\t            velocities.set(key, { pos: base.position, vel, t: timeMs });\n130\t            subject = { ...base, velocity: vel };\n131\t        }\n132\t        frameSubjectCache.set(ref, subject);\n133\t        return subject;\n134\t    };\n135\t    const subV = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];\n136\t    const scaleV = (a, s) => [a[0] * s, a[1] * s, a[2] * s];\n137\t    function viewProjection(pose, aspect) {\n138\t        const forward = [\n139\t            pose.target[0] - pose.position[0],\n140\t            pose.target[1] - pose.position[1],\n141\t            pose.target[2] - pose.position[2]\n142\t        ];\n143\t        // scene/math Vec3 is a mutable tuple — widen the readonly AuraVec3s.\n144\t        const mut = (v) => [v[0], v[1], v[2]];\n145\t        const up = rollUpVector(mut(normalize3(forward)), mut(pose.up), pose.roll);\n146\t        const view = lookAtMat4(mut(pose.position), mut(pose.target), up);\n147\t        const proj = pose.orthographicSize !== undefined\n148\t            ? orthographicMat4(-pose.orthographicSize * aspect, pose.orthographicSize * aspect, -pose.orthographicSize, pose.orthog"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 19,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQS9wcKEAgTGAI4AUIIdGhpbmtpbmcSDGkAKvTaFXT2iEUeFxoM16qD1XryIGrsia6KIjCAWSpmaVUoo7K2b2Wy9JQEfN4AjzoiCTLV21APKxa19HRGpS01p/EQJfIzRQe9YgcqlAd9T/Af0c25XhEoeoNChGUoftgjasgHusLuzhH+hUCwsVqHLtVLEPxH03NPQ4LJ7PnlyqIWYa4s9OfuShDzW3Xts1BdwdleV7E3eKcPkBRcFDh7WQt404zSPq7iDuQOMBBkm46tfntr+LzkMA7+9QB0XIL+VzXU+CNPAJoApVdk5TR1DaXiX6bHa9REFTysrAnO3flOwsNZj4DnOX27fryK6BTIzUX4xjcckfHtdt31dOo3F9CWk4qGZLnGifLqT2SKeDZMa8MXG+rt8MS2SZ9d4i4ZAAzTtEuqO622dx7rIYDNZP+BCSpw6UuFY4FM7msxRx/dsz0SvZf4byqIFylHFEO3RLb7Z3IPm6Z6t1+43APitBHZ+P+4vlZysN4eaVJ0GoeJXiTjGRCinXCv3c++iyQEkUUWiPnudU4awZYqxiwcH0t9WWSoczfWQhWfbD0nFyWiPXVio1hKvHk6M5Zk+3dxVH7fUq/RuZ0jn6b2ygA7edDuyRPyqb/4nL9135HDYxuYLOo5ctK+oL4mOvwPv509XBdZQOFdAgs+9W/jcUEu+ynPC0hbeIr+fOrbJaz6mM89mNLxNeFpKu7MgZ0FLf6Y4shntGmC5u4Y7J6p08tfJMeymQ4PtefNBIaEFGytEMz2lgOry/qIOMbFVnxWrY5q44Cq2zhY+bm3JgC3DcmkOHHgW/B5rS1CKpbHKhh8N8737/ubS/2H9QMmx0lCDTLz29fos323HS+RYx1BE/DTq/QUPMdP7yJ6YH73S0HBtHhNqDAXxnMRGzmOpZiWZSt+KbXjdkU9NAKXhEkmLdMFxbZdvdUowjO9AuRrz5ocHlUHDrGyIBtzNBs4uO7SzkndhlzYDKjTj40g+vdm7mS3JheOeiI78WS8USNWUPLRMJh48EFOnJaDb0vkysAToBoPfJ0oIjPdsckn4pWFCOqVjI6chUarrjy0fZPeKQQxk7lydLN1A9wdYcVCboNsKhD8nX/e/ec8iu3AEFiNGnhuzEEo1NAsax/sUOUMyNnQeWQMMMwD+OAIrxfEKfzlnS7VEb+Mxy7JHak5J9soDHVI/q0d8J3DSqG88+vha8WwbnW+40rW4q8E688mw7SSB3R6YvCMH78ExlbgXoozxa1AHpn/IekB1udlwVUMWWuXOT/yL35+tfGM6B8FQBjG4CLre2npOFQ/ZKSmDQ1tobEzBE/gPW7h3fsXm5wIyfoV2NbKGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01NVDvhQZi741dfM9ba6YqPF",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import {\n  camera,\n  createAuraApp,\n  environments,\n  instances,\n  lights,\n  material,\n  primitives,\n  scene,\n  type AuraRuntimeNodeHandle,\n  type AuraTransformSpec\n} from \"@aura3d/engine\";\n\ninterface PlantRecord {\n  x: number;\n  z: number;\n  t0: number;\n  rot: number;\n  height: number; // mature stem height\n  flower: number; // mature flower diameter\n  leaf: number; // mature leaf length\n  petal: [number, number, number]; // linear rgb\n  center: [number, number, number]; // linear rgb\n  shade: number; // leaf colour variation\n}\n\ninterface TaskPlant {\n  x: number;\n  z: number;\n  growth: number;\n}\n\ninterface TaskState {\n  readonly plantCount: number;\n  readonly plants: TaskPlant[];\n  readonly ready: boolean;\n}\n\ndeclare global {\n  interface Window {\n    __TASK_STATE__: TaskState;\n    __plantAt: (x: number, z: number) => boolean;\n    __EVAL_READY__?: boolean;\n  }\n}\n\n// ---------------------------------------------------------------- constants\nconst GROW_MS = 8000;\nconst MAX_PLANTS = 160;\nconst SPHERES_PER_PLANT = 11; // 4 leaves + 6 petals + 1 flower centre\nconst LEAVES = 4;\nconst PETALS = 6;\n\n// ground: x in [-GX, GX], z in [GZ0, GZ1]\nconst GX = 30;\nconst GZ0 = -10;\nconst GZ1 = 30;\n\nconst CAM_POS: [number, number, number] = [0, 10, 14];\nconst CAM_TARGET: [number, number, number] = [0, 0, 0];\nconst CAM_FOV = 45;\n\nconst SKY = \"#bfe3f7\";\n\n// ---------------------------------------------------------------- colour helpers\nfunction srgbToLinear(c: number): number {\n  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);\n}\nfunction hexToLinear(hex: string): [number, number, number] {\n  const n = parseInt(hex.slice(1), 16);\n  return [srgbToLinear(((n >> 16) & 255) / 255), srgbToLinear(((n >> 8) & 255) / 255), srgbToLinear((n & 255) / 255)];\n}\nconst SPROUT_STEM = hexToLinear(\"#b5e57a\");\nconst MATURE_STEM = hexToLinear(\"#3c8f3a\");\nconst SPROUT_LEAF = hexToLinear(\"#a2e36b\");\nconst MATURE_LEAF = hexToLinear(\"#2f9a3e\");\nconst BUD_GREEN = hexToLinear(\"#6fbf4a\");\n\nconst PETAL_COLORS = [\n  \"#ff4f79\",\n  \"#ffd23f\",\n  \"#ff8c42\",\n  \"#b57bff\",\n  \"#ffffff\",\n  \"#5ab8ff\",\n  \"#ff3b3b\",\n  \"#ff9ecb\",\n  \"#f7f06d\"\n].map(hexToLinear);\nconst CENTER_COLORS = [\"#ffcf24\", \"#8a4b1f\", \"#ff9a1f\", \"#fff2a0\"].map(hexToLinear);\n\n// ---------------------------------------------------------------- deterministic rng\nlet seed = 20240607;\nfunction rand(): number {\n  seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;\n  return seed / 4294967296;\n}\n\n// ---------------------------------------------------------------- math helpers\nconst clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);\nconst smooth = (v: number): number => {\n  const t = clamp01(v);\n  return t * t * (3 - 2 * t);\n};\nconst lerp = (a: number, b: number, t: number): number => a + (b - a) * t;\n\n/** Column-major T * Ry(yaw) * Rz(tilt) * S written into m at float offset o. */\nfunction putMatrix(\n  m: Float32Array,\n  o: number,\n  px: number,\n  py: number,\n  pz: number,\n  yaw: number,\n  tilt: number,\n  sx: number,\n  sy: number,\n  sz: number\n): void {\n  const ca = Math.cos(yaw);\n  const sa = Math.sin(yaw);\n  const c = Math.cos(tilt);\n  const s = Math.sin(tilt);\n  m[o] = ca * c * sx;\n  m[o + 1] = s * sx;\n  m[o + 2] = -sa * c * sx;\n  m[o + 3] = 0;\n  m[o + 4] = -ca * s * sy;\n  m[o + 5] = c * sy;\n  m[o + 6] = sa * s * sy;\n  m[o + 7] = 0;\n  m[o + 8] = sa * sz;\n  m[o + 9] = 0;\n  m[o + 10] = ca * sz;\n  m[o + 11] = 0;\n  m[o + 12] = px;\n  m[o + 13] = py;\n  m[o + 14] = pz;\n  m[o + 15] = 1;\n}\n\nfunction putColor(\n  c: Float32Array,\n  o: number,\n  r: number,\n  g: number,\n  b: number\n): void {\n  c[o] = r;\n  c[o + 1] = g;\n  c[o + 2] = b;\n  c[o + 3] = 1;\n}\n\n// ---------------------------------------------------------------- scene\nfunction hiddenTransforms(count: number): AuraTransformSpec[] {\n  const out: AuraTransformSpec[] = [];\n  for (let i = 0; i < count; i += 1) out.push({ position: [0, -50, 0], scale: [0.001, 0.001, 0.001] });\n  return out;\n}\n\nconst whiteMat = material.pbr({ color: \"#ffffff\", roughness: 0.75, metallic: 0 });\n\nconst app = createAuraApp(\"#app\", {\n  scene: scene({ background: SKY })\n    .add(environments.neutral({ intensity: 0.55, background: false }))\n    .add(lights.hemisphere({ name: \"sky-fill\", skyColor: \"#d6ecff\", groundColor: \"#7a5c3a\", intensity: 0.7 }))\n    .add(\n      lights.directional({\n        name: \"sun\",\n        position: [-7, 12, 6],\n        target: [0, 0, 0],\n        intensity: 2.4,\n        color: \"#fff3dc\",\n        shadow: {\n          filter: \"pcf\",\n          softness: 2,\n          mapSize: 2048,\n          cascades: 1,\n          fit: { center: [0, 0, -1], extent: 22 }\n        }\n      })\n    )\n    .add(\n      primitives.plane({\n        name: \"ground\",\n        position: [0, 0, (GZ0 + GZ1) / 2],\n        size: [GX * 2, 1, GZ1 - GZ0],\n        material: material.pbr({ color: \"#7d5d3d\", roughness: 1, metallic: 0 }),\n        castShadow: false,\n        receiveShadow: true\n      })\n    )\n    .add(\n      instances\n        .cylinder({\n          name: \"stems\",\n          transforms: hiddenTransforms(MAX_PLANTS),\n          material: whiteMat,\n          params: { radialSegments: 8 },\n          castShadow: true,\n          receiveShadow: true\n        })\n        .runtime({ id: \"stems\", mutable: true })\n    )\n    .add(\n      instances\n        .sphere({\n          name: \"blobs\",\n          transforms: hiddenTransforms(MAX_PLANTS * SPHERES_PER_PLANT),\n          material: whiteMat,\n          params: { widthSegments: 8, heightSegments: 5 },\n          castShadow: true,\n          receiveShadow: true\n        })\n        .runtime({ id: \"blobs\", mutable: true })\n    )\n    .camera(camera.perspective({ position: CAM_POS, target: CAM_TARGET, fov: CAM_FOV, near: 0.5, far: 200 }))\n});\n\n// ---------------------------------------------------------------- plants\nconst plants: PlantRecord[] = [];\nconst stemMats = new Float32Array(MAX_PLANTS * 16);\nconst stemCols = new Float32Array(MAX_PLANTS * 4);\nconst blobMats = new Float32Array(MAX_PLANTS * SPHERES_PER_PLANT * 16);\nconst blobCols = new Float32Array(MAX_PLANTS * SPHERES_PER_PLANT * 4);\n\nlet stemsHandle: AuraRuntimeNodeHandle | undefined;\nlet blobsHandle: AuraRuntimeNodeHandle | undefined;\nlet dirty = true;\nlet lastVisible: boolean | undefined;\n\nfunction growthOf(p: PlantRecord, now: number): number {\n  return clamp01((now - p.t0) / GROW_MS);\n}\n\nfunction plantAt(x: number, z: number): boolean {\n  if (!Number.isFinite(x) || !Number.isFinite(z)) return false;\n  if (x < -GX || x > GX || z < GZ0 || z > GZ1) return false;\n  if (plants.length >= MAX_PLANTS) return false;\n  const flowerSize = 0.7 + rand() * 0.55;\n  plants.push({\n    x,\n    z,\n    t0: performance.now(),\n    rot: rand() * Math.PI * 2,\n    height: 1.2 + rand() * 0.7,\n    flower: flowerSize,\n    leaf: 0.5 + rand() * 0.25,\n    petal: PETAL_COLORS[Math.floor(rand() * PETAL_COLORS.length)] ?? PETAL_COLORS[0]!,\n    center: CENTER_COLORS[Math.floor(rand() * CENTER_COLORS.length)] ?? CENTER_COLORS[0]!,\n    shade: 0.8 + rand() * 0.4\n  });\n  dirty = true;\n  updateCount();\n  return true;\n}\n\nfunction clearPlants(): void {\n  plants.length = 0;\n  dirty = true;\n  updateCount();\n}\n\nconst LEAF_FRAC = [0.34, 0.54, 0.72, 0.88];\n\nfunction writePlant(k: number, p: PlantRecord, now: number): void {\n  const g = growthOf(p, now);\n  const e = smooth(g);\n  const h = p.height * (0.1 + 0.9 * e);\n  const th = 0.04 + 0.05 * e;\n\n  // stem\n  putMatrix(stemMats, k * 16, p.x, h / 2, p.z, 0, 0, th, h, th);\n  putColor(\n    stemCols,\n    k * 4,\n    lerp(SPROUT_STEM[0], MATURE_STEM[0], e),\n    lerp(SPROUT_STEM[1], MATURE_STEM[1], e),\n    lerp(SPROUT_STEM[2], MATURE_STEM[2], e)\n  );\n\n  const base = k * SPHERES_PER_PLANT;\n  const leafR = lerp(SPROUT_LEAF[0], MATURE_LEAF[0] * p.shade, e);\n  const leafG = lerp(SPROUT_LEAF[1], MATURE_LEAF[1] * p.shade, e);\n  const leafB = lerp(SPROUT_LEAF[2], MATURE_LEAF[2] * p.shade, e);\n\n  // leaves\n  for (let i = 0; i < LEAVES; i += 1) {\n    const slot = base + i;\n    const early = i < 2;\n    const frac = early ? lerp(0.96, LEAF_FRAC[i] ?? 0.5, e) : (LEAF_FRAC[i] ?? 0.8);\n    const lenK = early ? 0.16 + 0.84 * e : smooth((g - 0.2) / 0.5);\n    const len = Math.max(0.0005, p.leaf * lenK);\n    const yaw = p.rot + (i % 2) * Math.PI + (i >= 2 ? Math.PI / 2 : 0);\n    const tilt = lerp(0.75, 0.3, e);\n    const ax = Math.cos(yaw) * Math.cos(tilt);\n    const ay = Math.sin(tilt);\n    const az = -Math.sin(yaw) * Math.cos(tilt);\n    const ay0 = h * frac;\n    const half = len * 0.5 + th * 0.4;\n    putMatrix(\n      blobMats,\n      slot * 16,\n      p.x + ax * half,\n      ay0 + ay * half,\n      p.z + az * half,\n      yaw,\n      tilt,\n      len,\n      Math.max(0.01, len * 0.14),\n      len * 0.5\n    );\n    putColor(blobCols, slot * 4, leafR, leafG, leafB);\n  }\n\n  // flower\n  const bud = smooth((g - 0.25) / 0.3);\n  const bloom = smooth((g - 0.45) / 0.55);\n  const cd = p.flower * 0.3 * bud + 0.0005;\n  const cSlot = base + LEAVES + PETALS;\n  putMatrix(blobMats, cSlot * 16, p.x, h + cd * 0.15, p.z, 0, 0, cd, cd * 0.8, cd);\n  putColor(\n    blobCols,\n    cSlot * 4,\n    lerp(BUD_GREEN[0], p.center[0], bloom),\n    lerp(BUD_GREEN[1], p.center[1], bloom),\n    lerp(BUD_GREEN[2], p.center[2], bloom)\n  );\n\n  const pl = Math.max(0.0005, p.flower * 0.5 * bloom);\n  const ptilt = lerp(1.1, 0.2, bloom);\n  for (let j = 0; j < PETALS; j += 1) {\n    const slot = base + LEAVES + j;\n    const yaw = p.rot + (j * Math.PI * 2) / PETALS;\n    const dx = Math.cos(yaw) * Math.cos(ptilt);\n    const dy = Math.sin(ptilt);\n    const dz = -Math.sin(yaw) * Math.cos(ptilt);\n    const off = pl * 0.5 + cd * 0.3;\n    putMatrix(\n      blobMats,\n      slot * 16,\n      p.x + dx * off,\n      h + cd * 0.2 + dy * off,\n      p.z + dz * off,\n      yaw,\n      ptilt,\n      pl,\n      Math.max(0.008, pl * 0.18),\n      pl * 0.62\n    );\n    // slight per-petal tone variation so heads look less flat\n    const tone = j % 2 === 0 ? 1 : 0.88;\n    putColor(blobCols, slot * 4, p.petal[0] * tone, p.petal[1] * tone, p.petal[2] * tone);\n  }\n}\n\nfunction syncScene(now: number): void {\n  if (!stemsHandle || !blobsHandle) return;\n  const n = plants.length;\n  let growing = false;\n  for (let k = 0; k < n; k += 1) {\n    const p = plants[k]!;\n    if (now - p.t0 < GROW_MS + 100) growing = true;\n  }\n  const visible = n > 0;\n  if (visible !== lastVisible) {\n    stemsHandle.setVisible(visible);\n    blobsHandle.setVisible(visible);\n    lastVisible = visible;\n  }\n  if (!visible || (!growing && !dirty)) {\n    dirty = false;\n    return;\n  }\n  for (let k = 0; k < n; k += 1) writePlant(k, plants[k]!, now);\n  stemsHandle.setInstanceMatrices(stemMats, n, stemCols);\n  blobsHandle.setInstanceMatrices(blobMats, n * SPHERES_PER_PLANT, blobCols);\n  dirty = false;\n}\n\n// ---------------------------------------------------------------- DOM overlay\nconst overlay = document.createElement(\"div\");\noverlay.id = \"hud\";\noverlay.style.cssText =\n  \"position:fixed;top:8px;left:8px;display:flex;align-items:center;gap:8px;padding:5px 8px;\" +\n  \"background:rgba(20,30,20,0.62);color:#fff;border-radius:6px;font:600 13px/1.2 system-ui,sans-serif;\" +\n  \"z-index:10;user-select:none;\";\nconst countLabel = document.createElement(\"span\");\ncountLabel.id = \"plant-count\";\ncountLabel.textContent = \"Plants: 0\";\nconst clearButton = document.createElement(\"button\");\nclearButton.id = \"clear-btn\";\nclearButton.type = \"button\";\nclearButton.textContent = \"Clear\";\nclearButton.style.cssText =\n  \"font:600 12px system-ui,sans-serif;padding:3px 9px;border:0;border-radius:4px;background:#f2f2f2;color:#222;cursor:pointer;\";\nclearButton.addEventListener(\"click\", (ev) => {\n  ev.stopPropagation();\n  clearPlants();\n});\noverlay.append(countLabel, clearButton);\ndocument.body.appendChild(overlay);\n\nfunction updateCount(): void {\n  countLabel.textContent = `Plants: ${plants.length}`;\n}\n\n// ---------------------------------------------------------------- click -> ground picking\nconst canvas = document.getElementById(\"app\") as HTMLCanvasElement;\n\nfunction sub(a: number[], b: number[]): number[] {\n  return [a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!];\n}\nfunction cross(a: number[], b: number[]): number[] {\n  return [a[1]! * b[2]! - a[2]! * b[1]!, a[2]! * b[0]! - a[0]! * b[2]!, a[0]! * b[1]! - a[1]! * b[0]!];\n}\nfunction norm(a: number[]): number[] {\n  const l = Math.hypot(a[0]!, a[1]!, a[2]!) || 1;\n  return [a[0]! / l, a[1]! / l, a[2]! / l];\n}\n\nconst camForward = norm(sub(CAM_TARGET, CAM_POS));\nconst camRight = norm(cross(camForward, [0, 1, 0]));\nconst camUp = cross(camRight, camForward);\nconst tanV = Math.tan((CAM_FOV * Math.PI) / 360);\n\nfunction pickGround(clientX: number, clientY: number): { x: number; z: number } | undefined {\n  const rect = canvas.getBoundingClientRect();\n  if (rect.width <= 0 || rect.height <= 0) return undefined;\n  const nx = ((clientX - rect.left) / rect.width) * 2 - 1;\n  const ny = 1 - ((clientY - rect.top) / rect.height) * 2;\n  if (nx < -1 || nx > 1 || ny < -1 || ny > 1) return undefined;\n  const aspect = rect.width / rect.height;\n  const dir = [\n    camForward[0]! + camRight[0]! * nx * tanV * aspect + camUp[0]! * ny * tanV,\n    camForward[1]! + camRight[1]! * nx * tanV * aspect + camUp[1]! * ny * tanV,\n    camForward[2]! + camRight[2]! * nx * tanV * aspect + camUp[2]! * ny * tanV\n  ];\n  if (dir[1]! >= -1e-6) return undefined; // ray never reaches the ground\n  const t = -CAM_POS[1] / dir[1]!;\n  if (t <= 0) return undefined;\n  const x = CAM_POS[0] + dir[0]! * t;\n  const z = CAM_POS[2] + dir[2]! * t;\n  if (x < -GX || x > GX || z < GZ0 || z > GZ1) return undefined;\n  return { x, z };\n}\n\ncanvas.addEventListener(\"click\", (ev) => {\n  const hit = pickGround(ev.clientX, ev.clientY);\n  if (hit) plantAt(hit.x, hit.z);\n});\n\n// ---------------------------------------------------------------- task state\nlet ready = false;\nconst state = {\n  get plantCount(): number {\n    return plants.length;\n  },\n  get plants(): TaskPlant[] {\n    const now = performance.now();\n    return plants.map((p) => ({ x: p.x, z: p.z, growth: growthOf(p, now) }));\n  },\n  get ready(): boolean {\n    return ready;\n  }\n};\nObject.defineProperty(window, \"__TASK_STATE__\", { value: Object.freeze(state), writable: false, enumerable: true, configurable: false });\nObject.defineProperty(window, \"__plantAt\", {\n  value: (x: number, z: number): boolean => plantAt(Number(x), Number(z)),\n  writable: false,\n  enumerable: true,\n  configurable: false\n});\n\n// ---------------------------------------------------------------- loop\nlet frames = 0;\napp.onFrame(() => {\n  if (!stemsHandle) {\n    stemsHandle = app.nodes.require(\"stems\");\n    blobsHandle = app.nodes.require(\"blobs\");\n    stemsHandle.frustumCulled = false;\n    blobsHandle.frustumCulled = false;\n  }\n  syncScene(performance.now());\n  frames += 1;\n  if (frames === 2 && !ready) {\n    ready = true;\n    window.__EVAL_READY__ = true;\n  }\n});\n\nawait app.ready();\n"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01XEdqJpwQzdkVqMNDELz2i5",
+    "name": "typecheck",
+    "input": {},
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 19,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01NVDvhQZi741dfM9ba6YqPF",
+    "content": "wrote src/main.ts (494 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01XEdqJpwQzdkVqMNDELz2i5",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 20,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01TrY9Ti8JcXFg2SZL4THpHW",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "await app.ready();\n",
+     "new_string": "void app.ready().then(() => {\n  // renderer mounted; the frame callback above flips the ready flags once frames are drawn\n  if (!ready && frames >= 1) {\n    ready = true;\n    window.__EVAL_READY__ = true;\n  }\n});\n"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_0159WBo3SDMu4wrfZdBw24df",
+    "name": "search",
+    "input": {
+     "pattern": ".",
+     "path": "tsconfig.json"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 20,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01TrY9Ti8JcXFg2SZL4THpHW",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_0159WBo3SDMu4wrfZdBw24df",
+    "content": "1:{\n2:  \"compilerOptions\": {\n3:    \"target\": \"ES2022\",\n4:    \"module\": \"ESNext\",\n5:    \"moduleResolution\": \"bundler\",\n6:    \"lib\": [\"ES2022\", \"DOM\", \"DOM.Iterable\"],\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 21,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "CAQSpAkKEAgTGAI4AUIIdGhpbmtpbmcSDHO2jIukwGGnerGFkhoM7GANwLbxUFYh2/ioIjAT8AoRkOZCPykPJGoyuQhot/wsHkP46/FTDb8u29gPirmue516D9Yb1xXUtIwX5VkqwQhMWz1YKZFktVy6WtyQ2feIP9aGd5SIhTZxJmEy/pcj59OMkOhnEMSGlAJXoMfPO9diMnh7SxeZMCGpiGUrGBM/OuKLj+i9wOYaSM5B8goeFz24c65XPpBylZG56RqNoiiWXI76dbXgdIud1HwP89p/uigKn3Ou+cJdE2HxDwQIGCk63FgOTPJFOmYo1g7H9V8T3Uzlic9eMw1XR29zKJ6AQUn4xpgguZrmaqL+zYPxNjsGaf7xhSd4omCBQsibhkiEn4ac7SKnUTzvugUhnp95s2MW4vfVd4PtiA7TiqRNIHHbMhDKZeZryj2iDgXDUgjoNv+K6fOgGJOPmyvHa5y3ox6JUUKuUmkY3gfdLibkmwBUNIMKniS9cKigQydqly9tDQj7elMEgXezOrT+7QQMlOnAPXTPpxE9pW1Me03qbVgdtmO7Y3dj7zf6zWfoB5QOiz7F9yY2XxOyUG/1iLAvW5y+Fwpn2E6RTVbV4qpnnUv/O1ajKmcTbYNBtyjRCrc1j9pXlotjrptNx8mlexInXFOzwXFegViKWycaCgc3hd/PEnPq/iGLYSIG3uIohMXrJPPUq0eClgE/IajkmUCwnqN/+GNYFCh9EPHhZOI1KK5wnm4ZvefM7haUQlEU39OhhCdy24qb/dof5S7QaDNaNmswePpSUqfP/iHPi5hU3kKnFWDuB9yB1yUXby5AS781tZ8Q7B94cU0Gl/rGMkrmyIYbAOg0RLvlFL/Oak8236ZpXhva2LhuwvLh1EkbPqlh8YqTbZK3cJIyBBOigW/4A7tRn21OKBOsWlM/AOcwtLXs2s5vaZMqsEj5re1UsKMSHVs8SlDINrtEvIeRz8bj8q4H/Vc+6RQ7eGvrfxJ6dMMuR7uzBuHCINkcOkWsoiKejPUbN/72HjTN5BQYWZxPZtvhtCwygTtGoJTl4cNhK1fYOEP19wG+VYPdP6ACjTbfG7r5MEmVh1KoSL6GEQ+dBiqknZEgQkOwgwiPp/YuPivzIWSYYyZhqvSwM2+kqe5Y6fCncW7NrVTH/IPqKUlsW19qd5kRys9mfHKAesbLTRqkGD1r664w81x5K7uTMBt90jWYqbZZKuWN8iAezFKtK/JowDf5r55d2eumny2NpBhxNiay/qUv/yjxHHw83StmwegETH0R8d3RynXSR7czkLXyM5ZWNInpkR/82QkWrH39HrpdiTldkvz3P+hld1G9ixBbkb0C6Cp/DL1OS/6pJI0yhkqEbO/UqlPHXygupUbEzRNsXhER0ttJPWpFJQRr9w0SbVmiNiI8WTKC3mnqH/jPtfMjfH0EweSIEOrOMNW1kTHpUHh9OzCWzAV5kPfYZPmdZvlKTgm/KCmQBydo9dUsJRYsGxu+bAQeOK7FrHhP52RwlyAt+pnxOgl5glGoylx9276ywi0BWstx/pZPt05o4bsBzDyjcJaxaxQJiPIYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01MUnu3P54CdFeAtNk8Qw34r",
+    "name": "typecheck",
+    "input": {},
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 21,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01MUnu3P54CdFeAtNk8Qw34r",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 22,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01M9PKu5dm6X2u9WoUHG28TW",
+    "name": "finish",
+    "input": {
+     "summary": "I built the click-to-plant garden in `src/main.ts`. It passes `typecheck`, but I couldn't run it or `vite build`, so I haven't seen it render or tested a click.\n\n- **Scene:** The ground is a large brown plane with a far edge, so there is sky behind it. It has a hemisphere light, a shadow-casting sun with soft (PCF) shadows, and a neutral environment light. The camera looks down at 35°, and the ground fills the lower part of the view.\n- **Picking:** Clicks are converted to a ray from the same camera numbers the scene uses and intersected with the y=0 ground plane. A click that misses the ground, or lands outside the ground rectangle, is ignored. This relies on the camera's `fov` being vertical, which I confirmed from the engine's camera code.\n- **Plants:** Each plant is a stem, four leaves and a six-petal flower, drawn as two instanced meshes (stems and spheres) so many plants cost only two draw calls. Growth takes 8 seconds from the planting time, so each plant grows independently and a later plant is smaller than an earlier one. A sprout is a short light-green stem with two small leaves. A mature plant is taller, darker green, with four leaves and an opened flower. Flower colour, flower size, height and leaf size are randomised per plant.\n- **Limit:** The scene holds up to 160 plants at once. Clicks and `__plantAt` calls beyond that are ignored.\n- **Overlay:** The top-left corner shows \"Plants: N\" and a \"Clear\" button that removes all plants.\n- **Globals:** `window.__TASK_STATE__` is a frozen object with `plantCount`, `plants` (`{x, z, growth}`, growth live from 0 to 1) and `ready`. `window.__plantAt(x, z)` plants exactly as a click would. `window.__EVAL_READY__` and `ready` are set once the second frame callback fires.\n- **`__plantAt` bounds:** It also rejects coordinates outside the ground rectangle (x from −30 to 30, z from −10 to 30). Only part of that rectangle is on screen, so a test planting far off-screen would still count.\n\nI avoided a top-level `await` so the Vite build target accepts it.\n\n"
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 22,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_01M9PKu5dm6X2u9WoUHG28TW",
+    "content": "ok"
+   }
+  ]
+ }
+]

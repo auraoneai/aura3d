@@ -1,0 +1,38 @@
+{
+  "bench505-interactive-sheet-t10-aura-r1": {
+    "ok": false,
+    "ms": 131,
+    "bundleKb": 0,
+    "log": "/agent-eval-base/aura/node_modules/vite/dist/node/chunks/config.js:33471:4)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:22482:32\n    at Object.logger [as onLog] (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:24476:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23221:26)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23179:26\n    at async Promise.all (index 0)\n"
+  },
+  "bench505-interactive-sheet-t10-aura-r2": {
+    "ok": false,
+    "ms": 130,
+    "bundleKb": 0,
+    "log": "/agent-eval-base/aura/node_modules/vite/dist/node/chunks/config.js:33471:4)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:22482:32\n    at Object.logger [as onLog] (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:24476:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23221:26)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23179:26\n    at async Promise.all (index 0)\n"
+  },
+  "bench505-interactive-sheet-t10-aura-r3": {
+    "ok": false,
+    "ms": 127,
+    "bundleKb": 0,
+    "log": "/agent-eval-base/aura/node_modules/vite/dist/node/chunks/config.js:33471:4)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:22482:32\n    at Object.logger [as onLog] (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:24476:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23221:26)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23179:26\n    at async Promise.all (index 0)\n"
+  },
+  "bench505-interactive-sheet-t11-aura-r1": {
+    "ok": false,
+    "ms": 134,
+    "bundleKb": 0,
+    "log": "/agent-eval-base/aura/node_modules/vite/dist/node/chunks/config.js:33471:4)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:22482:32\n    at Object.logger [as onLog] (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:24476:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23221:26)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23179:26\n    at async Promise.all (index 0)\n"
+  },
+  "bench505-interactive-sheet-t11-aura-r2": {
+    "ok": false,
+    "ms": 131,
+    "bundleKb": 0,
+    "log": "/agent-eval-base/aura/node_modules/vite/dist/node/chunks/config.js:33471:4)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:22482:32\n    at Object.logger [as onLog] (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:24476:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23221:26)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23179:26\n    at async Promise.all (index 0)\n"
+  },
+  "bench505-interactive-sheet-t11-aura-r3": {
+    "ok": false,
+    "ms": 131,
+    "bundleKb": 0,
+    "log": "/agent-eval-base/aura/node_modules/vite/dist/node/chunks/config.js:33471:4)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:22482:32\n    at Object.logger [as onLog] (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:24476:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23221:26)\n    at file:///private/tmp/agent-eval-base/aura/node_modules/rollup/dist/es/shared/node-entry.js:23179:26\n    at async Promise.all (index 0)\n"
+  }
+}

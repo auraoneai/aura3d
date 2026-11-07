@@ -1,0 +1,74 @@
+{
+  "rid": "bench505-interactive-t11-three-r2",
+  "task": 11,
+  "mode": "full",
+  "checks": {
+    "stateExposed": true,
+    "fnsExposed": true,
+    "planets6": true,
+    "planetsMove": true,
+    "innerFasterThanOuter": true,
+    "pauseBtnFound": true,
+    "pausedFreezes": true,
+    "pausedLabelPlay": true,
+    "resumeMoves": true,
+    "labelBackToPause": true,
+    "focusedName": true,
+    "camDistSmall": true,
+    "panelShown": true,
+    "followsKeepsClose": true,
+    "escapeUnfocuses": true,
+    "panelHiddenAfter": true,
+    "unfocusFn": true
+  },
+  "notes": [],
+  "errors": [],
+  "ready": true,
+  "angDisp": [
+    {
+      "name": "Mercury",
+      "r": 10,
+      "ang": 0.8971
+    },
+    {
+      "name": "Venus",
+      "r": 14,
+      "ang": 0.5357
+    },
+    {
+      "name": "Earth",
+      "r": 19,
+      "ang": 0.4101
+    },
+    {
+      "name": "Mars",
+      "r": 25,
+      "ang": 0.2897
+    },
+    {
+      "name": "Jupiter",
+      "r": 35,
+      "ang": 0.1052
+    },
+    {
+      "name": "Saturn",
+      "r": 45,
+      "ang": 0.0638
+    },
+    {
+      "name": "Uranus",
+      "r": 55,
+      "ang": 0.0359
+    },
+    {
+      "name": "Neptune",
+      "r": 64,
+      "ang": 0.0248
+    }
+  ],
+  "maxOrbit": 64.00000000000001,
+  "focusName": "Earth",
+  "cameraDistanceToFocus": 5.850000000000001,
+  "focusFrameReady": true,
+  "textAtEnd": "Pause\nClick a planet to focus · Esc to return · drag/scroll to explore"
+}

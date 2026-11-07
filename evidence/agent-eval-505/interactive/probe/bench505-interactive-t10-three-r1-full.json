@@ -1,0 +1,85 @@
+{
+  "rid": "bench505-interactive-t10-three-r1",
+  "task": 10,
+  "mode": "full",
+  "checks": {
+    "stateExposed": true,
+    "plantAtExposed": true,
+    "zeroInitially": true,
+    "counterInitial": true,
+    "count8": true,
+    "counterText8": true,
+    "clickMapsToDistinctSpots": true,
+    "growthMonotonic": true,
+    "growthRange": true,
+    "growthReaches95": true,
+    "growthChanges": true,
+    "clearFound": true,
+    "clearZero": true,
+    "counterTextAfterClear": true,
+    "skyClickIgnored": true,
+    "laterSmaller": true,
+    "manyPlants": true
+  },
+  "notes": [],
+  "errors": [],
+  "ready": true,
+  "countAfterPlant": 8,
+  "clickGround": [
+    {
+      "x": -4.7646834582047175,
+      "z": 4.4888538119482835
+    },
+    {
+      "x": 0,
+      "z": 6.068078025975858
+    },
+    {
+      "x": 4.969501306114046,
+      "z": 3.6641880548416363
+    }
+  ],
+  "growth": [
+    {
+      "t": 501,
+      "g": [
+        0.10042500000074506,
+        0.10040000000223517,
+        0.10038750000298023,
+        0.10038750000298023,
+        0.100375,
+        0.10030000000074506,
+        0.10028750000149012,
+        0.10027500000223517
+      ]
+    },
+    {
+      "t": 4002,
+      "g": [
+        0.5380124999992549,
+        0.537987500000745,
+        0.5379750000014901,
+        0.5379750000014901,
+        0.5379624999985099,
+        0.5378874999992549,
+        0.537875,
+        0.5378625000007451
+      ]
+    },
+    {
+      "t": 9001,
+      "g": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "finalCount": 26,
+  "textAtEnd": "Plants: 26\nClear"
+}

@@ -1,0 +1,85 @@
+{
+  "rid": "bench505-interactive-sheet-t10-aura-r1",
+  "task": 10,
+  "mode": "full",
+  "checks": {
+    "stateExposed": true,
+    "plantAtExposed": true,
+    "zeroInitially": true,
+    "counterInitial": true,
+    "count8": true,
+    "counterText8": true,
+    "clickMapsToDistinctSpots": true,
+    "growthMonotonic": true,
+    "growthRange": true,
+    "growthReaches95": true,
+    "growthChanges": true,
+    "clearFound": true,
+    "clearZero": true,
+    "counterTextAfterClear": true,
+    "skyClickIgnored": true,
+    "laterSmaller": true,
+    "manyPlants": true
+  },
+  "notes": [],
+  "errors": [],
+  "ready": true,
+  "countAfterPlant": 8,
+  "clickGround": [
+    {
+      "x": -7.693665974183836,
+      "z": 6.666173601374432
+    },
+    {
+      "x": 0,
+      "z": 9.342056441690085
+    },
+    {
+      "x": 8.00797083601344,
+      "z": 5.277171230998082
+    }
+  ],
+  "growth": [
+    {
+      "t": 501,
+      "g": [
+        0.10121249999850988,
+        0.10121249999850988,
+        0.10121249999850988,
+        0.10121249999850988,
+        0.10121249999850988,
+        0.1011875,
+        0.10117500000074506,
+        0.10117500000074506
+      ]
+    },
+    {
+      "t": 4000,
+      "g": [
+        0.538574999999255,
+        0.538574999999255,
+        0.538574999999255,
+        0.538574999999255,
+        0.538574999999255,
+        0.538550000000745,
+        0.5385375000014901,
+        0.5385375000014901
+      ]
+    },
+    {
+      "t": 9000,
+      "g": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "finalCount": 26,
+  "textAtEnd": "Plants: 26\nClear"
+}

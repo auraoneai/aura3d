@@ -1,0 +1,931 @@
+[
+  {
+    "id": "bench505-interactive-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 155.2,
+        "std": 42.9,
+        "nonblack": 1,
+        "diff": 2.28,
+        "changedFrac": 0.0516
+      },
+      "interactive": {
+        "stateExposed": true,
+        "plantAtExposed": true,
+        "zeroInitially": true,
+        "counterInitial": true,
+        "count8": true,
+        "counterText8": true,
+        "clickMapsToDistinctSpots": true,
+        "growthMonotonic": true,
+        "growthRange": true,
+        "growthReaches95": true,
+        "growthChanges": true,
+        "clearFound": true,
+        "clearZero": true,
+        "counterTextAfterClear": true,
+        "skyClickIgnored": true,
+        "laterSmaller": true,
+        "manyPlants": true
+      },
+      "probeDetail": {
+        "growth": [
+          {
+            "t": 518,
+            "g": [
+              0.10276249999925494,
+              0.10273750000074505,
+              0.10273750000074505,
+              0.10273750000074505,
+              0.10273750000074505,
+              0.10269999999925494,
+              0.1026875,
+              0.1026875
+            ]
+          },
+          {
+            "t": 4016,
+            "g": [
+              0.5399249999970198,
+              0.5398999999985099,
+              0.5398999999985099,
+              0.5398999999985099,
+              0.5398999999985099,
+              0.5398624999970197,
+              0.5398499999977648,
+              0.5398499999977648
+            ]
+          },
+          {
+            "t": 9020,
+            "g": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "finalCount": 26
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 6497.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 191.6,
+        "std": 19.9,
+        "nonblack": 1,
+        "diff": 1.73,
+        "changedFrac": 0.0525
+      },
+      "interactive": {
+        "stateExposed": true,
+        "plantAtExposed": true,
+        "zeroInitially": true,
+        "counterInitial": true,
+        "count8": true,
+        "counterText8": true,
+        "clickMapsToDistinctSpots": true,
+        "growthMonotonic": true,
+        "growthRange": true,
+        "growthReaches95": true,
+        "growthChanges": true,
+        "clearFound": true,
+        "clearZero": true,
+        "counterTextAfterClear": true,
+        "skyClickIgnored": true,
+        "laterSmaller": true,
+        "manyPlants": true
+      },
+      "probeDetail": {
+        "growth": [
+          {
+            "t": 500,
+            "g": [
+              0.10042500000074506,
+              0.10042500000074506,
+              0.10042500000074506,
+              0.10042500000074506,
+              0.10042500000074506,
+              0.10041250000149012,
+              0.10041250000149012,
+              0.10040000000223517
+            ]
+          },
+          {
+            "t": 4000,
+            "g": [
+              0.5378874999992549,
+              0.5378874999992549,
+              0.5378874999992549,
+              0.5378874999992549,
+              0.5378874999992549,
+              0.537875,
+              0.537875,
+              0.5378625000007451
+            ]
+          },
+          {
+            "t": 9000,
+            "g": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "finalCount": 26
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 6489.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": false,
+      "frame": {
+        "mean": 212.9,
+        "std": 23.1,
+        "nonblack": 1,
+        "diff": 0.04,
+        "changedFrac": 0
+      },
+      "interactive": {
+        "stateExposed": true,
+        "plantAtExposed": true,
+        "zeroInitially": true,
+        "counterInitial": true,
+        "count8": true,
+        "counterText8": true,
+        "clickMapsToDistinctSpots": true,
+        "growthMonotonic": true,
+        "growthRange": true,
+        "growthReaches95": true,
+        "growthChanges": true,
+        "clearFound": true,
+        "clearZero": true,
+        "counterTextAfterClear": true,
+        "skyClickIgnored": true,
+        "laterSmaller": true,
+        "manyPlants": true
+      },
+      "probeDetail": {
+        "growth": [
+          {
+            "t": 505,
+            "g": [
+              0.100875,
+              0.100875,
+              0.100875,
+              0.100875,
+              0.100875,
+              0.10085000000149012,
+              0.10085000000149012,
+              0.10085000000149012
+            ]
+          },
+          {
+            "t": 4006,
+            "g": [
+              0.5385374999977648,
+              0.5385374999977648,
+              0.5385374999977648,
+              0.5385374999977648,
+              0.5385374999977648,
+              0.538512499999255,
+              0.538512499999255,
+              0.538512499999255
+            ]
+          },
+          {
+            "t": 9000,
+            "g": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "finalCount": 26
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 6488.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t10-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 140.5,
+        "std": 40,
+        "nonblack": 1,
+        "diff": 0.94,
+        "changedFrac": 0.0286
+      },
+      "interactive": {
+        "stateExposed": true,
+        "plantAtExposed": true,
+        "zeroInitially": true,
+        "counterInitial": true,
+        "count8": true,
+        "counterText8": true,
+        "clickMapsToDistinctSpots": true,
+        "growthMonotonic": true,
+        "growthRange": true,
+        "growthReaches95": true,
+        "growthChanges": true,
+        "clearFound": true,
+        "clearZero": true,
+        "counterTextAfterClear": true,
+        "skyClickIgnored": true,
+        "laterSmaller": true,
+        "manyPlants": true
+      },
+      "probeDetail": {
+        "growth": [
+          {
+            "t": 501,
+            "g": [
+              0.10042500000074506,
+              0.10040000000223517,
+              0.10038750000298023,
+              0.10038750000298023,
+              0.100375,
+              0.10030000000074506,
+              0.10028750000149012,
+              0.10027500000223517
+            ]
+          },
+          {
+            "t": 4002,
+            "g": [
+              0.5380124999992549,
+              0.537987500000745,
+              0.5379750000014901,
+              0.5379750000014901,
+              0.5379624999985099,
+              0.5378874999992549,
+              0.537875,
+              0.5378625000007451
+            ]
+          },
+          {
+            "t": 9001,
+            "g": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "finalCount": 26
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 505.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t10-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 135.3,
+        "std": 46.6,
+        "nonblack": 1,
+        "diff": 2.91,
+        "changedFrac": 0.0826
+      },
+      "interactive": {
+        "stateExposed": true,
+        "plantAtExposed": true,
+        "zeroInitially": true,
+        "counterInitial": true,
+        "count8": true,
+        "counterText8": true,
+        "clickMapsToDistinctSpots": true,
+        "growthMonotonic": true,
+        "growthRange": true,
+        "growthReaches95": true,
+        "growthChanges": true,
+        "clearFound": true,
+        "clearZero": true,
+        "counterTextAfterClear": true,
+        "skyClickIgnored": true,
+        "laterSmaller": true,
+        "manyPlants": true
+      },
+      "probeDetail": {
+        "growth": [
+          {
+            "t": 501,
+            "g": [
+              0.10041250000149012,
+              0.10041250000149012,
+              0.10040000000223517,
+              0.10040000000223517,
+              0.10040000000223517,
+              0.10032499999925494,
+              0.10030000000074506,
+              0.10028750000149012
+            ]
+          },
+          {
+            "t": 4001,
+            "g": [
+              0.5379000000022351,
+              0.5379000000022351,
+              0.5378875000029802,
+              0.5378875000029802,
+              0.5378875000029802,
+              0.5378125,
+              0.5377875000014901,
+              0.5377750000022352
+            ]
+          },
+          {
+            "t": 9000,
+            "g": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "finalCount": 26
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 508.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t10-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 123.7,
+        "std": 35.9,
+        "nonblack": 1,
+        "diff": 2.32,
+        "changedFrac": 0.0577
+      },
+      "interactive": {
+        "stateExposed": true,
+        "plantAtExposed": true,
+        "zeroInitially": true,
+        "counterInitial": true,
+        "count8": true,
+        "counterText8": true,
+        "clickMapsToDistinctSpots": true,
+        "growthMonotonic": true,
+        "growthRange": true,
+        "growthReaches95": true,
+        "growthChanges": true,
+        "clearFound": true,
+        "clearZero": true,
+        "counterTextAfterClear": true,
+        "skyClickIgnored": true,
+        "laterSmaller": true,
+        "manyPlants": true
+      },
+      "probeDetail": {
+        "growth": [
+          {
+            "t": 502,
+            "g": [
+              0.10047500000149012,
+              0.10046250000223518,
+              0.10044999999925494,
+              0.10044999999925494,
+              0.10044999999925494,
+              0.100375,
+              0.10036250000074506,
+              0.10035000000149012
+            ]
+          },
+          {
+            "t": 4001,
+            "g": [
+              0.537875,
+              0.5378625000007451,
+              0.5378499999977648,
+              0.5378499999977648,
+              0.5378499999977648,
+              0.5377749999985099,
+              0.537762499999255,
+              0.53775
+            ]
+          },
+          {
+            "t": 9000,
+            "g": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "finalCount": 26
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 509.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 10.2,
+        "std": 27.9,
+        "nonblack": 0.091,
+        "diff": 1.06,
+        "changedFrac": 0.0087
+      },
+      "interactive": {
+        "stateExposed": true,
+        "fnsExposed": true,
+        "planets6": true,
+        "planetsMove": true,
+        "innerFasterThanOuter": true,
+        "pauseBtnFound": true,
+        "pausedFreezes": true,
+        "pausedLabelPlay": true,
+        "resumeMoves": true,
+        "labelBackToPause": true,
+        "focusedName": true,
+        "camDistSmall": true,
+        "panelShown": true,
+        "followsKeepsClose": true,
+        "escapeUnfocuses": true,
+        "panelHiddenAfter": true,
+        "unfocusFn": true
+      },
+      "probeDetail": {
+        "angDisp": [
+          {
+            "name": "Mercury",
+            "r": 9,
+            "ang": 0.3252
+          },
+          {
+            "name": "Venus",
+            "r": 12.5,
+            "ang": 0.2132
+          },
+          {
+            "name": "Earth",
+            "r": 16,
+            "ang": 0.1714
+          },
+          {
+            "name": "Mars",
+            "r": 20,
+            "ang": 0.129
+          },
+          {
+            "name": "Jupiter",
+            "r": 27,
+            "ang": 0.0563
+          },
+          {
+            "name": "Saturn",
+            "r": 34,
+            "ang": 0.0374
+          },
+          {
+            "name": "Uranus",
+            "r": 40,
+            "ang": 0.0233
+          },
+          {
+            "name": "Neptune",
+            "r": 46,
+            "ang": 0.0172
+          }
+        ],
+        "cameraDistanceToFocus": 4.901003298042811
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 6531.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t11-aura-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t11-aura-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 7.5,
+        "std": 20.9,
+        "nonblack": 0.082,
+        "diff": 0.77,
+        "changedFrac": 0.0115
+      },
+      "interactive": {
+        "stateExposed": true,
+        "fnsExposed": true,
+        "planets6": true,
+        "planetsMove": true,
+        "innerFasterThanOuter": true,
+        "pauseBtnFound": true,
+        "pausedFreezes": true,
+        "pausedLabelPlay": true,
+        "resumeMoves": true,
+        "labelBackToPause": true,
+        "focusedName": true,
+        "camDistSmall": true,
+        "panelShown": true,
+        "followsKeepsClose": true,
+        "escapeUnfocuses": true,
+        "panelHiddenAfter": true,
+        "unfocusFn": true
+      },
+      "probeDetail": {
+        "angDisp": [
+          {
+            "name": "Mercury",
+            "r": 11,
+            "ang": 0.4475
+          },
+          {
+            "name": "Venus",
+            "r": 15.5,
+            "ang": 0.255
+          },
+          {
+            "name": "Earth",
+            "r": 20.5,
+            "ang": 0.1905
+          },
+          {
+            "name": "Mars",
+            "r": 26,
+            "ang": 0.1304
+          },
+          {
+            "name": "Jupiter",
+            "r": 35,
+            "ang": 0.0432
+          },
+          {
+            "name": "Saturn",
+            "r": 45,
+            "ang": 0.025
+          },
+          {
+            "name": "Uranus",
+            "r": 54,
+            "ang": 0.0133
+          },
+          {
+            "name": "Neptune",
+            "r": 62,
+            "ang": 0.0089
+          }
+        ],
+        "cameraDistanceToFocus": 6.999999999999999
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 522.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t11-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 6.1,
+        "std": 18,
+        "nonblack": 0.057,
+        "diff": 0.29,
+        "changedFrac": 0.005
+      },
+      "interactive": {
+        "stateExposed": true,
+        "fnsExposed": true,
+        "planets6": true,
+        "planetsMove": true,
+        "innerFasterThanOuter": true,
+        "pauseBtnFound": true,
+        "pausedFreezes": true,
+        "pausedLabelPlay": true,
+        "resumeMoves": true,
+        "labelBackToPause": true,
+        "focusedName": true,
+        "camDistSmall": true,
+        "panelShown": true,
+        "followsKeepsClose": true,
+        "escapeUnfocuses": true,
+        "panelHiddenAfter": true,
+        "unfocusFn": true
+      },
+      "probeDetail": {
+        "angDisp": [
+          {
+            "name": "Mercury",
+            "r": 10,
+            "ang": 0.8971
+          },
+          {
+            "name": "Venus",
+            "r": 14,
+            "ang": 0.5357
+          },
+          {
+            "name": "Earth",
+            "r": 19,
+            "ang": 0.4101
+          },
+          {
+            "name": "Mars",
+            "r": 25,
+            "ang": 0.2897
+          },
+          {
+            "name": "Jupiter",
+            "r": 35,
+            "ang": 0.1052
+          },
+          {
+            "name": "Saturn",
+            "r": 45,
+            "ang": 0.0638
+          },
+          {
+            "name": "Uranus",
+            "r": 55,
+            "ang": 0.0359
+          },
+          {
+            "name": "Neptune",
+            "r": 64,
+            "ang": 0.0248
+          }
+        ],
+        "cameraDistanceToFocus": 5.850000000000001
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 543.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-interactive-t11-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": true,
+      "animated": true,
+      "frame": {
+        "mean": 7.1,
+        "std": 20.9,
+        "nonblack": 0.069,
+        "diff": 1.15,
+        "changedFrac": 0.0166
+      },
+      "interactive": {
+        "stateExposed": true,
+        "fnsExposed": true,
+        "planets6": true,
+        "planetsMove": true,
+        "innerFasterThanOuter": true,
+        "pauseBtnFound": true,
+        "pausedFreezes": true,
+        "pausedLabelPlay": true,
+        "resumeMoves": true,
+        "labelBackToPause": true,
+        "focusedName": true,
+        "camDistSmall": true,
+        "panelShown": true,
+        "followsKeepsClose": true,
+        "escapeUnfocuses": true,
+        "panelHiddenAfter": true,
+        "unfocusFn": true
+      },
+      "probeDetail": {
+        "angDisp": [
+          {
+            "name": "Mercury",
+            "r": 9,
+            "ang": 0.6
+          },
+          {
+            "name": "Venus",
+            "r": 12.5,
+            "ang": 0.47
+          },
+          {
+            "name": "Earth",
+            "r": 16.5,
+            "ang": 0.39
+          },
+          {
+            "name": "Mars",
+            "r": 20.5,
+            "ang": 0.32
+          },
+          {
+            "name": "Jupiter",
+            "r": 28,
+            "ang": 0.17
+          },
+          {
+            "name": "Saturn",
+            "r": 36,
+            "ang": 0.115
+          },
+          {
+            "name": "Uranus",
+            "r": 43.5,
+            "ang": 0.075
+          }
+        ],
+        "cameraDistanceToFocus": 5.170531887533428
+      },
+      "probeRan": true
+    },
+    "bundle": {
+      "rawKB": 542.9
+    },
+    "readyMs": null
+  }
+]

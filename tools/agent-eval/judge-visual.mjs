@@ -14,7 +14,7 @@ const batchDir = join(REPO, (process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-
 const taskText = (n) => readFileSync(join(REPO, "tools/agent-eval/tasks", readFileSyncName(n)), "utf8").split("The rendering contract")[0];
 import { readdirSync } from "node:fs";
 function readFileSyncName(n) {
-  return readdirSync(join(REPO, "tools/agent-eval/tasks")).find((f) => f.startsWith(`0${n}-`));
+  return readdirSync(join(REPO, "tools/agent-eval/tasks")).find((f) => f.startsWith(`${String(n).padStart(2, "0")}-`));
 }
 
 const RUBRIC = `You judge two rendered browser frames sets (candidate A and candidate B) produced by two different programs for the same task. You see only pixels. Each candidate shows one or two frames of the same page a few seconds apart.

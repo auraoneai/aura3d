@@ -1,0 +1,69 @@
+{
+  "rid": "bench505-interactive-t11-three-r3",
+  "task": 11,
+  "mode": "full",
+  "checks": {
+    "stateExposed": true,
+    "fnsExposed": true,
+    "planets6": true,
+    "planetsMove": true,
+    "innerFasterThanOuter": true,
+    "pauseBtnFound": true,
+    "pausedFreezes": true,
+    "pausedLabelPlay": true,
+    "resumeMoves": true,
+    "labelBackToPause": true,
+    "focusedName": true,
+    "camDistSmall": true,
+    "panelShown": true,
+    "followsKeepsClose": true,
+    "escapeUnfocuses": true,
+    "panelHiddenAfter": true,
+    "unfocusFn": true
+  },
+  "notes": [],
+  "errors": [],
+  "ready": true,
+  "angDisp": [
+    {
+      "name": "Mercury",
+      "r": 9,
+      "ang": 0.6
+    },
+    {
+      "name": "Venus",
+      "r": 12.5,
+      "ang": 0.47
+    },
+    {
+      "name": "Earth",
+      "r": 16.5,
+      "ang": 0.39
+    },
+    {
+      "name": "Mars",
+      "r": 20.5,
+      "ang": 0.32
+    },
+    {
+      "name": "Jupiter",
+      "r": 28,
+      "ang": 0.17
+    },
+    {
+      "name": "Saturn",
+      "r": 36,
+      "ang": 0.115
+    },
+    {
+      "name": "Uranus",
+      "r": 43.5,
+      "ang": 0.075
+    }
+  ],
+  "maxOrbit": 43.5,
+  "focusName": "Earth",
+  "cameraDistanceToFocus": 5.170531887533428,
+  "focusFrameReady": true,
+  "textAtEnd": "Pause\nClick a planet to focus. Esc: back to overview."
+}

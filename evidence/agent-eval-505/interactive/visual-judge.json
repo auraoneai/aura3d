@@ -1,0 +1,1103 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "callsPerPair": 3,
+  "results": [
+    {
+      "comparison": "aura-vs-three",
+      "task": 10,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-interactive-t10-aura-r1",
+        "three": "bench505-interactive-t10-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 19,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 5,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "A has a readable sky, textured grass ground and visible cast shadows, while B has much richer plants but a dark grey background instead of a sky, a plot clipped at the bottom, flat tan ground and faint shadows."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "aura",
+          "side": "subject",
+          "totals": {
+            "subject": 19,
+            "three": 17
+          },
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "A shows the whole plot with larger, clearly legible plants and varied pastel flowers, while B's plants are tiny, its plot is clipped at the sides, and only its stronger grass, sky and shadows favour it."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "aura",
+          "side": "subject",
+          "totals": {
+            "subject": 19,
+            "three": 17
+          },
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "A shows the whole plot with larger plants that have clear leaves and varied flowers across growth stages, while B's plot is clipped at the left and right edges, has a blank strip at the bottom, and its plants are small and thin, though B's grass, sky and shadows look better."
+        }
+      ],
+      "tally": {
+        "subject": 2,
+        "three": 1,
+        "tie": 0
+      },
+      "majority": "subject"
+    },
+    {
+      "comparison": "aura-vs-three",
+      "task": 10,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-interactive-t10-aura-r2",
+        "three": "bench505-interactive-t10-three-r2"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 18,
+            "three": 21
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "A shows the whole green plot with clear edges, a sky and a horizon, and its flowers are more varied and saturated, with visible shadows; B's flat tan ground has no readable plot boundary and its plants are small and clustered in the middle."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 16,
+            "three": 21
+          },
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows a defined green plot with visible edges, larger plants with clearer growth stages, vivid varied flower colours and stronger contact shadows, while A has an undefined tan ground with small, pale plants and weak shading."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 17,
+            "three": 21
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "A shows a bounded green plot with a visible horizon, strong shadows and vivid, varied flower colours, while B's plants are small and pastel on a flat tan field with no visible plot edges."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-vs-three",
+      "task": 10,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-interactive-t10-aura-r3",
+        "three": "bench505-interactive-t10-three-r3"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 9,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 2,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 4
+            }
+          },
+          "why": "A shows a lit green garden with readable ground, shadowed plants, and flowers in several colours and growth stages, while B is a washed-out pale plane where the plants are barely visible and the lighting looks broken."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 9,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 2,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 4
+            }
+          },
+          "why": "A shows a lit green plot with growing plants, varied flower colours and contact shadows, while B is washed out to a pale grey-blue plane where the plants are barely visible and the lighting is badly overexposed."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 9,
+            "three": 20
+          },
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 1,
+              "c3": 1,
+              "c4": 1,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "Candidate A shows a washed-out pale plane with no visible plants despite the counter reading 26, while candidate B shows a lit grass field with 26 plants at mixed growth stages, varied flower colours and contact shadows."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-vs-three",
+      "task": 11,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-interactive-t11-aura-r1",
+        "three": "bench505-interactive-t11-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 14,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 2
+            }
+          },
+          "why": "A has a textured glowing star, a clear Saturn-like ring, a detailed Earth with continents and day/night shading, thin subtle orbit lines and a well-placed info panel, while B has thick bluish orbit lines that dominate (including a wide band across the focused view), flatter planets, a clipped info p"
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 15,
+            "three": 21
+          },
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "why": "A shows the whole system with subtle orbit lines, a textured glowing star, a clear ringed planet, a lit Earth with continents and a moon, and a clean info panel, while B has thick dominating orbit lines, a flat-looking Earth, a clipped info panel, and a cropped outer orbit."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 12,
+            "three": 20
+          },
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a textured, glowing star, planets with visible shading and surface detail, a clear ring and moon, subtle orbit lines and a well-placed legible info panel, while A has tiny flat planets, heavy orbit lines that dominate, and a clipped outer orbit."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-vs-three",
+      "task": 11,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-interactive-t11-aura-r2",
+        "three": "bench505-interactive-t11-three-r2"
+      },
+      "calls": [],
+      "forfeit": "three",
+      "majority": "three",
+      "note": "Aura3D run has no frames (build failed or never finished): counted as a three.js win by forfeit, no judge calls"
+    },
+    {
+      "comparison": "aura-vs-three",
+      "task": 11,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-interactive-t11-aura-r3",
+        "three": "bench505-interactive-t11-three-r3"
+      },
+      "calls": [],
+      "forfeit": "three",
+      "majority": "three",
+      "note": "Aura3D run has no frames (build failed or never finished): counted as a three.js win by forfeit, no judge calls"
+    },
+    {
+      "comparison": "aura-sheet-vs-three",
+      "task": 10,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-interactive-sheet-t10-aura-r1",
+        "three": "bench505-interactive-t10-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 16,
+            "three": 19
+          },
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a bright sky, textured grass, clear soft shadows, and large, clearly legible flowers in varied colours. A's flat green plane on a dull grey background with tiny, dense plants is weaker, although A shows the whole plot and B's plane is clipped at the left and bottom edges."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 17,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            }
+          },
+          "why": "A has a textured grass plot, a clear sky gradient, varied flower colours and visible cast shadows, while B has a flat green plane on a dull grey background with small flowers, even though its plants are leafier."
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 14,
+            "three": 19
+          },
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 2,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a textured lit lawn under a blue sky and larger, clearly formed flowers in varied colours with visible shadows, while A has a flat green plot on a grey void with tiny, clustered plants, even though B's plot corners are clipped and it has a white strip at the bottom."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-sheet-vs-three",
+      "task": 10,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-interactive-sheet-t10-aura-r2",
+        "three": "bench505-interactive-t10-three-r2"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 14,
+            "three": 22
+          },
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 4
+            },
+            "three": {
+              "c1": 4,
+              "c2": 5,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has larger plants with clear leaves and flowers, distinct growth stages, varied flower colours and visible cast shadows on a well-exposed ground, while A's plants are tiny, washed out and barely shaded on a flat pale plane."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 15,
+            "three": 22
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 5,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 2,
+              "c5": 4
+            }
+          },
+          "why": "A shows a well-exposed plot with clearly visible contact shadows and large plants with varied flower colours across growth stages, while B is washed out, runs off the bottom edge, and has small, pale plants bunched in the centre with weak shading."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 14,
+            "three": 22
+          },
+          "scores": {
+            "three": {
+              "c1": 5,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 2,
+              "c3": 3,
+              "c4": 2,
+              "c5": 4
+            }
+          },
+          "why": "A shows a fully visible, well-exposed plot with large, legible plants, vivid varied flowers and clear contact shadows, while B has a washed-out ground that runs off the frame edges, tiny clustered plants and faint shading."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-sheet-vs-three",
+      "task": 10,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-interactive-sheet-t10-aura-r3",
+        "three": "bench505-interactive-t10-three-r3"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 18,
+            "three": 20
+          },
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a textured grass ground, more varied flower colours and sizes, and better contact shading, while A shows a clear square plot with a visible horizon but a flat green plane with less colour variety; B's curved ground edge hides the plot boundary, which costs it some composition points."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 18,
+            "three": 20
+          },
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 4
+            },
+            "three": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 5,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a textured grass surface, soft shadows, and a wider range of flower colours and sizes (white, orange, blue, purple, yellow, red), while A has a flat green plane with a clear square plot and horizon but a more limited palette. B's weaker point is the curved, domed ground whose edge fills the fr"
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "aura-sheet",
+          "side": "subject",
+          "totals": {
+            "subject": 20,
+            "three": 17
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows the whole plot with clear edges and taller plants whose stems, leaves and flowers are easy to read at different growth stages, while A's domed grass hides the plot boundary and its plants are small and clustered."
+        }
+      ],
+      "tally": {
+        "subject": 1,
+        "three": 2,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-sheet-vs-three",
+      "task": 11,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-interactive-sheet-t11-aura-r1",
+        "three": "bench505-interactive-t11-three-r1"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 17,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "why": "A's overview is cleaner, with fine orbit lines, a glowing star and a legible Saturn-like ring, and its focus view has a tidy info panel and a well-lit Earth with moon. B's orbit lines are thick and dominating in the focus view, one planet is clipped at the bottom-left of the overview, and its focus "
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 16,
+            "three": 18
+          },
+          "scores": {
+            "subject": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 2,
+              "c5": 3
+            },
+            "three": {
+              "c1": 4,
+              "c2": 3,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B has a clean, unclipped overview with subtle orbit lines, a clear ringed planet and a well-placed panel, while A's overview has dominant bright orbit lines, a clipped planet and an odd-looking ring, even though A's focused Earth is more detailed and better lit."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 17,
+            "three": 19
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 3,
+              "c2": 4,
+              "c3": 4,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "why": "A has a cleaner, fully visible overview with subtle thin orbit lines, a glowing star, a clear ringed planet, and a legible focus view, while B's orbit lines are thick and distracting, a ring is clipped or obscured, and the focus frame has a thick orbit band cutting through the planet and moon."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    },
+    {
+      "comparison": "aura-sheet-vs-three",
+      "task": 11,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-interactive-sheet-t11-aura-r2",
+        "three": "bench505-interactive-t11-three-r2"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "aura-sheet",
+          "side": "subject",
+          "totals": {
+            "subject": 17,
+            "three": 15
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "why": "B's overview is larger and easier to read, with a textured star, a visible ringed planet and clearly distinct planets, but its thick orbit lines cut across the focused Earth. A's overview is small and compressed, and in its focus frame a moon-like body and another planet overlap the view."
+        },
+        {
+          "call": 2,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "aura-sheet",
+          "side": "subject",
+          "totals": {
+            "subject": 17,
+            "three": 15
+          },
+          "scores": {
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            }
+          },
+          "why": "B's overview is larger and more readable, with a textured star, a visible ringed planet and clearer planets, while A's overview is small and its planets are tiny. B's focus view has distracting thick orbit lines cutting through the frame, but A's focus view is similarly mixed, with flat patchy Earth"
+        },
+        {
+          "call": 3,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 17,
+            "three": 18
+          },
+          "scores": {
+            "subject": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 3,
+              "c4": 3,
+              "c5": 3
+            },
+            "three": {
+              "c1": 3,
+              "c2": 3,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "A's overview is larger and more readable, but its focus frame has thick orbit lines cutting across the Earth, which hurts polish. B's focus view has a cleaner planet with visible terminator shading, a moon, subtle orbit lines, and a better-styled panel, though its overview system is small."
+        }
+      ],
+      "tally": {
+        "subject": 2,
+        "three": 1,
+        "tie": 0
+      },
+      "majority": "subject"
+    },
+    {
+      "comparison": "aura-sheet-vs-three",
+      "task": 11,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-interactive-sheet-t11-aura-r3",
+        "three": "bench505-interactive-t11-three-r3"
+      },
+      "calls": [
+        {
+          "call": 1,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 11,
+            "three": 20
+          },
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 3,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows distinct, visible planets with textured surfaces, a clear ring, subtle orbit lines and a legible well-styled info panel, whereas A has near-invisible dark planets, heavy bright orbit lines that dominate (a thick orbit ribbon fills the focus view) and a poorly lit, murky Earth."
+        },
+        {
+          "call": 2,
+          "order": [
+            "subject",
+            "three"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 10,
+            "three": 20
+          },
+          "scores": {
+            "subject": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 2
+            },
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            }
+          },
+          "why": "B shows distinct, visible, textured planets with a clear ring, thin subtle orbit lines and a well-styled panel, while A's planets are nearly invisible dark blobs, its orbit lines are thick and dominating, and its focus view is dark with a heavy orbit band across the frame."
+        },
+        {
+          "call": 3,
+          "order": [
+            "three",
+            "subject"
+          ],
+          "winner": "three",
+          "side": "three",
+          "totals": {
+            "subject": 11,
+            "three": 20
+          },
+          "scores": {
+            "three": {
+              "c1": 4,
+              "c2": 4,
+              "c3": 4,
+              "c4": 4,
+              "c5": 4
+            },
+            "subject": {
+              "c1": 2,
+              "c2": 2,
+              "c3": 2,
+              "c4": 2,
+              "c5": 3
+            }
+          },
+          "why": "A shows distinct, lit planets with a glowing star, a visible ring, a moon, subtle orbit lines and a legible info panel, while B's planets are nearly invisible dark blobs in the overview and its thick orbit lines dominate the focus view."
+        }
+      ],
+      "tally": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      },
+      "majority": "three"
+    }
+  ]
+}
