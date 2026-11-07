@@ -40,6 +40,7 @@ for (const id of ids) {
   if (done.has(`${id}-final`)) continue;
   const sandbox = join(runsDir, id, "sandbox");
   if (!existsSync(sandbox)) continue;
+  if (existsSync(join(runsDir, id, "dist/index.html"))) { builds[id] = { ok: true, ms: 0, cached: true }; continue; }
   builds[id] = await withLock("a3d-build", async () => {
     const started = Date.now();
     const r = spawnSync("nice", ["-n", "10", join(sandbox, "node_modules/.bin/vite"), "build", "--outDir", join(runsDir, id, "dist"), "--emptyOutDir", "--logLevel", "error"], { cwd: sandbox, encoding: "utf8", timeout: 300000 });
@@ -113,7 +114,9 @@ await withLock("a3d-rea", async () => {
       const b = await decode((await cdp.send("Page.captureScreenshot", { format: "png" })).data);
       const s = frameStats(a);
       const diff = frameDifference(a, b);
-      const errors = cdp.events.filter((e) => e.method === "Runtime.exceptionThrown" || (e.method === "Log.entryAdded" && e.params.entry.level === "error")).map((e) => JSON.stringify(e.params).slice(0, 300));
+      // favicon and /hdri/ look-preset fetches 404 in a cold sandbox that has no scaffold public/ files; they are not page errors.
+      const ignorable = (e) => e.method === "Log.entryAdded" && /(favicon\.ico|\/hdri\/[^/]+\.hdr)$/.test(e.params.entry.url ?? "");
+      const errors = cdp.events.filter((e) => !ignorable(e) && (e.method === "Runtime.exceptionThrown" || (e.method === "Log.entryAdded" && e.params.entry.level === "error"))).map((e) => (e.method === "Runtime.exceptionThrown" ? `exception: ${e.params.exceptionDetails.exception?.description ?? e.params.exceptionDetails.text}` : JSON.stringify(e.params).slice(0, 300)));
       mkdirSync(join(batchDir, "frames"), { recursive: true });
       for (const [tag, f] of [["t0", a], ["t3", b]]) await a.sharp(f.data, { raw: { width: f.width, height: f.height, channels: 4 } }).png().toFile(join(batchDir, "frames", `${id}-${tag}.png`));
       results.push({

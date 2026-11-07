@@ -1,0 +1,1496 @@
+[
+  {
+    "runId": "b511-sheet-t31-aura-r1",
+    "arm": "aura",
+    "task": 31,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 12,
+    "agentWallSec": 45.1,
+    "tokensIn": 258971,
+    "tokensOut": 2192,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 1,
+    "readCalls": 6,
+    "searchCalls": 6,
+    "writeCalls": 2,
+    "srcLines": 82,
+    "srcTokens": 689,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.2,
+    "bundleGzipKB": null,
+    "readyMs": 373,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 1,
+    "glueLines": 22,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "star",
+          "pass": true,
+          "why": "A 1.8-size sphere at the origin uses material.emissive with emissiveIntensity 3, plus a point light and effects.bloom. The probes show a non-blank render with no errors."
+        },
+        {
+          "id": "planets",
+          "pass": true,
+          "why": "Five planets have distinct sizes (0.4 to 1.05), colours, radii (2.6 to 9.2) and speeds (0.33 to 1.6). Each position is recomputed per frame in app.onFrame."
+        },
+        {
+          "id": "ring",
+          "pass": true,
+          "why": "A torus is placed at planet p3 with a tilted rotation. It is larger than the planet (about 4.6 against a 2.1 diameter) and follows the planet's position every frame."
+        },
+        {
+          "id": "space",
+          "pass": true,
+          "why": "The scene background is #03040a. The camera at [0,17,16] looks at the origin at 45° fov, about 23 units away. That field of view covers the outermost orbit (radius 9.2) from an elevated angle."
+        },
+        {
+          "id": "motion",
+          "pass": true,
+          "why": "The probes report animated=true with a frame diff of about 9.0, and the code updates every planet each frame from f.time."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "app.nodes.require(...).setRotation(...) on the star and the planets",
+          "why": "The star and planets are uniformly coloured spheres with no texture, so spinning them produces no visible change. The star's rotation is also not needed for any requirement."
+        }
+      ],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 14,
+        "glueLines": 22,
+        "notes": "Scene lines are the planet data table and the scene builder chain, including the ring and camera. Rules lines are the pos() orbit math and the onFrame position updates. Glue lines are the imports, the global Window declaration, the Planet interface, the createAuraApp call, the __EVAL_READY__ flag wi"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t31-aura-r2",
+    "arm": "aura",
+    "task": 31,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 17,
+    "agentWallSec": 68.1,
+    "tokensIn": 581488,
+    "tokensOut": 2849,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 4,
+    "readCalls": 11,
+    "searchCalls": 9,
+    "writeCalls": 2,
+    "srcLines": 93,
+    "srcTokens": 865,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.7,
+    "bundleGzipKB": null,
+    "readyMs": 373,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 3,
+    "glueLines": 25,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "star",
+          "pass": true,
+          "why": "A 2.6-unit sphere with an emissive material (intensity 3) sits at the origin, with a point light inside it and effects.bloom added to the scene. The probes show no errors and a lit frame."
+        },
+        {
+          "id": "planets",
+          "pass": true,
+          "why": "Five planets have distinct sizes (0.5 to 1.7), colours, orbit radii (3 to 11) and speeds (1.2 to 0.26 rad/s). Their positions are set from code each frame with cos/sin of phase + time*speed."
+        },
+        {
+          "id": "ring",
+          "pass": true,
+          "why": "Saturn has a torus ring (radius 1.15 times the planet size, tilted 0.35 rad) that is repositioned each frame to follow the planet."
+        },
+        {
+          "id": "space",
+          "pass": true,
+          "why": "The background is #02030a and the camera sits at [0,15,19] looking at the origin, giving an angled top-down view. The nearest point of the outermost orbit (z=11) falls roughly 5% past the bottom edge of the frame, so a small arc is clipped,"
+        },
+        {
+          "id": "motion",
+          "pass": true,
+          "why": "The probes report animated=true with a frame diff of 6.74, and the planets are updated every frame from f.time."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "app.nodes.require(p.id).setRotation(0, f.time*0.8, 0) on the planets",
+          "why": "Each planet is a plain sphere with a uniform colour and no texture, so spinning it produces no visible change."
+        },
+        {
+          "where": "app.nodes.require('star').setRotation(0, f.time*0.2, 0)",
+          "why": "The star is a uniformly emissive sphere, so rotating it has no visible effect."
+        },
+        {
+          "where": "orbitGuide() torus with params.tube 0.0012",
+          "why": "The tube is about 0.1% of the size, so the orbit guides are probably sub-pixel at 640x360 and not visible. The probes cannot confirm this either way."
+        }
+      ],
+      "glue": {
+        "sceneLines": 55,
+        "rulesLines": 14,
+        "glueLines": 25,
+        "notes": "Glue is the global Window declaration, the Planet interface, createAuraApp and app.ready bootstrapping, the __EVAL_READY__ flag, the manual cos/sin orbit math repeated in the build loop and the onFrame callback, and the torus size arithmetic (the 0.86 factor). The scene lines are the star, lights, p"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t31-aura-r3",
+    "arm": "aura",
+    "task": 31,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 17,
+    "agentWallSec": 71.2,
+    "tokensIn": 570312,
+    "tokensOut": 3087,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 4,
+    "readCalls": 11,
+    "searchCalls": 11,
+    "writeCalls": 4,
+    "srcLines": 99,
+    "srcTokens": 856,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.6,
+    "bundleGzipKB": null,
+    "readyMs": 692,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 12,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "star",
+          "pass": true,
+          "why": "A 2.4-unit sphere at the origin uses material.emissive (emissiveIntensity 3.5) with a point light and effects.bloom. The frame is not blank and has high contrast (std 37)."
+        },
+        {
+          "id": "planets",
+          "pass": true,
+          "why": "Five planets differ in size (0.45 to 1.3) and colour. Orbit radii run 2.6 to 8.5 and speeds 0.3 to 1.5 rad/s. app.onFrame sets positions each frame from planetPos(), with no page errors."
+        },
+        {
+          "id": "ring",
+          "pass": true,
+          "why": "Saturno gets a flattened, tilted pbr torus ring that is placed at the planet and moved with it every frame. There are no errors, and the probes give no sign that it fails to render."
+        },
+        {
+          "id": "space",
+          "pass": true,
+          "why": "The background is #02030a. The camera at [0,13,15.5] looks at the origin with a 46° fov, so it views from about 40° above the plane. By estimate the outermost orbit (radius 8.5) fits in frame. Nonblack coverage of 0.61 is fairly high, proba"
+        },
+        {
+          "id": "motion",
+          "pass": true,
+          "why": "The animated probe is true and the frame diff is 8.63. Positions depend on f.time."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 55,
+        "rulesLines": 14,
+        "glueLines": 12,
+        "notes": "Scene lines cover the star, light, bloom, orbit guides, planets, ring, camera and the PLANETS data table. Rules lines cover planetPos and the onFrame update loop. Glue lines cover the import, the declare global block, createAuraApp, await app.ready() and the double requestAnimationFrame that sets th"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t32-aura-r1",
+    "arm": "aura",
+    "task": 32,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 14,
+    "agentWallSec": 49.3,
+    "tokensIn": 344775,
+    "tokensOut": 2157,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 2,
+    "readCalls": 6,
+    "searchCalls": 12,
+    "writeCalls": 1,
+    "srcLines": 77,
+    "srcTokens": 685,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.2,
+    "bundleGzipKB": null,
+    "readyMs": 307,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 38,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "count",
+          "pass": true,
+          "why": "COUNT=64 and each bar is placed at angle i/64*2π on a ring of radius 4, standing on a 24x24 floor plane."
+        },
+        {
+          "id": "instanced",
+          "pass": true,
+          "why": "A single instances.box node named 'bars' holds all 64 transforms, and later updates go through setInstances on that one node."
+        },
+        {
+          "id": "animate",
+          "pass": true,
+          "why": "onFrame recomputes every bar height from a mix of four sine terms using f.time and calls setInstances each frame. The probe reports animated:true with frame diff of about 15."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Per-instance colors come from hslToHex(i/64, 0.85, 0.55), a full hue sweep around the ring. The material base colour is white, so the instance colour is not multiplied by a tint. The frame probe shows non-blank output with std of about 66. "
+        },
+        {
+          "id": "light",
+          "pass": true,
+          "why": "A directional light has shadow:true, with hemisphere and point lights added. camera.orbit uses autoRotate 0.18, which is a slow orbit, and the frame changes between snapshots. The probes do not directly show the shadow, so that part rests o"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 28,
+        "rulesLines": 10,
+        "glueLines": 38,
+        "notes": "Glue is the hslToHex helper and colour array (about 9 lines), transformFor and its constants (about 12), the import block (11), the onFrame setInstances plumbing (5) and the __EVAL_READY__ double-rAF bootstrap (about 6). Rules is the barHeight sine mix. Scene is the createAuraApp scene graph, with l"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t32-aura-r2",
+    "arm": "aura",
+    "task": 32,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 18,
+    "agentWallSec": 64.7,
+    "tokensIn": 579842,
+    "tokensOut": 2464,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 2,
+    "readCalls": 10,
+    "searchCalls": 12,
+    "writeCalls": 2,
+    "srcLines": 111,
+    "srcTokens": 802,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9272.2,
+    "bundleGzipKB": null,
+    "readyMs": 345,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 50,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "count",
+          "pass": true,
+          "why": "COUNT=64 and the bars are placed on a circle of radius 5 above a 40x40 floor plane."
+        },
+        {
+          "id": "instanced",
+          "pass": true,
+          "why": "A single instances.box node named \"bars\" is created with 64 transforms. It is updated through setInstances, so there are no per-bar scene nodes."
+        },
+        {
+          "id": "animate",
+          "pass": true,
+          "why": "onFrame recomputes every bar height from a mix of four sine terms and calls setInstances each frame. The probe reports animated=true with a non-zero frame diff."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Each bar gets a distinct hex colour from hueToHex(i/64), which gives a full hue ring. The base material colour is white, so the per-instance colour is not multiplied down. The frame is not blank and has std of about 32."
+        },
+        {
+          "id": "light",
+          "pass": true,
+          "why": "The product-studio look supplies the lighting. The floor has receiveShadow and the bars have castShadow. The camera setPose orbit runs every frame. The probes do not directly confirm the shadows or the camera motion, so this is judged from "
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 32,
+        "rulesLines": 22,
+        "glueLines": 50,
+        "notes": "Glue is mostly the manual hueToHex HSL-to-hex conversion (about 22 lines), the camPos orbit helper and constants, the transform-building boilerplate, the imports and global declaration, and the ready-flag/first-frame bootstrapping. Rules are barHeight and the per-frame bar update. Scene lines are th"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t32-aura-r3",
+    "arm": "aura",
+    "task": 32,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 16,
+    "agentWallSec": 67.2,
+    "tokensIn": 377078,
+    "tokensOut": 2180,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 3,
+    "readCalls": 9,
+    "searchCalls": 10,
+    "writeCalls": 1,
+    "srcLines": 87,
+    "srcTokens": 657,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273,
+    "bundleGzipKB": null,
+    "readyMs": 318,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 31,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "count",
+          "pass": true,
+          "why": "COUNT=64, and each bar is placed at angle i/64·2π on a radius-4 ring above a 24×24 floor plane. The frame probe shows non-blank content."
+        },
+        {
+          "id": "instanced",
+          "pass": true,
+          "why": "A single instances.box({name:'bars'}) node holds all 64 transforms, and it is updated through setInstances rather than as separate scene nodes."
+        },
+        {
+          "id": "animate",
+          "pass": true,
+          "why": "app.onFrame recomputes every bar height each frame from a mix of four sine terms using f.time, and the probe reports animated=true (frame diff ≈20.8)."
+        },
+        {
+          "id": "colour",
+          "pass": true,
+          "why": "Per-instance colours come from hueToHex(i/64), a smooth full-hue ring. The base material colour is white, so the instance colour is not multiplied against a tint. The frame std of ≈88.7 is consistent with visible colour, but the probes do n"
+        },
+        {
+          "id": "light",
+          "pass": true,
+          "why": "A directional light has shadow:true, with hemisphere and neutral environment fill. interactions.orbit has autoRotate 0.15, a slow camera orbit. No probe measures the shadow itself, and the source does not set castShadow explicitly, so shado"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 37,
+        "rulesLines": 19,
+        "glueLines": 31,
+        "notes": "Glue is the 12-line import block, the global Window declaration, the hand-written hueToHex HSL-to-hex helper (~10 lines), and the ready/__EVAL_READY__ bootstrap. The onFrame loop that rebuilds the full transform array each frame is counted as rules. Scene lines include the scene builder chain, barTr"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t33-aura-r1",
+    "arm": "aura",
+    "task": 33,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 5,
+    "agentWallSec": 31.7,
+    "tokensIn": 85119,
+    "tokensOut": 2040,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 1,
+    "readCalls": 4,
+    "searchCalls": 1,
+    "writeCalls": 1,
+    "srcLines": 114,
+    "srcTokens": 902,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9274.3,
+    "bundleGzipKB": null,
+    "readyMs": 723,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 24,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "shader",
+          "pass": true,
+          "why": "The sphere uses material.custom with its own GLSL vertex and fragment shaders. The fragment shader computes a fresnel term, pow(1 - |n·v|, 2.5), and uses it to drive the cyan rim colour and alpha. The build succeeded with no page or console"
+        },
+        {
+          "id": "scan",
+          "pass": true,
+          "why": "The shader derives scanline bands from vW.y * 38 - clk * 4. onFrame calls setUniform('clk', f.time) on the shield every frame, and the animated probe is true with a frame diff of 2.36. The cube also rotates, so the diff may not come from th"
+        },
+        {
+          "id": "translucent",
+          "pass": true,
+          "why": "The material sets transparent: true, depthWrite: false and normal blending. The output alpha is 0.10 to 0.95, low at the centre and high at the rim, so the sphere reads as a translucent shell."
+        },
+        {
+          "id": "cube",
+          "pass": true,
+          "why": "A 0.6 box with a pbr material (metallic 1, roughness 0.2) sits at the sphere centre inside the 2.2 sphere. It is rotated every frame with setRotation(f.time * ...)."
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The background is #03060c. A dark metallic floor has an additive cyan pool and ring glow shader just above it, plus a cyan point light. The camera is at [0,1.9,5.2], targets the sphere, and has a 40 degree fov. The probes show non-blank out"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 4,
+        "glueLines": 24,
+        "notes": "Glue is the import block, the global Window declaration, the onFrame uniform plumbing (setUniform calls for the two clk uniforms), and the ready()/double requestAnimationFrame handshake that sets __EVAL_READY__. Shader code is excluded from glue. The scene and material declarations are scene descrip"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t33-aura-r2",
+    "arm": "aura",
+    "task": 33,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 7,
+    "agentWallSec": 28.3,
+    "tokensIn": 143563,
+    "tokensOut": 1710,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 1,
+    "readCalls": 7,
+    "searchCalls": 3,
+    "writeCalls": 1,
+    "srcLines": 78,
+    "srcTokens": 681,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9273.6,
+    "bundleGzipKB": null,
+    "readyMs": 705,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 13,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "shader",
+          "pass": true,
+          "why": "material.custom supplies GLSL vertex and fragment shaders. The fragment shader computes fresnel as pow(1 - |dot(n, v)|, 2.5) and uses it for the cyan rim colour and alpha. The page ran with no errors."
+        },
+        {
+          "id": "scan",
+          "pass": true,
+          "why": "The shader scrolls sin(vWorld.y*22 - clk*2.2) and a sweep band with clk. The onFrame callback calls setUniform('clk', f.time) every frame, and the probes report animated=true with diff≈3.06. The cube also rotates, so the probes alone cannot"
+        },
+        {
+          "id": "translucent",
+          "pass": true,
+          "why": "The material sets transparent:true, depthWrite:false and normal blending. The output alpha is 0.08–0.92 and mostly low in the sphere centre, so the cube shows through."
+        },
+        {
+          "id": "cube",
+          "pass": true,
+          "why": "A 0.7 box with metallic:1 and roughness 0.2 sits at the sphere centre. It is rotated every frame via setRotation and is smaller than the 2.2 sphere."
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The background is #04070d. A large dark glossy metallic floor is lit by a cyan point light at the sphere centre, plus bloom. The camera at [0,1.9,5.4] looks at [0,1.15,0] with fov 40, which frames the sphere. The probes show it is not blank"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 32,
+        "rulesLines": 3,
+        "glueLines": 13,
+        "notes": "The shader is about 27 lines and is excluded from glue. Glue is the import and global Window declaration, the createAuraApp bootstrap, the __EVAL_READY__ double-requestAnimationFrame handshake, and the runtime ids and nodes.require lookups. There is no manual renderer, resize or loop code."
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t33-aura-r3",
+    "arm": "aura",
+    "task": 33,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 30.2,
+    "tokensIn": 115220,
+    "tokensOut": 2023,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 2,
+    "readCalls": 5,
+    "searchCalls": 4,
+    "writeCalls": 1,
+    "srcLines": 101,
+    "srcTokens": 855,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9274.2,
+    "bundleGzipKB": null,
+    "readyMs": 612,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 13,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "shader",
+          "pass": true,
+          "why": "The sphere uses material.custom with its own GLSL. The fragment shader computes fres = pow(1 - |n·v|, 2.5) and adds it to a cyan color as a rim glow."
+        },
+        {
+          "id": "scan",
+          "pass": true,
+          "why": "The shader scrolls scanlines with fract(vWorld.y*14 - clk*0.8). onFrame sets the clk uniform from f.time every frame, and the probes report animated:true with a frame diff of 7.9. The cube and floor pulse also move, so the probes cannot iso"
+        },
+        {
+          "id": "translucent",
+          "pass": true,
+          "why": "The material sets transparent:true, depthWrite:false and side:'double'. The fragment alpha ranges from about 0.08 to 0.95, so the sphere is see-through in the middle and brighter at the rim."
+        },
+        {
+          "id": "cube",
+          "pass": true,
+          "why": "A 0.7 box with pbr metallic:1 and roughness:0.2 sits at the origin inside the 2.2 sphere. onFrame rotates it with setRotation on all three axes."
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The background is #04070d. A dark metallic floor sits at y=-1.1, with an additive cyan glow plane just above it. The camera is at (0,0.6,5.2) looking at the sphere with a 40° fov. The probes show a non-blank, animated frame and no errors."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 42,
+        "rulesLines": 4,
+        "glueLines": 13,
+        "notes": "Scene lines cover the two materials' uniform and blend options, lights, bloom, floor, glow, core, shield and camera. Shader source is excluded. Glue is the global Window type declaration, the __EVAL_READY__ double-requestAnimationFrame handshake, the await app.ready(), the imports, and the per-frame"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t34-aura-r1",
+    "arm": "aura",
+    "task": 34,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 37,
+    "agentWallSec": 178.9,
+    "tokensIn": 2049473,
+    "tokensOut": 6026,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 10,
+    "readCalls": 26,
+    "searchCalls": 29,
+    "writeCalls": 1,
+    "srcLines": 179,
+    "srcTokens": 1345,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9294.8,
+    "bundleGzipKB": null,
+    "readyMs": 412,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 65,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "pyramid",
+          "pass": true,
+          "why": "Rows of 5,4,3,2,1 give 15 boxes. Each box has a dynamic body in the engine's physics world (physics.worldAsync) on a static floor body. Positions are copied to the scene nodes each frame. No hand-rolled physics."
+        },
+        {
+          "id": "launch",
+          "pass": true,
+          "why": "The loop launches the ball once the simulated clock reaches 1.5 s, with velocity [-0.1, 4.2, -21] from z=11 toward the pyramid at z=0. The probes show an animated, non-blank frame with no errors. The impact itself was not measured."
+        },
+        {
+          "id": "settle",
+          "pass": true,
+          "why": "The boxes are dynamic bodies with friction, damping and sleeping enabled, so they tumble and come to rest under engine physics. The probes did not measure settling, but frame diff is nonzero and there are no errors."
+        },
+        {
+          "id": "reset",
+          "pass": true,
+          "why": "The Space keydown handler calls world.reset(), zeroes the clock, re-syncs the nodes and relaunches the ball immediately. The key press was not exercised in the probes, but there are no page errors."
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The scene uses the outdoor-day look preset, which is assumed to provide lighting and shadows, since there is no explicit light or shadow code. The perspective camera at [12,5.5,17] targeting [0,1.8,4] frames the pyramid and the ball's path."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 60,
+        "rulesLines": 55,
+        "glueLines": 65,
+        "notes": "Glue is the quaternion-to-Euler conversion (about 16 lines), the node sync helpers, the fixed-timestep accumulator loop, the DOM HUD, the keydown listener and the ready flag. Scene lines cover the layout constants, box generation, the scene builder and the camera. Rules lines cover the physics world"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t34-aura-r2",
+    "arm": "aura",
+    "task": 34,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 22,
+    "agentWallSec": 108.2,
+    "tokensIn": 1070483,
+    "tokensOut": 3624,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 5,
+    "readCalls": 16,
+    "searchCalls": 11,
+    "writeCalls": 2,
+    "srcLines": 96,
+    "srcTokens": 761,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9272.2,
+    "bundleGzipKB": null,
+    "readyMs": 725,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 24,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "pyramid",
+          "pass": true,
+          "why": "Rows of 5,4,3,2,1 boxes (15) are built as dynamic bodies via .physics() on a static floor box, and stepped with app.physics.step. The engine's physics is used, with no hand-rolled integration. The probes show no errors and an animated, non-"
+        },
+        {
+          "id": "launch",
+          "pass": true,
+          "why": "The ball starts at z=9 and is given velocity (0,4,-22) toward the pyramid at z=0. The onFrame clock triggers launch() once it reaches 1.5 s. If the body is not yet available, launch() returns without setting the flag and retries next frame."
+        },
+        {
+          "id": "settle",
+          "pass": true,
+          "why": "Boxes have friction 0.6, low restitution and mass 1, and the engine steps them at a fixed 1/60. They should tumble and come to rest after the hit. The probes show an animated frame but give no direct evidence of settling."
+        },
+        {
+          "id": "reset",
+          "pass": true,
+          "why": "The Space keydown handler (ignoring key repeat) calls resetShot(), which rebuilds the scene with app.setScene, resets the clock, accumulator and launched flag, and calls launch(). If the new bodies are not available immediately, the onFrame"
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The 'outdoor-day' look preset supplies lighting and shadows, and exposure and app options are applied. The perspective camera at (8,5.5,14) targeting (0,1.4,3.5) with fov 45 frames both the pyramid and the ball's approach. The frame probe s"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 42,
+        "rulesLines": 28,
+        "glueLines": 24,
+        "notes": "Scene covers buildScene (floor, pyramid loops, ball, camera, look). Rules cover the constants, launch/reset logic, the launch-delay clock and the Space handler. Glue covers the Window type declaration, the manual fixed-timestep accumulator loop with its step cap, the __EVAL_READY__ double-rAF bootst"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t34-aura-r3",
+    "arm": "aura",
+    "task": 34,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 15,
+    "agentWallSec": 79.6,
+    "tokensIn": 484539,
+    "tokensOut": 2952,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 4,
+    "readCalls": 13,
+    "searchCalls": 8,
+    "writeCalls": 1,
+    "srcLines": 103,
+    "srcTokens": 784,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9272.2,
+    "bundleGzipKB": null,
+    "readyMs": 306,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 20,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "pyramid",
+          "pass": true,
+          "why": "Rows of 5,4,3,2,1 give 15 boxes. Each box has an engine .physics() dynamic body, the floor is static, and app.physics.step() drives the simulation with bindNodes. Nothing is hand-rolled."
+        },
+        {
+          "id": "launch",
+          "pass": true,
+          "why": "onFrame accumulates elapsed time and calls launch() at >= 1.5 s. launch() teleports the ball to (0,2,11) and sets velocity (0,1.6,-24) toward the pyramid at the origin. Rough ballistics put the ball at about y≈1.7 on arrival, so it hits the"
+        },
+        {
+          "id": "settle",
+          "pass": true,
+          "why": "Boxes are dynamic bodies with friction 0.6 and low restitution, stepped every frame with dt capped at 1/30. Settling relies on the engine's solver. The probes show no errors and an animated frame, but nothing measures the boxes coming to re"
+        },
+        {
+          "id": "reset",
+          "pass": true,
+          "why": "A Space keydown (repeats ignored) calls reset(), which does app.setScene(buildScene()), clears the timer and relaunches the ball. The relaunch is immediate, not after the 1.5 s delay. It also assumes the physics bodies are rebuilt synchrono"
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The outdoor-day look preset and its appOptions supply lighting and, presumably, shadows. Shadows are never enabled explicitly in the source, so that part is unverified. The camera at (11,5.5,11) looking at (0,1.6,3.5) with fov 50 keeps the "
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 30,
+        "glueLines": 20,
+        "notes": "Scene: buildScene (floor, 15 boxes, ball, camera). Rules: constants, launch/reset logic, the onFrame launch timer, and the Space handler. Glue: createAuraApp options, the ready flag, the app.ready() await, the double requestAnimationFrame for __EVAL_READY__, the physics step call, and keydown plumbi"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t35-aura-r1",
+    "arm": "aura",
+    "task": 35,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 13,
+    "agentWallSec": 81.5,
+    "tokensIn": 460360,
+    "tokensOut": 4904,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 1,
+    "readCalls": 10,
+    "searchCalls": 4,
+    "writeCalls": 4,
+    "srcLines": 170,
+    "srcTokens": 1772,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9311.8,
+    "bundleGzipKB": null,
+    "readyMs": 338,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 85,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "custom",
+          "pass": true,
+          "why": "Seven crystals are merged into one mesh built with geometry.define and placed with geometry.custom. No stock primitives are used for them."
+        },
+        {
+          "id": "flat",
+          "pass": true,
+          "why": "Each crystal is a hexagonal prism with tapered top ring and an apex. Every face gets its own normal and its own vertex colour, so shading is flat. Heights range from 1.0 to 2.9 and tiltX/tiltZ differ per crystal. The probe shows a non-blank"
+        },
+        {
+          "id": "rotate",
+          "pass": true,
+          "why": "onFrame calls setRotation(0, time*0.35, 0) on the crystals node, which is marked mutable. A static cylinder pedestal, an emissive torus rim and a ground disc sit under it. The probe reports animated frames."
+        },
+        {
+          "id": "sparks",
+          "pass": true,
+          "why": "Two additive effects.particles emitters (cool white-blue and warm orange) emit from a disc around the cluster. They have size and alpha over life, drift and noise. No page errors, and the frames animate."
+        },
+        {
+          "id": "mood",
+          "pass": true,
+          "why": "The background is #05060c with dim hemisphere and environment light. Cyan and magenta point lights sit behind and to the sides as rim lights. Fog and bloom are added. The probe diff of 12.27 confirms frames change over time."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 75,
+        "rulesLines": 3,
+        "glueLines": 85,
+        "notes": "Most glue is the hand-written mesh generation: hueToRgb, vec helpers (sub/cross/dot/norm), addFace with winding and normal fixing, bounds tracking, tilt-and-place rotation math, and typed-array assembly. The rest is the global Window declaration and the ready flag. Scene setup is declarative and lig"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t35-aura-r2",
+    "arm": "aura",
+    "task": 35,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.6666666666666666,
+    "turns": 22,
+    "agentWallSec": 112.8,
+    "tokensIn": 848901,
+    "tokensOut": 5180,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 6,
+    "readCalls": 13,
+    "searchCalls": 18,
+    "writeCalls": 2,
+    "srcLines": 196,
+    "srcTokens": 1634,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9311.1,
+    "bundleGzipKB": null,
+    "readyMs": 305,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 50,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "custom",
+          "pass": true,
+          "why": "Seven crystals are built with geometry.define and instanced through geometry.custom, one per placement. No stock primitives are used for the crystals."
+        },
+        {
+          "id": "flat",
+          "pass": true,
+          "why": "Each crystal is a non-indexed hexagonal or pentagonal prism with a pointed apex. It has per-face normals, a distinct per-face colour, and varied heights, radii and tilts. The probes cannot confirm that the per-vertex colours render, but the"
+        },
+        {
+          "id": "rotate",
+          "pass": true,
+          "why": "The cluster group is rotated about Y at 0.35 rad/s through app.nodes.require('cluster').setRotation in onFrame. It sits on two stacked cylinder pedestal discs. The animated probe is true and there are no errors."
+        },
+        {
+          "id": "sparks",
+          "pass": true,
+          "why": "effects.particles is added as an additive disc emitter of small bluish sparks around the cluster, with bloom. The run has no errors, but the probes cannot isolate the sparks."
+        },
+        {
+          "id": "mood",
+          "pass": true,
+          "why": "The background is #05060c with a dim warm key light and strong cyan and magenta rim lights from behind. The probes show nonblack coverage of 0.178, a frame std of 21.9, and animated true with a frame diff of 7.4."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 110,
+        "rulesLines": 6,
+        "glueLines": 50,
+        "notes": "Scene lines cover the crystal geometry construction, placements, materials, lights, pedestal, particles, bloom and camera. Glue is the seeded RNG, the hsl-to-hex helper, the sub/cross/dot vector helpers, the V3 type, the global Window declaration, the ready-flag bootstrapping, and the normal-orienta"
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t35-aura-r3",
+    "arm": "aura",
+    "task": 35,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 3,
+    "firstTryBuild": true,
+    "firstTryRender": false,
+    "finalBuild": true,
+    "finalRender": false,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": false,
+      "noPageErrors": true
+    },
+    "probePassFraction": 0.6666666666666666,
+    "turns": 19,
+    "agentWallSec": 80.6,
+    "tokensIn": 647036,
+    "tokensOut": 4528,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 5,
+    "readCalls": 10,
+    "searchCalls": 11,
+    "writeCalls": 4,
+    "srcLines": 147,
+    "srcTokens": 1663,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9311.4,
+    "bundleGzipKB": null,
+    "readyMs": 607,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "custom",
+          "pass": true,
+          "why": "Seven crystals are generated procedurally into one buffer, registered with geometry.define and instanced with geometry.custom. No stock primitives are used for the crystals. Only the pedestal uses primitives.cylinder."
+        },
+        {
+          "id": "flat",
+          "pass": true,
+          "why": "Each crystal is an n-gon prism (5-7 sides) with a pointed apex and a bottom cap. Triangles have their own duplicated vertices and a per-triangle normal, so the shading is flat. Each side face and tip face gets its own hsl colour. Heights, t"
+        },
+        {
+          "id": "rotate",
+          "pass": true,
+          "why": "The onFrame callback calls setRotation(0, time*0.35, 0) on the crystals node, which is a slow spin about the cluster origin. The cluster sits on a static two-layer cylinder pedestal. The probe reports animated: true with frame diff of about"
+        },
+        {
+          "id": "sparks",
+          "pass": true,
+          "why": "effects.particles is configured with an additive disc emitter over the pedestal, 38 particles/s, small sizes, colour and alpha over life, and bloom. There were no page or console errors. The probes do not isolate the particles, so this rest"
+        },
+        {
+          "id": "mood",
+          "pass": true,
+          "why": "The background is #05060d with dark fog. Three coloured point lights (cyan, magenta, violet) sit behind and to the sides as rim lights, with a dim neutral environment. The probes show nonblack about 0.11 and std about 20, so the frame is da"
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 80,
+        "rulesLines": 6,
+        "glueLines": 55,
+        "notes": "Glue is the manual vector helpers (sub, cross, dot), the hsl conversion, the addTri winding/normal fix-up, the per-crystal rotate/toWorld matrix math, the global Window declaration, the type aliases, and the frame counter used for the ready flag. Scene lines are the crystal spec table, the geometry "
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t36-aura-r1",
+    "arm": "aura",
+    "task": 36,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 18,
+    "agentWallSec": 64.1,
+    "tokensIn": 488850,
+    "tokensOut": 2757,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 5,
+    "readCalls": 9,
+    "searchCalls": 12,
+    "writeCalls": 2,
+    "srcLines": 106,
+    "srcTokens": 892,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9275.9,
+    "bundleGzipKB": null,
+    "readyMs": 995,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "model",
+          "pass": true,
+          "why": "soldier.glb is registered with defineModelAssets and added via assets.node(...).animate({clip:'Walk',loop:true}). The build succeeded, there were no page or console errors, and the probes show the frame is animated."
+        },
+        {
+          "id": "path",
+          "pass": true,
+          "why": "Position is set each frame to (4cos a, 0, 4sin a) with the angle advancing at speed/RADIUS. Yaw is atan2(-sin a, cos a), which equals -a and points +Z forward along the tangent. The probe frame diff of 0.81 shows movement."
+        },
+        {
+          "id": "switch",
+          "pass": true,
+          "why": "The keydown handler maps r to Run and w to Walk. Each calls node.play(gait,{loop:true,crossFade:0.35}) and changes targetSpeed from 1.4 to 3.6 (and back), with speed eased toward it. No probe pressed the keys, so this is judged from the sou"
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The scene has a ground plane, path-marker cylinders, a neutral environment, and a directional light with shadow:true. The frame is non-blank with std of about 15."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "The camera is fixed at [0,8.5,9.5], looking at [0,0.6,0] with fov 48. This frames the whole radius-4 circle, so the soldier stays visible. The probe frame is non-blank."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 45,
+        "rulesLines": 32,
+        "glueLines": 30,
+        "notes": "Glue is the sha256Hex helper with fetch and crypto, the window.__EVAL_READY__ declaration and double requestAnimationFrame, the main() wrapper and app.ready(), the startPos and yawFor math helpers, the exponential speed-easing code, and the keydown plumbing. Scene lines are the scene builder chain. "
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t36-aura-r2",
+    "arm": "aura",
+    "task": 36,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 43.4,
+    "tokensIn": 174723,
+    "tokensOut": 1979,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 0,
+    "readCalls": 5,
+    "searchCalls": 5,
+    "writeCalls": 1,
+    "srcLines": 75,
+    "srcTokens": 695,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9275.7,
+    "bundleGzipKB": null,
+    "readyMs": 309,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 12,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "model",
+          "pass": true,
+          "why": "soldier.glb is registered through defineModelAssets and placed with assets.node('soldier'), then .animate({clip:'Walk', loop:true}). The build succeeded, there were no page or console errors, and the animated probe is true."
+        },
+        {
+          "id": "path",
+          "pass": true,
+          "why": "Each frame the soldier is placed at (4cos a, 0, 4sin a) with yaw -a. The tangent is (-sin a, cos a), and rotating +Z by -a gives exactly that, so the soldier faces its direction of travel. The angle advances every frame, and the animated pr"
+        },
+        {
+          "id": "switch",
+          "pass": true,
+          "why": "The keydown handler maps r to Run and w to Walk. Each calls play(next, {loop:true, crossFade:0.4}) and changes targetSpeed (3.6 for Run, 1.4 for Walk), which the speed smoothing follows. The probes did not press keys, so this is judged from"
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The scene has a plane ground with path-marker cylinders, a hemisphere light, and a directional light with shadow:true. The frame is almost entirely non-black (0.999) with nonzero std, so it renders."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "A fixed perspective camera at [0,8.5,11.5] looks at [0,0.6,0] with fov 45. The radius-4 circle and the soldier stay in frame, and the frame is not blank."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 20,
+        "rulesLines": 36,
+        "glueLines": 12,
+        "notes": "Glue is the global Window type declaration, the __EVAL_READY__ flag handling, the import line, and the await app.ready() bootstrap. The engine hides renderer, resize and loop setup. The placeSoldier trig and the speed smoothing are counted as game rules."
+      }
+    }
+  },
+  {
+    "runId": "b511-sheet-t36-aura-r3",
+    "arm": "aura",
+    "task": 36,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true
+    },
+    "probePassFraction": 1,
+    "turns": 15,
+    "agentWallSec": 54.7,
+    "tokensIn": 405841,
+    "tokensOut": 2200,
+    "docsFilesOpened": 4,
+    "typesFilesOpened": 2,
+    "readCalls": 8,
+    "searchCalls": 8,
+    "writeCalls": 2,
+    "srcLines": 73,
+    "srcTokens": 597,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 9275.5,
+    "bundleGzipKB": null,
+    "readyMs": 608,
+    "consoleErrors": 0,
+    "docsSha256": "9e5abe1aec83ca5caa6513199d02e40a9baebac1cd0e3eb7f1ad6abaf623f576",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 14,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "model",
+          "pass": true,
+          "why": "soldier.glb is registered through defineModelAssets and placed with assets.node('soldier'). It is started with .animate({clip:'Walk', loop:true}). The probes show no build errors or page errors, and the frame is animated."
+        },
+        {
+          "id": "path",
+          "pass": true,
+          "why": "Each frame sets the position to (4·sinθ, 0, 4·cosθ), so the radius is 4. The tangent is (cosθ, 0, −sinθ). With yaw = θ+π/2 and forward +Z, the model's forward vector is (sin yaw, cos yaw) = (cosθ, −sinθ), which matches the tangent. Position"
+        },
+        {
+          "id": "switch",
+          "pass": true,
+          "why": "The 'r' key calls play('Run', {loop:true, crossFade:0.4}) and the 'w' key calls play('Walk', ...). Speed eases from 1.4 to 3.6 m/s and back. The probes did not exercise the key presses, so this rests on the source."
+        },
+        {
+          "id": "scene",
+          "pass": true,
+          "why": "The scene has a ground plane, a hemisphere light, a neutral environment, and a directional light with shadow:true. The probes show a non-blank, non-uniform frame (std about 14.8)."
+        },
+        {
+          "id": "camera",
+          "pass": true,
+          "why": "A fixed perspective camera at (0, 8.5, 10.5) looks at (0, 0.6, 0) with fov 50. The whole radius-4 circle is in frame, and the probes show a non-blank frame."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 32,
+        "rulesLines": 28,
+        "glueLines": 14,
+        "notes": "Glue is the global Window type declaration, the __EVAL_READY__ flag, the keydown listener, the exponential speed-smoothing math, and the final await app.ready(). The engine hides the renderer, loop, resize and canvas setup. Scene lines include the asset definition and the scene builder. Rules lines "
+      }
+    }
+  }
+]
