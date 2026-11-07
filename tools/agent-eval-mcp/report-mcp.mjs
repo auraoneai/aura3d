@@ -26,7 +26,8 @@ for (const batch of batches) {
     if (existsSync(f)) rows.push(JSON.parse(readFileSync(f, "utf8")));
   }
 }
-const label = { B: "B aura_lookup (control, rerun)", M: "M MCP tools only", N: "N cheat sheet + MCP tools" };
+const label = { base: "base: no entry docs, no tools", A: "A: cheat sheet only", B: "B: aura_lookup (511 session)", M: "M: MCP tools only", N: "N: cheat sheet + MCP tools" };
+const ORDER = ["base", "A", "B", "M", "N"].filter((c) => rows.some((r) => r.condition === c));
 const stat = (xs) => {
   const valid = xs.filter((x) => !x.invalid && x.usage);
   const count = (x, t) => x.events.filter((e) => e.type === t).length;
@@ -50,9 +51,9 @@ const sep = "|---|---|---|---|---|---|---|---|---|---|---|";
 const line = (name, s) => `| ${name} | ${s.n}${s.invalid ? ` (+${s.invalid} invalid)` : ""} | ${s.turns} | ${s.finished} | ${s.tc} | ${s.final} | ${s.mcp} | ${s.reads} | ${s.input} | ${s.output} | ${s.cached} |`;
 for (const task of [2, 5, 8, 9]) {
   out.push(`Task ${task}`, "", header, sep);
-  for (const c of ["B", "M", "N"]) out.push(line(label[c], stat(rows.filter((r) => Number(r.task) === task && r.condition === c))));
+  for (const c of ORDER) out.push(line(label[c], stat(rows.filter((r) => Number(r.task) === task && r.condition === c))));
   out.push("");
 }
 out.push("All four tasks pooled", "", header, sep);
-for (const c of ["B", "M", "N"]) out.push(line(label[c], stat(rows.filter((r) => r.condition === c))));
+for (const c of ORDER) out.push(line(label[c], stat(rows.filter((r) => r.condition === c))));
 console.log(out.join("\n"));

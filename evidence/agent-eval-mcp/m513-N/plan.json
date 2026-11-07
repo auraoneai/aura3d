@@ -1,0 +1,125 @@
+{
+  "args": {
+    "arm": "aura",
+    "task": "2,5,8,9",
+    "runs": 3,
+    "seed": 20261106,
+    "concurrency": 4,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "condition": "N",
+    "batch": "m513-N"
+  },
+  "plan": [
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 1,
+      "order": 0,
+      "runId": "m513-N-t5-aura-r1",
+      "seed": 20261106000
+    },
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 2,
+      "order": 1,
+      "runId": "m513-N-t5-aura-r2",
+      "seed": 20261106001
+    },
+    {
+      "task": 8,
+      "arm": "aura",
+      "idx": 3,
+      "order": 2,
+      "runId": "m513-N-t8-aura-r3",
+      "seed": 20261106002
+    },
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 3,
+      "order": 3,
+      "runId": "m513-N-t5-aura-r3",
+      "seed": 20261106003
+    },
+    {
+      "task": 9,
+      "arm": "aura",
+      "idx": 3,
+      "order": 4,
+      "runId": "m513-N-t9-aura-r3",
+      "seed": 20261106004
+    },
+    {
+      "task": 8,
+      "arm": "aura",
+      "idx": 1,
+      "order": 5,
+      "runId": "m513-N-t8-aura-r1",
+      "seed": 20261106005
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 3,
+      "order": 6,
+      "runId": "m513-N-t2-aura-r3",
+      "seed": 20261106006
+    },
+    {
+      "task": 9,
+      "arm": "aura",
+      "idx": 2,
+      "order": 7,
+      "runId": "m513-N-t9-aura-r2",
+      "seed": 20261106007
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 2,
+      "order": 8,
+      "runId": "m513-N-t2-aura-r2",
+      "seed": 20261106008
+    },
+    {
+      "task": 8,
+      "arm": "aura",
+      "idx": 2,
+      "order": 9,
+      "runId": "m513-N-t8-aura-r2",
+      "seed": 20261106009
+    },
+    {
+      "task": 9,
+      "arm": "aura",
+      "idx": 1,
+      "order": 10,
+      "runId": "m513-N-t9-aura-r1",
+      "seed": 20261106010
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 1,
+      "order": 11,
+      "runId": "m513-N-t2-aura-r1",
+      "seed": 20261106011
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/ae-mcp-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.0.2",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

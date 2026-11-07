@@ -1,0 +1,121 @@
+{
+  "runId": "m513-N-t9-aura-r1",
+  "batch": "m513-N",
+  "arm": "aura",
+  "task": 9,
+  "idx": 1,
+  "order": 10,
+  "seed": 20261106010,
+  "model": "claude-sonnet-5.5",
+  "condition": "N",
+  "startedAt": "2026-11-07T03:45:02.202Z",
+  "docsCommit": "cd56b9d54c3ebaeea2b5954253a6e7d619c99ea9",
+  "docs": {
+    "files": 111,
+    "sha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 25550,
+  "usage": {
+    "input": 47423,
+    "uncachedInput": 47423,
+    "output": 2423,
+    "turns": 5,
+    "perTurnInput": [
+      4467,
+      5113,
+      9096,
+      14127,
+      14620
+    ],
+    "perTurnOutput": [
+      6,
+      34,
+      58,
+      2063,
+      262
+    ]
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1736,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 4030,
+      "type": "mcp",
+      "tool": "get_recipe",
+      "chars": 7581,
+      "isError": false
+    },
+    {
+      "i": 2,
+      "t": 4030,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 6449,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 19
+    },
+    {
+      "i": 4,
+      "t": 6450,
+      "type": "mcp",
+      "tool": "search_docs",
+      "chars": 3553,
+      "isError": false
+    },
+    {
+      "i": 5,
+      "t": 21491,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 4772
+    },
+    {
+      "i": 6,
+      "t": 22073,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 7,
+      "t": 25550,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "docs/agents/recipes-src/procedural-humanoid/main.ts"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts with a procedural robot built from primitives, and it passes typecheck. I did not run `vite build` or open it in a browser, so I haven't seen a rendered frame or confirmed the shadows and rim colour.\n\n- **Joints:** The robot has 11 articulated joints: hips, chest, head, two shoulders, two elbows, two hips (legs) and two knees.\n- **Animation:** An idle loop runs in `onFrame`. It breathes, shifts weight side to side, and moves the head and arms gently, all driven by time, so frames differ.\n- **Lighting:** The background is `#05060a`. There is a warm key light with shadows on a floor plane. There is a strong magenta rim light behind-left and a weaker blue one behind-right.\n- **Camera:** A fixed perspective camera targets the robot's centre at height 1.0, which should frame the whole figure. I removed the orbit interaction so the view stays centred.\n- **Ready flag:** The script awaits `app.ready()` and then sets `window.__EVAL_READY__ = true`.\n\nThe structure follows the procedural-humanoid recipe in the project docs.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

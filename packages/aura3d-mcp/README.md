@@ -4,6 +4,10 @@ A stdio [Model Context Protocol](https://modelcontextprotocol.io) server that gi
 
 Status: phase 1 (E3-03). The package is `private` and is in no release inventory until the owner decides. The snippets below use a local build; replace the command with `npx -y @aura3d/mcp` once it is published.
 
+## What it is good for (and not)
+
+Measured on the cold-start trial (4 tasks, n=3, `evidence/agent-eval-mcp/RESULTS.md`): the MCP tools alone cut turns by about 31% against no entry docs (12 vs 17.5 median), but a first-screen cheat sheet alone is far better (4.5 turns), and adding the MCP on top of the sheet did not help (6.5). It does not save turns over a good sheet. Use it for exact signatures from the version you installed, error-code lookup, structured scaffold, asset and deploy-check calls, and for agents that cannot read the repository docs. Do not expect it to replace the cheat sheet on the first screen.
+
 ## What it answers
 
 Every answer starts with a stamp such as `[aura3d-mcp docs@5.0.2 | installed @aura3d/engine@5.0.2]`. The docs bundle is built from the repository at build time; signatures are read from the engine you installed in the project, so where they differ the installed declarations win. Each answer stays under 2,500 tokens (characters / 3.6).
