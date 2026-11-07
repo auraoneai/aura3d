@@ -77,3 +77,22 @@ test("a decode that never settles is named as decode, not fetch", async () => {
   await vi.waitFor(() => expect(value.textureStage).toBe("decode /map.png"));
   expect(value.textureStatus).toBe("pending");
 });
+
+test("a superseded upgrade leaves the replacement material's queued stage alone, so the replacement still upgrades (lane 521)", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  vi.stubGlobal("fetch", vi.fn(async () => { await gate; return new Response(Uint8Array.from(BYTES)); }));
+  vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1, height: 1, close: vi.fn() })));
+  const value = resource("retinted", { texture: assets.map });
+  const stale = run([value]);
+  await vi.waitFor(() => expect(value.textureStage).toBe("fetch /map.png"));
+  // The app replaces the material while the maps load (Aura FC's applyVenue re-tint); the scheduler re-queues it.
+  value.material = new PBRMaterial();
+  value.materialSpec = { texture: assets.map, color: "#88aa66" };
+  value.textureStatus = "pending";
+  value.textureStage = "queued";
+  release();
+  await stale;
+  expect(value.textureStage).toBe("queued");
+  expect(value.textureStatus).toBe("pending");
+});

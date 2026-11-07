@@ -39,6 +39,19 @@ describe("P3 preetham sky (CPU reference)", () => {
     expect(Math.hypot(d[0], d[1], d[2])).toBeCloseTo(1, 6);
   });
 
+  it("feeds the WebGL2 sky program its r185 calibration: horizon sun falloff and r185 Rayleigh/Mie (lane 521)", () => {
+    // Aura Diamond's Harbor park: a 9 degree sun. The Perez-fit stand-ins (sunE 1000, Mie ~4x) drew this sky 20x too bright.
+    const low = preethamFrame({ model: "preetham", turbidity: 3.5, rayleigh: 2.4, sun: { elevationDeg: 9, azimuthDeg: 250 } });
+    expect(low.sunE).toBeCloseTo(123.283, 2);
+    expect(low.betaR[2]).toBeCloseTo(7.26382e-5, 9);
+    expect(low.betaM[0]).toBeCloseTo(2.79495e-6, 10);
+    const noon = preethamFrame({ model: "preetham", turbidity: 2, rayleigh: 1, sun: { elevationDeg: 60, azimuthDeg: 150 } });
+    expect(noon.sunE).toBeCloseTo(515.667, 2);
+    expect(noon.betaM[2]).toBeCloseTo(3.54061e-6, 10);
+    // sun.intensity still scales the irradiance.
+    expect(preethamFrame({ model: "preetham", turbidity: 2, rayleigh: 1, sun: { elevationDeg: 60, azimuthDeg: 150, intensity: 2 } }).sunE).toBeCloseTo(2 * noon.sunE, 6);
+  });
+
   it("C-21 pass exposes a 24-float horizonRadiance table", () => {
     const pass = skyPassFor(new MockRenderDevice());
     pass.setSpec(SPEC, 0);

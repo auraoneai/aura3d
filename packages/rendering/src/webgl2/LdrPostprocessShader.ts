@@ -141,18 +141,43 @@ float uncharted2(float value) {
   return clamp(curve / white, 0.0, 1.0);
 }
 
-float agx(float value) {
-  float x = max(0.0, value);
-  float encoded = log2(1.0 + x) / log2(17.0);
-  return clamp(encoded * encoded * (3.0 - 2.0 * encoded), 0.0, 1.0);
+#if LDR_TONE && LDR_OP == 5
+// AgX: the same coupled-RGB transform as the output pass (output/ToneMappingOperators.glsl.ts, AgXToneMapping), so a
+// scene renders identically on the fused LDR route and the OutputPass route. Lane 521: this used to be a per-channel
+// log2(1 + x) / log2(17) smoothstep that mapped scene white (1.0) to 0.15 and mid grey to 0.01, so every look whose post
+// preset names agx (daylight-outdoor, cinematic-film, the 0.9-exposure preset) rendered near black once 5.0 started
+// honouring the preset operator on this route.
+vec3 agxRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {
+  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));
 }
+vec3 agxContrast(vec3 x) {
+  return (((((15.5 * x - 40.14) * x + 31.96) * x - 6.868) * x + 0.4298) * x + 0.1191) * x - 0.00232;
+}
+vec3 agxToneMap(vec3 color) {
+  vec3 wide = agxRows(max(color, vec3(0.0)),
+    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));
+  vec3 inset = agxRows(wide,
+    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),
+    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),
+    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));
+  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);
+  vec3 graded = agxContrast(logExposure);
+  vec3 outset = agxRows(graded,
+    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),
+    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),
+    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));
+  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));
+  return clamp(agxRows(display,
+    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);
+}
+#endif
 
 float neutral(float value) {
   float x = max(0.0, value);
   return min(1.0, (x * (1.0 + x / 7.5)) / (1.0 + x));
 }
 
-#if LDR_TONE && LDR_OP != 2
+#if LDR_TONE && LDR_OP != 2 && LDR_OP != 5
 float toneMapChannel(float value) {
   float exposed = max(0.0, value * u_exposure) / max(0.0001, u_whitePoint);
 #if LDR_OP == 0
@@ -163,8 +188,6 @@ float toneMapChannel(float value) {
   return filmic(exposed);
 #elif LDR_OP == 4
   return uncharted2(exposed);
-#elif LDR_OP == 5
-  return agx(exposed);
 #else
   return neutral(exposed);
 #endif
@@ -190,6 +213,8 @@ vec3 applyToneMapping(vec3 color, vec2 uv) {
 #endif
 #if LDR_OP == 2
   vec3 mapped = acesFilmic(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint));
+#elif LDR_OP == 5
+  vec3 mapped = agxToneMap(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint));
 #else
   vec3 mapped = vec3(toneMapChannel(decoded.r), toneMapChannel(decoded.g), toneMapChannel(decoded.b));
 #endif

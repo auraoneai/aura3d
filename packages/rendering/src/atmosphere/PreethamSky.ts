@@ -33,6 +33,13 @@ export interface PreethamSpec {
 }
 
 const clamp = (x: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, x));
+
+// r185 scattering constants for the WebGL2 sky program's uniforms (see `preethamFrame`).
+const R185_TOTAL_RAYLEIGH: Vec3 = [5.804542996261093e-6, 1.3562911419845635e-5, 3.0265902468824876e-5];
+const R185_MIE_CONST: Vec3 = [1.8399918514433978e14, 2.7798023919660528e14, 4.0790479543861094e14];
+const R185_CUTOFF_ANGLE = 1.6110731556870734;
+const R185_STEEPNESS = 1.5;
+const R185_EE = 1000.0;
 const numberOr = (x: number | undefined, fallback: number): number =>
   x !== undefined && Number.isFinite(x) ? x : fallback;
 
@@ -46,10 +53,13 @@ export function sunDirection(sun: AuraSkySunSpecLike): Vec3 {
 
 export interface PreethamFrame {
   readonly sunDirection: Vec3;
-  /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+  /**
+   * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+   * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+   */
   readonly sunE: number;
   readonly sunfade: number;
-  /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+  /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
   readonly betaR: Vec3;
   readonly betaM: Vec3;
   readonly mieDirectionalG: number;
@@ -122,12 +132,18 @@ export function preethamFrame(spec: PreethamSpec): PreethamFrame {
   const d: Vec3 = [-0.0641 * turbidity - 0.8989, -0.0441 * turbidity - 1.6537, 0.1206 * turbidity - 2.5771];
   const e: Vec3 = [-0.0033 * turbidity + 0.0452, -0.0109 * turbidity + 0.0529, -0.0670 * turbidity + 0.3703];
   const normalizer = [0, 1, 2].map(i => Math.max(1e-6, perez(a[i]!, b[i]!, c[i]!, d[i]!, e[i]!, 1, theta))) as unknown as Vec3;
-  const molecular = 5.8e-6 * rayleigh / 3;
-  const aerosol = 2e-5 * (turbidity / 6) * (mieCoefficient / 0.005);
+  // Lane 521: the WebGL2 sky program consumes sunE / betaR / betaM with the r185 scattering model it implements, so these
+  // keep the r185 calibration 4.x shipped. 5.0 sent the Perez-fit stand-ins here (sunE 1000 at every elevation, Mie
+  // about 4x stronger), which drew low-sun skies up to 20x too bright (Aura Diamond's Harbor park: sky 0.7 -> 15 linear)
+  // and the bloom washed out the whole frame. The CPU evaluation keeps its own Perez fit.
+  const sunE = intensity * R185_EE * Math.max(0, 1 - Math.exp(-((R185_CUTOFF_ANGLE - Math.acos(clamp(direction[1], -1, 1))) / R185_STEEPNESS)));
+  const r185Fade = 1 - clamp(1 - Math.exp(direction[1] * 2), 0, 1);
+  const rayleighCoefficient = rayleigh - (1 - r185Fade);
+  const mieScale = 0.434 * 0.2 * turbidity * 10e-18 * mieCoefficient;
   return {
-    sunDirection: direction, sunE: 1000 * intensity * sunfade, sunfade,
-    betaR: [molecular, molecular * (680 / 550) ** 4, molecular * (680 / 440) ** 4],
-    betaM: [aerosol, aerosol, aerosol], mieDirectionalG: g, exposure,
+    sunDirection: direction, sunE, sunfade,
+    betaR: [R185_TOTAL_RAYLEIGH[0] * rayleighCoefficient, R185_TOTAL_RAYLEIGH[1] * rayleighCoefficient, R185_TOTAL_RAYLEIGH[2] * rayleighCoefficient],
+    betaM: [R185_MIE_CONST[0] * mieScale, R185_MIE_CONST[1] * mieScale, R185_MIE_CONST[2] * mieScale], mieDirectionalG: g, exposure,
     showSunDisc: discRadius > 0 ? 1 : 0, groundColor: linearColor(spec.groundColor),
     perezA: a, perezB: b, perezC: c, perezD: d, perezE: e,
     zenithXyY: [zenithX, zenithSmallY, zenithY], perezZenith: normalizer,
