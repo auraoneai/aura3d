@@ -16,6 +16,8 @@ import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChas
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
+import { portableWaterMaterial } from "./portable-water";
+import { readPortableFlag } from "../../apps/showcase-port-shared/portable-flag";
 import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
@@ -520,7 +522,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       material: pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
     }).runtime({ id: "bank" }));
   }
-  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", material: material.custom(waterSpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "canal" }));
+  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : material.custom(waterSpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "canal" }));
   const deck = terrain.deckMesh();
   if (deck.indices.length) {
     builder.add(geometry.custom(dynamicFrom(deck), {

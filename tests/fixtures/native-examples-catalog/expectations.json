@@ -5056,7 +5056,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "75c01b56a566cf7c112fe77637d61911b0cf0a825629597157c9d40ee9ba4ee1"
+          "sha256": "156adc94fd3c2adb19e64e7ff58141c8b89b606da3c5d60fde13e2a2f855f924"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5160,7 +5160,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "75c01b56a566cf7c112fe77637d61911b0cf0a825629597157c9d40ee9ba4ee1"
+          "sha256": "156adc94fd3c2adb19e64e7ff58141c8b89b606da3c5d60fde13e2a2f855f924"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -6013,7 +6013,7 @@
       "sourceDependencies": [
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "6d6ab66348590fb05f9c7332dad5c1dc77deeb53094fbeeba5f7d752b1b333d6"
+          "sha256": "12cd34afbc4801a252bd76b5e9c9d2a764bf7f7b8c9c1a498c5af30ed1cc5356"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6120,7 +6120,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "6d6ab66348590fb05f9c7332dad5c1dc77deeb53094fbeeba5f7d752b1b333d6"
+          "sha256": "12cd34afbc4801a252bd76b5e9c9d2a764bf7f7b8c9c1a498c5af30ed1cc5356"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
