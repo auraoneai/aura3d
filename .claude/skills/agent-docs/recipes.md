@@ -7,6 +7,7 @@ Page needs a `<div id="app">` (or a `<canvas id="app">`); `createAuraApp("#app",
 Rules that every recipe follows:
 
 - Orbit control: `interactions.orbit({ target: "<node name>" })`. It takes a node name, nothing else.
+- Frame the subject with `camera.frame(subject, { fill: 0.6 })` (a node or array of nodes, not a hand-placed `camera.perspective`; pass `aspect` if the canvas is not 16:9).
 - Metals need something to reflect: add `environments.neutral(...)` (or a look preset) or a metallic material renders dark.
 - Instancing: `instances.cone/cylinder/sphere/box({ transforms, colors })` draws one draw call per shape; shapes are unit-sized, so `scale` sets the size.
 - A deformed surface needs vertices: build a grid with `geometry.define` and mount it with `geometry.custom(...)`.

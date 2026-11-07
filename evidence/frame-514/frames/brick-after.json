@@ -1,0 +1,41 @@
+{
+  "id": "brick-after",
+  "viewport": "640x360@2x",
+  "virtualFramesStepped": 120,
+  "virtualNowMs": 3099.999999999995,
+  "title": "frame-514 eval app",
+  "canvasPresent": true,
+  "subjectFill": 0.6,
+  "subjectFillRun2": 0.6,
+  "bounds": {
+    "min": [
+      -6.300000190734863,
+      -0.15000009536743164,
+      -0.4000000059604645
+    ],
+    "max": [
+      6.300000190734863,
+      10.299999624490738,
+      0.4000000059604645
+    ]
+  },
+  "pose": {
+    "position": [
+      0,
+      7.46824054768104,
+      18.786513009545548
+    ],
+    "target": [
+      0,
+      5.201141242037327,
+      -0.015210055748871614
+    ],
+    "fov": 50
+  },
+  "sameBuildNoiseMeanAbsDiff": 0,
+  "meanLuma": 2.2116930607545306,
+  "nearBlackFraction": 0.9237326388888889,
+  "distinctColours16": 159,
+  "realGameFrame": true,
+  "consoleErrors": []
+}
