@@ -40,7 +40,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/assets/exporters` | `5.2.0` | `./dist/exporters/index.d.ts` | 105 |
 | `@aura3d/assets/gltf-runtime` | `5.2.0` | `./dist/gltf-runtime.d.ts` | 181 |
 | `@aura3d/assets/importers` | `5.2.0` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.2.0` | `./dist/vite/auraDecoders.d.ts` | 7 |
+| `@aura3d/assets/vite` | `5.2.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
 | `@aura3d/assets/vite-client` | `5.2.0` | `./vite-client.d.ts` | 1 |
 | `@aura3d/audio` | `5.2.0` | `./dist/index.d.ts` | 309 |
 | `@aura3d/cli` | `5.2.0` | `./dist/index.d.ts` | 299 |
@@ -51,17 +51,17 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/debug/helpers` | `5.2.0` | `./dist/helpers.d.ts` | 40 |
 | `@aura3d/ecs` | `5.2.0` | `./dist/index.d.ts` | 76 |
 | `@aura3d/editor-runtime` | `5.2.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.2.0` | `./dist/engine/public/index.d.ts` | 10963 |
+| `@aura3d/engine` | `5.2.0` | `./dist/engine/public/index.d.ts` | 11045 |
 | `@aura3d/engine/animation` | `5.2.0` | `./dist/animation/index.d.ts` | 372 |
 | `@aura3d/engine/assets` | `5.2.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
 | `@aura3d/engine/audio` | `5.2.0` | `./dist/audio/index.d.ts` | 309 |
 | `@aura3d/engine/controls` | `5.2.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.2.0` | `./dist/engine/public/devtools.d.ts` | 10648 |
+| `@aura3d/engine/devtools` | `5.2.0` | `./dist/engine/public/devtools.d.ts` | 10727 |
 | `@aura3d/engine/ecs` | `5.2.0` | `./dist/ecs/index.d.ts` | 76 |
 | `@aura3d/engine/editor-runtime` | `5.2.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.2.0` | `./dist/game/index.d.ts` | 11399 |
-| `@aura3d/engine/game/art` | `5.2.0` | `./dist/game/art/index.d.ts` | 330 |
-| `@aura3d/engine/game/capture` | `5.2.0` | `./dist/game/capture/index.d.ts` | 10929 |
+| `@aura3d/engine/game` | `5.2.0` | `./dist/game/index.d.ts` | 11479 |
+| `@aura3d/engine/game/art` | `5.2.0` | `./dist/game/art/index.d.ts` | 332 |
+| `@aura3d/engine/game/capture` | `5.2.0` | `./dist/game/capture/index.d.ts` | 11008 |
 | `@aura3d/engine/game/styles.css` | `5.2.0` | `non-code or disabled export` | 0 |
 | `@aura3d/engine/game/util` | `5.2.0` | `./dist/game/util/index.d.ts` | 2 |
 | `@aura3d/engine/geometry-tools` | `5.2.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
@@ -69,20 +69,20 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/engine/lighting` | `5.2.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
 | `@aura3d/engine/math` | `5.2.0` | `./dist/math/index.d.ts` | 163 |
 | `@aura3d/engine/media-node` | `5.2.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.2.0` | `./dist/physics/index.d.ts` | 279 |
+| `@aura3d/engine/physics` | `5.2.0` | `./dist/physics/index.d.ts` | 285 |
 | `@aura3d/engine/physics/solverless` | `5.2.0` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.2.0` | `./dist/physics/world.d.ts` | 15 |
+| `@aura3d/engine/physics/world` | `5.2.0` | `./dist/physics/world.d.ts` | 16 |
 | `@aura3d/engine/procedural` | `5.2.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.2.0` | `./dist/engine/public/renderer.d.ts` | 10907 |
+| `@aura3d/engine/renderer` | `5.2.0` | `./dist/engine/public/renderer.d.ts` | 10986 |
 | `@aura3d/engine/scatter` | `5.2.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
 | `@aura3d/engine/scene` | `5.2.0` | `./dist/scene/index.d.ts` | 139 |
 | `@aura3d/engine/scene/math` | `5.2.0` | `./dist/scene/MathTypes.d.ts` | 36 |
 | `@aura3d/engine/scripting` | `5.2.0` | `./dist/scripting/index.d.ts` | 203 |
 | `@aura3d/engine/shader-graph-runtime` | `5.2.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
-| `@aura3d/engine/v5` | `5.2.0` | `./dist/engine/public/v5.d.ts` | 8383 |
+| `@aura3d/engine/v5` | `5.2.0` | `./dist/engine/public/v5.d.ts` | 8486 |
 | `@aura3d/engine/v5/context` | `5.2.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.2.0` | `./dist/game/v5.d.ts` | 11395 |
-| `@aura3d/engine/v5/internal` | `5.2.0` | `./dist/engine/public/v5-internal.d.ts` | 431 |
+| `@aura3d/engine/v5/game` | `5.2.0` | `./dist/game/v5.d.ts` | 11475 |
+| `@aura3d/engine/v5/internal` | `5.2.0` | `./dist/engine/public/v5-internal.d.ts` | 434 |
 | `@aura3d/engine/v5/math/hull` | `5.2.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
 | `@aura3d/engine/worker` | `5.2.0` | `./dist/engine/public/worker.d.ts` | 59 |
 | `@aura3d/engine/workflows` | `5.2.0` | `./dist/workflows/index.d.ts` | 89 |
@@ -91,11 +91,11 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/math/three` | `5.2.0` | `./dist/three/index.d.ts` | 81 |
 | `@aura3d/navigation-recast` | `5.2.0` | `./dist/index.d.ts` | 16 |
 | `@aura3d/physics` | `5.2.0` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.2.0` | `./dist/index.d.ts` | 29 |
+| `@aura3d/physics-rapier` | `5.2.0` | `./dist/index.d.ts` | 35 |
 | `@aura3d/physics/solverless` | `5.2.0` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.2.0` | `./dist/world.d.ts` | 15 |
+| `@aura3d/physics/world` | `5.2.0` | `./dist/world.d.ts` | 16 |
 | `@aura3d/product-studio` | `5.2.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.2.0` | `./dist/index.d.ts` | 45 |
+| `@aura3d/react` | `5.2.0` | `./dist/index.d.ts` | 51 |
 | `@aura3d/rendering` | `5.2.0` | `./dist/index.d.ts` | 4284 |
 | `@aura3d/rendering/contracts` | `5.2.0` | `./dist/contracts/index.d.ts` | 222 |
 | `@aura3d/rendering/contracts/atmosphere` | `5.2.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
@@ -141,8 +141,8 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 ## @aura3d/addons
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/addons@5.1.0#sha256=79968f82755f62d5297e0e799d2c531cb3e36a13de9e318d7fd17693675e94ff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
 
 ### Export conditions
 
@@ -5386,8 +5386,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
 
 ### Export conditions
 
@@ -5433,8 +5433,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
 
 ### Export conditions
 
@@ -7207,8 +7207,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/animation@5.1.0#sha256=bc8e723edbb60783678e9293afe63d7adbd7d929c38c7ac295c2da9d7315f1c6`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
 
 ### Export conditions
 
@@ -7247,8 +7247,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/apps@5.1.0#sha256=cd3a2416fa6adde3492554fcc698f6a96c697d1e72b2677afe00d30147e55fa8`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/apps@5.2.0#sha256=f94351276194c53db489f6c61a08e25e21e08ef00fbee613fc6e56924c6b2c21`
 
 ### Export conditions
 
@@ -7312,8 +7312,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/asset-index@5.1.0#sha256=cc3a835cf736f1925ddafeae8a5153706b72fd5ddefa024ed385f128aba5a403`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/asset-index@5.2.0#sha256=ba4e3eb2f7fa0edd9de3ede44069bb02197d76ba52b3109b3c3b52267021d109`
 
 ### Export conditions
 
@@ -8050,8 +8050,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -13775,8 +13775,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -18478,8 +18478,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -19387,8 +19387,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -21822,8 +21822,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -23582,8 +23582,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -23593,6 +23593,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ### `./dist/vite/auraDecoders.d.ts`
 
 ```ts
+import { type AuraPhysicsBuildMode } from "./auraPhysics.js";
 declare const CODECS: readonly ["basis", "draco", "meshopt"];
 export type AuraDecoderCodec = (typeof CODECS)[number];
 export interface AuraDecodersPluginOptions {
@@ -23673,14 +23674,202 @@ export declare function auraDecodersPlugin(options?: AuraDecodersPluginOptions):
 };
 /** Vendored decoder root, also used by non-Vite copy scripts. */
 export declare function auraDecodersVendorRoot(): string;
-export {};
+export { auraPhysicsPlugin, classifyModule, findPhysicsUsage, isRapierInitRequest, PHYSICS_ON_DEMAND_CONDITION, PHYSICS_STRIPPED_MESSAGE, PHYSICS_USAGE_PATTERN, scanModuleGraphForPhysics } from "./auraPhysics.js";
+export type { AuraPhysicsBuildMode, AuraPhysicsPluginContext, AuraPhysicsPluginOptions, AuraPhysicsResolveOptions, PhysicsScanContext, PhysicsScanResult } from "./auraPhysics.js";
+export interface Aura3DVitePluginOptions {
+    /**
+     * `auto` (default): on `vite build`, leave Rapier out of an app whose own code never mentions physics (see
+     * `auraPhysicsPlugin`); `true`: always keep it; `false`: always leave it out; `lazy`: keep it but download it only
+     * when the app first uses physics.
+     */
+    readonly physics?: AuraPhysicsBuildMode;
+    /** Options for the decoder deployment (`auraDecodersPlugin`), or `false` to leave it out. */
+    readonly decoders?: AuraDecodersPluginOptions | false;
+}
+/** The Aura3D Vite plugin set: same-origin decoder deployment plus build-time physics selection. */
+export declare function aura3d(options?: Aura3DVitePluginOptions): ({
+    name: string;
+    enforce: "pre";
+    config(config: {
+        resolve?: {
+            conditions?: readonly string[];
+        };
+    }): {
+        resolve: {
+            conditions: string[];
+        };
+    } | null;
+    configResolved(config: {
+        command?: "build" | "serve";
+        logger?: {
+            info(message: string): void;
+        };
+    }): void;
+    buildStart(): void;
+    resolveId(this: import("./auraPhysics.js").AuraPhysicsPluginContext, source: string, importer: string | undefined, resolveOptions?: import("./auraPhysics.js").AuraPhysicsResolveOptions): Promise<string | null>;
+    load(id: string): string | null;
+} | {
+    name: string;
+    config: {
+        order: "post";
+        handler(config: {
+            base?: string;
+            define?: Record<string, unknown>;
+            optimizeDeps?: {
+                esbuildOptions?: {
+                    define?: Record<string, string>;
+                };
+            };
+        }): {
+            define: {
+                "import.meta.env.AURA3D_DECODER_BASE_PATH": string;
+            };
+            optimizeDeps: {
+                esbuildOptions: {
+                    define: {
+                        "import.meta.env.AURA3D_DECODER_BASE_PATH": string;
+                    };
+                };
+            };
+        };
+    };
+    configResolved(config: {
+        command?: "build" | "serve";
+        root?: string;
+        base?: string;
+        build?: {
+            outDir?: string;
+        };
+        define?: Record<string, unknown>;
+        optimizeDeps?: {
+            esbuildOptions?: {
+                define?: Record<string, string>;
+            };
+        };
+    }): void;
+    resolveId(id: string): "\0virtual:aura3d-decoder-deployment" | null;
+    load(id: string): string | null;
+    configureServer(server: {
+        middlewares: MiddlewareStack;
+    }): void;
+    configurePreviewServer(server: {
+        middlewares: MiddlewareStack;
+    }): void;
+    closeBundle(): Promise<void>;
+})[];
 //# sourceMappingURL=auraDecoders.d.ts.map
+```
+
+### `./dist/vite/auraPhysics.d.ts`
+
+```ts
+export type AuraPhysicsBuildMode = "auto" | "lazy" | boolean;
+export interface AuraPhysicsPluginOptions {
+    /** `auto` (default) strips physics from builds that never mention it; `true` keeps it; `false` strips it; `lazy` loads it on demand. */
+    readonly physics?: AuraPhysicsBuildMode;
+}
+/** The exact detail carried by the typed error a stripped build throws when physics is used after all. */
+export declare const PHYSICS_STRIPPED_MESSAGE = "physics was stripped at build time because no physics usage was found; set aura3d({ physics: true }) in vite.config";
+/** Package `imports` condition that selects the on-demand Rapier initialisation. */
+export declare const PHYSICS_ON_DEMAND_CONDITION = "aura3d-physics-on-demand";
+/**
+ * Any match keeps physics. Deliberately broad (case-insensitive, comments and strings included): a false "keep" costs
+ * only the download every app pays today, a false "strip" breaks the app. Covers `.physics(`, `app.physics`,
+ * `preloadPhysics`, `ensurePhysics`, `PhysicsWorld`, `@aura3d/physics`, `@dimforge/rapier*`, rigid bodies, colliders,
+ * character controllers, vehicles, ragdolls, scene kits and every genre kit (`game`, `games`, `createGame*`), which use
+ * physics internally.
+ */
+export declare const PHYSICS_USAGE_PATTERN: RegExp;
+/**
+ * The first physics mention in a module's code, or `undefined`. Any of: the keyword pattern, a generated engine entry
+ * name, an unresolvable use of a namespace with physics members or of an Aura3D namespace import, or a dynamic import
+ * of the engine. When in doubt this keeps physics: a false "keep" only costs the download every app pays today.
+ */
+export declare function findPhysicsUsage(code: string): string | undefined;
+/** True for the request that selects the Rapier initialisation module (published `#aura3d/rapier-init` or workspace source). */
+export declare function isRapierInitRequest(source: string, importer: string | undefined): boolean;
+/** Source of the stub that replaces the Rapier initialisation module in a stripped build (no Rapier import). */
+export declare function strippedRapierInitSource(): string;
+/** Source of the module that replaces a direct Rapier import inside the physics adapter in a stripped build. */
+export declare function strippedRapierPackageSource(): string;
+type ModuleKind = "app" | "aura" | "aura-addon" | "skip";
+interface PackageInfo {
+    readonly dir: string;
+    readonly name?: string;
+    readonly dependsOnAura: boolean;
+}
+/**
+ * `app`: the application's own code (scanned, followed). `aura`: an Aura3D package (its physics code is what the strip
+ * removes, so it is not evidence of use). `aura-addon`: a third-party dependency that itself depends on Aura3D or Rapier
+ * (scanned, followed). `skip`: virtual modules and unrelated dependencies.
+ */
+export declare function classifyModule(id: string, packageOf?: (file: string) => PackageInfo | undefined): ModuleKind;
+/** The subset of the Rollup plugin context the scan uses. */
+export interface PhysicsScanContext {
+    getModuleIds(): IterableIterator<string> | Iterable<string>;
+    load(options: {
+        id: string;
+        resolveDependencies?: boolean;
+    }): Promise<{
+        readonly code: string | null;
+        readonly importedIds: readonly string[];
+        readonly dynamicallyImportedIds: readonly string[];
+    }>;
+}
+export interface PhysicsScanResult {
+    readonly used: boolean;
+    /** Module and token that kept physics, when `used`. */
+    readonly evidence?: {
+        readonly id: string;
+        readonly token: string;
+    };
+    readonly scannedModules: number;
+    readonly reason?: string;
+}
+/** Walk the app's module graph from every app module known so far and report the first physics mention. */
+export declare function scanModuleGraphForPhysics(context: PhysicsScanContext, classify?: (id: string) => ModuleKind): Promise<PhysicsScanResult>;
+export interface AuraPhysicsResolveOptions {
+    readonly ssr?: boolean;
+    readonly [key: string]: unknown;
+}
+export interface AuraPhysicsPluginContext extends PhysicsScanContext {
+    resolve(source: string, importer?: string, options?: Record<string, unknown>): Promise<{
+        id: string;
+        external?: boolean | string;
+    } | null>;
+    warn(message: string): void;
+}
+/** The physics half of `aura3d()`; usable on its own. */
+export declare function auraPhysicsPlugin(options?: AuraPhysicsPluginOptions): {
+    name: string;
+    enforce: "pre";
+    config(config: {
+        resolve?: {
+            conditions?: readonly string[];
+        };
+    }): {
+        resolve: {
+            conditions: string[];
+        };
+    } | null;
+    configResolved(config: {
+        command?: "build" | "serve";
+        logger?: {
+            info(message: string): void;
+        };
+    }): void;
+    buildStart(): void;
+    resolveId(this: AuraPhysicsPluginContext, source: string, importer: string | undefined, resolveOptions?: AuraPhysicsResolveOptions): Promise<string | null>;
+    load(id: string): string | null;
+};
+export {};
+//# sourceMappingURL=auraPhysics.d.ts.map
 ```
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/assets@5.1.0#sha256=2a1dee81cd650f8e0b3173142f9f0f88419b80a099b99839839172082116896e`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
 
 ### Export conditions
 
@@ -23699,8 +23888,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/audio@5.1.0#sha256=12a75c2bbad0e35af3c704024cadc64695544647cad027acf9d2fb2c800f554a`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/audio@5.2.0#sha256=84661d757d62a8e370133d20638bdf97ce9804345aa79f1af8ed9516458b8d69`
 
 ### Export conditions
 
@@ -26325,8 +26514,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/cli@5.1.0#sha256=94385c282b6bf4ab13fb5af88cdc5d43eafa1046714a626575e9d7ff79678590`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/cli@5.2.0#sha256=6d7e8fa9a69ab88e050b0abcc184100d981fc2c94f285ab4c5c1cd380c27df9a`
 
 ### Export conditions
 
@@ -28496,8 +28685,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/controls@5.1.0#sha256=b1a122901b3f38298afc0e6cd8f713e8956b595fd5d7a91b46795814eacdfa2f`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/controls@5.2.0#sha256=4f50d4da0738c016194112753c1aa7231b067fda716aa5a1eea0e8977c8a9db3`
 
 ### Export conditions
 
@@ -30299,8 +30488,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/core@5.1.0#sha256=4361008f95255f1474befe688e24b3b870b2d7b82fc02a219a195b5040d01bc2`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/core@5.2.0#sha256=392a8116130d044e79119632cefbd45b4239dfa14fa74e759197996b3391c9b3`
 
 ### Export conditions
 
@@ -30814,8 +31003,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.1.0`
-- Packed identity: `archive:create-aura3d@5.1.0#sha256=a85001914719d8346302eea984ee95838294bf20cd0f6b608c017956f2cb7b3f`
+- Version: `5.2.0`
+- Packed identity: `archive:create-aura3d@5.2.0#sha256=0caa1c612ea5c282d915322af2dd9db0681ef2b04fc109f7d3be98fe958e95e8`
 
 ### Export conditions
 
@@ -31584,8 +31773,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/debug@5.1.0#sha256=f8ebb3d99f0773e8a8b831b56e326a6c6d525831a55b2d9aea49e69713c2559d`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/debug@5.2.0#sha256=e0a9879b2989ad18a5a7cb656ab23c33971efcd0348966cfc632abd6d23557a9`
 
 ### Export conditions
 
@@ -32964,8 +33153,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/debug@5.1.0#sha256=f8ebb3d99f0773e8a8b831b56e326a6c6d525831a55b2d9aea49e69713c2559d`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/debug@5.2.0#sha256=e0a9879b2989ad18a5a7cb656ab23c33971efcd0348966cfc632abd6d23557a9`
 
 ### Export conditions
 
@@ -33172,8 +33361,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/ecs@5.1.0#sha256=5622339869609e9332b5e59f50a713138865a0e73f0d67d4853107dac782af4d`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/ecs@5.2.0#sha256=b1ff9d7e862671a91b5c471bd5609d1ca0dab6bc7abc65c655c032bad7f3fbc1`
 
 ### Export conditions
 
@@ -33840,8 +34029,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.1.0#sha256=5d68065aac1a5aab5dac385f00b8b023ad6fa02a26a9ec1c31a13e381aa471a0`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.2.0#sha256=14e6b021026ccb0b04e0b44b9dac8eb0247552cc26e8237df01309164b1a3d7a`
 
 ### Export conditions
 
@@ -36423,8 +36612,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -36446,8 +36635,8 @@ export declare class TransformCommand implements Command {
  * names a replacement that exists or says there is none). Do not regenerate over them.
  */
 import "../lanes/index.js";
-export { AnimationController, appExtensionsAll, asRuntimeCompiled, atmosphere, auditArtDirection, AuraAdvancedLightingUnavailableError, AuraColorParseError, AuraSceneBuilder, batched, bindGameTouchControls, bindRuntimeCompiled, blendSkyBandColor, camera, cameras, captionCueAtTime, captureFromUrl, characterAssembly, characters, charts, checkSpatialInvariants, city, clearFocus, Clock, cloneSkinned, combatFrameAdvantage, compilePromptEpisodePlan, compilePromptPlanV2, compilerSlot, compileScene, composeWorldMatrix, compute, computeLineDistances, createAnimationPerformanceCoverage, createAnimationRenderOutputPackageMetadata, createArchitectureKit, createAssetDiagnostics, createAudioStemManifest, createAuraApp, createAuraRouteHealthSnapshot, createAuraText3DGeometry, createAuraVoiceBridgePackage, createAuraVoiceVisemeTrack, createCameraPathFromPreset, createCinematicKit, createCollisionLayers, createCombatAi, createDiagnosticsPanel, createDigitalTwinKit, createEnvironment, createFightingGameKit, createFrameLoop, createGame, createGameApp, createGameArcadeVehicle, createGameAudio, createGlbBlendshapeVisemeCue, createInitialDiagnostics, createMeshSurfaceQuery, createPrimitiveMouthVisemeCues, createProductConfiguratorKit, createProductionRuntimeCollectedLights, createPromptAnimationDeterministicScreenshotFixtureMetadata, createShotPlaybackPlan, createSmartCityKit, createVehicleChassis, createVehicleDriverAi, decomposeMatrix, defineAuraAssets, defineDubMap, defineModelAssets, definePromptPlan, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceLod, distributeInRegion, effects, enforceFrameBudget, environments, eulerToQuaternion, fat, fitSizeToRegion, focusCameraIntent, focusObject, focusSemanticRegion, game, gameFeel, games, geometry, glbVisemeBlendshapeExample, groundedFittedModelPosition, groundedRenderedAssetPlacement, group, groups, helpers, installShotPlayback, instances, interactions, labels, lights, line, lines, lookLint, looks, loop, material, model, modelsEnabledFromUrl, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, normalizeLinePositions, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, particles, physics, placedBounds, placedBoundsFromAsset, planLayeredSceneComposition, planScatterInstances, planSkyBackdrop, platformerCompositionSpec, points, postPresets, prefabs, primitiveMouthVisemeExample, primitives, product, promptPlanToScene, promptRecipes, raycast, raycastFirst, registerAppExtension, registerDiagnosticsSection, registerEnvironmentSource, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, renderer, resolveBoundsAnchor, resolveCameraFrame, resolveChaseFraming, resolveEnvironment, resolveQrFlags, resolveSemanticRegion, sampleAuraVoiceBridgeAtTime, sampleCameraPath, sampleShotPlaybackPlan, sampleVisemeTrack, scatterWindOffset, scene, sceneKits, SCREEN_FEEL_BLACKBOARD_KEY, segments, setCompilerImpl, shadows, skyBandCountForRamp, snapshotDiagnostics, solar, solveCombatFrameData, solvePlatformerMotion, sprite, sprites, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, StubModelMaterialHandle, StubPostSurface, StubTimeController, surfaces, text3D, timeline, tsl, ui, updateCompiledScene, validateAuraVoiceBridgePackage, validateCombatFrameData, vehicleChassisSpecFromBounds, WIND_CHUNK, workflows, worldQueriesSlot } from "../agent-api/index.js";
-export type { AuraModelAssetEntry, AuraModelAssetRefs, AuraModelAssetSet, AuraModelAssetsOptions, AuraSceneInit, A3DAppLifecycleSnapshot, A3DDisposable, AnyNodeHandler, AppExtension, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationAssetLike, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions, AuraApp, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAppTarget, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetDefinition, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetMap, AuraAssetRef, AuraAssetRefIdentity, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchedGeometryInput, AuraBatchedMeshHandle, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedNode, AuraBiomeId, AuraBiomeRig, AuraBodyHandle, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraCameraController, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSpec, AuraCameraSubject, AuraCompiledFeature, AuraComputeBuffer, TslCompileResult, TslEvalContext, TslInput, TslMaterialNodeOptions, TslType, TslUniformKind, TslUniformOptions, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface, AuraCreateAppAnimationOptions, AuraCustomGeometrySpec, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDiagnostics, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFatLineOptions, AuraFeelBus, AuraFeelEventSpec, AuraFovKickLayer, AuraHeightFogSpec, AuraHeightQuery, AuraHelperBaseOptions, AuraInstancedBufferView, AuraInstancedGeometryInput, AuraInstancedMeshBoundingSphere, AuraInstancedMeshHandle, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLineNode, AuraLineOptions, AuraLinePositionsInput, AuraLocalShadowOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialSpec, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNamedAnimationClipDefinition, AuraNodeHandleExtensionMap, AuraNodeInput, AuraNodeKindMap, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraPhysicsRuntime, AuraPointsNode, AuraPointsOptions, AuraPostDiagnostics, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraPunchLayer, AuraQuat, AuraRendererMaterialOptions, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraRootLodLevelSpec, AuraRootMotionSpec, AuraRootVec3, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistryV2, AuraSceneNode, AuraSceneSnapshot, AuraScreenFeelUniforms, AuraShadowOptions, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSpriteNode, AuraSpriteOptions, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTransformSpec, AuraTraumaLayer, AuraVec3, AuraVfxEffectSpec, AuraVfxKind, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, CameraPath, CameraPresetId, CaptureContext, CharacterAssemblyPlan, ClonedSkinnedModel, CloneSkinnedModelInput, CloneSkinnedOptions, CombatAi, CombatAiAggression, CombatFrameAdvantage, CombatFrameData, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, DriverRoute, FightingGameSnapshot, FocusResult, FrameLoopCallback, FrameLoopFrame, FrameLoopOptions, FrameLoopSnapshot, FrameLoopSource, Game, GameAcceptance, GameArcadeVehicle, GameArcadeVehicleInput, GameArcadeVehicleState, GameAudio, GameAudioContextLike, GameAudioOptions, GameBeacon, GameBudgets, GameCombatEvent, GameCombatMove, GameCombatWorld, GameCombatWorldSnapshot, GameEffectsController, GameEntryV2, GameFallingBlockAction, GameFallingBlocksEvent, GameFallingBlocksSnapshot, GameFxKind, GameFxLayer, GameGenre, GameInputController, GameInputReplayEvent, GameInputReplayPlan, GameKitRect, GamePlatformerSnapshot, GameRacingKit, GameRacingSnapshot, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GroundRaycaster, Hud, HudMountOptions, HudWidgetSpec, MeshSurfaceQuery, NodeHandleExtension, NodeHandler, OptionCoverageRow, PauseReason, QrFlagInput, RebuildTier, RenderSourceContributions, RouteHealthQualityGate, RuntimeCompiledSceneInternals, RuntimeNodeHandleLike, SceneCompileContext, SceneQueryHit, SceneQueryTarget, SceneRay, SceneRaycastCamera, SceneRaycastInput, SceneRaycastOptions, SemanticRegion, SurfaceSample, TouchControls, TouchPreset, TransitionSpec, VehicleChassis, VehicleDriverAi, VehiclePose, VehicleSurface, VehicleVec3 } from "../agent-api/index.js";
+export { AnimationController, appExtensionsAll, asRuntimeCompiled, atmosphere, auditArtDirection, AuraAdvancedLightingUnavailableError, AuraColorParseError, AuraSceneBuilder, batched, bindGameTouchControls, bindRuntimeCompiled, blendSkyBandColor, camera, cameras, captionCueAtTime, captureFromUrl, characterAssembly, characters, charts, checkSpatialInvariants, city, clearFocus, Clock, cloneSkinned, combatFrameAdvantage, compilePromptEpisodePlan, compilePromptPlanV2, compilerSlot, compileScene, composeWorldMatrix, compute, computeLineDistances, createAnimationPerformanceCoverage, createAnimationRenderOutputPackageMetadata, createArchitectureKit, createAssetDiagnostics, createAudioStemManifest, createAuraApp, createAuraRouteHealthSnapshot, createAuraText3DGeometry, createAuraVoiceBridgePackage, createAuraVoiceVisemeTrack, createCameraPathFromPreset, createCinematicKit, createCollisionLayers, createCombatAi, createDiagnosticsPanel, createDigitalTwinKit, createEnvironment, createFightingGameKit, createFrameLoop, createGame, createGameApp, createGameArcadeVehicle, createGameAudio, createGlbBlendshapeVisemeCue, createInitialDiagnostics, createMeshSurfaceQuery, createPrimitiveMouthVisemeCues, createProductConfiguratorKit, createProductionRuntimeCollectedLights, createPromptAnimationDeterministicScreenshotFixtureMetadata, createShotPlaybackPlan, createSmartCityKit, createVehicleChassis, createVehicleDriverAi, decomposeMatrix, defineAuraAssets, defineDubMap, defineModelAssets, definePromptPlan, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceLod, distributeInRegion, effects, enforceFrameBudget, environments, eulerToQuaternion, fat, fitSizeToRegion, focusCameraIntent, focusObject, focusSemanticRegion, game, gameFeel, games, geometry, glbVisemeBlendshapeExample, groundedFittedModelPosition, groundedRenderedAssetPlacement, group, groups, helpers, installShotPlayback, instances, interactions, labels, lights, line, lines, lookLint, looks, loop, material, model, modelsEnabledFromUrl, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, normalizeLinePositions, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, particles, physics, placedBounds, placedBoundsFromAsset, planLayeredSceneComposition, planScatterInstances, planSkyBackdrop, platformerCompositionSpec, points, pointStreamOf, postPresets, prefabs, primitiveMouthVisemeExample, primitives, product, promptPlanToScene, promptRecipes, raycast, raycastFirst, registerAppExtension, registerDiagnosticsSection, registerEnvironmentSource, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, renderer, resolveBoundsAnchor, resolveCameraFrame, resolveChaseFraming, resolveEnvironment, resolveQrFlags, resolveSemanticRegion, sampleAuraVoiceBridgeAtTime, sampleCameraPath, sampleShotPlaybackPlan, sampleVisemeTrack, scatterWindOffset, scene, sceneKits, SCREEN_FEEL_BLACKBOARD_KEY, segments, setCompilerImpl, shadows, skyBandCountForRamp, snapshotDiagnostics, solar, solveCombatFrameData, solvePlatformerMotion, sprite, sprites, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, StubModelMaterialHandle, StubPostSurface, StubTimeController, surfaces, text3D, timeline, tsl, ui, updateCompiledScene, validateAuraVoiceBridgePackage, validateCombatFrameData, vehicleChassisSpecFromBounds, WIND_CHUNK, workflows, worldQueriesSlot } from "../agent-api/index.js";
+export type { AuraModelAssetEntry, AuraModelAssetRefs, AuraModelAssetSet, AuraModelAssetsOptions, AuraSceneInit, A3DAppLifecycleSnapshot, A3DDisposable, AnyNodeHandler, AppExtension, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationAssetLike, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions, AuraApp, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAppTarget, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetDefinition, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetMap, AuraAssetRef, AuraAssetRefIdentity, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchedGeometryInput, AuraBatchedMeshHandle, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedNode, AuraBiomeId, AuraBiomeRig, AuraBodyHandle, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraCameraController, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSpec, AuraCameraSubject, AuraCompiledFeature, AuraComputeBuffer, TslCompileResult, TslEvalContext, TslInput, TslMaterialNodeOptions, TslType, TslUniformKind, TslUniformOptions, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface, AuraCreateAppAnimationOptions, AuraCustomGeometrySpec, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDiagnostics, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFatLineOptions, AuraFeelBus, AuraFeelEventSpec, AuraFovKickLayer, AuraHeightFogSpec, AuraHeightQuery, AuraHelperBaseOptions, AuraInstancedBufferView, AuraInstancedGeometryInput, AuraInstancedMeshBoundingSphere, AuraInstancedMeshHandle, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLineNode, AuraLineOptions, AuraLinePositionsInput, AuraLocalShadowOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialSpec, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNamedAnimationClipDefinition, AuraNodeHandleExtensionMap, AuraNodeInput, AuraNodeKindMap, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraPhysicsRuntime, AuraPointsNode, AuraPointsOptions, AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions, AuraPostDiagnostics, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraPunchLayer, AuraQuat, AuraRendererMaterialOptions, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraRootLodLevelSpec, AuraRootMotionSpec, AuraRootVec3, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistryV2, AuraSceneNode, AuraSceneSnapshot, AuraScreenFeelUniforms, AuraShadowOptions, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSpriteNode, AuraSpriteOptions, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTransformSpec, AuraTraumaLayer, AuraVec3, AuraVfxEffectSpec, AuraVfxKind, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, CameraPath, CameraPresetId, CaptureContext, CharacterAssemblyPlan, ClonedSkinnedModel, CloneSkinnedModelInput, CloneSkinnedOptions, CombatAi, CombatAiAggression, CombatFrameAdvantage, CombatFrameData, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, DriverRoute, FightingGameSnapshot, FocusResult, FrameLoopCallback, FrameLoopFrame, FrameLoopOptions, FrameLoopSnapshot, FrameLoopSource, Game, GameAcceptance, GameArcadeVehicle, GameArcadeVehicleInput, GameArcadeVehicleState, GameAudio, GameAudioContextLike, GameAudioOptions, GameBeacon, GameBudgets, GameCombatEvent, GameCombatMove, GameCombatWorld, GameCombatWorldSnapshot, GameEffectsController, GameEntryV2, GameFallingBlockAction, GameFallingBlocksEvent, GameFallingBlocksSnapshot, GameFxKind, GameFxLayer, GameGenre, GameInputController, GameInputReplayEvent, GameInputReplayPlan, GameKitRect, GamePlatformerSnapshot, GameRacingKit, GameRacingSnapshot, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GroundRaycaster, Hud, HudMountOptions, HudWidgetSpec, MeshSurfaceQuery, NodeHandleExtension, NodeHandler, OptionCoverageRow, PauseReason, QrFlagInput, RebuildTier, RenderSourceContributions, RouteHealthQualityGate, RuntimeCompiledSceneInternals, RuntimeNodeHandleLike, SceneCompileContext, SceneQueryHit, SceneQueryTarget, SceneRay, SceneRaycastCamera, SceneRaycastInput, SceneRaycastOptions, SemanticRegion, SurfaceSample, TouchControls, TouchPreset, TransitionSpec, VehicleChassis, VehicleDriverAi, VehiclePose, VehicleSurface, VehicleVec3 } from "../agent-api/index.js";
 export { loadFont } from "../agent-api/index.js";
 export { AURA_SPEC_CONSTRUCTIBLE_SHAPES, createPhysicsRuntime } from "../agent-api/index.js";
 export type { AuraWorldTextOptions, FontAsset, FontAssetMetadata, FontLoadOptions, FontLoaderPlatform, LoadedFont, TextDirection } from "../agent-api/index.js";
@@ -36456,6 +36645,8 @@ export type { AuraDynamicHelper, AuraDynamicHelperOptions } from "../agent-api/i
 export { bindOrbitPointer, createOrbitRig } from "../agent-api/index.js";
 export { bindPointerInteractions } from "../agent-api/index.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "../agent-api/index.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance, createSpatialPicker, bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "../agent-api/index.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions, SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker, SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "../agent-api/index.js";
 export type { AuraOrbitRig, OrbitRigOptions } from "../agent-api/camera/rigs/orbit.js";
 export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
 export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
@@ -36539,6 +36730,7 @@ export type { AuraClipPlane, AuraClipScope, AuraClipOptions, AuraGlobalClipOptio
 export type { AuraXRButtonHandle, AuraXRButtonOptions, AuraXRDeviceBridge, AuraXREnterResult, AuraXREventMap, AuraXREventName, AuraXRFrameEvent, AuraXRMode, AuraXRRuntime, AuraXRSceneHelperOptions, AuraXRSceneHelpers, AuraXRSessionInit, AuraXRSessionProvenance, AuraXRVisual } from "../agent-api/index.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "../agent-api/index.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "../agent-api/nodes/types/runtime.js";
+export type { AuraRendererInfo, AuraPrecompileResult } from "../agent-api/nodes/types/runtime.js";
 export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDistanceMaterialOptions, AuraShadowMaterialOptions } from "../agent-api/index.js";
 export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubject.js";
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "../agent-api/camera/frameSubject.js";
@@ -36617,6 +36809,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";
@@ -36667,12 +36861,13 @@ export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScree
 export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
 export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry.js";
 export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry.js";
-export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
+export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
 export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AltitudeRigOptions, AnimationHandleLike, AnyNodeHandler, AppAssetDecoders, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloader, AuraAssetPreloadResult, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchPlanReport, AuraBiomeId, AuraBiomeRig, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraBudgetedCameraProbe, AuraCameraController, AuraCameraControllerDeps, AuraCameraControllerImpl, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraCinematicBarsLayer, AuraCinematicBarsOptions, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraColorRamp, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCurve, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDeprecatedVisualQA, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentNodeV2, AuraEnvironmentPresetName, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelBusDeps, AuraFeelBusImpl, AuraFeelEventSpec, AuraFeelExtensionOptions, AuraFeelPresetName, AuraFovKickLayer, AuraFrameTimingReport, AuraFramingContext, AuraHeightFogSpec, AuraHeightQuery, AuraInterpolableHandle, AuraInterpolationTransform, AuraIrradianceVolumeOptions, AuraLegacyParticleFields, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLocomotionClipEntry, AuraLookAtLayer, AuraLookBuildOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLookPreset, AuraLookV0Expansion, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOccluderFade, AuraOccluderFadeOptions, AuraOrbitRig, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraParticleEmitterOptions, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPassOrder, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraProbeNode, AuraPunchLayer, AuraQualityDiagnosticsReport, AuraQuat, AuraRange, AuraReflectionProbeOptions, AuraRenderCallback, AuraRendererMaterialOptions, AuraRenderFrame, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraScreenOverlay, AuraShadowOptions, AuraSkyBand, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSplineOptions, AuraSpringState, AuraSpringVec3State, AuraStructuralQAResult, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence, AuraVfxEffectSpec, AuraVfxKind, AuraVfxShading, AuraVfxSpriteSource, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, AuthoredMaterialSnapshot, BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams, CaptureContext, ChaseRigOptions, CollisionDamper, CollisionDamperOptions, CombatFeelEvent, CombatFeelMove, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, FeelChannel, FeelSoundListener, FightingRigOptions, FixedStepDriverApp, FixedStepDriverOptions, FlightRigOptions, Follow2dRigOptions, FrameLoopTick, FrameLoopTickCallback, Game, GameAcceptance, GameAudioListenerPose, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameJuice, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GeneratedCodeWarningsContext, GroundRaycaster, HemisphereIrradiance, Hud, HudMountOptions, HudWidgetSpec, LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions, LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource, LooksApi, NodeHandleExtension, NodeHandler, OptionCoverageRow, OrbitRigOptions, PauseReason, PhysicalLightDescriptor, PostFieldDiagnostic, Prd02CollectedLights, Prd02EnvironmentBinding, Prd02EnvironmentBindOptions, Prd02LightingKillSwitches, Prd02ShadowOptions, Prd05DebugViewName, Prd06ShaderWarmupCompiler, ProbeBoundsEntry, ProbePhysicsEntry, PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow, QrFlagInput, RebuildTier, RenderSourceContributions, ResolvedLookExpansion, RouteHealthQualityGate, RuntimeCompiledSceneInternals, SceneCompileContext, ShadowedLightSelection, ShadowReport, ShadowSystemConfig, ShoulderRigOptions, TimeControllerOptions, TimeControllerScopeEntry, TopDownRigOptions, TouchControls, TouchPreset, TransitionSpec, TypedGLBActorDecoderOptions, TypedGLBActorMaterialOverride, VfxBridge } from "./publishedUnion.js";
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
 export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
+export type { AuraGameWorkerOptions } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -41315,6 +41510,12 @@ export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -41461,8 +41662,16 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ```ts
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-export declare function registerAuraApp(app: AuraApp): void;
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export declare function registerAuraApp(app: AuraApp, options?: {
+    readonly publish?: boolean;
+}): void;
 export declare function unregisterAuraApp(app: AuraApp): void;
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export declare function clearPageEvidenceWithoutPublishers(): void;
 /** Ownerless builder compatibility is valid only while one app is registered. */
 export declare function soleLiveAuraApp(): AuraApp | undefined;
 export declare const auraAppRegistry: AuraAppRegistry;
@@ -41494,6 +41703,10 @@ export declare function markTiming(name: string): void;
 ```ts
 import type { AuraSceneSnapshot } from "../nodes/types.js";
 import type { MutableDiagnostics } from "../diagnostics.js";
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export declare function enrollRouteState(owner: MutableDiagnostics): void;
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export declare function releaseRouteState(owner: MutableDiagnostics): void;
 export declare function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void;
@@ -42252,6 +42465,10 @@ interface ProductionRuntimeActorState {
     readonly morphTargets?: RuntimeNodeMorphTargetWeights;
     /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
     readonly runtimeMaterial?: AuraModelNode["material"];
+    /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+    readonly denseInstanceMatrices?: Float32Array;
+    /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+    readonly denseInstanceRgba?: Float32Array;
 }
 export declare function resolveProductionActorRuntimeState(entry: ProductionRuntimeActorEntry, runtimeNodes: AuraRuntimeNodeRegistry | undefined): ProductionRuntimeActorState;
 /**
@@ -48670,6 +48887,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -49541,7 +49770,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -50430,7 +50659,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -50477,6 +50706,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -50486,6 +50716,433 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
 export declare function bindPointerInteractions(app: AuraPointerInteractionApp, listener: (event: AuraPointerInteractionEvent) => void, options?: AuraPointerInteractionBindOptions): () => void;
 export {};
 //# sourceMappingURL=pointerInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/labels.d.ts`
@@ -50582,13 +51239,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -50609,6 +51271,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -50816,6 +51481,112 @@ export declare const compute: AuraComputeSurface;
 //# sourceMappingURL=compute.d.ts.map
 ```
 
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/sprites.d.ts`
 
 ```ts
@@ -51009,6 +51780,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -53577,7 +54353,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -53743,6 +54522,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -54052,6 +54833,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -54177,6 +54964,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -54202,6 +55002,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -54261,6 +55068,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -54863,10 +55674,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -55032,6 +55851,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -83570,10 +84391,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -87579,6 +88403,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -88919,8 +89752,8 @@ export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptio
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
@@ -90148,8 +90981,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -90173,6 +91013,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -90185,16 +91026,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -90223,6 +91070,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -90246,7 +91094,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -90324,6 +91172,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -90466,6 +91321,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -90481,6 +91342,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -99755,6 +100622,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -99787,6 +100655,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -99866,7 +100742,7 @@ export {};
 ```ts
 import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 export interface AuraEnvironmentBackgroundOptions {
     /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
     readonly visible?: boolean;
@@ -99937,6 +100813,14 @@ export declare const prd02EnvironmentBuilders: {
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
 };
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+    /**
+     * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+     * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+     * Omitted or `"studio"` is the existing studio probe, unchanged.
+     */
+    readonly preset?: "studio" | "softbox";
+}
 export declare const envSourceBuilders: {
     preset: (name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     neutral: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -99955,7 +100839,7 @@ export declare const envSourceBuilders: {
         readonly texture: AuraAssetRef<"texture">;
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
-    studio: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
+    studio: (options?: AuraStudioEnvironmentOptions) => AuraNodeBuilder<AuraEnvironmentNode>;
     materialLab: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     productHero: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     nightCinematic: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -102296,6 +103180,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -118154,7 +119044,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -118175,7 +119066,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -118186,7 +119078,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -118200,7 +119093,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -118363,7 +119257,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -118371,7 +119265,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -118384,6 +119278,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -121081,8 +121992,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -123952,8 +124863,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -129678,8 +130589,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -132303,8 +133214,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -134105,8 +135016,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -134247,6 +135158,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";
@@ -134297,12 +135210,13 @@ export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScree
 export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
 export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry.js";
 export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry.js";
-export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
+export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
 export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AltitudeRigOptions, AnimationHandleLike, AnyNodeHandler, AppAssetDecoders, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloader, AuraAssetPreloadResult, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchPlanReport, AuraBiomeId, AuraBiomeRig, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraBudgetedCameraProbe, AuraCameraController, AuraCameraControllerDeps, AuraCameraControllerImpl, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraCinematicBarsLayer, AuraCinematicBarsOptions, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraColorRamp, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCurve, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDeprecatedVisualQA, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentNodeV2, AuraEnvironmentPresetName, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelBusDeps, AuraFeelBusImpl, AuraFeelEventSpec, AuraFeelExtensionOptions, AuraFeelPresetName, AuraFovKickLayer, AuraFrameTimingReport, AuraFramingContext, AuraHeightFogSpec, AuraHeightQuery, AuraInterpolableHandle, AuraInterpolationTransform, AuraIrradianceVolumeOptions, AuraLegacyParticleFields, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLocomotionClipEntry, AuraLookAtLayer, AuraLookBuildOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLookPreset, AuraLookV0Expansion, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOccluderFade, AuraOccluderFadeOptions, AuraOrbitRig, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraParticleEmitterOptions, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPassOrder, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraProbeNode, AuraPunchLayer, AuraQualityDiagnosticsReport, AuraQuat, AuraRange, AuraReflectionProbeOptions, AuraRenderCallback, AuraRendererMaterialOptions, AuraRenderFrame, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraScreenOverlay, AuraShadowOptions, AuraSkyBand, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSplineOptions, AuraSpringState, AuraSpringVec3State, AuraStructuralQAResult, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence, AuraVfxEffectSpec, AuraVfxKind, AuraVfxShading, AuraVfxSpriteSource, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, AuthoredMaterialSnapshot, BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams, CaptureContext, ChaseRigOptions, CollisionDamper, CollisionDamperOptions, CombatFeelEvent, CombatFeelMove, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, FeelChannel, FeelSoundListener, FightingRigOptions, FixedStepDriverApp, FixedStepDriverOptions, FlightRigOptions, Follow2dRigOptions, FrameLoopTick, FrameLoopTickCallback, Game, GameAcceptance, GameAudioListenerPose, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameJuice, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GeneratedCodeWarningsContext, GroundRaycaster, HemisphereIrradiance, Hud, HudMountOptions, HudWidgetSpec, LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions, LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource, LooksApi, NodeHandleExtension, NodeHandler, OptionCoverageRow, OrbitRigOptions, PauseReason, PhysicalLightDescriptor, PostFieldDiagnostic, Prd02CollectedLights, Prd02EnvironmentBinding, Prd02EnvironmentBindOptions, Prd02LightingKillSwitches, Prd02ShadowOptions, Prd05DebugViewName, Prd06ShaderWarmupCompiler, ProbeBoundsEntry, ProbePhysicsEntry, PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow, QrFlagInput, RebuildTier, RenderSourceContributions, ResolvedLookExpansion, RouteHealthQualityGate, RuntimeCompiledSceneInternals, SceneCompileContext, ShadowedLightSelection, ShadowReport, ShadowSystemConfig, ShoulderRigOptions, TimeControllerOptions, TimeControllerScopeEntry, TopDownRigOptions, TouchControls, TouchPreset, TransitionSpec, TypedGLBActorDecoderOptions, TypedGLBActorMaterialOverride, VfxBridge } from "./publishedUnion.js";
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
 export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
+export type { AuraGameWorkerOptions } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -138945,6 +139859,12 @@ export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -139091,8 +140011,16 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ```ts
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-export declare function registerAuraApp(app: AuraApp): void;
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export declare function registerAuraApp(app: AuraApp, options?: {
+    readonly publish?: boolean;
+}): void;
 export declare function unregisterAuraApp(app: AuraApp): void;
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export declare function clearPageEvidenceWithoutPublishers(): void;
 /** Ownerless builder compatibility is valid only while one app is registered. */
 export declare function soleLiveAuraApp(): AuraApp | undefined;
 export declare const auraAppRegistry: AuraAppRegistry;
@@ -139124,6 +140052,10 @@ export declare function markTiming(name: string): void;
 ```ts
 import type { AuraSceneSnapshot } from "../nodes/types.js";
 import type { MutableDiagnostics } from "../diagnostics.js";
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export declare function enrollRouteState(owner: MutableDiagnostics): void;
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export declare function releaseRouteState(owner: MutableDiagnostics): void;
 export declare function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void;
@@ -139882,6 +140814,10 @@ interface ProductionRuntimeActorState {
     readonly morphTargets?: RuntimeNodeMorphTargetWeights;
     /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
     readonly runtimeMaterial?: AuraModelNode["material"];
+    /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+    readonly denseInstanceMatrices?: Float32Array;
+    /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+    readonly denseInstanceRgba?: Float32Array;
 }
 export declare function resolveProductionActorRuntimeState(entry: ProductionRuntimeActorEntry, runtimeNodes: AuraRuntimeNodeRegistry | undefined): ProductionRuntimeActorState;
 /**
@@ -146300,6 +147236,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -147171,7 +148119,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -148060,7 +149008,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -148107,6 +149055,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -148116,6 +149065,433 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
 export declare function bindPointerInteractions(app: AuraPointerInteractionApp, listener: (event: AuraPointerInteractionEvent) => void, options?: AuraPointerInteractionBindOptions): () => void;
 export {};
 //# sourceMappingURL=pointerInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/labels.d.ts`
@@ -148212,13 +149588,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -148239,6 +149620,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -148446,6 +149830,112 @@ export declare const compute: AuraComputeSurface;
 //# sourceMappingURL=compute.d.ts.map
 ```
 
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/sprites.d.ts`
 
 ```ts
@@ -148639,6 +150129,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -151207,7 +152702,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -151373,6 +152871,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -151682,6 +153182,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -151807,6 +153313,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -151832,6 +153351,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -151891,6 +153417,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -152493,10 +154023,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -152662,6 +154200,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -181200,10 +182740,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -185209,6 +186752,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -186549,8 +188101,8 @@ export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptio
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
@@ -187778,8 +189330,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -187803,6 +189362,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -187815,16 +189375,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -187853,6 +189419,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -187876,7 +189443,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -187954,6 +189521,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -188096,6 +189670,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -188111,6 +189691,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -197342,6 +198928,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -197374,6 +198961,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -197453,7 +199048,7 @@ export {};
 ```ts
 import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 export interface AuraEnvironmentBackgroundOptions {
     /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
     readonly visible?: boolean;
@@ -197524,6 +199119,14 @@ export declare const prd02EnvironmentBuilders: {
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
 };
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+    /**
+     * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+     * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+     * Omitted or `"studio"` is the existing studio probe, unchanged.
+     */
+    readonly preset?: "studio" | "softbox";
+}
 export declare const envSourceBuilders: {
     preset: (name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     neutral: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -197542,7 +199145,7 @@ export declare const envSourceBuilders: {
         readonly texture: AuraAssetRef<"texture">;
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
-    studio: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
+    studio: (options?: AuraStudioEnvironmentOptions) => AuraNodeBuilder<AuraEnvironmentNode>;
     materialLab: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     productHero: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     nightCinematic: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -199883,6 +201486,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -215741,7 +217350,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -215762,7 +217372,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -215773,7 +217384,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -215787,7 +217399,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -215950,7 +217563,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -215958,7 +217571,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -215971,6 +217584,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -216299,8 +217929,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -216966,8 +218596,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -219548,8 +221178,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -219649,9 +221279,14 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
      */
     reset(): Promise<void>;
 }
+/**
+ * Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request
+ * (`fallback: "main-thread"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.
+ */
+export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): void;
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
-export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene"> & {
+export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
     /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
     readonly target: AuraAppTarget;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
@@ -248773,10 +250408,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -258739,6 +260377,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";
@@ -258789,12 +260429,13 @@ export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScree
 export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
 export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry.js";
 export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry.js";
-export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
+export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
 export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AltitudeRigOptions, AnimationHandleLike, AnyNodeHandler, AppAssetDecoders, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloader, AuraAssetPreloadResult, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchPlanReport, AuraBiomeId, AuraBiomeRig, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraBudgetedCameraProbe, AuraCameraController, AuraCameraControllerDeps, AuraCameraControllerImpl, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraCinematicBarsLayer, AuraCinematicBarsOptions, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraColorRamp, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCurve, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDeprecatedVisualQA, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentNodeV2, AuraEnvironmentPresetName, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelBusDeps, AuraFeelBusImpl, AuraFeelEventSpec, AuraFeelExtensionOptions, AuraFeelPresetName, AuraFovKickLayer, AuraFrameTimingReport, AuraFramingContext, AuraHeightFogSpec, AuraHeightQuery, AuraInterpolableHandle, AuraInterpolationTransform, AuraIrradianceVolumeOptions, AuraLegacyParticleFields, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLocomotionClipEntry, AuraLookAtLayer, AuraLookBuildOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLookPreset, AuraLookV0Expansion, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOccluderFade, AuraOccluderFadeOptions, AuraOrbitRig, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraParticleEmitterOptions, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPassOrder, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraProbeNode, AuraPunchLayer, AuraQualityDiagnosticsReport, AuraQuat, AuraRange, AuraReflectionProbeOptions, AuraRenderCallback, AuraRendererMaterialOptions, AuraRenderFrame, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraScreenOverlay, AuraShadowOptions, AuraSkyBand, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSplineOptions, AuraSpringState, AuraSpringVec3State, AuraStructuralQAResult, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence, AuraVfxEffectSpec, AuraVfxKind, AuraVfxShading, AuraVfxSpriteSource, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, AuthoredMaterialSnapshot, BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams, CaptureContext, ChaseRigOptions, CollisionDamper, CollisionDamperOptions, CombatFeelEvent, CombatFeelMove, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, FeelChannel, FeelSoundListener, FightingRigOptions, FixedStepDriverApp, FixedStepDriverOptions, FlightRigOptions, Follow2dRigOptions, FrameLoopTick, FrameLoopTickCallback, Game, GameAcceptance, GameAudioListenerPose, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameJuice, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GeneratedCodeWarningsContext, GroundRaycaster, HemisphereIrradiance, Hud, HudMountOptions, HudWidgetSpec, LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions, LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource, LooksApi, NodeHandleExtension, NodeHandler, OptionCoverageRow, OrbitRigOptions, PauseReason, PhysicalLightDescriptor, PostFieldDiagnostic, Prd02CollectedLights, Prd02EnvironmentBinding, Prd02EnvironmentBindOptions, Prd02LightingKillSwitches, Prd02ShadowOptions, Prd05DebugViewName, Prd06ShaderWarmupCompiler, ProbeBoundsEntry, ProbePhysicsEntry, PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow, QrFlagInput, RebuildTier, RenderSourceContributions, ResolvedLookExpansion, RouteHealthQualityGate, RuntimeCompiledSceneInternals, SceneCompileContext, ShadowedLightSelection, ShadowReport, ShadowSystemConfig, ShoulderRigOptions, TimeControllerOptions, TimeControllerScopeEntry, TopDownRigOptions, TouchControls, TouchPreset, TransitionSpec, TypedGLBActorDecoderOptions, TypedGLBActorMaterialOverride, VfxBridge } from "./publishedUnion.js";
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
 export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
+export type { AuraGameWorkerOptions } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -263437,6 +265078,12 @@ export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -263583,8 +265230,16 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ```ts
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-export declare function registerAuraApp(app: AuraApp): void;
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export declare function registerAuraApp(app: AuraApp, options?: {
+    readonly publish?: boolean;
+}): void;
 export declare function unregisterAuraApp(app: AuraApp): void;
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export declare function clearPageEvidenceWithoutPublishers(): void;
 /** Ownerless builder compatibility is valid only while one app is registered. */
 export declare function soleLiveAuraApp(): AuraApp | undefined;
 export declare const auraAppRegistry: AuraAppRegistry;
@@ -263616,6 +265271,10 @@ export declare function markTiming(name: string): void;
 ```ts
 import type { AuraSceneSnapshot } from "../nodes/types.js";
 import type { MutableDiagnostics } from "../diagnostics.js";
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export declare function enrollRouteState(owner: MutableDiagnostics): void;
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export declare function releaseRouteState(owner: MutableDiagnostics): void;
 export declare function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void;
@@ -264374,6 +266033,10 @@ interface ProductionRuntimeActorState {
     readonly morphTargets?: RuntimeNodeMorphTargetWeights;
     /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
     readonly runtimeMaterial?: AuraModelNode["material"];
+    /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+    readonly denseInstanceMatrices?: Float32Array;
+    /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+    readonly denseInstanceRgba?: Float32Array;
 }
 export declare function resolveProductionActorRuntimeState(entry: ProductionRuntimeActorEntry, runtimeNodes: AuraRuntimeNodeRegistry | undefined): ProductionRuntimeActorState;
 /**
@@ -270792,6 +272455,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -271663,7 +273338,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -272552,7 +274227,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -272599,6 +274274,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -272608,6 +274284,433 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
 export declare function bindPointerInteractions(app: AuraPointerInteractionApp, listener: (event: AuraPointerInteractionEvent) => void, options?: AuraPointerInteractionBindOptions): () => void;
 export {};
 //# sourceMappingURL=pointerInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/labels.d.ts`
@@ -272704,13 +274807,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -272731,6 +274839,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -272938,6 +275049,112 @@ export declare const compute: AuraComputeSurface;
 //# sourceMappingURL=compute.d.ts.map
 ```
 
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/sprites.d.ts`
 
 ```ts
@@ -273131,6 +275348,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -275699,7 +277921,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -275865,6 +278090,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -276174,6 +278401,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -276299,6 +278532,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -276324,6 +278570,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -276383,6 +278636,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -276985,10 +279242,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -277154,6 +279419,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -278133,6 +280400,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -279473,8 +281749,8 @@ export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptio
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
@@ -280671,8 +282947,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -280696,6 +282979,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -280708,16 +282992,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -280746,6 +283036,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -280769,7 +283060,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -280847,6 +283138,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -280989,6 +283287,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -281004,6 +283308,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -284709,6 +287019,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -284741,6 +287052,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -284820,7 +287139,7 @@ export {};
 ```ts
 import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 export interface AuraEnvironmentBackgroundOptions {
     /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
     readonly visible?: boolean;
@@ -284891,6 +287210,14 @@ export declare const prd02EnvironmentBuilders: {
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
 };
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+    /**
+     * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+     * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+     * Omitted or `"studio"` is the existing studio probe, unchanged.
+     */
+    readonly preset?: "studio" | "softbox";
+}
 export declare const envSourceBuilders: {
     preset: (name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     neutral: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -284909,7 +287236,7 @@ export declare const envSourceBuilders: {
         readonly texture: AuraAssetRef<"texture">;
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
-    studio: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
+    studio: (options?: AuraStudioEnvironmentOptions) => AuraNodeBuilder<AuraEnvironmentNode>;
     materialLab: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     productHero: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     nightCinematic: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -287250,6 +289577,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -302603,7 +304936,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -302624,7 +304958,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -302635,7 +304970,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -302649,7 +304985,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -302812,7 +305149,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -302820,7 +305157,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -302833,6 +305170,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -306556,8 +308910,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -306642,6 +308996,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -306808,7 +309169,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -307862,8 +310223,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -307887,6 +310255,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -307899,16 +310268,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -307937,6 +310312,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -308611,6 +310987,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -308626,6 +311008,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -309684,8 +312072,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -338703,10 +341091,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -348669,6 +351060,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";
@@ -348719,12 +351112,13 @@ export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScree
 export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
 export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry.js";
 export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry.js";
-export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
+export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
 export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AltitudeRigOptions, AnimationHandleLike, AnyNodeHandler, AppAssetDecoders, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloader, AuraAssetPreloadResult, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchPlanReport, AuraBiomeId, AuraBiomeRig, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraBudgetedCameraProbe, AuraCameraController, AuraCameraControllerDeps, AuraCameraControllerImpl, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraCinematicBarsLayer, AuraCinematicBarsOptions, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraColorRamp, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCurve, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDeprecatedVisualQA, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentNodeV2, AuraEnvironmentPresetName, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelBusDeps, AuraFeelBusImpl, AuraFeelEventSpec, AuraFeelExtensionOptions, AuraFeelPresetName, AuraFovKickLayer, AuraFrameTimingReport, AuraFramingContext, AuraHeightFogSpec, AuraHeightQuery, AuraInterpolableHandle, AuraInterpolationTransform, AuraIrradianceVolumeOptions, AuraLegacyParticleFields, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLocomotionClipEntry, AuraLookAtLayer, AuraLookBuildOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLookPreset, AuraLookV0Expansion, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOccluderFade, AuraOccluderFadeOptions, AuraOrbitRig, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraParticleEmitterOptions, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPassOrder, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraProbeNode, AuraPunchLayer, AuraQualityDiagnosticsReport, AuraQuat, AuraRange, AuraReflectionProbeOptions, AuraRenderCallback, AuraRendererMaterialOptions, AuraRenderFrame, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraScreenOverlay, AuraShadowOptions, AuraSkyBand, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSplineOptions, AuraSpringState, AuraSpringVec3State, AuraStructuralQAResult, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence, AuraVfxEffectSpec, AuraVfxKind, AuraVfxShading, AuraVfxSpriteSource, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, AuthoredMaterialSnapshot, BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams, CaptureContext, ChaseRigOptions, CollisionDamper, CollisionDamperOptions, CombatFeelEvent, CombatFeelMove, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, FeelChannel, FeelSoundListener, FightingRigOptions, FixedStepDriverApp, FixedStepDriverOptions, FlightRigOptions, Follow2dRigOptions, FrameLoopTick, FrameLoopTickCallback, Game, GameAcceptance, GameAudioListenerPose, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameJuice, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GeneratedCodeWarningsContext, GroundRaycaster, HemisphereIrradiance, Hud, HudMountOptions, HudWidgetSpec, LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions, LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource, LooksApi, NodeHandleExtension, NodeHandler, OptionCoverageRow, OrbitRigOptions, PauseReason, PhysicalLightDescriptor, PostFieldDiagnostic, Prd02CollectedLights, Prd02EnvironmentBinding, Prd02EnvironmentBindOptions, Prd02LightingKillSwitches, Prd02ShadowOptions, Prd05DebugViewName, Prd06ShaderWarmupCompiler, ProbeBoundsEntry, ProbePhysicsEntry, PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow, QrFlagInput, RebuildTier, RenderSourceContributions, ResolvedLookExpansion, RouteHealthQualityGate, RuntimeCompiledSceneInternals, SceneCompileContext, ShadowedLightSelection, ShadowReport, ShadowSystemConfig, ShoulderRigOptions, TimeControllerOptions, TimeControllerScopeEntry, TopDownRigOptions, TouchControls, TouchPreset, TransitionSpec, TypedGLBActorDecoderOptions, TypedGLBActorMaterialOverride, VfxBridge } from "./publishedUnion.js";
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
 export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
+export type { AuraGameWorkerOptions } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -353367,6 +355761,12 @@ export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -353513,8 +355913,16 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ```ts
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-export declare function registerAuraApp(app: AuraApp): void;
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export declare function registerAuraApp(app: AuraApp, options?: {
+    readonly publish?: boolean;
+}): void;
 export declare function unregisterAuraApp(app: AuraApp): void;
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export declare function clearPageEvidenceWithoutPublishers(): void;
 /** Ownerless builder compatibility is valid only while one app is registered. */
 export declare function soleLiveAuraApp(): AuraApp | undefined;
 export declare const auraAppRegistry: AuraAppRegistry;
@@ -353546,6 +355954,10 @@ export declare function markTiming(name: string): void;
 ```ts
 import type { AuraSceneSnapshot } from "../nodes/types.js";
 import type { MutableDiagnostics } from "../diagnostics.js";
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export declare function enrollRouteState(owner: MutableDiagnostics): void;
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export declare function releaseRouteState(owner: MutableDiagnostics): void;
 export declare function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void;
@@ -354304,6 +356716,10 @@ interface ProductionRuntimeActorState {
     readonly morphTargets?: RuntimeNodeMorphTargetWeights;
     /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
     readonly runtimeMaterial?: AuraModelNode["material"];
+    /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+    readonly denseInstanceMatrices?: Float32Array;
+    /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+    readonly denseInstanceRgba?: Float32Array;
 }
 export declare function resolveProductionActorRuntimeState(entry: ProductionRuntimeActorEntry, runtimeNodes: AuraRuntimeNodeRegistry | undefined): ProductionRuntimeActorState;
 /**
@@ -360722,6 +363138,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -361593,7 +364021,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -362482,7 +364910,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -362529,6 +364957,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -362538,6 +364967,433 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
 export declare function bindPointerInteractions(app: AuraPointerInteractionApp, listener: (event: AuraPointerInteractionEvent) => void, options?: AuraPointerInteractionBindOptions): () => void;
 export {};
 //# sourceMappingURL=pointerInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/labels.d.ts`
@@ -362634,13 +365490,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -362661,6 +365522,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -362868,6 +365732,112 @@ export declare const compute: AuraComputeSurface;
 //# sourceMappingURL=compute.d.ts.map
 ```
 
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/sprites.d.ts`
 
 ```ts
@@ -363061,6 +366031,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -365629,7 +368604,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -365795,6 +368773,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -366104,6 +369084,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -366229,6 +369215,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -366254,6 +369253,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -366313,6 +369319,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -366915,10 +369925,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -367084,6 +370102,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -368063,6 +371083,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -369403,8 +372432,8 @@ export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptio
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
@@ -370601,8 +373630,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -370626,6 +373662,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -370638,16 +373675,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -370676,6 +373719,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -370699,7 +373743,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -370777,6 +373821,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -370919,6 +373970,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -370934,6 +373991,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -374639,6 +377702,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -374671,6 +377735,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -374750,7 +377822,7 @@ export {};
 ```ts
 import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 export interface AuraEnvironmentBackgroundOptions {
     /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
     readonly visible?: boolean;
@@ -374821,6 +377893,14 @@ export declare const prd02EnvironmentBuilders: {
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
 };
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+    /**
+     * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+     * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+     * Omitted or `"studio"` is the existing studio probe, unchanged.
+     */
+    readonly preset?: "studio" | "softbox";
+}
 export declare const envSourceBuilders: {
     preset: (name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     neutral: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -374839,7 +377919,7 @@ export declare const envSourceBuilders: {
         readonly texture: AuraAssetRef<"texture">;
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
-    studio: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
+    studio: (options?: AuraStudioEnvironmentOptions) => AuraNodeBuilder<AuraEnvironmentNode>;
     materialLab: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     productHero: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     nightCinematic: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -377180,6 +380260,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -392533,7 +395619,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -392554,7 +395641,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -392565,7 +395653,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -392579,7 +395668,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -392742,7 +395832,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -392750,7 +395840,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -392763,6 +395853,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -393336,8 +396443,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -393347,8 +396454,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -393373,8 +396480,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -394100,8 +397207,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -395341,8 +398448,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -395980,8 +399087,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -397970,8 +401077,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -398595,8 +401702,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -398658,7 +401765,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
  * and the ECS/scene bridges. Navigation and crowd ownership moved to the optional
  * Recast/Detour adapter at the major-version boundary.
  */
-export { ensurePhysics, physicsInitMode } from "./ensure.js";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensure.js";
 export * from "./Shape.js";
 export * from "./RigidBody.js";
 export * from "./Collider.js";
@@ -398689,7 +401796,7 @@ export * from "./PhysicsDebugDraw.js";
 ### `./dist/physics/ensure.d.ts`
 
 ```ts
-export { ensurePhysics, physicsInitMode } from "../physics-rapier/index.js";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "../physics-rapier/index.js";
 //# sourceMappingURL=ensure.d.ts.map
 ```
 
@@ -398699,6 +401806,40 @@ export { ensurePhysics, physicsInitMode } from "../physics-rapier/index.js";
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { ensureRapier, rapierInitMode } from "./rapierInit.js";
 export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
+/**
+ * How this build loads Rapier: `eager` (default; at module evaluation, or in the background under `aura3d-no-tla`),
+ * `on-demand` (`aura3d-physics-on-demand` condition / `aura3d({ physics: "lazy" })`: on the first `ensurePhysics()`), or
+ * `stripped` (the Aura3D Vite plugin found no physics usage and removed the backend from this build).
+ */
+export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
+/** Stable error code for an absent or unresolvable Rapier backend. */
+export declare const PHYSICS_BACKEND_MISSING: "PHYSICS_BACKEND_MISSING";
+/** The exact command that installs the pinned Rapier backend with npm. */
+export declare const PHYSICS_BACKEND_INSTALL_COMMAND: "npm install @dimforge/rapier3d-compat@0.20.0";
+/**
+ * Thrown (synchronously for `new PhysicsWorld()` / declared `.physics({...})` bodies, asynchronously for
+ * `createRapierPhysics()` and `preloadPhysics()`) when `@dimforge/rapier3d-compat` cannot be resolved. Carries the
+ * install command so an agent or a developer can fix the project without reading docs.
+ */
+export declare class PhysicsBackendMissingError extends Error {
+    readonly code: "PHYSICS_BACKEND_MISSING";
+    readonly installCommand: "npm install @dimforge/rapier3d-compat@0.20.0";
+    constructor(detail?: string, options?: {
+        readonly cause?: unknown;
+    });
+}
+export type PhysicsBackendStatus = {
+    readonly state: "ready";
+} | {
+    readonly state: "missing";
+    readonly code: typeof PHYSICS_BACKEND_MISSING;
+    readonly installCommand: typeof PHYSICS_BACKEND_INSTALL_COMMAND;
+} | {
+    readonly state: "failed";
+    readonly cause: unknown;
+};
+/** Observed (not predicted) backend state; `missing` also covers a lazy build that has not finished loading. */
+export declare function getPhysicsBackendStatus(): PhysicsBackendStatus;
 export type RapierModule = typeof import("@dimforge/rapier3d-compat");
 export type PhysicsVec3 = readonly [number, number, number];
 export type RapierShapeSpec = {
@@ -401233,8 +404374,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -402485,8 +405626,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -402511,7 +405652,7 @@ export declare class PhysicsWorld {
  * adapter module's one-time WASM initialization without pulling unrelated arcade or query APIs.
  */
 export { PhysicsWorld } from "./PhysicsWorld.js";
-export { ensurePhysics, physicsInitMode } from "./ensureOpaque.js";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensureOpaque.js";
 export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection, PhysicsContinuousCollisionDescriptor, PhysicsContinuousCollisionSelection, PhysicsSnapshot, PhysicsStepStats, PhysicsWorldDescriptor } from "./PhysicsWorld.js";
 //# sourceMappingURL=world.d.ts.map
 ```
@@ -402741,13 +405882,15 @@ export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
 export declare const ensurePhysics: () => Promise<PhysicsSolverModule | null>;
 /** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
 export declare const physicsInitMode: "top-level-await" | "lazy";
+/** How this build loads the solver: `eager` (default), `on-demand` (first `ensurePhysics()`), or `stripped` (removed at build time). */
+export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 //# sourceMappingURL=ensureOpaque.d.ts.map
 ```
 
 ## @aura3d/engine/procedural
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -403043,8 +406186,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -431439,10 +434582,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -435892,6 +439038,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";
@@ -435942,12 +439090,13 @@ export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScree
 export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
 export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry.js";
 export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry.js";
-export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
+export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
 export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AltitudeRigOptions, AnimationHandleLike, AnyNodeHandler, AppAssetDecoders, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloader, AuraAssetPreloadResult, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchPlanReport, AuraBiomeId, AuraBiomeRig, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraBudgetedCameraProbe, AuraCameraController, AuraCameraControllerDeps, AuraCameraControllerImpl, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraCinematicBarsLayer, AuraCinematicBarsOptions, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraColorRamp, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCurve, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDeprecatedVisualQA, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentNodeV2, AuraEnvironmentPresetName, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelBusDeps, AuraFeelBusImpl, AuraFeelEventSpec, AuraFeelExtensionOptions, AuraFeelPresetName, AuraFovKickLayer, AuraFrameTimingReport, AuraFramingContext, AuraHeightFogSpec, AuraHeightQuery, AuraInterpolableHandle, AuraInterpolationTransform, AuraIrradianceVolumeOptions, AuraLegacyParticleFields, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLocomotionClipEntry, AuraLookAtLayer, AuraLookBuildOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLookPreset, AuraLookV0Expansion, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOccluderFade, AuraOccluderFadeOptions, AuraOrbitRig, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraParticleEmitterOptions, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPassOrder, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraProbeNode, AuraPunchLayer, AuraQualityDiagnosticsReport, AuraQuat, AuraRange, AuraReflectionProbeOptions, AuraRenderCallback, AuraRendererMaterialOptions, AuraRenderFrame, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraScreenOverlay, AuraShadowOptions, AuraSkyBand, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSplineOptions, AuraSpringState, AuraSpringVec3State, AuraStructuralQAResult, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence, AuraVfxEffectSpec, AuraVfxKind, AuraVfxShading, AuraVfxSpriteSource, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, AuthoredMaterialSnapshot, BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams, CaptureContext, ChaseRigOptions, CollisionDamper, CollisionDamperOptions, CombatFeelEvent, CombatFeelMove, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, FeelChannel, FeelSoundListener, FightingRigOptions, FixedStepDriverApp, FixedStepDriverOptions, FlightRigOptions, Follow2dRigOptions, FrameLoopTick, FrameLoopTickCallback, Game, GameAcceptance, GameAudioListenerPose, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameJuice, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GeneratedCodeWarningsContext, GroundRaycaster, HemisphereIrradiance, Hud, HudMountOptions, HudWidgetSpec, LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions, LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource, LooksApi, NodeHandleExtension, NodeHandler, OptionCoverageRow, OrbitRigOptions, PauseReason, PhysicalLightDescriptor, PostFieldDiagnostic, Prd02CollectedLights, Prd02EnvironmentBinding, Prd02EnvironmentBindOptions, Prd02LightingKillSwitches, Prd02ShadowOptions, Prd05DebugViewName, Prd06ShaderWarmupCompiler, ProbeBoundsEntry, ProbePhysicsEntry, PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow, QrFlagInput, RebuildTier, RenderSourceContributions, ResolvedLookExpansion, RouteHealthQualityGate, RuntimeCompiledSceneInternals, SceneCompileContext, ShadowedLightSelection, ShadowReport, ShadowSystemConfig, ShoulderRigOptions, TimeControllerOptions, TimeControllerScopeEntry, TopDownRigOptions, TouchControls, TouchPreset, TransitionSpec, TypedGLBActorDecoderOptions, TypedGLBActorMaterialOverride, VfxBridge } from "./publishedUnion.js";
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
 export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
+export type { AuraGameWorkerOptions } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -440590,6 +443739,12 @@ export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -440736,8 +443891,16 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ```ts
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-export declare function registerAuraApp(app: AuraApp): void;
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export declare function registerAuraApp(app: AuraApp, options?: {
+    readonly publish?: boolean;
+}): void;
 export declare function unregisterAuraApp(app: AuraApp): void;
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export declare function clearPageEvidenceWithoutPublishers(): void;
 /** Ownerless builder compatibility is valid only while one app is registered. */
 export declare function soleLiveAuraApp(): AuraApp | undefined;
 export declare const auraAppRegistry: AuraAppRegistry;
@@ -440769,6 +443932,10 @@ export declare function markTiming(name: string): void;
 ```ts
 import type { AuraSceneSnapshot } from "../nodes/types.js";
 import type { MutableDiagnostics } from "../diagnostics.js";
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export declare function enrollRouteState(owner: MutableDiagnostics): void;
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export declare function releaseRouteState(owner: MutableDiagnostics): void;
 export declare function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void;
@@ -441527,6 +444694,10 @@ interface ProductionRuntimeActorState {
     readonly morphTargets?: RuntimeNodeMorphTargetWeights;
     /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
     readonly runtimeMaterial?: AuraModelNode["material"];
+    /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+    readonly denseInstanceMatrices?: Float32Array;
+    /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+    readonly denseInstanceRgba?: Float32Array;
 }
 export declare function resolveProductionActorRuntimeState(entry: ProductionRuntimeActorEntry, runtimeNodes: AuraRuntimeNodeRegistry | undefined): ProductionRuntimeActorState;
 /**
@@ -447945,6 +451116,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -448816,7 +451999,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -449705,7 +452888,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -449752,6 +452935,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -449761,6 +452945,433 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
 export declare function bindPointerInteractions(app: AuraPointerInteractionApp, listener: (event: AuraPointerInteractionEvent) => void, options?: AuraPointerInteractionBindOptions): () => void;
 export {};
 //# sourceMappingURL=pointerInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/labels.d.ts`
@@ -449857,13 +453468,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -449884,6 +453500,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -450091,6 +453710,112 @@ export declare const compute: AuraComputeSurface;
 //# sourceMappingURL=compute.d.ts.map
 ```
 
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/sprites.d.ts`
 
 ```ts
@@ -450284,6 +454009,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -452852,7 +456582,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -453018,6 +456751,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -453327,6 +457062,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -453452,6 +457193,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -453477,6 +457231,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -453536,6 +457297,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -454138,10 +457903,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -454307,6 +458080,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -455286,6 +459061,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -456626,8 +460410,8 @@ export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptio
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
@@ -457855,8 +461639,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -457880,6 +461671,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -457892,16 +461684,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -457930,6 +461728,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -457953,7 +461752,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -458031,6 +461830,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -458173,6 +461979,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -458188,6 +462000,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -467462,6 +471280,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -467494,6 +471313,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -467573,7 +471400,7 @@ export {};
 ```ts
 import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 export interface AuraEnvironmentBackgroundOptions {
     /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
     readonly visible?: boolean;
@@ -467644,6 +471471,14 @@ export declare const prd02EnvironmentBuilders: {
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
 };
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+    /**
+     * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+     * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+     * Omitted or `"studio"` is the existing studio probe, unchanged.
+     */
+    readonly preset?: "studio" | "softbox";
+}
 export declare const envSourceBuilders: {
     preset: (name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     neutral: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -467662,7 +471497,7 @@ export declare const envSourceBuilders: {
         readonly texture: AuraAssetRef<"texture">;
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
-    studio: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
+    studio: (options?: AuraStudioEnvironmentOptions) => AuraNodeBuilder<AuraEnvironmentNode>;
     materialLab: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     productHero: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     nightCinematic: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -470003,6 +473838,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -485861,7 +489702,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -485882,7 +489724,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -485893,7 +489736,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -485907,7 +489751,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -486070,7 +489915,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -486078,7 +489923,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -486091,6 +489936,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -487165,8 +491027,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -487298,8 +491160,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -488423,8 +492285,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -488507,8 +492369,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -489687,8 +493549,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -490028,6 +493890,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -492596,7 +496463,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -492762,6 +496632,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -493071,6 +496943,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -493196,6 +497074,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -493221,6 +497112,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -493280,6 +497178,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -493888,8 +497790,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -493977,6 +497879,7 @@ export { sprite } from "./nodes/sprites.js";
 export { texture } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "./nodes/types/runtime.js";
+export type { AuraRendererInfo, AuraPrecompileResult } from "./nodes/types/runtime.js";
 export { AuraClipGroup, clipping } from "./nodes/clipping.js";
 export { postPresets } from "../contracts/post.js";
 export { shadows } from "./nodes/shadows.js";
@@ -494157,6 +498060,8 @@ export type { AuraInstanceLightsOptions, AuraInstanceWind, AuraInstanceWindOptio
 export type { AuraFatLineOptions, AuraLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
 export type { AuraMergeStaticOptions, AuraStaticPart } from "./nodes/mergeStatic.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export type { AuraScatterAlongPathOptions, AuraScatterArea, AuraScatterExclusion, AuraScatterInAreaOptions, AuraScatterPoint, AuraScatterRange, AuraScatterSide } from "./nodes/scatter.js";
 export type { AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions } from "./nodes/sky.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
@@ -494204,6 +498109,17 @@ export type { TslInput, TslType } from "./nodes/tsl/ir.js";
 export type { AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraToneMappingOperator } from "../contracts/output.js";
 export type { AuraRuntimeNodeHandleParts, TypedGLBActor, TypedGLBActorCrossFadeOptions } from "../production-runtime/TypedGLBActor.js";
 export type { AuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay.js";
+export { frameCameraPose, measureFrameFill } from "./camera/frameSubject.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
+export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
+export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
+export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
+export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";
 //# sourceMappingURL=isolated-index.d.ts.map
 ```
 
@@ -494214,6 +498130,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -494404,6 +498322,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -494436,6 +498355,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -494617,7 +498544,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -494638,7 +498566,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -494649,7 +498578,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -494663,7 +498593,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -494964,7 +498895,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -495049,7 +498980,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -495096,6 +499027,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -495129,10 +499061,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -495426,7 +499366,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -495434,7 +499374,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -495447,6 +499387,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -524768,10 +528725,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -529786,6 +533746,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -534649,13 +538618,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -534676,6 +538650,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -535069,6 +539046,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -535378,6 +539357,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -535503,6 +539488,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -535528,6 +539526,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -535587,6 +539592,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -536628,6 +540637,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -543071,6 +547086,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -547325,8 +551352,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -547350,6 +551384,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -547362,16 +551397,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -547400,6 +551441,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -547423,7 +551465,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -547501,6 +551543,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -547643,6 +551692,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -547658,6 +551713,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -555482,6 +559543,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -558050,7 +562116,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -558201,6 +562270,112 @@ export interface AuraAssetBudget {
     readonly gpuBytesHigh: number;
 }
 //# sourceMappingURL=assets.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/effects.post.d.ts`
@@ -560532,6 +564707,701 @@ export declare function createAuraDiagnosticsOverlay(app: AuraApp, host?: HTMLEl
 //# sourceMappingURL=AuraDiagnosticsOverlay.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/frameSubject.d.ts`
+
+```ts
+/**
+ * `camera.frame` geometry: a pure, dependency-free mapping from world bounds +
+ * lens + aspect + fill to a camera pose, so the maths is unit-testable without a
+ * scene, a DOM or a GPU.
+ *
+ * Definition of fill: the larger of the subject's projected height (as a fraction
+ * of the frame height) and projected width (as a fraction of the frame width).
+ * With `fill: 0.6` a landscape frame shows the subject 60% of the frame tall; a
+ * portrait frame shows it 60% of the frame wide when width is the tighter axis.
+ * The projection is exact for perspective (all eight bounds corners are
+ * projected, not a bounding sphere), and the aim is re-centred so the projected
+ * box sits in the middle of the frame.
+ */
+import type { AuraVec3 } from "../nodes/types.js";
+/** Named camera angles; azimuth 0 looks from +Z toward -Z, positive azimuth swings toward +X. */
+export type AuraFrameAngle = "three-quarter" | "front" | "top" | "side";
+export interface AuraFrameBounds {
+    readonly min: AuraVec3;
+    readonly max: AuraVec3;
+}
+export interface AuraFramePoseOptions {
+    /** Fraction (0.05..1) of the limiting frame axis the subject occupies. Default 0.6. */
+    readonly fill?: number;
+    /** A named angle, or pass `azimuth`/`elevation` (radians) which win over it. Default `"three-quarter"`. */
+    readonly angle?: AuraFrameAngle;
+    /** Radians around +Y from +Z. */
+    readonly azimuth?: number;
+    /** Radians above the horizon. */
+    readonly elevation?: number;
+    /** Extra margin as a fraction of the subject size (0.1 = 10% breathing room). Shrinks the effective fill by 1 / (1 + padding). Default 0. */
+    readonly padding?: number;
+    /** Vertical field of view in degrees. Default 40. */
+    readonly fov?: number;
+    /** Frame width / height the fit is solved for. Default 16 / 9. */
+    readonly aspect?: number;
+    /** Never place the eye closer than this. Default 0.05. */
+    readonly minDistance?: number;
+}
+export interface AuraFramePose {
+    readonly position: AuraVec3;
+    readonly target: AuraVec3;
+    readonly distance: number;
+    readonly fov: number;
+    readonly azimuth: number;
+    readonly elevation: number;
+    /** Effective fill the solver targeted (`fill / (1 + padding)`). */
+    readonly fill: number;
+    readonly near: number;
+    readonly far: number;
+}
+export declare const FRAME_ANGLES: Readonly<Record<AuraFrameAngle, {
+    readonly azimuth: number;
+    readonly elevation: number;
+}>>;
+/**
+ * The fill (larger of projected height / width fraction of the frame) the given
+ * pose produces for `bounds`. Tests and callers measure with the same definition
+ * the solver uses.
+ */
+export declare function measureFrameFill(bounds: AuraFrameBounds, pose: Pick<AuraFramePose, "position" | "target" | "fov">, aspect?: number): number;
+/**
+ * Camera pose that frames `bounds` so the subject fills `fill` of the frame.
+ *
+ * Pure: same inputs, same pose. Throws `RangeError` on non-finite bounds.
+ */
+export declare function frameCameraPose(bounds: AuraFrameBounds, options?: AuraFramePoseOptions): AuraFramePose;
+//# sourceMappingURL=frameSubject.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/camera/frameNodes.d.ts`
+
+```ts
+/**
+ * World bounds of scene nodes for `camera.frame`. Uses the same matrix the
+ * renderer composes for every model/primitive (`createModelMatrix`, which owns
+ * `size`, `scale`, `rotation`, `pivot`, `targetHeight` and normalised model fit)
+ * and the same group flattening the camera rigs use, so the framed box is the
+ * box that is drawn.
+ */
+import type { AuraNodeInput, AuraSceneNode } from "../nodes/types.js";
+import type { AuraFrameBounds, AuraFramePoseOptions } from "./frameSubject.js";
+/** Anything `camera.frame` accepts as a subject. */
+export type AuraFrameSubject = AuraNodeInput | {
+    toJSON(): unknown;
+};
+export interface AuraFrameNodeFilter {
+    /** Return true to leave a node out of the framed bounds (e.g. a ground slab). */
+    readonly exclude?: (node: AuraSceneNode) => boolean;
+}
+/** Default scene-wide filter: skips planes and nodes named like ground, which would otherwise dominate the box. */
+export declare function isGroundLikeNode(node: AuraSceneNode): boolean;
+/**
+ * World-space AABB of the given nodes (groups expanded, hidden nodes and
+ * non-spatial nodes skipped, per-instance transforms honoured), or `undefined`
+ * when nothing occupies space.
+ */
+export declare function worldBoundsOfNodes(subjects: AuraFrameSubject | readonly AuraFrameSubject[], filter?: AuraFrameNodeFilter): AuraFrameBounds | undefined;
+export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameNodeFilter {
+}
+//# sourceMappingURL=frameNodes.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraEffectNode, AuraVec3 } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+/** A light-like source: anything with a world `position` (point or spot light, a mesh) or a travel `direction` (a directional light). */
+export interface AuraGodRaysLightSource {
+    readonly position?: AuraVec3;
+    /** Direction the light travels (a directional light's `direction`); the shafts point back toward the light. */
+    readonly direction?: AuraVec3;
+}
+export interface AuraGodRaysOptions {
+    readonly name?: string;
+    /**
+     * Where the shafts radiate from: `"sun"` (default) is the strongest directional light in the scene; a `[x, y, z]` world
+     * point, a light-like `{ position }` or `{ direction }` object pins it.
+     */
+    readonly source?: "sun" | AuraVec3 | AuraGodRaysLightSource;
+    /** Shaft gain (default 0.7). */
+    readonly intensity?: number;
+    /** Per-step falloff along each shaft, 0.8 to 0.99 (default 0.94); higher gives longer shafts. */
+    readonly decay?: number;
+    /** March samples: 32, 48 or 64 (default 48). A quality tier can only lower this. */
+    readonly samples?: 32 | 48 | 64;
+    /** Shaft colour (default warm white). */
+    readonly color?: AuraColor;
+    /** March density in (0, 1]: the fraction of the screen distance toward the light that is sampled (default 1). */
+    readonly density?: number;
+    /** Scattering medium per metre: shafts build with distance as `1 - exp(-medium * depth)` (default 0.18). */
+    readonly medium?: number;
+}
+export interface AuraVolumetricBeamOptions {
+    readonly name?: string;
+    /** World position of the beam's source (the apex). Default `[0, 0, 0]`. */
+    readonly position?: AuraVec3;
+    /** Direction the beam travels from the source (default `[0, -1, 0]`). Need not be normalised. */
+    readonly direction?: AuraVec3;
+    /** Beam length in world units (default 20). */
+    readonly length?: number;
+    /** Radius of the beam where it ends (default `length * 0.12`). */
+    readonly endRadius?: number;
+    readonly color?: AuraColor;
+    readonly intensity?: number;
+    readonly falloff?: number;
+    readonly edgeSoftness?: number;
+    readonly noise?: number;
+    readonly noiseScale?: number;
+    readonly noiseSpeed?: number;
+    /** Cone sides (default 48). */
+    readonly radialSegments?: number;
+}
+export declare const visualEffectBuilders: {
+    /**
+     * Screen-space god rays: radial shafts march from the light toward each pixel through the scene depth and add onto the
+     * HDR frame (the S4 stage, WebGL2 v2 post chain). Unlike `effects.volumetricFog` it adds no forward fog. It needs
+     * the depth-aware post chain: where the renderer cannot sample depth, the stage is skipped and
+     * `app.diagnostics` carries the degradation instead of failing the frame. Tier `Low` turns the stage off.
+     */
+    readonly godRays: (options?: AuraGodRaysOptions) => AuraNodeBuilder<AuraEffectNode>;
+    /**
+     * Soft light shaft (lighthouse beam, searchlight, window light through haze): an open cone whose silhouette dissolves
+     * and whose dust noise drifts with the clock. Returns a primitive node; add it like any other node.
+     */
+    readonly volumetricBeam: (options?: AuraVolumetricBeamOptions) => AuraNodeBuilder<import("./types.js").AuraPrimitiveNode>;
+};
+//# sourceMappingURL=effects.visual.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/material.visual.d.ts`
+
+```ts
+import type { AuraColor, AuraMaterialSpec } from "./types.js";
+export interface AuraStrataSlopeOptions {
+    /** Surfaces flatter than this angle from horizontal (degrees) take `flatColor`; steeper ones show the bands. Default 38. */
+    readonly angle?: number;
+    /** Blend width in degrees around `angle`. Default 12. */
+    readonly blend?: number;
+    /** Colour of flat ground (talus, sand, grass) between cliffs. Default: the first palette colour, lightened. */
+    readonly flatColor?: AuraColor;
+}
+export interface AuraStrataMaterialOptions {
+    /** Number of layers across the height range (default 12). */
+    readonly bands?: number;
+    /** Palette cycled through the layers (default: five warm sandstone tones). One to eight colours. */
+    readonly colors?: readonly AuraColor[];
+    /** World-space height range the bands span `[bottom, top]` (default `[0, 10]`). Bands repeat outside it. */
+    readonly heightRange?: readonly [number, number];
+    /** Layer-edge waviness and grain, 0 to 1 (default 0.35). 0 gives ruler-straight layers. */
+    readonly noise?: number;
+    /** World-unit size of the noise features (default 3). */
+    readonly noiseScale?: number;
+    /** Thin dark seam between layers, 0 to 1 (default 0.25). */
+    readonly seam?: number;
+    /** Per-layer brightness variation, 0 to 1 (default 0.18). */
+    readonly variation?: number;
+    /** Colour flat ground separately from steep cliffs. Omit to band every surface. */
+    readonly slope?: AuraStrataSlopeOptions;
+    /** Surface roughness for the specular term (default 0.9). */
+    readonly roughness?: number;
+    /** Seed that shifts the noise (default 0). */
+    readonly seed?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.strata(options)`: sedimentary layers by world height with noisy layer edges, thin seams and per-layer
+ * brightness, lit by every scene light and the scene environment. With `slope`, flat ground reads `flatColor` and only
+ * steep faces show the bands, which is how a canyon wall or heightfield cliff separates from its floor and rim.
+ * Apply it to any mesh, including a `procedural.heightfield` surface.
+ */
+export declare function strataMaterial(options?: AuraStrataMaterialOptions): AuraMaterialSpec;
+export interface AuraCausticsMaterialOptions {
+    /** Colour of the floor under the light (default sand). */
+    readonly color?: AuraColor;
+    /** Colour of the caustic light (default warm white). */
+    readonly causticColor?: AuraColor;
+    /** Caustic brightness (default 1.2). */
+    readonly strength?: number;
+    /** World size of one caustic tile along X and Z (default 6). */
+    readonly scale?: number;
+    /** Animation speed multiplier (default 1). */
+    readonly speed?: number;
+    /** World height of the water surface. With `depthFade` the pattern dims the deeper a point lies below it (default none). */
+    readonly surfaceY?: number;
+    /** Extinction per metre below `surfaceY` (default 0.12; ignored without `surfaceY`). */
+    readonly depthFade?: number;
+    /** Roughness of the floor (default 0.95). */
+    readonly roughness?: number;
+    readonly side?: "front" | "back" | "double";
+}
+/**
+ * `material.caustics(options)`: a lit floor whose surface carries moving water-caustic light, projected straight down in
+ * world X/Z so every receiver (sand, rock, ruins) shows the same shimmering net. It reads `uTime`, so it animates as long
+ * as the app draws frames (a scene with a `uTime` custom shader is a declared time consumer on builds that include
+ * `timeConsumers`; otherwise add an `app.onFrame` hook or a looping timeline).
+ */
+export declare function causticsMaterial(options?: AuraCausticsMaterialOptions): AuraMaterialSpec;
+export interface AuraLightBeamMaterialOptions {
+    /** Beam colour (default warm white). */
+    readonly color?: AuraColor;
+    /** Brightness multiplier (default 1). */
+    readonly intensity?: number;
+    /** Length of the cone along its axis, in object units: must match the cone's height (default 20). */
+    readonly length?: number;
+    /** How fast the beam fades from source to end (exponent, default 1). */
+    readonly falloff?: number;
+    /** Edge softness exponent: higher gives a brighter core and softer silhouette (default 1.3). */
+    readonly edgeSoftness?: number;
+    /** Dust noise strength, 0 to 1 (default 0.35). */
+    readonly noise?: number;
+    /** World-unit size of the dust features (default 2.5). */
+    readonly noiseScale?: number;
+    /** Noise drift speed (default 0.25). */
+    readonly noiseSpeed?: number;
+}
+/**
+ * `material.lightBeam(options)`: additive soft beam for an open cone or cylinder whose axis is the mesh's local Y with the
+ * source at +Y (`effects.volumetricBeam` builds that mesh for you). Brightness is strongest where the surface faces the
+ * camera, so the silhouette dissolves instead of showing a hard cone edge; a drifting dust noise breaks up the shaft.
+ */
+export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions): AuraMaterialSpec;
+//# sourceMappingURL=material.visual.d.ts.map
+```
+
 ### `./dist/engine/public/v5-context.d.ts`
 
 ```ts
@@ -560845,8 +565715,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -561091,8 +565961,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -590195,10 +595065,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -600161,6 +605034,8 @@ export { interactions } from "./nodes/interactions.js";
 export { compute, createComputeSurface } from "./nodes/compute.js";
 export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
+export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
+export { pointStreamOf } from "./nodes/pointStream.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraLineNode, AuraPointsNode, AuraSpriteNode } from "./nodes/types.js";
@@ -600211,12 +605086,13 @@ export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScree
 export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
 export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry.js";
 export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry.js";
-export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
+export { A3D_APP_WORKFLOW_PRESETS, A3DAppLifecycle, A3DRenderer, A3DScene, appExtensionsAll, appliedLookSection, applyMaterialOverrides, applyPrd05DebugViewToMaterialLibrary, asRuntimeCompiled, assertAuraRouteReady, assertAuraScreenshotNotBlank, AssetDecoderUnavailable, atmosphere, attachAppAssetDecoders, attachVfxBridge, auditArtDirection, AURA_VFX_BUILTIN_SEQUENCES, AuraCameraSpline, AuraClipMapMissingError, AuraColorParseError, authoredLookIds, BicycleModel, bindFeelSound, bindOrbitPointer, bindPrd02EnvironmentProbe, bindRuntimeCompiled, CAMERA_DEFAULT_POSE, CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ, captureAuraAppScreenshot, captureFromUrl, catmullRom, catmullRomDerivative, characterAnimation, clampLookOverrides, collectAtmosphereSection, collectEffectsSection, collectExposureSection, collectGeneratedCodeWarnings, collectPostSection, collectPrd02Lights, collectPrd04MaterialDiagnostics, combatFeelEvent, compilerSlot, compileScene, composeWorldMatrix, createA3DApp, createAltitudeRig, createAnimationLabWorkflow, createAppAssetDecoders, createAppEffects, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAtmosphereExtension, createAuraAssetPanelRows, createAuraCameraController, createAuraDiagnosticsOverlay, createAuraFeelBus, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createBicycleModel, createCameraController, createCameraProbe, createChaseRig, createCinematicBarsLayer, createCollisionDamper, createComparisonWorkflow, createECSRenderSource, createEffectsExtension, createExternalParityEnvironmentPipeline, createFeelBus, createFightingRig, createFixedStepDriver, createFlightRig, createFollow2dRig, createFovKickLayer, createFromSpecRig, createGame, createInteractiveSceneWorkflow, createInterpolationStore, createLeanCameraRigAdapter, createLeanGameFeelAdapter, createLetterboxContributor, createLookAtLayer, createMaterialStudioWorkflow, createNoise1D, createOccluderFade, createOccluderFadeContributor, createOrbitRig, createPrd02ShadowOptions, createPrd03PostSurface, createProductConfiguratorWorkflow, createProductionRuntimePostprocess, createPunchLayer, createRailRig, createResourceManager, createRootPostPipeline, createSceneShowcaseWorkflow, createScreenOverlay, createShoulderRig, createSpline, createTimeController, createTopDownRig, createTraumaLayer, decomposeMatrix, descriptorToAuraLightData, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTIC_ONLY_PRD04_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceForFraction, distanceForFractionInContext, ease, effectiveAxisFov, emitCombatFeel, eulerToQuaternion, explicitEnvironmentResolution, FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, FEEL_PRESET_EVENTS, FEEL_PRESETS, feelPresets, FixedStepDriver, fractionForDistance, fractionForDistanceInContext, frameTimingSection, getAppAssetDecoders, GLTFLoader, inspectGLTFAsset, installLookLintDefaults, installPrd06ShaderWarmup, InterpolationStore, isFakeEffectName, latestAuthoredPostContext, latestSubmittedPostprocess, LegacySpecRig, LETTERBOX_BLACKBOARD_KEY, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookDiagnosticsSection, lookLint, lookLintRegisteredCodes, lookNodeHandler, lookPresetIds, lookPresets, lowerModelMaterialOverrides, mapBloomOptionsV2, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, perlin1, physicalLightDescriptor, POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, postPresets, prd02AmbientTerm, prd02EnvironmentBuilders, prd02KitLighting, prd02LightingOn, Prd02LightingRuntime, prd02ResolveTier, PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE, Prd03PostSurface, PRD05_DEBUG_VIEW_CHANNELS, prd06RenderingLaneReady, PRD07_DIAGNOSTIC_ONLY_FIELDS, prd07SystemFor, prepareModelDecoders, presentedViewProjection, probes, PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE, providePrd13Contracts, qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, readAura3dTonemapQuery, readLightingKillSwitches, readLightingModelFromUrl, recordAuthoredPostContext, recordSubmittedPostprocess, registerAppExtension, registerDiagnosticsSection, registeredTypedGLBActors, registerEnvironmentSource, registerLookLintDefaults, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, registerPrd02EnvironmentSources, registerPrd04MaterialDiagnostics, registerPrd04OptionCoverage, registerPrd04TypedGLBActorMaterials, registerPrd07LookLintRules, registerPrd07System, Renderer, resetAuthoredPostContext, resetSubmittedPostprocess, resolveA3DAppQualityPreset, resolveEnvironment, resolveLightingModel, resolveLightingTier, resolveLookExpansion, resolveQrFlags, resolveShadowSystemConfig, sceneShadowRadius, SCREEN_FEEL_BLACKBOARD_KEY, SCREEN_FEEL_KEY, screenFeelTier, selectShadowedLights, setCharacterAnimationAppTimeScale, setCompilerImpl, setLookLintDefaultsProvider, setPrd05DebugView, setPrd06ShaderWarmupCompiler, setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, skyNodeHandler, smoothingToHalflife, snapshotMaterials, sniffGLBRequiredDecoders, springDamp, springDampVec3, springStep, springStepVec3, staticRig, structuralQA, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, stubLookContractRequirements, StubModelMaterialHandle, StubPostSurface, StubTimeController, summarizeExternalParityGLTFCorpus, TimeController, typedGLBActorDecoderOptions, typedGLBActorForNode, typedGLBActorQrTransmissionMode, updateCompiledScene, validateClipMap, validatePostEffectNode, validateVfxAtlasManifest, vfxAtlasPageForTier, WEBGPU_COMPRESSED_CAPS, WIND_CHUNK, worldQueriesSlot } from "./publishedUnion.js";
 export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AltitudeRigOptions, AnimationHandleLike, AnyNodeHandler, AppAssetDecoders, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloader, AuraAssetPreloadResult, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchPlanReport, AuraBiomeId, AuraBiomeRig, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraBudgetedCameraProbe, AuraCameraController, AuraCameraControllerDeps, AuraCameraControllerImpl, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraCinematicBarsLayer, AuraCinematicBarsOptions, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraColorRamp, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCurve, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDeprecatedVisualQA, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentNodeV2, AuraEnvironmentPresetName, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelBusDeps, AuraFeelBusImpl, AuraFeelEventSpec, AuraFeelExtensionOptions, AuraFeelPresetName, AuraFovKickLayer, AuraFrameTimingReport, AuraFramingContext, AuraHeightFogSpec, AuraHeightQuery, AuraInterpolableHandle, AuraInterpolationTransform, AuraIrradianceVolumeOptions, AuraLegacyParticleFields, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLocomotionClipEntry, AuraLookAtLayer, AuraLookBuildOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLookPreset, AuraLookV0Expansion, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOccluderFade, AuraOccluderFadeOptions, AuraOrbitRig, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraParticleEmitterOptions, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPassOrder, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraProbeNode, AuraPunchLayer, AuraQualityDiagnosticsReport, AuraQuat, AuraRange, AuraReflectionProbeOptions, AuraRenderCallback, AuraRendererMaterialOptions, AuraRenderFrame, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraScreenOverlay, AuraShadowOptions, AuraSkyBand, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSplineOptions, AuraSpringState, AuraSpringVec3State, AuraStructuralQAResult, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence, AuraVfxEffectSpec, AuraVfxKind, AuraVfxShading, AuraVfxSpriteSource, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, AuthoredMaterialSnapshot, BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams, CaptureContext, ChaseRigOptions, CollisionDamper, CollisionDamperOptions, CombatFeelEvent, CombatFeelMove, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, FeelChannel, FeelSoundListener, FightingRigOptions, FixedStepDriverApp, FixedStepDriverOptions, FlightRigOptions, Follow2dRigOptions, FrameLoopTick, FrameLoopTickCallback, Game, GameAcceptance, GameAudioListenerPose, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameJuice, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GeneratedCodeWarningsContext, GroundRaycaster, HemisphereIrradiance, Hud, HudMountOptions, HudWidgetSpec, LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions, LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource, LooksApi, NodeHandleExtension, NodeHandler, OptionCoverageRow, OrbitRigOptions, PauseReason, PhysicalLightDescriptor, PostFieldDiagnostic, Prd02CollectedLights, Prd02EnvironmentBinding, Prd02EnvironmentBindOptions, Prd02LightingKillSwitches, Prd02ShadowOptions, Prd05DebugViewName, Prd06ShaderWarmupCompiler, ProbeBoundsEntry, ProbePhysicsEntry, PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow, QrFlagInput, RebuildTier, RenderSourceContributions, ResolvedLookExpansion, RouteHealthQualityGate, RuntimeCompiledSceneInternals, SceneCompileContext, ShadowedLightSelection, ShadowReport, ShadowSystemConfig, ShoulderRigOptions, TimeControllerOptions, TimeControllerScopeEntry, TopDownRigOptions, TouchControls, TouchPreset, TransitionSpec, TypedGLBActorDecoderOptions, TypedGLBActorMaterialOverride, VfxBridge } from "./publishedUnion.js";
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
 export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
+export type { AuraGameWorkerOptions } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -604859,6 +609735,12 @@ export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
 export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
+export { PointCloudIndex, InstanceIndex, pixelTolerance } from "./spatialIndex.js";
+export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions } from "./spatialIndex.js";
+export { createSpatialPicker } from "./spatialPicker.js";
+export type { SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker } from "./spatialPicker.js";
+export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "./spatialInteraction.js";
+export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -605005,8 +609887,16 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ```ts
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-export declare function registerAuraApp(app: AuraApp): void;
+/** `publish: false` (embedded apps) registers for ownerless-builder lookup without touching `globalThis`. */
+export declare function registerAuraApp(app: AuraApp, options?: {
+    readonly publish?: boolean;
+}): void;
 export declare function unregisterAuraApp(app: AuraApp): void;
+/**
+ * Startup-failure cleanup: a publishing app mirrors compile evidence before it is registered, so a
+ * failed construction removes those globals unless another publishing app still owns them.
+ */
+export declare function clearPageEvidenceWithoutPublishers(): void;
 /** Ownerless builder compatibility is valid only while one app is registered. */
 export declare function soleLiveAuraApp(): AuraApp | undefined;
 export declare const auraAppRegistry: AuraAppRegistry;
@@ -605038,6 +609928,10 @@ export declare function markTiming(name: string): void;
 ```ts
 import type { AuraSceneSnapshot } from "../nodes/types.js";
 import type { MutableDiagnostics } from "../diagnostics.js";
+/** Marks `owner` as a publisher of page-global route state. Called once per app that has not opted out. */
+export declare function enrollRouteState(owner: MutableDiagnostics): void;
+/** Stops `owner` publishing and clears the page globals when it was the last publisher. */
+export declare function releaseRouteState(owner: MutableDiagnostics): void;
 export declare function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void;
 export declare function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void;
@@ -605796,6 +610690,10 @@ interface ProductionRuntimeActorState {
     readonly morphTargets?: RuntimeNodeMorphTargetWeights;
     /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
     readonly runtimeMaterial?: AuraModelNode["material"];
+    /** I-07: dense column-major mat4s written by `handle.setInstanceMatrices` on an `instances.model` node. */
+    readonly denseInstanceMatrices?: Float32Array;
+    /** I-07: dense linear RGBA written alongside `denseInstanceMatrices`. */
+    readonly denseInstanceRgba?: Float32Array;
 }
 export declare function resolveProductionActorRuntimeState(entry: ProductionRuntimeActorEntry, runtimeNodes: AuraRuntimeNodeRegistry | undefined): ProductionRuntimeActorState;
 /**
@@ -612214,6 +617112,18 @@ export declare class AuraNodeBuilder<TNode extends AuraSceneNode> {
         readonly rotation: AuraVec3;
         readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
     }>;
+    /**
+     * E3-06 three.js name: `mesh.rotation.set(x, y, z)` reads as `.rotation(x, y, z)`. Identical to `rotate` (same node
+     * output); the canonical spelling stays `rotate`.
+     */
+    rotation(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
+    rotation(value: AuraVec3, order?: import("../../contracts/sceneGraph.js").AuraEulerOrder): AuraNodeBuilder<TNode & {
+        readonly rotation: AuraVec3;
+        readonly rotationOrder?: import("../../contracts/sceneGraph.js").AuraEulerOrder;
+    }>;
     /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
     quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & {
         readonly quaternion: import("../../contracts/sceneGraph.js").AuraQuat;
@@ -613085,7 +617995,7 @@ export declare const environments: {
         readonly texture: import("./types.js").AuraAssetRef<"texture">;
         readonly reflectionTexture?: import("./types.js").AuraAssetRef<"texture">;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly studio: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly studio: (options?: import("./environments.js").AuraStudioEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly materialLab: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly productHero: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly nightCinematic: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
@@ -613974,7 +618884,7 @@ export {};
 ```ts
 import type { AuraInteractionNode, AuraSceneNode, AuraSceneSnapshot } from "./types.js";
 import type { AuraRuntimeNodeHandle } from "./types/runtime.js";
-import { type SceneQueryHit } from "../SceneQueries.js";
+import { type SceneQueryHit, type SceneRaycastCamera } from "../SceneQueries.js";
 export type AuraPointerInteractionPhase = "down" | "move" | "up";
 export interface AuraPointerInteractionEvent {
     readonly phase: AuraPointerInteractionPhase;
@@ -614021,6 +618931,7 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
     readonly ndc: readonly [number, number];
     readonly pointerId?: number;
 }): AuraPointerInteractionEvent[];
+export declare function cameraFor(app: AuraPointerInteractionApp, aspect: number): SceneRaycastCamera | undefined;
 /**
  * Bind `interactions.pointer` nodes to real pointer input. Each pointerdown/move/up on the element is cast through
  * the presented camera (the scene camera before the first frame) against the mounted node handles (the scene
@@ -614030,6 +618941,433 @@ export declare function routePointerInteraction(nodes: readonly AuraSceneNode[],
 export declare function bindPointerInteractions(app: AuraPointerInteractionApp, listener: (event: AuraPointerInteractionEvent) => void, options?: AuraPointerInteractionBindOptions): () => void;
 export {};
 //# sourceMappingURL=pointerInteraction.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialIndex.d.ts`
+
+```ts
+/**
+ * Pure CPU spatial indices for picking points and instances (register gaps K-02 / K-03).
+ *
+ * No scene, DOM or renderer dependency: positions and instance matrices go in, rays go in, hits come out.
+ *
+ * Both indices share one uniform grid (counting-sort CSR layout, no per-cell allocation) and one
+ * Amanatides-Woo ray walk. The grid is built lazily on the first query after construction or
+ * `invalidate()`, so a buffer that is written every frame but picked rarely pays nothing per write.
+ *
+ * Freshness contract: JavaScript cannot observe an in-place write into a `Float32Array`, so the owner of the
+ * buffer calls `invalidate()` (or `update(buffer, count)`) after writing. The scene picker also compares a cheap
+ * strided fingerprint as a best-effort guard; do not rely on it for a few edited elements.
+ */
+export type Vec3 = readonly [number, number, number];
+export interface PickRay {
+    readonly origin: Vec3;
+    /** Normalized internally. */
+    readonly direction: Vec3;
+}
+/** Bounded pick tolerance around the ray: `radius + slope * t` at distance `t` along the ray. */
+export interface PickTolerance {
+    /** World radius at the ray origin. Default 0. */
+    readonly radius?: number;
+    /** World radius added per unit distance along the ray (a pixel tolerance on a perspective camera). Default 0. */
+    readonly slope?: number;
+}
+export interface PointPickOptions extends PickTolerance {
+    /** Ignore points closer than this along the ray. Default 0. */
+    readonly near?: number;
+    /** Ignore points farther than this along the ray. Default infinity. */
+    readonly far?: number;
+    /**
+     * `"ray"` (default): the point with the smallest tolerance-normalized distance from the ray (the one the cursor
+     * is visually closest to). `"depth"`: the point nearest the viewer among all inside the tolerance.
+     */
+    readonly rank?: "ray" | "depth";
+}
+export interface PointPickHit {
+    /** Index into the position array (point number). */
+    readonly index: number;
+    /** The point's position in the index's space. */
+    readonly point: Vec3;
+    /** Distance along the (normalized) ray to the point's closest approach. */
+    readonly distance: number;
+    /** Perpendicular distance from the point to the ray. */
+    readonly rayDistance: number;
+}
+export interface PointCloudIndexOptions {
+    /** Target average points per grid cell. Default 2. */
+    readonly pointsPerCell?: number;
+    /** Lower bound for the cell edge, in position units. */
+    readonly minCellSize?: number;
+}
+/** Lazy uniform-grid index over a flat `xyz` position array. */
+export declare class PointCloudIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private positionsRef;
+    private countValue;
+    private versionValue;
+    private builds;
+    constructor(positions: ArrayLike<number>, count?: number, options?: PointCloudIndexOptions);
+    get count(): number;
+    /** Incremented on every invalidation. */
+    get version(): number;
+    /** How many times the grid has been (re)built; a counter for tests and benchmarks. */
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    /** Mark the grid stale after the position buffer was written; the next query rebuilds it. */
+    invalidate(): void;
+    /** Point the index at a (possibly new) buffer and/or count and invalidate. */
+    update(positions?: ArrayLike<number>, count?: number): void;
+    /** Build now (otherwise built on the first query). */
+    ensureBuilt(): void;
+    /** Nearest point to the ray inside the tolerance, or `undefined`. */
+    pick(ray: PickRay, options?: PointPickOptions): PointPickHit | undefined;
+    /** Farthest ray parameter that can matter: distance to the grid centre plus the grid diagonal. */
+    private farBound;
+}
+/** Local-space bounds of the instanced geometry. Give `min`/`max` for exact box hits, or `radius` for spheres. */
+export interface InstanceLocalBounds {
+    readonly min?: Vec3;
+    readonly max?: Vec3;
+    /** Local bounding-sphere centre; defaults to the box centre or the origin. */
+    readonly center?: Vec3;
+    /** Local bounding-sphere radius; defaults to the box half-diagonal. */
+    readonly radius?: number;
+}
+export interface InstancePickOptions {
+    readonly near?: number;
+    readonly far?: number;
+    /** `"box"` (default when local `min`/`max` exist) tests the transformed local box; `"sphere"` the bounding sphere. */
+    readonly shape?: "box" | "sphere";
+}
+export interface InstancePickHit {
+    readonly instanceId: number;
+    readonly point: Vec3;
+    /** Surface normal for box hits; the direction from the sphere centre for sphere hits. */
+    readonly normal: Vec3;
+    readonly distance: number;
+}
+export interface InstanceIndexOptions {
+    readonly pointsPerCell?: number;
+}
+/** Lazy uniform-grid index over per-instance bounding spheres built from column-major 4x4 instance matrices. */
+export declare class InstanceIndex {
+    private readonly options;
+    private grid;
+    private built;
+    private matricesRef;
+    private countValue;
+    private spheres;
+    private centres;
+    private maxRadius;
+    private versionValue;
+    private builds;
+    private readonly bounds;
+    constructor(matrices: ArrayLike<number>, count?: number, localBounds?: InstanceLocalBounds, options?: InstanceIndexOptions);
+    get count(): number;
+    get version(): number;
+    get buildCount(): number;
+    get isBuilt(): boolean;
+    invalidate(): void;
+    update(matrices?: ArrayLike<number>, count?: number): void;
+    ensureBuilt(): void;
+    /** Nearest instance hit by the ray, or `undefined`. */
+    pick(ray: PickRay, options?: InstancePickOptions): InstancePickHit | undefined;
+}
+/**
+ * Rows of the inverse of the upper-left 3x3 of the column-major matrix at `m[base..]`
+ * (`[r00, r01, r02, r10, ...]`, row r maps a world vector to local coordinate r); undefined when singular.
+ */
+export declare function inverseLinear3(m: ArrayLike<number>, base?: number): readonly number[] | undefined;
+/**
+ * Convert a screen-space pixel tolerance into a world {@link PickTolerance} for a ray built from a camera.
+ * `ray` and `ray1` are the unit-direction rays for two NDC positions one pixel apart (vertically); the origin
+ * separation gives the orthographic part and the direction separation the perspective part.
+ */
+export declare function pixelTolerance(ray: PickRay, ray1: PickRay, pixelRadius: number): Required<PickTolerance>;
+//# sourceMappingURL=spatialIndex.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialPicker.d.ts`
+
+```ts
+/**
+ * Scene-level CPU picking for points and instances, hover/click events, and a pick-driven annotation record.
+ *
+ * `createSpatialPicker` adapts mounted runtime handles (preferred: they carry live positions, instance matrices and
+ * world matrices) or declarative scene nodes onto the pure indices in `spatialIndex.ts`. It keeps one lazily built
+ * index per node and rebuilds it only when the node's buffer identity, length or strided fingerprint changes, or
+ * when the caller invalidates it. It does not touch the renderer: a GPU id-buffer pass (K-04) is a separate,
+ * later piece of work.
+ *
+ * Worker-render mode: nothing here reads the DOM or the renderer, but `bindSpatialPicking` needs a canvas element in
+ * the calling realm; where the canvas lives in a worker the caller feeds `picker.pick` with its own ray instead.
+ */
+import type { AuraRuntimeNodeHandle, AuraSceneNode } from "./nodes/types.js";
+import { type SceneRaycastInput } from "./SceneQueries.js";
+import { type InstancePickHit, type PointPickHit } from "./spatialIndex.js";
+export interface SpatialPickViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface SpatialPickOptions {
+    /** Which target kinds to test. Default both. */
+    readonly kinds?: "points" | "instances" | "all";
+    /**
+     * Screen tolerance in CSS pixels for points. Needs `viewport` and a camera + NDC input; ignored for a bare world
+     * ray (use `worldRadius`/`radiusSlope`). Default 8 when a viewport is given, else 0.
+     */
+    readonly pixelRadius?: number;
+    readonly viewport?: SpatialPickViewport;
+    /** World-space tolerance at the ray origin (added to the pixel tolerance). */
+    readonly worldRadius?: number;
+    /** World-space tolerance added per unit distance along the ray. */
+    readonly radiusSlope?: number;
+    readonly near?: number;
+    readonly far?: number;
+    /** Point ranking: closest to the cursor (`"ray"`, default) or nearest to the viewer (`"depth"`). */
+    readonly rank?: "ray" | "depth";
+    /** Restrict to a node name or runtime id. */
+    readonly node?: string;
+    /** Instance hit shape. Default `"box"`. */
+    readonly instanceShape?: "box" | "sphere";
+}
+export interface SpatialPointHit extends PointPickHit {
+    readonly kind: "point";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export interface SpatialInstanceHit extends InstancePickHit {
+    readonly kind: "instance";
+    readonly nodeId: string | undefined;
+    readonly nodeName: string | undefined;
+}
+export type SpatialPickHit = SpatialPointHit | SpatialInstanceHit;
+export interface SpatialPickerSources {
+    /** Mounted handles (`app.nodes.all()`). Preferred. */
+    readonly handles?: readonly AuraRuntimeNodeHandle[];
+    /** Declarative nodes (`app.scene.nodes`), used when no handle list is given. Groups are descended. */
+    readonly nodes?: readonly AuraSceneNode[];
+}
+export interface SpatialPicker {
+    /** Nearest hit across the selected kinds, or `undefined`. */
+    pick(input: SceneRaycastInput, options?: SpatialPickOptions): SpatialPickHit | undefined;
+    /** Nearest hit per kind (point and instance), e.g. for a hover tooltip that wants both. */
+    pickAll(input: SceneRaycastInput, options?: SpatialPickOptions): readonly SpatialPickHit[];
+    /** Force a rebuild of one node's index (by name or id), or of every index. */
+    invalidate(node?: string): void;
+    /** Number of grid builds performed so far (benchmark and test counter). */
+    readonly buildCount: number;
+    dispose(): void;
+}
+/** Create a picker over mounted handles or declarative nodes. Sources are re-read on every call. */
+export declare function createSpatialPicker(sourcesOf: SpatialPickerSources | (() => SpatialPickerSources)): SpatialPicker;
+//# sourceMappingURL=spatialPicker.d.ts.map
+```
+
+### `./dist/engine/agent-api/spatialInteraction.d.ts`
+
+```ts
+/**
+ * Hover/click events for point and instance picks, a culling label overlay manager, and a measurement /
+ * annotation record (register gaps K-01, K-03, K-07 first cuts).
+ *
+ * Everything except the thin DOM writes in `createLabelOverlay` and the listener wiring in `bindSpatialPicking` is
+ * pure and unit-tested without a browser.
+ */
+import type { AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import { type AuraPointerInteractionApp } from "./nodes/pointerInteraction.js";
+import { type SpatialPickHit, type SpatialPickOptions, type SpatialPicker } from "./spatialPicker.js";
+import type { Vec3 } from "./spatialIndex.js";
+export type SpatialPickEventType = "enter" | "leave" | "move" | "click";
+export interface SpatialPickEvent {
+    readonly type: SpatialPickEventType;
+    /** The hit under the pointer now (`undefined` for `leave`, or a click on nothing). */
+    readonly hit: SpatialPickHit | undefined;
+    /** The hit that was hovered before this event. */
+    readonly previous: SpatialPickHit | undefined;
+    readonly ndc: readonly [number, number];
+    readonly client: readonly [number, number];
+    readonly pointerId: number | undefined;
+}
+interface SpatialPickElementLike {
+    addEventListener(type: string, listener: (event: unknown) => void): unknown;
+    removeEventListener(type: string, listener: (event: unknown) => void): unknown;
+    getBoundingClientRect(): {
+        readonly left: number;
+        readonly top: number;
+        readonly width: number;
+        readonly height: number;
+    };
+}
+export interface SpatialPickBindOptions {
+    readonly element?: SpatialPickElementLike;
+    /** Reuse a picker (and its indices); default builds one over `app.nodes` / `app.scene.nodes`. */
+    readonly picker?: SpatialPicker;
+    /** Pick options (pixel radius, kinds, rank...). `viewport` is filled from the element rect. */
+    readonly pick?: Omit<SpatialPickOptions, "viewport">;
+    /** Max pointer travel in CSS pixels between down and up for a click. Default 4. */
+    readonly clickSlop?: number;
+    /** Frame scheduler for coalesced hover picks; default `requestAnimationFrame` or a microtask. */
+    readonly schedule?: (callback: () => void) => void;
+}
+export interface SpatialPickBinding {
+    /** Hover picks actually executed (at most one per scheduled frame, however many pointermoves arrived). */
+    readonly pickCount: number;
+    /** Run any pending coalesced hover pick now. */
+    flush(): void;
+    dispose(): void;
+}
+/**
+ * Bind hover (`enter` / `leave` / `move`) and `click` events for points and instances to a canvas. Pointer moves are
+ * coalesced to one pick per scheduled frame, hover transitions are diffed by node + point index / instance id, and
+ * a click is a pick at pointer-up within `clickSlop` of pointer-down. Returns a binding with a disposer.
+ */
+export declare function bindSpatialPicking(app: AuraPointerInteractionApp & {
+    readonly scene: AuraSceneSnapshot;
+    readonly nodes?: {
+        all(): readonly AuraRuntimeNodeHandle[];
+    };
+}, listener: (event: SpatialPickEvent) => void, options?: SpatialPickBindOptions): SpatialPickBinding;
+export interface CssViewport {
+    readonly width: number;
+    readonly height: number;
+}
+export interface CssProjection {
+    /** CSS pixels from the viewport's top-left. */
+    readonly x: number;
+    readonly y: number;
+    /** NDC depth (standard convention, smaller is nearer). */
+    readonly depth: number;
+    /** Clip-space w; `<= 0` is behind the camera. */
+    readonly w: number;
+    /** In front of the camera, inside the clip depth range and inside the viewport. */
+    readonly visible: boolean;
+}
+/** Project a world point to CSS pixels with a column-major view-projection matrix. */
+export declare function worldToCss(viewProjection: ArrayLike<number>, point: Vec3, viewport: CssViewport, margin?: number): CssProjection;
+/** Inverse of {@link worldToCss}'s pixel mapping: CSS pixels to NDC. */
+export declare function cssToNdc(x: number, y: number, viewport: CssViewport): readonly [number, number];
+export interface OverlayLabel {
+    readonly id: string;
+    readonly text: string;
+    readonly position: Vec3;
+    /** Higher wins when the cap drops labels. Default 0; ties go to the nearer label. */
+    readonly priority?: number;
+    /** CSS pixel offset from the projected point. */
+    readonly offset?: readonly [number, number];
+    readonly className?: string;
+}
+export interface PlacedOverlayLabel {
+    readonly label: OverlayLabel;
+    readonly x: number;
+    readonly y: number;
+    readonly depth: number;
+}
+export interface LabelOverlayOptions {
+    /** Maximum labels shown per update. Default 64. */
+    readonly maxLabels?: number;
+    /** CSS pixels outside the viewport that still count as visible. Default 0. */
+    readonly margin?: number;
+}
+/** Cull labels behind the camera or outside the viewport, rank by priority then nearness, cap at `maxLabels`. */
+export declare function planLabelOverlay(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[], options?: LabelOverlayOptions): PlacedOverlayLabel[];
+interface OverlayElementLike {
+    textContent: string | null;
+    className: string;
+    style: {
+        transform: string;
+        display: string;
+        position?: string;
+        left?: string;
+        top?: string;
+        pointerEvents?: string;
+    };
+    remove(): void;
+}
+interface OverlayContainerLike {
+    appendChild(element: never): unknown;
+    readonly ownerDocument?: {
+        createElement(tag: string): unknown;
+    } | null;
+}
+export interface LabelOverlay {
+    /** Place up to `maxLabels` labels; elements are pooled and unchanged text/position writes are skipped. */
+    update(viewProjection: ArrayLike<number>, viewport: CssViewport, labels: readonly OverlayLabel[]): void;
+    /** Number of label elements currently shown. */
+    readonly shown: number;
+    /** DOM property writes performed so far (for the no-write-when-unchanged test). */
+    readonly writes: number;
+    clear(): void;
+    dispose(): void;
+}
+/**
+ * Overlay manager for N DOM labels per frame. Labels are positioned with `transform` (no layout), culled when
+ * behind the camera or off screen, and capped. The container should be `position: relative/absolute` over the canvas.
+ */
+export declare function createLabelOverlay(container: OverlayContainerLike, options?: LabelOverlayOptions & {
+    readonly createElement?: () => OverlayElementLike;
+}): LabelOverlay;
+/** A picked or typed world anchor. */
+export interface MeasurePoint {
+    readonly position: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+    readonly kind?: "point" | "instance" | "surface" | undefined;
+    /** Point index (`kind: "point"`). */
+    readonly index?: number | undefined;
+    /** Instance id (`kind: "instance"`). */
+    readonly instanceId?: number | undefined;
+}
+export interface AnnotationRecord {
+    readonly id: string;
+    readonly type: "point" | "distance";
+    /** Coordinate frame name of `points`; `"world"` unless the host says otherwise. */
+    readonly frame: string;
+    /** Unit of `value` (`"m"` by default; scene units are not assumed to be metres by the engine). */
+    readonly unit: string;
+    readonly points: readonly MeasurePoint[];
+    /** Euclidean distance for `type: "distance"`. */
+    readonly value?: number;
+    readonly text: string;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    /** Milliseconds since the epoch (caller-supplied for determinism, default `Date.now()`). */
+    readonly createdAt: number;
+}
+export interface AnnotationOptions {
+    readonly id: string;
+    readonly frame?: string;
+    readonly unit?: string;
+    readonly text?: string;
+    readonly decimals?: number;
+    readonly attributes?: Readonly<Record<string, string | number | boolean>>;
+    readonly createdAt?: number;
+}
+/** Straight-line distance and delta between two world points. */
+export declare function measureDistance(a: Vec3, b: Vec3): {
+    readonly distance: number;
+    readonly delta: Vec3;
+};
+/** Normalize a pick hit (or a bare anchor) to a serializable {@link MeasurePoint}. */
+export declare function measurePointFromHit(hit: SpatialPickHit | MeasurePoint | {
+    readonly point: Vec3;
+    readonly nodeId?: string | undefined;
+    readonly nodeName?: string | undefined;
+}): MeasurePoint;
+/** Record a two-point distance annotation from two picks. */
+export declare function createDistanceAnnotation(a: Parameters<typeof measurePointFromHit>[0], b: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** Record a single-point annotation from a pick. */
+export declare function createPointAnnotation(hit: Parameters<typeof measurePointFromHit>[0], options: AnnotationOptions): AnnotationRecord;
+/** The overlay label for an annotation: at the midpoint of a distance, at the point otherwise. */
+export declare function annotationOverlayLabel(record: AnnotationRecord, priority?: number): OverlayLabel;
+/** Lossless JSON for an annotation. */
+export declare function serializeAnnotation(record: AnnotationRecord): string;
+/** Parse and validate {@link serializeAnnotation} output; throws `ANNOTATION_INVALID` on a malformed record. */
+export declare function parseAnnotation(json: string): AnnotationRecord;
+export {};
+//# sourceMappingURL=spatialInteraction.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/labels.d.ts`
@@ -614126,13 +619464,18 @@ export declare const lines: {
 
 ```ts
 import { AuraNodeBuilder } from "./builder.js";
+import { pointStream } from "./pointStream.js";
 import { type AuraLinePositionsInput } from "./lines.js";
 import type { AuraColor, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
 export interface AuraPointsOptions {
     readonly points?: AuraLinePositionsInput;
     readonly positions?: AuraLinePositionsInput;
-    /** Per-point colors → vertex coloring (three's `vertexColors: true`). */
-    readonly colors?: readonly AuraColor[];
+    /**
+     * Per-point colors → vertex coloring (three's `vertexColors: true`). CSS color strings (one per point), or typed linear
+     * RGBA with no parsing: `Uint8Array`/`Uint8ClampedArray` (4 bytes per point), `Uint32Array` (one packed little-endian
+     * RGBA word per point) or `Float32Array` (4 floats per point). Typed colors are used with a `Float32Array` `positions`.
+     */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
     /** Point size in CSS pixels (three's `PointsMaterial.size`; default 1). */
     readonly size?: number;
     /** Scale point size with view depth (three's `sizeAttenuation`, default true). */
@@ -614153,6 +619496,9 @@ export interface AuraPointsOptions {
 }
 /** `points({ positions, colors?, size, sizeAttenuation, map?, alphaTest, transparent })` (SG-07). */
 export declare function points(options: AuraPointsOptions): AuraNodeBuilder<AuraPointsNode>;
+export declare namespace points {
+    var stream: typeof pointStream;
+}
 //# sourceMappingURL=points.d.ts.map
 ```
 
@@ -614360,6 +619706,112 @@ export declare const compute: AuraComputeSurface;
 //# sourceMappingURL=compute.d.ts.map
 ```
 
+### `./dist/engine/agent-api/nodes/pointStream.d.ts`
+
+```ts
+import { AuraNodeBuilder } from "./builder.js";
+import type { AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraRuntimeNodeHandle, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+/** Per-point color storage. Omitted = one uniform color from `material`. */
+export type AuraPointStreamColorFormat = "u8x4n" | "f32x4";
+export interface AuraPointStreamSpec {
+    /** Maximum number of points (fixed per mount). Writes beyond it throw `POINT_STREAM_CAPACITY_EXCEEDED`. */
+    readonly capacity: number;
+    /**
+     * Per-point RGBA storage: `"u8x4n"` (4 bytes/point, the compact default for sensor data) or `"f32x4"`.
+     * Values are linear, like `three.js` vertex colors, unless `colorSpace: "srgb"` is set (u8 sources only).
+     */
+    readonly colors?: AuraPointStreamColorFormat;
+    /** How `u8x4n` source bytes are interpreted. `"srgb"` decodes through a 256-entry table on write. Default `"linear"`. */
+    readonly colorSpace?: "linear" | "srgb";
+    /** Point size in CSS pixels (same meaning as `points({ size })`). Default 1. */
+    readonly size?: number;
+    readonly sizeAttenuation?: boolean;
+    readonly map?: AuraMaterialTextureInput;
+    readonly alphaTest?: number;
+    readonly transparent?: boolean;
+    readonly material?: AuraMaterialSpec;
+    /**
+     * Fixed local bounds. With a hint the engine never scans positions; without one it tracks exact bounds
+     * while it copies (a full write resets them, a partial write only grows them), so a visible cloud is
+     * never culled by stale bounds.
+     */
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+    readonly name?: string;
+    readonly visible?: boolean;
+    /** Required: the runtime id is the handle key. */
+    readonly runtime: AuraRuntimeNodeSpec;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
+/** The serialisable stream declaration carried on the node: capacity and layout, no payload. */
+export interface AuraPointStreamNodeSpec {
+    readonly capacity: number;
+    readonly colors?: AuraPointStreamColorFormat;
+    readonly colorSpace?: "linear" | "srgb";
+    readonly bounds?: {
+        readonly min: AuraVec3;
+        readonly max: AuraVec3;
+    };
+}
+export interface AuraPointStreamWriteOptions {
+    /** Number of points to write (default `positions.length / 3`). */
+    readonly count?: number;
+    /**
+     * Destination start index. Omitted = replace the cloud (the draw count becomes `count`). Given (even 0) = partial update:
+     * only `[offset, offset + count)` is written and the draw count only grows.
+     */
+    readonly offset?: number;
+    /** RGBA, 4 values per point, for the same `[offset, offset + count)` range. Omitted = existing colors stay. */
+    readonly colors?: Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** Reject non-finite positions (an O(count) scan; off by default). */
+    readonly validate?: boolean;
+}
+export interface AuraPointStreamDirtyRange {
+    readonly start: number;
+    readonly count: number;
+}
+/** Engine-owned writable views. Fill them, then `commit`. */
+export interface AuraPointStreamLease {
+    /** `capacity * 3` floats. */
+    readonly positions: Float32Array;
+    /** `capacity * 4` values (u8 or f32 per the declared format); absent when the stream has no per-point colors. */
+    readonly colors: Uint8Array | Float32Array | undefined;
+    /** Publish `count` points (default: replace) and optionally only the `dirty` index range. */
+    commit(count: number, dirty?: AuraPointStreamDirtyRange): void;
+}
+export interface AuraPointStreamStats {
+    /** Completed `write`/`commit` calls. */
+    readonly commits: number;
+    /** Bytes copied into the CPU mirror over the node's lifetime. */
+    readonly bytesCopied: number;
+    /** Typed-array allocations made by the stream after mount (0 in steady state; lease staging counts once). */
+    readonly allocations: number;
+    /** Currently pending dirty byte range in the CPU mirror, or null. */
+    readonly dirtyBytes: number | null;
+}
+export interface AuraPointStreamControls {
+    readonly capacity: number;
+    /** Points currently drawn. */
+    readonly drawCount: number;
+    write(positions: Float32Array, options?: AuraPointStreamWriteOptions): void;
+    lease(): AuraPointStreamLease;
+    /** Change the drawn count without touching data (a draw range change, not a reallocation). */
+    setDrawCount(count: number): void;
+    readonly stats: AuraPointStreamStats;
+}
+/** A runtime handle of a `points.stream` node. */
+export type AuraPointStreamHandle = AuraRuntimeNodeHandle & AuraPointStreamControls;
+/** `points.stream({ capacity, colors?, size?, runtime: { id } })`: a mutable typed point cloud (E6-00 §4). */
+export declare function pointStream(spec: AuraPointStreamSpec): AuraNodeBuilder<AuraPointsNode>;
+/** Narrow a runtime handle to a point-stream handle; throws when the node is not a `points.stream`. */
+export declare function pointStreamOf(handle: AuraRuntimeNodeHandle | undefined): AuraPointStreamHandle;
+//# sourceMappingURL=pointStream.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/sprites.d.ts`
 
 ```ts
@@ -614553,6 +620005,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -617121,7 +622578,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -617287,6 +622747,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -617596,6 +623058,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -617721,6 +623189,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -617746,6 +623227,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -617805,6 +623293,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -618407,10 +623899,18 @@ export interface PrimitiveOptionGuard {
     readonly options: unknown;
 }
 export declare function primitive(primitiveName: AuraPrimitiveNode["primitive"], options?: AuraPrimitiveOptions, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode>;
+/**
+ * E3-06: three.js `PlaneGeometry(width, height)` reads as a two-number size. `primitives.plane` accepts
+ * `size: [width, depth]` and compiles it to the canonical `size: [width, 1, depth]` (the plane lies in XZ), so the
+ * node output is identical to writing the three-number form.
+ */
+export type AuraPlaneOptions = Omit<AuraPrimitiveOptions, "size"> & {
+    readonly size?: AuraPrimitiveOptions["size"] | readonly [number, number];
+};
 export declare const primitives: {
     readonly box: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly sphere: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
-    readonly plane: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
+    readonly plane: (options?: AuraPlaneOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly cylinder: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly capsule: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
     readonly torus: (options?: AuraPrimitiveOptions) => AuraNodeBuilder<AuraPrimitiveNode>;
@@ -618576,6 +624076,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -619555,6 +625057,15 @@ export interface AuraPhysicsRuntime {
      * fast-body frame rather than assuming it did.
      */
     backend(): PhysicsBackendSelection;
+    /**
+     * Resolves once the Rapier backend behind this runtime is loaded and usable. Already resolved in the default (eager)
+     * build; with `physics: { load: "on-demand" }` (or `aura3d({ physics: "lazy" })`) it starts the download if nothing has
+     * yet, and rejects with the typed `PHYSICS_BACKEND_MISSING` error when the backend cannot be loaded.
+     *
+     * Optional in the type (added in 5.2.0; existing implementations of this interface stay valid). Every runtime the
+     * engine returns has it, so call it as `await app.physics.ready?.()`.
+     */
+    ready?(): Promise<void>;
 }
 /**
  * Layer membership and masks.
@@ -620895,8 +626406,8 @@ export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptio
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
-export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
-export type { GameJuice } from "../contracts/game.js";
+export { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass } from "../contracts/flags.js";
+export type { AuraGameWorkerOptions, GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
 export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
@@ -622093,8 +627604,15 @@ export interface AuraParticleEmitterOptions {
         readonly node: string;
         readonly socket?: string;
     };
+    /**
+     * Spawn volume, simulated by the CPU emitter (a `simulation` that resolves to `"gpu"` keeps the disc spawn).
+     * Omitted keeps the legacy `radius` disc. `"mesh-surface"` is still accepted but has no effect yet (the emitter keeps the
+     * legacy disc); scatter from a mesh with `scatterInArea` / `scatterTransforms` and place emitters there.
+     */
     readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+    /** Extents of `shape`: a number is a radius (`box`: the cube side); a vector is full box extents or per-axis radii. */
     readonly shapeSize?: AuraVec3 | number;
+    /** Half-angle of the emission cone around `direction`; `shape: "cone"` defaults to 25. Replaces `spread` jitter. */
     readonly coneAngleDeg?: number;
     /** Particles per second (continuous). */
     readonly rate?: number;
@@ -622118,6 +627636,7 @@ export interface AuraParticleEmitterOptions {
     readonly angularVelocity?: AuraRange;
     readonly gravity?: number | AuraVec3;
     readonly drag?: number;
+    /** Constant air drift in m/s added to every particle. `"weather"` is not read by the emitter and is ignored. */
     readonly wind?: AuraVec3 | "weather";
     readonly noise?: {
         readonly strength: number;
@@ -622130,16 +627649,22 @@ export interface AuraParticleEmitterOptions {
         readonly bounce?: number;
         readonly lifeLoss?: number;
     };
+    /** Size multiplier over normalized life, linearly interpolated across evenly spaced samples. */
     readonly sizeOverLife?: AuraCurve;
+    /** Alpha multiplier over normalized life; replaces the default fade-in/fade-out envelope. */
     readonly alphaOverLife?: AuraCurve;
     readonly speedOverLife?: AuraCurve;
     readonly color?: AuraColor;
     readonly colorOverLife?: AuraColorRamp;
-    /** HDR multiplier. */
+    /**
+     * HDR multiplier.
+     * @deprecated No effect yet: the emitter does not read it. Pre-multiply `color` for an HDR boost.
+     */
     readonly intensity?: number;
     readonly sprite?: AuraVfxSpriteSource;
     readonly blend?: AuraBlendMode;
     readonly shading?: AuraVfxShading;
+    /** `"velocity"` draws velocity-stretched billboards (`factor` default 0.02); `"none"` forces upright ones. */
     readonly stretch?: {
         readonly mode: "velocity" | "none";
         readonly factor?: number;
@@ -622168,6 +627693,7 @@ export interface AuraLegacyParticleFields {
     readonly particleCount?: number;
     readonly emissionRate?: number;
     readonly groundCollision?: boolean;
+    /** `#rgb` / `#rrggbb` stops spread evenly over a particle's life; replaces `color`. Any other stop ignores the ramp. */
     readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly velocityOverLife?: readonly number[];
     readonly turbulence?: number;
@@ -622191,7 +627717,7 @@ export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of
 export interface AuraEnvironmentSourceResolution {
     readonly kind: AuraEnvironmentSourceKind;
     readonly probe: "neutral" | {
-        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+        readonly preset: "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
     } | {
         readonly hdri: string;
         readonly reflection?: string;
@@ -622269,6 +627795,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -622411,6 +627944,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -622426,6 +627965,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -626131,6 +631676,7 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraPostPresetId } from "../../contracts/post.js";
 import { type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 export interface AuraLookBuildOptions {
     /** Default "auto": v1 iff every required slot is provided and its flag is on. */
     readonly expansion?: "v0" | "v1" | "auto";
@@ -626163,6 +631709,14 @@ export declare function expandLookChildren(id: AuraLookId, overrides?: AuraLookO
  */
 export declare function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined;
 export declare const looks: {
+    /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+    readonly heroRig: typeof heroRig;
+    /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+    readonly heroStage: typeof heroStage;
+    /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+    readonly fogForExtent: typeof fogForExtent;
+    /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+    readonly fogDensityForExtent: typeof fogDensityForExtent;
     /**
      * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
      * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
@@ -626242,7 +631796,7 @@ export {};
 ```ts
 import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor";
+export type AuraEnvironmentPresetName = "neutral" | "studio" | "outdoor" | "sunset" | "night" | "indoor" | "softbox";
 export interface AuraEnvironmentBackgroundOptions {
     /** Draw the environment behind the scene. Default: true for preset/hdri/capture, false for neutral and legacy aliases. */
     readonly visible?: boolean;
@@ -626313,6 +631867,14 @@ export declare const prd02EnvironmentBuilders: {
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
 };
+export interface AuraStudioEnvironmentOptions extends AuraEnvironmentOptionsV2 {
+    /**
+     * `"softbox"` binds the structured product-photography probe (overhead and key softboxes, strip lights, a windowed
+     * fill and dark flags over a gradient room) that gives chrome, brushed steel and glass something to reflect.
+     * Omitted or `"studio"` is the existing studio probe, unchanged.
+     */
+    readonly preset?: "studio" | "softbox";
+}
 export declare const envSourceBuilders: {
     preset: (name: AuraEnvironmentPresetName, options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     neutral: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -626331,7 +631893,7 @@ export declare const envSourceBuilders: {
         readonly texture: AuraAssetRef<"texture">;
         readonly reflectionTexture?: AuraAssetRef<"texture">;
     }) => AuraNodeBuilder<AuraEnvironmentNode>;
-    studio: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
+    studio: (options?: AuraStudioEnvironmentOptions) => AuraNodeBuilder<AuraEnvironmentNode>;
     materialLab: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     productHero: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
     nightCinematic: (options?: AuraEnvironmentOptionsV2) => AuraNodeBuilder<AuraEnvironmentNode>;
@@ -628672,6 +634234,12 @@ export interface SceneRaycastOptions {
 export declare function raycast(input: SceneRaycastInput, options?: SceneRaycastOptions): readonly SceneQueryHit[];
 /** Convenience nearest-hit form of {@link raycast} (three's `intersectObject`). */
 export declare function raycastFirst(input: SceneRaycastInput, options?: SceneRaycastOptions): SceneQueryHit | undefined;
+/**
+ * three's `Raycaster.setFromCamera`: NDC `(x, y)` in [-1, 1] becomes a world
+ * ray. With a view-projection matrix the ray is unprojected exactly; a pose +
+ * `fov`/`aspect` (or `orthographicSize`) is reduced analytically.
+ */
+export declare function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, number]): SceneRay | undefined;
 //# sourceMappingURL=SceneQueries.d.ts.map
 ```
 
@@ -644025,7 +649593,8 @@ export declare const lights: {
         readonly skyColor?: AuraColor;
         readonly groundColor?: AuraColor;
         readonly intensity?: number;
-        readonly position?: AuraVec3;
+        readonly position?: AuraVec3; /** three.js-style alias of `skyColor`; `skyColor` wins. */
+        readonly color?: AuraColor;
     }) => AuraNodeBuilder<AuraLightNode>;
     /**
      * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
@@ -644046,7 +649615,8 @@ export declare const lights: {
         readonly target?: AuraVec3;
         readonly intensity?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
@@ -644057,7 +649627,8 @@ export declare const lights: {
         readonly distance?: number;
         readonly decay?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
     }) => AuraNodeBuilder<AuraLightNode>;
     readonly spot: (options?: {
@@ -644071,7 +649642,8 @@ export declare const lights: {
         readonly intensity?: number;
         readonly power?: number;
         readonly color?: AuraColor;
-        readonly shadow?: boolean | AuraLocalShadowOptions;
+        readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
+        readonly castShadow?: boolean;
         readonly photometricProfile?: AuraPhotometricProfile;
         readonly projectedImage?: AuraProjectedLightImage;
     }) => AuraNodeBuilder<AuraLightNode>;
@@ -644234,7 +649806,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -644242,7 +649814,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -644255,6 +649827,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -644877,9 +650466,14 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
      */
     reset(): Promise<void>;
 }
+/**
+ * Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request
+ * (`fallback: "main-thread"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.
+ */
+export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): void;
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
-export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene"> & {
+export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
     /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
     readonly target: AuraAppTarget;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
@@ -648071,8 +653665,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -648138,6 +653732,13 @@ export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | R
  * caller can still turn it off through `qualityRebuild.flags`.
  */
 export declare function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags;
+/**
+ * `material.studioGlass` needs physical transmission (a clear sphere against a pale backdrop is invisible without the
+ * frame capture), and `A3D_QR_MATERIALS_TRANSMISSION` is off unless a source sets it. Compose it on for a scene that
+ * uses studio glass; any explicit value already resolved for the flag (`?a3d-qr=-materials.transmission`,
+ * `qualityRebuild.flags`) wins, and scenes without studio glass are returned untouched.
+ */
+export declare function qrFlagsWithStudioGlass(flags: QrFlags, usesStudioGlass: boolean): QrFlags;
 export declare function resolveQrFlags(input: {
     readonly options?: QrFlagInput;
     readonly url?: URL | string;
@@ -648678,7 +654279,7 @@ export declare const material: {
     readonly shadow: typeof shadowMaterial;
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
-    readonly pbr: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -648686,7 +654287,7 @@ export declare const material: {
      */
     readonly physical: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly emissive: (options?: AuraMaterialSpec) => AuraMaterialSpec;
-    readonly metal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    readonly metal: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly rubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly glass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearcoat: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -648699,6 +654300,23 @@ export declare const material: {
     readonly brushedMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly frostedGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly clearGlass: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Polished metal that reads as metal without tuning: full metalness, clearcoat-free reflection, and a hint so a scene
+     * with no `environments.*` node binds the structured softbox probe (a near-uniform probe leaves a mirror nothing to
+     * reflect). Pair with `environments.studio({ preset: "softbox" })` to say it explicitly. Wraps `material.metal`;
+     * every option still overrides.
+     */
+    readonly studioMetal: (options?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * Clear glass that stays visible: physical transmission with `ior` and `thickness`, a faint `tint` carried by the
+     * absorption colour, and the same softbox hint. `createAuraApp` also turns physical transmission on for a scene that
+     * uses it (a source that sets `A3D_QR_MATERIALS_TRANSMISSION` explicitly wins). Glass shows the opaque scene behind it
+     * plus reflections, so it needs something behind it and something to reflect; against a plain white backdrop and a
+     * uniform probe it is invisible. Wraps `material.glass`; every option still overrides.
+     */
+    readonly studioGlass: (options?: AuraMaterialSpec & {
+        readonly tint?: AuraColor;
+    }) => AuraMaterialSpec;
     readonly blackRubber: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly matteClay: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     readonly ceramic: (options?: AuraMaterialSpec) => AuraMaterialSpec;
@@ -648762,6 +654380,8 @@ import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNo
 import { boundsFromAsset } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraClipGroup, type AuraClipGroupSnapshot } from "./clipping.js";
+/** True when some node's material came from `material.studioGlass` (used to opt that scene into physical transmission). */
+export declare function sceneUsesStudioGlass(nodes: readonly AuraSceneNode[]): boolean;
 /** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
 export declare function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined;
 /** Internal rendering seam for a copied material in a scene snapshot. */
@@ -649254,6 +654874,12 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
+/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+export interface AuraGameWorkerOptions {
+    readonly createWorker?: (() => Worker) | undefined;
+    readonly fallback?: "error" | "main-thread" | undefined;
+    readonly disposeTimeoutMs?: number | undefined;
+}
 export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly id: string;
     readonly target: HTMLElement;
@@ -649269,6 +654895,12 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly qualityRebuild?: {
         readonly flags?: readonly string[];
     };
+    /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
+    readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
+    /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
+    readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
+    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
 export interface GameJuice<TEvent extends string = string> {
@@ -649562,6 +655194,8 @@ export interface AuraRuntimeNodeSnapshot {
 /** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
 export interface AuraLightPatch {
     readonly color?: string;
+    /** three.js `HemisphereLight.color` spelling: alias of `color` (the sky colour); `color` wins. */
+    readonly skyColor?: string;
     readonly intensity?: number;
     readonly power?: number;
     readonly distance?: number;
@@ -649871,6 +655505,12 @@ export interface AuraApp {
     /** Current mount's terminal outcome, or the final disposal outcome. */
     renderTermination?(): AuraRenderTermination | undefined;
     /**
+     * This app's compiler audit evidence (shadow tap tier, dense shadow cap, shadow proxies), keyed by
+     * the historical page-global names. Apps created with `routeState: false` (embedded) record it only
+     * here; publishing apps also mirror it to `globalThis` while they are alive.
+     */
+    compileEvidence?(): import("../../compiler/compileEvidence.js").AuraCompileEvidence;
+    /**
      * Subscribe to WebGL context loss. Returns an unsubscribe function.
      *
      * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
@@ -649996,6 +655636,19 @@ export interface AuraCreateAppOptions {
          * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
          */
         readonly bindNodes?: boolean | undefined;
+        /**
+         * When the Rapier backend is loaded. Omitted (the default) follows the build: `eager` unless the app was built with
+         * `aura3d({ physics: "lazy" })` (the `aura3d-physics-on-demand` condition), which makes it `on-demand`.
+         *
+         * `on-demand`: nothing is downloaded until a scene declares `.physics({...})` bodies or `app.physics` is first
+         * touched. Until then (and until the backend finishes loading) declared bodies and `onCollision` / `onTrigger*`
+         * handlers are queued and applied on load, `app.physics.step()` and `contacts()` return `[]`, and every other
+         * `app.physics` call throws a typed `PHYSICS_NOT_READY` error; `await app.physics.ready?.()` (or `await app.ready()` once a load is in flight)
+         * first. Setting it explicitly gives the same semantics in an eagerly loading build (dev and prod agree).
+         * `eager` keeps the synchronous behaviour even in an on-demand build (it then behaves like the `aura3d-no-tla`
+         * build: await `ensurePhysics()` before creating the app).
+         */
+        readonly load?: "eager" | "on-demand" | undefined;
     };
     readonly diagnostics?: boolean | AuraDiagnosticsOptions;
     readonly renderer?: AuraCreateAppRendererOptions;
@@ -650021,6 +655674,13 @@ export interface AuraCreateAppOptions {
     readonly preserveDrawingBuffer?: boolean;
     readonly autoStart?: boolean;
     readonly resize?: boolean;
+    /**
+     * Publish page-global route state (`document.body.dataset.aura3d*`, `window.__AURA3D_ROUTE_READY__`,
+     * `globalThis.__AURA3D_LIVE_APPS__`). Default `true` for route-health and capture tooling. Embedded
+     * instances pass `false` so they never touch the host page; with `true` the globals are removed again
+     * when the last publishing app is disposed.
+     */
+    readonly routeState?: boolean;
     readonly pixelRatio?: number | {
         readonly max?: number;
         readonly min?: number;
@@ -650080,6 +655740,10 @@ export interface AuraRendererInfo {
         readonly textures: number;
         readonly renderTargets?: number;
         readonly programs?: number;
+        /** 5.1: live GPU buffer bytes (vertex/index/uniform) when the device reports them. */
+        readonly bufferBytes?: number;
+        /** 5.1: resident texture bytes when the device reports them. */
+        readonly textureBytes?: number;
     };
     readonly approximateGpuMemoryBytes?: number;
 }
@@ -650524,6 +656188,11 @@ export interface AuraMaterialSpec {
     readonly emissive?: AuraColor;
     readonly emissiveIntensity?: number;
     readonly opacity?: number;
+    /**
+     * three.js `side`. `material.pbr` / `material.metal` map `"double"` to `doubleSided: true` and `"front"` to the default; `"back"` has
+     * no equivalent and is reported as OPTION_IGNORED. An explicit `doubleSided` wins.
+     */
+    readonly side?: "front" | "back" | "double";
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
@@ -653092,7 +658761,10 @@ export interface AuraPointsNode extends AuraTransformSpec {
     readonly kind: "points";
     readonly name?: string;
     readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
-    readonly colors?: readonly AuraColor[];
+    /** CSS color strings (one per point) or typed linear RGBA: packed bytes / `Uint32Array` words / `Float32Array`. */
+    readonly colors?: readonly AuraColor[] | Uint8Array | Uint8ClampedArray | Uint32Array | Float32Array;
+    /** E6-00 §4: `points.stream(...)` declaration (capacity + layout, no payload). `positions` is empty for stream nodes. */
+    readonly stream?: import("./pointStream.js").AuraPointStreamNodeSpec;
     readonly size?: number;
     readonly sizeAttenuation?: boolean;
     readonly map?: AuraMaterialTextureInput;
@@ -653267,8 +658939,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -653455,8 +659127,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -653955,8 +659627,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/engine@5.1.0#sha256=eafe6d8b9f1290883cb955d94a601b89fd0e6e299650c3f968136d7d400c9566`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=ae105460d3b2fa5aef3f2794ee9872c977200d6b310a26af6c51a09cc38449fe`
 
 ### Export conditions
 
@@ -654413,8 +660085,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/input@5.1.0#sha256=5880b1dff81d4feb180e29b4fe53c1e52de18f555ac94f6a4330ea4af761c0c2`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/input@5.2.0#sha256=eb53f725f56567dd493bef784d086b0e3ac6f1b53293f01260a2a2d353517e3e`
 
 ### Export conditions
 
@@ -655655,8 +661327,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/math@5.1.0#sha256=e81ad21a5f2573e6eb9d332958d2570568f5736aa1b91651a3ca37a532dda0c0`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/math@5.2.0#sha256=c7089eeddf53e60caf31fdcef70e19efa4601182d8784013b37552fcab4498e1`
 
 ### Export conditions
 
@@ -657642,8 +663314,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/math@5.1.0#sha256=e81ad21a5f2573e6eb9d332958d2570568f5736aa1b91651a3ca37a532dda0c0`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/math@5.2.0#sha256=c7089eeddf53e60caf31fdcef70e19efa4601182d8784013b37552fcab4498e1`
 
 ### Export conditions
 
@@ -658890,8 +664562,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.1.0#sha256=93065f594990dd00bf869b7fa5804b78982480f1aabe2a9e7ddd5434e00f23d2`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.2.0#sha256=495ab26e7d25b74728a2dd66c14af3f9002a2783784d4966011ffe5b59ea3de5`
 
 ### Export conditions
 
@@ -659021,8 +664693,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/physics@5.1.0#sha256=edb6dede7440c018a295e077e143d81172ccd9935f5d12729334275c8dd124a4`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/physics@5.2.0#sha256=0d5d43b9004013a93ae44a6ecd17fb9baa1819ce905d502856b15422451da121`
 
 ### Export conditions
 
@@ -659085,7 +664757,7 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
  * and the ECS/scene bridges. Navigation and crowd ownership moved to the optional
  * Recast/Detour adapter at the major-version boundary.
  */
-export { ensurePhysics, physicsInitMode } from "./ensure.js";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensure.js";
 export * from "./Shape.js";
 export * from "./RigidBody.js";
 export * from "./Collider.js";
@@ -659116,7 +664788,7 @@ export * from "./PhysicsDebugDraw.js";
 ### `./dist/ensure.d.ts`
 
 ```ts
-export { ensurePhysics, physicsInitMode } from "@aura3d/physics-rapier";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "@aura3d/physics-rapier";
 //# sourceMappingURL=ensure.d.ts.map
 ```
 
@@ -661245,8 +666917,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.1.0#sha256=efee9e059f5606d42be6207665f4f979d146f1800a9bad4b50ef95317e789c0a`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.2.0#sha256=57a04f1424b72ba238223b3c92f04b06d698d4a1f025caccd2b72965cfd02afb`
 
 ### Export conditions
 
@@ -661259,6 +666931,40 @@ export {};
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { ensureRapier, rapierInitMode } from "./rapierInit.js";
 export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
+/**
+ * How this build loads Rapier: `eager` (default; at module evaluation, or in the background under `aura3d-no-tla`),
+ * `on-demand` (`aura3d-physics-on-demand` condition / `aura3d({ physics: "lazy" })`: on the first `ensurePhysics()`), or
+ * `stripped` (the Aura3D Vite plugin found no physics usage and removed the backend from this build).
+ */
+export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
+/** Stable error code for an absent or unresolvable Rapier backend. */
+export declare const PHYSICS_BACKEND_MISSING: "PHYSICS_BACKEND_MISSING";
+/** The exact command that installs the pinned Rapier backend with npm. */
+export declare const PHYSICS_BACKEND_INSTALL_COMMAND: "npm install @dimforge/rapier3d-compat@0.20.0";
+/**
+ * Thrown (synchronously for `new PhysicsWorld()` / declared `.physics({...})` bodies, asynchronously for
+ * `createRapierPhysics()` and `preloadPhysics()`) when `@dimforge/rapier3d-compat` cannot be resolved. Carries the
+ * install command so an agent or a developer can fix the project without reading docs.
+ */
+export declare class PhysicsBackendMissingError extends Error {
+    readonly code: "PHYSICS_BACKEND_MISSING";
+    readonly installCommand: "npm install @dimforge/rapier3d-compat@0.20.0";
+    constructor(detail?: string, options?: {
+        readonly cause?: unknown;
+    });
+}
+export type PhysicsBackendStatus = {
+    readonly state: "ready";
+} | {
+    readonly state: "missing";
+    readonly code: typeof PHYSICS_BACKEND_MISSING;
+    readonly installCommand: typeof PHYSICS_BACKEND_INSTALL_COMMAND;
+} | {
+    readonly state: "failed";
+    readonly cause: unknown;
+};
+/** Observed (not predicted) backend state; `missing` also covers a lazy build that has not finished loading. */
+export declare function getPhysicsBackendStatus(): PhysicsBackendStatus;
 export type RapierModule = typeof import("@dimforge/rapier3d-compat");
 export type PhysicsVec3 = readonly [number, number, number];
 export type RapierShapeSpec = {
@@ -661670,8 +667376,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/physics@5.1.0#sha256=edb6dede7440c018a295e077e143d81172ccd9935f5d12729334275c8dd124a4`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/physics@5.2.0#sha256=0d5d43b9004013a93ae44a6ecd17fb9baa1819ce905d502856b15422451da121`
 
 ### Export conditions
 
@@ -662923,8 +668629,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/physics@5.1.0#sha256=edb6dede7440c018a295e077e143d81172ccd9935f5d12729334275c8dd124a4`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/physics@5.2.0#sha256=0d5d43b9004013a93ae44a6ecd17fb9baa1819ce905d502856b15422451da121`
 
 ### Export conditions
 
@@ -662950,7 +668656,7 @@ export declare class PhysicsWorld {
  * adapter module's one-time WASM initialization without pulling unrelated arcade or query APIs.
  */
 export { PhysicsWorld } from "./PhysicsWorld.js";
-export { ensurePhysics, physicsInitMode } from "./ensureOpaque.js";
+export { ensurePhysics, physicsInitMode, physicsLoadMode } from "./ensureOpaque.js";
 export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection, PhysicsContinuousCollisionDescriptor, PhysicsContinuousCollisionSelection, PhysicsSnapshot, PhysicsStepStats, PhysicsWorldDescriptor } from "./PhysicsWorld.js";
 //# sourceMappingURL=world.d.ts.map
 ```
@@ -663180,13 +668886,15 @@ export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
 export declare const ensurePhysics: () => Promise<PhysicsSolverModule | null>;
 /** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
 export declare const physicsInitMode: "top-level-await" | "lazy";
+/** How this build loads the solver: `eager` (default), `on-demand` (first `ensurePhysics()`), or `stripped` (removed at build time). */
+export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 //# sourceMappingURL=ensureOpaque.d.ts.map
 ```
 
 ## @aura3d/product-studio
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/product-studio@5.1.0#sha256=4ec6481f02a4688e8c35a1406c94a6e043293f84e0dcd2f93077eb6b780a855b`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/product-studio@5.2.0#sha256=074d0ffd8c828a5a1d58a78179e48d00646a6bab8ee9389ffb18eff00d97e650`
 
 ### Export conditions
 
@@ -663467,8 +669175,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/react@5.1.0#sha256=a69b690cae45c44774562dd4fa06762b8f0183020877531b18c7d272baee8aff`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/react@5.2.0#sha256=177c88961c8f4d67ac2b012b5a7b5e11b0c7c522071a1784700a0696c17aad97`
 
 ### Export conditions
 
@@ -663480,7 +669188,7 @@ export interface ProductStudio {
 ### `./dist/index.d.ts`
 
 ```ts
-import { type CSSProperties, type ReactElement, type ReactNode } from "react";
+import { type CSSProperties, type ReactElement, type Ref, type ReactNode } from "react";
 import { effects, interactions, type AuraApp, type AuraAssetRef, type AuraCameraSpec, type AuraColor, type AuraCreateAppOptions, type AuraEffectNode, type AuraLightNode, type AuraMaterialSpec, type AuraModelOptions, type AuraSceneBuilder } from "@aura3d/engine";
 /**
  * Declared locally: the engine removed these names from "./index.js" in 4.0.0
@@ -663512,6 +669220,13 @@ export interface AuraTimelineSpec {
 }
 export interface AuraCanvasProps {
     readonly children?: ReactNode;
+    /**
+     * A scene built with the engine API (`scene().add(primitives.box(...).runtime({ id }))`) used instead of the
+     * one described by `children`. Declarative children still render (overlays, hooks) but no longer describe the
+     * scene. Replacing the builder calls `setScene` on the live app; update nodes in place through the handle
+     * instead of rebuilding the scene for every change.
+     */
+    readonly scene?: AuraSceneBuilder;
     readonly diagnostics?: AuraCreateAppOptions["diagnostics"];
     readonly pixelRatio?: number;
     readonly autoStart?: boolean;
@@ -663533,6 +669248,72 @@ export interface AuraCanvasProps {
     readonly onPointerUp?: (event: PointerEvent) => void;
     /** Fires on canvas pointermove for hover-position tracking. */
     readonly onHover?: (event: PointerEvent) => void;
+    /**
+     * Receives the imperative {@link AuraCanvasHandle} once the renderer is ready, and `null` after the
+     * canvas unmounts or its app is disposed. Object refs and callback refs are both accepted. Use
+     * {@link AuraCanvasWithRef} to pass a plain `ref` instead.
+     */
+    readonly handleRef?: Ref<AuraCanvasHandle | null>;
+    /** Receives the underlying `<canvas>` element (callback or object ref). */
+    readonly canvasRef?: Ref<HTMLCanvasElement | null>;
+    /** Called with the live app when it becomes ready, and with `undefined` when that app is disposed. */
+    readonly onAppChange?: (app: AuraApp | undefined) => void;
+    /**
+     * Opt in to the legacy page-global route state (`document.body.dataset.aura3d*`,
+     * `window.__AURA3D_ROUTE_READY__`, `globalThis.__AURA3D_LIVE_APPS__`). Off by default for a canvas
+     * embedded in a host page. Read at mount; changing it does not recreate the app.
+     */
+    readonly routeState?: boolean;
+    /**
+     * Let the engine read `?a3d-qr=` quality flags from the host page URL. Off by default for an
+     * embedded canvas. Read at mount; changing it does not recreate the app.
+     */
+    readonly allowUrlFlags?: boolean;
+    /**
+     * `tabIndex` of the canvas. Defaults to `-1`: a click focuses the canvas so {@link AuraCanvasHandle.input}
+     * keyboard events are scoped to it, without adding a tab stop to the host page.
+     */
+    readonly tabIndex?: number;
+}
+/** A partial, absolute update to a mounted runtime node. Every field is optional. */
+export interface AuraNodePatch {
+    readonly position?: readonly [number, number, number];
+    readonly rotation?: readonly [number, number, number];
+    readonly scale?: number | readonly [number, number, number];
+    readonly visible?: boolean;
+    readonly material?: AuraMaterialSpec;
+    readonly text?: string;
+    readonly morphTargets?: Readonly<Record<string, number>>;
+    /** Dense per-frame instance write; see `AuraRuntimeNodeHandle.setInstanceMatrices`. */
+    readonly instances?: {
+        readonly matrices: Float32Array;
+        readonly count: number;
+        readonly rgba?: Float32Array;
+    };
+}
+/**
+ * Imperative surface of a mounted {@link AuraCanvas}. It is created when the renderer is ready, is the
+ * same object for the life of that app (including `setScene` changes), and goes inert once the app is
+ * disposed. Live data written through it never renders React and never calls `setScene`.
+ */
+export interface AuraCanvasHandle {
+    readonly app: AuraApp;
+    readonly canvas: HTMLCanvasElement;
+    /** The app's live runtime-node registry (`nodes.require(id)`). Resolved at call time. */
+    readonly nodes: AuraApp["nodes"];
+    /** Apply `patch` to the node named `id`. Returns `false` when the node does not exist or the handle is disposed. */
+    update(id: string, patch: AuraNodePatch): boolean;
+    /** Dense instance write on node `id` (same as `update(id, { instances })`). */
+    writeInstances(id: string, matrices: Float32Array, count: number, rgba?: Float32Array): boolean;
+    /** Subscribe to the app frame loop. The returned function unsubscribes; subscriptions end with the handle. */
+    onFrame(callback: AuraFrameCallback): () => void;
+    /** A game-input controller whose keyboard target is this canvas, not the page `window`. */
+    input(options: Parameters<AuraApp["input"]>[0]): ReturnType<AuraApp["input"]>;
+    pause(): void;
+    resume(): void;
+    screenshot(): ReturnType<AuraApp["screenshot"]>;
+    /** `true` once the app has been disposed; every method is then a no-op. */
+    readonly disposed: boolean;
 }
 /** A renderer readiness outcome that did not produce a usable renderer. */
 export declare class AuraCanvasReadinessError extends Error {
@@ -663658,7 +669439,29 @@ export declare function sceneChildrenKey(children: ReactNode): string;
  * moved, nothing otherwise. Returns the key now mounted. The app, its canvas and WebGL context stay.
  */
 export declare function applySceneChange(app: Pick<AuraApp, "setScene">, mountedKey: string, nextKey: string, nextScene: AuraSceneBuilder): string;
+/** Apply an {@link AuraNodePatch} to a mounted app's node. Returns `false` when the node is missing. */
+export declare function applyAuraNodePatch(app: Pick<AuraApp, "nodes">, id: string, patch: AuraNodePatch): boolean;
+/**
+ * Build the imperative handle for a mounted app. Returns the handle and a `release` that makes it
+ * inert and drops its frame subscriptions. `AuraCanvas` calls this; it is exported for hosts that
+ * create the app themselves and for tests.
+ */
+export declare function createAuraCanvasHandle(app: AuraApp, canvas: HTMLCanvasElement): {
+    readonly handle: AuraCanvasHandle;
+    release(): void;
+};
+/**
+ * Push `patch` into node `id` of the enclosing {@link AuraCanvas} whenever `patch` changes identity.
+ * The write goes through the live app: no remount and no `setScene`. Memoise `patch` in the host.
+ */
+export declare function useAuraNodeUpdate(id: string, patch: AuraNodePatch | undefined): void;
 export declare function AuraCanvas(props: AuraCanvasProps): ReactElement;
+/**
+ * `AuraCanvas` with a standard React `ref` that receives the {@link AuraCanvasHandle}
+ * (`null` until the renderer is ready and after unmount). `AuraCanvas` itself keeps its
+ * plain-function type; this wrapper is the `forwardRef` form for React 18 and 19.
+ */
+export declare const AuraCanvasWithRef: import("react").ForwardRefExoticComponent<AuraCanvasProps & import("react").RefAttributes<AuraCanvasHandle | null>>;
 export declare function Scene(props: SceneProps): ReactElement;
 export declare function Model(props: ModelProps): ReactElement | null;
 export declare function Camera(_props: CameraProps): null;
@@ -663774,8 +669577,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -692130,10 +697933,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -695352,8 +701158,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -696941,8 +702747,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -696986,8 +702792,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697031,8 +702837,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697101,8 +702907,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697154,8 +702960,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697240,8 +703046,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697310,8 +703116,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697340,8 +703146,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697484,8 +703290,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697542,8 +703348,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -697590,8 +703396,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699179,8 +704985,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699239,8 +705045,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699311,8 +705117,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699368,8 +705174,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699476,8 +705282,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699682,8 +705488,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699811,8 +705617,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699871,8 +705677,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -699989,8 +705795,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700085,8 +705891,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700146,8 +705952,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700222,8 +706028,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700260,8 +706066,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700293,8 +706099,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700326,8 +706132,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700398,8 +706204,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -700439,8 +706245,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -706108,10 +711914,13 @@ export interface PreethamSpec {
 export declare function sunDirection(sun: AuraSkySunSpecLike): Vec3;
 export interface PreethamFrame {
     readonly sunDirection: Vec3;
-    /** Solar brightness retained for cloud shading; 1000 is the default day value. */
+    /**
+     * Solar irradiance for the WebGL2 sky program (`sky.glsl.ts`, `u_sunE`, also its cloud shading), which implements the
+     * r185 scattering model: the r185 horizon falloff (1000 by day, about 123 at 9 degrees of elevation) times `sun.intensity`.
+     */
     readonly sunE: number;
     readonly sunfade: number;
-    /** Approximate wavelength-dependent coefficients retained for consumers of the older frame. */
+    /** Rayleigh and Mie coefficients for the same program (`u_betaR` / `u_betaM`), in its r185 calibration. */
     readonly betaR: Vec3;
     readonly betaM: Vec3;
     readonly mieDirectionalG: number;
@@ -707293,8 +713102,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -707932,8 +713741,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -711424,8 +717233,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -712157,8 +717966,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -712292,8 +718101,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -712535,8 +718344,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -713091,8 +718900,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -715781,8 +721590,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/rendering@5.1.0#sha256=f6b87b4b826b64e393db57dc2d412f8541831aa9f8caa7fa8aa001134eb85a12`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=1a75e8722ed1d636de12799e5ac7ffaffdccd9e36fd47d62a04b1f672dfd3072`
 
 ### Export conditions
 
@@ -716880,8 +722689,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/scene@5.1.0#sha256=628cbaa6f2f6847700a512f0fc941c1580d968cd511e79acfc830df97d58acfa`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/scene@5.2.0#sha256=287e053f97fbda051a683bd45a76e9a6675b00458ab714584dd8b9f9e029d4ba`
 
 ### Export conditions
 
@@ -718006,8 +723815,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/scene@5.1.0#sha256=628cbaa6f2f6847700a512f0fc941c1580d968cd511e79acfc830df97d58acfa`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/scene@5.2.0#sha256=287e053f97fbda051a683bd45a76e9a6675b00458ab714584dd8b9f9e029d4ba`
 
 ### Export conditions
 
@@ -718091,8 +723900,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/scripting@5.1.0#sha256=fb3dfa3b29604d6d9742cebdd7eac1cd04cec321095f596ed4042d9fae77c28a`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/scripting@5.2.0#sha256=4cb1eef5b2ad9dbf0f09e17433d7b6d692066bd99816ee15a08946e607b3be84`
 
 ### Export conditions
 
@@ -719272,8 +725081,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.1.0`
-- Packed identity: `archive:@aura3d/workflows@5.1.0#sha256=189611d74f71525e69a72e7f1fad17a65518ad4ce5df9a73003cc1e7eeefffb6`
+- Version: `5.2.0`
+- Packed identity: `archive:@aura3d/workflows@5.2.0#sha256=141e826950f88c3bc1c7fc8c1576aaeba5ee40dec883be59c7814398fd23c78e`
 
 ### Export conditions
 
