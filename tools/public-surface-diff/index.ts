@@ -578,6 +578,65 @@ export function readonlyTupleOnlyAppends(before: ts.Symbol, after: ts.Symbol): b
   const oldElements = elements(before), newElements = elements(after);
   return !!oldElements && !!newElements && newElements.length > oldElements.length && oldElements.every((text, index) => newElements[index] === text);
 }
+/**
+ * A type alias (generic or not) whose header keeps its exact text and whose body is
+ * an intersection (or a single type) where every constituent keeps its text except
+ * `Omit<X, Keys>` constituents that only gain keys, each gained key naming a member
+ * of the old `X` declared optional with type `never` (or no member at all). Such a
+ * member only ever admitted an absent value, so dropping it from one constituent
+ * lets another constituent widen it (for example an options type whose `worker?:
+ * never` gives way to a real worker option) while every old value stays valid. `X`
+ * itself and the other constituents' named types are judged as their own
+ * declarations by `attributedWidening`. Decided on declaration text, like
+ * `declarationOnlyAddsMembers`, so it also covers generic aliases.
+ */
+export function aliasOmitOnlyDropsNeverMembers(checker: ts.TypeChecker, before: ts.Symbol, after: ts.Symbol): boolean {
+  const single = (symbol: ts.Symbol) => {
+    const declarations = symbol.getDeclarations() ?? [];
+    return declarations.length === 1 && ts.isTypeAliasDeclaration(declarations[0]!) ? declarations[0] : undefined;
+  };
+  const oldNode = single(before), newNode = single(after);
+  if (!oldNode || !newNode) return false;
+  const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
+  const header = (node: ts.TypeAliasDeclaration) => normalize([
+    ...(ts.getModifiers(node) ?? []).map((m) => m.getText()), node.name.getText(), ...(node.typeParameters ?? []).map((p) => p.getText())
+  ].join(" "));
+  if (header(oldNode) !== header(newNode)) return false;
+  const parts = (node: ts.TypeAliasDeclaration) => ts.isIntersectionTypeNode(node.type) ? [...node.type.types] : [node.type];
+  const oldParts = parts(oldNode), newParts = parts(newNode);
+  if (oldParts.length !== newParts.length) return false;
+  const omit = (node: ts.TypeNode) => ts.isTypeReferenceNode(node) && node.typeName.getText() === "Omit" && node.typeArguments?.length === 2 ? node.typeArguments as ts.NodeArray<ts.TypeNode> : undefined;
+  const keys = (node: ts.TypeNode): string[] | undefined => {
+    const members = ts.isUnionTypeNode(node) ? [...node.types] : [node];
+    const out: string[] = [];
+    for (const member of members) {
+      if (!ts.isLiteralTypeNode(member) || !ts.isStringLiteral(member.literal)) return undefined;
+      out.push(member.literal.text);
+    }
+    return out;
+  };
+  let changed = 0;
+  for (let index = 0; index < oldParts.length; index += 1) {
+    const oldPart = oldParts[index]!, newPart = newParts[index]!;
+    if (normalize(oldPart.getText()) === normalize(newPart.getText())) continue;
+    const oldArgs = omit(oldPart), newArgs = omit(newPart);
+    if (!oldArgs || !newArgs || normalize(oldArgs[0]!.getText()) !== normalize(newArgs[0]!.getText())) return false;
+    const oldKeys = keys(oldArgs[1]!), newKeys = keys(newArgs[1]!);
+    if (!oldKeys || !newKeys || !oldKeys.every((key) => newKeys.includes(key))) return false;
+    const added = newKeys.filter((key) => !oldKeys.includes(key));
+    if (added.length === 0) return false;
+    const source = checker.getTypeFromTypeNode(oldArgs[0]!);
+    for (const key of added) {
+      const member = checker.getPropertyOfType(source, key);
+      if (!member) continue;
+      if (!(member.flags & ts.SymbolFlags.Optional)) return false;
+      const declarations = member.getDeclarations() ?? [];
+      if (declarations.length === 0 || !declarations.every((node) => ts.isPropertySignature(node) && node.type?.kind === ts.SyntaxKind.NeverKeyword)) return false;
+    }
+    changed += 1;
+  }
+  return changed > 0;
+}
 export function declarationSelfWidens(checker: ts.TypeChecker, before: ts.Symbol, after: ts.Symbol): boolean {
   const assignable = (source: ts.Type, target: ts.Type) => checker.isTypeAssignableTo(source, target);
   const isClass = !!(before.flags & ts.SymbolFlags.Class) && !!(after.flags & ts.SymbolFlags.Class);
@@ -588,6 +647,7 @@ export function declarationSelfWidens(checker: ts.TypeChecker, before: ts.Symbol
   if ((before.flags & ts.SymbolFlags.Type) !== (after.flags & ts.SymbolFlags.Type) || (before.flags & ts.SymbolFlags.Value) !== (after.flags & ts.SymbolFlags.Value)) return false;
   if ((before.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.Interface)) && declarationOnlyAddsMembers(before, after)) return true;
   if (readonlyTupleOnlyAppends(before, after)) return true;
+  if ((before.flags & ts.SymbolFlags.TypeAlias) && (after.flags & ts.SymbolFlags.TypeAlias) && aliasOmitOnlyDropsNeverMembers(checker, before, after)) return true;
   if (before.flags & ts.SymbolFlags.Type) {
     const oldType = checker.getDeclaredTypeOfSymbol(before), newType = checker.getDeclaredTypeOfSymbol(after);
     if (isClass ? !assignable(newType, oldType) : (generic(before) || generic(after) || !typeWidens(checker, oldType, newType))) return false;

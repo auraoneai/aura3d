@@ -120,6 +120,28 @@ export declare const TEMPLATES: readonly ["viewer", "game", "procedural"];
     expect(change?.classification).toEqual({ compatible: false, breaking: true, disposition: "breaking" });
   }, 60000);
 
+  const OMIT_BEFORE = `
+export interface AppOptions { readonly scene: string; readonly worker?: never; readonly label?: string }
+export interface GameOptions<TCue extends string> { readonly id: string; readonly cue?: TCue }
+export type CreateOptions<TCue extends string> = Omit<GameOptions<TCue>, "id"> & Omit<AppOptions, "scene"> & { readonly target: string };
+export declare const createGame: <TCue extends string>(options: CreateOptions<TCue>) => void;
+`;
+  it("accepts a generic alias whose Omit drops a never-typed optional member that another constituent now declares", () => {
+    const after = OMIT_BEFORE
+      .replace("readonly cue?: TCue }", "readonly cue?: TCue; readonly worker?: { readonly fallback: \"main-thread\" } }")
+      .replace('Omit<AppOptions, "scene">', 'Omit<AppOptions, "scene" | "worker">');
+    const report = diff(OMIT_BEFORE, after, "1.1.0", "minor");
+    expect(report.diagnostics).toEqual([]);
+    expect(report.changes.filter((change) => change.classification.breaking)).toEqual([]);
+    expect(dispositions(report)).toMatchObject({ CreateOptions: "compatible-widening", GameOptions: "compatible-widening" });
+  }, 60000);
+
+  it("fails a generic alias whose Omit drops a member that admitted values", () => {
+    const after = OMIT_BEFORE.replace('Omit<AppOptions, "scene">', 'Omit<AppOptions, "scene" | "label">');
+    const change = diff(OMIT_BEFORE, after, "1.1.0", "minor").changes.find((entry) => entry.name === "CreateOptions");
+    expect(change?.classification).toEqual({ compatible: false, breaking: true, disposition: "breaking" });
+  }, 60000);
+
   it("fails removals in a minor", () => {
     const report = diff(
       "export declare const kept: number; export declare const lost: number; export interface Options { a: string; b: string; nested: { c: string; d: string } } export interface Deep { nested: { c: string; d: string } }",
