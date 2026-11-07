@@ -17,9 +17,9 @@ the library had four hardcoded genre kits and no path to a fifth.
 
 ## Install the Rapier backend
 
-Physics runs on `@dimforge/rapier3d-compat`, an optional peer of `@aura3d/engine`: apps that never call physics must not fetch its
-WASM chunk (about 1.1 MB gzip), so it is not installed with the engine. Install it once in any project that calls `.physics({...})`,
-`app.physics`, `preloadPhysics()` or `new PhysicsWorld()`:
+Physics runs on `@dimforge/rapier3d-compat`, an optional peer of `@aura3d/engine`. It is not installed with the engine, so a project that
+never installs it never ships it; once it is installed, every app in the project loads it at startup (see the costs below). Install it once in any project that calls `.physics({...})`, `app.physics`, `preloadPhysics()` or
+`new PhysicsWorld()`:
 
 ```bash
 npm install @dimforge/rapier3d-compat@0.20.0
@@ -31,6 +31,40 @@ If it is missing, the failure is typed and immediate rather than an anonymous st
   `new PhysicsWorld()`, `createRapierPhysics()`; `preloadPhysics()` rejects with it).
 - `createAuraApp` keeps the app alive: `app.diagnostics().errors` contains the message, the canvas shows the error overlay, and the console logs it. Declared bodies stay unsimulated.
 - `aura3d doctor` fails a project whose `src/` uses physics while the backend cannot be resolved, and prints the same command.
+
+### What installing Rapier costs (measured, and not lazy)
+
+Once `@dimforge/rapier3d-compat` is resolvable from your project, **every** app that imports `@aura3d/engine` downloads and initialises
+it at startup, including an app that never touches physics. The engine root statically imports the physics world module, which
+initialises the WASM backend with a top-level `await`; that is what makes `app.physics` and `new PhysicsWorld()` usable synchronously
+the moment `createAuraApp` returns.
+
+Measured in a clean Vite 8 consumer (the npm dependency tree of `@aura3d/engine@5.0.2`), for a small app that draws one box and
+never uses physics (gzip at level 9):
+
+| Engine | Rapier installed | JS emitted | gzip | Rapier chunk | Fetched at startup |
+| --- | --- | --- | --- | --- | --- |
+| 5.0.2 (npm) | no | 6.55 MB | 1.93 MB | none | - |
+| 5.0.2 (npm) | yes | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | yes |
+| this branch | no | 6.55 MB | 1.93 MB | none | - |
+| this branch | yes | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | yes |
+| this branch, `aura3d-no-tla` condition | yes | 9.40 MB | 3.01 MB | 2.85 MB (1.08 MB gzip) | yes (in the background) |
+
+The chunk lists, sizes and the scripts the browser fetched are in `evidence/physics-514/bundle-sizes.json`. The cost is the same in
+5.0.2; this change does not add or remove it. What to do:
+
+- Do not install Rapier in a project that does not use physics, not even "just in case". Installing `@aura3d/physics` or
+  `@aura3d/physics-rapier` from npm also installs it (they list it as a dependency, and npm normally hoists it where the engine
+  resolves it), so the same cost applies.
+- A project that uses physics pays the 1.08 MB gzip once, at startup, and gets synchronous `app.physics`.
+- The `aura3d-no-tla` condition (see "Bundler targets and top-level await" below) does not avoid the download: it only moves the WASM
+  initialisation off the import path, and the lazy module still starts loading Rapier as soon as it is evaluated.
+- Loading Rapier only for scenes that declare physics bodies is not possible without a breaking change. The bundler cannot know at
+  build time whether a scene will call `.physics({...})` (it is a method on every node), so the chunk would have to be a runtime
+  dynamic import, and Rapier's WASM initialisation is asynchronous (its `init()` returns a promise). `createAuraApp(...)` followed immediately by
+  `app.physics.createBody(...)`, `body.velocity()` or `app.physics.raycast(...)` would then have nothing to answer with; a queueing
+  facade cannot return those synchronous results. Making physics async-only is an open owner decision for 5.x (C5-05 in
+  `docs/project/5.0-games-and-examples-upgrade-plan.md`).
 
 A complete example is recipe 16 in `docs/agents/recipes.md` (`docs/agents/recipes-src/physics-basics`).
 
