@@ -34,6 +34,7 @@ import { createGameInput, round } from "../GameRuntimeCore.js";
 import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime.js";
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, registerManagedRootApp, reserveRootCanvas, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import type { PhysicsWorldAccess } from "../physics/PhysicsWorldAccess.js";
+import { isPhysicsBackendMissing } from "../physics/backendMissing.js";
 import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
 import { clearTypedGLBActorQrFlags, setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
@@ -700,7 +701,17 @@ export function createAuraAppWithPhysicsWorldAccess(
       }
     };
   };
-  stageDeclaredBodies(renderSnapshot, snapshot.nodes).commit();
+  // A missing Rapier backend must not leave the app absent (nothing to inspect, black canvas): keep the scene
+  // renderable, and surface the typed PHYSICS_BACKEND_MISSING error in diagnostics().errors, on the canvas, and in the console.
+  let startupPhysicsBackendFailure: unknown;
+  // Survives diagnostics resets on remount: a missing backend stays reported for the life of the app.
+  let physicsBackendFailureMessage: string | undefined;
+  try {
+    stageDeclaredBodies(renderSnapshot, snapshot.nodes).commit();
+  } catch (error) {
+    if (!isPhysicsBackendMissing(error)) throw error;
+    startupPhysicsBackendFailure = error;
+  }
 
   let initialRuntimePhysics: ReturnType<typeof createRuntimeScenePhysicsWithAccess>;
   // The first mount starts before the public app object exists. Reserve the
@@ -729,7 +740,13 @@ export function createAuraAppWithPhysicsWorldAccess(
       // sizing and remounts cannot mutate the admitted owner's surface.
       const admittedCanvas = canvasAdmissionError ? undefined : resolved;
       const usesProductionRenderer = Boolean(admittedCanvas && hasRootRenderableContent(admittedCanvas, declaresWebGLContent(renderSnapshot.nodes), runtimeOwner) && typeof window !== "undefined");
-      initialRuntimePhysics = usesProductionRenderer ? undefined : createRuntimeScenePhysicsWithAccess(physicsAccess, renderSnapshot);
+      try {
+        initialRuntimePhysics = usesProductionRenderer ? undefined : createRuntimeScenePhysicsWithAccess(physicsAccess, renderSnapshot);
+      } catch (error) {
+        if (!isPhysicsBackendMissing(error)) throw error;
+        startupPhysicsBackendFailure ??= error;
+        initialRuntimePhysics = undefined;
+      }
       return admittedCanvas;
     } catch (error) {
       const failures: unknown[] = [error];
@@ -794,6 +811,17 @@ export function createAuraAppWithPhysicsWorldAccess(
     // Runtime mutations remain guarded by app.setPerformanceQuality().
     if (options.performanceQuality) setRootPerformanceQuality(canvas, options.performanceQuality);
   }
+  const reportPhysicsBackendMissing = (error: unknown): void => {
+    const message = productionRenderErrorMessage(error);
+    physicsBackendFailureMessage = message;
+    if (!diagnosticsState.errors.includes(message)) {
+      if (diagnosticsState.errors.length >= 128) diagnosticsState.errors.shift();
+      diagnosticsState.errors.push(message);
+    }
+    if (typeof console !== "undefined") console.error(message);
+    if (canvas) attachErrorOverlay(canvas, error);
+  };
+  if (startupPhysicsBackendFailure !== undefined) reportPhysicsBackendMissing(startupPhysicsBackendFailure);
   const overlay = canvas && shouldRenderOverlay(options.diagnostics, snapshot) ? createDiagnosticsOverlay(canvas, diagnosticsState) : undefined;
   let disposed = false;
   let disposingApp = false;
@@ -1334,7 +1362,13 @@ export function createAuraAppWithPhysicsWorldAccess(
   /** Lazy `app.physics`. Identity is stable: the same runtime is returned on every access. */
   const appPhysics = (): AuraPhysicsRuntime => {
     if (appPhysicsInstance === undefined) {
-      const runtime = createPhysicsRuntime(appPhysicsWorld(), {
+      let physicsWorld: World;
+      try { physicsWorld = appPhysicsWorld(); }
+      catch (error) {
+        if (isPhysicsBackendMissing(error)) reportPhysicsBackendMissing(error);
+        throw error;
+      }
+      const runtime = createPhysicsRuntime(physicsWorld, {
         ...(options.physics?.layers ? { layers: options.physics.layers } : {}),
         nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
       });
@@ -1440,7 +1474,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     diagnosticsState.evidence = fresh.evidence;
     diagnosticsState.renderer = fresh.renderer;
     diagnosticsState.warnings = [...fresh.warnings, ...rendererQualityWarnings(options.renderer)];
-    diagnosticsState.errors = [];
+    diagnosticsState.errors = physicsBackendFailureMessage === undefined ? [] : [physicsBackendFailureMessage];
     validateSceneAssets(renderSnapshot, diagnosticsState.assets, formatRegistry);
     diagnosticsState.warnings.push(
       ...collectGeneratedCodeWarnings(renderSnapshot, qrFlags, {

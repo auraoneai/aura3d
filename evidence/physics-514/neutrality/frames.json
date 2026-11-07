@@ -1,0 +1,658 @@
+{
+ "frames": {
+  "showcase-bank-shot": {
+   "base-a": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "756bd419cfaa9cab9460ea8b3f93d5ac25c34f6cbcd5efccc55b79ff7920621c",
+    "storedAs": "base-showcase-bank-shot-a.png",
+    "info": {
+     "title": "Aura3D - Bank Shot",
+     "canvases": 1,
+     "text": "...\n\nAURA3D PROTOTYPE\n\nBank Shot\n\nArcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. C",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-slingshot-siege": {
+   "base-a": {
+    "sha256": "c0b936a54e6cfd0fab8962105feda4d6c5e53ce144fda7f5f073f694d9fcbf53",
+    "storedAs": "base-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "c0b936a54e6cfd0fab8962105feda4d6c5e53ce144fda7f5f073f694d9fcbf53",
+    "storedAs": "base-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "28ddb8d8e3fd9e177bd7015f7af20a92160d947a6b0a6f13ea6b318117c9eef1",
+    "storedAs": "branch-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "c0b936a54e6cfd0fab8962105feda4d6c5e53ce144fda7f5f073f694d9fcbf53",
+    "storedAs": "base-showcase-slingshot-siege-a.png",
+    "info": {
+     "title": "Aura3D - Slingshot Siege",
+     "canvases": 1,
+     "text": "DRIFTWOOD COVE\nQUARRY RISE\nGREENHOUSE PERCH\nWINDMILL GAP\nGULL KEEP\nMOON ROOST\n Slingshot Siege\nSiege\nSiege Map\nPlayer St",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-blockfall-reactor": {
+   "base-a": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "692b069807966ad74f5cfd856e4187c0353f81b7af89fa59239b5d9a14fda479",
+    "storedAs": "base-showcase-blockfall-reactor-a.png",
+    "info": {
+     "title": "Aura3D Showcase - Blockfall Reactor",
+     "canvases": 1,
+     "text": "0\n0\n0\n3\n0\n4\n0\n1\n\nAURA3D SHOWCASE\n\nBlockfall Reactor\nRunning\n36f gravity\nSCORE\n304\nLINES\n2\nLEVEL\n1\nCOMBO\n1x\n28%\nB2B off\nH",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-aurora-lander": {
+   "base-a": {
+    "sha256": "86b35298f03c44ec536436597416d68f806217a419999d24ff0fd23dfa56b1b2",
+    "storedAs": "base-showcase-aurora-lander-a.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 \u00b7 Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0\u00b0\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/\u2191/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "113b463984235c17a9114684dc17a9ca9976c6e6eb3bd56d3a9f7dc97e158595",
+    "storedAs": "base-showcase-aurora-lander-b.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 \u00b7 Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0\u00b0\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/\u2191/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "86b35298f03c44ec536436597416d68f806217a419999d24ff0fd23dfa56b1b2",
+    "storedAs": "base-showcase-aurora-lander-a.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 \u00b7 Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0\u00b0\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/\u2191/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "594be4bf661f7fac043169c636707aed1307d11d28db24e5fb74d54eaa741d5b",
+    "storedAs": "branch-showcase-aurora-lander-b.png",
+    "info": {
+     "title": "Aura3D - Aurora Lander",
+     "canvases": 1,
+     "text": "SITE 1\nSITE1 \u00b7 Wide Valley\nSCORE0\nALT18.5 m\nV/S1.3\nH/S0.4\nATT0\u00b0\nFUEL 92%\nHULL100%\nGUST INBOUND\nAURORA LANDER\n\nW/\u2191/Space ",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-roadster-rush": {
+   "base-a": {
+    "sha256": "2cd0ba430a90d84fba539182779371095ab4f4a5c3fa25f08bf8d0d4f673e5fd",
+    "storedAs": "base-showcase-roadster-rush-a.png",
+    "info": {
+     "title": "Apex Overdrive \u2014 3D Sky-Lane Highway Racer on Aura3D",
+     "canvases": 1,
+     "text": "STEER: A/D or ARROWS \u00b7 HOP / FLY: SPACE or W (HOLD) \u00b7 BARREL ROLL: Q / E \u00b7 BOOST: SHIFT \u00b7 DIVE: S \u00b7 PAUSE: P\nSCORE\n\u00d71\n0\n",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "2cd0ba430a90d84fba539182779371095ab4f4a5c3fa25f08bf8d0d4f673e5fd",
+    "storedAs": "base-showcase-roadster-rush-a.png",
+    "info": {
+     "title": "Apex Overdrive \u2014 3D Sky-Lane Highway Racer on Aura3D",
+     "canvases": 1,
+     "text": "STEER: A/D or ARROWS \u00b7 HOP / FLY: SPACE or W (HOLD) \u00b7 BARREL ROLL: Q / E \u00b7 BOOST: SHIFT \u00b7 DIVE: S \u00b7 PAUSE: P\nSCORE\n\u00d71\n0\n",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "2cd0ba430a90d84fba539182779371095ab4f4a5c3fa25f08bf8d0d4f673e5fd",
+    "storedAs": "base-showcase-roadster-rush-a.png",
+    "info": {
+     "title": "Apex Overdrive \u2014 3D Sky-Lane Highway Racer on Aura3D",
+     "canvases": 1,
+     "text": "STEER: A/D or ARROWS \u00b7 HOP / FLY: SPACE or W (HOLD) \u00b7 BARREL ROLL: Q / E \u00b7 BOOST: SHIFT \u00b7 DIVE: S \u00b7 PAUSE: P\nSCORE\n\u00d71\n0\n",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "2cd0ba430a90d84fba539182779371095ab4f4a5c3fa25f08bf8d0d4f673e5fd",
+    "storedAs": "base-showcase-roadster-rush-a.png",
+    "info": {
+     "title": "Apex Overdrive \u2014 3D Sky-Lane Highway Racer on Aura3D",
+     "canvases": 1,
+     "text": "STEER: A/D or ARROWS \u00b7 HOP / FLY: SPACE or W (HOLD) \u00b7 BARREL ROLL: Q / E \u00b7 BOOST: SHIFT \u00b7 DIVE: S \u00b7 PAUSE: P\nSCORE\n\u00d71\n0\n",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "showcase-teleoperator": {
+   "base-a": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch \u2014 San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH \u00b7 SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919\u00b0 N \u00b7 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "base-b": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch \u2014 San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH \u00b7 SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919\u00b0 N \u00b7 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-a": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch \u2014 San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH \u00b7 SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919\u00b0 N \u00b7 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   },
+   "branch-b": {
+    "sha256": "ac9f01064e7fc729f75b1cb39b26323e306c5a6ebd7489ff87cd04e765e6d896",
+    "storedAs": "base-showcase-teleoperator-a.png",
+    "info": {
+     "title": "Grid Dispatch \u2014 San Francisco Robotaxi & Autonomous Fleet Showcase",
+     "canvases": 2,
+     "text": "GRID DISPATCH \u00b7 SAN FRANCISCO\nLOADING THE FLEET AND THE AVENUE...\nMason St\nGrant Ave\nGrant Ave\nNob Hill\n37.7919\u00b0 N \u00b7 122",
+     "vt": 5000.000000000003
+    },
+    "errors": []
+   }
+  },
+  "recipe16": {
+   "base-a": {
+    "sha256": "2b4cfd949a84a96237a42d6b34c1aede2c115908fbcb63a0b111a78efd02d06c",
+    "storedAs": null,
+    "info": {
+     "recipe": {
+      "errors": [],
+      "stats": {
+       "steps": 140,
+       "solidHits": 109,
+       "hardestHit": 1.4098556041780554,
+       "firstCrateHitStep": 78
+      }
+     }
+    },
+    "errors": [],
+    "note": "Monorepo source build of recipe 16 renders a black canvas under this harness in base and branch alike (same bytes); not a valid frame, not stored. Only the physics state (stats after 140 fixed steps, diagnostics errors) is used. The same recipe built in the clean consumer renders: ../clean-consumer-present-steps140.png."
+   },
+   "base-b": {
+    "sha256": "2b4cfd949a84a96237a42d6b34c1aede2c115908fbcb63a0b111a78efd02d06c",
+    "storedAs": null,
+    "info": {
+     "recipe": {
+      "errors": [],
+      "stats": {
+       "steps": 140,
+       "solidHits": 109,
+       "hardestHit": 1.4098556041780554,
+       "firstCrateHitStep": 78
+      }
+     }
+    },
+    "errors": [],
+    "note": "Monorepo source build of recipe 16 renders a black canvas under this harness in base and branch alike (same bytes); not a valid frame, not stored. Only the physics state (stats after 140 fixed steps, diagnostics errors) is used. The same recipe built in the clean consumer renders: ../clean-consumer-present-steps140.png."
+   },
+   "branch-a": {
+    "sha256": "2b4cfd949a84a96237a42d6b34c1aede2c115908fbcb63a0b111a78efd02d06c",
+    "storedAs": null,
+    "info": {
+     "recipe": {
+      "errors": [],
+      "stats": {
+       "steps": 140,
+       "solidHits": 109,
+       "hardestHit": 1.4098556041780554,
+       "firstCrateHitStep": 78
+      }
+     }
+    },
+    "errors": [],
+    "note": "Monorepo source build of recipe 16 renders a black canvas under this harness in base and branch alike (same bytes); not a valid frame, not stored. Only the physics state (stats after 140 fixed steps, diagnostics errors) is used. The same recipe built in the clean consumer renders: ../clean-consumer-present-steps140.png."
+   },
+   "branch-b": {
+    "sha256": "2b4cfd949a84a96237a42d6b34c1aede2c115908fbcb63a0b111a78efd02d06c",
+    "storedAs": null,
+    "info": {
+     "recipe": {
+      "errors": [],
+      "stats": {
+       "steps": 140,
+       "solidHits": 109,
+       "hardestHit": 1.4098556041780554,
+       "firstCrateHitStep": 78
+      }
+     }
+    },
+    "errors": [],
+    "note": "Monorepo source build of recipe 16 renders a black canvas under this harness in base and branch alike (same bytes); not a valid frame, not stored. Only the physics state (stats after 140 fixed steps, diagnostics errors) is used. The same recipe built in the clean consumer renders: ../clean-consumer-present-steps140.png."
+   }
+  }
+ },
+ "pixelDiffs": {
+  "showcase-bank-shot": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-slingshot-siege": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 16.4028,
+    "pixelsDiffering": 0.7078,
+    "pixelsDifferingOver8": 0.42178,
+    "diffBox": [
+     0,
+     0,
+     959,
+     539
+    ]
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 16.4028,
+    "pixelsDiffering": 0.7078,
+    "pixelsDifferingOver8": 0.42178,
+    "diffBox": [
+     0,
+     0,
+     959,
+     539
+    ]
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 16.4028,
+    "pixelsDiffering": 0.7078,
+    "pixelsDifferingOver8": 0.42178,
+    "diffBox": [
+     0,
+     0,
+     959,
+     539
+    ]
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-blockfall-reactor": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-aurora-lander": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0.0075,
+    "pixelsDiffering": 0.00169,
+    "pixelsDifferingOver8": 0.00098,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0.0075,
+    "pixelsDiffering": 0.00169,
+    "pixelsDifferingOver8": 0.00098,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0.0037,
+    "pixelsDiffering": 0.0016,
+    "pixelsDifferingOver8": 0,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0.0037,
+    "pixelsDiffering": 0.0016,
+    "pixelsDifferingOver8": 0,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0.0038,
+    "pixelsDiffering": 0.00167,
+    "pixelsDifferingOver8": 0,
+    "diffBox": [
+     224,
+     86,
+     345,
+     114
+    ]
+   }
+  },
+  "showcase-roadster-rush": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "showcase-teleoperator": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  },
+  "recipe16": {
+   "noise_baseA_vs_baseB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchA": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "noise_branchA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseA_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   },
+   "change_baseB_vs_branchB": {
+    "meanAbsDiff": 0,
+    "pixelsDiffering": 0,
+    "pixelsDifferingOver8": 0,
+    "diffBox": null
+   }
+  }
+ }
+}

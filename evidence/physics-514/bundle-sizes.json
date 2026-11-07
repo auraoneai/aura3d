@@ -1,0 +1,3935 @@
+{
+ "question": "Does installing @dimforge/rapier3d-compat add an eagerly loaded chunk to apps that never use physics, and does this branch change that?",
+ "answer": "Yes, and no. With Rapier installed, a no-physics app emits one Rapier chunk of 2853.75 kB (1082.64 kB gzip -9) and the browser fetches it at startup, with the published 5.0.2 engine and with this branch alike (also under the aura3d-no-tla condition). Without Rapier installed nothing Rapier-related is emitted.",
+ "setup": {
+  "consumer": "Clean Vite 8 project (node_modules = npm install of the @aura3d/engine@5.0.2 dependency tree + vite + typescript + @dimforge/rapier3d-compat@0.20.0); @aura3d/engine replaced by the tarball under test. 'absent' = node_modules/@dimforge moved away before the build.",
+  "apps": {
+   "nophys": "src/main.ts: createAuraApp with one lit box, no physics",
+   "phys": "phys/main.ts: recipe 16 (docs/agents/recipes-src/physics-basics/main.ts)"
+  },
+  "engineTarballs": {
+   "published": {
+    "source": "npm pack @aura3d/engine@5.0.2",
+    "sha1": "96567782ede2872a1209c13585f1f60b3dd31e77"
+   },
+   "branch": {
+    "source": "pnpm build && npm pack of this branch (lane/514-physics-out-of-box, engine source as of 59106f712)",
+    "sha1": "4b162ae7a0b0b11dff2f404033a86bf9cc19b80a"
+   }
+  },
+  "gzip": "zlib level 9 over each emitted file",
+  "fetch": "headless Chrome via loopback CDP, Network.requestWillBeSent over 8 s after navigation (tools/ccap.mjs)",
+  "tools": "evidence/physics-514/tools/{consumer.sh,measure.mjs,ccap.mjs}"
+ },
+ "noPhysicsApp": {
+  "published 5.0.2, rapier absent": {
+   "buildExit": "0",
+   "totalJsBytes": 6547594,
+   "totalGzip9Bytes": 1926399,
+   "rapierChunks": [],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-Cy6NGkEO.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-BmyLtkSO.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464331
+    },
+    {
+     "file": "TypedGLBActor-BqD-vq8O.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "engine-B7mXb1j0.js",
+     "bytes": 138,
+     "gzip9Bytes": 138
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-0vzJr_Um.js",
+     "bytes": 174,
+     "gzip9Bytes": 157
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-C2S3Abt3.js",
+     "bytes": 1437248,
+     "gzip9Bytes": 439543
+    },
+    {
+     "file": "lanes-Cul33vp1.js",
+     "bytes": 316,
+     "gzip9Bytes": 224
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-CHUiBpgY.js",
+     "bytes": 77893,
+     "gzip9Bytes": 21181
+    },
+    {
+     "file": "world-DTwXTmmP.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ]
+  },
+  "published 5.0.2, rapier installed": {
+   "buildExit": "0",
+   "totalJsBytes": 9401203,
+   "totalGzip9Bytes": 3008909,
+   "rapierChunks": [
+    {
+     "file": "rapier-B9LFmugn.js",
+     "kB": 2853.75,
+     "gzip_kB": 1082.64
+    }
+   ],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-X79RhuOb.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-BubbwSD4.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464334
+    },
+    {
+     "file": "TypedGLBActor-JZMncApz.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-CIsa18Wc.js",
+     "bytes": 174,
+     "gzip9Bytes": 158
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-DkH_tCkE.js",
+     "bytes": 1437248,
+     "gzip9Bytes": 439545
+    },
+    {
+     "file": "lanes-BqJATtFX.js",
+     "bytes": 316,
+     "gzip9Bytes": 224
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "rapier-B9LFmugn.js",
+     "bytes": 2853747,
+     "gzip9Bytes": 1082643
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-BtW4nItN.js",
+     "bytes": 77893,
+     "gzip9Bytes": 21180
+    },
+    {
+     "file": "world-DwVN856v.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ],
+   "runtime": {
+    "rapierChunkFetchedAtStartup": true,
+    "fetchedScripts": [
+     "/assets/index-DkH_tCkE.js",
+     "/assets/core-CTbf8c1p.js",
+     "/assets/geometry-CfTDB3nx.js",
+     "/assets/blend-DQ8wcZvm.js",
+     "/assets/Texture-DTxK2pAG.js",
+     "/assets/RenderDevice-C16SG2Y8.js",
+     "/assets/ShaderLibraryCore-DZHkoXpY.js",
+     "/assets/Material-Cwu2s6mU.js",
+     "/assets/MaterialInstance-BfhzxYpL.js",
+     "/assets/environment-C1cvPN60.js",
+     "/assets/ProjectionClip-Briltfqk.js",
+     "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "/assets/lobes-DexmyCFz.js",
+     "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "/assets/InstanceBuffer-XW9Iu5fV.js",
+     "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "/assets/ProgramCache-Bs-ATSyi.js",
+     "/assets/prd01-BguQJ55h.js",
+     "/assets/quality-WsR5RWKt.js",
+     "/assets/TextureBudget-Xx59LLFU.js",
+     "/assets/SphericalHarmonics-vhVBxGHB.js",
+     "/assets/probeBuild-DoomduxJ.js",
+     "/assets/WebGL2Device-BT974LRF.js",
+     "/assets/PBRMaterial-BggwD6KE.js",
+     "/assets/ShaderLibrary-6FWyOJhi.js",
+     "/assets/preload-helper-7y9sWmk5.js",
+     "/assets/ForwardPass-GDY6lXl_.js",
+     "/assets/UniformLayout-BqZUpNgX.js",
+     "/assets/LoaderFetch-BuwAIHza.js",
+     "/assets/rolldown-runtime-XKyaHtl9.js",
+     "/assets/lanes-DhkmKRGG.js",
+     "/assets/EXRLoader-Dy7oHqGM.js",
+     "/assets/TypedGLBActor-BubbwSD4.js",
+     "/assets/PostGraph-CwbroYz7.js",
+     "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+     "/assets/ProgramWarmup-DOwuC_m-.js",
+     "/assets/Rgb9e5Cube-HKZn0BP8.js",
+     "/assets/world-BtW4nItN.js",
+     "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+     "/assets/ScalarVolumeFrame-DymSUs6j.js",
+     "/assets/NativePipelineWarmup-DB1Sd79v.js",
+     "/assets/rapier-B9LFmugn.js",
+     "/assets/v2Entry-DRB71tlP.js",
+     "/assets/TemporalHistory-D_QGww1O.js",
+     "/assets/ShaderLibrary-DEqwkoAf.js",
+     "/assets/TemporalHistory-hup3wl_N.js",
+     "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+     "/assets/neutralEmbedded-BmhlQNxh.js"
+    ]
+   }
+  },
+  "branch, rapier absent": {
+   "buildExit": "0",
+   "totalJsBytes": 6548717,
+   "totalGzip9Bytes": 1926868,
+   "rapierChunks": [],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-BuwLHO6L.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-BgiljlZD.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "TypedGLBActor-Z81UNhle.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464332
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "engine-B7mXb1j0.js",
+     "bytes": 138,
+     "gzip9Bytes": 138
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-QbU7LpvR.js",
+     "bytes": 174,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-Dc66-ikO.js",
+     "bytes": 1438095,
+     "gzip9Bytes": 439870
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lanes-Dupzw1jd.js",
+     "bytes": 316,
+     "gzip9Bytes": 226
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-C2mEbsrm.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "world-DH6ycqkF.js",
+     "bytes": 78169,
+     "gzip9Bytes": 21318
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ],
+   "runtime": "not captured"
+  },
+  "branch, rapier installed": {
+   "buildExit": "0",
+   "totalJsBytes": 9402326,
+   "totalGzip9Bytes": 3009374,
+   "rapierChunks": [
+    {
+     "file": "rapier-B9LFmugn.js",
+     "kB": 2853.75,
+     "gzip_kB": 1082.64
+    }
+   ],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-DgKle5sx.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-B0FGe8ND.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "TypedGLBActor-yh7afv3g.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464331
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-B1ZFTkW2.js",
+     "bytes": 174,
+     "gzip9Bytes": 158
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-BEJ5hy5r.js",
+     "bytes": 1438095,
+     "gzip9Bytes": 439876
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lanes-tw20defd.js",
+     "bytes": 316,
+     "gzip9Bytes": 225
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "rapier-B9LFmugn.js",
+     "bytes": 2853747,
+     "gzip9Bytes": 1082643
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-BfzuuLM3.js",
+     "bytes": 78169,
+     "gzip9Bytes": 21316
+    },
+    {
+     "file": "world-CY26LDq_.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ],
+   "runtime": {
+    "rapierChunkFetchedAtStartup": true,
+    "fetchedScripts": [
+     "/assets/index-BEJ5hy5r.js",
+     "/assets/core-CTbf8c1p.js",
+     "/assets/geometry-CfTDB3nx.js",
+     "/assets/blend-DQ8wcZvm.js",
+     "/assets/Texture-DTxK2pAG.js",
+     "/assets/RenderDevice-C16SG2Y8.js",
+     "/assets/ShaderLibraryCore-DZHkoXpY.js",
+     "/assets/Material-Cwu2s6mU.js",
+     "/assets/MaterialInstance-BfhzxYpL.js",
+     "/assets/environment-C1cvPN60.js",
+     "/assets/ProjectionClip-Briltfqk.js",
+     "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "/assets/lobes-DexmyCFz.js",
+     "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "/assets/InstanceBuffer-XW9Iu5fV.js",
+     "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "/assets/ProgramCache-Bs-ATSyi.js",
+     "/assets/prd01-BguQJ55h.js",
+     "/assets/quality-WsR5RWKt.js",
+     "/assets/TextureBudget-Xx59LLFU.js",
+     "/assets/SphericalHarmonics-vhVBxGHB.js",
+     "/assets/probeBuild-DoomduxJ.js",
+     "/assets/WebGL2Device-BT974LRF.js",
+     "/assets/PBRMaterial-BggwD6KE.js",
+     "/assets/ShaderLibrary-6FWyOJhi.js",
+     "/assets/preload-helper-7y9sWmk5.js",
+     "/assets/ForwardPass-GDY6lXl_.js",
+     "/assets/UniformLayout-BqZUpNgX.js",
+     "/assets/LoaderFetch-BuwAIHza.js",
+     "/assets/rolldown-runtime-XKyaHtl9.js",
+     "/assets/lanes-DhkmKRGG.js",
+     "/assets/EXRLoader-Dy7oHqGM.js",
+     "/assets/TypedGLBActor-yh7afv3g.js",
+     "/assets/PostGraph-CwbroYz7.js",
+     "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+     "/assets/ProgramWarmup-DOwuC_m-.js",
+     "/assets/Rgb9e5Cube-HKZn0BP8.js",
+     "/assets/world-BfzuuLM3.js",
+     "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+     "/assets/ScalarVolumeFrame-DymSUs6j.js",
+     "/assets/NativePipelineWarmup-DB1Sd79v.js",
+     "/assets/rapier-B9LFmugn.js",
+     "/assets/v2Entry-DRB71tlP.js",
+     "/assets/TemporalHistory-D_QGww1O.js",
+     "/assets/ShaderLibrary-DEqwkoAf.js",
+     "/assets/TemporalHistory-hup3wl_N.js",
+     "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+     "/assets/neutralEmbedded-BmhlQNxh.js"
+    ]
+   }
+  },
+  "branch, rapier installed, aura3d-no-tla condition": {
+   "buildExit": "0",
+   "totalJsBytes": 9402556,
+   "totalGzip9Bytes": 3009472,
+   "rapierChunks": [
+    {
+     "file": "rapier-B9LFmugn.js",
+     "kB": 2853.75,
+     "gzip_kB": 1082.64
+    }
+   ],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-C3beV-Xx.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-D4BBhG9J.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464334
+    },
+    {
+     "file": "TypedGLBActor-G06Dcd6z.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-BFwpd2By.js",
+     "bytes": 174,
+     "gzip9Bytes": 158
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-DEEmMNMS.js",
+     "bytes": 1438095,
+     "gzip9Bytes": 439872
+    },
+    {
+     "file": "lanes-CQ4pA98T.js",
+     "bytes": 316,
+     "gzip9Bytes": 224
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "rapier-B9LFmugn.js",
+     "bytes": 2853747,
+     "gzip9Bytes": 1082643
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-iJKeAmos.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "world-mgkybctm.js",
+     "bytes": 78399,
+     "gzip9Bytes": 21416
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ],
+   "runtime": {
+    "rapierChunkFetchedAtStartup": true,
+    "fetchedScripts": [
+     "/assets/index-DEEmMNMS.js",
+     "/assets/core-CTbf8c1p.js",
+     "/assets/geometry-CfTDB3nx.js",
+     "/assets/blend-DQ8wcZvm.js",
+     "/assets/Texture-DTxK2pAG.js",
+     "/assets/RenderDevice-C16SG2Y8.js",
+     "/assets/ShaderLibraryCore-DZHkoXpY.js",
+     "/assets/Material-Cwu2s6mU.js",
+     "/assets/MaterialInstance-BfhzxYpL.js",
+     "/assets/environment-C1cvPN60.js",
+     "/assets/ProjectionClip-Briltfqk.js",
+     "/assets/PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "/assets/lobes-DexmyCFz.js",
+     "/assets/StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "/assets/InstanceBuffer-XW9Iu5fV.js",
+     "/assets/StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "/assets/ProgramCache-Bs-ATSyi.js",
+     "/assets/prd01-BguQJ55h.js",
+     "/assets/quality-WsR5RWKt.js",
+     "/assets/TextureBudget-Xx59LLFU.js",
+     "/assets/SphericalHarmonics-vhVBxGHB.js",
+     "/assets/probeBuild-DoomduxJ.js",
+     "/assets/WebGL2Device-BT974LRF.js",
+     "/assets/PBRMaterial-BggwD6KE.js",
+     "/assets/ShaderLibrary-6FWyOJhi.js",
+     "/assets/preload-helper-7y9sWmk5.js",
+     "/assets/ForwardPass-GDY6lXl_.js",
+     "/assets/UniformLayout-BqZUpNgX.js",
+     "/assets/LoaderFetch-BuwAIHza.js",
+     "/assets/rolldown-runtime-XKyaHtl9.js",
+     "/assets/lanes-DhkmKRGG.js",
+     "/assets/EXRLoader-Dy7oHqGM.js",
+     "/assets/TypedGLBActor-D4BBhG9J.js",
+     "/assets/PostGraph-CwbroYz7.js",
+     "/assets/RenderTargetPoolLease-Bq7N7RDn.js",
+     "/assets/ProgramWarmup-DOwuC_m-.js",
+     "/assets/Rgb9e5Cube-HKZn0BP8.js",
+     "/assets/world-mgkybctm.js",
+     "/assets/WebGPUDepthOfField-DPTMBJqe.js",
+     "/assets/ScalarVolumeFrame-DymSUs6j.js",
+     "/assets/NativePipelineWarmup-DB1Sd79v.js",
+     "/assets/v2Entry-DRB71tlP.js",
+     "/assets/TemporalHistory-D_QGww1O.js",
+     "/assets/rapier-B9LFmugn.js",
+     "/assets/ShaderLibrary-DEqwkoAf.js",
+     "/assets/TemporalHistory-hup3wl_N.js",
+     "/assets/neutralEmbeddedLoader-DIrq3QlW.js",
+     "/assets/neutralEmbedded-BmhlQNxh.js"
+    ]
+   }
+  }
+ },
+ "physicsApp": {
+  "published 5.0.2, rapier absent": {
+   "buildExit": "0",
+   "totalJsBytes": 6550036,
+   "totalGzip9Bytes": 1927431,
+   "rapierChunks": [],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-C9PC-TU_.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-B9SK4aqm.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464328
+    },
+    {
+     "file": "TypedGLBActor-B_5k9B_j.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "engine-B7mXb1j0.js",
+     "bytes": 138,
+     "gzip9Bytes": 138
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-YHMM_ChQ.js",
+     "bytes": 174,
+     "gzip9Bytes": 158
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-CUlTqnip.js",
+     "bytes": 1439690,
+     "gzip9Bytes": 440577
+    },
+    {
+     "file": "lanes-DhkeDRhW.js",
+     "bytes": 316,
+     "gzip9Bytes": 224
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-CHUiBpgY.js",
+     "bytes": 77893,
+     "gzip9Bytes": 21181
+    },
+    {
+     "file": "world-DTwXTmmP.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ]
+  },
+  "published 5.0.2, rapier installed": {
+   "buildExit": "0",
+   "totalJsBytes": 9403645,
+   "totalGzip9Bytes": 3009934,
+   "rapierChunks": [
+    {
+     "file": "rapier-B9LFmugn.js",
+     "kB": 2853.75,
+     "gzip_kB": 1082.64
+    }
+   ],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-DIQeVzxy.js",
+     "bytes": 110,
+     "gzip9Bytes": 108
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-CKGZTypm.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464333
+    },
+    {
+     "file": "TypedGLBActor-D-Mpp9H0.js",
+     "bytes": 99,
+     "gzip9Bytes": 94
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "gltf-runtime-uPDhpyfo.js",
+     "bytes": 174,
+     "gzip9Bytes": 157
+    },
+    {
+     "file": "index-Ccz1MaIv.js",
+     "bytes": 1439690,
+     "gzip9Bytes": 440575
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lanes-qQrrG5WV.js",
+     "bytes": 316,
+     "gzip9Bytes": 223
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "rapier-B9LFmugn.js",
+     "bytes": 2853747,
+     "gzip9Bytes": 1082643
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-BtW4nItN.js",
+     "bytes": 77893,
+     "gzip9Bytes": 21180
+    },
+    {
+     "file": "world-DwVN856v.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ]
+  },
+  "branch, rapier absent": {
+   "buildExit": "0",
+   "totalJsBytes": 6551162,
+   "totalGzip9Bytes": 1927916,
+   "rapierChunks": [],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-D-Nu2M6Y.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-C2xlDeAf.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464330
+    },
+    {
+     "file": "TypedGLBActor-SF_8J1DX.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "engine-B7mXb1j0.js",
+     "bytes": 138,
+     "gzip9Bytes": 138
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-CkL2gaX0.js",
+     "bytes": 174,
+     "gzip9Bytes": 158
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "index-DUtpmIPZ.js",
+     "bytes": 1440540,
+     "gzip9Bytes": 440922
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lanes-Dmb26Oi9.js",
+     "bytes": 316,
+     "gzip9Bytes": 225
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-C2mEbsrm.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "world-DH6ycqkF.js",
+     "bytes": 78169,
+     "gzip9Bytes": 21318
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ]
+  },
+  "branch, rapier installed": {
+   "buildExit": "0",
+   "totalJsBytes": 9404771,
+   "totalGzip9Bytes": 3010424,
+   "rapierChunks": [
+    {
+     "file": "rapier-B9LFmugn.js",
+     "kB": 2853.75,
+     "gzip_kB": 1082.64
+    }
+   ],
+   "chunks": [
+    {
+     "file": "AssetDecoders-BMosQ3gb.js",
+     "bytes": 201,
+     "gzip9Bytes": 163
+    },
+    {
+     "file": "AssetDecoders-CYBWP_Ex.js",
+     "bytes": 110,
+     "gzip9Bytes": 109
+    },
+    {
+     "file": "DeferredPipeline-9nz11DjX.js",
+     "bytes": 282,
+     "gzip9Bytes": 198
+    },
+    {
+     "file": "DeferredPipeline-BgXQVk8E.js",
+     "bytes": 41683,
+     "gzip9Bytes": 12551
+    },
+    {
+     "file": "DeferredProbe-BM3RXP8H.js",
+     "bytes": 4703,
+     "gzip9Bytes": 1885
+    },
+    {
+     "file": "DeferredProbe-Bgc4jIs6.js",
+     "bytes": 118,
+     "gzip9Bytes": 99
+    },
+    {
+     "file": "EXRLoader-Dy7oHqGM.js",
+     "bytes": 214144,
+     "gzip9Bytes": 62854
+    },
+    {
+     "file": "ForwardPass-GDY6lXl_.js",
+     "bytes": 464524,
+     "gzip9Bytes": 121669
+    },
+    {
+     "file": "GaussianSplatRenderer-0JCbbuZK.js",
+     "bytes": 19940,
+     "gzip9Bytes": 7130
+    },
+    {
+     "file": "InstanceBuffer-XW9Iu5fV.js",
+     "bytes": 2467,
+     "gzip9Bytes": 858
+    },
+    {
+     "file": "LoaderFetch-BuwAIHza.js",
+     "bytes": 10406,
+     "gzip9Bytes": 4062
+    },
+    {
+     "file": "Material-Cwu2s6mU.js",
+     "bytes": 10938,
+     "gzip9Bytes": 3780
+    },
+    {
+     "file": "MaterialInstance-BfhzxYpL.js",
+     "bytes": 18605,
+     "gzip9Bytes": 6539
+    },
+    {
+     "file": "MeshletPipeline-D7vF_kBG.js",
+     "bytes": 11145,
+     "gzip9Bytes": 4120
+    },
+    {
+     "file": "MeshletPipeline-DjpBNrrU.js",
+     "bytes": 113,
+     "gzip9Bytes": 106
+    },
+    {
+     "file": "NativeDeferredAdmission-DXcr8j-s.js",
+     "bytes": 935,
+     "gzip9Bytes": 527
+    },
+    {
+     "file": "NativePipelineWarmup-DB1Sd79v.js",
+     "bytes": 1200,
+     "gzip9Bytes": 648
+    },
+    {
+     "file": "PBRMaterial-BggwD6KE.js",
+     "bytes": 35183,
+     "gzip9Bytes": 9924
+    },
+    {
+     "file": "PhysicalLighting.wgsl-Bbf-xK5E.js",
+     "bytes": 6041,
+     "gzip9Bytes": 1597
+    },
+    {
+     "file": "PngTexturePixels-TulthyWk.js",
+     "bytes": 1733,
+     "gzip9Bytes": 926
+    },
+    {
+     "file": "PostGraph-CwbroYz7.js",
+     "bytes": 12297,
+     "gzip9Bytes": 4154
+    },
+    {
+     "file": "ProgramCache-Bs-ATSyi.js",
+     "bytes": 24984,
+     "gzip9Bytes": 7464
+    },
+    {
+     "file": "ProgramCache-vSDODiPz.js",
+     "bytes": 217,
+     "gzip9Bytes": 159
+    },
+    {
+     "file": "ProgramWarmup-DOwuC_m-.js",
+     "bytes": 40016,
+     "gzip9Bytes": 12023
+    },
+    {
+     "file": "ProjectionClip-Briltfqk.js",
+     "bytes": 255,
+     "gzip9Bytes": 199
+    },
+    {
+     "file": "RenderDevice-C16SG2Y8.js",
+     "bytes": 37785,
+     "gzip9Bytes": 10137
+    },
+    {
+     "file": "RenderTargetPoolLease-Bq7N7RDn.js",
+     "bytes": 2354,
+     "gzip9Bytes": 1078
+    },
+    {
+     "file": "Rgb9e5Cube-HKZn0BP8.js",
+     "bytes": 5619,
+     "gzip9Bytes": 2192
+    },
+    {
+     "file": "ScalarVolumeFrame-DymSUs6j.js",
+     "bytes": 3975,
+     "gzip9Bytes": 1601
+    },
+    {
+     "file": "ShaderLibrary-6FWyOJhi.js",
+     "bytes": 187447,
+     "gzip9Bytes": 23848
+    },
+    {
+     "file": "ShaderLibrary-DEqwkoAf.js",
+     "bytes": 113,
+     "gzip9Bytes": 103
+    },
+    {
+     "file": "ShaderLibraryCore-DZHkoXpY.js",
+     "bytes": 76320,
+     "gzip9Bytes": 18591
+    },
+    {
+     "file": "SphericalHarmonics-vhVBxGHB.js",
+     "bytes": 4765,
+     "gzip9Bytes": 1959
+    },
+    {
+     "file": "StaticGeneratedCacheCapability-CqBlT8FD.js",
+     "bytes": 4819,
+     "gzip9Bytes": 2195
+    },
+    {
+     "file": "StaticGeneratedUnlitShader-Dzvo1fkp.js",
+     "bytes": 353321,
+     "gzip9Bytes": 94199
+    },
+    {
+     "file": "TemporalHistory-D_QGww1O.js",
+     "bytes": 69482,
+     "gzip9Bytes": 19180
+    },
+    {
+     "file": "TemporalHistory-hup3wl_N.js",
+     "bytes": 64,
+     "gzip9Bytes": 69
+    },
+    {
+     "file": "Texture-DTxK2pAG.js",
+     "bytes": 24194,
+     "gzip9Bytes": 6175
+    },
+    {
+     "file": "TextureBudget-Xx59LLFU.js",
+     "bytes": 124281,
+     "gzip9Bytes": 35074
+    },
+    {
+     "file": "TypedGLBActor-A6kggZyX.js",
+     "bytes": 99,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "TypedGLBActor-lwsJogJT.js",
+     "bytes": 1576569,
+     "gzip9Bytes": 464336
+    },
+    {
+     "file": "UniformLayout-BqZUpNgX.js",
+     "bytes": 4211,
+     "gzip9Bytes": 1768
+    },
+    {
+     "file": "VisibilityBufferPipeline-BIjwgy3L.js",
+     "bytes": 13966,
+     "gzip9Bytes": 4153
+    },
+    {
+     "file": "VisibilityBufferPipeline-C5oxnpUk.js",
+     "bytes": 82,
+     "gzip9Bytes": 80
+    },
+    {
+     "file": "WebGL2Device-BT974LRF.js",
+     "bytes": 463535,
+     "gzip9Bytes": 114172
+    },
+    {
+     "file": "WebGL2Device-DIgoCxT3.js",
+     "bytes": 419,
+     "gzip9Bytes": 242
+    },
+    {
+     "file": "WebGPUDepthOfField-DPTMBJqe.js",
+     "bytes": 29164,
+     "gzip9Bytes": 8182
+    },
+    {
+     "file": "WebGPUDevice-BNkvVsoX.js",
+     "bytes": 58,
+     "gzip9Bytes": 68
+    },
+    {
+     "file": "WebGPUDevice-N5WvGyR_.js",
+     "bytes": 446880,
+     "gzip9Bytes": 114846
+    },
+    {
+     "file": "__vite-browser-external-BDfy7Drd.js",
+     "bytes": 103,
+     "gzip9Bytes": 117
+    },
+    {
+     "file": "assetsBrowserLazy-CBsK1kFn.js",
+     "bytes": 47370,
+     "gzip9Bytes": 15820
+    },
+    {
+     "file": "assetsImportersLazy-CqSADbJ5.js",
+     "bytes": 68416,
+     "gzip9Bytes": 23444
+    },
+    {
+     "file": "blend-DQ8wcZvm.js",
+     "bytes": 11504,
+     "gzip9Bytes": 3775
+    },
+    {
+     "file": "core-CTbf8c1p.js",
+     "bytes": 2222,
+     "gzip9Bytes": 989
+    },
+    {
+     "file": "environment-C1cvPN60.js",
+     "bytes": 692,
+     "gzip9Bytes": 404
+    },
+    {
+     "file": "extension-scalar-atlas-CxHMDUYP.js",
+     "bytes": 2748,
+     "gzip9Bytes": 1164
+    },
+    {
+     "file": "geometry-CfTDB3nx.js",
+     "bytes": 1238,
+     "gzip9Bytes": 546
+    },
+    {
+     "file": "gltf-runtime-cjerPgCH.js",
+     "bytes": 19731,
+     "gzip9Bytes": 5309
+    },
+    {
+     "file": "gltf-runtime-iaFsbSjq.js",
+     "bytes": 174,
+     "gzip9Bytes": 157
+    },
+    {
+     "file": "index-9-Yh1jOt.js",
+     "bytes": 1440540,
+     "gzip9Bytes": 440923
+    },
+    {
+     "file": "lanes-CVyPjHS4.js",
+     "bytes": 316,
+     "gzip9Bytes": 224
+    },
+    {
+     "file": "lanes-DhkmKRGG.js",
+     "bytes": 36495,
+     "gzip9Bytes": 13849
+    },
+    {
+     "file": "lobes-DexmyCFz.js",
+     "bytes": 31042,
+     "gzip9Bytes": 9893
+    },
+    {
+     "file": "neutralEmbedded-BmhlQNxh.js",
+     "bytes": 126255,
+     "gzip9Bytes": 92862
+    },
+    {
+     "file": "neutralEmbeddedLoader-DIrq3QlW.js",
+     "bytes": 984,
+     "gzip9Bytes": 586
+    },
+    {
+     "file": "prd01-BMB6XgEB.js",
+     "bytes": 28,
+     "gzip9Bytes": 48
+    },
+    {
+     "file": "prd01-BguQJ55h.js",
+     "bytes": 345,
+     "gzip9Bytes": 228
+    },
+    {
+     "file": "preload-helper-7y9sWmk5.js",
+     "bytes": 1615,
+     "gzip9Bytes": 831
+    },
+    {
+     "file": "probeBuild-DoomduxJ.js",
+     "bytes": 8840,
+     "gzip9Bytes": 3568
+    },
+    {
+     "file": "quality-WsR5RWKt.js",
+     "bytes": 4186,
+     "gzip9Bytes": 1450
+    },
+    {
+     "file": "rapier-B9LFmugn.js",
+     "bytes": 2853747,
+     "gzip9Bytes": 1082643
+    },
+    {
+     "file": "renderingLazy-Bmbly8Jn.js",
+     "bytes": 5141,
+     "gzip9Bytes": 1875
+    },
+    {
+     "file": "retarget.worker-CVQ7tuk1.js",
+     "bytes": 30194,
+     "gzip9Bytes": 9863
+    },
+    {
+     "file": "rolldown-runtime-XKyaHtl9.js",
+     "bytes": 726,
+     "gzip9Bytes": 431
+    },
+    {
+     "file": "textures-DG-oXJrg.js",
+     "bytes": 1144,
+     "gzip9Bytes": 675
+    },
+    {
+     "file": "v2Entry-DRB71tlP.js",
+     "bytes": 128356,
+     "gzip9Bytes": 37171
+    },
+    {
+     "file": "volumetrics-CCOzOqWR.js",
+     "bytes": 59819,
+     "gzip9Bytes": 16236
+    },
+    {
+     "file": "webgpu-BgfPp_Jm.js",
+     "bytes": 13573,
+     "gzip9Bytes": 4622
+    },
+    {
+     "file": "world-BfzuuLM3.js",
+     "bytes": 78169,
+     "gzip9Bytes": 21316
+    },
+    {
+     "file": "world-CY26LDq_.js",
+     "bytes": 91,
+     "gzip9Bytes": 95
+    },
+    {
+     "file": "zstd.worker-CD0d6sNb.js",
+     "bytes": 77205,
+     "gzip9Bytes": 31223
+    }
+   ]
+  }
+ }
+}

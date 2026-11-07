@@ -3,21 +3,56 @@ import { toRapierHeightfieldHeights } from "./HeightfieldLayout.js";
 
 import { ensureRapier, getRapierInitializationError, getRapierModule, rapierInitMode } from "./rapierInit.js";
 
-// `@dimforge/rapier3d-compat` is an OPTIONAL peer: it must be absent-tolerant at module evaluation so
+// `@dimforge/rapier3d-compat` is an OPTIONAL peer (see PhysicsBackendMissingError for the failure contract): it must be absent-tolerant at module evaluation so
 // `import { createAuraApp } from "@aura3d/engine"` works in consumers that never use physics. Failure defers to
 // call time. Initialisation lives in `./rapierInit.js` (top-level await by default, a lazy variant under the
 // `aura3d-no-tla` bundler condition).
 export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
+
+/** Stable error code for an absent or unresolvable Rapier backend. */
+export const PHYSICS_BACKEND_MISSING = "PHYSICS_BACKEND_MISSING" as const;
+/** The exact command that installs the pinned Rapier backend with npm. */
+export const PHYSICS_BACKEND_INSTALL_COMMAND = "npm install @dimforge/rapier3d-compat@0.20.0" as const;
+
+/**
+ * Thrown (synchronously for `new PhysicsWorld()` / declared `.physics({...})` bodies, asynchronously for
+ * `createRapierPhysics()` and `preloadPhysics()`) when `@dimforge/rapier3d-compat` cannot be resolved. Carries the
+ * install command so an agent or a developer can fix the project without reading docs.
+ */
+export class PhysicsBackendMissingError extends Error {
+  readonly code = PHYSICS_BACKEND_MISSING;
+  readonly installCommand = PHYSICS_BACKEND_INSTALL_COMMAND;
+  constructor(detail?: string, options?: { readonly cause?: unknown }) {
+    super(
+      `${PHYSICS_BACKEND_MISSING}: ${detail ?? "Aura3D physics needs the Rapier backend @dimforge/rapier3d-compat, which is not installed."} Install it with: ${PHYSICS_BACKEND_INSTALL_COMMAND} (pnpm add @dimforge/rapier3d-compat@0.20.0, yarn add @dimforge/rapier3d-compat@0.20.0).`,
+      options
+    );
+    this.name = "PhysicsBackendMissingError";
+  }
+}
+
+export type PhysicsBackendStatus =
+  | { readonly state: "ready" }
+  | { readonly state: "missing"; readonly code: typeof PHYSICS_BACKEND_MISSING; readonly installCommand: typeof PHYSICS_BACKEND_INSTALL_COMMAND }
+  | { readonly state: "failed"; readonly cause: unknown };
+
+/** Observed (not predicted) backend state; `missing` also covers a lazy build that has not finished loading. */
+export function getPhysicsBackendStatus(): PhysicsBackendStatus {
+  if (getRapierModule()) return { state: "ready" };
+  const failure = getRapierInitializationError();
+  if (failure) return { state: "failed", cause: failure.cause };
+  return { state: "missing", code: PHYSICS_BACKEND_MISSING, installCommand: PHYSICS_BACKEND_INSTALL_COMMAND };
+}
 
 function requireRapierModule(): RapierModule {
   const rapier = getRapierModule();
   if (!rapier) {
     const failure = getRapierInitializationError();
     if (failure) throw new Error("@aura3d/engine physics failed to initialize the Rapier WASM backend.", { cause: failure.cause });
-    throw new Error(
+    throw new PhysicsBackendMissingError(
       rapierInitMode === "lazy"
-        ? "@aura3d/engine physics is not ready: this build has no top-level await, so `await ensurePhysics()` (from @aura3d/engine/physics) before creating a world or calling createAuraApp, and install the optional peer @dimforge/rapier3d-compat."
-        : "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics."
+        ? "this build has no top-level await, so `await ensurePhysics()` (from @aura3d/engine/physics) before creating a world or calling createAuraApp; if it still fails the Rapier backend @dimforge/rapier3d-compat is not installed."
+        : undefined
     );
   }
   return rapier;
@@ -1110,11 +1145,7 @@ function flattenVertices(vertices: readonly PhysicsVec3[]): Float32Array {
 export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> {
   const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))()
     .catch((error: unknown) => {
-      if ((error as { code?: string })?.code === "ERR_MODULE_NOT_FOUND") {
-        throw new Error(
-          "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics."
-        );
-      }
+      if ((error as { code?: string })?.code === "ERR_MODULE_NOT_FOUND") throw new PhysicsBackendMissingError(undefined, { cause: error });
       throw error;
     });
   // The official compat build exposes explicit async WASM initialization and
