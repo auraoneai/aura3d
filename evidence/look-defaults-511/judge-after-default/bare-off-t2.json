@@ -1,0 +1,47 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "results": [
+    {
+      "task": 2,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A shows fog fading into the horizon and some shaded, varied cone canopies on a dark ground, while B looks flat and saturated with a washed-out ground, no visible fog or shadows, and no visible trunks or rocks."
+    },
+    {
+      "task": 2,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 2,
+      "idx": 3,
+      "error": "missing frames"
+    }
+  ]
+}

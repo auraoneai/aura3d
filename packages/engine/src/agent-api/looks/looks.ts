@@ -30,6 +30,7 @@ import { worldQueriesSlot } from "../../contracts/world.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { lookPresets, type AuraLookPreset } from "./lookPresets.js";
+import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 import { authoredLookIds } from "./lookLint.js";
 
 export interface AuraLookBuildOptions {
@@ -749,6 +750,14 @@ function presetImpl(
 }
 
 export const looks = {
+  /** 5.1, opt-in: warm key + cool fill + back rim sized to a subject (see lookStage.ts). */
+  heroRig,
+  /** 5.1, opt-in: studio IBL + hero rig + a floor that fades into the background (no visible edge). */
+  heroStage,
+  /** 5.1, opt-in: scene fog sized by scene extent (opacity `haze` at `extent` world units) instead of a fixed density. */
+  fogForExtent,
+  /** Fog density that reaches `haze` opacity at `extent` for `exp` or `exp2` fog. */
+  fogDensityForExtent,
   /**
    * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
    * (the documented, flag-off shape — `scene().add(looks.preset(id))`).

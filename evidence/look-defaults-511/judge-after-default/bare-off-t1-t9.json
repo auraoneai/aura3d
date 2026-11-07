@@ -1,0 +1,102 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "results": [
+    {
+      "task": 1,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "A shows a large, well-framed gold cube with visible gradient and a specular streak that suggest a metallic PBR surface, while B shows a small, nearly flat grey cube with little shading or metallic character."
+    },
+    {
+      "task": 1,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 1,
+      "idx": 3,
+      "error": "missing frames"
+    },
+    {
+      "task": 2,
+      "idx": 1,
+      "error": "Unexpected non-whitespace character after JSON at position 149 (line 3 column 1)"
+    },
+    {
+      "task": 2,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 2,
+      "idx": 3,
+      "error": "missing frames"
+    },
+    {
+      "task": 9,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 5,
+          "materials": 3,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 2,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "A has clearly visible cyan and magenta rim lighting, a dark background and a lit floor, with a well-framed robot, while B has flat grey lighting, a washed-out floor with no visible shadows or coloured rim light, and a smaller, less defined robot."
+    },
+    {
+      "task": 9,
+      "idx": 2,
+      "error": "missing frames"
+    },
+    {
+      "task": 9,
+      "idx": 3,
+      "error": "missing frames"
+    }
+  ]
+}
