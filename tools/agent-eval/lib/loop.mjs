@@ -112,9 +112,14 @@ export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, max
       const results = [];
       const t1 = now();
       for (const use of toolUses) {
+        // Calls after finish in the same turn are not run, but still get a result: the follow-up phase continues this
+        // conversation and the API rejects a tool_use without a matching tool_result.
+        if (toolbox.state.finished) {
+          results.push({ type: "tool_result", tool_use_id: use.id, content: "not run: finish was already called in this turn", is_error: true });
+          continue;
+        }
         const { content: text, isError } = toolbox.exec(use.name, use.input);
         results.push({ type: "tool_result", tool_use_id: use.id, content: text, ...(isError ? { is_error: true } : {}) });
-        if (toolbox.state.finished) break;
       }
       const toolMs = now() - t1;
       usage.toolMs += toolMs;

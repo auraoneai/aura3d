@@ -8,9 +8,9 @@ Tasks (frozen 2026-11-08, before results): 101 spider (animation), 102 portal (e
 
 | arm | runs (valid) | finished task | capped | follow-up finished | renders | functional all pass (mean) | follow-up all pass | regressions | turns median (task + follow-up) | wall s median | tool s median | tokens in median (cached share) | tokens out median | billed $ median | billed $ total | cost source | emitted JS gzip KB | fetched at load KB | load ms | fps |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| aura | 1 (1) | 100% | 0 | 100% | 100% | 100% (100%) | 100% | 0 | 8 (5 + 3) | 11.1 | 3.6 | 85900 (82%) | 2800 | 0.0755 | 0.0755 | list-price-estimate | 2141.7 | 5654.1 | 357 | 60 |
-| three | 2 (2) | 100% | 0 | 100% | 100% | 100% (100%) | 100% | 0 | 7 (4 + 3) | 11 | 2.9 | 66000 (80%) | 2450 | 0.0635 | 0.1270 | list-price-estimate | 127 | 503.7 | 555.50 | 60 |
-| bridge | 1 (1) | 100% | 0 | 100% | 100% | 100% (100%) | 100% | 0 | 9 (6 + 3) | 16 | 5.5 | 108450 (83%) | 3150 | 0.0882 | 0.0882 | list-price-estimate | 3201.8 | 8912.9 | 1439 | 46.1 |
+| aura | 1 (1) | 100% | 0 | 100% | 100% | 100% (100%) | 100% | 0 | 8 (5 + 3) | 6.5 | 6.3 | 85900 (82%) | 2800 | 0.0755 | 0.0755 | list-price-estimate | 2141.7 | 5654.1 | 427 | 60 |
+| three | 2 (2) | 100% | 0 | 100% | 100% | 100% (100%) | 100% | 0 | 7 (4 + 3) | 4.5 | 4.3 | 66000 (80%) | 2450 | 0.0635 | 0.1270 | list-price-estimate | 127 | 503.7 | 126 | 60 |
+| bridge | 1 (1) | 100% | 0 | 100% | 100% | 100% (100%) | 100% | 0 | 9 (6 + 3) | 9 | 8.7 | 108450 (83%) | 3150 | 0.0882 | 0.0882 | list-price-estimate | 3201.8 | 8912.9 | 609 | 47.4 |
 
 ## Blind visual pairs (main phase, majority of judge calls)
 
@@ -28,7 +28,7 @@ Verdict: **native stays the default (bridge does not meet the rule)** (meaningle
 
 ```json
 {
- "timeGain": -0.4414414414414415,
+ "timeGain": -0.38461538461538464,
  "costGain": -0.16898608349900593,
  "bridgeVsAuraWinRate": 0.5,
  "correctnessDelta": 0,
@@ -42,10 +42,10 @@ Verdict: **native stays the default (bridge does not meet the rule)** (meaningle
 
 | task | arm | finished | functional | follow-up | turns median | billed $ median | load ms | fps |
 |---|---|---|---|---|---|---|---|---|
-| 105 garden | three | 1/1 | 1/1 | 1/1 | 7 | 0.0635 | 599 | 60 |
-| 107 lighthouse | aura | 1/1 | 1/1 | 1/1 | 8 | 0.0755 | 357 | 60 |
-| 107 lighthouse | three | 1/1 | 1/1 | 1/1 | 7 | 0.0635 | 512 | 60 |
-| 107 lighthouse | bridge | 1/1 | 1/1 | 1/1 | 9 | 0.0882 | 1439 | 46.1 |
+| 105 garden | three | 1/1 | 1/1 | 1/1 | 7 | 0.0635 | 142 | 60 |
+| 107 lighthouse | aura | 1/1 | 1/1 | 1/1 | 8 | 0.0755 | 427 | 60 |
+| 107 lighthouse | three | 1/1 | 1/1 | 1/1 | 7 | 0.0635 | 110 | 60 |
+| 107 lighthouse | bridge | 1/1 | 1/1 | 1/1 | 9 | 0.0882 | 609 | 47.4 |
 
 ## Failed, capped and errored runs
 

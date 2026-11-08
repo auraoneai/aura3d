@@ -30,6 +30,13 @@ Answer with ONLY JSON: {"A":{"readability":n,"lighting":n,"materials":n,"fidelit
 
 const taskText = (file) => readFileSync(join(C1_DIR, "tasks", file), "utf8");
 
+/** Add one judge response's provider usage (tokens and any billed credits / USD) to the running judge total. */
+export function addJudgeUsage(total, u) {
+  for (const key of ["uncachedInput", "cacheRead", "cacheWrite", "output"]) total[key] += u[key] ?? 0;
+  for (const key of ["providerCredits", "providerCostUsd"]) if (u[key] != null) total[key] = (total[key] ?? 0) + u[key];
+  return total;
+}
+
 export function majority(calls) {
   const tally = {};
   for (const c of calls) if (c.winner) tally[c.winner] = (tally[c.winner] ?? 0) + 1;
@@ -59,13 +66,13 @@ async function main(argv) {
   const calls = Number(opt("--calls", stub ? 1 : 3));
   const seed = Number(opt("--seed", 20261108));
   const model = opt("--model", DEFAULT_MODEL);
-  const batchDir = join(REPO, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", batch);
+  const batchDir = resolve(REPO, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", batch);
   const framesDir = join(batchDir, "frames");
   const manifest = loadTasks();
   const client = stub ? null : createPrismClient({ key: loadKey() });
   const rand = mulberry32(seed);
   const runs = readdirSync(join(batchDir, "runs")).filter((id) => existsSync(join(batchDir, "runs", id, "run.json"))).map((id) => JSON.parse(readFileSync(join(batchDir, "runs", id, "run.json"), "utf8")));
-  const usage = { uncachedInput: 0, cacheRead: 0, cacheWrite: 0, output: 0 };
+  const usage = { uncachedInput: 0, cacheRead: 0, cacheWrite: 0, output: 0, providerCredits: null, providerCostUsd: null };
   const pairs = [];
   for (const task of manifest.tasks) {
     const file = readdirSync(join(C1_DIR, "tasks")).find((f) => f.startsWith(`${task.id}-`));
@@ -93,8 +100,7 @@ async function main(argv) {
               }
               content.push({ type: "text", text: "Judge both candidates now. Answer with ONLY the JSON object." });
               const response = await client.messages({ model, max_tokens: 800, system: RUBRIC, messages: [{ role: "user", content }] }, { session: `c1-visjudge-${task.id}`, jobType: "agent-eval-judge" });
-              const u = usageOf(response);
-              for (const key of Object.keys(usage)) usage[key] += u[key];
+              addJudgeUsage(usage, usageOf(response));
               json = JSON.parse(/\{[\s\S]*\}/.exec((response.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join(""))[0]);
             }
             const winner = json.winner === "tie" ? "tie" : json.winner === "A" ? order[0] : order[1];
@@ -124,8 +130,7 @@ async function main(argv) {
       const checklist = lists[String(run.task)] ?? [];
       try {
         const response = await client.messages({ model, max_tokens: 4000, system: JUDGE_SYSTEM, messages: [{ role: "user", content: buildJudgePrompt({ task: run.task, checklist, sources, probes: phase.probes, remote: { build: phase.build, readyTimeout: phase.ready === false, page: { pageErrors: phase.pageErrors } } }) }] }, { session: `c1-judge-${run.task}`, jobType: "agent-eval-judge" });
-        const u = usageOf(response);
-        for (const key of Object.keys(usage)) usage[key] += u[key];
+        addJudgeUsage(usage, usageOf(response));
         const parsed = parseJudge((response.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join(""));
         checklists.push({ runId: run.runId, passFraction: parsed.checklist.length ? parsed.checklist.filter((c) => c.pass).length / parsed.checklist.length : null, silentNoOps: parsed.silentNoOps.length, checklist: parsed.checklist });
       } catch (error) {
@@ -133,7 +138,7 @@ async function main(argv) {
       }
     }
   }
-  const out = { schema: "aura3d.agent-eval.c1-judge/1", judge: stub ? "stub-frame-statistics" : model, seed, callsPerPair: calls, pairs, checklists, judgeCost: stub ? null : costOf(usage, model) };
+  const out = { schema: "aura3d.agent-eval.c1-judge/1", judge: stub ? "stub-frame-statistics" : model, seed, callsPerPair: calls, pairs, checklists, judgeCost: stub ? null : costOf(usage, model, { usdPerCredit: process.env.AGENT_EVAL_USD_PER_CREDIT ? Number(process.env.AGENT_EVAL_USD_PER_CREDIT) : null }) };
   writeFileSync(join(batchDir, "c1-judge.json"), JSON.stringify(out, null, 2));
   console.log("wrote", join(batchDir, "c1-judge.json"));
 }

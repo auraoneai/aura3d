@@ -256,7 +256,7 @@ async function main(argv) {
   const httpPort = Number(opt("--http-port", 10682));
   const only = opt("--only", null)?.split(",");
   const work = process.env.AGENT_EVAL_WORK ?? "/tmp/agent-eval-runs";
-  const batchDir = join(REPO, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", batch);
+  const batchDir = resolve(REPO, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", batch);
   const tasks = Object.fromEntries(loadTasks().tasks.map((t) => [t.id, t]));
   const framesDir = join(batchDir, "frames");
   mkdirSync(framesDir, { recursive: true });

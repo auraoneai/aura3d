@@ -8,6 +8,7 @@ import { basePackageJson } from "../../../tools/agent-eval/lib/base.mjs";
 import { BRIDGE_GUIDE, createBridgeHandler } from "../../../tools/agent-eval/c1/bridge.mjs";
 import { costOf, priceFor } from "../../../tools/agent-eval/c1/cost.mjs";
 import { PROBES, runProbe } from "../../../tools/agent-eval/c1/probes.mjs";
+import { addJudgeUsage } from "../../../tools/agent-eval/c1/judge.mjs";
 import { armSummary, bridgeDecision, runMetrics, visualSummary, wilson } from "../../../tools/agent-eval/c1/report.mjs";
 import { estimatePlan, loadTasks, resolveArms, resolveC1Tasks } from "../../../tools/agent-eval/c1/run-c1.mjs";
 import { stubScript, stubSolution } from "../../../tools/agent-eval/c1/stub-model.mjs";
@@ -106,6 +107,39 @@ describe("C1 loop follow-up phase", () => {
     expect(last.role).toBe("user");
     expect(last.content.some((b) => b.type === "tool_result")).toBe(true);
     expect(last.content.find((b) => b.type === "text")?.text).toContain("Add an Undo button.");
+  });
+
+  it("answers tool calls made after finish in the same turn, so the follow-up request is a valid conversation", async () => {
+    const state = { finished: false, summary: null as string | null };
+    const execs: string[] = [];
+    const toolbox = { state, exec(name: string) { execs.push(name); if (name === "finish") state.finished = true; return { content: "ok", isError: false }; } };
+    const turns = [["finish", "typecheck"], ["finish"]];
+    const seen: Array<Array<{ role: string; content: unknown }>> = [];
+    let n = 0;
+    const client = {
+      async messages(body: { messages: Array<{ role: string; content: unknown }> }) {
+        seen.push(structuredClone(body.messages));
+        const names = turns[n++] ?? ["finish"];
+        return { content: names.map((name, i) => ({ type: "tool_use", id: `${n}-${i}`, name, input: {} })), stop_reason: "tool_use", usage: { input_tokens: 1, output_tokens: 1 } };
+      }
+    };
+    const out = await runAgent({ client, model: "m", arm: "aura", toolbox, maxTurns: 3, followUp: { text: "x", maxTurns: 2 } });
+    expect(out.followUpEndReason).toBe("finished");
+    expect(execs).toEqual(["finish", "finish"]);
+    const results = (seen[1][seen[1].length - 1].content as Array<{ type: string; tool_use_id?: string; is_error?: boolean }>).filter((b) => b.type === "tool_result");
+    expect(results.map((r) => r.tool_use_id)).toEqual(["1-0", "1-1"]);
+    expect(results[1].is_error).toBe(true);
+  });
+});
+
+describe("C1 judge cost", () => {
+  it("keeps provider-billed credits and USD from judge responses, not only tokens", () => {
+    const total = { uncachedInput: 0, cacheRead: 0, cacheWrite: 0, output: 0, providerCredits: null as number | null, providerCostUsd: null as number | null };
+    addJudgeUsage(total, usageOf({ usage: { input_tokens: 6000, output_tokens: 400, kiro_credits: 1.5 } }));
+    addJudgeUsage(total, usageOf({ usage: { input_tokens: 6000, output_tokens: 400, kiro_credits: 0.5 } }));
+    expect(total.uncachedInput).toBe(12000);
+    expect(total.providerCredits).toBe(2);
+    expect(costOf(total, "claude-sonnet-5.5", { usdPerCredit: 0.04 })).toMatchObject({ billedUsd: 0.08, source: "provider-credits" });
   });
 });
 

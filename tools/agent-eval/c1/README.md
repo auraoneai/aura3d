@@ -97,6 +97,11 @@ node tools/agent-eval/c1/judge.mjs c1-<date> --checklist
 node tools/agent-eval/c1/report.mjs c1-<date>
 ```
 
+Each run executes in its own worker thread: the toolbox runs typecheck, search and the bridge synchronously, and in a
+shared event loop one run's tool call would stall the other runs' model responses and inflate their wall and model time
+(the first dry run showed 58 s of "model time" for 8 stub turns of 25 ms). `AGENT_EVAL_EVIDENCE` may be relative to the
+repo or absolute; all four scripts resolve it the same way.
+
 Re-run infra failures only with `--only <runId,...>` (writes `plan-rerun-*.json`); never re-run a valid run because its
 result is bad.
 

@@ -14,7 +14,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_12",
+    "id": "stub_1",
     "name": "read_file",
     "input": {
      "path": "TASK.md"
@@ -22,7 +22,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_13",
+    "id": "stub_2",
     "name": "list_dir",
     "input": {
      "path": "."
@@ -37,12 +37,12 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_12",
+    "tool_use_id": "stub_1",
     "content": "1\t# Task 10: Procedural lighthouse\n2\t\n3\tBuild a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. Model a coastal lighthouse entirely from code (no external model, texture or image files). It must read clearly as a lighthouse: a tapered tower with alternating painted bands (at least 3 bands in two contrasting colours), a gallery balcony with a railing near the top, a glass lantern room with a visible lamp, a conical or domed roof with a finial, a door and at least 4 small windows spiralling or stacked up the tower, and a rocky base made of several irregular rocks sitting on a patch of sea or ground. Add a small keeper's cottage next to the base. The camera must frame the whole lighthouse with some sky/horizon visible and slowly orbit it. Use lighting that gives clear form (a key light with shadows plus fill). When the first frame has rendered, set window.__TASK_STATE__ = { ready: true, partCount: <number of distinct visible mesh parts you created>, bandCount: <number of tower bands> }.\n4\t\n5\tThe provided framework is Aura3D (`@aura3d/engine`, already installed in node_modules).\n6\t\n7\tThe rendering contract in the next section applies.\n8\t\n9\t## Rendering contract (all tasks)\n10\t\n11\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n12\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READ"
    },
    {
     "type": "tool_result",
-    "tool_use_id": "stub_13",
+    "tool_use_id": "stub_2",
     "content": ".agents/\nAGENTS.md\nTASK.md\ndocs/\nindex.html\nllms.txt\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
    }
   ]
@@ -58,7 +58,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_14",
+    "id": "stub_3",
     "name": "read_file",
     "input": {
      "path": "llms.txt",
@@ -74,7 +74,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_14",
+    "tool_use_id": "stub_3",
     "content": "1\t# Aura3D\n2\t\n3\t> Aura3D 5.2.0: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai\n4\t\n5\t## First screen: Aura3D patterns (copy the shape, change the subject)\n6\t\n7\t`@aura3d/engine` is installed; never open `node_modules` or `dist`. Blocks are typechecked, GPU-rendered patterns, not finished scenes: change subject and numbers; typecheck once. `createAuraApp(selector, { scene })` owns renderer, resize and loop. Vectors `[x, y, z]`, colours CSS strings, primitives are unit shapes scaled by `size`. Per frame `app.onFrame((f) => ...)` gives `f.dt`, `f.time` in seconds. To change a node later give it `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`.\n8\t\n9\t### Scene skeleton: look, subject, camera, per-frame update\n10\t```ts render=animated\n11\timport { camera, createAuraApp, looks, material, primitives, scene } from \"@aura3d/engine\";\n12\tconst app = createAuraApp(\"#app\", {\n13\t  scene: scene().add(looks.preset(\"product-studio\", { exposureEv: -1.2 }))\n14\t    .add(primitives.sphere({ name: \"orb\", size: 1.6, material: material.pbr({ color: \"#d9534f\", roughness: 0.4 }) }).position(0, 0.8, 0).runtime({ id: \"orb\", mutable: true }))\n15\t    .camera(camera.orbit({ position: [3, 2.5, 5], target: [0, 1, 0], fov: 40 })),\n16\t  ...looks.appOptions(\"product-"
    }
   ]
@@ -90,7 +90,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_15",
+    "id": "stub_4",
     "name": "write_file",
     "input": {
      "path": "src/main.ts",
@@ -106,7 +106,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_15",
+    "tool_use_id": "stub_4",
     "content": "wrote src/main.ts (46 lines)"
    }
   ]
@@ -122,7 +122,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_16",
+    "id": "stub_5",
     "name": "typecheck",
     "input": {}
    }
@@ -135,7 +135,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_16",
+    "tool_use_id": "stub_5",
     "content": "typecheck passed (no errors)"
    }
   ]
@@ -151,7 +151,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_17",
+    "id": "stub_6",
     "name": "finish",
     "input": {
      "summary": "stub solution written"
@@ -166,7 +166,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_17",
+    "tool_use_id": "stub_6",
     "content": "ok"
    }
   ]
@@ -187,7 +187,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_18",
+    "id": "stub_7",
     "name": "write_file",
     "input": {
      "path": "src/main.ts",
@@ -203,7 +203,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_18",
+    "tool_use_id": "stub_7",
     "content": "wrote src/main.ts (52 lines)"
    }
   ]
@@ -219,7 +219,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_19",
+    "id": "stub_8",
     "name": "typecheck",
     "input": {}
    }
@@ -232,7 +232,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_19",
+    "tool_use_id": "stub_8",
     "content": "typecheck passed (no errors)"
    }
   ]
@@ -248,7 +248,7 @@
    },
    {
     "type": "tool_use",
-    "id": "stub_20",
+    "id": "stub_9",
     "name": "finish",
     "input": {
      "summary": "stub follow-up applied"
@@ -263,7 +263,7 @@
   "content": [
    {
     "type": "tool_result",
-    "tool_use_id": "stub_20",
+    "tool_use_id": "stub_9",
     "content": "ok"
    }
   ]

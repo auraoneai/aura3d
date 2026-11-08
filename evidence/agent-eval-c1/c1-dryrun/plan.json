@@ -4,7 +4,7 @@
     "task": "105,107",
     "runs": 1,
     "seed": 20261108,
-    "concurrency": 2,
+    "concurrency": 4,
     "model": "claude-sonnet-5.5",
     "condition": "base",
     "stub": true,

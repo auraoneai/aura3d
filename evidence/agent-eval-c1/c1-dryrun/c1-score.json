@@ -7,7 +7,7 @@
       "main": {
         "build": {
           "ok": true,
-          "ms": 2288,
+          "ms": 2292,
           "log": ""
         },
         "size": {
@@ -18,7 +18,7 @@
           "files": 2
         },
         "ready": true,
-        "loadMs": 599,
+        "loadMs": 142,
         "blank": false,
         "frame": {
           "lit": 1,
@@ -50,7 +50,7 @@
               "firstPlant": {
                 "x": 0,
                 "z": 3.297894423194248,
-                "growth": 0.0118500000014901
+                "growth": 0.0006375000029802264
               }
             },
             "passed": 7,
@@ -61,7 +61,7 @@
       "followup": {
         "build": {
           "ok": true,
-          "ms": 2118,
+          "ms": 1581,
           "log": ""
         },
         "size": {
@@ -72,7 +72,7 @@
           "files": 2
         },
         "ready": true,
-        "loadMs": 87,
+        "loadMs": 73,
         "blank": false,
         "frame": {
           "lit": 1,
@@ -86,7 +86,7 @@
           "requests": 1
         },
         "fps": 60,
-        "p95FrameMs": 16.7,
+        "p95FrameMs": 16.8,
         "pageErrors": [],
         "probes": {
           "garden-followup": {
@@ -116,7 +116,7 @@
               "firstPlant": {
                 "x": 0,
                 "z": 3.297894423194248,
-                "growth": 0.013812499999999978
+                "growth": 0.011987499997019771
               }
             },
             "passed": 7,
@@ -134,7 +134,7 @@
       "main": {
         "build": {
           "ok": true,
-          "ms": 19713,
+          "ms": 14947,
           "log": ""
         },
         "size": {
@@ -145,13 +145,13 @@
           "files": 84
         },
         "ready": true,
-        "loadMs": 357,
+        "loadMs": 427,
         "blank": false,
         "frame": {
           "lit": 1,
           "meanLuma": 184.9,
           "stdLuma": 28,
-          "motion": 22.28
+          "motion": 22.21
         },
         "loaded": {
           "totalKB": 5654.1,
@@ -173,7 +173,7 @@
             "notes": {
               "partCount": 23,
               "bandCount": 4,
-              "diff": 19.646451099537035
+              "diff": 19.073725405092592
             },
             "passed": 4,
             "total": 4
@@ -183,7 +183,7 @@
       "followup": {
         "build": {
           "ok": true,
-          "ms": 15529,
+          "ms": 11223,
           "log": ""
         },
         "size": {
@@ -194,13 +194,13 @@
           "files": 84
         },
         "ready": true,
-        "loadMs": 402,
+        "loadMs": 403,
         "blank": false,
         "frame": {
           "lit": 1,
           "meanLuma": 184.9,
           "stdLuma": 28,
-          "motion": 22.05
+          "motion": 22.35
         },
         "loaded": {
           "totalKB": 5654.2,
@@ -208,7 +208,7 @@
           "requests": 57
         },
         "fps": 60,
-        "p95FrameMs": 16.7,
+        "p95FrameMs": 16.8,
         "pageErrors": [],
         "probes": {
           "lighthouse-followup": {
@@ -221,9 +221,9 @@
             "notes": {
               "flips": 4,
               "gaps": [
-                1051,
-                932,
-                1060
+                996,
+                950,
+                1051
               ]
             },
             "passed": 3,
@@ -240,7 +240,7 @@
             "notes": {
               "partCount": 23,
               "bandCount": 4,
-              "diff": 20.71796875
+              "diff": 19.27343894675926
             },
             "passed": 4,
             "total": 4
@@ -257,7 +257,7 @@
       "main": {
         "build": {
           "ok": true,
-          "ms": 64304,
+          "ms": 15378,
           "log": ""
         },
         "size": {
@@ -268,20 +268,20 @@
           "files": 87
         },
         "ready": true,
-        "loadMs": 1439,
+        "loadMs": 609,
         "blank": false,
         "frame": {
           "lit": 1,
           "meanLuma": 189.1,
-          "stdLuma": 28.3,
-          "motion": 18.61
+          "stdLuma": 27.7,
+          "motion": 22.56
         },
         "loaded": {
           "totalKB": 8912.9,
           "jsKB": 8491.2,
-          "requests": 67
+          "requests": 66
         },
-        "fps": 46.1,
+        "fps": 47.4,
         "p95FrameMs": 33.4,
         "pageErrors": [],
         "probes": {
@@ -296,7 +296,7 @@
             "notes": {
               "partCount": 35,
               "bandCount": 4,
-              "diff": 22.352468171296298
+              "diff": 20.848424479166667
             },
             "passed": 4,
             "total": 4
@@ -306,7 +306,7 @@
       "followup": {
         "build": {
           "ok": true,
-          "ms": 32442,
+          "ms": 14306,
           "log": ""
         },
         "size": {
@@ -317,20 +317,20 @@
           "files": 87
         },
         "ready": true,
-        "loadMs": 696,
+        "loadMs": 584,
         "blank": false,
         "frame": {
           "lit": 1,
           "meanLuma": 189.1,
           "stdLuma": 27.9,
-          "motion": 22.52
+          "motion": 22.6
         },
         "loaded": {
           "totalKB": 8913,
           "jsKB": 8491.3,
-          "requests": 66
+          "requests": 67
         },
-        "fps": 45.7,
+        "fps": 48.1,
         "p95FrameMs": 33.4,
         "pageErrors": [],
         "probes": {
@@ -344,9 +344,9 @@
             "notes": {
               "flips": 4,
               "gaps": [
-                1055,
-                957,
-                975
+                1016,
+                1034,
+                993
               ]
             },
             "passed": 3,
@@ -363,7 +363,7 @@
             "notes": {
               "partCount": 35,
               "bandCount": 4,
-              "diff": 21.38463396990741
+              "diff": 21.176707175925927
             },
             "passed": 4,
             "total": 4
@@ -380,7 +380,7 @@
       "main": {
         "build": {
           "ok": true,
-          "ms": 7743,
+          "ms": 2001,
           "log": ""
         },
         "size": {
@@ -391,13 +391,13 @@
           "files": 2
         },
         "ready": true,
-        "loadMs": 512,
+        "loadMs": 110,
         "blank": false,
         "frame": {
           "lit": 0.999,
-          "meanLuma": 148,
-          "stdLuma": 48,
-          "motion": 6.35
+          "meanLuma": 148.6,
+          "stdLuma": 47.8,
+          "motion": 6.21
         },
         "loaded": {
           "totalKB": 504.5,
@@ -419,7 +419,7 @@
             "notes": {
               "partCount": 23,
               "bandCount": 4,
-              "diff": 5.00404224537037
+              "diff": 4.9407349537037035
             },
             "passed": 4,
             "total": 4
@@ -429,7 +429,7 @@
       "followup": {
         "build": {
           "ok": true,
-          "ms": 14893,
+          "ms": 2135,
           "log": ""
         },
         "size": {
@@ -446,7 +446,7 @@
           "lit": 0.999,
           "meanLuma": 148.7,
           "stdLuma": 47.8,
-          "motion": 6.18
+          "motion": 6.22
         },
         "loaded": {
           "totalKB": 504.6,
@@ -454,7 +454,7 @@
           "requests": 1
         },
         "fps": 60,
-        "p95FrameMs": 16.7,
+        "p95FrameMs": 16.8,
         "pageErrors": [],
         "probes": {
           "lighthouse-followup": {
@@ -465,12 +465,11 @@
               "aboutOneSecond": true
             },
             "notes": {
-              "flips": 5,
+              "flips": 4,
               "gaps": [
-                1287,
-                905,
+                1013,
                 1012,
-                831
+                938
               ]
             },
             "passed": 3,
@@ -487,7 +486,7 @@
             "notes": {
               "partCount": 23,
               "bandCount": 4,
-              "diff": 5.05904224537037
+              "diff": 4.963071469907407
             },
             "passed": 4,
             "total": 4

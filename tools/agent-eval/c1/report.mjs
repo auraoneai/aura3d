@@ -206,7 +206,7 @@ export function renderReport({ batch, tasks, rows, arms, visual, decision, judge
 function main(argv) {
   const [batch] = argv;
   if (!batch) throw new Error("usage: report.mjs <batch>");
-  const batchDir = join(REPO, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", batch);
+  const batchDir = resolve(REPO, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", batch);
   const tasks = loadTasks();
   const byId = Object.fromEntries(tasks.tasks.map((t) => [t.id, t]));
   const score = existsSync(join(batchDir, "c1-score.json")) ? JSON.parse(readFileSync(join(batchDir, "c1-score.json"), "utf8")) : {};

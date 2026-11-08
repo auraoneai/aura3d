@@ -8,6 +8,7 @@
 // Scoring: c1/score.mjs (build, real-GPU load/fps/frames, functional probes), c1/judge.mjs, c1/report.mjs.
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { Worker, isMainThread, parentPort, workerData } from "node:worker_threads";
 import { ensureBase } from "../lib/base.mjs";
 import { runAgent } from "../lib/loop.mjs";
 import { DEFAULT_MODEL, createPrismClient, loadKey } from "../lib/prism.mjs";
@@ -192,6 +193,36 @@ export async function executeC1Run({ item, args, task, bases, makeClient, batchD
   return record;
 }
 
+/** Client factory for one run: the scripted stub, or the shared Prism client. */
+function clientFactory(args) {
+  let prism = null;
+  return (item) => (args.stub ? createStubClient({ arm: item.arm, task: item.task }) : (prism ??= createPrismClient({ key: loadKey() })));
+}
+
+/**
+ * Run one item in its own worker thread. The toolbox runs typecheck, search and the bridge synchronously
+ * (execFileSync); in a shared event loop one run's tool call would stall every other run's pending model response and
+ * inflate their model and wall time. A worker per run keeps each run's clock its own at any concurrency.
+ */
+export function executeC1RunIsolated(payload) {
+  return new Promise((ok, fail) => {
+    const worker = new Worker(new URL(import.meta.url), { workerData: { c1Run: payload } });
+    let settled = false;
+    worker.once("message", (msg) => {
+      settled = true;
+      if (msg.error) fail(new Error(msg.error));
+      else ok(msg.record);
+    });
+    worker.once("error", (error) => {
+      settled = true;
+      fail(error);
+    });
+    worker.once("exit", (code) => {
+      if (!settled) fail(new Error(`run worker exited with code ${code}`));
+    });
+  });
+}
+
 async function pool(items, concurrency, worker) {
   const queue = [...items];
   const results = [];
@@ -225,13 +256,12 @@ export async function main(argv) {
   const bases = Object.fromEntries(arms.map((arm) => [arm, ensureBase(arm, { tarballs: args.auraTarballs ?? null })]));
   const rerun = Boolean(args.only) && existsSync(join(batchDir, "plan.json"));
   writeFileSync(join(batchDir, rerun ? `plan-rerun-${Date.now()}.json` : "plan.json"), JSON.stringify({ args, plan, bases, tasks: manifest.tasks.filter((t) => tasks.includes(t.id)) }, null, 2));
-  const prism = args.stub ? null : createPrismClient({ key: loadKey() });
-  const makeClient = (item) => (args.stub ? createStubClient({ arm: item.arm, task: item.task }) : prism);
+  if (!args.stub) loadKey(); // fail fast on a missing key before any worker starts
   const byId = Object.fromEntries(manifest.tasks.map((t) => [t.id, t]));
   const started = Date.now();
   const records = await pool(plan, args.concurrency, async (item) => {
     try {
-      const r = await executeC1Run({ item, args, task: byId[item.task], bases, makeClient, batchDir });
+      const r = await executeC1RunIsolated({ item, args, task: byId[item.task], bases, batchDir });
       console.log(`[c1] ${item.runId} ${r.endReason}/${r.followUpEndReason} turns=${r.usage?.turns} cost=$${r.cost?.billedUsd} (${r.cost?.source})`);
       return r;
     } catch (error) {
@@ -243,7 +273,13 @@ export async function main(argv) {
   return { args, records, batchDir };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (!isMainThread && workerData?.c1Run) {
+  const { c1Run } = workerData;
+  executeC1Run({ ...c1Run, makeClient: clientFactory(c1Run.args) }).then(
+    (record) => parentPort.postMessage({ record }),
+    (error) => parentPort.postMessage({ error: String(error?.message ?? error).split(/sk-[A-Za-z0-9]+/).join("[redacted]") })
+  );
+} else if (isMainThread && import.meta.url === `file://${process.argv[1]}`) {
   main(process.argv.slice(2)).catch((error) => {
     console.error(String(error.stack ?? error).split(/sk-[A-Za-z0-9]+/).join("[redacted]"));
     process.exit(1);
