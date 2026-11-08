@@ -6,14 +6,14 @@ import { cloudSpec } from "../../../examples/last-train-port/materials";
 import { waterGraph, portableWaterMaterial } from "../../../examples/silt-and-signal-port/portable-water";
 import { waterSpec } from "../../../examples/silt-and-signal-port/world";
 
-describe("A4 portable pilots: ?portable=1 flag", () => {
-  it("is off unless the value is exactly 1", () => {
-    expect(parsePortableFlag(undefined)).toBe(false);
-    expect(parsePortableFlag("")).toBe(false);
+describe("A4 portable pilots: on by default, ?portable=0 opts out", () => {
+  it("is on unless the value is exactly 0", () => {
+    expect(parsePortableFlag(undefined)).toBe(true);
+    expect(parsePortableFlag("")).toBe(true);
     expect(parsePortableFlag("?portable=0")).toBe(false);
-    expect(parsePortableFlag("?portable=true")).toBe(false);
+    expect(parsePortableFlag("?portable=true")).toBe(true);
     expect(parsePortableFlag("?portable=1")).toBe(true);
-    expect(parsePortableFlag(new URLSearchParams("backend=webgpu&portable=1"))).toBe(true);
+    expect(parsePortableFlag(new URLSearchParams("backend=webgpu&portable=0"))).toBe(false);
   });
 });
 

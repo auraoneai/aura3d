@@ -3242,7 +3242,13 @@ export function executePostGraphWebGL2(
   const p3TailFallback = Boolean(ldrTailTarget && !request.outputTarget && pipeline.outputColorSpace === "display-p3");
   const requiresAlphaPolicy = pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque";
   if (requiresOutputPolicy && !outputPassTone && (!p3TailFallback || requiresAlphaPolicy)) {
-    throw new RenderDeviceError("The active post chain cannot apply the requested output color or alpha policy", "POSTPROCESS_OUTPUT_POLICY_UNAVAILABLE");
+    // An alpha policy or an explicit offscreen target cannot be honored without the
+    // OutputPass route. A P3-only canvas request degrades to the verified sRGB
+    // fallback (recorded on the output negotiation, released in the finally).
+    if (requiresAlphaPolicy || request.outputTarget) {
+      throw new RenderDeviceError("The active post chain cannot apply the requested output color or alpha policy", "POSTPROCESS_OUTPUT_POLICY_UNAVAILABLE");
+    }
+    if (!p3TailFallback) tailOutputScope = host.device.beginSrgbOutputFallbackScope("Display-P3 is unavailable for this post chain");
   }
   // A P3 tail requires the explicit, frame-owned surface capability and a
   // snapshotted sequence whose stages preserve the encoded display gamut.

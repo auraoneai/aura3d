@@ -384,10 +384,11 @@ describe("prepared depth plans", () => {
     } finally { proxy.dispose(); geometry.dispose(); device.dispose(); }
   });
 
-  it.each(["depth", "shadow"] as const)("rejects unclipped WebGPU point %s and point proxies before any upload", (clippingPass) => {
+  it.each(["depth", "shadow"] as const)("strict: rejects unclipped WebGPU point %s and point proxies before any upload", (clippingPass) => {
     const triangles = Geometry.triangle();
     const points = new Geometry(new VertexBuffer(VertexFormat.P3, 3), null, "points");
     const device = checkedMock("webgpu");
+    setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
     const context = { device, width: 8, height: 8 };
     try {
       device.beginFrame(8, 8);
@@ -405,6 +406,26 @@ describe("prepared depth plans", () => {
       expect(triangles.vertexBuffer.hasAttemptedUpload).toBe(false);
       device.endFrame();
     } finally { points.dispose(); triangles.dispose(); device.dispose(); }
+  });
+
+  it.each(["depth", "shadow"] as const)("leaves WebGPU point %s casters and point proxies out of the pass with one warning outside strict", (clippingPass) => {
+    const triangles = Geometry.triangle();
+    const points = new Geometry(new VertexBuffer(VertexFormat.P3, 3), null, "points");
+    const device = checkedMock("webgpu");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const context = { device, width: 8, height: 8 };
+    try {
+      device.beginFrame(8, 8);
+      const pass = new DepthPass({ clippingPass, checkedSubmission: true,
+        casters: [{ geometry: triangles, label: "mesh" }, { geometry: points, label: "dust" }, { geometry: triangles, shadowGeometry: points, label: "proxy" }] });
+      expect(() => pass.assertLegacyDepthFallback(context)).not.toThrow();
+      pass.prepare(context).dispose();
+      pass.execute(context);
+      expect(device.drawCommands.map((command) => command.topology)).toEqual(["triangles"]);
+      expect(points.vertexBuffer.hasAttemptedUpload).toBe(false);
+      expect(warn.mock.calls.filter(([line]) => String(line).startsWith("WEBGPU_POINT_DEPTH_SKIPPED")).length).toBeLessThanOrEqual(1);
+      device.endFrame();
+    } finally { warn.mockRestore(); points.dispose(); triangles.dispose(); device.dispose(); }
   });
 
   it.each(["mock", "webgl2"] as const)("keeps unclipped %s point depth on its existing path", (backend) => {

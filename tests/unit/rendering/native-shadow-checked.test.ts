@@ -24,6 +24,8 @@ const EYE = [7, -3, 11] as const;
 const IDENTITY = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 const FLAGS_OFF = resolveQrFlags({ options: ["none"] });
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
+// Outside strict, WebGPU leaves point casters out of depth with one warning; strict keeps the preflight rejection.
+const FLAGS_STRICT = resolveQrFlags({ options: { A3D_QR_LIGHTING: true, A3D_QR_STRICT: true } });
 
 function caster() {
   const graph: ShaderGraphDocument = {
@@ -159,6 +161,7 @@ describe("checked WebGPU shadow publication", () => {
     }] });
     const clear = vi.spyOn(f.device, "clearRenderTarget");
     const allocate = vi.spyOn(f.device, "createRenderTarget");
+    if (kind === "webgpu") setRendererQrFlags(FLAGS_STRICT, f.device);
     try {
       f.device.beginFrame(4, 4); f.device.setRenderTarget(previous);
       expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
@@ -178,6 +181,7 @@ describe("checked WebGPU shadow publication", () => {
     const light = new DirectionalLight("sun"); light.castsShadow = true;
     const pass = new ShadowPass({ light, casters: [{ geometry: points, globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true } }] });
     const clear = vi.spyOn(f.device, "clearRenderTarget");
+    setRendererQrFlags(FLAGS_STRICT, f.device);
     try {
       expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(/WebGPU point depth requires/);
       expect(f.device.activeFrameToken).toBeNull();
@@ -310,13 +314,14 @@ describe("checked WebGPU shadow publication", () => {
     const system = new Prd02ShadowSystem(f.device, { enabled: true, mapSize: 4, cascades: 2, maxDistance: 50, splitLambda: 0.6, filter: "hard", strength: 1, bias: 0, normalBias: 0 });
     const clear = vi.spyOn(f.device, "clearRenderTarget");
     const allocate = vi.spyOn(f.device, "createRenderTarget");
+    if (kind === "webgpu") setRendererQrFlags(FLAGS_STRICT, f.device);
     try {
       f.device.beginFrame(4, 4); f.device.setRenderTarget(previous);
       expect(() => system.update({ camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near: camera.near, far: camera.far },
         sun: { direction: [0, -1, -0.2] }, cameraPosition: EYE,
         casters: [item, { geometry: points, label: "late-clipped-points", instanceTransforms: [...IDENTITY], globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true } }],
         localLights: [{ shadowIndex: 0, kind: "point", position: [1, 2, 3], direction: [0, -1, 0], range: 20, size: 64 }],
-        flags: FLAGS_ON, tier: QUALITY_TIERS.high })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
+        flags: kind === "webgpu" ? FLAGS_STRICT : FLAGS_ON, tier: QUALITY_TIERS.high })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
       expect(clear).not.toHaveBeenCalled();
       expect(allocate).not.toHaveBeenCalled();
       expect(f.attempts).toHaveLength(0);

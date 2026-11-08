@@ -221,8 +221,16 @@ function liveClippingGroups(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRunt
   return out;
 }
 
-const webgpuLacksDepth = (createProductionRuntimePostprocess as unknown as Record<symbol, ((snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas) => boolean) | undefined>)[
-  Symbol.for("@aura3d/root-postprocess/webgpu-depth-gap/v1")];
+type WebgpuGap = { readonly code: string; readonly missing: readonly string[] };
+const webgpuPostGap = (createProductionRuntimePostprocess as unknown as Record<symbol, ((snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas,
+  dofGap?: (post: unknown) => WebgpuGap | undefined) => WebgpuGap | undefined) | undefined>)[Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")];
+const webgpuDofGap = (Renderer as unknown as Record<symbol, ((post: unknown) => WebgpuGap | undefined) | undefined>)[
+  Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1")];
+
+/** One console line per app when a requested WebGPU backend runs on WebGL2 instead. */
+function warnBackendFallback(requested: string, code: string, missing: readonly string[]): void {
+  console.warn(`[aura3d] BACKEND_FALLBACK: requested ${requested}, using webgl2 (${code}${missing.length ? `: ${missing.join(", ")}` : ""})`);
+}
 
 /**
  * Initialized-renderer selection. `webgpuGap` is the capability the scene needs that
@@ -281,12 +289,16 @@ async function selectProductionRenderer(
     const renderer = await make("webgl2");
     return { renderer, selection: { requested: "webgl2", active: "webgl2", missingFeatures: [], deviceLost: false } };
   }
+  // Yield once first: the mount starts synchronously inside createAuraApp, before the app's C-38 extensions record the
+  // authored post/output context this check compiles against (without it the bag is the legacy one, not the v2 chain).
+  if (webgpuGap) await Promise.resolve();
   const gap = webgpuGap?.();
   if (gap) {
     if (!selection.allowFallback) {
       throw new RenderDeviceError(`${gap.code}: the scene needs ${gap.missing.join(", ")}, which the WebGPU backend does not provide`, gap.code, { backend: "webgpu" });
     }
     const renderer = await make("webgl2");
+    warnBackendFallback(selection.requested, gap.code, gap.missing);
     return { renderer, selection: { requested: selection.requested, active: "webgl2", fallbackReason: gap.code, missingFeatures: [...gap.missing], deviceLost: false } };
   }
   try {
@@ -315,6 +327,7 @@ async function selectProductionRenderer(
       failure.code = "WEBGPU_FALLBACK_UNAVAILABLE";
       throw failure;
     }
+    warnBackendFallback(selection.requested, code, missing);
     return { renderer, selection: { requested: selection.requested, active: "webgl2", fallbackReason: code, missingFeatures: missing, deviceLost: false } };
   }
 }
@@ -630,9 +643,10 @@ export async function createProductionRuntimeSceneRenderer(
     // apps on one page never read each other's flags through FrameGraph.
     qrFlags: flags
   }, resolveBackendOptions(rendererOptions), undefined,
-  // WebGPU never advertises sampleable depth textures; the legacy depth-aware passes need them (Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame).
-  () => !isDirectRenderPath(canvas) && webgpuLacksDepth?.(snapshot, canvas)
-    ? { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] } : undefined);
+  // Checked on the final post bag before any WebGPU context exists: WebGPU never advertises sampleable depth textures
+  // (the legacy depth-aware passes need them; Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame), and its
+  // native depth of field cannot yet combine with most other stages (WEBGPU_DOF_COMBINATION_UNSUPPORTED at mount).
+  () => isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap));
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
@@ -1170,7 +1184,8 @@ export async function createProductionRuntimeSceneRenderer(
           + `${texturesObservation.evictedEntries.length} evicted: ${texturesObservation.evictedEntries.join(", ") || "none"}); `
           + (residencyObservation ? `raise renderer.textureResidency.budgetBytes to fund more mip data` : `raise renderer.textureBudgetBytes above ${texturesObservation.requestedBytes} bytes or move textures closer`)]
         : [];
-      return { ...createRendererDiagnosticReport(
+      // backendSelection first: the sanitizer's node budget truncates late keys of a large report.
+      return { backendSelection: { ...backendSelection, deviceLost }, ...createRendererDiagnosticReport(
         snapshot,
         {
           mounted: true,
@@ -1265,7 +1280,7 @@ export async function createProductionRuntimeSceneRenderer(
         )
         },
         rendererOptions
-      ), backendSelection: { ...backendSelection, deviceLost },
+      ),
       ...(productionRenderer.drawingPathDiagnostics ? { drawingPath: productionRenderer.drawingPathDiagnostics } : {}) };
     };
 
