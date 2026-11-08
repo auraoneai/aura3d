@@ -93,6 +93,8 @@ Commands:
       Static checks: colour strings, unknown options/members/exports, invented asset paths and keys, framing, lighting, reflective materials.
   aura3d render [projectDir] [--out shot.png] [--json] [--no-build] [--url http://127.0.0.1:5173/] [--route /path] [--dist dist] [--width N] [--height N]
       Build, serve and screenshot in local headless Chrome; diagnostics JSON with errors, codes, luma, saturation and subject fill.
+  aura3d import-three <factory.mjs> [--name <key>] [--seed <n>] [--params <json>] [--out <dir>] [--stage <dir>] [--three <dir>] [--no-admit] [--license <id>] [--json]
+      Runs a three.js scene factory headless, admits its GLB as a typed asset and writes Aura3D source plus a supported/approximated/unsupported report (clips, simple ShaderMaterials as material.custom).
   aura3d init --agent all [--skills core|all|none] [--template <create-aura3d template>]
       Writes agent instruction files, Aura3D agent skills (per client skills dir), and llms.txt; never overwrites user-edited files.`;
 }
