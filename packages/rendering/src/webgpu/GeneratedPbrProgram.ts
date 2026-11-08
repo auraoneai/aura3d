@@ -330,7 +330,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (rim && !descriptor.verifiedFeatures?.includes("prd04.rim")) unsupported("activeFeatures", "a replaced or unverified prd04.rim contributor");
   if (rim && descriptor.defines.A3D_PRD04_RIM !== 1 && descriptor.defines.A3D_PRD04_RIM !== true) unsupported("defines.A3D_PRD04_RIM", "invalid rim define");
   // GU47 E-D `prd04.instanceColorTarget: "both"`: the instance colour multiplies the base (USE_INSTANCING_COLOR) and the
-  // emissive term. "emissive" (a separate a_a3dInstanceEmissive stream) is not implemented natively yet.
+  // emissive term; "emissive" (handled below) feeds only the emissive term.
   const instanceColorTarget = active.has(INSTANCE_COLOR_TARGET_FEATURE);
   const targetValue = active.get(INSTANCE_COLOR_TARGET_FEATURE);
   if ((instanceColorTarget && ((targetValue !== "both" && targetValue !== "emissive") || f.features[INSTANCE_COLOR_TARGET_FEATURE] !== targetValue))

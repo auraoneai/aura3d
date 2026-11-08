@@ -3282,6 +3282,124 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "return () => { throw unavailable(`${key}()`); };",
     ]
   },
+  {
+    file: "packages/aura3d-cli/src/agent-tools/validate.ts",
+    reason: "5.3 aura3d validate: \"unavailable\" is the reported status of the type-check step when @aura3d/engine types cannot be resolved; it surfaces the VALIDATE_TYPES_UNAVAILABLE finding (run npm install) instead of claiming a pass",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "readonly typeCheck: \"ran\" | \"skipped\" | \"unavailable\";",
+      "if (d.code === 2307 && /@aura3d\\/engine/.test(text)) return { status: \"unavailable\", findings: [finding(\"VALIDATE_TYPES_UNAVAILABLE\", \"Cannot resolve @aura3d/engine types from this project, so unknown options and names were not checked. Run npm install.\")] };",
+    ]
+  },
+  {
+    file: "packages/aura3d-cli/src/import-three/analyze.ts",
+    reason: "5.3 three.js importer: `placeholder` is the local Object3D that stands in for an imported light in the analysed graph so its children, transform and userData survive; a variable name, not a missing feature",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "const placeholder = new Object3D();",
+      "placeholder.name = light.name;",
+      "Object.assign(placeholder.userData, light.userData);",
+      "placeholder.position.copy(holder.position);",
+      "placeholder.quaternion.copy(holder.quaternion);",
+      "placeholder.scale.copy(holder.scale);",
+      "placeholder.visible = light.visible;",
+      "for (const child of children) placeholder.add(child);",
+      "parent.children[index] = placeholder;",
+      "placeholder.parent = parent;",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/app/workerAtmosphere.ts",
+    reason: "5.3 worker apps: comments naming the existing flag-off stub atmosphere the main-thread compiler already uses; the worker mirrors that decision, nothing is left unimplemented",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "/** True when the main-thread app would install a real (non-stub) atmosphere for these flags. */",
+      "* when the flags keep the stub atmosphere (the compiler then uses its",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/app/workerNodes.ts",
+    reason: "5.3 worker apps: node methods whose effect cannot be replayed in the render worker fail closed with the typed worker-unsupported AuraWorkerError instead of silently doing nothing",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "throw new AuraWorkerError(`node.${key}() is unavailable for a worker-backed app; its effect cannot be replayed in the render worker.`, \"worker-unsupported\");",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/app/workerPatch.ts",
+    reason: "5.3 worker apps: a worker renderer without runtime nodes fails node patches closed with the typed, recoverable patch-unsupported AuraWorkerError",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "if (!registry) throw new AuraWorkerError(\"This worker renderer does not expose runtime nodes; node patches are unavailable.\", \"patch-unsupported\", \"recoverable\");",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/app/workerRootApp.ts",
+    reason: "5.3 worker apps: a host-side app extension that throws on install is reported in diagnostics errors (not swallowed)",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "appendError(`Worker app extension ${ext.member} unavailable: ${errorDetails(error).message}`);",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/camera/autoFrame.ts",
+    reason: "5.3 N4 camera.auto: a `placeholder` camera spec is the auto-framed request the scene builder resolves to a real pose from the drawn bounds; describes real behaviour, not a missing feature",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "/** Mark `spec` as an auto-framed placeholder (resolved by the scene builder). */",
+      "/** The `camera.auto` options of a placeholder spec, or `undefined` for an ordinary spec. */",
+    ]
+  },
+  {
+    file: "packages/rendering/src/Renderer.ts",
+    reason: "5.3 renderer: `deferred` is the existing deferred-in-frame render option/field name (the in-frame deferred pass path), not a postponed feature",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean;",
+      "&& !this.renderingViews && !this.pendingViewState && this.rasterViewportIsFull() && !options.explicitTarget && !options.deferred",
+      "{ environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame,",
+      "{ environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame,",
+    ]
+  },
+  {
+    file: "packages/rendering/src/WebGPUDevice.ts",
+    reason: "5.3 WebGPU depth of field: a comment on deferred passes and typed fail-closed RenderDeviceErrors (WEBGPU_DOF_FRAME_UNSUPPORTED, WEBGPU_DOF_HOST_UNAVAILABLE) when the host lacks the native MSAA resolve inputs",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "// and deferred passes. Multisampled targets still reject `depth: \"texture\"`.",
+      "throw new RenderDeviceError(\"Native depth-of-field multisample resolve is unavailable\", \"WEBGPU_DOF_FRAME_UNSUPPORTED\");",
+      "if (!bindLayout) throw new RenderDeviceError(\"Native depth-of-field resolve layout is unavailable\", \"WEBGPU_DOF_HOST_UNAVAILABLE\");",
+    ]
+  },
+  {
+    file: "packages/rendering/src/webgl2/LegacyPost.ts",
+    reason: "5.2.1 P3 safe fallback (ported from release/5.2.1 494807655): a Display-P3 request on a post chain or encoded tail without an OutputPass route opens the sRGB fallback scope and records this fallbackReason instead of failing the mount; describes a real fallback, not a missing feature",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "if (!p3TailFallback) tailOutputScope = host.device.beginSrgbOutputFallbackScope(`Display-P3 is unavailable for this post chain: ${outputPassRouteBlocker(v2Passes, pipeline, source, host)}`);",
+      ": host.device.beginSrgbOutputFallbackScope(`Display-P3 is unavailable for the encoded postprocess tail: ${",
+      ": (typeof v2?.p3DisplayTailBlocker === \"function\" ? v2.p3DisplayTailBlocker(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId) : undefined) ?? \"display-surface-unavailable\"}`);",
+    ]
+  },
+  {
+    file: "packages/rendering/src/webgpu/WebGPUDepthEffects.ts",
+    reason: "5.3 WebGPU depth effects: comment on keeping the lazily loaded (deferred) v2 module out of the renderer chunk; describes chunk splitting, not a missing feature",
+    expires: EXPIRES,
+    reviewer: "agent (5.3.0 candidate, 2026-11-08)",
+    markers: [
+      "* renderer chunk does not import the deferred v2 module).",
+    ]
+  },
 ];
 
 export const runtimeEdgeAllowlistMarkers: readonly string[] = runtimeEdgeAllowlist.flatMap((group) =>
