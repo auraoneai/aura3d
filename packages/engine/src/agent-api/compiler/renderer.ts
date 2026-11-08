@@ -223,9 +223,11 @@ function liveClippingGroups(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRunt
 
 type WebgpuGap = { readonly code: string; readonly missing: readonly string[] };
 const webgpuPostGap = (createProductionRuntimePostprocess as unknown as Record<symbol, ((snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas,
-  dofGap?: (post: unknown) => WebgpuGap | undefined) => WebgpuGap | undefined) | undefined>)[Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")];
+  dofGap?: (post: unknown) => WebgpuGap | undefined, nativeDepthStages?: readonly string[]) => WebgpuGap | undefined) | undefined>)[Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")];
 const webgpuDofGap = (Renderer as unknown as Record<symbol, ((post: unknown) => WebgpuGap | undefined) | undefined>)[
   Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1")];
+const webgpuNativeDepthStages = (Renderer as unknown as Record<symbol, (() => readonly string[]) | undefined>)[
+  Symbol.for("@aura3d/rendering/webgpu-native-depth-stages/v1")];
 
 /** One console line per app when a requested WebGPU backend runs on WebGL2 instead. */
 function warnBackendFallback(requested: string, code: string, missing: readonly string[]): void {
@@ -646,7 +648,7 @@ export async function createProductionRuntimeSceneRenderer(
   // Checked on the final post bag before any WebGPU context exists: WebGPU never advertises sampleable depth textures
   // (the legacy depth-aware passes need them; Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame), and its
   // native depth of field cannot yet combine with most other stages (WEBGPU_DOF_COMBINATION_UNSUPPORTED at mount).
-  () => isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap));
+  () => isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap, webgpuNativeDepthStages?.()));
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.

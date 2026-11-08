@@ -74,6 +74,7 @@ import { UnlitMaterial } from "./UnlitMaterial";
 import { renderStateHasExtendedCommandFields } from "./Material";
 import { linearizeWebGPUDepthSample, type WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import { nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions } from "./post/WebGPUDepthOfField";
+import { webgpuNativeDepthPostStages } from "./post/WebGPUScreenSpaceReflections";
 import type { DofOptions } from "./post/PostGraph";
 import type { PostPipelineOptions } from "./contracts/post";
 import { materialLobes } from "./contracts/materialLobes";
@@ -7674,3 +7675,5 @@ function deviceDrawCalls(device: RenderDevice): number {
  * this symbol before any WebGPU context is taken on the canvas.
  */
 Object.defineProperty(Renderer, Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1"), { value: webgpuNativeDofGap, configurable: true });
+// W3: post stages the native WebGPU chain runs over sampleable depth, for the engine pre-mount backend check.
+Object.defineProperty(Renderer, Symbol.for("@aura3d/rendering/webgpu-native-depth-stages/v1"), { value: () => webgpuNativeDepthPostStages(), configurable: true });

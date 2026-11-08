@@ -444,12 +444,14 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
  * passes, and on the v2 chain the ao / god-rays / motion-blur / ssr / taa stages. Depth of field is exempt because the
  * WebGPU device runs it natively.
  */
-function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
+function postLacksWebgpuDepth(post: RendererPostProcessOptions, nativeDepthStages: readonly string[] = []): boolean {
+  // Stages the renderer package reports as native on WebGPU over the device's sampleable depth (W3: "ssr").
+  const native = (stage: string): boolean => nativeDepthStages.includes(stage);
   if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
-      (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth)) return true;
+      (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth && !native("ssr"))) return true;
   if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
   const bag = post.pipeline as { ao?: unknown; godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
-  return [bag.ao, bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
+  return [bag.ao, bag.godRays, bag.motionBlur, native("ssr") ? undefined : bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };
@@ -462,11 +464,12 @@ type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[
 function webgpuPostGapForPostprocess(
   snapshot: AuraSceneSnapshot,
   canvas: HTMLCanvasElement | OffscreenCanvas,
-  dofGap?: (post: RendererPostProcessOptions) => WebgpuPostGap | undefined
+  dofGap?: (post: RendererPostProcessOptions) => WebgpuPostGap | undefined,
+  nativeDepthStages?: readonly string[]
 ): WebgpuPostGap | undefined {
   let post: RendererPostProcessOptions;
   try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return undefined; }
-  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
+  if (postLacksWebgpuDepth(post, nativeDepthStages)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
   try { return dofGap?.(post); } catch { return undefined; }
 }
 

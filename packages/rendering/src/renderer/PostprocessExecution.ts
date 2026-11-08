@@ -282,6 +282,35 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
   return nativePost?.nativeDepthOfField ? passes.filter(pass => pass.name !== "depth-of-field") : passes;
 }
 
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget,
+  passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[] {
+  if (device.kind !== "webgpu" || postprocess.execution === "cpu-deterministic" || !passes.some(pass => pass.name === "ssr")) return passes;
+  const pipeline = postprocess.v2 === true && postprocess.pipeline && typeof postprocess.pipeline === "object"
+    ? postprocess.pipeline as PostPipelineOptions : undefined;
+  const v2Ssr = pipeline?.ssr;
+  const camera = postprocess.cameraFrame;
+  const token = postprocess.postFrameContext?.diagnosticToken;
+  const skip = (reason: string): readonly RendererPostProcessPassPlan[] => {
+    if (reason) recordPostSkipped(reason, token);
+    return passes.filter(pass => pass.name !== "ssr");
+  };
+  if (postprocess.v2 === true && !v2Ssr) return skip("");
+  if (!source.depthTexture || (source.sampleCount ?? 1) !== 1) return skip("WEBGPU_SSR_DEPTH_UNAVAILABLE");
+  const inverse = camera?.projectionMatrixInverse;
+  if (!camera || !inverse || !camera.depth) return skip("WEBGPU_SSR_CAMERA_UNAVAILABLE");
+  const webgpuFrame = { projection: camera.projectionMatrix, inverseProjection: inverse, far: camera.far,
+    orthographic: camera.projection === "orthographic", clipRange: camera.depth.clipRange, clearDepth: camera.depth.clearValue };
+  return passes.map(pass => pass.name === "ssr"
+    ? { ...pass, options: { ...pass.options, ...(v2Ssr && typeof v2Ssr === "object" ? v2Ssr : {}), webgpuFrame } } as unknown as RendererPostProcessPassPlan
+    : pass);
+}
+
 /** Forward native effects and frame attribution to the backend that executes them. */
 function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget): WebgpuNativePostOptions | undefined {
   if (device.kind !== "webgpu") return undefined;
@@ -907,7 +936,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost)), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost))), postprocess, nativePost);
     if (passes.length === 0) {
       // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
       // emits no plan passes — the v2 route still applies its stages.
@@ -1083,7 +1112,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost)), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost))), postprocess, nativePost);
     if (passes.length === 0) {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")

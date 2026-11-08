@@ -74,6 +74,8 @@ import { WebGPUAutoExposure, normalizeWebGPUAutoExposure, type WebGPUExposureDra
 import { createOutputWgsl } from "./output/ToneMappingOperators.wgsl";
 import { WebGPULinearDepth, linearizeWebGPUDepthSample, type WebGPULinearDepthDraw } from "./post/WebGPULinearDepth";
 import { WebGPUDepthOfField, nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions, type WebGPUDepthOfFieldDraw } from "./post/WebGPUDepthOfField";
+import { resolveWebGPUSsrOptions, validateWebGPUSsrFrame, webgpuSsrCompositeUniforms, webgpuSsrTraceUniforms } from "./post/WebGPUScreenSpaceReflections";
+import { SSR_COMPOSITE_WGSL, SSR_TRACE_WGSL } from "./post/shaders/ssr.wgsl";
 import { validateNativePostEffect, type NativePostEffect } from "./post/NativeEffectShaders";
 import { NATIVE_EFFECT_WGSL } from "./webgpu/NativeEffectShaders.wgsl";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
@@ -1347,6 +1349,7 @@ export class WebGPUDevice implements RenderDevice {
   private nativeBloomPasses = 0;
   private nativeColorGradePasses = 0;
   private nativeFxaaPasses = 0;
+  private nativeSsrPasses = 0;
   private nativeTaaPasses = 0;
   private nativeTemporalBindings = 0;
   private readonly webgpuPostPipelines = new Map<string, WebGPURenderPipelineLike>();
@@ -4972,6 +4975,7 @@ export class WebGPUDevice implements RenderDevice {
       ["nativeBloomPasses", this.nativeBloomPasses],
       ["nativeColorGradePasses", this.nativeColorGradePasses],
       ["nativeFxaaPasses", this.nativeFxaaPasses],
+      ["nativeSsrPasses", this.nativeSsrPasses],
       ["nativeTaaPasses", this.nativeTaaPasses],
       ["nativeTemporalBindings", this.nativeTemporalBindings],
       ["canvasSubmissions", this.canvasSubmissions]
@@ -5235,6 +5239,49 @@ export class WebGPUDevice implements RenderDevice {
     } catch (error) {
       out.dispose();
       throw error;
+    }
+  }
+
+  /**
+   * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+   * a half-res trace against the source's sampleable depth attachment, then a
+   * full-res additive composite into a fresh caller-owned target of the
+   * source's format. `options.webgpuFrame` is the renderer-attached
+   * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+   */
+  executeWebGPUSsr(source: RenderTarget, options: Readonly<Record<string, unknown>> = {}): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(source);
+    const frame = validateWebGPUSsrFrame(options.webgpuFrame);
+    const ssr = resolveWebGPUSsrOptions(options);
+    if (!src.nativeView || !src.nativeDepthTexture || !src.depthTexture || src.depthTexture.disposed || (src.sampleCount ?? 1) !== 1) {
+      throw new RenderDeviceError("WebGPU SSR requires a single-sample source with a sampleable depth attachment", "WEBGPU_SSR_DEPTH_REQUIRED", { label: src.label });
+    }
+    const format = src.colorTexture.format;
+    if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") {
+      throw new RenderDeviceError("WebGPU SSR requires an rgba8, rgba16f or rgba32f source", "WEBGPU_SSR_SOURCE_UNSUPPORTED", { format });
+    }
+    if (format === "rgba32f" && !this.device.features?.has("float32-filterable")) {
+      throw new RenderDeviceError("WebGPU SSR of rgba32f requires float32-filterable", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
+    }
+    const depthView = src.nativeDepthTexture.createView({ aspect: "depth-only" });
+    const trace = this.createRenderTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
+      format: "rgba16f", depth: false, label: "a3d-webgpu-ssr-trace" });
+    let out: RenderTarget | undefined;
+    try {
+      this.runWebGPUFullscreenPass({ label: `webgpu-ssr-trace-${ssr.steps}`, fragment: SSR_TRACE_WGSL, entryPoint: "fs_ssr_trace",
+        uniforms: webgpuSsrTraceUniforms(frame, ssr, src.width, src.height), views: [src.nativeView, depthView], target: trace });
+      out = this.createRenderTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-ssr" });
+      const traceView = this.requireRenderTarget(trace).nativeView;
+      this.runWebGPUFullscreenPass({ label: "webgpu-ssr-composite", fragment: SSR_COMPOSITE_WGSL, entryPoint: "fs_ssr_composite",
+        uniforms: webgpuSsrCompositeUniforms(ssr), views: [src.nativeView, traceView], target: out });
+      this.nativeSsrPasses += 1;
+      return out;
+    } catch (error) {
+      out?.dispose();
+      throw error;
+    } finally {
+      trace.dispose();
     }
   }
 
@@ -5578,7 +5625,7 @@ export class WebGPUDevice implements RenderDevice {
       }
       exposureFrame = { ...frame, timeSeconds: frame.timeSeconds };
     }
-    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa"]);
+    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa", "ssr"]);
     for (const pass of options.passes) {
       if (!supported.has(pass.name)) throw new RenderDeviceError(`Native WebGPU postprocess does not support ${pass.name}`, "WEBGPU_POSTPROCESS_UNSUPPORTED", { pass: pass.name });
       if (pass.name === "taa" && (pass.options.temporal as WebGPUTemporalInputs | undefined)?.v2) {
@@ -5661,6 +5708,14 @@ export class WebGPUDevice implements RenderDevice {
       } else runCustoms(customs);
     };
     try {
+      // W3: SSR composites onto the scene-linear source before bloom and tone
+      // mapping (the v2 S3 position), reading the source's depth attachment.
+      const ssrPass = options.passes.find(pass => pass.name === "ssr");
+      if (ssrPass) {
+        if (options.nativeDepthOfField) throw new RenderDeviceError("Native depth of field cannot combine with SSR", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+        track(this.executeWebGPUSsr(current, ssrPass.options));
+        if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
+      }
       if (options.nativeDepthOfField) {
         const frame = options.nativeDepthOfField.frame;
         const proof = this.#nativeDofProofs.get(frame);
