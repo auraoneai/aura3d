@@ -151,9 +151,9 @@ export function buildWorld(options: WorldOptions): World {
   }
 
   add("ball", ballMesh(), toonSpec(LINEAR.red));
-  add("ball-shadow", shadowMesh(), shadowSpec());
-  add("shield", orbMesh(), flatSpec(LINEAR.mint, 0.25));
-  add("shockwave", shockwaveMesh(), flatSpec([1, 1, 1], LOOK.shockwave.alpha));
+  add("ball-shadow", shadowMesh(), shadowSpec(), false); // a blob shadow must not itself cast (DEPTH_ALPHA_HASH_DEGRADED)
+  add("shield", orbMesh(), flatSpec(LINEAR.mint, 0.25), false); // translucent bubble: no opaque shadow
+  add("shockwave", shockwaveMesh(), flatSpec([1, 1, 1], LOOK.shockwave.alpha), false);
 
   const deckWarm = new Batch(translateMesh(deckHalfMesh(), -DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckWarm);
   const deckCool = new Batch(translateMesh(deckHalfMesh(), DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckCoolDim);

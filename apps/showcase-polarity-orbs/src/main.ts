@@ -112,7 +112,9 @@ function updateHud(): void {
   hud.update(o, best);
   if (o.phase !== lastPhase) {
     if (o.phase === "gameOver") showResults();
-    if (o.phase === "splash" || o.phase === "playing") fx?.clearReveal();
+    // The burst disc floods the frame during "bursting"; once the results card is up, fade it so the
+    // translucent game-over screen shows the world behind it (presentation only).
+    if (o.phase === "splash" || o.phase === "playing" || o.phase === "gameOver") fx?.clearReveal();
     if (o.phase !== "playing") $("popups").replaceChildren();
     sound.setIntensity(o.phase === "playing" || o.phase === "bursting" ? "play" : o.phase === "gameOver" ? "over" : "title");
     lastPhase = o.phase;
