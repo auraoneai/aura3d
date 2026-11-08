@@ -12,6 +12,8 @@ import { publishBackendReport } from "../../showcase-port-shared/backend-report"
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 installBlackFrameGuard();
 
@@ -82,6 +84,8 @@ const g = createGame({
     ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
   },
   qualityRebuild: { flags: ["game", "materials"] },
+  // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
+  ...(({ worker }) => (worker ? { worker } : {}))(labAppOptions(readLabFlags(), createWorkerRendererWorker)),
   evidence: {
     schema: 1,
     sections: {

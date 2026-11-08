@@ -463,9 +463,12 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
         height: safeHeight,
         pixelRatio: safePixelRatio
       };
+      // A worker app's canvas was transferred; its backing size follows CSS.
       if (app.canvas) {
-        app.canvas.width = Math.max(1, Math.floor(safeWidth * safePixelRatio));
-        app.canvas.height = Math.max(1, Math.floor(safeHeight * safePixelRatio));
+        if ((app as { execution?: { active?: string } }).execution?.active !== "worker") {
+          app.canvas.width = Math.max(1, Math.floor(safeWidth * safePixelRatio));
+          app.canvas.height = Math.max(1, Math.floor(safeHeight * safePixelRatio));
+        }
         app.canvas.style.width = `${safeWidth}px`;
         app.canvas.style.height = `${safeHeight}px`;
       }

@@ -400,6 +400,13 @@ export interface AuraApp {
   offFrame(callback: AuraFrameCallback): void;
   input(options: GameInputOptions): ReturnType<typeof createGameInput>;
   workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+  /**
+   * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+   * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+   */
+  pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+  /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+  viewProjection?(): Float32Array;
   recoverWorker?(): Promise<void>;
   pause(): void;
   resume(): void;
@@ -676,7 +683,12 @@ export interface AuraPrecompileResult {
 }
 
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-  readonly worker?: never;
+  /**
+   * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+   * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+   * still need the main-thread renderer (use `fallback: "main-thread"`).
+   */
+  readonly worker?: AuraCreateAppOptions["worker"];
   readonly loop?: GameAppRuntimeOptions["loop"];
   readonly input?: GameAppRuntimeOptions["input"];
   readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];

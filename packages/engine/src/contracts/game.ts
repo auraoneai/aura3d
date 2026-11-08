@@ -25,14 +25,14 @@ export interface GameScenario { readonly description: string; setup(game: unknow
 export interface GameBeacon { readonly route: string; readonly state: GameSessionState; readonly frame: number; readonly firstFrameAt: number | null; readonly sessionStartedAt: number; /** Live mounted app (snapshotForAudit + budget lanes read app.scene / app.diagnostics()); absent before mount. */ readonly app?: { readonly scene?: unknown; diagnostics?: () => Record<string, unknown> }; readonly scene?: unknown; readonly session?: unknown; }
 // window.__AURA3D_GAME__: GameBeacon; readiness: window.__AURA3D_GAME__?.state === "playing"
 // window.__AURA3D_GAME_EVIDENCE__[route]: lazy getter object with sections session/sound/juice/hud/perf/capture (+ route sections)
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions { readonly createWorker?: (() => Worker) | undefined; readonly fallback?: "error" | "main-thread" | undefined; readonly disposeTimeoutMs?: number | undefined; }
 export interface CreateGameOptions<TCue extends string, TEvent extends string> { readonly id: string; readonly target: HTMLElement; readonly scene: () => unknown; readonly layout?: GameShellLayout; readonly hud?: HudMountOptions; readonly touch?: { readonly preset: TouchPreset; readonly bindings: Readonly<Record<string, string>> }; readonly sound?: unknown /* C-25 GameSoundOptions<TCue> */; readonly juice?: Readonly<Record<TEvent, unknown>>; readonly qualityRebuild?: { readonly flags?: readonly string[] };
   /** 5.1 additive passthrough to the app renderer options (`backend`, `allowFallback`, ...). */
   readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
   /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
   readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-  /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+  /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
   readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */

@@ -233,7 +233,7 @@ function writeViteConfig(tempDir) {
   const configPath = path.join(tempDir, "vite.config.mjs");
   writeFileSync(
     configPath,
-    `import rootConfig from ${JSON.stringify(rootViteConfig)};
+    `import rootConfig, { createSourceWorkerEntryPlugin } from ${JSON.stringify(rootViteConfig)};
 
 const rootAliases = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 const retargetWorkerTarget = ${JSON.stringify(retargetWorkerPath)};
@@ -257,9 +257,13 @@ export default {
   root: ${JSON.stringify(repoRoot)},
   publicDir: false,
   base: "/",
-  plugins: [resolveRetargetWorker()],
+  plugins: [resolveRetargetWorker(), createSourceWorkerEntryPlugin()],
+  // K4: the render worker (createWorkerRendererWorker, \`?worker=1\`) is a module
+  // worker with dynamic imports, so workers are emitted as ES modules. It is
+  // only fetched when a page constructs it; default pages never do.
   worker: {
-    plugins: () => [resolveRetargetWorker()]
+    format: "es",
+    plugins: () => [resolveRetargetWorker(), createSourceWorkerEntryPlugin()]
   },
   resolve: {
     alias: [
