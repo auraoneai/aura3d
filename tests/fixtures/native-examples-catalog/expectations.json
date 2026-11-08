@@ -1078,7 +1078,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "2ced99c21035e7c33b2330aae4823e2429d3c46eef479893a120a3a9ed9827e4"
+          "sha256": "8d7ee1fd6095768dcc7ecfd7fa4e4b8b57b2391c8f29b4d59f405d165a352ccc"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
         }
       ],
       "regions": [
@@ -5322,7 +5322,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "f2263b72962e542268d7ee5fefb46c61dc1e37a0d185af0bc2d695b595334fec"
+          "sha256": "3a47a77f69a5a94e76fb9b768d3c3de65e0b3c7f033028f9a9f63018e6896827"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -5443,7 +5443,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "f2263b72962e542268d7ee5fefb46c61dc1e37a0d185af0bc2d695b595334fec"
+          "sha256": "3a47a77f69a5a94e76fb9b768d3c3de65e0b3c7f033028f9a9f63018e6896827"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
         }
       ],
       "regions": [
