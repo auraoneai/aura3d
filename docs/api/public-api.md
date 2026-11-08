@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.2.1` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.2.1` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.2.1` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.2.1` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.2.1` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.2.1` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.2.1` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.2.1` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.2.1` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.2.1` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.2.1` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.2.1` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.2.1` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.2.1` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.2.1` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.2.1` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.2.1` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.2.1` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.2.1` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.2.1` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.2.1` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.2.1` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.2.1` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.2.1` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.2.1` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.2.1` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.2.1` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.2.1` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.2.1` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.2.1` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.2.1` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.2.1` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.2.1` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.2.1` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.2.1` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.2.1` | `./dist/engine/public/index.d.ts` | 11055 |
-| `@aura3d/engine/animation` | `5.2.1` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.2.1` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.2.1` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.2.1` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.2.1` | `./dist/engine/public/devtools.d.ts` | 10737 |
-| `@aura3d/engine/ecs` | `5.2.1` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.2.1` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.2.1` | `./dist/game/index.d.ts` | 11489 |
-| `@aura3d/engine/game/art` | `5.2.1` | `./dist/game/art/index.d.ts` | 332 |
-| `@aura3d/engine/game/capture` | `5.2.1` | `./dist/game/capture/index.d.ts` | 11018 |
-| `@aura3d/engine/game/styles.css` | `5.2.1` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.2.1` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.2.1` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.2.1` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.2.1` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.2.1` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.2.1` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.2.1` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.2.1` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.2.1` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.2.1` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.2.1` | `./dist/engine/public/renderer.d.ts` | 10996 |
-| `@aura3d/engine/scatter` | `5.2.1` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.2.1` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.2.1` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.2.1` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.2.1` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
-| `@aura3d/engine/v5` | `5.2.1` | `./dist/engine/public/v5.d.ts` | 8496 |
-| `@aura3d/engine/v5/context` | `5.2.1` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.2.1` | `./dist/game/v5.d.ts` | 11485 |
-| `@aura3d/engine/v5/internal` | `5.2.1` | `./dist/engine/public/v5-internal.d.ts` | 434 |
-| `@aura3d/engine/v5/math/hull` | `5.2.1` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.2.1` | `./dist/engine/public/worker.d.ts` | 59 |
-| `@aura3d/engine/workflows` | `5.2.1` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.2.1` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.2.1` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.2.1` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.2.1` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.2.1` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.2.1` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.2.1` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.2.1` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.2.1` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.2.1` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.2.1` | `./dist/index.d.ts` | 4294 |
-| `@aura3d/rendering/contracts` | `5.2.1` | `./dist/contracts/index.d.ts` | 222 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.2.1` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.2.1` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.2.1` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.2.1` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.2.1` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.2.1` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.2.1` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.2.1` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.2.1` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.2.1` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.2.1` | `./dist/contracts/index.d.ts` | 222 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.2.1` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.2.1` | `./dist/contracts/output.d.ts` | 8 |
-| `@aura3d/rendering/contracts/particles` | `5.2.1` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.2.1` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.2.1` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.2.1` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.2.1` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.2.1` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.2.1` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.2.1` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.2.1` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.2.1` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.2.1` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.2.1` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.2.1` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.2.1` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.2.1` | `./dist/lanes/index.d.ts` | 1018 |
-| `@aura3d/rendering/lighting` | `5.2.1` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.2.1` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.2.1` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.2.1` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.2.1` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.2.1` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.2.1` | `./dist/webgpu.d.ts` | 203 |
-| `@aura3d/rendering/world` | `5.2.1` | `./dist/world/index.d.ts` | 172 |
-| `@aura3d/scene` | `5.2.1` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.2.1` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.2.1` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.2.1` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.3.0` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.3.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.3.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.3.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.3.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.3.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.3.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.3.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.3.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.3.0` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.3.0` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.3.0` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.3.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.3.0` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.3.0` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.3.0` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.3.0` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.3.0` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.3.0` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.3.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.3.0` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.3.0` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.3.0` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.3.0` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.3.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.3.0` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.3.0` | `./dist/index.d.ts` | 309 |
+| `@aura3d/cli` | `5.3.0` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.3.0` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.3.0` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.3.0` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.3.0` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.3.0` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.3.0` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.3.0` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.3.0` | `./dist/engine/public/index.d.ts` | 11078 |
+| `@aura3d/engine/animation` | `5.3.0` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.3.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.3.0` | `./dist/audio/index.d.ts` | 309 |
+| `@aura3d/engine/controls` | `5.3.0` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.3.0` | `./dist/engine/public/devtools.d.ts` | 10755 |
+| `@aura3d/engine/ecs` | `5.3.0` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.3.0` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.3.0` | `./dist/game/index.d.ts` | 11507 |
+| `@aura3d/engine/game/art` | `5.3.0` | `./dist/game/art/index.d.ts` | 333 |
+| `@aura3d/engine/game/capture` | `5.3.0` | `./dist/game/capture/index.d.ts` | 11036 |
+| `@aura3d/engine/game/styles.css` | `5.3.0` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.3.0` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.3.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.3.0` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.3.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.3.0` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.3.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.3.0` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.3.0` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.3.0` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.3.0` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.3.0` | `./dist/engine/public/renderer.d.ts` | 11014 |
+| `@aura3d/engine/scatter` | `5.3.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.3.0` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.3.0` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.3.0` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.3.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 318 |
+| `@aura3d/engine/v5` | `5.3.0` | `./dist/engine/public/v5.d.ts` | 8518 |
+| `@aura3d/engine/v5/context` | `5.3.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.3.0` | `./dist/game/v5.d.ts` | 11503 |
+| `@aura3d/engine/v5/internal` | `5.3.0` | `./dist/engine/public/v5-internal.d.ts` | 434 |
+| `@aura3d/engine/v5/math/hull` | `5.3.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.3.0` | `./dist/engine/public/worker.d.ts` | 77 |
+| `@aura3d/engine/workflows` | `5.3.0` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.3.0` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.3.0` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.3.0` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.3.0` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.3.0` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.3.0` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.3.0` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.3.0` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.3.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.3.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.3.0` | `./dist/index.d.ts` | 4310 |
+| `@aura3d/rendering/contracts` | `5.3.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.3.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.3.0` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.3.0` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.3.0` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.3.0` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.3.0` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.3.0` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.3.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.3.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.3.0` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.3.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.3.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.3.0` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.3.0` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.3.0` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.3.0` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.3.0` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.3.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.3.0` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.3.0` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.3.0` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.3.0` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.3.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.3.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.3.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.3.0` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.3.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.3.0` | `./dist/lanes/index.d.ts` | 1023 |
+| `@aura3d/rendering/lighting` | `5.3.0` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.3.0` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.3.0` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.3.0` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.3.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.3.0` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.3.0` | `./dist/webgpu.d.ts` | 214 |
+| `@aura3d/rendering/world` | `5.3.0` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.3.0` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.3.0` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.3.0` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.3.0` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
 
 ### Export conditions
 
@@ -5386,8 +5386,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
 
 ### Export conditions
 
@@ -5433,8 +5433,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
 
 ### Export conditions
 
@@ -7207,8 +7207,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
 
 ### Export conditions
 
@@ -7247,8 +7247,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/apps@5.2.1#sha256=c88a36afa6a7d1c5b69855206b5bb8120f99ce745eaaae630246e40a3842ae4f`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/apps@5.3.0#sha256=32161a87c7990ffdc84d142f7bb3e8d097cae0252ca3b93f02f5125d6589afe0`
 
 ### Export conditions
 
@@ -7312,8 +7312,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/asset-index@5.2.1#sha256=184bccd97beaf1abbc41cb10ed59cf45711deaace6a1fa9a1837500bc2d7f853`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/asset-index@5.3.0#sha256=3b67566927b2a19d647608684e0740be18244b0414656a7929c273f33e7ef8d3`
 
 ### Export conditions
 
@@ -8050,8 +8050,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -13775,8 +13775,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -18478,8 +18478,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -19387,8 +19387,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -21822,8 +21822,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -23582,8 +23582,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -23868,8 +23868,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=d476d6ac154e5075d5b6c97b1f3535195c15a3df2c8405ef81389280e2a556bc`
 
 ### Export conditions
 
@@ -23888,8 +23888,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/audio@5.2.1#sha256=1021beb0bc72eb9d67ea56b23d0373344c70444e35b5e8047a22b05b5a820a4f`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/audio@5.3.0#sha256=3b32fa94bc0feb214795d33bfe01f65a7a77be094a3d4766b8a79b38a7a01079`
 
 ### Export conditions
 
@@ -26514,8 +26514,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/cli@5.2.1#sha256=93bafe512d1ea8d8e233419b26a482c69edb05adffe5369beb2e939d9322db87`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/cli@5.3.0#sha256=90e073c318a13ac7fe8ceb3f03404f404fb0a01f19f74d48a50136159b04b77c`
 
 ### Export conditions
 
@@ -28685,8 +28685,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/controls@5.2.1#sha256=5e06b57f3626fa0d26577189237021bae95a7a3bfca1b18c7ffcc85e7f6a5c5e`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/controls@5.3.0#sha256=9ef135cd90b5139a23cc304b97435fa3ce4b7c58c961df4a9a705d24a792e0bd`
 
 ### Export conditions
 
@@ -30488,8 +30488,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/core@5.2.1#sha256=80d8bcc10799cab1178c3630fea7d7755b5db5afff99ac551b54282e187e3b7e`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/core@5.3.0#sha256=ec3c851bcf3069a59a79b4c3d9220d6f7c7bd1ce773c75d254354a35c691a617`
 
 ### Export conditions
 
@@ -31003,8 +31003,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.2.1`
-- Packed identity: `archive:create-aura3d@5.2.1#sha256=6981fc02fcc7820b8a19e7fab2fbfdb18c19f9f3004870ff475d47aa311c0756`
+- Version: `5.3.0`
+- Packed identity: `archive:create-aura3d@5.3.0#sha256=9de1ab75e110f42637e6987ae50424f9ed2e5f822806d942e008a84aff1d7142`
 
 ### Export conditions
 
@@ -31773,8 +31773,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/debug@5.2.1#sha256=776a186ca1d4703e081dbc6bbe397203a2c008a5fc2e385ac44eef4d5c4cd679`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/debug@5.3.0#sha256=31dfcc6dfae4fec63c6c594a2869dfac53afc21b2653962a1977f58f28e1ba4f`
 
 ### Export conditions
 
@@ -33153,8 +33153,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/debug@5.2.1#sha256=776a186ca1d4703e081dbc6bbe397203a2c008a5fc2e385ac44eef4d5c4cd679`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/debug@5.3.0#sha256=31dfcc6dfae4fec63c6c594a2869dfac53afc21b2653962a1977f58f28e1ba4f`
 
 ### Export conditions
 
@@ -33361,8 +33361,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/ecs@5.2.1#sha256=e7b3ae7baf9e2cb04d7cd3359c019db4bdfab0d0ef7ec98fc73eb874f0b5d7eb`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/ecs@5.3.0#sha256=75bf878c3f9345dc2bd3490a8f6c6588c5c2d02743ef62bdeb0437b9185d5f50`
 
 ### Export conditions
 
@@ -34029,8 +34029,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/editor-runtime@5.2.1#sha256=47eeb8f32d00cf4a55b95234f3b455959a556f145aa0601fe174f5d03f098861`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.3.0#sha256=cbf64d44795b2f53d19ccbc989cd078b14eaffaecb447ee46edc985c8564e0f5`
 
 ### Export conditions
 
@@ -36612,8 +36612,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -36735,6 +36735,7 @@ export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDi
 export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubject.js";
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "../agent-api/camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "../agent-api/camera/frameNodes.js";
+export type { AuraCameraAutoOptions } from "../agent-api/camera/autoFrame.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "../agent-api/nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "../agent-api/nodes/material.visual.js";
 //# sourceMappingURL=index.d.ts.map
@@ -41332,6 +41333,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -51316,7 +51325,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -54563,6 +54572,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -54791,6 +54816,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -55020,6 +55052,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -55081,7 +55120,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -55131,6 +55175,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -55865,6 +55911,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -55900,6 +55947,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -56417,6 +56466,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -56518,9 +56568,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -56714,6 +56765,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -56733,10 +56789,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -56746,6 +56839,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -56769,6 +56892,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -57114,6 +57244,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -58316,7 +58452,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -58325,6 +58461,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -58699,6 +58836,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -58930,8 +59073,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -59175,6 +59326,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -59291,6 +59451,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -59305,7 +59472,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -59313,6 +59490,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -59332,6 +59527,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -59350,6 +59553,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -59447,6 +59663,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -59525,6 +59774,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -60009,6 +60278,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -60124,6 +60395,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -60190,6 +60463,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -60428,7 +60707,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -61928,6 +62219,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -63996,6 +64292,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -73234,9 +73532,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -78393,6 +78693,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -82120,7 +82433,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -82133,6 +82446,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -82142,6 +82477,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -83554,6 +83897,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -84655,6 +85000,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -85628,6 +85975,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -91210,6 +91585,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -91407,7 +91784,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -91432,7 +91809,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -92331,6 +92708,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -99733,7 +100116,7 @@ export declare function scaleEnvironmentLighting(lighting: EnvironmentLightingOp
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
  */
-export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">, conjunction: boolean): {
+export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">, conjunction: boolean): {
     readonly diffuseIntensity: number;
     readonly specularIntensity: number;
 };
@@ -100758,8 +101141,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -116896,6 +117279,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -116963,10 +117347,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -119155,6 +119549,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -119240,13 +119651,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -119344,6 +119748,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -121323,7 +121732,7 @@ export declare const vfxEffectBuilders: {
      * maxOpacity 1). Flag-off compile reads `?? 0.12`/`?? "#9fb7d9"` so the
      * uniforms are unchanged.
      */
-    fog: (options?: FogNodeOptions) => AuraNodeBuilder<AuraEffectNode>;
+    fog: (rawOptions?: FogNodeOptions) => AuraNodeBuilder<AuraEffectNode>;
     cinematicBloom: (options?: Omit<AuraEffectNode, "kind" | "effect">) => AuraNodeBuilder<AuraEffectNode>;
     /**
      * A5 volumetric fog (muse3jsparity-PRD): builds a DISTINCT "volumetric-fog"
@@ -121913,6 +122322,56 @@ export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameN
 //# sourceMappingURL=frameNodes.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/autoFrame.d.ts`
+
+```ts
+/**
+ * N4 (5.4.0): framing by default. `camera.auto(options)` returns a camera spec
+ * the scene builder solves against its own nodes when it serialises, so an
+ * author never hand-places a camera and never needs the scene object to frame
+ * it (`scene().add(...).camera(camera.auto())` works in one chain). A scene
+ * whose author never chose a camera is solved the same way.
+ *
+ * The solve is the `camera.frame` maths (`frameCameraPose`, exact perspective
+ * fit over the drawn world bounds; ground planes and ground-named nodes are
+ * left out of the box). The aspect is the author's `aspect`, else the window's
+ * at serialisation time, else 16/9. With no model or primitive nodes the spec
+ * stays the plain default orbit.
+ */
+import type { AuraCameraSpec, AuraSceneNode, AuraVec3 } from "../nodes/types.js";
+import { type AuraCameraFrameOptions } from "./frameNodes.js";
+/** Options for `camera.auto`: the `camera.frame` options (fill default 0.6) plus orbit extras. */
+export interface AuraCameraAutoOptions extends AuraCameraFrameOptions {
+    /**
+     * Frame only these nodes, matched by `name` or runtime `id` anywhere in the
+     * scene (parent group transforms are honoured), e.g. `subject: "clock"` keeps
+     * the floor, wall and props in shot without letting them set the size.
+     * Unmatched names fall back to the whole scene.
+     */
+    readonly subject?: string | readonly string[];
+    /** Orbit auto-rotation speed, as on `camera.orbit`. */
+    readonly autoRotate?: number;
+}
+/** Mark `spec` as an auto-framed placeholder (resolved by the scene builder). */
+export declare function markAutoFrameSpec(spec: AuraCameraSpec, options: AuraCameraAutoOptions): AuraCameraSpec;
+/** The `camera.auto` options of a placeholder spec, or `undefined` for an ordinary spec. */
+export declare function autoFrameOptionsOf(spec: AuraCameraSpec | undefined): AuraCameraAutoOptions | undefined;
+/**
+ * Solve an auto-framed orbit spec for `nodes`, or `undefined` when nothing in
+ * the scene occupies space (the caller keeps its fallback spec).
+ */
+export declare function resolveAutoFrameSpec(nodes: readonly AuraSceneNode[], options: AuraCameraAutoOptions, build: (pose: {
+    readonly target: AuraVec3;
+    readonly position: AuraVec3;
+    readonly distance: number;
+    readonly fov: number;
+    readonly near: number;
+    readonly far: number;
+    readonly autoRotate?: number;
+}) => AuraCameraSpec): AuraCameraSpec | undefined;
+//# sourceMappingURL=autoFrame.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
 
 ```ts
@@ -122078,8 +122537,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -124949,8 +125408,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -130675,8 +131134,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -133300,8 +133759,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -135102,8 +135561,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -139767,6 +140226,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -149751,7 +150218,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -152998,6 +153465,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -153226,6 +153709,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -153455,6 +153945,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -153516,7 +154013,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -153566,6 +154068,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -154300,6 +154804,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -154335,6 +154840,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -154852,6 +155359,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -154953,9 +155461,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -155149,6 +155658,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -155168,10 +155682,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -155181,6 +155732,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -155204,6 +155785,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -155549,6 +156137,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -156751,7 +157345,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -156760,6 +157354,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -157134,6 +157729,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -157365,8 +157966,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -157610,6 +158219,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -157726,6 +158344,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -157740,7 +158365,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -157748,6 +158383,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -157767,6 +158420,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -157785,6 +158446,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -157882,6 +158556,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -157960,6 +158667,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -158444,6 +159171,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -158559,6 +159288,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -158625,6 +159356,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -158863,7 +159600,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -160363,6 +161112,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -162431,6 +163185,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -171669,9 +172425,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -176828,6 +177586,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -180555,7 +181326,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -180568,6 +181339,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -180577,6 +181370,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -181989,6 +182790,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -183090,6 +183893,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -184063,6 +184868,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -189645,6 +190478,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -189842,7 +190677,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -189867,7 +190702,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -190766,6 +191601,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -198125,7 +198966,7 @@ export declare function scaleEnvironmentLighting(lighting: EnvironmentLightingOp
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
  */
-export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">, conjunction: boolean): {
+export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">, conjunction: boolean): {
     readonly diffuseIntensity: number;
     readonly specularIntensity: number;
 };
@@ -199150,8 +199991,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -215288,6 +216129,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -215355,10 +216197,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -217547,6 +218399,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -217632,13 +218501,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -217736,6 +218598,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -218101,8 +218968,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -218768,8 +219635,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -221350,8 +222217,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -221452,10 +222319,11 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
     reset(): Promise<void>;
 }
 /**
- * Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request
- * (`fallback: "main-thread"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.
+ * Games keep their loop on the main thread. A `worker` with `createWorker` renders the game in that worker (K2: frame
+ * callbacks run on the main thread and node changes reach the worker once per frame). `fallback: "main-thread"` alone
+ * (the shared lab-flag fragment) is accepted and runs on the main thread. Returns the option to forward, if any.
  */
-export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): void;
+export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): NonNullable<CreateGameOptions<string, string>["worker"]> | undefined;
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
 export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
@@ -222606,6 +223474,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -222707,9 +223576,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -222903,6 +223773,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -222922,10 +223797,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -222935,6 +223847,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -222958,6 +223900,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -223303,6 +224252,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -224505,7 +225460,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -224514,6 +225469,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -224888,6 +225844,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -225119,8 +226081,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -225364,6 +226334,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -225480,6 +226459,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -225494,7 +226480,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -225502,6 +226498,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -225521,6 +226535,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -225539,6 +226561,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -225636,6 +226671,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -225714,6 +226782,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -226198,6 +227286,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -226313,6 +227403,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -226379,6 +227471,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -226617,7 +227715,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -228117,6 +229227,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -230185,6 +231300,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -239423,9 +240540,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -244582,6 +245701,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -248309,7 +249441,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -248322,6 +249454,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -248331,6 +249485,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -249743,6 +250905,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -250844,6 +252008,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -251817,6 +252983,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -265158,6 +266352,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -275142,7 +276344,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -278389,6 +279591,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -278617,6 +279835,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -278846,6 +280071,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -278907,7 +280139,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -278957,6 +280194,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -279691,6 +280930,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -279726,6 +280966,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -283348,6 +284590,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -283545,7 +284789,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -283570,7 +284814,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -284469,6 +285713,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -286302,7 +287552,7 @@ export declare function scaleEnvironmentLighting(lighting: EnvironmentLightingOp
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
  */
-export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">, conjunction: boolean): {
+export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">, conjunction: boolean): {
     readonly diffuseIntensity: number;
     readonly specularIntensity: number;
 };
@@ -287327,8 +288577,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -302960,6 +304210,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -303027,10 +304278,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -305219,6 +306480,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -305304,13 +306582,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -305408,6 +306679,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -309168,8 +310444,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -309407,6 +310683,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -309457,6 +310739,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -311245,7 +312529,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -311270,7 +312554,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -312330,8 +313614,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -313375,6 +314659,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -313476,9 +314761,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -313672,6 +314958,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -313691,10 +314982,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -313704,6 +315032,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -313727,6 +315085,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -314072,6 +315437,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -315274,7 +316645,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -315283,6 +316654,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -315657,6 +317029,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -315888,8 +317266,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -316133,6 +317519,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -316249,6 +317644,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -316263,7 +317665,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -316271,6 +317683,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -316290,6 +317720,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -316308,6 +317746,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -316405,6 +317856,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -316483,6 +317967,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -316967,6 +318471,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -317082,6 +318588,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -317148,6 +318656,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -317386,7 +318900,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -318886,6 +320412,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -320954,6 +322485,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -330192,9 +331725,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -335351,6 +336886,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -339078,7 +340626,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -339091,6 +340639,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -339100,6 +340670,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -340512,6 +342090,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -341613,6 +343193,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -342586,6 +344168,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -355927,6 +357537,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -365911,7 +367529,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -369158,6 +370776,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -369386,6 +371020,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -369615,6 +371256,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -369676,7 +371324,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -369726,6 +371379,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -370460,6 +372115,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -370495,6 +372151,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -374117,6 +375775,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -374314,7 +375974,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -374339,7 +375999,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -375238,6 +376898,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -377071,7 +378737,7 @@ export declare function scaleEnvironmentLighting(lighting: EnvironmentLightingOp
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
  */
-export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">, conjunction: boolean): {
+export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">, conjunction: boolean): {
     readonly diffuseIntensity: number;
     readonly specularIntensity: number;
 };
@@ -378096,8 +379762,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -393729,6 +395395,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -393796,10 +395463,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -395988,6 +397665,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -396073,13 +397767,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -396177,6 +397864,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -396787,8 +398479,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -396798,8 +398490,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -396824,8 +398516,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -397551,8 +399243,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -398792,8 +400484,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -399431,8 +401123,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -401421,8 +403113,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -402046,8 +403738,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -404718,8 +406410,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -405970,8 +407662,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -406233,8 +407925,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -406530,8 +408222,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -406952,6 +408644,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -407053,9 +408746,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -407249,6 +408943,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -407268,10 +408967,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -407281,6 +409017,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -407304,6 +409070,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -407649,6 +409422,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -408851,7 +410630,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -408860,6 +410639,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -409234,6 +411014,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -409465,8 +411251,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -409710,6 +411504,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -409826,6 +411629,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -409840,7 +411650,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -409848,6 +411668,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -409867,6 +411705,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -409885,6 +411731,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -409982,6 +411841,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -410060,6 +411952,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -410544,6 +412456,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -410659,6 +412573,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -410725,6 +412641,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -410963,7 +412885,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -412463,6 +414397,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -414531,6 +416470,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -423769,9 +425710,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -428928,6 +430871,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -432655,7 +434611,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -432668,6 +434624,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -432677,6 +434655,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -434089,6 +436075,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -435190,6 +437178,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -436163,6 +438153,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -443991,6 +446009,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -453975,7 +456001,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -457222,6 +459248,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -457450,6 +459492,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -457679,6 +459728,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -457740,7 +459796,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -457790,6 +459851,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -458524,6 +460587,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -458559,6 +460623,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -462212,6 +464278,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -462409,7 +464477,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -462434,7 +464502,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -463333,6 +465401,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -470735,7 +472809,7 @@ export declare function scaleEnvironmentLighting(lighting: EnvironmentLightingOp
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
  */
-export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">, conjunction: boolean): {
+export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">, conjunction: boolean): {
     readonly diffuseIntensity: number;
     readonly specularIntensity: number;
 };
@@ -471760,8 +473834,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -487898,6 +489972,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -487965,10 +490040,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -490157,6 +492242,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -490242,13 +492344,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -490346,6 +492441,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -491457,8 +493557,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -491590,8 +493690,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -492715,8 +494815,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -492799,8 +494899,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -493979,8 +496079,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -494129,6 +496229,11 @@ export declare class AuraCustomShaderMaterial extends PortableShaderMaterial {
 }
 /** Color-encoded depth is consumed when the shadow target has no sampleable depth attachment. */
 export declare const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(vec3(gl_FragCoord.z), 1.0);\n}\n";
+/**
+ * WebGPU half of `CUSTOM_DEPTH_FRAGMENT_GLSL` for `castShadow: true` materials with a WGSL twin: the same encoded colour
+ * depth the native depth programs write (the framebuffer depth `@builtin(position).z`, already 0..1 on WebGPU).
+ */
+export declare const CUSTOM_DEPTH_FRAGMENT_WGSL = "/* @aura3d-bindings */\n@fragment\nfn fs_main(@builtin(position) a3dFragCoord: vec4f) -> @location(0) vec4f {\n  return vec4f(a3dFragCoord.z, a3dFragCoord.z, a3dFragCoord.z, 1.0);\n}\n";
 type GraphJointKind = "float" | "uint" | "sint";
 /** Compile an `AuraCustomMaterialSpec` into a renderer-integrated portable material. */
 export declare function createCustomShaderMaterial(spec: AuraCustomMaterialSpec, name?: string): AuraCustomShaderMaterial;
@@ -497103,6 +499208,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -497331,6 +499452,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -497560,6 +499688,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -497621,7 +499756,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -497671,6 +499811,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -498220,8 +500362,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -498548,6 +500690,7 @@ export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabel
 export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
+export type { AuraCameraAutoOptions } from "./camera/autoFrame.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";
 //# sourceMappingURL=isolated-index.d.ts.map
@@ -498574,6 +500717,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -498609,6 +500753,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -498802,8 +500948,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -498999,6 +501145,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -499082,6 +501245,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -499149,10 +501313,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -499263,7 +501437,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -499693,13 +501867,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -499797,6 +501964,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -501181,6 +503353,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -501282,9 +503455,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -501478,6 +503652,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -501497,10 +503676,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -501510,6 +503726,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -501533,6 +503779,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -501878,6 +504131,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -503080,7 +505339,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -503089,6 +505348,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -503463,6 +505723,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -503694,8 +505960,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -503939,6 +506213,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -504055,6 +506338,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -504069,7 +506359,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -504077,6 +506377,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -504096,6 +506414,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -504114,6 +506440,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -504211,6 +506550,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -504289,6 +506661,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -504773,6 +507165,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -504888,6 +507282,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -504954,6 +507350,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -505192,7 +507594,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -506692,6 +509106,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -508760,6 +511179,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -517998,9 +520419,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -523157,6 +525580,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -526884,7 +529320,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -526897,6 +529333,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -526906,6 +529364,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -528318,6 +530784,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -529419,6 +531887,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -530392,6 +532862,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -539603,6 +542101,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -539831,6 +542345,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -540060,6 +542581,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -540121,7 +542649,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -540171,6 +542704,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -552011,6 +554546,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -552208,7 +554745,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -552233,7 +554770,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -552585,6 +555122,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -563167,7 +565710,7 @@ export declare const vfxEffectBuilders: {
      * maxOpacity 1). Flag-off compile reads `?? 0.12`/`?? "#9fb7d9"` so the
      * uniforms are unchanged.
      */
-    fog: (options?: FogNodeOptions) => AuraNodeBuilder<AuraEffectNode>;
+    fog: (rawOptions?: FogNodeOptions) => AuraNodeBuilder<AuraEffectNode>;
     cinematicBloom: (options?: Omit<AuraEffectNode, "kind" | "effect">) => AuraNodeBuilder<AuraEffectNode>;
     /**
      * A5 volumetric fog (muse3jsparity-PRD): builds a DISTINCT "volumetric-fog"
@@ -565755,6 +568298,56 @@ export interface AuraCameraFrameOptions extends AuraFramePoseOptions, AuraFrameN
 //# sourceMappingURL=frameNodes.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/autoFrame.d.ts`
+
+```ts
+/**
+ * N4 (5.4.0): framing by default. `camera.auto(options)` returns a camera spec
+ * the scene builder solves against its own nodes when it serialises, so an
+ * author never hand-places a camera and never needs the scene object to frame
+ * it (`scene().add(...).camera(camera.auto())` works in one chain). A scene
+ * whose author never chose a camera is solved the same way.
+ *
+ * The solve is the `camera.frame` maths (`frameCameraPose`, exact perspective
+ * fit over the drawn world bounds; ground planes and ground-named nodes are
+ * left out of the box). The aspect is the author's `aspect`, else the window's
+ * at serialisation time, else 16/9. With no model or primitive nodes the spec
+ * stays the plain default orbit.
+ */
+import type { AuraCameraSpec, AuraSceneNode, AuraVec3 } from "../nodes/types.js";
+import { type AuraCameraFrameOptions } from "./frameNodes.js";
+/** Options for `camera.auto`: the `camera.frame` options (fill default 0.6) plus orbit extras. */
+export interface AuraCameraAutoOptions extends AuraCameraFrameOptions {
+    /**
+     * Frame only these nodes, matched by `name` or runtime `id` anywhere in the
+     * scene (parent group transforms are honoured), e.g. `subject: "clock"` keeps
+     * the floor, wall and props in shot without letting them set the size.
+     * Unmatched names fall back to the whole scene.
+     */
+    readonly subject?: string | readonly string[];
+    /** Orbit auto-rotation speed, as on `camera.orbit`. */
+    readonly autoRotate?: number;
+}
+/** Mark `spec` as an auto-framed placeholder (resolved by the scene builder). */
+export declare function markAutoFrameSpec(spec: AuraCameraSpec, options: AuraCameraAutoOptions): AuraCameraSpec;
+/** The `camera.auto` options of a placeholder spec, or `undefined` for an ordinary spec. */
+export declare function autoFrameOptionsOf(spec: AuraCameraSpec | undefined): AuraCameraAutoOptions | undefined;
+/**
+ * Solve an auto-framed orbit spec for `nodes`, or `undefined` when nothing in
+ * the scene occupies space (the caller keeps its fallback spec).
+ */
+export declare function resolveAutoFrameSpec(nodes: readonly AuraSceneNode[], options: AuraCameraAutoOptions, build: (pose: {
+    readonly target: AuraVec3;
+    readonly position: AuraVec3;
+    readonly distance: number;
+    readonly fov: number;
+    readonly near: number;
+    readonly far: number;
+    readonly autoRotate?: number;
+}) => AuraCameraSpec): AuraCameraSpec | undefined;
+//# sourceMappingURL=autoFrame.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
 
 ```ts
@@ -566231,8 +568824,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -566477,8 +569070,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -567607,6 +570200,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -567708,9 +570302,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -567904,6 +570499,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -567923,10 +570523,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -567936,6 +570573,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -567959,6 +570626,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -568304,6 +570978,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -569506,7 +572186,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/rendering/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -569515,6 +572195,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -569889,6 +572570,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -570120,8 +572807,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -570365,6 +573060,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -570481,6 +573185,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -570495,7 +573206,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -570503,6 +573224,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -570522,6 +573261,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -570540,6 +573287,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -570637,6 +573397,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -570715,6 +573508,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -571199,6 +574012,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -571314,6 +574129,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -571380,6 +574197,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -571618,7 +574441,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -573118,6 +575953,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -575186,6 +578026,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -584424,9 +587266,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -589583,6 +592427,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -593310,7 +596167,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -593323,6 +596180,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -593332,6 +596211,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -594744,6 +597631,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -595845,6 +598734,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -596818,6 +599709,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/rendering/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -610159,6 +613078,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -620143,7 +623070,7 @@ export declare const effects: {
     readonly filmGrain: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly chromaticAberration: (options?: import("./effects.post.js").PostV3EffectOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly shaderPass: (options: import("./effects.post.js").AuraShaderPassOptions) => import("../publishedUnion.js").AuraCustomPostPass;
-    readonly fog: (options?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
+    readonly fog: (rawOptions?: Omit<import("./types.js").AuraEffectNode, "mode" | "kind" | "effect"> & {
         readonly mode?: import("../publishedUnion.js").AuraHeightFogSpec["mode"];
     } & Record<string, unknown>) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly cinematicBloom: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -623390,6 +626317,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -623618,6 +626561,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -623847,6 +626797,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -623908,7 +626865,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -623958,6 +626920,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -624692,6 +627656,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -624727,6 +627692,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -628349,6 +631316,8 @@ export interface AuraEnvironmentSourceResolution {
         readonly color: AuraColor;
         readonly intensity: number;
     } | null;
+    /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+    readonly diffuseYield?: boolean;
     /**
      * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
      * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
@@ -628546,7 +631515,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -628571,7 +631540,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -629470,6 +632439,12 @@ export declare class AuraColorParseError extends Error {
 }
 /** Validate a colour option at its API entry so the error names the option (`material.pbr({ color })`). Non-colour values pass through. */
 export declare function assertAuraColorOption(value: unknown, where: string): void;
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export declare function auraColorToHex<T>(value: T, where: string): T | string;
 /** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
 /** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
@@ -631303,7 +634278,7 @@ export declare function scaleEnvironmentLighting(lighting: EnvironmentLightingOp
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
  */
-export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">, conjunction: boolean): {
+export declare function prd02ProbeBindIntensities(knobLighting: EnvironmentLightingOptions | false | undefined, resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">, conjunction: boolean): {
     readonly diffuseIntensity: number;
     readonly specularIntensity: number;
 };
@@ -632328,8 +635303,8 @@ export declare const looks: {
      * Callers that pass `options` get the union type (v1 emission is opt-in).
      */
     readonly preset: {
-        (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
-        (id: AuraLookId, overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
+        (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+        (id: AuraLookId | "plain", overrides: AuraLookOverrides | undefined, options: AuraLookBuildOptions): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
     };
     /** Flat v0 children (same list the group carries). */
     readonly nodes: (id: AuraLookId, overrides?: AuraLookOverrides) => readonly AuraNodeBuilder<AuraSceneNode>[];
@@ -647961,6 +650936,7 @@ import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCam
 import { type AuraCameraRigFactories } from "../../contracts/camera.js";
 import { type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 export declare const camera: {
     readonly shoulder: typeof import("../GameCameraRigs.js").createShoulderCamera;
     readonly collisionAwareOrbit: typeof import("../GameCameraRigs.js").createCollisionAwareOrbit;
@@ -648028,10 +651004,20 @@ export declare const camera: {
     readonly frame: (subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options?: AuraCameraFrameOptions) => AuraCameraSpec;
     /**
      * Frame everything in a scene (a `scene()` builder or node array). Ground
-     * planes and nodes named like ground/floor/terrain are left out of the box
+     * planes and nodes named like ground/floor/terrain/wall are left out of the box
      * unless you pass your own `exclude`.
      */
     readonly frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options?: AuraCameraFrameOptions) => AuraCameraSpec;
+    /**
+     * Frame whatever the scene holds, with no hand-placed camera:
+     * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+     * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+     * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+     * planes and ground-named nodes are left out of the box). Solved for
+     * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+     * framed. A scene that never sets a camera is framed the same way.
+     */
+    readonly auto: (options?: AuraCameraAutoOptions) => AuraCameraSpec;
     /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
     /**
      * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to
@@ -650220,6 +653206,23 @@ export declare const lights: {
         readonly shadow?: boolean | AuraDirectionalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */
         readonly castShadow?: boolean;
     }) => AuraNodeBuilder<AuraLightNode>;
+    /**
+     * N4 (5.4.0): the key light of the standard creation path. A directional
+     * light that casts a shadow by default, lit from a three-quarter angle above
+     * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+     * (floors, walls) show a clean shadow instead of acne. Primitives and models
+     * receive shadows by default, so a ground plane under the subject shows it.
+     * Every option of `lights.directional` is accepted; `shadow: false` turns the
+     * shadow off and a `shadow` object replaces the default one.
+     */
+    readonly key: (options?: {
+        readonly name?: string;
+        readonly position?: AuraVec3;
+        readonly target?: AuraVec3;
+        readonly intensity?: number;
+        readonly color?: AuraColor;
+        readonly shadow?: boolean | AuraDirectionalShadowOptions;
+    }) => AuraNodeBuilder<AuraLightNode>;
     readonly point: (options?: {
         readonly name?: string;
         readonly position?: AuraVec3;
@@ -650305,13 +653308,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -650409,6 +653405,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -651069,10 +654070,11 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
     reset(): Promise<void>;
 }
 /**
- * Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request
- * (`fallback: "main-thread"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.
+ * Games keep their loop on the main thread. A `worker` with `createWorker` renders the game in that worker (K2: frame
+ * callbacks run on the main thread and node changes reach the worker once per frame). `fallback: "main-thread"` alone
+ * (the shared lab-flag fragment) is accepted and runs on the main thread. Returns the option to forward, if any.
  */
-export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): void;
+export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): NonNullable<CreateGameOptions<string, string>["worker"]> | undefined;
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
 export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
@@ -654267,8 +657269,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -654778,13 +657780,6 @@ import { type ShaderGraphMaterialOptions } from "./shaderGraph.js";
 import { proceduralTexture } from "../nodes/materialTools.js";
 import { causticsMaterial, lightBeamMaterial, strataMaterial } from "./material.visual.js";
 import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
-/**
- * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
- * spec field names that came from the preset's own defaults rather than the caller's options, so the
- * flag-on override lowering (C-15, §7.2) can ignore preset-defaulted values — most importantly
- * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
- * preset colour.
- */
 export declare const AURA_PRESET_DEFAULTS: unique symbol;
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export declare function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec;
@@ -654882,6 +657877,11 @@ export declare const material: {
     /** Node material from a persistent graph or the existing TSL expression API. */
     readonly node: (options: TslMaterialNodeOptions | ShaderGraphMaterialOptions) => AuraMaterialSpec;
     readonly pbr: (rawOptions?: AuraMaterialSpec) => AuraMaterialSpec;
+    /**
+     * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+     * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+     */
+    readonly standard: (options?: AuraMaterialSpec) => AuraMaterialSpec;
     /**
      * Film thickness endpoints are in nanometres. Explicit minimum/maximum
      * override the corresponding legacy range entries; omitted endpoints use
@@ -654996,6 +657996,7 @@ export declare class AuraSceneBuilder {
     private backgroundToneMapped;
     private backgroundImageSpec;
     private cameraSpec;
+    private cameraChosen;
     private timelineSpec;
     private physicsController;
     private diagnosticsEnabled;
@@ -655031,6 +658032,8 @@ export declare class AuraSceneBuilder {
     physics(next: AuraPhysicsWorldController): this;
     diagnostics(enabled?: boolean): this;
     toJSON(): AuraSceneSnapshot;
+    /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+    private resolvedCamera;
     getPhysicsController(): AuraPhysicsWorldController | undefined;
 }
 /** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
@@ -655476,7 +658479,7 @@ export interface GameBeacon {
     readonly scene?: unknown;
     readonly session?: unknown;
 }
-/** Worker request accepted by `createGame`. Games keep a synchronous main-thread frame loop, so only `fallback: "main-thread"` is honored. */
+/** Worker request accepted by `createGame`. With `createWorker` the game renders in that worker while its loop stays on the main thread (K2); `fallback: "main-thread"` alone runs the game on the main thread. */
 export interface AuraGameWorkerOptions {
     readonly createWorker?: (() => Worker) | undefined;
     readonly fallback?: "error" | "main-thread" | undefined;
@@ -655501,7 +658504,7 @@ export interface CreateGameOptions<TCue extends string, TEvent extends string> {
     readonly renderer?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["renderer"];
     /** 5.1 additive passthrough to the app output options (`outputColorSpace`, ...). */
     readonly output?: import("../agent-api/nodes/types/runtime.js").AuraCreateAppOptions["output"];
-    /** 5.1 additive: games always render on the main thread. `fallback: "main-thread"` accepts the request and runs on the main thread; any other value throws `worker-unsupported`. */
+    /** 5.1 additive. With `createWorker` the game renders in a worker (logic, input, HUD and audio stay on the main thread); `fallback: "main-thread"` alone runs on the main thread; any other value throws `worker-unsupported`. */
     readonly worker?: AuraGameWorkerOptions | undefined;
 }
 /** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
@@ -655837,6 +658840,22 @@ export interface AuraRuntimeNodeHandle {
     setText(text: string): this;
     setMaterial(material: AuraMaterialSpec): this;
     /**
+     * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+     * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+     * RangeError naming the call to use (handle.materials, setUniform).
+     *
+     * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+     * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+     * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+     */
+    setColor?(color: AuraColor): this;
+    /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+    setIntensity?(intensity: number): this;
+    /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+    setOpacity?(opacity: number): this;
+    /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+    setEmissive?(color: AuraColor, intensity?: number): this;
+    /**
      * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
      * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
      * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -656065,6 +659084,13 @@ export interface AuraApp {
     offFrame(callback: AuraFrameCallback): void;
     input(options: GameInputOptions): ReturnType<typeof createGameInput>;
     workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+    /**
+     * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+     * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+     */
+    pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+    /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+    viewProjection?(): Float32Array;
     recoverWorker?(): Promise<void>;
     pause(): void;
     resume(): void;
@@ -656294,6 +659320,13 @@ export interface AuraCreateAppOptions {
     };
     readonly lighting?: import("../../../contracts/lighting.js").AuraLightingOptions;
     readonly output?: import("../../../contracts/output.js").AuraOutputOptions;
+    /**
+     * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+     * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+     * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+     * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+     */
+    readonly plainLook?: boolean;
     readonly assets?: import("../../../contracts/assets.js").AuraAssetsOption;
     /** Optional per-app native model adapters. Install only the formats this app uses. */
     readonly formatRegistry?: import("../../../../assets/index.js").FormatRegistry;
@@ -656355,7 +659388,12 @@ export interface AuraPrecompileResult {
     readonly durationMs: number;
 }
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-    readonly worker?: never;
+    /**
+     * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+     * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+     * still need the main-thread renderer (use `fallback: "main-thread"`).
+     */
+    readonly worker?: AuraCreateAppOptions["worker"];
     readonly loop?: GameAppRuntimeOptions["loop"];
     readonly input?: GameAppRuntimeOptions["input"];
     readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -656405,6 +659443,8 @@ export interface WebGLRenderController {
     renderAsync?(time: () => number): Promise<void>;
     busy?(): boolean;
     whenIdle?(): Promise<void>;
+    /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+    autoAsyncFrames?(): boolean;
     /** Coalesce a single frame for an externally invalidated static scene. */
     invalidate?(): void;
     resetTemporalHistory?(reason: string): void;
@@ -659541,8 +662581,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -659729,8 +662769,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -659758,8 +662798,9 @@ export type { WorkerScheduledFrame } from "../agent-api/app/workerFrameLoop.js";
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraScreenshot, WebGLSceneRenderer } from "../nodes/types.js";
 import { type OffscreenCanvasSize } from "./canvas.js";
 import { type WorkerScheduledFrame } from "./workerFrameLoop.js";
-import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerRequest, AuraWorkerResponse } from "./workerProtocol.js";
+import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse } from "./workerProtocol.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
+import { Texture } from "../../../rendering/index.js";
 import { TextureHandle } from "../nodes/texture.js";
 export declare class AuraWorkerError extends Error {
     readonly code: string;
@@ -659779,6 +662820,8 @@ export interface AuraWorkerRendererOptions {
      * At most 32 MiB of texture snapshots may be in flight per worker handle. */
     readonly sceneTransfer?: Transferable[];
     readonly renderer?: AuraCreateAppRendererOptions;
+    /** Quality-rebuild flags and animation mixer the worker renderer resolves (the host app's options). */
+    readonly flags?: AuraWorkerRenderFlags;
     /** Asset/decoder options, including an explicit same-origin codec base when supplied. */
     readonly assets?: AuraAssetsOption;
     readonly size?: OffscreenCanvasSize;
@@ -659809,6 +662852,11 @@ export interface AuraWorkerRenderer {
     }): Promise<void>;
     setInput(input: AuraWorkerInput): Promise<void>;
     flushInput(): Promise<void>;
+    /**
+     * K1: send batched node/camera changes; they apply between worker frames. Optional in the type (added in 5.3.0, a
+     * minor release: existing implementations of this interface stay valid); every renderer the engine creates has it.
+     */
+    patch?(ops: readonly AuraWorkerNodePatchOp[]): Promise<void>;
     resize(size: OffscreenCanvasSize): Promise<void>;
     setVisible(visible: boolean): Promise<void>;
     pause(): Promise<void>;
@@ -659865,6 +662913,24 @@ export interface AuraWorkerRuntimeOptions {
 export declare function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerRequest, AuraWorkerResponse>, options?: AuraWorkerRuntimeOptions): () => Promise<void>;
 /** Root diagnostics flatten group nodes and cannot safely traverse cyclic groups. */
 export declare function validateWorkerSceneGroups(scene: AuraSceneSnapshot): void;
+/** A live 2D image source whose pixels the host can read back (canvas, image, bitmap); never a video. */
+export declare function isWorkerReadableImageTexture(texture: Texture): boolean;
+/**
+ * Read a live image source's current pixels (unpremultiplied RGBA8, top row
+ * first). Drawn into a private 2D canvas so the source's own context type is
+ * never touched. Undefined when the source cannot be read (tainted, sized
+ * differently from its texture, or no 2D canvas in this realm).
+ */
+export declare function readWorkerImageTexturePixels(texture: Texture): Uint8ClampedArray | undefined;
+/** Worker-side image texture rebuilt from a host canvas snapshot; host repaints write into `write`. */
+interface WorkerCanvasTexture {
+    readonly hostId: string;
+    readonly width: number;
+    readonly height: number;
+    write(data: Uint8ClampedArray | Uint8Array): void;
+}
+/** Resolve a host texture id to the worker's canvas texture among the scene's handles. */
+export declare function findWorkerCanvasTexture(handles: Iterable<TextureHandle>, hostId: string): WorkerCanvasTexture | undefined;
 export declare function measureWorkerCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): OffscreenCanvasSize;
 export {};
 //# sourceMappingURL=workerRuntime.d.ts.map
@@ -659888,6 +662954,15 @@ export { workerRendererUrl } from "./workerRuntime.js";
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot } from "../nodes/types.js";
 import type { OffscreenCanvasSize } from "./canvas.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
+import type { AuraWorkerNodePatchOp } from "./workerPatch.js";
+export type { AuraWorkerNodePatchOp } from "./workerPatch.js";
+/** Renderer-side quality-rebuild flags and animation mixer mirrored from the host app options. */
+export interface AuraWorkerRenderFlags {
+    readonly qualityRebuild?: import("../../contracts/flags.js").QrFlagInput;
+    readonly animationMixer?: "pose" | "legacy";
+    /** The page URL whose `?a3d-qr=` flags apply after the option flags (absent when the app opted out). */
+    readonly url?: string;
+}
 /** A pointer snapshot in content-box CSS pixels, for untransformed or positively axis-scaled canvases. */
 export interface AuraWorkerPointer {
     readonly id: number;
@@ -659971,6 +663046,7 @@ export type AuraWorkerRequest = {
     readonly size: OffscreenCanvasSize;
     readonly autoStart: boolean;
     readonly syncLocalScenes?: boolean;
+    readonly flags?: AuraWorkerRenderFlags;
 } | {
     readonly type: "scene";
     readonly id: number;
@@ -659979,6 +663055,12 @@ export type AuraWorkerRequest = {
     readonly type: "input";
     readonly id: number;
     readonly input: AuraWorkerInput;
+}
+/** K1: batched node transform, visibility, material, animation-param and camera changes, applied before the next frame. */
+ | {
+    readonly type: "patch";
+    readonly id: number;
+    readonly ops: readonly AuraWorkerNodePatchOp[];
 } | {
     readonly type: "resize";
     readonly id: number;
@@ -660094,6 +663176,66 @@ export interface AuraWorkerHostEndpoint {
 //# sourceMappingURL=workerProtocol.d.ts.map
 ```
 
+### `./dist/engine/agent-api/app/workerPatch.d.ts`
+
+```ts
+/**
+ * K1 patch ops shared by the host mirror (workerNodes.ts) and the render
+ * worker. Kept free of registry/query imports so the worker entry stays small.
+ */
+import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
+/**
+ * Function-valued node-handle extension members (for example prd09
+ * `setInstanceTransforms`, prd08 `teleport`, prd07 `setFog`). Their whole call
+ * is replayed; the worker must have the same extension registered.
+ */
+export declare function isReplayableExtensionMethod(member: string): boolean;
+/** Handle methods whose effect can be replayed in the worker. */
+export declare const WORKER_PATCH_METHODS: readonly ["setPosition", "setPivot", "setTransform", "translate", "setRotation", "setScale", "setVisible", "setText", "setMaterial", "setLight", "setInstances", "setInstanceMatrices", "setColor", "setIntensity", "setOpacity", "setEmissive", "play", "setAnimation", "setAnimationPose", "setAnimationBinding", "setMorphTarget", "setMorphTargets", "morphInfluence", "setUniform", "setGeometry", "updateAttribute"];
+/** Handle properties whose assignment can be replayed in the worker. */
+export declare const WORKER_PATCH_PROPERTIES: readonly ["position", "rotation", "scale", "visible", "renderOrder", "frustumCulled"];
+export type AuraWorkerPatchMethod = (typeof WORKER_PATCH_METHODS)[number];
+export type AuraWorkerPatchProperty = (typeof WORKER_PATCH_PROPERTIES)[number];
+/** One replayable change. Ops apply in order; `camera` replaces the scene camera spec. */
+export type AuraWorkerNodePatchOp = {
+    readonly id: string;
+    readonly call: AuraWorkerPatchMethod | (string & {});
+    readonly args: readonly unknown[];
+} | {
+    readonly id: string;
+    readonly set: AuraWorkerPatchProperty;
+    readonly value: unknown;
+} | {
+    readonly camera: AuraSceneSnapshot["camera"];
+}
+/** A host repaint of a live image texture (`texture.canvas`): its full RGBA8 pixels, top row first. */
+ | {
+    readonly texture: string;
+    readonly width: number;
+    readonly height: number;
+    readonly data: Uint8ClampedArray | Uint8Array;
+};
+/** Worker-side target of a `texture` op (see workerRuntime.ts). */
+export interface AuraWorkerPatchTextureTarget {
+    readonly width: number;
+    readonly height: number;
+    write(data: Uint8ClampedArray | Uint8Array): void;
+}
+export declare const WORKER_PATCH_METHOD_SET: Set<string>;
+export declare const WORKER_PATCH_PROPERTY_SET: Set<string>;
+/** Reads that are answered by the host mirror without a patch. */
+export declare const WORKER_HOST_READS: Set<string>;
+/** Absolute writes: a later op with the same key makes an earlier one redundant. */
+export declare function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined;
+/**
+ * Worker side: replay ops on the registry the renderer reads. Every op is
+ * attempted; the first failure is rethrown (recoverable) after the rest ran,
+ * so one stale id does not drop a whole frame of movement.
+ */
+export declare function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefined, scene: AuraSceneSnapshot | undefined, ops: readonly AuraWorkerNodePatchOp[], textures?: (id: string) => AuraWorkerPatchTextureTarget | undefined): number;
+//# sourceMappingURL=workerPatch.d.ts.map
+```
+
 ### `./dist/engine/agent-api/app/canvas.d.ts`
 
 ```ts
@@ -660119,6 +663261,14 @@ export interface OffscreenCanvasSize {
 /** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
 export declare const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export declare const MAX_WORKER_CANVAS_PIXELS = 33554432;
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export declare function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void;
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export declare function workerCanvasBackingSize(size: OffscreenCanvasSize): {
     readonly width: number;
@@ -660229,8 +663379,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=e7618acaae7271fbfe7a0042961fdf91a0603e45e95f43d53788202988e587b0`
 
 ### Export conditions
 
@@ -660687,8 +663837,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/input@5.2.1#sha256=634a853c6177771ff09c873981a223d219c540118ec05ebd78890cf4e4435b7d`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/input@5.3.0#sha256=2f1c231891ddcd56cbb1a630d073dd3b396503c4b4fd739cb580cd29e04ee86e`
 
 ### Export conditions
 
@@ -661929,8 +665079,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/math@5.2.1#sha256=b6459f3679912251ddfe272dd5bc5afd9a6b01ed6577ef5c4043aada9eb77998`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/math@5.3.0#sha256=952d2617d0952ae620962e80f4d62ded68762906f8bdcb05c2e7fefe925a4f7f`
 
 ### Export conditions
 
@@ -663916,8 +667066,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/math@5.2.1#sha256=b6459f3679912251ddfe272dd5bc5afd9a6b01ed6577ef5c4043aada9eb77998`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/math@5.3.0#sha256=952d2617d0952ae620962e80f4d62ded68762906f8bdcb05c2e7fefe925a4f7f`
 
 ### Export conditions
 
@@ -665164,8 +668314,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/navigation-recast@5.2.1#sha256=27932e32fbddfb12b9e6d822ed8e8072d6ea4453f865950183138a28e15707d9`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.3.0#sha256=fcde7d994a732d4dd7cd2fb4fb0c6fc3f275d6468cfe6184fe54169290f05f7f`
 
 ### Export conditions
 
@@ -665295,8 +668445,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/physics@5.2.1#sha256=a4d58a4a7362585f9404d635c6f8e265ff7318a8fefb0c2a581bbe27813ad206`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/physics@5.3.0#sha256=4a51fc1bfbe528ab6d9879fc80cf6e836eaa2eb18bf9dcd26f7b1ec14586b052`
 
 ### Export conditions
 
@@ -667519,8 +670669,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/physics-rapier@5.2.1#sha256=349a7b6a4be78edd7bc7b48f057eef985855932edf14833681eb2d0e3417f1a4`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.3.0#sha256=a51e558caa21c4b66cd24b0a6aecffa304f3cb3a8694acc56434db66994b40f4`
 
 ### Export conditions
 
@@ -667978,8 +671128,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/physics@5.2.1#sha256=a4d58a4a7362585f9404d635c6f8e265ff7318a8fefb0c2a581bbe27813ad206`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/physics@5.3.0#sha256=4a51fc1bfbe528ab6d9879fc80cf6e836eaa2eb18bf9dcd26f7b1ec14586b052`
 
 ### Export conditions
 
@@ -669231,8 +672381,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/physics@5.2.1#sha256=a4d58a4a7362585f9404d635c6f8e265ff7318a8fefb0c2a581bbe27813ad206`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/physics@5.3.0#sha256=4a51fc1bfbe528ab6d9879fc80cf6e836eaa2eb18bf9dcd26f7b1ec14586b052`
 
 ### Export conditions
 
@@ -669495,8 +672645,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/product-studio@5.2.1#sha256=9e1867795070f4dc56140d91edcd5537211491bdb8a4c579c8edda213a8b05d6`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/product-studio@5.3.0#sha256=f9956084df068b8fc0255ccb2104a1e7b528dd851513a244b1059c3d0e30087f`
 
 ### Export conditions
 
@@ -669777,8 +672927,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/react@5.2.1#sha256=028fd5483bae5b201d8a791b015daf6441fa1846debeb46d4c3f888cb5d6843a`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/react@5.3.0#sha256=4197de875d35d9b4f8dab9c0705508a3091bcc3cffc414b175ee112c8f833b80`
 
 ### Export conditions
 
@@ -670179,8 +673329,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -670561,6 +673711,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -670662,9 +673813,10 @@ import { type ShaderReflection } from "./ShaderReflection.js";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan.js";
 import type { NativePostEffect } from "./post/NativeEffectShaders.js";
 import type { GeneratedProgramDescriptor } from "./contracts/program.js";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph.js";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph.js";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages.js";
 import type { VelocityCoverage } from "./forward/Velocity.js";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection.js";
@@ -670858,6 +674010,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
     readonly source: RenderTarget;
+    /**
+     * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+     * `source` (resolved color, any-sample coverage, nearest covered depth).
+     */
+    readonly multisample?: RenderTarget;
     readonly coverage: WebGPULinearDepthCoverage;
     readonly projection: WebGPULinearDepthProjection;
     readonly maxGeometryDepthMeters: number;
@@ -670877,10 +674034,47 @@ export interface NativeWebGPUDofRequest {
     readonly options: Partial<DofOptions>;
     readonly frame: NativeWebGPUDofFrame;
 }
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+    readonly options: Partial<DofOptions>;
+    readonly camera: {
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
+    readonly maxGeometryDepthMeters: number;
+    readonly skyDepthMeters: number;
+}
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
     readonly depthSubmitted: boolean;
     readonly effectSubmitted: boolean;
+}
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+    readonly options: {
+        readonly radius?: number;
+        readonly intensity?: number;
+        readonly falloff?: number;
+        readonly directions?: number;
+        readonly steps?: number;
+        readonly multiBounce?: boolean;
+        readonly fallbackStrength?: number;
+    };
+    readonly camera: {
+        readonly projectionMatrix: ArrayLike<number>;
+        readonly projectionMatrixInverse?: ArrayLike<number>;
+        readonly near: number;
+        readonly far: number;
+        readonly orthographic: boolean;
+    };
 }
 export interface LdrPostprocessPresentationOptions {
     readonly passes: readonly LdrPostprocessPassDescriptor[];
@@ -670890,6 +674084,36 @@ export interface LdrPostprocessPresentationOptions {
     readonly autoExposure?: Partial<AutoExposureOptionsV2>;
     /** Native HDR DoF before exposure, bloom and output conversion. */
     readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+    /**
+     * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+     * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+     */
+    readonly nativeLut?: {
+        readonly source: string;
+        readonly cube?: string;
+        readonly data?: LutTexture3D;
+        readonly intensity?: number;
+    };
+    /**
+     * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+     * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+     * tone mapping, as the WebGL2 v2 chain applies it.
+     */
+    readonly nativeHdrGrade?: {
+        readonly whiteBalance: readonly [number, number, number];
+        readonly lift: readonly [number, number, number];
+        readonly gamma: readonly [number, number, number];
+        readonly gain: readonly [number, number, number];
+        readonly shadows: readonly [number, number, number];
+        readonly midtones: readonly [number, number, number];
+        readonly highlights: readonly [number, number, number];
+    };
+    /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+    readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+    /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+    readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+    /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+    readonly nativeDofDisplay?: NativeDofDisplayStages;
     /** Ordered native display effects; texture inputs remain borrowed. */
     readonly nativeEffects?: readonly NativePostEffect[];
     /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -670913,6 +674137,13 @@ export interface LdrPostprocessPresentationOptions {
         readonly near: number;
         readonly far: number;
     };
+    /**
+     * WebGPU only: native S4 god rays on the HDR source, read from the source's
+     * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+     */
+    readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects.js").WebGPUGodRaysRequest;
+    /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+    readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects.js").WebGPUMotionBlurRequest;
 }
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
     readonly label?: string;
@@ -671258,6 +674489,12 @@ export interface RenderDevice {
     drawChecked?(command: DrawCommand): void;
     /** Optional portable-schema draw. Unsupported backends must omit this capability. */
     drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+    /**
+     * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+     * Queue order is preserved; any other device operation submits the recorded draws first.
+     */
+    beginDrawBatch?(): void;
+    endDrawBatch?(): void;
     /** Internal, forward-only point-quad submission; unsupported backends omit it. */
     drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads.js").NativePointQuadSubmission): void;
     /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
@@ -672460,7 +675697,7 @@ export declare function decideSkinningPalettePath(options: {
 ### `./dist/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -672469,6 +675706,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -672843,6 +676081,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -673074,8 +676318,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -673319,6 +676571,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -673435,6 +676696,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -673449,7 +676717,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -673457,6 +676735,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -673476,6 +676772,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -673494,6 +676798,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -673591,6 +676908,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -673669,6 +677019,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -674153,6 +677523,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -674268,6 +677640,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -674334,6 +677708,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -674572,7 +677952,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -676072,6 +679464,11 @@ export declare function assertForwardClippingSupported(item: RenderItem, clippin
 /** Native unlit pipelines are keyed by the original geometry topology. */
 export declare function nativeUnlitPrimitiveForGeometry(geometry: Pick<Geometry, "topology">, device: Pick<RenderDevice, "kind">, lighting: ProgramFeatures["lighting"]): Geometry["topology"] | undefined;
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export declare function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T;
 export declare function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean;
 /** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
 export declare function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T;
@@ -678140,6 +681537,8 @@ export declare function outputFragmentGlsl(options: {
     fullCoverage?: boolean;
     outputColorSpace?: "srgb" | "display-p3";
     alphaMode?: "opaque" | "straight" | "premultiplied";
+    /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+    colorGrade?: boolean;
 }): string;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
@@ -687378,9 +690777,11 @@ export declare function depthInstanceBufferFor(device: RenderDevice, key: object
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
@@ -692537,6 +695938,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -696264,7 +699678,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -696277,6 +699691,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -696286,6 +699722,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -697698,6 +701142,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -698799,6 +702245,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -699772,6 +703220,34 @@ export {};
  */
 export {};
 //# sourceMappingURL=prd15.d.ts.map
+```
+
+### `./dist/program/directMultiscatter.d.ts`
+
+```ts
+/**
+ * Colour of the broad multiple-scattering lobe that generated programs add to direct specular (`brdf` chunk,
+ * `a3dDirectSpecular`). The lobe returns part of the energy a single GGX bounce misses.
+ *
+ * - `"single-fresnel"` (default): coloured by the mean Fresnel once. Right for metals (Favg near 1); for dielectrics it
+ *   over-lights rough surfaces: on a roughness-1 dielectric under a lone directional light it adds about 0.025 linear
+ *   of white (three.js adds no such lobe), which greys saturated rough colours.
+ * - `"kulla-conty"`: coloured by the multiple-bounce Fresnel of Kulla and Conty, Favg^2 Eavg / (1 - Favg (1 - Eavg)),
+ *   which is 1 at Favg = 1 (metals unchanged) and about 0.0035 for a 0.04 dielectric.
+ *
+ * The same switch colours the image-based multiple-scattering term (`a3dMultiscatter`): Fdez-Aguera's
+ * FssEss Favg Ems / (1 - Ems Favg), as three.js computes it, instead of Ems Favg (which lifts rough dielectrics under an
+ * environment the same way).
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"kulla-conty"` for apps on the N3
+ * plain look path (no authored look or output); every other app keeps `"single-fresnel"` and renders as before.
+ */
+export type DirectMultiscatterModel = "single-fresnel" | "kulla-conty";
+export declare function setDirectMultiscatterModel(device: object, model: DirectMultiscatterModel): void;
+export declare function directMultiscatterModel(device?: object | null): DirectMultiscatterModel;
+/** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
+export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
+//# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
 ### `./dist/batching/index.d.ts`
@@ -701846,8 +705322,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -702393,6 +705869,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -703435,8 +706924,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703480,8 +706969,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703525,8 +707014,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703595,8 +707084,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703648,8 +707137,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703734,8 +707223,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703804,8 +707293,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703834,8 +707323,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -703978,8 +707467,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -704036,8 +707525,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -704084,8 +707573,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -704631,6 +708120,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -705673,8 +709175,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -705733,8 +709235,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -705773,6 +709275,19 @@ export interface OutputPassOptions {
     readonly vignette?: OutputVignetteUniforms;
     /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
     readonly fullCoverage?: boolean;
+    /**
+     * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+     * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+     */
+    readonly colorGrade?: OutputColorGradeUniforms;
+}
+export interface OutputColorGradeUniforms {
+    readonly contrast: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly saturation: number;
+    readonly vibrance: number;
+    readonly vignette: number;
 }
 export interface OutputVignetteUniforms {
     readonly intensity: number;
@@ -705805,8 +709320,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -705862,8 +709377,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -705970,8 +709485,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706176,8 +709691,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706305,8 +709820,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706365,8 +709880,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706483,8 +709998,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706579,8 +710094,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706640,8 +710155,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706716,8 +710231,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706754,8 +710269,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706787,8 +710302,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706820,8 +710335,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706892,8 +710407,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -706933,8 +710448,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -709925,7 +713440,7 @@ export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postpr
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
 /**
@@ -709938,6 +713453,28 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
     readonly missing: readonly string[];
 } | undefined;
 /**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export declare function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean;
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export declare function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[];
+/**
+ * True when every depth reader in this post bag is one the WebGPU native chain
+ * serves from the forward target's own depth attachment: legacy volumetric
+ * light, v2 god rays and v2 motion blur (`webgpu/WebGPUDepthEffects.ts`). Those
+ * frames need no public sampleable depth texture, so the renderer neither
+ * requires the `depth-textures` capability nor requests a sampleable depth
+ * target (which would also forbid MSAA) for them.
+ */
+export declare function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
+/**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
  * so the frame route and the execution agree. A non-null reason means the
@@ -709947,6 +713484,14 @@ export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptio
 export declare function postV2SeamDeclineReason(deviceKind: string, postprocess: RendererPostProcessOptions, passes: readonly RendererPostProcessPassPlan[], sourceIsHdr: boolean): string | null;
 export declare function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean;
 export declare function defaultPostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export declare function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export declare function resolvePostprocessTargetFormat(device: RenderDevice, postprocess: RendererPostProcessOptions): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
 export declare function createPostprocessDiagnostics(postprocess: RendererPostProcessOptions | undefined, ownedTargets: readonly RenderTarget[], width: number, height: number, context?: {
     readonly targetFormat?: RendererPostprocessTargetFormat;
     readonly nativeLdrPostprocess?: boolean;
@@ -711652,6 +715197,8 @@ export declare class ParticleBatchPass {
     private lowResComposite;
     private queueItem;
     private drawBatch;
+    /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+    private wgslUnavailable;
     private program;
     private deviceHonoursBlendMode;
     private note;
@@ -712855,6 +716402,8 @@ export declare class RibbonPass {
     private indexBuffer;
     private vertexCapacity;
     private indexCapacity;
+    /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
+    private wgslUnavailable;
     constructor(device: RenderDevice);
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
@@ -713832,8 +717381,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -714471,8 +718020,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -715078,6 +718627,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
         readonly cameraCut?: boolean;
         /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
         readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+        /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+        readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
         readonly sceneDepth: {
             readonly texture: Texture | null;
             readonly available: boolean;
@@ -715193,6 +718744,8 @@ export declare class Renderer {
      * paid a full target build-and-teardown every frame.
      */
     private forwardColorTarget;
+    /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+    private nativeDofResolveTarget;
     private selectiveBloomTarget;
     private readonly canvas?;
     private width;
@@ -715259,6 +718812,12 @@ export declare class Renderer {
     private readonly frameStatsMonitor?;
     /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
     private probeGraph?;
+    /**
+     * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+     * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+     * (and, on WebGPU, re-creating pipelines for) the same programs.
+     */
+    private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
     private readonly projectedSpotImages?;
@@ -715497,7 +719056,19 @@ export declare class Renderer {
     private recordRasterDepthStorage;
     /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
     private frameDepthPrecision;
+    /**
+     * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+     * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+     * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+     * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+     * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+     */
+    private nativeDofRoute;
     private planNativeDepthOfField;
+    /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+    private nativeDofStrictFrame;
+    /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+    private nativeDofSourceFor;
     private beginNativeDofFrame;
     private releasePostEffectView;
     private releasePostEffectScope;
@@ -717963,8 +721534,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -718696,8 +722267,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -718831,8 +722402,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -719074,8 +722645,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -719630,8 +723201,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -719689,7 +723260,7 @@ export type { GaussianSplatPrepareOptions } from "./GaussianSplatRenderer.js";
 ### `./dist/WebGPUDevice.d.ts`
 
 ```ts
-import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
+import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
 import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
@@ -719698,6 +723269,7 @@ import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
 import { type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention.js";
+import { type ShaderDataLayout } from "./webgpu/ShaderDataLayout.js";
 import { type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup.js";
 import { type NativePostEffect } from "./post/NativeEffectShaders.js";
 import { type NativePointQuadSubmission } from "./webgpu/NativePointQuads.js";
@@ -720072,6 +723644,12 @@ export interface WebGPUDeviceOptions {
     readonly allowDepthFallback?: boolean;
     /** Per-device admission limits for sampled textures. */
     readonly textureBudgetPolicy?: TextureBudgetPolicy;
+    /**
+     * Record consecutive forward draws inside a `beginDrawBatch()` window into one command encoder (sharing a render pass
+     * while the attachments match) and submit them together. Default: on for a real browser `GPUDevice`, off for injected
+     * structural devices, whose tests observe one submission per draw.
+     */
+    readonly nativeDrawBatching?: boolean;
 }
 /** Device-local streaming contract; kept structural to avoid an assets dependency. */
 export interface WebGPUResidencyMip {
@@ -720303,8 +723881,16 @@ export declare class WebGPUDevice implements RenderDevice {
     private nativeBloomPasses;
     private nativeColorGradePasses;
     private nativeFxaaPasses;
+    private nativeSsaoPasses;
+    private nativeAmbientOcclusionPasses;
+    private nativeSsrPasses;
+    /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+    private readonly webgpuLuts;
+    private readonly webgpuLutFailed;
     private nativeTaaPasses;
     private nativeTemporalBindings;
+    /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+    private nativeDepthStagePasses;
     private readonly webgpuPostPipelines;
     private webgpuPostLinearSampler;
     private webgpuDeferredProbeSampler;
@@ -720548,6 +724134,15 @@ export declare class WebGPUDevice implements RenderDevice {
     beginNativeDepthOfFieldFrame(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
     sealNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
     cancelNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame): void;
+    /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+    private nativeDofMultisampleProducerMatches;
+    /**
+     * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+     * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+     * and the nearest covered sample depth (the clear value where none was). The
+     * proof then tracks the single-sample source; the producer is no longer read.
+     */
+    private resolveNativeDofMultisampleProducer;
     validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
     /** Per-issuance submission evidence; authored frame IDs and diagnostic tokens may be reused. */
     getNativeDepthOfFieldFrameSubmission(frame: NativeWebGPUDofFrame): Readonly<{
@@ -720664,6 +724259,13 @@ export declare class WebGPUDevice implements RenderDevice {
      * is disposed before return. Throws fail-closed when the native device
      * cannot run fullscreen passes.
      */
+    /**
+     * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+     * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+     * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+     * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+     */
+    private executeNativeWebGPUBloomV2;
     executeWebGPUBloom(source: RenderTarget, options?: WebGPUBloomOptions): RenderTarget;
     private executeNativeWebGPUBloom;
     /** Last native bloom run on this device (null before the first run). */
@@ -720678,7 +724280,17 @@ export declare class WebGPUDevice implements RenderDevice {
      * Exposure (stops) -> saturation around luma -> contrast around middle
      * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
      */
+    /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+    private executeWebGPUHdrGrade;
     executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    /**
+     * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
+     * a half-res trace against the source's sampleable depth attachment, then a
+     * full-res additive composite into a fresh caller-owned target of the
+     * source's format. `options.webgpuFrame` is the renderer-attached
+     * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
+     */
+    executeWebGPUSsr(source: RenderTarget, options?: Readonly<Record<string, unknown>>, depthSource?: RenderTarget): RenderTarget;
     /**
      * muse3jsparity-PRD J2 — native WebGPU FXAA.
      * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
@@ -720686,6 +724298,24 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    /**
+     * Depth-only view of a single-sample hardware depth attachment, for the
+     * native ambient-occlusion passes, plus the attachment's encoding.
+     */
+    private nativeAmbientOcclusionDepth;
+    /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+    executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options?: Readonly<Record<string, unknown>>): RenderTarget;
+    /**
+     * One display stage of the native depth-of-field chain (chromatic aberration
+     * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+     */
+    private executeNativeDofDisplayStage;
+    /**
+     * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+     * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+     * apply. Returns a caller-owned target in the source's format.
+     */
+    executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest, frameIndex?: number, diagnosticToken?: PostDiagnosticToken): RenderTarget;
     private preflightNativeDofPresentation;
     /** Validate the allocation-time pair used to resolve multisampled color for sampling. */
     private requireP3ResolvedColor;
@@ -720705,6 +724335,14 @@ export declare class WebGPUDevice implements RenderDevice {
     presentLdrPostprocess(source: RenderTarget, options: WebGPUNativePostPresentationOptions): void;
     /** Native target-to-target chain; Display-P3 inputs are final scene color. */
     private presentLdrPostprocessTransaction;
+    /**
+     * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+     * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+     * a caller-owned target in the color's float format.
+     */
+    private executeWebGPUSceneDepthOfField;
+    /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+    private executeWebGPUDisplayLut;
     private executeWebGPUExposurePass;
     private assertNativeDofTarget;
     private submitNativeDofPass;
@@ -720723,6 +724361,19 @@ export declare class WebGPUDevice implements RenderDevice {
     private withNativePostOwnerOperation;
     releaseNativePostEffectView(scopeId: object, viewId: string | number): void;
     releaseNativePostEffectScope(scopeId: object): void;
+    /**
+     * The source's own depth attachment for the native depth stages. A 4x
+     * attachment is read at sample 0; no public sampleable depth texture is
+     * required, because the attachment is always created with texture binding.
+     */
+    private webgpuDepthStageDepth;
+    private webgpuDepthStageColor;
+    /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+    private executeWebGPUGodRays;
+    /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+    private executeWebGPUMotionBlur;
+    /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+    private executeWebGPUVolumetricLight;
     /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
     executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget;
     /**
@@ -720820,6 +724471,39 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeRenderPass;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
+    /**
+     * Open a draw batch window: until the matching `endDrawBatch()`, eligible forward draws are recorded into one command
+     * encoder (one render pass while their attachments match) instead of one encoder, pass and queue submission each.
+     * Any other device operation, a retirement, or a texture upload the recorded draws read submits the batch first, so
+     * queue order is unchanged. Windows nest; a no-op when batching is disabled.
+     */
+    beginDrawBatch(): void;
+    /** Close a draw batch window; the outermost close submits any recorded draws. */
+    endDrawBatch(): void;
+    /** Draws recorded in the open batch and not yet submitted (diagnostics and tests). */
+    get pendingBatchedDraws(): number;
+    /** End the open batch pass, finish the batch encoder and submit it. */
+    flushDrawBatch(): void;
+    /** The open batch pass for these attachments, starting a new pass (same encoder) when they differ or a clear is due. */
+    private drawBatchPass;
+    /** End the open batch pass after a failed draw so the next draw starts a clean pass. */
+    private closeDrawBatchPass;
+    /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
+    private acquireTransientUniform;
+    /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
+    private releaseTransientUniform;
+    /** One immutable sampler per descriptor for this device. */
+    private nativeSampler;
+    /** The pipeline's (stable) bind group layout for `group`. */
+    private pipelineGroupLayout;
+    private bindGroupObjectId;
+    /**
+     * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
+     * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
+     */
+    private cachedBindGroup;
+    /** Largest index in `[firstIndex, firstIndex + indexCount)`, cached per buffer contents revision. */
+    private maxIndexInRange;
     private createNativeSampledTextureBinding;
     /** Validate each decoded mip before allocating or writing its native texture. */
     private assertNativeCompressedFallbackLevel;
@@ -720898,6 +724582,26 @@ export declare class WebGPUDevice implements RenderDevice {
     private clearActiveRenderTarget;
     private indicesFor;
 }
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+    readonly name: string;
+    readonly offset: number;
+    /** Floats per element (1, 2, 3, 4 or 16). */
+    readonly count: number;
+    readonly rows: number;
+    readonly columnStride: number;
+    readonly elements: number;
+    readonly elementStride: number;
+    readonly array: boolean;
+}
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export declare function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null;
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export declare function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null;
 //# sourceMappingURL=WebGPUDevice.d.ts.map
 ```
 
@@ -721142,6 +724846,50 @@ export interface WebGPUFxaaOptions {
 export declare function webgpuSoftKneeWeight(luma: number, threshold: number, knee: number): number;
 export declare function webgpuColorGradeFragment(): string;
 export declare function webgpuFxaaFragment(): string;
+/**
+ * The v2 (`postprocess.v2`) bloom request as the WebGL2 v2 chain reads it
+ * (`normalizeNativeBloomOptions` with the `v2` stamp, webgl2/LegacyPost.ts):
+ * an HDR excess prefilter over `threshold` with an absolute soft knee
+ * (`threshold × knee`, capped at 0.5; else the authored `softKnee`), the
+ * cinematic 5-mip pyramid when `quality` is unauthored, `spread`-weighted
+ * mips and a composite of `scene + bloom × intensity` with no hidden gain.
+ */
+export interface WebGPUBloomV2Request {
+    readonly threshold: number;
+    readonly intensity: number;
+    readonly softKnee: number;
+    readonly quality: WebGPUBloomQuality;
+    /** Single-scale (performance) blur radius in pixels, as WebGL2 derives it from `scatter` / `radius`. */
+    readonly radius: number;
+    readonly spread: number;
+}
+/** True when a bloom pass carries the v2 stamp (`RendererPostprocessPlan` adds it on `postprocess.v2` frames). */
+export declare function isWebGPUBloomV2(options: unknown): boolean;
+export declare function normalizeWebGPUBloomV2Options(options: Readonly<Record<string, unknown>>): WebGPUBloomV2Request;
+/** v2 excess prefilter (BLOOM_BRIGHT_EXTRACT_GLSL, `u_hdr = 1`, `u_excess = 1`). Uniforms: threshold, softKnee. */
+export declare const WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\n@fragment\nfn fs_bloom_prefilter(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let size = vec2<f32>(textureDimensions(u_source));\n  let source = textureSampleLevel(u_source, u_sampler, position.xy / size, 0.0);\n  let luma = dot(source.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));\n  let knee = max(params.y, 0.0);\n  var soft = clamp(luma - params.x + knee, 0.0, 2.0 * knee);\n  soft = soft * soft / (4.0 * knee + 1e-5);\n  let excessWeight = max(soft, luma - params.x) / max(luma, 1e-5);\n  return vec4<f32>(source.rgb * excessWeight, source.a);\n}\n";
+/** Four-tap box downsample (webgl2-bloom-downsample). Uniforms: source texel size (xy). */
+export declare const WEBGPU_BLOOM_V2_DOWNSAMPLE_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\nfn a3dFinite(c: vec4<f32>) -> vec4<f32> {\n  let bad = (c != c) | (abs(c) > vec4<f32>(3.0e38));\n  return select(c, vec4<f32>(0.0), any(bad));\n}\n@fragment\nfn fs_bloom_downsample(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let uv = position.xy / params.zw;\n  let e = params.xy * 0.5;\n  let sum = a3dFinite(textureSampleLevel(u_source, u_sampler, uv - e, 0.0)) + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + vec2<f32>(e.x, -e.y), 0.0))\n    + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + vec2<f32>(-e.x, e.y), 0.0)) + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + e, 0.0));\n  return sum * 0.25;\n}\n";
+/**
+ * Separable Gaussian with an integer radius (webgl2-bloom-blur): sigma = max(r / 3, 0.5), edge-clamped taps,
+ * normalised weights. Uniforms: direction (xy), radius (z). Taps sample texel centres, so the linear sampler
+ * returns the texel exactly, as the WebGL2 texelFetch does.
+ */
+export declare const WEBGPU_BLOOM_V2_BLUR_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\n@fragment\nfn fs_bloom_blur(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let size = vec2<f32>(textureDimensions(u_source));\n  let pixel = floor(position.xy);\n  let radius = i32(params.z + 0.5);\n  let sigma = max(params.z / 3.0, 0.5);\n  let coefficient = 0.39894 / sigma;\n  var sum = textureSampleLevel(u_source, u_sampler, (pixel + 0.5) / size, 0.0) * coefficient;\n  var weightSum = coefficient;\n  for (var offset = 1; offset <= 24; offset = offset + 1) {\n    if (offset > radius) { break; }\n    let distance = f32(offset);\n    let weight = coefficient * exp(-0.5 * distance * distance / (sigma * sigma));\n    let delta = params.xy * distance;\n    let a = clamp(pixel + delta, vec2<f32>(0.0), size - 1.0);\n    let b = clamp(pixel - delta, vec2<f32>(0.0), size - 1.0);\n    sum = sum + (textureSampleLevel(u_source, u_sampler, (a + 0.5) / size, 0.0) + textureSampleLevel(u_source, u_sampler, (b + 0.5) / size, 0.0)) * weight;\n    weightSum = weightSum + 2.0 * weight;\n  }\n  return sum / max(weightSum, 0.000001);\n}\n";
+/**
+ * Weighted mip sum at level-0 size (webgl2-bloom-accumulate, smallest to largest, each mip bilinearly sampled at
+ * the level-0 pixel centre). Uniforms: weights 0-3 (vec4) and weight 4 (x of the second vec4); unused mips bind
+ * mip 0 with weight 0.
+ */
+export declare const WEBGPU_BLOOM_V2_ACCUMULATE_FRAGMENT = "struct BloomAccumulate { w: vec4<f32>, w4: vec4<f32> };\n@group(0) @binding(0) var<uniform> params: BloomAccumulate;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_mip0: texture_2d<f32>;\n@group(0) @binding(3) var u_mip1: texture_2d<f32>;\n@group(0) @binding(4) var u_mip2: texture_2d<f32>;\n@group(0) @binding(5) var u_mip3: texture_2d<f32>;\n@group(0) @binding(6) var u_mip4: texture_2d<f32>;\n@fragment\nfn fs_bloom_accumulate(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let uv = position.xy / vec2<f32>(textureDimensions(u_mip0));\n  var bloom = textureSampleLevel(u_mip4, u_sampler, uv, 0.0).rgb * params.w4.x;\n  bloom = bloom + textureSampleLevel(u_mip3, u_sampler, uv, 0.0).rgb * params.w.w;\n  bloom = bloom + textureSampleLevel(u_mip2, u_sampler, uv, 0.0).rgb * params.w.z;\n  bloom = bloom + textureSampleLevel(u_mip1, u_sampler, uv, 0.0).rgb * params.w.y;\n  bloom = bloom + textureSampleLevel(u_mip0, u_sampler, uv, 0.0).rgb * params.w.x;\n  return vec4<f32>(bloom, 0.0);\n}\n";
+/** HDR composite `scene + bloom × intensity` (webgl2-bloom-composite, `u_hdr = 1`); the bloom is upsampled bilinearly. */
+export declare const WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_scene: texture_2d<f32>;\n@group(0) @binding(3) var u_bloom: texture_2d<f32>;\n@fragment\nfn fs_bloom_composite(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let uv = position.xy / vec2<f32>(textureDimensions(u_scene));\n  let scene = textureSampleLevel(u_scene, u_sampler, uv, 0.0);\n  let bloom = textureSampleLevel(u_bloom, u_sampler, uv, 0.0).rgb;\n  return vec4<f32>(scene.rgb + bloom * params.x, scene.a);\n}\n";
+/**
+ * The v2 S10 linear grade (`HDR_GRADE_GLSL`, post/shaders/hdrGrade.glsl.ts) without the S8 multiply: white balance,
+ * ASC-CDL lift/gamma/gain, then the shadows/midtones/highlights weights over log2 luma. Uniforms: seven vec4 rows
+ * (whiteBalance, lift, gamma, gain, shadows, midtones, highlights; w unused).
+ */
+export declare const WEBGPU_HDR_GRADE_FRAGMENT = "struct HdrGrade { whiteBalance: vec4<f32>, lift: vec4<f32>, gamma: vec4<f32>, gain: vec4<f32>,\n  shadows: vec4<f32>, midtones: vec4<f32>, highlights: vec4<f32> };\n@group(0) @binding(0) var<uniform> grade: HdrGrade;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_hdr: texture_2d<f32>;\n@fragment\nfn fs_hdr_grade(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let src = textureSampleLevel(u_hdr, u_sampler, position.xy / vec2<f32>(textureDimensions(u_hdr)), 0.0);\n  var c = src.rgb * grade.whiteBalance.rgb;\n  let safeGamma = max(grade.gamma.rgb, vec3<f32>(1e-3));\n  c = pow(max(c * grade.gain.rgb + grade.lift.rgb, vec3<f32>(0.0)), vec3<f32>(1.0) / safeGamma);\n  let s = clamp(log2(max(dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)), 1e-6) / 0.18) / 8.0 + 0.5, 0.0, 1.0);\n  c = c * (grade.shadows.rgb * (1.0 - s) * (1.0 - s) + grade.midtones.rgb * 2.0 * s * (1.0 - s) + grade.highlights.rgb * s * s);\n  return vec4<f32>(c, src.a);\n}\n";
 //# sourceMappingURL=WebGPUPostShaders.d.ts.map
 ```
 
@@ -721456,6 +725204,8 @@ export declare class WebGPUResourceInterop {
     private serial;
     private submissionsInFlight;
     private readonly deferredRetirements;
+    /** Called before every submission, e.g. so an owner can first submit work it has recorded but not yet queued. */
+    beforeSubmit: (() => void) | undefined;
     constructor(queue: WebGPUInteropQueue, generation: number);
     get submissionSerial(): number;
     get disposed(): boolean;
@@ -721528,7 +725278,14 @@ export declare class WebGPUResourceInterop {
      */
     invalidate(): void;
     private destroyRecord;
+    /**
+     * Settle observers whose state may have changed. A per-resource event (`resource` given) can only settle that
+     * resource's own observers, so it skips the scan over every other pending lease; that scan made retiring N leases
+     * cost O(N^2) when many per-draw resources were in flight.
+     */
     private notifySettlementObservers;
+    private settleResourceObservers;
+    private settleGlobalObservers;
     private rejectCompletion;
     private assertActive;
 }
@@ -722320,8 +726077,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=792198a0677f8580fab3cee83a87bfb0b10c39dd5fd3e743008552dcd8ea79da`
 
 ### Export conditions
 
@@ -722957,9 +726714,24 @@ export declare function grassCardVertices(): Float32Array;
  * Shared by foliage, grass and the depth pass (`prd10.wind` feature, hook
  * `vertex:deform`). Length-preserving offset, quadratic-in-height bend.
  */
-import type { ShaderChunk } from "../../../contracts/program.js";
+import { type ShaderChunk } from "../../../contracts/program.js";
 export declare const a3d_prd10_wind: ShaderChunk;
 export declare const a3d_prd10_wind_deform: ShaderChunk;
+/**
+ * True when a feature is the stock `prd10.wind` deform: its only chunk is the registered built-in
+ * `a3d_prd10_wind_deform` object, so native WGSL twins (generated PBR, PRD-02 depth) reproduce exactly
+ * what the GLSL programs splice. A replaced chunk or feature is never trusted by id alone.
+ */
+export declare function isStockPrd10WindDeform(feature: {
+    readonly id: string;
+    readonly chunks: readonly string[];
+}): boolean;
+/**
+ * WGSL twin of `a3dWindOffset` reading the plain deform uniforms from a struct (`m.windDirStrength`, `m.windGust`)
+ * and the gust noise as `<tex>`/`<sampler>`. Vertex stages have no derivatives, so the noise is read at LOD 0
+ * (what GLSL texture() does in a vertex shader).
+ */
+export declare function prd10WindOffsetWgsl(fn: string, dirStrength: string, gustParams: string, texture: string, sampler: string): string;
 //# sourceMappingURL=wind.d.ts.map
 ```
 
@@ -723419,8 +727191,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/scene@5.2.1#sha256=035a7b6b8fdf2575de1606e5499c0ec862e57ff95c7036b423ddcdca1557a2bd`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/scene@5.3.0#sha256=57cd354689e1ca4fee3c1eae0fdd1df1c7b4fea22a08e9881a75814cfba41b3f`
 
 ### Export conditions
 
@@ -724545,8 +728317,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/scene@5.2.1#sha256=035a7b6b8fdf2575de1606e5499c0ec862e57ff95c7036b423ddcdca1557a2bd`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/scene@5.3.0#sha256=57cd354689e1ca4fee3c1eae0fdd1df1c7b4fea22a08e9881a75814cfba41b3f`
 
 ### Export conditions
 
@@ -724630,8 +728402,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/scripting@5.2.1#sha256=4cfed582d0e382f0ed01c0ef6a7726af405c2a0a56cd2df5aea66b0f7808bf02`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/scripting@5.3.0#sha256=fda318cd67cef203a5fa4ad4f173d683b0df89dcc1add0bc9dc2abff02886096`
 
 ### Export conditions
 
@@ -725811,8 +729583,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.2.1`
-- Packed identity: `archive:@aura3d/workflows@5.2.1#sha256=c354ac45c69331b554cda2da379fe83d5e0adf1638fcec1c0319733439d3085b`
+- Version: `5.3.0`
+- Packed identity: `archive:@aura3d/workflows@5.3.0#sha256=ec6196e0ffa12c3a232cbdfb3a99835a94b5db477bfde359395f00b7b7f07b17`
 
 ### Export conditions
 
