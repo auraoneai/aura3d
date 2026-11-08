@@ -14,6 +14,7 @@
  * swing at under 0.5 Hz (no flash). Low tier: the same program (the gutters cover a few percent of the frame).
  */
 import { material, type AuraMaterialSpec } from "@aura3d/engine";
+import { WGSL_CLIP, WGSL_ENVIRONMENT_FOG, WGSL_INSTANCE_INPUTS, WGSL_MATH, wgslStage } from "../../showcase-port-shared/wgsl-twins";
 
 /** Chevron brightness gain at full heat response: +25% at 90% core heat (HS-15 acceptance). */
 export const CHEVRON_HEAT_GAIN = 0.25;
@@ -74,6 +75,64 @@ void main() {
   outColor = vec4(u_color * u_intensity * gain * scan, 1.0);
 }`;
 
+/*
+ * A3/W6: WGSL twins of the four programs for the WebGPU backend. WebGL2 keeps drawing the GLSL above (same pixels as
+ * before); each twin is the GLSL line for line. `fog: true` wraps only the GLSL stage (at the reconstructed world
+ * position), so the fogged twins carry the world position as a varying and apply the same scene fog themselves.
+ */
+const INSTANCED_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct TdVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) local: vec3<f32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) world: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, ${WGSL_INSTANCE_INPUTS}) -> TdVarying {
+  var out: TdVarying;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let world = aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0);
+  out.local = a3dMat3Mul(aura.u_modelMatrix, a3dMat3Mul(instanceMatrix, a_position));
+  out.normal = normalize(a3dMat3Mul(aura.u_modelMatrix, a3dMat3Mul(instanceMatrix, a_normal)));
+  out.world = world.xyz;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * world);
+  return out;
+}`);
+
+const MOLTEN_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_ENVIRONMENT_FOG], /* wgsl */ `
+fn tdHash(p: vec2<f32>) -> f32 { return fract(sin(dot(p, vec2<f32>(41.3, 289.1))) * 43758.5453); }
+fn tdNoise(p: vec2<f32>) -> f32 {
+  let i = floor(p);
+  let f = fract(p);
+  let u = f * f * (vec2<f32>(3.0) - 2.0 * f);
+  return mix(mix(tdHash(i), tdHash(i + vec2<f32>(1.0, 0.0)), u.x), mix(tdHash(i + vec2<f32>(0.0, 1.0)), tdHash(i + vec2<f32>(1.0, 1.0)), u.x), u.y);
+}
+fn tdFbm(p0: vec2<f32>) -> f32 {
+  var v = 0.0;
+  var a = 0.5;
+  var p = p0;
+  for (var i = 0; i < 4; i = i + 1) { v = v + a * tdNoise(p); p = p * 2.03 + vec2<f32>(1.7, 9.2); a = a * 0.5; }
+  return v;
+}
+@fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) vTdLocal: vec3<f32>, @location(1) vTdNormal: vec3<f32>, @location(2) vTdWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let t = a3dModF(aura.u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * aura.u_flow;
+  let p = vTdLocal.xz * vec2<f32>(0.9, 0.35) + vec2<f32>(0.0, t);
+  var veins = tdFbm(p + vec2<f32>(tdFbm(p * 1.7 - vec2<f32>(t * 0.3)), 0.0));
+  veins = veins + 0.08 * (tdNoise(vTdLocal.xz * 4.0 + vec2<f32>(t * 5.0, -t * 3.0)) - 0.5);
+  let molten = smoothstep(0.42, 0.68, veins);
+  let pulse = 0.88 + 0.12 * sin(t * 3.5 + vTdLocal.z * 0.25);
+  var color = mix(aura.u_crust, aura.u_hot * aura.u_glow * pulse, vec3<f32>(molten));
+  color = color + aura.u_hot * 0.06 * max(0.0, vTdNormal.y);
+  return vec4<f32>(a3dApplyEnvironmentFog(color, vTdWorld, fragCoord.xy), 1.0);
+}`);
+
+const CHEVRON_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_ENVIRONMENT_FOG], /* wgsl */ `
+@fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) vTdLocal: vec3<f32>, @location(1) vTdNormal: vec3<f32>, @location(2) vTdWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let response = smoothstep(${CHEVRON_HEAT_RANGE[0].toFixed(2)}, ${CHEVRON_HEAT_RANGE[1].toFixed(2)}, aura.u_heat);
+  let gain = 1.0 + ${CHEVRON_HEAT_GAIN.toFixed(2)} * response;
+  let scan = 0.92 + 0.08 * sin(vTdLocal.z * 0.6 - a3dModF(aura.u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * 3.0 * aura.u_motion);
+  return vec4<f32>(a3dApplyEnvironmentFog(aura.u_color * aura.u_intensity * gain * scan, vTdWorld, fragCoord.xy), 1.0);
+}`);
+
 /** Linear RGB of a "#rrggbb" colour. */
 export function linearRgb(hex: string): [number, number, number] {
   const n = Number.parseInt(hex.replace("#", ""), 16);
@@ -100,6 +159,7 @@ export function moltenFlow(reducedMotion: boolean, base = MOLTEN_FLOW): number {
 export function moltenMaterial(options: { readonly hot: string; readonly crust: string; readonly glow: number; readonly reducedMotion?: boolean }): AuraMaterialSpec {
   return material.custom({
     glsl: { vertex: INSTANCED_VERTEX_GLSL, fragment: MOLTEN_FRAGMENT_GLSL },
+    wgsl: { vertex: INSTANCED_VERTEX_WGSL, fragment: MOLTEN_FRAGMENT_WGSL },
     uniforms: {
       u_hot: { type: "vec3", value: linearRgb(options.hot) },
       u_crust: { type: "vec3", value: linearRgb(options.crust) },
@@ -117,6 +177,7 @@ export const CHEVRON_HEAT_UNIFORM = "u_heat";
 export function chevronHeatMaterial(color: string, intensity: number, reducedMotion = false): AuraMaterialSpec {
   return material.custom({
     glsl: { vertex: INSTANCED_VERTEX_GLSL, fragment: CHEVRON_FRAGMENT_GLSL },
+    wgsl: { vertex: INSTANCED_VERTEX_WGSL, fragment: CHEVRON_FRAGMENT_WGSL },
     uniforms: {
       u_color: { type: "vec3", value: linearRgb(color) },
       u_intensity: { type: "f32", value: intensity },
@@ -176,6 +237,52 @@ void main() {
   outColor = vec4(color, 1.0);
 }`;
 
+/** A3/W6: WGSL twin of the skyline facade (see the note above `INSTANCED_VERTEX_WGSL`). */
+const SKYLINE_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct SkylineVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) box: vec3<f32>,
+  @location(1) n: vec3<f32>,
+  @location(2) seed: vec2<f32>,
+  @location(3) world: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, ${WGSL_INSTANCE_INPUTS}) -> SkylineVarying {
+  var out: SkylineVarying;
+  let s = vec3<f32>(length(a_instanceMatrix0.xyz), length(a_instanceMatrix1.xyz), length(a_instanceMatrix2.xyz));
+  out.box = a_position * s + vec3<f32>(0.0, 0.5 * s.y, 0.0);
+  out.n = a_normal;
+  out.seed = a_instanceMatrix3.xz;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let world = aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0);
+  out.world = world.xyz;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * world);
+  return out;
+}`);
+
+const SKYLINE_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_ENVIRONMENT_FOG], /* wgsl */ `
+fn tdCellHash(p: vec2<f32>) -> f32 { return fract(sin(dot(p, vec2<f32>(12.9898, 78.233))) * 43758.5453); }
+@fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) vTdBox: vec3<f32>, @location(1) vTdN: vec3<f32>, @location(2) vTdSeed: vec2<f32>, @location(3) vTdWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let n = normalize(vTdN);
+  let v = vTdBox.y;
+  let body = aura.u_body * mix(1.25, 0.7, smoothstep(0.0, 90.0, v));
+  var color = body + aura.u_foot * exp(-v / 14.0);
+  if (abs(n.y) < 0.5) {
+    let u = select(vTdBox.z, vTdBox.x, abs(n.z) > 0.5);
+    let cell = vec2<f32>(u / aura.u_cell.x, (v - 2.0) / aura.u_cell.y);
+    let id = floor(cell);
+    let f = fract(cell);
+    let pane = step(0.2, f.x) * step(f.x, 0.8) * step(0.28, f.y) * step(f.y, 0.78) * step(0.0, cell.y);
+    let pick = tdCellHash(id + vTdSeed * 0.173 + n.xz * 7.1);
+    let lit = step(1.0 - aura.u_lit, pick);
+    let tone = tdCellHash(id.yx * 1.7 + vTdSeed * 0.311);
+    let window = mix(aura.u_window, aura.u_window2, vec3<f32>(tone)) * aura.u_glow * (0.6 + 0.4 * fract(pick * 13.0));
+    color = color + window * pane * lit;
+  } else {
+    color = color * 0.6;
+  }
+  return vec4<f32>(a3dApplyEnvironmentFog(color, vTdWorld, fragCoord.xy), 1.0);
+}`);
+
 export interface SkylineFacadeOptions {
   readonly body: string;
   readonly foot: string;
@@ -192,6 +299,7 @@ export interface SkylineFacadeOptions {
 export function skylineFacadeMaterial(o: SkylineFacadeOptions): AuraMaterialSpec {
   return material.custom({
     glsl: { vertex: SKYLINE_VERTEX_GLSL, fragment: SKYLINE_FRAGMENT_GLSL },
+    wgsl: { vertex: SKYLINE_VERTEX_WGSL, fragment: SKYLINE_FRAGMENT_WGSL },
     uniforms: {
       u_body: { type: "vec3", value: linearRgb(o.body) },
       u_foot: { type: "vec3", value: linearRgb(o.foot) },
@@ -222,10 +330,32 @@ void main() {
   outColor = vec4(0.0, 0.0, 0.0, a);
 }`;
 
+/** A3/W6: WGSL twin of the contact shadow (not fogged, like the GLSL). */
+const CONTACT_SHADOW_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct DiscVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) disc: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, ${WGSL_INSTANCE_INPUTS}) -> DiscVarying {
+  var out: DiscVarying;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  out.disc = a3dMat3Mul(aura.u_modelMatrix, a3dMat3Mul(instanceMatrix, a_position)).xz / aura.u_radius;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * (aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0)));
+  return out;
+}`);
+
+const CONTACT_SHADOW_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vTdDisc: vec2<f32>) -> @location(0) vec4<f32> {
+  let r = length(vTdDisc);
+  let a = aura.u_opacity * (1.0 - smoothstep(0.15, 1.0, r));
+  return vec4<f32>(0.0, 0.0, 0.0, a);
+}`);
+
 /** `radius` is half the box footprint in metres. */
 export function contactShadowMaterial(opacity: number, radius: number): AuraMaterialSpec {
   return material.custom({
     glsl: { vertex: CONTACT_SHADOW_VERTEX_GLSL, fragment: CONTACT_SHADOW_FRAGMENT_GLSL },
+    wgsl: { vertex: CONTACT_SHADOW_VERTEX_WGSL, fragment: CONTACT_SHADOW_FRAGMENT_WGSL },
     uniforms: { u_opacity: { type: "f32", value: opacity }, u_radius: { type: "f32", value: radius } },
     transparent: true,
     depthWrite: false

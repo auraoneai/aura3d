@@ -15,6 +15,7 @@ import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioram
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
+import { shadeMaterial } from "./shade";
 
 // ---------------- pool capacities ----------------
 const CAP = {
@@ -845,31 +846,6 @@ export function mountSpectators(): void {
 function critterMaterial(key: string, diorama: boolean): { material?: typeof CRITTER_MAT; materialOverrides?: ReturnType<typeof critterOverrides> } {
   return diorama ? { materialOverrides: critterOverrides(key) } : { material: CRITTER_MAT };
 }
-// A4 (5.0.3): not a designated shader-graph pilot, so this stays GLSL and is WebGL2-only (the portable shader graph is the
-// cross-backend path; see docs/upgrade-5.0.0/cross-hop.md).
-const SHADE_VERTEX_GLSL = `out vec2 vShade;
-void main() {
-  // Unit plane in instance space: the decal shape follows the instance's own footprint.
-  vShade = position.xz * 2.0;
-  gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
-}`;
-const SHADE_FRAGMENT_GLSL = `in vec2 vShade;
-out vec4 outColor;
-void main() {
-  vec2 q = abs(vShade);
-  float r = pow(pow(q.x, 4.0) + pow(q.y, 4.0), 0.25);
-  outColor = vec4(0.03, 0.04, 0.08, u_opacity * (1.0 - smoothstep(0.45, 1.0, r)));
-}`;
-/** Soft rounded-rectangle shadow decal (transparent, no depth write). */
-function shadeMaterial() {
-  return material.custom({
-    glsl: { vertex: SHADE_VERTEX_GLSL, fragment: SHADE_FRAGMENT_GLSL },
-    uniforms: { u_opacity: { type: "f32", value: 0.42 } },
-    transparent: true,
-    depthWrite: false
-  });
-}
-
 /** Drawn heights and depths (metres) of the movers, for their shadow decals. */
 const SHADE_SIZE: Record<string, readonly [number, number]> = {
   car: [0.72, 0.92], hatch: [0.72, 0.9], taxi: [0.75, 0.92], suv: [0.9, 0.98], van: [0.95, 0.98], pickup: [0.85, 0.98],

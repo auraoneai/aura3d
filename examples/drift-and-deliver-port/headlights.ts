@@ -8,6 +8,7 @@
  * moved from GLSL1 `varying`/`gl_FragColor` to GLSL 300 es.
  */
 import type { material } from "@aura3d/engine";
+import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 
@@ -149,9 +150,41 @@ void main() {
   outColor = vec4(beamColor, (a == a) ? clamp(a, 0.0, 1.0) : 0.0);
 }`;
 
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+export const BEAM_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct BeamVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) w: vec3<f32>,
+  @location(1) n: vec3<f32>,
+  @location(2) t: f32,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, @location(2) a_uv: vec2<f32>) -> BeamVarying {
+  var out: BeamVarying;
+  out.t = a_uv.y;
+  let wp = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
+  out.w = wp.xyz;
+  out.n = normalize(a3dMat3Mul(aura.u_modelMatrix, a_normal));
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * wp);
+  return out;
+}`);
+
+export const BEAM_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
+@fragment fn fs_main(@location(0) vW: vec3<f32>, @location(1) vN: vec3<f32>, @location(2) vT: f32) -> @location(0) vec4<f32> {
+  let v = aura.u_cameraPosition - vW;
+  let d = length(v);
+  let facing = clamp(abs(dot(vN, v / max(d, 0.001))), 0.0, 1.0);
+  var a = aura.u_beamAmount;
+  a = a * (0.72 + 0.28 * a3dPow(max(1.0 - facing, 0.0), 1.6));
+  a = a * (a3dPow(clamp(1.0 - vT, 0.0, 1.0), 1.25) * smoothstep(0.0, 0.07, vT));
+  a = a * smoothstep(aura.u_beamRoadY - 0.15, aura.u_beamRoadY + 1.5, vW.y);
+  a = a * smoothstep(aura.u_beamNear, aura.u_beamNear * 2.3, d);
+  return vec4<f32>(aura.u_beamColor, clamp(a3dFinite1(a), 0.0, 1.0));
+}`);
+
 /** Uniform names avoid the engine's lowered built-ins (`color`, `near`... are fine, `time` would become `u_time`). */
 export const beamSpec = (amount = 0): CustomSpec => ({
   glsl: { vertex: BEAM_VERTEX, fragment: BEAM_FRAGMENT },
+  wgsl: { vertex: BEAM_VERTEX_WGSL, fragment: BEAM_FRAGMENT_WGSL },
   uniforms: {
     beamColor: { type: "color3", value: [1, 0.82, 0.63] },
     beamAmount: { type: "f32", value: amount },

@@ -21,6 +21,7 @@ import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
+import { WGSL_CLIP, WGSL_INSTANCE_INPUTS, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
 
 export { VENUE_LOOKS } from "./look";
 
@@ -206,15 +207,45 @@ void main() {
   outColor = vec4(vPoolTint * glow, glow);
 }`;
 
-function lightPoolMaterial(strength: number) {
-  return material.custom({
+/** A3/W6: WGSL twin of the light pool for the WebGPU backend; WebGL2 keeps drawing the GLSL above (same pixels). */
+export const LIGHT_POOL_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct PoolVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) poolUv: vec2<f32>,
+  @location(1) poolTint: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>, ${WGSL_INSTANCE_INPUTS},
+  @location(12) a_instanceColor: vec4<f32>) -> PoolVarying {
+  var out: PoolVarying;
+  out.poolUv = a_uv;
+  out.poolTint = a_instanceColor.rgb;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * (aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0)));
+  return out;
+}`);
+export const LIGHT_POOL_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vPoolUv: vec2<f32>, @location(1) vPoolTint: vec3<f32>) -> @location(0) vec4<f32> {
+  let d = vPoolUv * 2.0 - vec2<f32>(1.0);
+  let r2 = dot(d, d);
+  let glow = aura.u_poolStrength * exp(-3.0 * r2) * (1.0 - smoothstep(0.55, 1.0, r2));
+  return vec4<f32>(vPoolTint * glow, glow);
+}`);
+
+/** The pool's `material.custom` spec (GLSL for WebGL2, WGSL twin for WebGPU). */
+export function lightPoolSpec(strength: number): Parameters<typeof material.custom>[0] {
+  return {
     glsl: { vertex: LIGHT_POOL_VERTEX_GLSL, fragment: LIGHT_POOL_FRAGMENT_GLSL },
+    wgsl: { vertex: LIGHT_POOL_VERTEX_WGSL, fragment: LIGHT_POOL_FRAGMENT_WGSL },
     uniforms: { poolStrength: { type: "f32", value: strength } },
     transparent: true,
     depthWrite: false,
     blending: "additive",
     side: "double"
-  });
+  };
+}
+
+function lightPoolMaterial(strength: number) {
+  return material.custom(lightPoolSpec(strength));
 }
 
 /** Pool transform for tower i: centred 45% of the way from the tower base to the centre spot, stretched along the aim. */
