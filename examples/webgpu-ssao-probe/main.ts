@@ -2,7 +2,8 @@
  * Isolated proof page for native WebGPU ambient occlusion: a cluster of unlit
  * blocks on a floor (creases, stacked corners, a wall), rendered through the
  * public Renderer on either backend with the same post bag. Query flags:
- *   ?backend=webgpu|webgl2  ?ao=0  ?mode=gtao|legacy  ?msaa=0
+ *   ?backend=webgpu|webgl2  ?ao=0  ?mode=gtao|legacy  ?msaa=0  ?dof=1  ?tilt=1  ?godrays=1
+ * `dof=1` adds v2 depth of field (lit PBR content takes the WebGPU scene DoF route); `tilt=1` makes it a tilt-shift band.
  * `gtao` is the v2 S2 stage (pipeline.ao, the route games take); `legacy` is
  * the fused-chain ssao pass. The page publishes the native AO pass counters
  * on `document.body.dataset` for capture scripts.
@@ -19,6 +20,9 @@ const backend = params.get("backend") === "webgl2" ? "webgl2" : "webgpu";
 const aoOn = params.get("ao") !== "0";
 const legacy = params.get("mode") === "legacy";
 const msaa = params.get("msaa") !== "0";
+const dofOn = params.get("dof") === "1";
+const tilt = params.get("tilt") === "1";
+const godRays = params.get("godrays") === "1";
 
 const canvas = document.getElementById("view") as HTMLCanvasElement;
 const width = Math.max(1, Math.round(canvas.clientWidth));
@@ -72,6 +76,9 @@ for (const [index, [x, y, z, size, color]] of blocks.entries()) add(`block-${ind
 const ao = { radius: 0.6, intensity: 1, falloff: 1, directions: 4 as const, steps: 6 as const, halfRes: true, temporal: false, multiBounce: true, fallbackStrength: 0.1 };
 const pipeline = {
   ...(aoOn && !legacy ? { ao } : {}),
+  ...(dofOn ? { dof: { focusDistance: 2.4, fStop: 1.4, focalLengthMm: 50, maxBlurPx: 12, sensorHeightMm: 24, halfRes: true,
+    ...(tilt ? { tiltShift: { bandCenter: 0.55, bandWidth: 0.15 } } : {}) } } : {}),
+  ...(godRays ? { godRays: { samples: 48, decay: 0.95, weight: 0.6, color: [1, 0.85, 0.6], intensity: 0.8, lightDirection: [0.2, 0.35, -1] } } : {}),
   antiAliasing: msaa ? ("msaa" as const) : ("off" as const),
   toneMapping: "aces" as const,
   exposure: 1,

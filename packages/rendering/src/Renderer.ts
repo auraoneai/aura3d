@@ -4047,7 +4047,7 @@ export class Renderer {
       const contactReads = shadowWrites.includes("prd02.contactShadowMask") ? ["prd02.contactShadowMask"] : [];
       // C-02/T0-06 sync-path warm, keyed on the shadow map this frame actually draws with (warming before it existed compiled no-shadow
       // variants nothing draws: 2 dead programs on a one-material scene, 4 with a skinned model).
-      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, false, prd07WarmupContext, nativeWebGPUDofRequested(this.device, postprocess));
+      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, false, prd07WarmupContext, Boolean(nativeDofPlan));
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
@@ -4952,7 +4952,7 @@ export class Renderer {
         // A collect contributor introduced clipping after async warmup. Start
         // the matching programs now; a pending draw retries when readiness
         // invalidates the owning static frame.
-        this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, true, prd07WarmupContext, nativeWebGPUDofRequested(this.device, postprocess));
+        this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, true, prd07WarmupContext, Boolean(nativeDofPlan));
       }
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),

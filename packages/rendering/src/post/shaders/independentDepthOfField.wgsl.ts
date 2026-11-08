@@ -220,7 +220,8 @@ fn independentSignedCoc(depth: f32) -> f32 {
 fn independentTiltShiftCoc(p: vec2<i32>, size: vec2<i32>) -> f32 {
   let uv = (vec2<f32>(p) + 1.0) / vec2<f32>(size);
   let aspect = f32(size.x) / f32(max(size.y, 1));
-  let q = vec2<f32>((uv.x - 0.5) * aspect, (1.0 - uv.y) - 0.5);
+  // WebGPU fragment y runs top-down, so uv.y is already the GLSL (1 - uv.y) distance from the top edge.
+  let q = vec2<f32>((uv.x - 0.5) * aspect, uv.y - 0.5);
   let t = dot(q, vec2<f32>(-sin(dof.tiltShift.z), cos(dof.tiltShift.z))) + 0.5;
   let halfBand = 0.5 * clamp(dof.tiltShift.y, 0.0, 1.0);
   let ramp = max(0.05, 0.5 - halfBand);
