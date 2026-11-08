@@ -10,7 +10,7 @@ export const HOWTO_SEEN_KEY = "splatSiblings.splat-turf.howtoSeen";
 const CONFIRM_LABEL: Record<HowtoContext, string> = {
   first: "GOT IT — PLAY",
   splash: "GOT IT",
-  pause: "BACK TO PAUSE"
+  pause: "GOT IT"
 };
 
 export interface HowtoPanel {

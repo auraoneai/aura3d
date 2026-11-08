@@ -369,10 +369,11 @@ function requestStart(): void {
 const howto = createHowto({
   root: $("howto-screen"),
   confirm: $<HTMLButtonElement>("btn-howto-ok"),
-  onClose(context, confirmed) {
+  onClose(context) {
     store.set(HOWTO_SEEN_KEY, "1");
     loop.resetAccumulator();
-    if (context === "first" && confirmed && sim.o.phase === "splash") {
+    // The player already pressed Play: any close (GOT IT, Enter, Space or Esc) starts the run.
+    if (context === "first" && sim.o.phase === "splash") {
       (document.activeElement as HTMLElement | null)?.blur?.();
       pending.start = true;
     }
