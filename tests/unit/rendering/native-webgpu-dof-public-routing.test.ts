@@ -147,7 +147,7 @@ describe("native depth of field through the public renderer", () => {
     } finally { f.close(); }
   });
 
-  it("rejects partial coverage, multisampling and nonopaque clear color", async () => {
+  it("rejects partial coverage and nonopaque clear color", async () => {
     const f = await fixture([0, 0, 0, 0]);
     try {
       expect(() => f.renderer.render(f.source, f.camera)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_FRAME_UNSUPPORTED" }));
@@ -156,8 +156,6 @@ describe("native depth of field through the public renderer", () => {
     try {
       expect(() => g.renderer.render({ source: g.source, camera: g.camera, viewport: { x: 0, y: 0, width: 4, height: 4 } }))
         .toThrowError(expect.objectContaining({ code: "NATIVE_DOF_FRAME_UNSUPPORTED" }));
-      const multisampled = { ...g.source, postprocess: { ...g.source.postprocess, sampleCount: 4 } };
-      expect(() => g.renderer.render(multisampled, g.camera)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_TARGET_UNSUPPORTED" }));
       expect(g.passes.some(pass => pass.draws > 0)).toBe(false);
     } finally { g.close(); }
   });

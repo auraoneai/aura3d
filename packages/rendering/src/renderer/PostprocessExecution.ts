@@ -18,6 +18,7 @@ import { webgl2DeviceHost } from "../webgl2/Counters";
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
+import { nativeDofCustomAnchorPrecedesDof, nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayStages";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { markPostV2Presented, recordPostSkipped } from "./postSkipped";
 import { postDiagnostics, type PostDiagnosticToken } from "./PostDiagnosticsScope";
@@ -194,7 +195,7 @@ export function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: R
   return value !== undefined && value !== false;
 }
 
-type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField">;
+type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeDofDisplay">;
 
 // A strict-v2 root compile also retains a legacy DoF for WebGL fallback. Its
 // focus controls are different from the native lens controls, so equality of
@@ -231,18 +232,24 @@ export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipe
   const conflicts: string[] = [];
   const add = (condition: unknown, name: string): void => { if (condition) conflicts.push(name); };
   add(pipeline.ao, "ao"); add(pipeline.ssr, "ssr"); add(pipeline.godRays, "god-rays"); add(pipeline.taa, "taa"); add(pipeline.motionBlur, "motion-blur");
-  add(pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa", `anti-aliasing-${String(pipeline.antiAliasing)}`);
+  // MSAA: the 4x producer is resolved into the single-sample DoF source when the frame is sealed.
+  add(pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa" && pipeline.antiAliasing !== "msaa",
+    `anti-aliasing-${String(pipeline.antiAliasing)}`);
   add(pipeline.antiAliasing === "fxaa" && !postprocess.fxaa, "fxaa");
   add(pipeline.nativeEffects?.length, "native-effects");
   add(pipeline.customPasses?.length, "custom-passes");
-  add(registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false), "registered-passes");
+  add(registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false && nativeDofCustomAnchorPrecedesDof(pass.insertAt)), "registered-passes");
   add(postprocess.depthOfField && !isRootDofTwin(postprocess.depthOfField, pipeline.dof), "legacy-depth-of-field");
   add(postprocess.volumetricLight, "volumetric-light"); add(postprocess.motionBlur, "legacy-motion-blur");
   add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao, "ssao"); add(postprocess.ssr, "legacy-ssr");
-  add(postprocess.taa, "legacy-taa"); add(postprocess.outline, "outline");
-  add(postprocess.chromaticAberration || pipeline.chromaticAberration, "chromatic-aberration");
-  add(postprocess.filmGrain || pipeline.filmGrain, "film-grain");
-  add(pipeline.lut, "lut"); add(pipeline.vignette, "vignette");
+  // A targeted outline draws after the whole chain (executeOutlineTargets),
+  // outside the depth-of-field route; only the full-frame chain pass conflicts.
+  add(postprocess.taa, "legacy-taa"); add(postprocess.outline && outlineTargetsOf(postprocess.outline) === null, "outline");
+  // The v2 bag's chromatic aberration, vignette and grain run as native DoF
+  // display stages (webgpu/NativeDofDisplayStages.ts); legacy twins do not.
+  add(postprocess.chromaticAberration, "chromatic-aberration");
+  add(postprocess.filmGrain, "film-grain");
+  add(pipeline.lut, "lut");
   add(pipeline.bloom && !postprocess.bloom, "bloom"); add(pipeline.grade && !postprocess.colorGrade, "grade");
   return conflicts;
 }
@@ -322,6 +329,7 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
     }
     nativeDepthOfField = { options: depthOfField as NonNullable<LdrPostprocessPresentationOptions["nativeDepthOfField"]>["options"], frame: dofFrame };
   }
+  const nativeDofDisplay = nativeDepthOfField ? nativeDofDisplayStagesFor(pipeline) : undefined;
   const validView = typeof context?.viewId === "string" || (typeof context?.viewId === "number" && Number.isFinite(context.viewId));
   const frame = context?.scopeId && typeof context.scopeId === "object" && validView && Number.isSafeInteger(context.frameId) && context.frameId! >= 0
     ? { scopeId: context.scopeId, viewId: context.viewId, frameId: context.frameId!, cameraCut: context.cameraCut,
@@ -333,7 +341,7 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
   if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField) return undefined;
   return { ...(effects?.length ? { nativeEffects: effects } : {}), ...(frame ? { postFrameContext: frame as NonNullable<WebgpuNativePostOptions["postFrameContext"]> } : {}),
     ...(autoExposure !== undefined ? { autoExposure: autoExposure as NonNullable<WebgpuNativePostOptions["autoExposure"]> } : {}),
-    ...(nativeDepthOfField ? { nativeDepthOfField } : {}) };
+    ...(nativeDepthOfField ? { nativeDepthOfField } : {}), ...(nativeDofDisplay ? { nativeDofDisplay } : {}) };
 }
 
 function webgpuNativeOnlyPasses(source: RenderTarget, postprocess: RendererPostProcessOptions): readonly LdrPostprocessPassDescriptor[] {

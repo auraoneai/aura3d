@@ -933,6 +933,8 @@ export class Renderer {
    * paid a full target build-and-teardown every frame.
    */
   private forwardColorTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
+  /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+  private nativeDofResolveTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
   private selectiveBloomTarget: (SelectiveBloomTarget & { readonly key: string }) | null = null;
   private readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
   private width: number;
@@ -2208,13 +2210,29 @@ export class Renderer {
     return plan;
   }
 
+  /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+  private nativeDofSourceFor(forward: RenderTarget): RenderTarget {
+    if ((forward.sampleCount ?? 1) === 1) return forward;
+    const format = forward.colorTexture.format as Extract<TextureFormat, "rgba16f">;
+    const depthPrecision = this.frameDepthPrecision();
+    const key = `${this.width}x${this.height}:${format}:${depthPrecision.depthPrecision ?? "fixed"}`;
+    const cached = this.nativeDofResolveTarget;
+    if (cached && cached.key === key && !cached.target.disposed) return cached.target;
+    cached?.target.dispose();
+    const target = this.device.createRenderTarget({ width: this.width, height: this.height, label: "renderer-native-dof-resolve",
+      format, depth: "texture", sampleCount: 1, ...depthPrecision, colorAttachments: [{ format }, { format: "rgba8" as const }] });
+    this.nativeDofResolveTarget = { target, key };
+    return target;
+  }
+
   private beginNativeDofFrame(plan: ReturnType<typeof nativeDofProjection>, source: RenderTarget, items: readonly RenderItem[],
-    projection: Mat4 | undefined, viewProjection: Mat4 | undefined): { readonly frame: NativeWebGPUDofFrame; readonly assertCurrent: () => void } {
+    projection: Mat4 | undefined, viewProjection: Mat4 | undefined, multisample?: RenderTarget): { readonly frame: NativeWebGPUDofFrame; readonly assertCurrent: () => void } {
     const flags = rendererQrFlags(this.device);
     assertNativeDofItems(items, flags);
     if (!projection || !viewProjection || !source.depthTexture || !source.colorTextures || source.colorTextures.length !== 2
       || source.colorTextures[0] !== source.colorTexture || source.colorTextures[1]?.format !== "rgba8"
-      || source.colorTextures[1].disposed || source.depthTexture.disposed || source.sampleCount !== 1) {
+      || source.colorTextures[1].disposed || source.depthTexture.disposed || source.sampleCount !== 1
+      || (multisample && (multisample.sampleCount !== 4 || multisample.colorTextures?.length !== 2 || multisample.colorTextures[1]?.format !== "rgba8"))) {
       throw new RenderDeviceError("Native depth of field requires a live single-sample HDR/depth/coverage target", "NATIVE_DOF_TARGET_UNSUPPORTED");
     }
     const snapshotProjection = Array.from(projection), snapshotViewProjection = Array.from(viewProjection);
@@ -2226,10 +2244,12 @@ export class Renderer {
     const generation = this.device.generation;
     const clear = Array.from(this.clearColor);
     const frame = this.device.beginNativeDepthOfFieldFrame!({ source, coverage: { target: source, colorAttachment: 1, encoding: "depth-coverage-red8" },
-      ...plan, alpha: "opaque", depthModel: "single-surface", scopeId, viewId, frameId });
+      ...plan, alpha: "opaque", depthModel: "single-surface", scopeId, viewId, frameId, ...(multisample ? { multisample } : {}) });
+    // The device moves a 4x producer frame to `source` when sealing it; frame.isCurrent() checks the exact phase.
+    const active = (): boolean => { const bound = this.device.getRenderTarget?.(); return bound === source || (multisample !== undefined && bound === multisample); };
     const assertCurrent = (): void => {
       if (this.disposed || this.device.disposed || this.device.generation !== generation || this.activeViewId !== viewId
-        || this.authoredFrameId !== frameId || this.device.getRenderTarget?.() !== source || !frame.isCurrent()
+        || this.authoredFrameId !== frameId || !active() || !frame.isCurrent()
         || this.clearColor.some((value, i) => value !== clear[i])
         || projection.some((value, i) => value !== snapshotProjection[i]) || viewProjection.some((value, i) => value !== snapshotViewProjection[i])
         || items.length !== participants.length || participants.some((snapshot, i) => items[i] !== snapshot.item
@@ -2645,11 +2665,13 @@ export class Renderer {
     catch (error) { this.nativeDrawingLossCleanupFailures.push(error); }
     release(() => this.shadowDepthTarget?.dispose());
     release(() => this.forwardColorTarget?.target.dispose());
+    release(() => this.nativeDofResolveTarget?.target.dispose());
     release(() => this.selectiveBloomTarget?.dispose());
     release(() => this.hdrSceneTarget?.target.dispose());
     release(() => this.sceneDepthCopyTarget?.dispose());
     this.shadowDepthTarget = null;
     this.forwardColorTarget = null;
+    this.nativeDofResolveTarget = null;
     this.selectiveBloomTarget = null;
     this.hdrSceneTarget = null;
     this.sceneDepthCopyTarget = null;
@@ -3821,10 +3843,12 @@ export class Renderer {
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
-      if (nativeDofPlan && (sampleCount !== 1 || (format !== "rgba16f" && format !== "rgba32f"))) {
+      // 4x is admitted as an rgba16f producer that the device resolves into a
+      // single-sample source when the frame is sealed (nativeDofSourceFor).
+      if (nativeDofPlan && ((sampleCount !== 1 && !(sampleCount === 4 && format === "rgba16f")) || (format !== "rgba16f" && format !== "rgba32f"))) {
         throw new RenderDeviceError("Native depth of field requires single-sample HDR color and depth", "NATIVE_DOF_TARGET_UNSUPPORTED");
       }
-      let forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      let forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture && !(nativeDofPlan && sampleCount > 1), sampleCount, Boolean(nativeDofPlan));
       // Native depth of field (5.0) owns colour attachment 1 for coverage, so
       // the 4.7.x selective signal (also attachment 1) declines on those frames.
       if (selectiveRequested && !selectiveEarlyReason && nativeDofPlan) selectiveEarlyReason = "native-depth-of-field";
@@ -4002,7 +4026,8 @@ export class Renderer {
         }
         const target = ownedTargets[0];
         if (!target) throw new RenderDeviceError("Native depth of field is missing its forward target", "NATIVE_DOF_TARGET_UNSUPPORTED");
-        const lease = this.beginNativeDofFrame(nativeDofPlan, target, items, forwardCamera.projection, cameraViewProjection);
+        const dofSource = this.nativeDofSourceFor(target);
+        const lease = this.beginNativeDofFrame(nativeDofPlan, dofSource, items, forwardCamera.projection, cameraViewProjection, dofSource !== target ? target : undefined);
         nativeDofFrame = lease.frame;
         assertNativeDofCurrent = lease.assertCurrent;
       }
@@ -4303,6 +4328,8 @@ export class Renderer {
         if (!this.device.validateNativeDepthOfFieldFrame!(nativeDofFrame, nativeDofFrame.source)) {
           throw new RenderDeviceError("Native depth-of-field coverage proof is unavailable", "NATIVE_DOF_FRAME_STALE");
         }
+        // A 4x producer was resolved into the frame source; post reads that slot.
+        if (ownedTargets[0] !== nativeDofFrame.source) ownedTargets[0] = nativeDofFrame.source;
       }
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
@@ -4738,10 +4765,12 @@ export class Renderer {
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
-      if (nativeDofPlan && (sampleCount !== 1 || (format !== "rgba16f" && format !== "rgba32f"))) {
+      // 4x is admitted as an rgba16f producer that the device resolves into a
+      // single-sample source when the frame is sealed (nativeDofSourceFor).
+      if (nativeDofPlan && ((sampleCount !== 1 && !(sampleCount === 4 && format === "rgba16f")) || (format !== "rgba16f" && format !== "rgba32f"))) {
         throw new RenderDeviceError("Native depth of field requires single-sample HDR color and depth", "NATIVE_DOF_TARGET_UNSUPPORTED");
       }
-      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture && !(nativeDofPlan && sampleCount > 1), sampleCount, Boolean(nativeDofPlan));
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
       frameHooks.setForwardTarget(forwardTarget);
@@ -4894,7 +4923,8 @@ export class Renderer {
         }
         const target = ownedTargets[0];
         if (!target) throw new RenderDeviceError("Native depth of field is missing its forward target", "NATIVE_DOF_TARGET_UNSUPPORTED");
-        const lease = this.beginNativeDofFrame(nativeDofPlan, target, items, forwardCamera.projection, cameraViewProjection);
+        const dofSource = this.nativeDofSourceFor(target);
+        const lease = this.beginNativeDofFrame(nativeDofPlan, dofSource, items, forwardCamera.projection, cameraViewProjection, dofSource !== target ? target : undefined);
         nativeDofFrame = lease.frame;
         assertNativeDofCurrent = lease.assertCurrent;
       }
@@ -5176,6 +5206,8 @@ export class Renderer {
         if (!this.device.validateNativeDepthOfFieldFrame!(nativeDofFrame, nativeDofFrame.source)) {
           throw new RenderDeviceError("Native depth-of-field coverage proof is unavailable", "NATIVE_DOF_FRAME_STALE");
         }
+        // A 4x producer was resolved into the frame source; post reads that slot.
+        if (ownedTargets[0] !== nativeDofFrame.source) ownedTargets[0] = nativeDofFrame.source;
       }
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
@@ -5724,6 +5756,8 @@ export class Renderer {
     this.shadowDepthTarget = null;
     release(() => this.forwardColorTarget?.target.dispose());
     this.forwardColorTarget = null;
+    release(() => this.nativeDofResolveTarget?.target.dispose());
+    this.nativeDofResolveTarget = null;
     release(() => this.selectiveBloomTarget?.dispose());
     this.selectiveBloomTarget = null;
     release(() => this.hdrSceneTarget?.target.dispose());
@@ -5769,7 +5803,7 @@ export class Renderer {
 
   /** True for renderer-lifetime targets that must survive end-of-frame disposal. */
   private isReusedTarget(target: RenderTarget): boolean {
-    return target === this.forwardColorTarget?.target || target === this.selectiveBloomTarget?.target || target === this.shadowDepthTarget || target === this.hdrSceneTarget?.target || target === this.sceneDepthCopyTarget || [...this.viewTargets.values()].includes(target);
+    return target === this.forwardColorTarget?.target || target === this.nativeDofResolveTarget?.target || target === this.selectiveBloomTarget?.target || target === this.shadowDepthTarget || target === this.hdrSceneTarget?.target || target === this.sceneDepthCopyTarget || [...this.viewTargets.values()].includes(target);
   }
 
   /**
