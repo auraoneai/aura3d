@@ -331,13 +331,15 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (rim && descriptor.defines.A3D_PRD04_RIM !== 1 && descriptor.defines.A3D_PRD04_RIM !== true) unsupported("defines.A3D_PRD04_RIM", "invalid rim define");
   // GU47 E-D `prd04.instanceColorTarget: "both"`: the instance colour multiplies the base (USE_INSTANCING_COLOR) and the
   // emissive term. "emissive" (a separate a_a3dInstanceEmissive stream) is not implemented natively yet.
-  const instanceEmissive = active.has(INSTANCE_COLOR_TARGET_FEATURE);
-  if ((instanceEmissive && (active.get(INSTANCE_COLOR_TARGET_FEATURE) !== "both" || f.features[INSTANCE_COLOR_TARGET_FEATURE] !== "both"))
-    || (!instanceEmissive && f.features[INSTANCE_COLOR_TARGET_FEATURE] !== undefined && f.features[INSTANCE_COLOR_TARGET_FEATURE] !== false)) {
+  const instanceColorTarget = active.has(INSTANCE_COLOR_TARGET_FEATURE);
+  if ((instanceColorTarget && (active.get(INSTANCE_COLOR_TARGET_FEATURE) !== "both" || f.features[INSTANCE_COLOR_TARGET_FEATURE] !== "both"))
+    || (!instanceColorTarget && f.features[INSTANCE_COLOR_TARGET_FEATURE] !== undefined && f.features[INSTANCE_COLOR_TARGET_FEATURE] !== false)) {
     unsupported(`features.${INSTANCE_COLOR_TARGET_FEATURE}`, "instance colour targets other than \"both\"");
   }
-  if (instanceEmissive && f.instancing?.color !== true) unsupported(`features.${INSTANCE_COLOR_TARGET_FEATURE}`, "an emissive instance colour target without instance colours");
-  if (instanceEmissive && !descriptor.verifiedFeatures?.includes(INSTANCE_COLOR_TARGET_FEATURE)) unsupported("activeFeatures", `a replaced or unverified ${INSTANCE_COLOR_TARGET_FEATURE} contributor`);
+  if (instanceColorTarget && !descriptor.verifiedFeatures?.includes(INSTANCE_COLOR_TARGET_FEATURE)) unsupported("activeFeatures", `a replaced or unverified ${INSTANCE_COLOR_TARGET_FEATURE} contributor`);
+  // Like the GLSL call (`#elif defined(USE_INSTANCING_COLOR)`), a program without instance colours (renderer warmup
+  // variants) leaves the emissive term unchanged.
+  const instanceEmissive = instanceColorTarget && f.instancing?.color === true;
   const packedLoopColor = active.get("a3d.packedLoopColor") === true;
   if ((active.has("a3d.packedLoopColor") && !packedLoopColor) || (f.features["a3d.packedLoopColor"] === true) !== packedLoopColor) unsupported("features.a3d.packedLoopColor", "inactive packed member color");
   const deform = active.get("prd06.deform");
@@ -476,7 +478,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height", A3D_CLIPPING: f.features["a3d.clipping"] === true,
     A3D_PHOTOMETRIC_PROFILE: photometric, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_WETNESS: wetness,
     A3D_FOG: prd07Fog !== undefined, A3D_FOG_FROXEL_TIER: prd07Fog === "volumetric", A3D_PRD10_WIND: wind, A3D_PRD04_RIM: rim,
-    A3D_INSTANCE_COLOR_EMISSIVE: instanceEmissive, A3D_INSTANCE_EMISSIVE_ATTRIBUTE: false,
+    A3D_INSTANCE_COLOR_EMISSIVE: instanceColorTarget, A3D_INSTANCE_EMISSIVE_ATTRIBUTE: false,
     A3D_LOG_DEPTH: f.features[PROGRAM_LOG_DEPTH_FEATURE] === true,
     A3D_PRD04_ALPHA_TO_COVERAGE: alphaToCoverage, ALPHA_TO_COVERAGE: alphaToCoverage,
     A3D_LEGACY_POINT_SHADOW: pointShadow, A3D_LEGACY_SPOT_SHADOW: spotShadow,

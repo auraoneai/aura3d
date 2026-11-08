@@ -31,7 +31,8 @@ describe("native WebGPU instance colour target", () => {
     expect(plain.fragment).not.toContain("input.instanceColor.rgb");
   });
 
-  it("fails closed on \"emissive\", unverified contributors and missing instance colours", () => {
+  it("leaves the emissive term alone without instance colours; fails closed on \"emissive\" and unverified contributors", () => {
+    expect(createGeneratedPbrProgram(generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "both" }, false)).fragment).not.toContain("input.instanceColor");
     expect(() => createGeneratedPbrProgram(generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "emissive" }, false))).toThrow(/instance colour targets/);
     const both = generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "both" });
     expect(() => createGeneratedPbrProgram({ ...both, verifiedFeatures: [] })).toThrow(/unverified prd04.instanceColorTarget/);
