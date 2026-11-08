@@ -452,7 +452,12 @@
       "status": "live",
       "verification": "playable",
       "evidenceFolder": "evidence/shape-shift-sprint",
-      "screens": null
+      "screens": {
+        "set": "final",
+        "dir": "evidence/shape-shift-sprint/screens/final",
+        "card": "card@2x.jpg",
+        "frameCount": 12
+      }
     },
     {
       "slug": "number-surge",
@@ -464,7 +469,12 @@
       "status": "live",
       "verification": "playable",
       "evidenceFolder": "evidence/number-surge",
-      "screens": null
+      "screens": {
+        "set": "final",
+        "dir": "evidence/number-surge/screens/final",
+        "card": "card@2x.jpg",
+        "frameCount": 12
+      }
     },
     {
       "slug": "splat-turf",
@@ -476,7 +486,12 @@
       "status": "live",
       "verification": "playable",
       "evidenceFolder": "evidence/splat-turf",
-      "screens": null
+      "screens": {
+        "set": "final",
+        "dir": "evidence/splat-turf/screens/final",
+        "card": "card@2x.jpg",
+        "frameCount": 12
+      }
     },
     {
       "slug": "polarity-orbs",
@@ -488,7 +503,12 @@
       "status": "live",
       "verification": "playable",
       "evidenceFolder": "evidence/polarity-orbs",
-      "screens": null
+      "screens": {
+        "set": "final",
+        "dir": "evidence/polarity-orbs/screens/final",
+        "card": "card@2x.jpg",
+        "frameCount": 12
+      }
     },
     {
       "slug": "beat-hopper",
@@ -500,7 +520,12 @@
       "status": "live",
       "verification": "playable",
       "evidenceFolder": "evidence/beat-hopper",
-      "screens": null
+      "screens": {
+        "set": "final",
+        "dir": "evidence/beat-hopper/screens/final",
+        "card": "card@2x.jpg",
+        "frameCount": 12
+      }
     }
   ]
 }
