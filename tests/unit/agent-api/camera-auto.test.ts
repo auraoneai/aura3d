@@ -29,6 +29,12 @@ describe("camera.auto (N4 framing by default)", () => {
     expect(stage.toJSON().camera.position![2]).toBeCloseTo(framed.position![2], 6);
   });
 
+  test("a back wall is set dressing: the scene-wide frame leaves it out", () => {
+    const withWall = scene().add(primitives.box({ name: "back wall", size: [12, 6, 0.2] }).position(0, 3, -3)).add(subject()).camera(camera.auto({ aspect: 16 / 9 }));
+    const without = scene().add(subject()).camera(camera.auto({ aspect: 16 / 9 }));
+    expect(withWall.toJSON().camera).toEqual(without.toJSON().camera);
+  });
+
   test("follows nodes added after the camera is set", () => {
     const stage = scene().camera(camera.auto({ aspect: 16 / 9 })).add(subject());
     expect(fillOf(stage)).toBeCloseTo(0.6, 2);

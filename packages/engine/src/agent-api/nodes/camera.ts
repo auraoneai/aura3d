@@ -264,7 +264,7 @@ export const camera = lazyNamespace(() => ({
   },
   /**
    * Frame everything in a scene (a `scene()` builder or node array). Ground
-   * planes and nodes named like ground/floor/terrain are left out of the box
+   * planes and nodes named like ground/floor/terrain/wall are left out of the box
    * unless you pass your own `exclude`.
    */
   frameScene: (subject: AuraFrameSubject | readonly AuraFrameSubject[], options: AuraCameraFrameOptions = {}): AuraCameraSpec => {

@@ -2,19 +2,20 @@
 
 `@aura3d/engine` is installed; never open `node_modules` or `dist`. Blocks are typechecked, GPU-rendered patterns, not finished scenes: change subject and numbers; typecheck once. `createAuraApp(selector, { scene })` owns renderer, resize and loop. Vectors `[x, y, z]`, colours CSS strings, primitives are unit shapes scaled by `size`. Per frame `app.onFrame((f) => ...)` gives `f.dt`, `f.time` in seconds. To change a node later give it `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`.
 
-### Scene skeleton: look, subject, camera, per-frame update
+### Scene skeleton: look, subject, ground, framed camera, per-frame update
 ```ts render=animated
 import { camera, createAuraApp, looks, material, primitives, scene } from "@aura3d/engine";
 const app = createAuraApp("#app", {
   scene: scene().add(looks.preset("product-studio", { exposureEv: -1.2 }))
+    .add(primitives.plane({ name: "floor", size: [12, 1, 12], material: material.pbr({ color: "#d8dadf", roughness: 0.9 }) }))
     .add(primitives.sphere({ name: "orb", size: 1.6, material: material.pbr({ color: "#d9534f", roughness: 0.4 }) }).position(0, 0.8, 0).runtime({ id: "orb", mutable: true }))
-    .camera(camera.orbit({ position: [3, 2.5, 5], target: [0, 1, 0], fov: 40 })),
+    .camera(camera.auto({ fill: 0.5 })),
   ...looks.appOptions("product-studio")
 });
-app.onFrame((f) => app.nodes.require("orb").setPosition(0, 0.8 + 0.9 * Math.abs(Math.sin(f.time * 1.7)), 0));
+app.onFrame((f) => app.nodes.require("orb").setPosition(0, 0.8 + 0.5 * Math.abs(Math.sin(f.time * 1.7)), 0));
 await app.ready();
 ```
-Gotchas: a look brings light, shadow, fog, sky and grade; spread `looks.appOptions(id)` with it (`outdoor-day`, `night-city`, `golden-hour`, `overcast`, `space`). `camera.perspective` is fixed, `camera.orbit` adds drag. Bright looks wash out: `looks.preset(id, { exposureEv: -1 })`. Colours are `#rrggbb`, `rgb()` or names: `hsl()` strings are not parsed. Hand-built light needs `environments.neutral({ intensity: 0.6, background: false })` beside `lights.directional({ position, target, intensity: 3, shadow: true })`, else the frame is flat and dark and metals reflect nothing; `primitives.plane` size is `[w, 1, d]`. Glow: `effects.bloom({ intensity: 0.5, threshold: 0.8, radius: 0.5 })`.
+Gotchas: never hand-place the camera. `camera.auto()` frames what the scene holds so the subject fills `fill` (default 0.6) of the frame, ground planes and `floor`/`ground`/`wall`-named nodes left out; `camera.auto({ subject: "clock", angle: "front", fill: 0.8 })` frames one named node or group with the props still in shot. A moving subject: `app.camera?.setPose(camera.framePose(box, { azimuth, fill, aspect }))` each frame (`examples/auto-frame-bird`). A look brings light, shadow, fog, sky and grade; spread `looks.appOptions(id)` with it (`outdoor-day`, `night-city`, `golden-hour`, `overcast`, `space`). `camera.perspective` is fixed, `camera.orbit` adds drag. Bright looks wash out: `looks.preset(id, { exposureEv: -1 })`. Colours are `#rrggbb`, `rgb()` or names: `hsl()` strings are not parsed. Hand-built light needs `environments.neutral({ intensity: 0.6, background: false })` beside `lights.key({ target })` (a directional key that casts a clean shadow; put a `primitives.plane` ground under the subject to catch it), else the frame is flat and dark and metals reflect nothing; `primitives.plane` size is `[w, 1, d]`. Glow: `effects.bloom({ intensity: 0.5, threshold: 0.8, radius: 0.5 })`.
 
 ### Instancing: many copies, one draw, updated live
 ```ts render=animated
@@ -29,7 +30,7 @@ const colors = cells.map((_, i) => PAL[(i % N + Math.floor(i / N)) % 6]!);
 const app = createAuraApp("#app", {
   scene: scene().add(looks.preset("outdoor-day", { exposureEv: -1 }))
     .add(instances.box({ name: "tiles", transforms: cells, colors, material: material.pbr({ color: "#ffffff" }) }).runtime({ id: "tiles", mutable: true }))
-    .camera(camera.orbit({ position: [10, 9, 12], target: [0, 0, 0], fov: 40 })),
+    .camera(camera.auto({ elevation: 0.7, fill: 0.8 })),
   ...looks.appOptions("outdoor-day")
 });
 app.onFrame((f) => app.nodes.require("tiles").setInstances(cells.map((_, i) => at(i, f.time * 1.3)), colors));
@@ -71,7 +72,7 @@ const geo = geometry.define({ positions, normals: geometry.computeNormals({ posi
 createAuraApp("#app", {
   scene: scene().add(looks.preset("product-studio", { exposureEv: -1.2 }))
     .add(geometry.custom(geo, { name: "vase", material: material.pbr({ color: "#c58b5a", roughness: 0.5 }) }))
-    .camera(camera.orbit({ position: [2.4, 1.6, 2.8], target: [0, 0.8, 0], fov: 38 })),
+    .camera(camera.auto({ fill: 0.8 })),
   ...looks.appOptions("product-studio")
 });
 ```
