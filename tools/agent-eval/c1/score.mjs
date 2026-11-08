@@ -63,11 +63,27 @@ class Cdp {
         this.pending.delete(msg.id);
       } else if (msg.method) this.events.push(msg);
     });
+    // A dead browser must fail pending calls, not hang the scorer.
+    ws.addEventListener("close", () => {
+      for (const done of this.pending.values()) done({ error: { message: "CDP socket closed" } });
+      this.pending.clear();
+    });
   }
-  send(method, params = {}) {
+  send(method, params = {}, timeoutMs = 45000) {
     const id = ++this.id;
+    if (this.ws.readyState !== 1) return Promise.reject(new Error(`${method}: CDP socket closed`));
     this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((ok, fail) => this.pending.set(id, (msg) => (msg.error ? fail(new Error(`${method}: ${msg.error.message}`)) : ok(msg.result))));
+    return new Promise((ok, fail) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        fail(new Error(`${method}: CDP timeout after ${timeoutMs} ms`));
+      }, timeoutMs);
+      this.pending.set(id, (msg) => {
+        clearTimeout(timer);
+        if (msg.error) fail(new Error(`${method}: ${msg.error.message}`));
+        else ok(msg.result);
+      });
+    });
   }
 }
 
@@ -192,6 +208,8 @@ export async function measurePhase({ cdpPort, url, framesPrefix, probes }) {
     writeFileSync(`${framesPrefix}-2.png`, f2.png);
     const stats = frameStats(f1);
     const runtime = await cdp.send("Runtime.evaluate", { expression: FPS_EXPR, returnByValue: true, awaitPromise: true }).then((r) => r.result.value).catch(() => null);
+    // Bytes the page actually fetched by now (emitted lazy chunks that never load are in `size`, not here).
+    const loaded = await cdp.send("Runtime.evaluate", { returnByValue: true, expression: "(() => { const r = performance.getEntriesByType('resource'); const kb = (f) => Math.round(r.filter(f).reduce((a, e) => a + (e.encodedBodySize || e.transferSize || 0), 0) / 102.4) / 10; return { totalKB: kb(() => true), jsKB: kb((e) => /\\.m?js(\\?|$)/.test(e.name)), requests: r.length }; })()" }).then((r) => r.result.value).catch(() => null);
     const errors = pageErrors(cdp);
     const probeResults = {};
     for (const name of probes) {
@@ -204,6 +222,7 @@ export async function measurePhase({ cdpPort, url, framesPrefix, probes }) {
       loadMs,
       blank: !(stats.litFraction > 0.2 && stats.stdLuma > 3),
       frame: { lit: Math.round(stats.litFraction * 1000) / 1000, meanLuma: Math.round(stats.meanLuma * 10) / 10, stdLuma: Math.round(stats.stdLuma * 10) / 10, motion: Math.round(frameDifference(f1, f2) * 100) / 100 },
+      loaded,
       fps: runtime?.fps ?? null,
       p95FrameMs: runtime?.p95FrameMs ?? null,
       pageErrors: errors,

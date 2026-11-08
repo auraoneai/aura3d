@@ -38,7 +38,8 @@ Turn caps: 40 for the task, 15 for the follow-up (same conversation, appended to
   typecheck after each phase, bridge exports (count, failures, ms).
 
 `score.mjs` adds, per phase: stock `vite build` (ok, ms), dist size (total, JS, JS gzip, assets), real-GPU headless Chrome
-(ANGLE Metal, loopback CDP): load ms to the ready flag, runtime fps and p95 frame time over 3 s, page errors, two frames
+(ANGLE Metal, loopback CDP): load ms to the ready flag, bytes actually fetched by the page (uncompressed, from
+Resource Timing; emitted-but-never-loaded lazy chunks only count in the dist size), runtime fps and p95 frame time over 3 s, page errors, two frames
 3 s apart, and the functional probes (`probes.mjs`, scripted key presses, canvas clicks, button clicks, state reads).
 The follow-up build runs the follow-up probe and the main probe again (regression check). `judge.mjs` runs blind
 pairwise visual judging (aura vs three, bridge vs three, bridge vs aura; 3 calls per pair, majority) and optionally the
@@ -71,7 +72,11 @@ node tools/agent-eval/c1/report.mjs c1-dryrun
 
 Output: `evidence/agent-eval-c1/c1-dryrun/` (`REPORT.md`, `c1-metrics.json`, `c1-score.json`, `c1-judge.json`, frames,
 run records). Task 107 ran on all three arms (one per arm); 105 ran on three.js to exercise the click, button and
-`__plantAt` probes. The stub solutions are in `stub/<task>/<arm>/`; tokens and cost there are synthetic.
+`__plantAt` probes. The stub solutions are in `stub/<task>/<arm>/`; tokens and cost there are synthetic. All four runs
+finished both phases and passed every functional and follow-up check on the real GPU. Real measurements worth knowing
+before the paid run (Aura3D 5.2.0 from npm, stub code): the native lighthouse page fetched 5.7 MB of JS at load against
+0.5 MB for three.js, the bridge page 8.9 MB and ran at about 46 fps against 60; and a bridge GLB placed without
+`scaleMode: "world"` is normalised to a tiny model (the guide now says so).
 
 ## Launching the real run
 

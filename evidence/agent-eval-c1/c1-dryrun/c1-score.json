@@ -1,0 +1,499 @@
+{
+  "c1-dryrun-t105-three-r1": {
+    "runId": "c1-dryrun-t105-three-r1",
+    "arm": "three",
+    "task": 105,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2288,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 503.4,
+          "jsKB": 502.9,
+          "jsGzipKB": 126.7,
+          "assetKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 599,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 148.4,
+          "stdLuma": 45.2,
+          "motion": 0
+        },
+        "loaded": {
+          "totalKB": 502.9,
+          "jsKB": 502.9,
+          "requests": 2
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "garden": {
+            "name": "garden",
+            "checks": {
+              "readyEmpty": true,
+              "clickPlantsOnGround": true,
+              "plantAtExact": true,
+              "plantsGrow": true,
+              "skyClickIgnored": true,
+              "overlayCount": true,
+              "clearRemovesAll": true
+            },
+            "notes": {
+              "firstPlant": {
+                "x": 0,
+                "z": 3.297894423194248,
+                "growth": 0.0118500000014901
+              }
+            },
+            "passed": 7,
+            "total": 7
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 2118,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 503.5,
+          "jsKB": 503,
+          "jsGzipKB": 126.7,
+          "assetKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 87,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 148.4,
+          "stdLuma": 45.4,
+          "motion": 0
+        },
+        "loaded": {
+          "totalKB": 503,
+          "jsKB": 503,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "garden-followup": {
+            "name": "garden-followup",
+            "checks": {
+              "undoButton": true,
+              "undoRemovesNewest": true,
+              "overlayUpdates": true,
+              "repeatedUndo": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "garden": {
+            "name": "garden",
+            "checks": {
+              "readyEmpty": true,
+              "clickPlantsOnGround": true,
+              "plantAtExact": true,
+              "plantsGrow": true,
+              "skyClickIgnored": true,
+              "overlayCount": true,
+              "clearRemovesAll": true
+            },
+            "notes": {
+              "firstPlant": {
+                "x": 0,
+                "z": 3.297894423194248,
+                "growth": 0.013812499999999978
+              }
+            },
+            "passed": 7,
+            "total": 7
+          }
+        }
+      }
+    }
+  },
+  "c1-dryrun-t107-aura-r1": {
+    "runId": "c1-dryrun-t107-aura-r1",
+    "arm": "aura",
+    "task": 107,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 19713,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 9890.6,
+          "jsKB": 6766,
+          "jsGzipKB": 2141.7,
+          "assetKB": 3119.9,
+          "files": 84
+        },
+        "ready": true,
+        "loadMs": 357,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 184.9,
+          "stdLuma": 28,
+          "motion": 22.28
+        },
+        "loaded": {
+          "totalKB": 5654.1,
+          "jsKB": 5654.1,
+          "requests": 57
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "lighthouse": {
+            "name": "lighthouse",
+            "checks": {
+              "ready": true,
+              "enoughParts": true,
+              "threeOrMoreBands": true,
+              "cameraOrbits": true
+            },
+            "notes": {
+              "partCount": 23,
+              "bandCount": 4,
+              "diff": 19.646451099537035
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 15529,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 9890.7,
+          "jsKB": 6766.1,
+          "jsGzipKB": 2141.8,
+          "assetKB": 3119.9,
+          "files": 84
+        },
+        "ready": true,
+        "loadMs": 402,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 184.9,
+          "stdLuma": 28,
+          "motion": 22.05
+        },
+        "loaded": {
+          "totalKB": 5654.2,
+          "jsKB": 5654.2,
+          "requests": 57
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "lighthouse-followup": {
+            "name": "lighthouse-followup",
+            "checks": {
+              "lampOnExposed": true,
+              "blinks": true,
+              "aboutOneSecond": true
+            },
+            "notes": {
+              "flips": 4,
+              "gaps": [
+                1051,
+                932,
+                1060
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "lighthouse": {
+            "name": "lighthouse",
+            "checks": {
+              "ready": true,
+              "enoughParts": true,
+              "threeOrMoreBands": true,
+              "cameraOrbits": true
+            },
+            "notes": {
+              "partCount": 23,
+              "bandCount": 4,
+              "diff": 20.71796875
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-dryrun-t107-bridge-r1": {
+    "runId": "c1-dryrun-t107-bridge-r1",
+    "arm": "bridge",
+    "task": 107,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 64304,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 12788.5,
+          "jsKB": 9555.5,
+          "jsGzipKB": 3201.8,
+          "assetKB": 3228.3,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 1439,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 189.1,
+          "stdLuma": 28.3,
+          "motion": 18.61
+        },
+        "loaded": {
+          "totalKB": 8912.9,
+          "jsKB": 8491.2,
+          "requests": 67
+        },
+        "fps": 46.1,
+        "p95FrameMs": 33.4,
+        "pageErrors": [],
+        "probes": {
+          "lighthouse": {
+            "name": "lighthouse",
+            "checks": {
+              "ready": true,
+              "enoughParts": true,
+              "threeOrMoreBands": true,
+              "cameraOrbits": true
+            },
+            "notes": {
+              "partCount": 35,
+              "bandCount": 4,
+              "diff": 22.352468171296298
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 32442,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 12788.7,
+          "jsKB": 9555.6,
+          "jsGzipKB": 3201.8,
+          "assetKB": 3228.3,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 696,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 189.1,
+          "stdLuma": 27.9,
+          "motion": 22.52
+        },
+        "loaded": {
+          "totalKB": 8913,
+          "jsKB": 8491.3,
+          "requests": 66
+        },
+        "fps": 45.7,
+        "p95FrameMs": 33.4,
+        "pageErrors": [],
+        "probes": {
+          "lighthouse-followup": {
+            "name": "lighthouse-followup",
+            "checks": {
+              "lampOnExposed": true,
+              "blinks": true,
+              "aboutOneSecond": true
+            },
+            "notes": {
+              "flips": 4,
+              "gaps": [
+                1055,
+                957,
+                975
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "lighthouse": {
+            "name": "lighthouse",
+            "checks": {
+              "ready": true,
+              "enoughParts": true,
+              "threeOrMoreBands": true,
+              "cameraOrbits": true
+            },
+            "notes": {
+              "partCount": 35,
+              "bandCount": 4,
+              "diff": 21.38463396990741
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-dryrun-t107-three-r1": {
+    "runId": "c1-dryrun-t107-three-r1",
+    "arm": "three",
+    "task": 107,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 7743,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 505,
+          "jsKB": 504.5,
+          "jsGzipKB": 127.3,
+          "assetKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 512,
+        "blank": false,
+        "frame": {
+          "lit": 0.999,
+          "meanLuma": 148,
+          "stdLuma": 48,
+          "motion": 6.35
+        },
+        "loaded": {
+          "totalKB": 504.5,
+          "jsKB": 504.5,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "lighthouse": {
+            "name": "lighthouse",
+            "checks": {
+              "ready": true,
+              "enoughParts": true,
+              "threeOrMoreBands": true,
+              "cameraOrbits": true
+            },
+            "notes": {
+              "partCount": 23,
+              "bandCount": 4,
+              "diff": 5.00404224537037
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 14893,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 505.1,
+          "jsKB": 504.6,
+          "jsGzipKB": 127.3,
+          "assetKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 102,
+        "blank": false,
+        "frame": {
+          "lit": 0.999,
+          "meanLuma": 148.7,
+          "stdLuma": 47.8,
+          "motion": 6.18
+        },
+        "loaded": {
+          "totalKB": 504.6,
+          "jsKB": 504.6,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "lighthouse-followup": {
+            "name": "lighthouse-followup",
+            "checks": {
+              "lampOnExposed": true,
+              "blinks": true,
+              "aboutOneSecond": true
+            },
+            "notes": {
+              "flips": 5,
+              "gaps": [
+                1287,
+                905,
+                1012,
+                831
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "lighthouse": {
+            "name": "lighthouse",
+            "checks": {
+              "ready": true,
+              "enoughParts": true,
+              "threeOrMoreBands": true,
+              "cameraOrbits": true
+            },
+            "notes": {
+              "partCount": 23,
+              "bandCount": 4,
+              "diff": 5.05904224537037
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  }
+}

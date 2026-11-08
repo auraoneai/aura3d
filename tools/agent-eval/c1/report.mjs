@@ -63,6 +63,7 @@ export function runMetrics(run, score, task) {
     jsGzipKB: main.size?.jsGzipKB ?? null,
     totalKB: main.size?.totalKB ?? null,
     assetKB: main.size?.assetKB ?? null,
+    loadedKB: main.loaded?.totalKB ?? null,
     loadMs: main.loadMs ?? null,
     fps: main.fps ?? null,
     p95FrameMs: main.p95FrameMs ?? null,
@@ -112,6 +113,7 @@ export function armSummary(rows) {
     costSources: [...new Set(valid.map((r) => r.costSource))],
     jsGzipKBMedian: m("jsGzipKB"),
     totalKBMedian: m("totalKB"),
+    loadedKBMedian: m("loadedKB"),
     loadMsMedian: m("loadMs"),
     fpsMedian: m("fps")
   };
@@ -172,12 +174,12 @@ export function renderReport({ batch, tasks, rows, arms, visual, decision, judge
   if (stub) L.push("**DRY RUN with the stub model.** Agent output, tokens and cost are synthetic (scripted solutions, made-up usage); build, real-GPU load/fps, frames and functional probes are real measurements of the stub solutions. The visual judge is a frame-statistics stand-in. No number here says anything about Aura3D versus three.js.", "");
   L.push(`Tasks (frozen ${tasks.frozenAt}, before results): ${tasks.tasks.map((t) => `${t.id} ${t.slug} (${t.category})`).join(", ")}. Runs per arm per task: ${tasks.runsPerArm}. Turn caps: task ${tasks.mainTurnCap}, follow-up ${tasks.followUpTurnCap}.`, "");
   L.push("## Per arm", "");
-  L.push("| arm | runs (valid) | finished task | capped | follow-up finished | renders | functional all pass (mean) | follow-up all pass | regressions | turns median (task + follow-up) | wall s median | tool s median | tokens in median (cached share) | tokens out median | billed $ median | billed $ total | cost source | JS gzip KB | load ms | fps |");
-  L.push("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
+  L.push("| arm | runs (valid) | finished task | capped | follow-up finished | renders | functional all pass (mean) | follow-up all pass | regressions | turns median (task + follow-up) | wall s median | tool s median | tokens in median (cached share) | tokens out median | billed $ median | billed $ total | cost source | emitted JS gzip KB | fetched at load KB | load ms | fps |");
+  L.push("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
   for (const arm of ARMS) {
     const s = arms[arm];
     if (!s) continue;
-    L.push(`| ${arm} | ${s.runs} (${s.valid}) | ${pct(s.mainFinished)} | ${s.mainCapped} | ${pct(s.followUpFinished)} | ${pct(s.renderMain)} | ${pct(s.functionalMainAll)} (${pct(s.functionalMainMean)}) | ${pct(s.functionalFollowUpAll)} | ${s.regressions} | ${fmt(s.turnsMedian)} (${fmt(s.turnsMainMedian)} + ${fmt(s.turnsFollowUpMedian)}) | ${fmt(s.wallSecMedian, 1)} | ${fmt(s.toolSecMedian, 1)} | ${fmt(s.tokensInMedian)} (${pct(s.cachedShareMedian)}) | ${fmt(s.tokensOutMedian)} | ${fmt(s.billedUsdMedian, 4)} | ${fmt(s.billedUsdTotal, 4)} | ${s.costSources.join(", ")} | ${fmt(s.jsGzipKBMedian, 1)} | ${fmt(s.loadMsMedian)} | ${fmt(s.fpsMedian, 1)} |`);
+    L.push(`| ${arm} | ${s.runs} (${s.valid}) | ${pct(s.mainFinished)} | ${s.mainCapped} | ${pct(s.followUpFinished)} | ${pct(s.renderMain)} | ${pct(s.functionalMainAll)} (${pct(s.functionalMainMean)}) | ${pct(s.functionalFollowUpAll)} | ${s.regressions} | ${fmt(s.turnsMedian)} (${fmt(s.turnsMainMedian)} + ${fmt(s.turnsFollowUpMedian)}) | ${fmt(s.wallSecMedian, 1)} | ${fmt(s.toolSecMedian, 1)} | ${fmt(s.tokensInMedian)} (${pct(s.cachedShareMedian)}) | ${fmt(s.tokensOutMedian)} | ${fmt(s.billedUsdMedian, 4)} | ${fmt(s.billedUsdTotal, 4)} | ${s.costSources.join(", ")} | ${fmt(s.jsGzipKBMedian, 1)} | ${fmt(s.loadedKBMedian, 1)} | ${fmt(s.loadMsMedian)} | ${fmt(s.fpsMedian, 1)} |`);
   }
   L.push("", "## Blind visual pairs (main phase, majority of judge calls)", "");
   L.push(`Judge: ${judge?.judge ?? "not run"}; calls per pair: ${judge?.callsPerPair ?? "-"}; judge cost: ${judge?.judgeCost?.billedUsd != null ? `$${judge.judgeCost.billedUsd} (${judge.judgeCost.source})` : "-"}.`, "");

@@ -283,11 +283,13 @@ export const PROBES = {
       await page.sleep(100);
     }
     const gaps = flips.slice(1).map((t, i) => t - flips[i]);
+    // Median, not every gap: each sample is a CDP round trip, so single gaps carry polling jitter.
+    const mid = [...gaps].sort((x, y) => x - y)[Math.floor(gaps.length / 2)];
     return {
       checks: {
         lampOnExposed: seen.size > 0,
         blinks: seen.has(true) && seen.has(false),
-        aboutOneSecond: gaps.length > 0 && gaps.every((g) => g > 600 && g < 1500)
+        aboutOneSecond: gaps.length > 0 && mid > 700 && mid < 1400
       },
       notes: { flips: flips.length, gaps }
     };
