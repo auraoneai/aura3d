@@ -1,0 +1,15 @@
+{
+  "name": "@aura3d/three-bridge-recipes",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "B1 three.js asset bridge prototype: procedural three.js recipes, the paired-frame pages and the capture driver. Standalone (not a pnpm workspace member) so three stays out of the root lockfile and out of every runtime package.",
+  "scripts": {
+    "install:three": "npm install --no-audit --no-fund",
+    "import": "node ../../node_modules/tsx/dist/cli.mjs --tsconfig ../../tsconfig.base.json ../../packages/aura3d-cli/src/cli.ts import-three",
+    "build": "node ../../node_modules/vite/bin/vite.js build --config vite.config.ts"
+  },
+  "devDependencies": {
+    "three": "0.185.1"
+  }
+}

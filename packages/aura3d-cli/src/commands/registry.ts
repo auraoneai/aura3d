@@ -20,5 +20,6 @@ import "./assets/index.js";
 import "./evidence/index.js";
 import "./verify/index.js";
 import "./agent-tools/index.js";
+import "./import-three/index.js";
 
 export {};

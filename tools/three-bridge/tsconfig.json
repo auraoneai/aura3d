@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "noEmit": true, "allowJs": false, "types": ["node", "vite/client"] },
+  "include": ["src/**/*.ts", "pages/aura-main.ts", "../../packages/aura3d-cli/src/import-three/*.ts", "../../packages/aura3d-cli/src/commands/import-three/*.ts"]
+}
