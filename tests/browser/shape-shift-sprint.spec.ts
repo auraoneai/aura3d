@@ -45,11 +45,9 @@ interface Hooks {
   diagnostics(): { errors?: readonly unknown[]; drawCalls?: number } | null;
   routeHealth(): { status: string } | null;
   nodeCount(): number;
-  extras: {
-    runAutopilot(n: number, mistakeRows?: number[]): State;
-    restart(): State;
-    presentation(): Record<string, unknown>;
-  };
+  runAutopilot(n: number, mistakeRows?: number[]): State;
+  restart(): State;
+  presentation(): Record<string, unknown>;
 }
 type Win = Window & { __AURA_SHAPE_SHIFT__: Hooks; __AURA_SHAPE_SHIFT_ERROR__?: string };
 
@@ -118,9 +116,9 @@ test.describe("shape-shift-sprint", () => {
 
     /* run: cream road, candy-primary player + wall hole rims, autopilot scoring, frame progression */
     await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.reset(20261101));
-    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(60));
     await shootScreen("early-1280");
-    const early = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(180));
+    const early = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(180));
     expect(early.phase).toBe("playing");
     expect(early.score).toBeGreaterThan(0);
     expect(early.distance).toBeGreaterThan(50);
@@ -129,7 +127,7 @@ test.describe("shape-shift-sprint", () => {
     const run1 = await stats();
     expect(run1.low.cream + run1.mid.cream, "cream road and wall panels").toBeGreaterThan(run1.low.n * 0.05);
     expect(run1.mid.sat + run1.low.sat, "candy-primary player and hole rims").toBeGreaterThan(30);
-    const late = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(600));
+    const late = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(600));
     expect(late.score).toBeGreaterThan(early.score);
     expect(late.matches).toBeGreaterThan(early.matches);
     await save("03-run-14s");
@@ -139,7 +137,7 @@ test.describe("shape-shift-sprint", () => {
 
     /* death path: deliberate mistake rows drain all 3 lives into bursting -> gameOver */
     await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.reset(20261101));
-    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(900, [0, 1, 2, 3, 4, 5]));
+    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(900, [0, 1, 2, 3, 4, 5]));
     expect(["gameOver", "bursting"]).toContain(dead.phase);
     expect(dead.lives).toBe(0);
     if (dead.phase === "bursting") {
@@ -153,7 +151,7 @@ test.describe("shape-shift-sprint", () => {
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_SHAPE_SHIFT__;
       h.reset(20261101);
-      h.extras.runAutopilot(240);
+      h.runAutopilot(240);
     });
     await shootScreen("card@2x");
 
@@ -164,23 +162,23 @@ test.describe("shape-shift-sprint", () => {
       h.stepFrames(30);
     });
     await shootScreen("title-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(60));
     await shootScreen("early-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(180));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(180));
     await shootScreen("action-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.runAutopilot(600));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.runAutopilot(600));
     await shootScreen("mid-390");
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_SHAPE_SHIFT__;
       h.reset(20261101);
-      const s = h.extras.runAutopilot(900, [0, 1, 2, 3, 4, 5]);
+      const s = h.runAutopilot(900, [0, 1, 2, 3, 4, 5]);
       if (s.phase === "bursting") h.stepFrames(80);
     });
     await shootScreen("results-390");
     await page.setViewportSize({ width: 1280, height: 720 });
 
     /* restart re-centres steering (C4) and resets the run */
-    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.extras.restart());
+    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_SHAPE_SHIFT__.restart());
     expect(restarted.phase).toBe("playing");
     expect(restarted.distance).toBe(0);
     expect(restarted.lives).toBe(3);

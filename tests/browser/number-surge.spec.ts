@@ -43,11 +43,9 @@ interface Hooks {
   diagnostics(): { errors?: readonly unknown[]; drawCalls?: number } | null;
   routeHealth(): { status: string } | null;
   nodeCount(): number;
-  extras: {
-    runAutopilot(n: number, reckless?: boolean): State;
-    restart(): State;
-    presentation(): Record<string, unknown>;
-  };
+  runAutopilot(n: number, reckless?: boolean): State;
+  restart(): State;
+  presentation(): Record<string, unknown>;
 }
 type Win = Window & { __AURA_NUMBER_SURGE__: Hooks; __AURA_NUMBER_SURGE_ERROR__?: string };
 
@@ -116,9 +114,9 @@ test.describe("number-surge", () => {
 
     /* run: neon gates + cyan ball, autopilot scoring and smashing walls, frame progression */
     await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.reset(20261103));
-    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(60));
     await shootScreen("early-1280");
-    const early = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(180));
+    const early = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(180));
     expect(early.phase).toBe("playing");
     expect(early.score).toBeGreaterThan(0);
     expect(early.distance).toBeGreaterThan(50);
@@ -127,7 +125,7 @@ test.describe("number-surge", () => {
     const run1 = await stats();
     expect(run1.low.dusk + run1.mid.dusk, "violet road and dusk lighting").toBeGreaterThan(run1.low.n * 0.1);
     expect(run1.mid.sat + run1.low.sat + run1.mid.neon + run1.low.neon, "neon gates and cyan ball").toBeGreaterThan(30);
-    const late = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(1500));
+    const late = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(1500));
     expect(late.score).toBeGreaterThan(early.score);
     expect(late.wallsSmashed).toBeGreaterThanOrEqual(1);
     await save("03-run-wall-smash");
@@ -137,7 +135,7 @@ test.describe("number-surge", () => {
 
     /* death path: reckless autopilot steers into worse gates so the first boss wall triggers bursting -> gameOver */
     await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.reset(20261103));
-    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(2000, true));
+    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(2000, true));
     expect(["gameOver", "bursting"]).toContain(dead.phase);
     if (dead.phase === "bursting") {
       await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.stepFrames(80));
@@ -150,7 +148,7 @@ test.describe("number-surge", () => {
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_NUMBER_SURGE__;
       h.reset(20261103);
-      h.extras.runAutopilot(240);
+      h.runAutopilot(240);
     });
     await shootScreen("card@2x");
 
@@ -161,23 +159,23 @@ test.describe("number-surge", () => {
       h.stepFrames(30);
     });
     await shootScreen("title-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(60));
     await shootScreen("early-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(180));
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(180));
     await shootScreen("action-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.runAutopilot(1500));
+    await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.runAutopilot(1500));
     await shootScreen("mid-390");
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_NUMBER_SURGE__;
       h.reset(20261103);
-      const s = h.extras.runAutopilot(2000, true);
+      const s = h.runAutopilot(2000, true);
       if (s.phase === "bursting") h.stepFrames(80);
     });
     await shootScreen("results-390");
     await page.setViewportSize({ width: 1280, height: 720 });
 
     /* restart re-centres steering (C4) and resets the run */
-    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.extras.restart());
+    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_NUMBER_SURGE__.restart());
     expect(restarted.phase).toBe("playing");
     expect(restarted.distance).toBe(0);
     expect(restarted.number).toBe(10);

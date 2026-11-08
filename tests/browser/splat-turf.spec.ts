@@ -43,11 +43,9 @@ interface Hooks {
   diagnostics(): { errors?: readonly unknown[]; drawCalls?: number } | null;
   routeHealth(): { status: string } | null;
   nodeCount(): number;
-  extras: {
-    runAutopilot(n: number, reckless?: boolean): State;
-    restart(): State;
-    presentation(): Record<string, unknown>;
-  };
+  runAutopilot(n: number, reckless?: boolean): State;
+  restart(): State;
+  presentation(): Record<string, unknown>;
 }
 type Win = Window & { __AURA_SPLAT_TURF__: Hooks; __AURA_SPLAT_TURF_ERROR__?: string };
 
@@ -116,9 +114,9 @@ test.describe("splat-turf", () => {
 
     /* run: white road under the ball, saturated paint trail, frame progression */
     await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.reset(20261121));
-    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(60));
     await shootScreen("early-1280");
-    const early = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(180));
+    const early = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(180));
     expect(early.phase).toBe("playing");
     expect(early.score).toBeGreaterThan(0);
     expect(early.distance).toBeGreaterThan(50);
@@ -127,7 +125,7 @@ test.describe("splat-turf", () => {
     const run1 = await stats();
     expect(run1.low.bright, "white road under the ball").toBeGreaterThan(run1.low.n * 0.05);
     expect(run1.mid.sat + run1.low.sat, "saturated paint and pink ball").toBeGreaterThan(30);
-    const late = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(600));
+    const late = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(600));
     expect(late.score).toBeGreaterThan(early.score);
     expect(late.coveragePercent).toBeGreaterThan(0);
     await save("03-run-14s");
@@ -137,7 +135,7 @@ test.describe("splat-turf", () => {
 
     /* death path: the reckless autopilot chases solvent and erasers until the tank runs dry */
     await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.reset(20261121));
-    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(5000, true));
+    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(5000, true));
     expect(["gameOver", "bursting"]).toContain(dead.phase);
     expect(dead.solventHits + dead.eraserHits).toBeGreaterThan(0);
     if (dead.phase === "bursting") {
@@ -151,7 +149,7 @@ test.describe("splat-turf", () => {
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_SPLAT_TURF__;
       h.reset(20261121);
-      h.extras.runAutopilot(240);
+      h.runAutopilot(240);
     });
     await shootScreen("card@2x");
 
@@ -162,23 +160,23 @@ test.describe("splat-turf", () => {
       h.stepFrames(30);
     });
     await shootScreen("title-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(60));
     await shootScreen("early-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(180));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(180));
     await shootScreen("action-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.runAutopilot(600));
+    await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.runAutopilot(600));
     await shootScreen("mid-390");
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_SPLAT_TURF__;
       h.reset(20261121);
-      const s = h.extras.runAutopilot(5000, true);
+      const s = h.runAutopilot(5000, true);
       if (s.phase === "bursting") h.stepFrames(80);
     });
     await shootScreen("results-390");
     await page.setViewportSize({ width: 1280, height: 720 });
 
     /* restart re-centres (C4) and the run starts fresh */
-    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.extras.restart());
+    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_SPLAT_TURF__.restart());
     expect(restarted.phase).toBe("playing");
     expect(restarted.distance).toBe(0);
     expect(restarted.tank).toBe(100);

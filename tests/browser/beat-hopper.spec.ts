@@ -49,12 +49,9 @@ interface Hooks {
   diagnostics(): { errors?: readonly unknown[]; drawCalls?: number } | null;
   routeHealth(): { status: string } | null;
   nodeCount(): number;
-  extras: {
-    runAutopilot(n: number, mistakeObstacles?: number[]): State;
-    replay(inputs: Record<string, unknown>[], warmup?: number, seed?: number): number[][];
-    restart(): State;
-    presentation(): Record<string, unknown>;
-  };
+  runAutopilot(n: number, mistakeObstacles?: number[]): State;
+  restart(): State;
+  presentation(): Record<string, unknown>;
 }
 type Win = Window & { __AURA_BEAT_HOPPER__: Hooks; __AURA_BEAT_HOPPER_ERROR__?: string };
 
@@ -123,9 +120,9 @@ test.describe("beat-hopper", () => {
 
     /* run: indigo road deck, neon cyan hopper + stripes + magenta rails, autopilot scoring, frame progression */
     await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.reset(20261101));
-    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(60));
     await shootScreen("early-1280");
-    const early = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(240));
+    const early = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(240));
     expect(early.phase).toBe("playing");
     expect(early.score).toBeGreaterThan(0);
     expect(early.dist).toBeGreaterThan(50);
@@ -135,7 +132,7 @@ test.describe("beat-hopper", () => {
     const run1 = await stats();
     expect(run1.low.night + run1.mid.night, "indigo road deck and equalizer skyline").toBeGreaterThan(run1.low.n * 0.05);
     expect(run1.mid.sat + run1.low.sat + run1.mid.neon + run1.low.neon, "neon cyan hopper, beat stripes, and rails").toBeGreaterThan(30);
-    const late = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(600));
+    const late = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(600));
     expect(late.score).toBeGreaterThan(early.score);
     expect(late.perfect + late.good).toBeGreaterThan(early.perfect + early.good);
     await save("03-run-15s");
@@ -145,7 +142,7 @@ test.describe("beat-hopper", () => {
 
     /* death path: deliberate missed obstacles drain all 3 lives into bursting -> gameOver */
     await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.reset(20261101));
-    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(900, [0, 1, 2, 3, 4]));
+    const dead = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(900, [0, 1, 2, 3, 4]));
     expect(["gameOver", "bursting"]).toContain(dead.phase);
     expect(dead.lives).toBe(0);
     expect(dead.miss).toBeGreaterThanOrEqual(3);
@@ -160,7 +157,7 @@ test.describe("beat-hopper", () => {
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_BEAT_HOPPER__;
       h.reset(20261101);
-      h.extras.runAutopilot(300);
+      h.runAutopilot(300);
     });
     await shootScreen("card@2x");
 
@@ -171,23 +168,23 @@ test.describe("beat-hopper", () => {
       h.stepFrames(30);
     });
     await shootScreen("title-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(60));
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(60));
     await shootScreen("early-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(240));
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(240));
     await shootScreen("action-390");
-    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.runAutopilot(600));
+    await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.runAutopilot(600));
     await shootScreen("mid-390");
     await page.evaluate(() => {
       const h = (window as unknown as Win).__AURA_BEAT_HOPPER__;
       h.reset(20261101);
-      const s = h.extras.runAutopilot(900, [0, 1, 2, 3, 4]);
+      const s = h.runAutopilot(900, [0, 1, 2, 3, 4]);
       if (s.phase === "bursting") h.stepFrames(80);
     });
     await shootScreen("results-390");
     await page.setViewportSize({ width: 1280, height: 720 });
 
     /* restart re-centres hold/pose state (C4) and resets the run */
-    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.extras.restart());
+    const restarted = await page.evaluate(() => (window as unknown as Win).__AURA_BEAT_HOPPER__.restart());
     expect(restarted.phase).toBe("playing");
     expect(restarted.dist).toBe(0);
     expect(restarted.lives).toBe(3);
