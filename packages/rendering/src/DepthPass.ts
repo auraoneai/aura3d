@@ -218,17 +218,27 @@ function warnDepthDegradedOnce(code: string, label: string | undefined, detail: 
   console.warn(`${code}: "${label ?? "unlabelled item"}" ${detail}`);
 }
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean {
   if (device.kind !== "webgpu" || isEnginePackedBatchItem(source) || rendererQrFlags(device).on("A3D_QR_STRICT")) return false;
-  const pointProxy = source.shadowGeometry?.topology === "points"
-    && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry;
-  if (source.geometry.topology !== "points" && !pointProxy) return false;
-  warnDepthDegradedOnce("WEBGPU_POINT_DEPTH_SKIPPED", source.label, "is a point caster; WebGPU has no point depth program yet, so it is left out of depth and shadow passes.");
+  if (!webgpuPointDepthCaster(source)) return false;
+  const base = source.material instanceof MaterialInstance ? source.material.baseMaterial : source.material;
+  const clipped = source.globalClipping != null || source.materialClipping != null
+    || (base as (typeof base & { readonly clipping?: unknown }) | undefined)?.clipping != null;
+  if (!clipped) return false;
+  warnDepthDegradedOnce("WEBGPU_POINT_DEPTH_SKIPPED", source.label, "is a clipped point caster; WebGPU has no clipped point depth program yet, so it is left out of depth and shadow passes.");
   return true;
+}
+
+/** The caster itself is points, or its selected shadow proxy is. */
+function webgpuPointDepthCaster(source: RenderItem): boolean {
+  return source.geometry.topology === "points" || (source.shadowGeometry?.topology === "points"
+    && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry);
 }
 function warnAlphaHashDegradedOnce(label: string | undefined): void {
   warnDepthDegradedOnce("DEPTH_ALPHA_HASH_DEGRADED", label, "is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.");
@@ -478,8 +488,9 @@ export function assertDepthClippingSupported(source: RenderItem, clip: ClippingB
   const selectedPointProxy = source.shadowGeometry?.topology === "points" && (device.kind === "webgpu" || clip.groups.length > 0)
     && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry;
   const pointGeometry = source.geometry.topology === "points" || selectedPointProxy;
-  if (device.kind === "webgpu" && pointGeometry) {
-    throw new RenderDeviceError("WebGPU point depth requires a scene-raster point quad program and retained geometry lease", "WEBGPU_POINT_DEPTH_UNSUPPORTED", { label: source.label });
+  // Unclipped point casters draw as one-pixel point lists (see skipWebGPUPointDepthCaster); clipped ones have no twin.
+  if (device.kind === "webgpu" && pointGeometry && clip.groups.length > 0) {
+    throw new RenderDeviceError("WebGPU clipped point depth requires a scene-raster point quad program and retained geometry lease", "WEBGPU_POINT_DEPTH_UNSUPPORTED", { label: source.label });
   }
   if (clip.groups.length === 0) return;
   const base = source.material instanceof MaterialInstance ? source.material.baseMaterial : source.material;

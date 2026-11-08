@@ -384,46 +384,50 @@ describe("prepared depth plans", () => {
     } finally { proxy.dispose(); geometry.dispose(); device.dispose(); }
   });
 
-  it.each(["depth", "shadow"] as const)("strict: rejects unclipped WebGPU point %s and point proxies before any upload", (clippingPass) => {
+  it.each([["depth", false], ["shadow", false], ["depth", true], ["shadow", true]] as const)("draws unclipped WebGPU point %s casters and point proxies as point lists (strict %s)", (clippingPass, strict) => {
     const triangles = Geometry.triangle();
     const points = new Geometry(new VertexBuffer(VertexFormat.P3, 3), null, "points");
     const device = checkedMock("webgpu");
-    setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
-    const context = { device, width: 8, height: 8 };
-    try {
-      device.beginFrame(8, 8);
-      for (const caster of [{ geometry: points }, { geometry: triangles, shadowGeometry: points }]) {
-        expect(() => assertDepthClippingSupported(caster, createClippingBinding({ backend: "webgpu", pass: clippingPass }), device))
-          .toThrow(/WebGPU point depth requires a scene-raster point quad program/);
-        const pass = new DepthPass({ clippingPass, checkedSubmission: true, casters: [{ geometry: triangles }, caster] });
-        for (const run of [() => pass.prepare(context), () => pass.execute(context), () => pass.assertLegacyDepthFallback(context)]) {
-          expect(run).toThrow(/WebGPU point depth requires a scene-raster point quad program/);
-        }
-      }
-      expect(device.drawCommands).toHaveLength(0);
-      expect(device.getDiagnostics().buffers).toBe(0);
-      expect(points.vertexBuffer.hasAttemptedUpload).toBe(false);
-      expect(triangles.vertexBuffer.hasAttemptedUpload).toBe(false);
-      device.endFrame();
-    } finally { points.dispose(); triangles.dispose(); device.dispose(); }
-  });
-
-  it.each(["depth", "shadow"] as const)("leaves WebGPU point %s casters and point proxies out of the pass with one warning outside strict", (clippingPass) => {
-    const triangles = Geometry.triangle();
-    const points = new Geometry(new VertexBuffer(VertexFormat.P3, 3), null, "points");
-    const device = checkedMock("webgpu");
+    if (strict) setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const context = { device, width: 8, height: 8 };
     try {
       device.beginFrame(8, 8);
+      for (const caster of [{ geometry: points }, { geometry: triangles, shadowGeometry: points }]) {
+        expect(() => assertDepthClippingSupported(caster, createClippingBinding({ backend: "webgpu", pass: clippingPass }), device)).not.toThrow();
+      }
       const pass = new DepthPass({ clippingPass, checkedSubmission: true,
         casters: [{ geometry: triangles, label: "mesh" }, { geometry: points, label: "dust" }, { geometry: triangles, shadowGeometry: points, label: "proxy" }] });
       expect(() => pass.assertLegacyDepthFallback(context)).not.toThrow();
       pass.prepare(context).dispose();
       pass.execute(context);
+      // Same as WebGL2: the depth program writes no point size, so each point rasterizes as one pixel.
+      expect(device.drawCommands.map((command) => command.topology)).toEqual(["triangles", "points", "points"]);
+      expect(device.drawCommands[1]!.vertexCount).toBe(3);
+      expect(warn.mock.calls.some(([line]) => String(line).startsWith("WEBGPU_POINT_DEPTH_SKIPPED"))).toBe(false);
+      device.endFrame();
+    } finally { warn.mockRestore(); points.dispose(); triangles.dispose(); device.dispose(); }
+  });
+
+  it.each(["depth", "shadow"] as const)("leaves clipped WebGPU point %s casters out with one warning outside strict and rejects them in strict", (clippingPass) => {
+    const triangles = Geometry.triangle();
+    const points = new Geometry(new VertexBuffer(VertexFormat.P3, 3), null, "points");
+    const clipped = { geometry: points, label: "dust", materialClipping: { planes: [[1, 0, 0, 0]] as [number, number, number, number][], clipShadows: true } };
+    const device = checkedMock("webgpu");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const context = { device, width: 8, height: 8 };
+    try {
+      device.beginFrame(8, 8);
+      const pass = new DepthPass({ clippingPass, checkedSubmission: true, casters: [{ geometry: triangles, label: "mesh" }, clipped] });
+      pass.prepare(context).dispose();
+      pass.execute(context);
       expect(device.drawCommands.map((command) => command.topology)).toEqual(["triangles"]);
       expect(points.vertexBuffer.hasAttemptedUpload).toBe(false);
       expect(warn.mock.calls.filter(([line]) => String(line).startsWith("WEBGPU_POINT_DEPTH_SKIPPED")).length).toBeLessThanOrEqual(1);
+      expect(() => assertDepthClippingSupported(clipped, createClippingBinding({ backend: "webgpu", pass: clippingPass, material: clipped.materialClipping, primitive: "point" }), device))
+        .toThrow(/WebGPU clipped point depth requires a scene-raster point quad program/);
+      setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
+      expect(() => new DepthPass({ clippingPass, checkedSubmission: true, casters: [clipped] }).execute(context)).toThrow();
       device.endFrame();
     } finally { warn.mockRestore(); points.dispose(); triangles.dispose(); device.dispose(); }
   });
