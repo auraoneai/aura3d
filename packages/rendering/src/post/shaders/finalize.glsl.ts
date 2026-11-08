@@ -72,21 +72,29 @@ void main() {
 }
 `;
 
-/** Encoded P3 pass-through for the admitted same-gamut tail subset. */
+/**
+ * Encoded P3 finalize for the admitted same-gamut tail subset: film grain (the same display-space noise as the sRGB
+ * finalize, applied to the encoded P3 values; zero intensity leaves the bytes untouched) and the authored dither.
+ */
 export const FINALIZE_P3_GLSL = /* glsl */ `#version 300 es
 precision highp float;
 uniform sampler2D u_source;
 uniform float u_frame;
 uniform int u_ditherEnabled;
 uniform int u_outputAlphaMode; // 0 straight, 1 opaque, 2 premultiplied
+uniform float u_grainIntensity;
+uniform float u_grainSize;
+uniform float u_grainLuminanceResponse;
 in vec2 v_uv;
 out vec4 outColor;
 
 ${POST_COMMON_GLSL}
+${FINALIZE_FNS_GLSL}
 
 void main() {
   vec4 source = texture(u_source, v_uv);
   vec3 encoded = source.rgb;
+  if (u_grainIntensity > 0.0) encoded += filmGrain(gl_FragCoord.xy, u_frame, u_grainIntensity, u_grainSize, u_grainLuminanceResponse, luma709(encoded));
   if (u_ditherEnabled != 0) encoded += triangularDither(gl_FragCoord.xy, u_frame);
   vec4 result = vec4(clamp(encoded, 0.0, 1.0), source.a);
   if (u_outputAlphaMode == 1) result.a = 1.0;

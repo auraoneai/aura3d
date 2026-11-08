@@ -53,10 +53,27 @@ interface OutputVariantKey {
   readonly fullCoverage: boolean;
   readonly outputColorSpace: "srgb" | "display-p3";
   readonly alphaMode: "opaque" | "straight" | "premultiplied";
+  readonly colorGrade: boolean;
 }
 
 function variantCacheKey(key: OutputVariantKey): string {
-  return `${key.toneMapping}|${key.coverage ? 1 : 0}|${key.overlay ? 1 : 0}|${key.vignette ? 1 : 0}|${key.fullCoverage ? 1 : 0}|${key.outputColorSpace}|${key.alphaMode}`;
+  const base = `${key.toneMapping}|${key.coverage ? 1 : 0}|${key.overlay ? 1 : 0}|${key.vignette ? 1 : 0}|${key.fullCoverage ? 1 : 0}|${key.outputColorSpace}|${key.alphaMode}`;
+  return key.colorGrade ? `${base}|grade` : base;
+}
+
+/** Validated grade uniforms, or an error naming the out-of-range field (same ranges as the fused grade). */
+function outputColorGrade(grade: OutputPassOptions["colorGrade"]): { readonly a: number[]; readonly b: number[] } | null {
+  if (grade === undefined) return null;
+  const ranges: ReadonlyArray<readonly [keyof NonNullable<OutputPassOptions["colorGrade"]>, number, number]> = [
+    ["contrast", 0, 3], ["temperature", -1, 1], ["tint", -1, 1], ["saturation", 0, 3], ["vibrance", -1, 1], ["vignette", 0, 1]
+  ];
+  for (const [name, min, max] of ranges) {
+    const value = grade?.[name];
+    if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) {
+      throw new Error(`OUTPUT_COLOR_GRADE_UNSUPPORTED:${name}`);
+    }
+  }
+  return { a: [grade.contrast, grade.temperature, grade.tint, grade.saturation], b: [grade.vibrance, grade.vignette, 0, 0] };
 }
 
 function createFullscreenTriangleGeometry(): Geometry {
@@ -274,6 +291,7 @@ export class OutputPass implements OutputPassLike, DisposableResource {
       const overlay = options.overlay ?? null;
       const overlayActive = overlay !== null && overlayEnabledAmounts(overlay);
       const vignette = options.vignette !== undefined && options.vignette.intensity > 0 ? options.vignette : null;
+      const grade = outputColorGrade(options.colorGrade);
       const key: OutputVariantKey = {
         toneMapping,
         coverage: useCoverage,
@@ -281,7 +299,8 @@ export class OutputPass implements OutputPassLike, DisposableResource {
         vignette: vignette !== null,
         fullCoverage: options.fullCoverage === true && !useCoverage,
         outputColorSpace,
-        alphaMode
+        alphaMode,
+        colorGrade: grade !== null
       };
       const cacheKey = variantCacheKey(key);
       const shader = this.moduleFor(key).compile(this.device);
@@ -305,6 +324,10 @@ export class OutputPass implements OutputPassLike, DisposableResource {
       if (vignette) {
         uniforms.set("u_vignette", [vignette.intensity, vignette.smoothness, vignette.roundness, input.width / Math.max(1, input.height)]);
         uniforms.set("u_vignetteColor", [vignette.color[0], vignette.color[1], vignette.color[2]]);
+      }
+      if (grade) {
+        uniforms.set("u_gradeA", grade.a);
+        uniforms.set("u_gradeB", grade.b);
       }
       if (overlay) {
         overlayUniforms(overlay, input.width / Math.max(1, input.height), overlayActive, uniforms);
@@ -383,7 +406,8 @@ export class OutputPass implements OutputPassLike, DisposableResource {
         vignette: key.vignette,
         fullCoverage: key.fullCoverage,
         outputColorSpace: key.outputColorSpace,
-        alphaMode: key.alphaMode
+        alphaMode: key.alphaMode,
+        ...(key.colorGrade ? { colorGrade: true } : {})
       };
       module = new ShaderModule({
         label: `prd01-output-${cacheKey}`,

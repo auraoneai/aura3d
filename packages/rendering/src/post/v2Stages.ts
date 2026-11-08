@@ -2084,17 +2084,36 @@ export function v2NeedsLdrTail(pipeline: PostPipelineOptions, token?: PostDiagno
     || pipeline.antiAliasing === "smaa" || displayCustoms);
 }
 
-/** Snapshot the bounded display-P3 tail before any encoded P3 scratch is written. */
+/** Frozen copy of a display-stage option bag: only finite numeric fields (and an RGB colour) survive the snapshot. */
+function snapshotDisplayStage(options: unknown, numeric: readonly string[], withColor: boolean): Readonly<Record<string, unknown>> | undefined {
+  if (!options) return undefined;
+  if (typeof options !== "object") return Object.freeze({});
+  const source = options as Record<string, unknown>;
+  const copy: Record<string, unknown> = {};
+  for (const name of numeric) {
+    const value = source[name];
+    if (typeof value === "number" && Number.isFinite(value)) copy[name] = value;
+  }
+  if (withColor && source["color"] !== undefined) copy["color"] = Object.freeze(vignetteColorRgb(source["color"]));
+  return Object.freeze(copy);
+}
+
+/**
+ * Snapshot the bounded display-P3 tail before any encoded P3 scratch is written. The admitted stages are gamut-agnostic
+ * kernels on encoded display values (display vignette, film grain, SMAA, FXAA, pixelation, glitch, afterimage); a user
+ * LUT (authored for sRGB primaries), an upscale/RCAS pass and after-tonemap custom passes keep the sRGB fallback.
+ */
 export function prepareP3DisplayTail(pipeline: PostPipelineOptions, token?: PostDiagnosticToken, postScopeId?: object): PostPipelineOptions | undefined {
-  if (pipeline.outputColorSpace !== "display-p3" || pipeline.vignette || pipeline.filmGrain || pipeline.lut
-      || (pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "msaa" && pipeline.antiAliasing !== "taa")
+  if (pipeline.outputColorSpace !== "display-p3" || pipeline.lut
+      || (pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "msaa" && pipeline.antiAliasing !== "taa"
+        && pipeline.antiAliasing !== "smaa" && pipeline.antiAliasing !== "fxaa")
       || (pipeline.renderScale !== undefined && (!Number.isFinite(pipeline.renderScale) || pipeline.renderScale < 1))
       || typeof pipeline.dither !== "boolean"
       || (pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque" && pipeline.alphaMode !== "straight" && pipeline.alphaMode !== "premultiplied")
-      || !Array.isArray(pipeline.nativeEffects) || pipeline.nativeEffects.length === 0
+      || (pipeline.nativeEffects !== undefined && !Array.isArray(pipeline.nativeEffects))
       || mergedCustomPasses(pipeline, token, postScopeId).some(pass => pass.insertAt === "after-tonemap")) return undefined;
   const effects: NativePostEffect[] = [];
-  for (const effect of pipeline.nativeEffects) {
+  for (const effect of pipeline.nativeEffects ?? []) {
     let copy: NativePostEffect;
     if (effect.kind === "pixelation") copy = { kind: "pixelation", size: effect.size };
     else if (effect.kind === "glitch") copy = { kind: "glitch", intensity: effect.intensity, seed: effect.seed };
@@ -2103,7 +2122,10 @@ export function prepareP3DisplayTail(pipeline: PostPipelineOptions, token?: Post
     validateNativePostEffect(copy);
     effects.push(Object.freeze(copy));
   }
-  return Object.freeze({ ...pipeline, nativeEffects: Object.freeze(effects), outputColorSpace: "display-p3" });
+  const vignette = snapshotDisplayStage(pipeline.vignette, ["intensity", "smoothness", "roundness"], true);
+  const filmGrain = snapshotDisplayStage(pipeline.filmGrain, ["intensity", "size", "luminanceResponse"], false);
+  return Object.freeze({ ...pipeline, nativeEffects: Object.freeze(effects), outputColorSpace: "display-p3",
+    ...(vignette ? { vignette } : {}), ...(filmGrain ? { filmGrain } : {}) });
 }
 
 /**
@@ -2204,7 +2226,14 @@ export function runV2LdrTail(
     gl.uniform3f(gl.getUniformLocation(prog, "u_vignetteColor"), vc[0], vc[1], vc[2]);
     gl.uniform2f(gl.getUniformLocation(prog, "u_resolution"), w, h);
     if (!outTarget) {
-      try { host.device.assertSrgbOutputFallbackScope?.(); }
+      try {
+        if (p3) {
+          // Display-P3: FXAA, the display vignette and grain run on the encoded P3 surface (gamut-agnostic kernels).
+          host.device.assertEncodedDisplayTarget(ldr);
+          assertEncodedDisplaySurfaceWritten(encodedSurface!, host.device, ldr);
+          host.device.assertDisplayOutputScope("display-p3");
+        } else host.device.assertSrgbOutputFallbackScope?.();
+      }
       catch (error) {
         try { gl.bindVertexArray(null); } catch { /* Preserve the presentation failure. */ }
         try { host.stateCache.invalidate(); } catch { /* Preserve the presentation failure. */ }
@@ -2244,7 +2273,12 @@ export function runV2LdrTail(
       const vc = vignetteColorRgb(vignette?.color);
       g.uniform3f(g.getUniformLocation(prog, "u_vignetteColor"), vc[0], vc[1], vc[2]);
       g.uniform2f(g.getUniformLocation(prog, "u_resolution"), w, h);
-    });
+    }, p3 ? () => {
+      assertEncodedDisplaySurfaceWritten(encodedSurface!, host.device, ldr);
+      host.device.assertDisplayOutputScope("display-p3");
+      host.device.assertEncodedDisplayTarget(ldr);
+      host.device.assertEncodedDisplayTarget(graded);
+    } : undefined);
     replaceCurrent(graded, gradedLease);
   }
 
