@@ -4,15 +4,16 @@ One guide per live game (`docs/workflows/game-inventory.json`, `kind: "game"`, `
 
 Legend used in the checklists (from the plan): **A1..A18** are the adoption catalog IDs (plan section 4); **GC** = `node tools/game-checks/run.mjs <slug>`; **UT** = the game's targeted vitest folder; **CAP** = the parent's single coordinated ACR capture (`tests/browser/game-luma-capture.spec.ts`); **RG** = real-GPU pass (`tools/real-gpu/run.sh`) for any EXPERIMENTAL flag. W-1..W-8 are the shared work items (plan section 8).
 
-Decision D1: EXPERIMENTAL 5.0 features (WebGPU, worker rendering, reversed/log depth, wide gamut) never ship as a game default. They are reachable only through the lab flags below.
+Decision D1 (superseded by the owner decision of 2026-11-07): an EXPERIMENTAL 5.0 feature (WebGPU, worker rendering, reversed/log depth, wide gamut) is on by default in a game once it passes a real-GPU check there, with WebGL2 / standard depth kept as the automatic fallback and a query flag to opt out. Everything else stays behind the lab flags below.
 
 ## Lab flags (W-8)
 
-Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth in Ion Circuit (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) and the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`). Unknown values are ignored and listed in `flags.ignored`.
+Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`, `resolveLabBackend`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) in Ion Circuit, the other showcase games that pass it and the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`); and the WebGPU backend in Chroma Roll, Dot Dash 3D and Cumulus Dash (`labAppOptions(flags, { backend: "auto" })`, opt out with `?backend=webgl2`). Unknown values are ignored and listed in `flags.ignored`.
 
 | Query | Effect | Option fragment it produces | Label |
 |---|---|---|---|
 | `?backend=auto` or `?backend=webgpu` | request the WebGPU backend, WebGL2 fallback kept | `renderer: { backend, allowFallback: true }` | EXPERIMENTAL |
+| `?backend=webgl2` | force WebGL2 (the opt-out for games whose default is `auto`) | no `renderer` fragment (WebGL2 is the engine default) | opt-out |
 | `?worker=1` | worker-owned rendering, main-thread fallback | `worker: { fallback: "main-thread" }` (the game supplies `createWorker`) | EXPERIMENTAL |
 | `?depth=reversed` or `?depth=logarithmic` | camera depth mode | `camera({ depth: { mode, allowFallback: true } })` via `labCameraOptions` | EXPERIMENTAL |
 | `?gamut=p3` | Display-P3 output (falls back to sRGB, reported in diagnostics) | `output: { outputColorSpace: "display-p3" }` | EXPERIMENTAL |
@@ -21,10 +22,30 @@ Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags
 import { labAppOptions, labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 const lab = readLabFlags();
 const app = createAuraApp(canvas, { scene, ...labAppOptions(lab) /* add worker.createWorker yourself */ });
-// camera({ ...labCameraOptions(lab) })
+// A game whose WebGPU check passed: labAppOptions(lab, { backend: "auto", createWorker }) -> renderer { backend: "auto", allowFallback: true }
+// unless ?backend=webgl2. Code that switches on the backend (point-sprite quads, async frames) uses resolveLabBackend(lab, default).
+// camera({ ...labCameraOptions(lab, "reversed") })
 ```
 
-`?backend=webgl2`, `?worker=0` and `?depth=standard` are not flags (they are the defaults) and are reported as ignored. A game that wires a flag must also show the active backend: use the report below.
+`?worker=0` is not a flag and is reported as ignored. `?depth=standard` and `?backend=webgl2` are the opt-outs for games that default to reversed depth or WebGPU. A game that wires a flag must also show the active backend: use the report below.
+
+### WebGPU default per game (real-GPU check 2026-11-08)
+
+Method: headless Chrome 157 on the real GPU (Apple M4 Max, Metal ANGLE for WebGL2, Dawn for WebGPU), 1280x720, title screen, page settled 16 s, then 3 s of `requestAnimationFrame`; the number used is the engine's own rendered-frame rate (`app.diagnostics().fps`), because some games skip renders while an async frame is in flight and the rAF count then overstates them. 2 to 5 paired runs per game, backend order alternated, another agent's browser work kept the machine loaded (1-minute load 5 to 80, noted per run), so single numbers are noisy and the ratio (geometric mean of the paired WebGPU/WebGL2 ratios) is what decides. Rendering correctness comes from the earlier 25-game sweep (same draws, 0 errors, static diff 0.1-2.8) plus a default-vs-`?backend=webgl2` capture of the three switched games (static diff 0.3, 2.4, 3.1; Cumulus Dash differs only by its moving title camera). Absolute rates are low because this run is headless and loaded; they are not a performance claim.
+
+Rule: WebGPU becomes the default (`backend: "auto"`, WebGL2 fallback kept) only where it renders correctly and runs at >= 0.9x WebGL2.
+
+| Game | WebGL2 fps (median) | WebGPU fps (median) | WebGPU/WebGL2 | Default |
+|---|---|---|---|---|
+| Chroma Roll | 15.4 | 24.8 | 1.04 (n=5) | WebGPU (auto) |
+| Dot Dash 3D | 3.4 | 4.0 | 1.04 (n=5) | WebGPU (auto) |
+| Cumulus Dash | 11.4 | 8.3 | 0.90 (n=5, borderline) | WebGPU (auto) |
+| The Bellkeeper's Walk | 21.1 | 21.8 | 0.87 (n=5) | WebGL2 |
+| Near misses: Saltwind Highway 0.79, Serpentine Sky Run 0.82, Ion Circuit 0.81, Cross Hop 0.78, Slingshot Siege 0.74, Top Tennis 0.73, Shadowstep Gauntlet 0.72 | | | < 0.9 | WebGL2 |
+| Further below: Roadster Rush 0.69, Teleoperator 0.69, Iron Crown 0.67, Duneglide 0.66, Aura FC 0.65, Aura Diamond 0.62, Gridlock Courier 0.58, Aura Links 0.57, Thermal Drift (showcase-heatsink) 0.54, Aura Hoops 0.50, Bunker Zero 0.44, Craterline GP 0.43, Pip's Big Leap 0.42, Lamplight Line 0.28 | | | < 0.9 | WebGL2 |
+| Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper | | | n/a | WebGL2: `?backend=webgpu` falls back cleanly (`CUSTOM_SHADER_WGSL_MISSING`, about 30 runner-kit / scenery GLSL materials per game have no WGSL twin) |
+
+Dot Dash 3D spends most of each WebGL2 frame re-capturing its `update: "once"` reflection probe (6 faces plus a CPU prefilter, from a CPU profile), so its low rate measures that engine cost more than the backend. Thermal Drift and Pip's Big Leap are also 2 to 5 fps headless for reasons not yet profiled.
 
 ## Shared helpers added in Wave 0
 

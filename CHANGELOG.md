@@ -4,6 +4,19 @@ Version: 5.2.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## Unreleased (5.3.0)
+
+### Showcase games: experimental features on by default where they passed a real-GPU check
+
+- WebGPU is now the default backend in Chroma Roll, Dot Dash 3D and Cumulus Dash (`backend: "auto"`, WebGL2 stays the automatic fallback; `?backend=webgl2` forces WebGL2). They rendered the same frame as WebGL2 and kept at least 0.9x its frame rate (paired-run ratios 1.04, 1.04 and 0.90; Cumulus Dash is borderline). Every other showcase game stays on WebGL2 by default because WebGPU ran at 0.28x to 0.88x of WebGL2 there, even though all 25 original games render correctly with `?backend=webgpu`. Measured headless on one Apple M4 Max under heavy machine load, title screen, 1280x720; these are not public performance claims. Per-game table in `docs/upgrade-5.0.0/README.md`.
+- Reversed depth is the default in the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); `?depth=standard` opts out. Their title frames match standard depth (static diff 0.0 to 0.3).
+- The five new games accept `?backend=webgpu|auto`, but they fall back to WebGL2 (`CUSTOM_SHADER_WGSL_MISSING`: their runner-kit and scenery GLSL materials have no WGSL twins yet), so they stay on WebGL2.
+- Lab flags (`apps/showcase-port-shared/lab-flags.ts`): `?backend=webgl2` is now an accepted value meaning "force WebGL2"; `labAppOptions(flags, { backend: "auto", createWorker })` takes a per-game default backend (the old `labAppOptions(flags, createWorker)` form still works); `resolveLabBackend(flags, default)` gives the requested backend for code that switches on it (point-sprite quads, async frames), so `?backend=webgl2` no longer turns those WebGPU paths on.
+
+### Known limits
+
+- Dot Dash 3D re-captures its `update: "once"` reflection probe (all six faces plus a CPU prefilter) on every WebGL2 frame, which dominates its frame time (CPU profile); the likely cause is that every scene change publishes a new atmosphere snapshot and the probe host disposes its probes when the snapshot identity changes. Thermal Drift and Pip's Big Leap are also very slow headless (2 to 5 fps) for other reasons not yet profiled. Not fixed here.
+
 ## 5.2.0 (2026-11-07)
 
 A minor release: the 5.1.x lanes that were held back from 5.1.0 (typed point and instance streams, picking, React embedding, guessable-API aliases, a cold-start look, studio materials, physics setup errors, contact-shadow participants and template fixes). Everything is additive; nothing in the 5.1.0 public API is removed or narrowed.

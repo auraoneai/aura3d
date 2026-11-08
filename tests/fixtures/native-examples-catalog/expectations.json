@@ -3848,7 +3848,7 @@
       },
       "source": {
         "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "c4bb2c63b71210eef4fb6675f0f5241bae0447bfea35537c796e230ba657529d"
+        "sha256": "d1c3ada9d79f51a5c51926ad8d327687c2a63bcc8ede15519b858fae7e959908"
       },
       "sourceDependencies": [
         {
@@ -4163,7 +4163,7 @@
         },
         {
           "path": "examples/aura-slam/main.ts",
-          "sha256": "48b267f27c2615ebb9923d05ec4279f2378e69336ca8eeda1ab50a4ab389d3b0"
+          "sha256": "ffd050915867c10ec83f8466835a84126538c646cdbe6c2878dd59756d1f2ccb"
         },
         {
           "path": "examples/aura-slam/shell/boot.ts",
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "8e545b257a9ddef3b8204e04a5517f590a5850333129f4afcf3a1d96e5274785"
+          "sha256": "4a23686798a3410cc36de4cbfa45379d544dd23ce3c729a772bae3ff03e44d9d"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4818,7 +4818,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "8e545b257a9ddef3b8204e04a5517f590a5850333129f4afcf3a1d96e5274785"
+          "sha256": "4a23686798a3410cc36de4cbfa45379d544dd23ce3c729a772bae3ff03e44d9d"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -5109,7 +5109,7 @@
       },
       "source": {
         "path": "examples/last-train-port/main.ts",
-        "sha256": "14a43033ab181c9dd0df1e17c5a3060384b402b67ef7c930c776cf295e81f33b"
+        "sha256": "6e2f5e49ce7741fee686c489fbd90e46e2494d0699f6828f431bb7953b01c4fa"
       },
       "sourceDependencies": [
         {
@@ -5118,7 +5118,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "f6e7fab27ee4e3268347141a9ac4fc243ddccc017ca3926cf57a0cc514b4b35d"
+          "sha256": "b01c47d7cd8b014d8a03c530994f80afb4faf4af645b44ba3e6ecded2e361680"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5218,11 +5218,11 @@
         },
         {
           "path": "examples/last-train-port/main.ts",
-          "sha256": "14a43033ab181c9dd0df1e17c5a3060384b402b67ef7c930c776cf295e81f33b"
+          "sha256": "6e2f5e49ce7741fee686c489fbd90e46e2494d0699f6828f431bb7953b01c4fa"
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "f6e7fab27ee4e3268347141a9ac4fc243ddccc017ca3926cf57a0cc514b4b35d"
+          "sha256": "b01c47d7cd8b014d8a03c530994f80afb4faf4af645b44ba3e6ecded2e361680"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -6385,7 +6385,7 @@
       },
       "source": {
         "path": "examples/splat-rush-port/main.ts",
-        "sha256": "b413d7c6b7ea41cf8ce76a02a5ff9326ce4d7f481ab5fa49ab932cfc3e1b2c23"
+        "sha256": "774ac5a3602f3adb722e5821a4be7ecc797c08a1bbf693b4b39e6e3adf194a01"
       },
       "sourceDependencies": [
         {
@@ -6481,7 +6481,7 @@
       "sourceDependencies": [
         {
           "path": "examples/splat-rush-port/main.ts",
-          "sha256": "b413d7c6b7ea41cf8ce76a02a5ff9326ce4d7f481ab5fa49ab932cfc3e1b2c23"
+          "sha256": "774ac5a3602f3adb722e5821a4be7ecc797c08a1bbf693b4b39e6e3adf194a01"
         },
         {
           "path": "examples/splat-rush-port/sim.ts",
@@ -6572,7 +6572,7 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "1a62ad9b2d1a46e04b05a1587c166ea39fe6830f657f5e1fe2dd6a9f592ec3a8"
+          "sha256": "0affcd5fb9c3f39a4b19001a5e3321117f39a5214a1414f2cd8581ce67796023"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6663,7 +6663,7 @@
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "1a62ad9b2d1a46e04b05a1587c166ea39fe6830f657f5e1fe2dd6a9f592ec3a8"
+          "sha256": "0affcd5fb9c3f39a4b19001a5e3321117f39a5214a1414f2cd8581ce67796023"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -8378,7 +8378,7 @@
       },
       "source": {
         "path": "examples/aura-slam/main.ts",
-        "sha256": "48b267f27c2615ebb9923d05ec4279f2378e69336ca8eeda1ab50a4ab389d3b0"
+        "sha256": "ffd050915867c10ec83f8466835a84126538c646cdbe6c2878dd59756d1f2ccb"
       },
       "sourceDependencies": [
         {
@@ -8506,7 +8506,7 @@
       },
       "source": {
         "path": "apps/showcase-heatsink/src/main.ts",
-        "sha256": "6f5b097d3f06e509021d623d08f3adf52accf7abec764d442596a26cdcc0ac70"
+        "sha256": "b091e92ba4a24aab8ba0c111a2f8e48eabe73d0e57bcc9cf0f7ee9165fa7d457"
       },
       "sourceDependencies": [
         {

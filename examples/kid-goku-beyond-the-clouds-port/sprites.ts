@@ -1,15 +1,19 @@
 /** Pooled glow / puff sprite geometry for the Cloud Runner (star orbs and the FX pools): points, or quads on WebGPU. */
 import { geometry } from "@aura3d/engine";
-import { readLabFlags } from "../shared/lab-flags";
+import { readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { pointQuadArrays, quadUpdater } from "../shared/point-quads";
 
 const f32 = (a: ArrayLike<number>): Float32Array => Float32Array.from(a as ArrayLike<number>);
 
 /**
- * A3/W6: draw the glow / puff sprites as quads (WebGPU has no `gl_PointSize`) only when a lab backend is requested
- * (`?backend=webgpu|auto`); the default scene keeps its points.
+ * A3/W6: draw the glow / puff sprites as quads (WebGPU has no `gl_PointSize`) whenever a WebGPU-capable backend is
+ * requested. The showcase wrapper (apps/showcase-cloud-runner-port/src/lab.ts) decides that, including its `auto`
+ * default; without the wrapper only `?backend=webgpu|auto` does. `?backend=webgl2` keeps the points.
  */
-export const spriteQuads = (): boolean => readLabFlags().backend !== undefined;
+export const spriteQuads = (): boolean => {
+  const wrapped = (globalThis as { __AURA_LAB_APP_OPTIONS__?: { readonly renderer?: unknown } }).__AURA_LAB_APP_OPTIONS__;
+  return wrapped ? wrapped.renderer !== undefined : resolveLabBackend(readLabFlags()) !== undefined;
+};
 /** A pooled sprite geometry of `n` points (`tone`, `aSize`, `aAlpha`), as points or (quads) four corners per point. */
 export function spritePoolGeometry(n: number, quads: boolean) {
   const count = quads ? n * 4 : n;

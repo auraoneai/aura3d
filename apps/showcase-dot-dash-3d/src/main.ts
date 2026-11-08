@@ -10,7 +10,6 @@ import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -45,17 +44,12 @@ const inputOptions = {
   bufferMs: 140
 } as const;
 
-// Lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu and ?gamut=p3 reach the engine. ?worker= and
-// ?depth= are not wired for this game. Without a flag both fragments are empty and the options are unchanged.
-const { renderer: labRenderer, output: labOutput } = labAppOptions(readLabFlags());
-
 const g = createGame({
-  ...(labRenderer ? { renderer: labRenderer } : {}),
-  ...(labOutput ? { output: labOutput } : {}),
   id: "dot-dash-3d",
   target: "#app",
-  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=auto|webgpu (WebGL2 fallback kept); defaults unchanged.
-  ...(() => { const { output, renderer } = labAppOptions(readLabFlags()); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}) }; })(),
+  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=. WebGPU is the default (backend "auto", WebGL2 fallback kept;
+  // real-GPU check 2026-11-08: same frame, >= 0.9x the WebGL2 frame rate); `?backend=webgl2` forces WebGL2.
+  ...(() => { const { output, renderer } = labAppOptions(readLabFlags(), { backend: "auto" }); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}) }; })(),
   diagnostics: { overlay: false, performancePanel: false },
   scene: buildScene,
   input: inputOptions,
