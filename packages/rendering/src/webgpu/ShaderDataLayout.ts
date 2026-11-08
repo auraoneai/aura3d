@@ -166,6 +166,8 @@ function joinPath(parent: string, key: string | number | undefined): string {
   return key === undefined ? parent : typeof key === "number" ? `${parent}[${key}]` : `${parent}.${key}`;
 }
 
+const LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+
 /** The success condition of `sequence`, without a path. */
 function isSequence(value: unknown, length: number): value is ArrayLike<unknown> {
   return !!value && typeof value === "object" && !(value instanceof DataView) && (value as ArrayLike<unknown>).length === length;
@@ -232,9 +234,21 @@ export function writeShaderData(
       : new Uint8Array(target.buffer, target.byteOffset, target.byteLength);
   if (byteOffset + layout.size > bytes.byteLength) fail("SHADER_DATA_RANGE", "$", "target is too small for the layout");
 
-  // Write a temporary image first so all validation errors leave the target intact.
-  const staging = new Uint8Array(layout.size);
-  const view = new DataView(staging.buffer);
+  // Write a temporary image first so all validation errors leave the target intact. A freshly allocated image has
+  // nothing to protect, so it is written in place (saves one layout-sized allocation and copy per upload).
+  const direct = target === undefined && byteOffset === 0;
+  const staging = direct ? bytes : new Uint8Array(layout.size);
+  const view = new DataView(staging.buffer, staging.byteOffset, staging.byteLength);
+  // f32 vectors and matrices (the bulk of every uniform block) are stored through a typed view: the stored f32 is
+  // finite exactly when `plainScalarValid("f32", v)` holds, so the check reads the stored value back.
+  const f32 = LITTLE_ENDIAN && staging.byteOffset % 4 === 0 ? new Float32Array(staging.buffer, staging.byteOffset, staging.byteLength >> 2) : undefined;
+  function storeF32(item: unknown, at: number, parent: string, key: string | number | undefined, index: number): void {
+    if (f32 !== undefined && typeof item === "number") {
+      f32[at >> 2] = item;
+      if (Number.isFinite(f32[at >> 2]!)) return;
+    }
+    storeScalar("f32", item, at, joinPath(parent, key), index);
+  }
   // Paths name the failing element in errors only; they are built on failure (or once per compound level), never
   // once per scalar on the success path (this runs for every uniform block upload, every frame).
   function writeScalar(type: ShaderDataScalar, v: number, offset: number): void {
@@ -254,6 +268,10 @@ export function writeShaderData(
     switch (type.kind) {
       case "vector": {
         const items = values(input, type.length, parent, key);
+        if (type.element === "f32") {
+          for (let i = 0; i < type.length; i += 1) storeF32(items[i], offset + i * 4, parent, key, i);
+          return;
+        }
         for (let i = 0; i < type.length; i += 1) {
           const item = items[i];
           if (typeof item === "number" && plainScalarValid(type.element, item)) writeScalar(type.element, item, offset + i * 4);
@@ -265,10 +283,7 @@ export function writeShaderData(
         const items = values(input, type.columns * type.rows, parent, key);
         for (let c = 0; c < type.columns; c += 1) {
           for (let r = 0; r < type.rows; r += 1) {
-            const item = items[c * type.rows + r];
-            const at = offset + c * current.stride! + r * 4;
-            if (typeof item === "number" && plainScalarValid("f32", item)) writeScalar("f32", item, at);
-            else storeScalar("f32", item, at, joinPath(parent, key), c * type.rows + r);
+            storeF32(items[c * type.rows + r], offset + c * current.stride! + r * 4, parent, key, c * type.rows + r);
           }
         }
         return;
@@ -298,6 +313,6 @@ export function writeShaderData(
     }
   }
   store(layout, value, 0, "$", undefined);
-  bytes.set(staging, byteOffset);
+  if (!direct) bytes.set(staging, byteOffset);
   return bytes.subarray(byteOffset, byteOffset + layout.size);
 }

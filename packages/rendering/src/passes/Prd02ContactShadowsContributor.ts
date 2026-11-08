@@ -209,7 +209,8 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
   }
   return included;
   function checkItem(item: RenderItem): void {
-    if (!forwardContactGeometrySafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
+    // Providers were proven once above for ctx.flags; nothing in this loop runs user code.
+    if (!forwardContactGeometrySafe(item, ctx.flags, true)) fail(item, "an unverified material or geometry participant");
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     const material = item.material;
     const base = material instanceof MaterialInstance ? material.baseMaterial : material;
@@ -218,7 +219,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     // that does not move vertices, by the position-only depth. Anything else keeps the old refusal.
     const portable = base instanceof PortableShaderMaterial ? base : undefined;
     if (portable && (strict || !portableContactDepthRepresentable(item, portable))) fail(item, "an unverified custom or graph material participant");
-    if (!portable && !forwardContactParticipantSafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
+    if (!portable && !forwardContactParticipantSafe(item, ctx.flags, true)) fail(item, "an unverified material or geometry participant");
     if (item.geometry.topology !== "triangles") fail(item, "non-triangle coverage");
     if (item.geometryMatrix && !identityMatrix(item.geometryMatrix)) fail(item, "a geometry transform");
     if (item.instanceAttributes?.length || (item.instanceCount !== undefined && item.instanceCount > 1 && !item.instanceTransforms)) fail(item, "custom instance attributes");

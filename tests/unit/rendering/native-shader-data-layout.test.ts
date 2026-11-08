@@ -108,6 +108,19 @@ describe("shader data layouts", () => {
     expect([...target.slice(128)]).toEqual(Array(16).fill(0xa5));
   });
 
+  it("rejects f32 vector and matrix values outside the finite f32 range on the typed fast path", () => {
+    const layout = deriveShaderDataLayout(mixed, "glsl-std140");
+    for (const bad of [{ axis: [1, 1e39, 3] }, { axis: [1, Number.NaN, 3] }, { transform: [10, 11, 12, 20, Infinity, 22] }, { axis: [1, "2", 3] }]) {
+      expect(() => writeShaderData(layout, { ...mixedValue, ...bad })).toThrow();
+      const target = new Uint8Array(layout.size + 16).fill(7);
+      expect(() => writeShaderData(layout, { ...mixedValue, ...bad }, target, 16)).toThrow();
+      expect(target.every((byte) => byte === 7)).toBe(true);
+    }
+    const fresh = writeShaderData(layout, mixedValue);
+    const placed = writeShaderData(layout, mixedValue, new Uint8Array(layout.size + 16), 16);
+    expect([...fresh]).toEqual([...placed]);
+  });
+
   it("snapshots caller schemas so later edits cannot change a derived layout", () => {
     const schema = { kind: "array" as const, element: "u32" as const, length: 2 };
     const layout = deriveShaderDataLayout(schema, "wgsl-storage");
