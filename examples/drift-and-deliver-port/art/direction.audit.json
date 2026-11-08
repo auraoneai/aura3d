@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/drift-and-deliver-port/art/direction.ts",
-  "sourceSha256": "37a858aac40974d6c5f459f4bc293b5899413974a25374a594e2c4cb54fbab3a",
+  "sourceSha256": "3bffc6d1ef7bc38d4bf8710344eca028a305cc7ff43985fd916ad3986c38ff29",
   "id": "drift-and-deliver-port",
   "genre": "vehicle-delivery",
   "signatureEffect": "delivery-beacon",

@@ -55,12 +55,15 @@ RUN if [ "$AURA3D_NATIVE_ACCEPTANCE" != "1" ]; then \
 #     (tools/vfx-atlas-bake). The version check fails the build, not a later run.
 ARG KTX_VERSION=4.4.2
 ARG KTX_SHA256=a8781bad05f9624edbf910b7f258cd0a4ba7d3e63b49ecc0a0ab440bf6a0a245
+# GitHub API asset id of the same file: fallback when github.com release downloads fail (seen 2026-11-08 as 504s); the SHA-256 check still applies.
+ARG KTX_ASSET_ID=300417090
 RUN set -eux; \
     if [ "$AURA3D_NATIVE_ACCEPTANCE" = "1" ]; then exit 0; fi; \
     if ! command -v curl >/dev/null || ! command -v bzip2 >/dev/null; then \
       apt-get update; apt-get install -y --no-install-recommends ca-certificates curl bzip2; rm -rf /var/lib/apt/lists/*; \
     fi; \
-    curl -fsSL -o /tmp/ktx.tar.bz2 "https://github.com/KhronosGroup/KTX-Software/releases/download/v${KTX_VERSION}/KTX-Software-${KTX_VERSION}-Linux-x86_64.tar.bz2"; \
+    curl -fsSL --retry 3 -o /tmp/ktx.tar.bz2 "https://github.com/KhronosGroup/KTX-Software/releases/download/v${KTX_VERSION}/KTX-Software-${KTX_VERSION}-Linux-x86_64.tar.bz2" \
+      || curl -fsSL --retry 3 -H "Accept: application/octet-stream" -o /tmp/ktx.tar.bz2 "https://api.github.com/repos/KhronosGroup/KTX-Software/releases/assets/${KTX_ASSET_ID}"; \
     echo "${KTX_SHA256}  /tmp/ktx.tar.bz2" | sha256sum -c -; \
     mkdir -p /opt/ktx; \
     tar -xjf /tmp/ktx.tar.bz2 -C /opt/ktx --strip-components=1; \

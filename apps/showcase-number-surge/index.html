@@ -172,6 +172,102 @@
       #final-score { font-size: clamp(44px, 10vw, 76px); color: var(--ink); font-variant-numeric: tabular-nums; }
       #new-best { color: var(--gold); font-size: 18px; }
       #new-best[hidden] { display: none; }
+      #howto-screen { z-index: 30; background: rgba(13, 11, 46, 0.72); padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left)); }
+      .howto-card {
+        width: min(760px, 100%);
+        max-height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        text-align: left;
+        background: rgba(19, 18, 48, 0.96);
+        border: 1px solid rgba(62, 242, 255, 0.35);
+        border-radius: 18px;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(62, 242, 255, 0.12);
+        padding: 20px 22px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      .howto-card h2 { font-size: clamp(26px, 5vw, 36px); color: var(--cyan); text-shadow: 0 0 18px rgba(62, 242, 255, 0.35); text-align: center; }
+      .howto-goal { font-size: clamp(15px, 3.6vw, 17px); line-height: 1.4; color: var(--ink); text-align: center; }
+      .howto-card h3 { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+      .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .howto-box { background: rgba(234, 246, 255, 0.05); border: 1px solid rgba(234, 246, 255, 0.12); border-radius: 12px; padding: 10px 12px; }
+      .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 14px; line-height: 1.35; color: var(--ink); }
+      .howto-list li { display: flex; align-items: center; gap: 8px; }
+      .howto-list .what { color: var(--ink-dim); }
+      .howto-list b { color: var(--ink); font-weight: 700; }
+      kbd {
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        min-width: 28px;
+        height: 26px;
+        padding: 0 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        color: var(--ink);
+        background: #23224c;
+        border: 1px solid rgba(234, 246, 255, 0.3);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+        flex: none;
+      }
+      .keys { display: inline-flex; flex-wrap: wrap; gap: 4px; flex: none; width: 142px; }
+      .howto-things { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+      .thing { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.35; color: var(--ink-dim); }
+      .thing b { color: var(--ink); }
+      .swatch { flex: none; width: 44px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #ffffff; }
+      .swatch.gate-good { background: #0d3540; border: 3px solid #3ef2ff; }
+      .swatch.gate-bad { background: #381131; border: 3px solid #ff4fd8; }
+      .swatch.wall { background: #5a2d91; color: #ffd84d; font-size: 14px; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.3); }
+      .swatch.orb { width: 30px; margin: 0 7px; border-radius: 50%; }
+      .swatch.orb-gold { background: radial-gradient(circle at 35% 30%, #fff3b8, #ffd84d 55%, #c99a12); }
+      .swatch.orb-green { background: radial-gradient(circle at 35% 30%, #d8ffe3, #7dff9e 55%, #2fb85a); }
+      .swatch.ball { width: 30px; margin: 0 7px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c9fbff, #3ef2ff 60%, #1597a6); color: #10102e; font-size: 12px; }
+      .howto-score { list-style: disc; padding-left: 18px; font-size: 14px; line-height: 1.4; color: var(--ink-dim); display: flex; flex-direction: column; gap: 3px; }
+      .howto-score b { color: var(--ink); }
+      .howto-score .gold { color: var(--gold); }
+      .howto-actions { display: flex; justify-content: center; padding-top: 4px; position: sticky; bottom: -18px; padding-bottom: 2px; background: linear-gradient(rgba(19, 18, 48, 0), rgba(19, 18, 48, 0.96) 35%); }
+      #btn-howto-close { min-height: 52px; min-width: 200px; }
+      /* Footer bar: solid so the close hint never sits over scrolled rules text; button and hint share one row on wide screens. */
+      .howto-actions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 0 -22px -18px; padding: 10px 22px 14px; bottom: -18px; background: rgb(19, 18, 48); border-top: 1px solid rgba(62, 242, 255, 0.2); }
+      .howto-hint { font-size: 12px; color: var(--ink-dim); }
+      .howto-section { margin-bottom: -4px !important; }
+      #howto-screen button:focus-visible, #btn-howto:focus-visible, #btn-howto-pause:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+      .btn-ghost {
+        font-size: 16px;
+        padding: 11px 24px;
+        min-height: 44px;
+        background: rgba(19, 18, 48, 0.8);
+        color: var(--ink);
+        border: 1px solid rgba(234, 246, 255, 0.35);
+        box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+      }
+      @media (max-width: 620px) {
+        .howto-card { padding: 16px 14px 14px; gap: 10px; }
+        .howto-cols, .howto-things { grid-template-columns: 1fr; }
+        .howto-actions { flex-direction: column; margin: 0 -14px -14px; padding: 10px 14px 12px; bottom: -14px; }
+      }
+      @media (max-height: 760px) and (min-width: 621px) {
+        .howto-card { gap: 8px; padding: 12px 20px 12px; }
+        .howto-card h2 { font-size: 28px; }
+        .howto-goal { font-size: 15px; line-height: 1.3; }
+        .howto-box { padding: 8px 12px; }
+        .howto-card h3 { margin-bottom: 4px; }
+        .howto-things { gap: 5px 14px; }
+        .howto-score { line-height: 1.3; gap: 2px; }
+        #btn-howto-close { min-height: 48px; padding: 10px 40px; }
+        .howto-list, .thing, .howto-score { font-size: 13px; }
+        .howto-list { gap: 4px; }
+        kbd { height: 23px; min-width: 25px; font-size: 12px; }
+        .howto-actions { margin: 0 -20px -12px; padding: 8px 20px 10px; bottom: -12px; }
+      }
       @media (prefers-reduced-motion: reduce) {
         .popup { animation-duration: 0.6s; }
         #load-fill { transition: none; }
@@ -209,6 +305,7 @@
       <p class="best-line" id="splash-best">BEST 0</p>
       <div id="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="load-fill"></div></div>
       <button id="btn-start" type="button" aria-busy="true">PLAY NOW</button>
+      <button id="btn-howto" class="btn-ghost" type="button" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
       <label class="toggle-row"><input id="toggle-motion" type="checkbox" /> Reduced motion</label>
       <p class="hint">Drag or ← → / A D to steer · P pauses</p>
     </div>
@@ -230,7 +327,74 @@
     <div id="pause-screen" class="screen no-steer" hidden>
       <h2>PAUSED</h2>
       <button id="btn-resume" type="button">RESUME</button>
+      <button id="btn-howto-pause" class="btn-ghost" type="button" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
       <p class="hint">P or Esc resumes</p>
+    </div>
+
+    <div id="howto-screen" class="screen no-steer" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal" hidden>
+      <div class="howto-card">
+        <h2 id="howto-title">HOW TO PLAY</h2>
+        <p class="howto-goal" id="howto-goal">Steer your number ball through the better gate in every pair to grow its number, then smash each wall by being bigger than it.</p>
+
+        <h3 class="howto-section">Controls</h3>
+        <div class="howto-cols">
+          <section class="howto-box" aria-labelledby="howto-kb">
+            <h3 id="howto-kb">Keyboard</h3>
+            <ul class="howto-list">
+              <li><span class="keys"><kbd aria-label="Left arrow">←</kbd><kbd aria-label="Right arrow">→</kbd><kbd>A</kbd><kbd>D</kbd></span><span class="what">steer left / right</span></li>
+              <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span class="what">start a run, or play again</span></li>
+              <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span class="what">pause / resume</span></li>
+              <li><span class="keys"><kbd>M</kbd></span><span class="what">sound on / off</span></li>
+            </ul>
+          </section>
+          <section class="howto-box" aria-labelledby="howto-touch">
+            <h3 id="howto-touch">Touch &amp; mouse</h3>
+            <ul class="howto-list">
+              <li><span class="keys"><kbd>Drag</kbd></span><span class="what">drag left / right anywhere to steer</span></li>
+              <li><span class="keys"><kbd>PLAY NOW</kbd></span><span class="what">start a run, or <b>PLAY AGAIN</b> after one</span></li>
+              <li><span class="keys"><kbd>PAUSE</kbd></span><span class="what">pause button, bottom right</span></li>
+              <li><span class="keys"><kbd>SOUND</kbd></span><span class="what">sound button, bottom right</span></li>
+            </ul>
+          </section>
+        </div>
+
+        <section class="howto-box" aria-labelledby="howto-road">
+          <h3 id="howto-road">On the road</h3>
+          <div class="howto-things">
+            <div class="thing"><span class="swatch ball" aria-hidden="true">10</span><span><b>Your ball</b> shows your number. You start at 10; it never drops below 1.</span></div>
+            <div class="thing"><span class="swatch gate-good" aria-hidden="true">+20</span><span><b>Cyan gates</b> (+N, ×2) grow your number. Every pair has at least one.</span></div>
+            <div class="thing"><span class="swatch gate-bad" aria-hidden="true">÷2</span><span><b>Magenta gates</b> (−N, ÷2) shrink it. You always pass one gate of each pair.</span></div>
+            <div class="thing"><span class="swatch wall" aria-hidden="true">40</span><span><b>Walls</b> every 300 m show a gold number. Be bigger to smash through; the wall's number comes off yours.</span></div>
+            <div class="thing"><span class="swatch orb orb-gold" aria-hidden="true"></span><span><b>Gold orb</b>: +25 to your number, ×2 your number, or ×2 score for 7 s.</span></div>
+            <div class="thing"><span class="swatch orb orb-green" aria-hidden="true"></span><span><b>Green orb</b>: a shield that blocks one wall you are too small for.</span></div>
+          </div>
+        </section>
+
+        <div class="howto-cols">
+          <section class="howto-box" aria-labelledby="howto-scoring">
+            <h3 id="howto-scoring">Scoring</h3>
+            <ul class="howto-score">
+              <li>A <b>good pick</b> (the better of the two gates) scores what it added × your multiplier.</li>
+              <li>Every <b>3 good picks</b> in a row lifts the multiplier, up to <b>×5</b>. The bar under your score fills as you go; a worse pick resets it to ×1.</li>
+              <li><b>Smash</b> = wall number × 10 × multiplier. <span class="gold">×2 SCORE</span> doubles everything.</li>
+              <li><b>+100 bonus</b> every 750 points.</li>
+            </ul>
+          </section>
+          <section class="howto-box" aria-labelledby="howto-end">
+            <h3 id="howto-end">Lives &amp; the end of a run</h3>
+            <ul class="howto-score">
+              <li><b>One life.</b> Reach a wall with a number that is not bigger than it and the run is over, unless a shield blocks it.</li>
+              <li>Walls roughly double each time and the road speeds up, so keep picking the bigger gate.</li>
+              <li><b>P</b> / <b>Esc</b> pauses, <b>M</b> mutes, <b>Space</b> or <b>PLAY AGAIN</b> restarts.</li>
+            </ul>
+          </section>
+        </div>
+
+        <div class="howto-actions">
+          <button id="btn-howto-close" type="button">GOT IT</button>
+          <p class="howto-hint keys-hint">Esc, Enter or Space to close</p>
+        </div>
+      </div>
     </div>
 
     <div id="render-error" class="screen no-steer" hidden>

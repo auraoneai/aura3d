@@ -25,6 +25,8 @@ export const CONFIG = {
   MAX_MULT: 5,
   COMBO_PER_MULT: 4,
   JUMP_VY: 8.5,
+  /** A hop pressed this long (s) before landing is kept and fires on the landing step. */
+  JUMP_BUFFER: 0.12,
   GRAVITY: 22,
   DUCK_HOLD: 0.18,
   /** Duck should engage this long before the bar crossing. */
@@ -77,6 +79,11 @@ export interface Input {
   lane: number;
   /** With `down`: a dedicated duck press (ArrowDown/S) that ducks at once and never hops on release. */
   duck?: boolean;
+  /**
+   * A dedicated hop press (Space/ArrowUp/W keydown): hops this step when grounded or ducking, never ducks, and needs
+   * no release. Pressed in the air it is buffered and fires on landing if the press came within JUMP_BUFFER of it.
+   */
+  hop?: boolean;
 }
 export const IDLE: Input = { start: false, down: false, up: false, dx: 0, tap: false, lane: 0 };
 
@@ -131,6 +138,8 @@ export interface GameState {
   holdT: number;
   airStart: number;
   duckStart: number;
+  /** Sim time of a hop press made in the air, waiting for landing (-10 = none). */
+  hopQueuedAt: number;
   /** Current x (m), tweening towards laneX(lane). */
   laneOffset: number;
   /** Target lane (-1, 0, 1). */
@@ -217,7 +226,7 @@ export class BeatHopperSim {
     return {
       phase, t: 0, dist: 0, speed: CONFIG.SPEED_INIT, beatIndex: 0, phraseIndex: 0,
       score: 0, lives: CONFIG.MAX_LIVES, combo: 0, maxCombo: 0, mult: 1,
-      pose: "grounded", y: 0, vy: 0, holding: false, holdT: 0, airStart: -10, duckStart: -10,
+      pose: "grounded", y: 0, vy: 0, holding: false, holdT: 0, airStart: -10, duckStart: -10, hopQueuedAt: -10,
       laneOffset: 0, lane: 0, dragAcc: 0, dragTravel: 0, steering: false, dodges: 0, orbs: 0,
       perfect: 0, good: 0, miss: 0, milestones: 0,
       milestoneTarget: CONFIG.MILESTONE, shakeAt: -10, burstT: 0,
@@ -458,6 +467,13 @@ export class BeatHopperSim {
       }
     };
 
+    const hop = (): void => {
+      o.pose = "air";
+      o.vy = CONFIG.JUMP_VY;
+      o.airStart = o.t;
+      o.hopQueuedAt = -10;
+    };
+
     // Input: release first so a duck can end and a fresh tap can start in the same frame.
     if (input.up) {
       if (o.holding) drag();
@@ -469,9 +485,9 @@ export class BeatHopperSim {
       if (o.pose === "duck") {
         o.pose = "grounded";
       } else if (wasTap && o.pose === "grounded") {
-        o.pose = "air";
-        o.vy = CONFIG.JUMP_VY;
-        o.airStart = o.t;
+        hop();
+      } else if (wasTap && o.pose === "air") {
+        o.hopQueuedAt = o.t;
       }
       o.holdT = 0;
     }
@@ -479,6 +495,10 @@ export class BeatHopperSim {
       o.holding = true;
       // A dedicated duck key skips the tap/hold discrimination: it ducks this step and its release never hops.
       o.holdT = input.duck ? CONFIG.DUCK_HOLD : 0;
+    }
+    if (input.hop) {
+      if (o.pose === "air") o.hopQueuedAt = o.t;
+      else hop();
     }
     if (!dragDone) drag();
     if (o.holding && !o.steering) o.holdT += CONFIG.DT;
@@ -493,7 +513,10 @@ export class BeatHopperSim {
       if (o.y <= 0) {
         o.y = 0;
         o.vy = 0;
-        if (o.holding && o.holdT >= CONFIG.DUCK_HOLD) {
+        if (o.t - o.hopQueuedAt <= CONFIG.JUMP_BUFFER + 1e-9) {
+          // A buffered press: hop again on the landing step (judged from this actual hop start).
+          hop();
+        } else if (o.holding && o.holdT >= CONFIG.DUCK_HOLD) {
           o.pose = "duck";
           o.duckStart = o.t;
         } else {

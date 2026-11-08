@@ -4,7 +4,8 @@
  * adaptive DPR, QA hooks at window.__AURA_SHAPE_SHIFT__ and the route-health snapshot.
  *
  * Query params: seed, manual, autostart, autopilot, warmup, dpr, motion=reduced|full, symbols.
- * Settings persist under splatSiblings.shape-shift-sprint.{best,mute,motion,symbols} (guarded).
+ * Settings persist under splatSiblings.shape-shift-sprint.{best,mute,motion,symbols,howtoSeen} (guarded).
+ * The How to play panel opens on the first PLAY (howtoSeen) and from the splash and pause screens.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
@@ -15,6 +16,7 @@ import { Autopilot } from "./autopilot";
 import { createShapeSound, diffSounds, type FrameState } from "./audio";
 import { Fx } from "./fx";
 import { Hud } from "./hud";
+import { createHowTo } from "./howto";
 import { LOOK } from "./look";
 import { ChaseCamera, createShapePresenter, shownOf, viewOf } from "./presentation";
 import { buildWorld, type PostMode, type WorldRuntime } from "./world";
@@ -74,6 +76,7 @@ const KEY_BEST = "splatSiblings.shape-shift-sprint.best";
 const KEY_MUTE = "splatSiblings.shape-shift-sprint.mute";
 const KEY_MOTION = "splatSiblings.shape-shift-sprint.motion";
 const KEY_SYMBOLS = "splatSiblings.shape-shift-sprint.symbols";
+const KEY_HOWTO = "splatSiblings.shape-shift-sprint.howtoSeen";
 let best = Number(store.get(KEY_BEST)) || 0;
 sound.setMuted(store.get(KEY_MUTE) === "1");
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -82,6 +85,16 @@ let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" 
 let symbols = config.symbols || store.get(KEY_SYMBOLS) === "1";
 let paused = false;
 const hud = new Hud();
+/* How to play: closing it marks it seen; when it was opened by PLAY, closing starts the run. */
+const howto = createHowTo({
+  onClose(play) {
+    store.set(KEY_HOWTO, "1");
+    if (play && ready && sim.o.phase === "splash") pending.start = true;
+  }
+});
+for (const node of document.querySelectorAll<HTMLButtonElement>("[data-howto-open]")) {
+  node.addEventListener("click", () => { if (!config.manual && !pilot) howto.open(false); });
+}
 
 /* ------------------------------------------------------------------ frame */
 
@@ -261,7 +274,7 @@ addEventListener("pointerdown", (e) => {
   const target = e.target as HTMLElement | null;
   if (target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "gameOver" && target?.id !== "btn-restart") return;
-  if (paused) return;
+  if (paused || howto.isOpen) return;
   if (sim.o.phase === "splash") startRun();
   else pending.down = true;
   dragging = true;
@@ -337,7 +350,9 @@ paintSettings();
 /* ------------------------------------------------------------------ start / restart / mute */
 
 function startRun(): void {
-  if (!ready) return;
+  if (!ready || howto.isOpen) return;
+  // First PLAY ever: show the rules first; the panel's GOT IT button starts the run.
+  if (!config.manual && !pilot && store.get(KEY_HOWTO) !== "1") { howto.open(true); return; }
   pending.start = true;
 }
 
@@ -489,7 +504,7 @@ const qa = installQaHooks("shape-shift", {
     presentation() {
       return {
         popupSeq: sim.popupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0,
-        pixelRatio, paused, reducedMotion, symbols, warm: warmResult
+        pixelRatio, paused, reducedMotion, symbols, warm: warmResult, howtoOpen: howto.isOpen
       };
     },
     /** Change a setting without the UI (captures). */
