@@ -12,6 +12,7 @@ import { createLoadingProgress } from "../../showcase-port-shared/loading-progre
 import { labAppOptions, parseLabFlags } from "../../showcase-port-shared/lab-flags";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
 
@@ -73,14 +74,15 @@ function tameJuice(j: Record<string, JuiceSpec>): Record<string, JuiceSpec> {
   return out;
 }
 
-// 5.0.2 lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu and ?gamut=p3 only. No worker or depth flag is
-// wired for this game, so those query values are inert. Without a flag `labAppOptions` is `{}` and nothing changes.
+// 5.0.2 lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu, ?gamut=p3 and ?worker=1 (worker rendering,
+// main-thread fallback kept). No depth flag is wired. Without a flag `labAppOptions` is `{}` and nothing changes.
 const LAB = parseLabFlags(window.location.search);
-const { renderer: labRenderer, output: labOutput } = labAppOptions(LAB);
+const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(LAB, createWorkerRendererWorker);
 
 const g = createGame({
   ...(labRenderer ? { renderer: labRenderer } : {}),
   ...(labOutput ? { output: labOutput } : {}),
+  ...(labWorker ? { worker: labWorker } : {}),
   id: "cross-hop",
   target: "#app",
   diagnostics: { overlay: false, performancePanel: false },

@@ -108,6 +108,7 @@ import {
   type PowerupKind,
   type VehicleType
 } from "./render/pools";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 let beaconFrames = 0;
@@ -806,11 +807,11 @@ function paintBootProgress(fraction: number): void {
 
 /**
  * The lab fragments this game takes: `?backend=` (renderer backend + allowFallback, merged into the game's renderer options)
- * and `?gamut=p3` (output). Worker rendering is not taken (the game loop is synchronous).
+ * and `?gamut=p3` (output), and `?worker=1` (worker rendering; the game loop stays on the main thread, fallback kept).
  */
-function labRendererAndOutput(): { renderer?: { backend: "auto" | "webgpu"; allowFallback: true }; output?: { outputColorSpace: "display-p3" } } {
-  const { renderer, output } = labAppOptions(readLabFlags());
-  return { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) };
+function labRendererAndOutput(): Pick<ReturnType<typeof labAppOptions>, "renderer" | "output"> & { worker?: { fallback: "main-thread"; createWorker: () => Worker } } {
+  const { renderer, output, worker } = labAppOptions(readLabFlags(), createWorkerRendererWorker);
+  return { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}), ...(worker ? { worker } : {}) };
 }
 
 async function bootRoadsterRushAura3D(): Promise<void> {
@@ -833,6 +834,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     renderer: { quality: "auto", ...lab.renderer },
     // A10 (EXPERIMENTAL, lab only): `?gamut=p3`.
     ...(lab.output ? { output: lab.output } : {}),
+    // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
+    ...(lab.worker ? { worker: lab.worker } : {}),
     qualityRebuild: { flags: ["game"] }
   });
 

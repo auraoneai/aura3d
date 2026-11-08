@@ -120,6 +120,7 @@ import {
   type PlayPhase
 } from "./game/flow";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 /** game-logic clock: wall time plus the simulated time a ?qa=1 advance() has stepped */
@@ -3360,10 +3361,10 @@ function boot(): void {
   if (holeCardEl) holeCardEl.style.transition = holeCardTransition(state.reducedMotion);
 
   bootStage("scene-build");
-  // 5.0 lab flags (EXPERIMENTAL, default OFF): only ?backend= and ?gamut=p3 are wired; ?worker and ?depth are ignored here (?depth fails the contact-shadow mount: CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED).
+  // 5.0 lab flags (EXPERIMENTAL, default OFF): ?backend=, ?gamut=p3 and ?worker=1 (worker rendering, main-thread fallback kept) are wired; ?depth is ignored here (?depth fails the contact-shadow mount: CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED).
   // With no flag in the URL both fragments are empty and the options are exactly the 4.x/5.0.1 ones.
   const lab = readLabFlags();
-  const labFragment = labAppOptions(lab);
+  const labFragment = labAppOptions(lab, createWorkerRendererWorker);
   const labOptions: Record<string, unknown> = {};
   if (labFragment.renderer || labFragment.output) {
     const base = looks.appOptions(state.course.look) as Record<string, any>;
@@ -3375,6 +3376,7 @@ function boot(): void {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
     ...looks.appOptions(state.course.look),
     ...labOptions,
+    ...(labFragment.worker ? { worker: labFragment.worker } : {}),
     qualityRebuild: { flags: ["game"] }
   } as any);
   // GU47 LINKS-11: runtime VFX are on again (E-F root-caused and fixed the floating dots in the engine; `?vfx=off` still

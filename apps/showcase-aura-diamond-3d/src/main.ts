@@ -194,6 +194,7 @@ import {
   type ContactConfig,
   buildContactConfig
 } from "./batter-pose";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 /* ================================================================== *
  *  Clubs + pitcher repertoires + pitch specs                          *
@@ -389,15 +390,17 @@ function boot(): void {
   };
   let auraApp: ReturnType<typeof createAuraApp>;
   try {
-    // Lab flags (EXPERIMENTAL, default OFF): `?backend=webgpu`, `?gamut=p3`. With no flag the fragments are empty and the
+    // Lab flags (EXPERIMENTAL, default OFF): `?backend=webgpu`, `?gamut=p3`, `?worker=1`. With no flag the fragments are empty and the
     // options below are exactly what shipped before.
-    const lab = labAppOptions(readLabFlags());
+    const lab = labAppOptions(readLabFlags(), createWorkerRendererWorker);
     auraApp = createAuraApp("#app", {
       scene: buildParkScene(PARKS[bootPark], sceneCtx),
       // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
       qualityRebuild: { flags: ["game", "animation", "post"] },
       renderer: { quality: sceneCtx.tier, ...lab.renderer },
-      ...(lab.output ? { output: lab.output } : {})
+      ...(lab.output ? { output: lab.output } : {}),
+      // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
+      ...(lab.worker ? { worker: lab.worker } : {})
     });
   } catch (err) {
     if (renderError) {

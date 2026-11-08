@@ -39,6 +39,7 @@ import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
 import type { UserInputFrame, PlayerState, SimEvent, VenueId } from "./game/types";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -97,7 +98,7 @@ function boot(): void {
   };
 
   // 5.0.2 W-8: EXPERIMENTAL lab flags (?backend=auto|webgpu, ?gamut=p3), all off by default; WebGL2 fallback is kept.
-  // `?worker=1` and `?depth=` are parsed but not wired here (no worker entry, camera is built in scene.ts).
+  // `?worker=1` renders in a worker (main-thread fallback kept); `?depth=` is parsed but not wired (camera is built in scene.ts).
   const lab = readLabFlags();
   // 5.0.2 A1: shared loading/readiness tracker (no visible UI; the existing HUD banner stays the loading message).
   // 5.0.3 A1: a visible staged progress bar under the "Loading 3D Stadium & Athletes" banner (app created 0.2, mount
@@ -116,7 +117,7 @@ function boot(): void {
   try {
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
-      ...labAppOptions(lab),
+      ...labAppOptions(lab, createWorkerRendererWorker),
       ...bootLookOptions,
       // The look's renderer options would otherwise replace the lab backend request (?backend=webgpu was ignored).
       ...(bootLookOptions.renderer || labAppOptions(lab).renderer ? { renderer: { ...bootLookOptions.renderer, ...labAppOptions(lab).renderer } } : {}),
