@@ -393,7 +393,7 @@ function requestStart(): void {
   if (sim.o.phase !== "splash" || !ready || howto.isOpen) return;
   if (store.get(KEY_HOWTO) === "1") { pending.start = true; return; }
   store.set(KEY_HOWTO, "1");
-  howto.open("GOT IT · PLAY", () => {
+  howto.open("GOT IT — PLAY", () => {
     if (sim.o.phase === "splash" && ready && !config.manual && !pilot) pending.start = true;
   });
 }

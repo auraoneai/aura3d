@@ -193,6 +193,7 @@
         margin-bottom: 6px;
       }
       .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
+      .howto-body h3.howto-section { margin-bottom: -8px; color: var(--ink); }
       .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 14px; line-height: 1.35; }
       .howto-list li { display: flex; align-items: flex-start; gap: 9px; }
       .howto-list .keys { flex: none; display: inline-flex; gap: 4px; flex-wrap: wrap; }
@@ -323,12 +324,15 @@
           <h2 id="howto-title">HOW TO PLAY</h2>
           <p id="howto-goal" class="howto-goal">Roll down the track and hit the orb that matches your colour in every row: flip between <span style="color: var(--red)">red +</span> and <span style="color: var(--blue)">blue −</span> to match, build a combo and survive as long as you can.</p>
 
+          <h3 class="howto-section">Controls</h3>
           <div class="howto-cols">
             <section aria-labelledby="howto-kb">
               <h3 id="howto-kb">Keyboard</h3>
               <ul class="howto-list keyed">
                 <li><span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>A</kbd><kbd>D</kbd></span><span>Steer left / right across the three lanes</span></li>
-                <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Flip polarity (red ↔ blue), no cooldown</span></li>
+                <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Flip polarity (red ↔ blue), no cooldown; on the title and results screens they start a run or play again</span></li>
+                <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume</span></li>
+                <li><span class="keys"><kbd>M</kbd></span><span>Sound on / off</span></li>
               </ul>
             </section>
             <section aria-labelledby="howto-touch">
@@ -336,6 +340,8 @@
               <ul class="howto-list keyed">
                 <li><span class="keys"><kbd>Drag</kbd></span><span>Slide sideways to steer</span></li>
                 <li><span class="keys"><kbd>Tap</kbd></span><span>Tap or click without moving to flip polarity</span></li>
+                <li><span class="keys"><kbd>PLAY NOW</kbd></span><span>Start a run, or PLAY AGAIN after one</span></li>
+                <li><span class="keys"><kbd>II</kbd><kbd>♪</kbd></span><span>Pause and sound buttons</span></li>
               </ul>
             </section>
           </div>
@@ -363,33 +369,23 @@
           </section>
 
           <section aria-labelledby="howto-lives">
-            <h3 id="howto-lives">Lives &amp; end of run</h3>
+            <h3 id="howto-lives">Lives &amp; the end of a run</h3>
             <ul class="howto-list">
               <li><span class="swatch life" aria-hidden="true"></span><span>You start with 3 lives. A wrong-colour orb takes one, resets your combo to x1 and shrinks your orb. Lose all three and the run ends.</span></li>
             </ul>
           </section>
 
-          <div class="howto-cols">
-            <section aria-labelledby="howto-sys">
-              <h3 id="howto-sys">Pause, sound &amp; restart</h3>
-              <ul class="howto-list keyed">
-                <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume (or the II button)</span></li>
-                <li><span class="keys"><kbd>M</kbd></span><span>Mute / unmute (or the ♪ button)</span></li>
-                <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Play again after game over</span></li>
-              </ul>
-            </section>
-            <section aria-labelledby="howto-opts">
-              <h3 id="howto-opts">Options</h3>
-              <ul class="howto-list">
-                <li><span class="swatch red" aria-hidden="true">+</span><span><b>Polarity symbols</b> on the title screen shows a + or − over your orb as well as its colour.</span></li>
-                <li><span class="swatch purple" aria-hidden="true"></span><span><b>Reduced motion</b> calms camera shake and flashes.</span></li>
-              </ul>
-            </section>
-          </div>
+          <section aria-labelledby="howto-opts">
+            <h3 id="howto-opts">Options</h3>
+            <ul class="howto-list">
+              <li><span class="swatch red" aria-hidden="true">+</span><span><b>Polarity symbols</b> on the title screen shows a + or − over your orb as well as its colour.</span></li>
+              <li><span class="swatch purple" aria-hidden="true"></span><span><b>Reduced motion</b> calms camera shake and flashes.</span></li>
+            </ul>
+          </section>
         </div>
         <div class="howto-foot">
           <button type="button" id="btn-howto-close" class="big-btn">GOT IT</button>
-          <span class="hint">Esc / Enter / Space to close</span>
+          <span class="hint">Esc, Enter or Space to close</span>
         </div>
       </div>
     </div>
