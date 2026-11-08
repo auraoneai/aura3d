@@ -39,7 +39,7 @@ const game = createGame({
 });
 
 game.start();
-await game.ready();
+void game.ready().then(() => { /* mounted */ }); // never a module top-level await: a production build deadlocks on it
 ```
 
 `game.app` is the mounted Aura app, `game.session` owns pause, time scale, hit-stop and the legal state transitions (`booting`, `loading`, `playing`, `paused`, `transitioning`, `results`, `disposed`), and `game.shell` shows the pause, settings and results menus.

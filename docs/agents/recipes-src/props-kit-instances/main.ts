@@ -53,4 +53,4 @@ const app = createAuraApp("#app", {
     .add(instances.cone({ name: "roofs", transforms: roofs, colors: roofColors, material: white, params: { radialSegments: 4 } }))
     .camera(camera.perspective({ position: [26, 21, 30], target: [0, 1.5, 0], fov: 42, near: 1, far: 300 }))
 });
-await app.ready();
+void app.ready();

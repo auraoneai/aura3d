@@ -35,7 +35,8 @@ app.onFrame((frame) => {
   angle += frame.dt * 0.8; // animate in onFrame, scaled by frame.dt
   app.nodes.require("cube").setRotation(angle * 0.45, angle, 0);
 });
-await app.ready(); // renderer mounted; programs may still be compiling, so the first frames can miss draws (games: await warmPrograms(app) from @aura3d/engine/game)
+void app.ready().then(() => { /* renderer mounted; programs may still be compiling, so the first frames can miss draws (games: call warmPrograms(app) from @aura3d/engine/game here) */ });
+// Never `await app.ready()` at module top level: in a production build the lazy engine chunks import this entry back, it never finishes evaluating and the page stays black.
 ```
 
 ## 2. A forest of thousands of instances (fog, shadows, per-instance colour)
@@ -98,7 +99,7 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "KeyR") app.nodes.require("soldier").play("Run", { loop: true, crossFade: 0.4 });
   if (event.code === "KeyI") app.nodes.require("soldier").play("Idle", { loop: true, crossFade: 0.4 });
 });
-await app.ready();
+void app.ready();
 ```
 
 `.animate({ clip, loop })` sets the starting clip; `app.nodes.require(id).play(clip, { crossFade })` blends to another. Clip names come from the file (`aura3d assets inspect --animation` lists them).
@@ -175,7 +176,7 @@ const app = createAuraApp("#app", {
 });
 const start = performance.now();
 app.onFrame(() => app.nodes.require("water").setUniform?.("waveClock", (performance.now() - start) / 1000)); // needs .runtime({ id, mutable: true })
-await app.ready();
+void app.ready();
 ```
 
 `material.custom` auto-declares the uniforms you list. Prelude names: `position`, `normal` and `uv` (vertex attributes), `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition` (a uniform in both stages) and `uTime`. `uTime` is wall-clock seconds, but the engine redraws every frame only when the scene declares motion (a `.runtime({ id, mutable: true })` node, an `app.onFrame` callback, an animated model, particles or rain, an auto-rotating orbit camera, a looping timeline). A static scene whose only motion is `uTime` renders one frame and the shader looks frozen (measured on a real GPU). This recipe uses its own `waveClock` uniform written in `onFrame`, which also keeps the loop running; `uTime` works too when the node is `.runtime({ id, mutable: true })`. The fragment stage writes `outColor` (GLSL 3 `in`/`out`). There is no `eyePos`: it fails to compile with `undeclared identifier`. If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](troubleshooting.md)).
@@ -319,7 +320,7 @@ app.onFrame((frame) => {
   app.nodes.require("l-elbow").setRotation(-0.25 - 0.05 * breathe, 0, 0);
   app.nodes.require("r-elbow").setRotation(-0.25 - 0.05 * breathe, 0, 0);
 });
-await app.ready();
+void app.ready();
 ```
 
 ### 9. Heightfield island with vertex colours, water and fog
@@ -377,7 +378,7 @@ const app = createAuraApp("#app", {
     .add(effects.fog({ color: "#b7d2ea", density: 0.004 }))
     .camera(camera.perspective({ position: [30, 13, 34], target: [0, 1, 0], fov: 45, near: 0.5, far: 400 }))
 });
-await app.ready();
+void app.ready();
 ```
 
 ### 10. Stylised props kit with instancing (rocks, pines, houses)
@@ -444,7 +445,7 @@ const app = createAuraApp("#app", {
     .add(instances.cone({ name: "roofs", transforms: roofs, colors: roofColors, material: white, params: { radialSegments: 4 } }))
     .camera(camera.perspective({ position: [26, 21, 30], target: [0, 1.5, 0], fov: 42, near: 1, far: 300 }))
 });
-await app.ready();
+void app.ready();
 ```
 
 ### 11. PBR product viewer on a procedural pedestal
@@ -483,7 +484,7 @@ app.onFrame((frame) => {
   angle += frame.dt * 0.5;
   app.nodes.require("product").setRotation(0, angle, 0); // slow turntable
 });
-await app.ready();
+void app.ready();
 ```
 
 ### 12. Water with a custom GLSL material (waves, fresnel, sun glint)
@@ -560,7 +561,7 @@ const app = createAuraApp("#app", {
 });
 const start = performance.now();
 app.onFrame(() => app.nodes.require("water").setUniform?.("waveClock", (performance.now() - start) / 1000));
-await app.ready();
+void app.ready();
 ```
 
 ### 13. Procedural sky with a day and night cycle and moving shadows
@@ -622,7 +623,7 @@ app.onFrame((frame) => {
   app.nodes.require("moon").setPosition(...lightAt(-s.elevationDeg, s.azimuthDeg + 180));
   if (fixedHour === null) app.atmosphere?.setSky({ sun: { ...s, intensity: 1 } });
 });
-await app.ready();
+void app.ready();
 ```
 
 ### 14. Campfire particles with no sprite art (fire, smoke, sparks)
@@ -667,7 +668,7 @@ const app = createAuraApp("#app", {
     }))
     .camera(camera.perspective({ position: [3.6, 1.9, 4.6], target: [0, 1.1, 0], fov: 44, near: 0.1, far: 80 }))
 });
-await app.ready();
+void app.ready();
 ```
 
 ### 15. Night street with point lights, emissive windows and bloom
@@ -718,7 +719,7 @@ for (const [i, [x, z]] of lampSpots.entries()) {
 }
 
 const app = createAuraApp("#app", { scene: stage });
-await app.ready();
+void app.ready();
 ```
 
 ## 16. Physics: bodies, a stacked wall, a swinging rope, collision events, fixed step
@@ -810,7 +811,7 @@ app.onFrame((frame) => {
 const positions = (): Record<string, readonly number[]> =>
   Object.fromEntries(["ball", "crate-0-0", "crate-4-2"].map((name) => [name, app.physics.bodies.require(name).position().map((value) => Math.round(value * 1e4) / 1e4)]));
 (window as unknown as { __PHYSICS_RECIPE__: unknown }).__PHYSICS_RECIPE__ = { stats, positions, diagnostics: () => app.diagnostics().errors };
-await app.ready();
+void app.ready();
 ```
 
 ## Type traps (strict `tsc` errors agents hit on a first draft)

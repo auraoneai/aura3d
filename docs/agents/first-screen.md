@@ -13,9 +13,9 @@ const app = createAuraApp("#app", {
   ...looks.appOptions("product-studio")
 });
 app.onFrame((f) => app.nodes.require("orb").setPosition(0, 0.8 + 0.5 * Math.abs(Math.sin(f.time * 1.7)), 0));
-await app.ready();
+void app.ready();
 ```
-Gotchas: never hand-place the camera. `camera.auto()` frames what the scene holds so the subject fills `fill` (default 0.6) of the frame, ground planes and `floor`/`ground`/`wall`-named nodes left out; `camera.auto({ subject: "clock", angle: "front", fill: 0.8 })` frames one named node or group with the props still in shot. A moving subject: `app.camera?.setPose(camera.framePose(box, { azimuth, fill, aspect }))` each frame (`examples/auto-frame-bird`). A look brings light, shadow, fog, sky and grade; spread `looks.appOptions(id)` with it (`outdoor-day`, `night-city`, `golden-hour`, `overcast`, `space`). `camera.perspective` is fixed, `camera.orbit` adds drag. Bright looks wash out: `looks.preset(id, { exposureEv: -1 })`. Colours are `#rrggbb`, `rgb()` or names: `hsl()` strings are not parsed. Hand-built light needs `environments.neutral({ intensity: 0.6, background: false })` beside `lights.key({ target })` (a directional key that casts a clean shadow; put a `primitives.plane` ground under the subject to catch it), else the frame is flat and dark and metals reflect nothing; `primitives.plane` size is `[w, 1, d]`. Glow: `effects.bloom({ intensity: 0.5, threshold: 0.8, radius: 0.5 })`.
+Gotchas: never `await app.ready()` at module top level: a production build deadlocks on it (black page); use `void app.ready()` or `app.ready().then(...)`. Never hand-place the camera. `camera.auto()` frames what the scene holds so the subject fills `fill` (default 0.6) of the frame, ground planes and `floor`/`ground`/`wall`-named nodes left out; `camera.auto({ subject: "clock", angle: "front", fill: 0.8 })` frames one named node or group with the props still in shot. A moving subject: `app.camera?.setPose(camera.framePose(box, { azimuth, fill, aspect }))` each frame (`examples/auto-frame-bird`). A look brings light, shadow, fog, sky and grade; spread `looks.appOptions(id)` with it (`outdoor-day`, `night-city`, `golden-hour`, `overcast`, `space`). `camera.perspective` is fixed, `camera.orbit` adds drag. Bright looks wash out: `looks.preset(id, { exposureEv: -1 })`. Colours are `#rrggbb`, `rgb()` or names: `hsl()` strings are not parsed. Hand-built light needs `environments.neutral({ intensity: 0.6, background: false })` beside `lights.key({ target })` (a directional key that casts a clean shadow; put a `primitives.plane` ground under the subject to catch it), else the frame is flat and dark and metals reflect nothing; `primitives.plane` size is `[w, 1, d]`. Glow: `effects.bloom({ intensity: 0.5, threshold: 0.8, radius: 0.5 })`.
 
 ### Instancing: many copies, one draw, updated live
 ```ts render=animated
@@ -92,7 +92,7 @@ const app = createAuraApp("#app", {
   ...looks.appOptions("character-showcase")
 });
 window.addEventListener("keydown", () => app.nodes.require("hero").play("Walking", { loop: true, crossFade: 0.4 }));
-await app.ready();
+void app.ready();
 ```
 Gotchas: clip names come from the file (`npx @aura3d/cli@latest assets inspect <file> --animation`). In a CLI project use `model(assets.hero)` after `assets resolve`. One skinned body per character: never animate primitives beside it.
 
@@ -112,7 +112,7 @@ createFixedStepLoop({ stepSeconds: 1 / 60, step: (dt) => {
   input.update(dt); state.t += dt;
   state.x += ((input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0)) * 4 * dt;
 }, render: () => app.nodes.require("player").setPosition(state.x, 0.7, 0).setRotation(0, state.t * 3, 0) }).start();
-await app.ready();
+void app.ready();
 ```
 Gotchas: simulate in `step` (no `Date.now`, no `Math.random`), copy state to nodes in `render`. Restart by resetting state and nodes, not `app.setScene`. Full games (`createGame`: pause, touch, results): `docs/agents/build-a-game.md`.
 
@@ -129,7 +129,7 @@ const app = createAuraApp("#app", {
   physics: { bindNodes: true }, ...looks.appOptions("outdoor-day")
 });
 app.onFrame((f) => { app.physics.step(f.dt); });
-await app.ready();
+void app.ready();
 ```
 Gotchas: needs the optional peer `@dimforge/rapier3d-compat` installed (scaffolds have it), else the page throws. Pass `physics: { bindNodes: true }`, give each body `.runtime({ id })`, call `app.physics.step(dt)` once per frame. Colliders take radius or half extents, not the primitive `size`.
 

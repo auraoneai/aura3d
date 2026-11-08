@@ -59,7 +59,7 @@ createAuraApp("#app", {
 - Hero subject: use `model(assets.x)` with a typed asset when one exists or the prompt names a real object. With no admitted model (a world, a creature, a prop set, an abstract piece) build it procedurally as in recipes 8 to 15, never as a flat placeholder.
 - Never emissive cards or sprites faking reflections, puddles or glows; use the look's grade and `effects.*`.
 - Never CSS/DOM particles or labels standing in for rendered output. HUD lives in the DOM, the scene does not.
-- Gate frame 1 on `await app.ready()`; mutate node handles on restart instead of calling `app.setScene()` again.
+- Gate frame 1 on `app.ready().then(...)` (never a module top-level `await app.ready()`: a production build deadlocks and the page stays black); mutate node handles on restart instead of calling `app.setScene()` again.
 
 ## Genre looks (starting points)
 

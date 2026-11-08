@@ -44,4 +44,4 @@ const app = createAuraApp("#app", {
     .add(effects.fog({ color: "#b7d2ea", density: 0.004 }))
     .camera(camera.perspective({ position: [30, 13, 34], target: [0, 1, 0], fov: 45, near: 0.5, far: 400 }))
 });
-await app.ready();
+void app.ready();

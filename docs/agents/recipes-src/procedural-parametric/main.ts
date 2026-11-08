@@ -51,4 +51,4 @@ const app = createAuraApp("#app", {
     .add(geometry.custom(rock(8, 0.22, 1), { name: "rock-c", material: stone("#9a8b73") }).position(5.8, 0.9, -0.2))
     .camera(camera.perspective({ position: [0.4, 3.4, 11.5], target: [0.2, 1.2, 0], fov: 38 }))
 });
-await app.ready();
+void app.ready();

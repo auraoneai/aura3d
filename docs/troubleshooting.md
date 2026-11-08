@@ -5,7 +5,7 @@
 - **Failed GLB/glTF load**: run `assets validate` and check file paths and canonical 64-character `sha256-...` `hash` provenance in `aura.assets.json` / `src/aura-assets.ts`.
 - **Deployment missing files**: run `check-deploy` and upload hashed assets under `public/aura-assets/`.
 - **Scene pops in with missing characters/props on first frames, or AI steals manual controls on load**:
-  - Gate Frame 1 on `await app.ready()` before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and before starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes are fully mounted on Frame 1.
+  - Gate Frame 1 on `app.ready().then(...)` (never a module top-level `await app.ready()`: a production build deadlocks and the page stays black) before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and before starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes are fully mounted on Frame 1.
   - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); enable AI autopilot only when `?autoplay=1` or `?demo=1` is present in the URL or when the user clicks the HUD `Auto` toggle button (`button.blur()` so `Space`/`Enter` never re-trigger focused HUD controls).
 - **Characters slide across the floor like rigid statues or horizontal props look stretched vertically**:
   - Ensure humanoid and creature GLBs are rigged (`skins > 0`) and drive skeletal clips every state change via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synced to locomotion (`idle`, `walk`, `run`, `attack`, `swing`) so character-region pixels animate under the key shadow.

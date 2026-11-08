@@ -24,5 +24,5 @@ const app = createAuraApp("#app", {
   scene: s,
   renderer: { quality: { tier: "high" }, ...(lab.renderer ?? {}) }
 });
-await app.ready();
-document.body.dataset.aura3dReady = "true";
+// No top-level await: a default vite build deadlocks on it (lazy engine chunks import this entry chunk back).
+void app.ready().then(() => { document.body.dataset.aura3dReady = "true"; });

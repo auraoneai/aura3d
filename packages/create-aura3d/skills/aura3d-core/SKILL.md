@@ -80,8 +80,9 @@ without a look ships flat shading, void background and floating props.
    by capture, claim nothing unproven): shader graphs through `material.node`,
    `renderOrder` on nodes, post effects through `effects.*` including
    `effects.shaderPass`, depth and normal inputs for post, motion vectors.
-7. For interactive and game routes, gate Frame 1 on `await app.ready()` before
-   fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
+7. For interactive and game routes, gate Frame 1 on `app.ready().then(...)`
+   (never a module top-level `await app.ready()`: a production build deadlocks
+   on it and the page stays black) before fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
    mounted; default `autopilot` to `false` (manual control on Frame 1) unless
    `?autoplay=1` / `?demo=1` is in the URL or the user clicks the HUD `Auto`
    button (with `button.blur()` for clean framing), keep canonical `sha256-...`

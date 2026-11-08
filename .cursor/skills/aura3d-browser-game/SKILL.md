@@ -95,7 +95,8 @@ Pick the genre's recipe row before adding props: [genre looks](references/genre-
    deep in `+Z`/`-Z` so the bottom frame is never a black void, disable
    `collision: true` on `camera.rigs.shoulder` when the hero has child nodes, and
    enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
-5. Gate Frame 1 on `await app.ready()` before fading `#boot-gate` (`opacity: 0;
+5. Gate Frame 1 on `app.ready().then(...)` (never a module top-level `await
+   app.ready()`: a production build deadlocks and the page stays black) before fading `#boot-gate` (`opacity: 0;
    pointer-events: none` then remove) and starting simulation so lighting,
    shadow, and GLB silhouettes never pop in. Default `autopilot` to `false`
    (immediate manual control on Frame 1) unless `?autoplay=1` or `?demo=1` is in

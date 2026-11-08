@@ -39,4 +39,4 @@ for (const marker of markers) sceneBuilder = sceneBuilder.add(marker);
 const app = createAuraApp("#app", {
   scene: sceneBuilder.camera(camera.perspective({ position: [0, 12.5, 10.5], target: [0, 0, 0.4], fov: 40 }))
 });
-await app.ready();
+void app.ready();

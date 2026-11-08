@@ -58,7 +58,8 @@ const app = createAuraApp("#app", {
     .add(interactions.orbit({ target: "robot" })),
   ...looks.appOptions("product-studio")
 });
-await app.ready(); // the WebGL mount (and GLB load) has settled; shader programs may still be compiling (games: await warmPrograms(app))
+void app.ready().then(() => { /* the WebGL mount (and GLB load) has settled; shader programs may still be compiling (games: call warmPrograms(app) here) */ });
+// Never `await app.ready()` at module top level: a production build deadlocks (lazy engine chunks import the entry back) and the page stays black.
 ```
 
 Use `targetHeight` for upright humanoids, `targetMaxDimension` for vehicles and wide props.

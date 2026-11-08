@@ -111,7 +111,7 @@ Two tables are copied from the engine and guarded by a parity test (`tests/unit/
 | `LINT_UTIME_NOT_ANIMATED` | warning | lint | Shader reads uTime but nothing advances time |
 | `LINT_UNIFORM_RESERVED` | error | lint | Reserved uniform name |
 | `LINT_READY_NOT_AWAITED` | warning | lint | app.ready() is not awaited |
-| `LINT_TOP_LEVEL_AWAIT_READY` | warning | lint | Module-level `await app.ready()` |
+| `LINT_TOP_LEVEL_AWAIT_READY` | error | lint | Module-level `await app.ready()` |
 | `LINT_SCALE_EXTREME` | warning | lint | Node scale looks off by orders of magnitude |
 | `LINT_CAMERA_INSIDE_OBJECT` | warning | lint | Camera starts inside an object |
 | `BUILD_FAILED` | error | build | Build failed |
@@ -199,7 +199,7 @@ The staged `product-viewer` frame shows the product floating above the plinth. T
 
 ## A finding from building this
 
-While seeding scenes, `await app.ready()` at module scope left every page blank with no console output and no `data-aura3d-ready`: the page loaded, the canvas was sized, and the app never reported ready. The same source with `void app.ready()` (or `await` inside an `async function main()`) reached ready in about 3 seconds. The mechanism is not proven here; the evidence is the A/B on the same build config. The likely cause is a single-entry Vite bundle where the engine's lazily imported chunks import back from the entry module that is itself waiting on the app. It was observed with monorepo-source builds (`vite.aliases.generated.ts`); `docs/agents/recipes-src` avoids it because each recipe is one entry among several with a shared chunk. It was not tested against the published npm bundle. `verify` reports it as `LINT_TOP_LEVEL_AWAIT_READY` (static) and `RENDER_NEVER_READY` (runtime). Guidance elsewhere in `docs/agents` that says top-level await on `app.ready()` is fine has not been changed by this lane.
+While seeding scenes, `await app.ready()` at module scope left every page blank with no console output and no `data-aura3d-ready`: the page loaded, the canvas was sized, and the app never reported ready. The same source with `void app.ready()` (or `await` inside an `async function main()`) reached ready in about 3 seconds. The mechanism was later confirmed (5.3.0 candidate, a one-box app built by Vite 7 with default options against the package dist): a single-entry build puts the engine modules the app imports into the entry chunk, and every lazily loaded engine chunk (`renderingLazy`, `v2Entry`, the environment loaders, decoders) imports that entry chunk back. An entry suspended on `await app.ready()` never finishes evaluating, so those chunks never evaluate and the mount never settles. It is a property of how the consumer's bundler places shared modules, so the engine cannot remove it; `docs/agents/recipes-src` escaped it only because each recipe is one entry among several with a shared chunk. `verify` and `validate` report it as `LINT_TOP_LEVEL_AWAIT_READY` (static, an error since 5.3.0) and `verify` as `RENDER_NEVER_READY` (runtime). Every snippet in `docs/agents`, `llms.txt` and the skills now uses `void app.ready()` / `app.ready().then(...)` or awaits inside a function.
 
 ## What this does not prove
 

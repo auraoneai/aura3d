@@ -13,7 +13,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-11-07
+- Last updated: 2026-11-08
 
 ## Pages
 
@@ -90,7 +90,7 @@ Read this first. Aura3D is a standalone engine with its own renderer: you descri
 
 | If you would write (three.js) | Write (Aura3D) | Difference that bites |
 | --- | --- | --- |
-| `Scene` + `PerspectiveCamera` + `WebGLRenderer` + `setAnimationLoop` | `scene({ background }).camera(camera.perspective({ position, target, fov }))` then `createAuraApp("#app", { scene })`; per frame `app.onFrame((f) => ...)` with `f.dt`; `await app.ready()` | No renderer, resize or loop code. Mount target is a `<canvas>` or a sized wrapper. |
+| `Scene` + `PerspectiveCamera` + `WebGLRenderer` + `setAnimationLoop` | `scene({ background }).camera(camera.perspective({ position, target, fov }))` then `createAuraApp("#app", { scene })`; per frame `app.onFrame((f) => ...)` with `f.dt`; `app.ready().then(...)` (never a top-level `await`) | No renderer, resize or loop code. Mount target is a `<canvas>` or a sized wrapper. |
 | `new Mesh(geometry, material)` | `primitives.box({ name, size: [w, h, d], material: material.pbr({ color }) })` (also `sphere`, `plane`, `cylinder`, `capsule`, `cone`, `torus`, `torusKnot`, `lathe`, `extrude`, `tube`) | Primitives are unit shapes scaled by `size`. `sphere` size is the **diameter**; `plane` is `[w, 1, d]` and lies in XZ. Unknown option keys are reported, not ignored. |
 | `mesh.position.set(...)`, `rotation`, `scale` | Build time: `.position(x, y, z).rotate(x, y, z).scale(2)`. Runtime: `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`, `.setRotation`, `.setScale` | A node you move later needs `runtime({ id, mutable: true })`. Handles have `set*`, not `.position.x`. Vectors are tuples, not `Vector3`. |
 | `Group` / `Object3D` hierarchy, bones as groups | `group("arm", [children], { position }).runtime({ id, mutable: true })` | Children use local transforms; a group's origin is its pivot. |
@@ -224,8 +224,8 @@ Mandatory 3D game & scene anti-failure guardrails:
    - Every character, vehicle, creature, weapon, and landmark must mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts` (use `targetHeight` only for upright humanoids and `targetMaxDimension` for horizontal vehicles, rackets, paddles, weapons, barriers, and wide props so aspect ratios and silhouettes never stretch vertically). If the catalog lacks a required 3D model, generate a bespoke PBR 3D model with Meshy (`meshy`) and admit it via `aura3d assets import-meshy`.
    - Drive rigged humanoid and creature GLBs (`skins > 0`) via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synchronized to locomotion (`idle`, `walk`, `run`, `attack`, `swing`) so limbs articulate under the key light and shadow instead of sliding rigid statues across the floor.
    - Primitives (`primitives.plane`, `primitives.box`, `primitives.cylinder`, `primitives.torus`) are reserved strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.
-2. Boot sequence gate (`await app.ready()`) & default manual control (`autopilot = false` on Frame 1):
-   - Gate Frame 1 on `await app.ready()` before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes never pop in mid-frame.
+2. Boot sequence gate (`app.ready().then(...)`, never a module top-level `await`) & default manual control (`autopilot = false` on Frame 1):
+   - Gate Frame 1 on `app.ready().then(...)` (a module top-level `await app.ready()` deadlocks a production build: black page) before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes never pop in mid-frame.
    - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); enable AI autopilot only when `?autoplay=1` or `?demo=1` is present in the URL or when the user clicks the HUD `Auto` toggle button, and yield back to manual control on keyboard (`keydown`), pointer, touch, or gamepad input.
    - Keep mode, stage, camera, `Auto`, and roster selectors in a compact, non-blocking top HUD bar that preserves camera framing, and always call `button.blur()` after button clicks so `Space` or `Enter` gameplay keys never re-trigger focused HUD buttons.
 3. Always optimize Meshy 3D GLBs before admission (`aura3d assets optimize --file in.glb --out out.glb --role <role>`):

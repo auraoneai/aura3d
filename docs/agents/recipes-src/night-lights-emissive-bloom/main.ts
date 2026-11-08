@@ -37,4 +37,4 @@ for (const [i, [x, z]] of lampSpots.entries()) {
 }
 
 const app = createAuraApp("#app", { scene: stage });
-await app.ready();
+void app.ready();

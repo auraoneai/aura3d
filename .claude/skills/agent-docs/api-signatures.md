@@ -17,7 +17,7 @@ Defaults the types do not carry (read from `agent-api/nodes/lights.ts`):
 
 ## `createAuraApp`
 
-Mounts the scene, owns renderer, resize, loop and disposal. `await app.ready()` before the first frame is judged.
+Mounts the scene, owns renderer, resize, loop and disposal. Wait on `app.ready()` (`.then(...)`, or `await` inside a function: a module top-level await deadlocks a production build) before the first frame is judged.
 
 ```ts
 const app = createAuraApp("#app", { scene: scene({ background: "#101418" }) });
