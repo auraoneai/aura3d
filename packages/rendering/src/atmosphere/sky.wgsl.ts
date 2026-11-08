@@ -48,7 +48,8 @@ export function gradientSkyPortableBindings(fog: boolean, clouds: boolean): read
   return [...(fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS), ...GRADIENT_SKY_CLOUD_PORTABLE_BINDINGS];
 }
 
-const skyVertex = (clipZ: string): string => /* wgsl */ `
+/** Far-plane fullscreen sky vertex stage (shared by the gradient and full sky programs). */
+export const skyVertexWgsl = (clipZ: string): string => /* wgsl */ `
 // aura3d.prd07.sky vertex
 /* @aura3d-bindings */
 struct SkyVertex {
@@ -64,7 +65,7 @@ struct SkyVertex {
 
 // The analytic optical-depth and segment equations are the Aura3D atmosphere
 // contract (HeightFog/FogVolumes), evaluated at the sky background distance.
-const SKY_FOG = /* wgsl */ `
+export const SKY_FOG_WGSL = /* wgsl */ `
 fn skyHeightTau(originY: f32, rayY: f32, rayLength: f32) -> f32 {
   let path = max(rayLength - aura.u_fogB.x, 0.0);
   let base = aura.u_fogA.x * path;
@@ -228,7 +229,7 @@ function gradientFragment(fog: boolean, clouds = false): string {
   return /* wgsl */ `
 // aura3d.prd07.sky fragment
 /* @aura3d-bindings */
-${fog ? SKY_FOG : ""}
+${fog ? SKY_FOG_WGSL : ""}
 ${clouds ? SKY_CLOUDS : ""}
 @fragment fn fs_main(@location(0) clip: vec2<f32>) -> @location(0) vec4<f32> {
   let world = aura.u_invViewProj * vec4<f32>(clip, 1.0, 1.0);
@@ -258,7 +259,7 @@ ${clouds ? SKY_CLOUDS : ""}
 }`;
 }
 
-const SKY_VERTEX = skyVertex("0.999999");
+const SKY_VERTEX = skyVertexWgsl("0.999999");
 
 export const GRADIENT_SKY_WGSL: NativeShaderStages = {
   vertex: SKY_VERTEX,
@@ -276,5 +277,5 @@ export const GRADIENT_SKY_FOG_WGSL: NativeShaderStages = {
  */
 export function gradientSkyWgsl(fog: boolean, clipZLiteral: string, clouds = false): NativeShaderStages {
   if (clipZLiteral === "0.999999" && !clouds) return fog ? GRADIENT_SKY_FOG_WGSL : GRADIENT_SKY_WGSL;
-  return { vertex: clipZLiteral === "0.999999" ? SKY_VERTEX : skyVertex(clipZLiteral), fragment: gradientFragment(fog, clouds) };
+  return { vertex: clipZLiteral === "0.999999" ? SKY_VERTEX : skyVertexWgsl(clipZLiteral), fragment: gradientFragment(fog, clouds) };
 }

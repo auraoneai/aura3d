@@ -181,12 +181,9 @@ describe("native plain-gradient sky", () => {
       pass.setSpec(grounded(), 0);
       pass.drawSky(IDENTITY);
       const variants: readonly [string, Readonly<Record<string, unknown>>][] = [
-        ["bands", { ...grounded(), bands: [{ elevationDeg: 10, widthDeg: 5, color: "#ff00ff", intensity: 1 }] }],
-        ["stars", { ...grounded(), stars: { count: 300 } }],
-        ["moon", { ...grounded(), moon: { elevationDeg: 20, azimuthDeg: 0 } }],
-        ["model:preetham", { model: "preetham", sun: { elevationDeg: 20, azimuthDeg: 0 } }],
-        ["model:color", { model: "color", color: [1, 0, 0] }],
-        ["model:hdri", { model: "hdri" }]
+        ["model:hdri", { model: "hdri" }],
+        ["model:cubemap", { model: "cubemap" }],
+        ["model:none", { model: "none" }]
       ];
       for (const [reason, spec] of variants) {
         pass.setSpec(spec, 0);
@@ -218,8 +215,8 @@ describe("native plain-gradient sky", () => {
     const pass = new SkyBackgroundPass(f.device);
     try {
       f.device.beginFrame(2, 2);
-      pass.setSpec({ ...grounded(), bands: [{ elevationDeg: 10, widthDeg: 5, color: "#f0f", intensity: 1 }] }, 0);
-      expect(() => pass.drawSky(IDENTITY)).toThrow(/bands/);
+      pass.setSpec({ model: "hdri" }, 0);
+      expect(() => pass.drawSky(IDENTITY)).toThrow(/model:hdri/);
       expect(f.modules).toHaveLength(0);
       expect(f.submissions).toHaveLength(0);
     } finally {
@@ -261,9 +258,9 @@ describe("native plain-gradient sky", () => {
       const setTarget = f.device.setRenderTarget.bind(f.device);
       const spy = vi.spyOn(f.device, "setRenderTarget").mockImplementation(target => {
         setTarget(target);
-        if (target === face) pass.setSpec({ ...grounded(), stars: { count: 300 } }, 0);
+        if (target === face) pass.setSpec({ model: "cubemap" }, 0);
       });
-      expect(() => pass.renderToCubeFace(0, face, IDENTITY)).toThrow(/stars/);
+      expect(() => pass.renderToCubeFace(0, face, IDENTITY)).toThrow(/model:cubemap/);
       expect(f.device.getRenderTarget()).toBe(previous);
       expect(f.modules).toHaveLength(0);
       expect(f.submissions.filter(record => record.vertices !== undefined)).toHaveLength(0);
@@ -330,6 +327,88 @@ describe("native plain-gradient sky", () => {
     } finally {
       pass.dispose();
       device.dispose();
+    }
+  });
+});
+
+describe("native full sky (Preetham, colour, bands, stars, clouds, moon)", () => {
+  const variants: readonly [string, Readonly<Record<string, unknown>>, readonly string[]][] = [
+    ["preetham + stars", { model: "preetham", sun: { elevationDeg: 20, azimuthDeg: 30 }, stars: { count: 300 } }, ["fn skyPreetham", "fn skyStarfield", "color = skyPreetham(direction);"]],
+    ["gradient bands", { ...grounded(), bands: [{ elevationDeg: 10, widthDeg: 5, color: "#ff00ff", intensity: 1 }] }, ["fn skyGradient", "aura.u_bandColors[i]"]],
+    ["gradient stars", { ...grounded(), stars: { count: 300 } }, ["fn skyStarfield", "(1.0 - aura.u_sunfade) * 2.0"]],
+    ["gradient stars + clouds", { ...grounded(), stars: { count: 300 }, clouds: { coverage: 0.3 } }, ["fbm(cloudUV * 1000.0)", "mix(color, vec3<f32>(aura.u_intensity)"]],
+    ["preetham clouds", { model: "preetham", sun: { elevationDeg: 20, azimuthDeg: 30 }, clouds: { coverage: 0.4 } }, ["cloudColor *= aura.u_sunE * 0.00002;"]],
+    ["moon", { ...grounded(), moon: { elevationDeg: 20, azimuthDeg: 0 } }, ["fn skyMoonDisc"]],
+    ["colour", { model: "color", color: [1, 0, 0] }, ["color = aura.u_zenith;"]]
+  ];
+
+  for (const [name, spec, snippets] of variants) {
+    it(`draws ${name} through the full WGSL program`, async () => {
+      const f = await nativeFixture();
+      const target = f.device.createRenderTarget({ width: 4, height: 4, format: "rgba16f", depth: true });
+      const pass = new SkyBackgroundPass(f.device);
+      try {
+        f.device.beginFrame(4, 4);
+        f.device.setRenderTarget(target);
+        pass.setSpec(spec, 1.5);
+        pass.drawSky(IDENTITY);
+        const draws = f.submissions.filter(record => record.vertices === 3);
+        expect(draws).toHaveLength(1);
+        const fragment = draws[0]!.pipeline!.descriptor.fragment.module.code;
+        expect(fragment).toContain("@group(0) @binding(0) var<uniform> aura");
+        for (const snippet of snippets) expect(fragment).toContain(snippet);
+        // Reversed-edge smoothstep is undefined in WGSL; every port uses ordered edges.
+        expect(fragment).not.toContain("smoothstep(0.5, 0.05");
+      } finally {
+        pass.dispose();
+        f.device.dispose();
+      }
+    });
+  }
+
+  it("uploads the Preetham frame's sunE, betaR, betaM and Mie g where the WGSL struct reads them", async () => {
+    const f = await nativeFixture();
+    const pass = new SkyBackgroundPass(f.device);
+    try {
+      const target = f.device.createRenderTarget({ width: 2, height: 2, format: "rgba16f", depth: true });
+      f.device.beginFrame(2, 2);
+      f.device.setRenderTarget(target);
+      pass.setSpec({ model: "preetham", sun: { elevationDeg: 35, azimuthDeg: 120 }, turbidity: 4 }, 0);
+      pass.drawSky(IDENTITY);
+      const bytes = f.submissions.find(record => record.vertices === 3)!.group!.bytes!;
+      const pre = pass.skyFrame.preetham!;
+      expectVector(floats(bytes, 64, 3), pre.sunDirection);
+      expect(floats(bytes, 76, 1)[0]).toBeCloseTo(pre.sunE, 2);
+      expect(floats(bytes, 80, 1)[0]).toBeCloseTo(pre.sunfade, 6);
+      expectVector(floats(bytes, 96, 3), pre.betaR);
+      expectVector(floats(bytes, 112, 3), pre.betaM);
+      expect(floats(bytes, 124, 1)[0]).toBeCloseTo(pre.mieDirectionalG, 6);
+    } finally {
+      pass.dispose();
+      f.device.dispose();
+    }
+  });
+
+  it("keeps the plain gradient on its dedicated program and caches full variants separately", async () => {
+    const f = await nativeFixture();
+    const pass = new SkyBackgroundPass(f.device);
+    try {
+      const target = f.device.createRenderTarget({ width: 2, height: 2, format: "rgba16f", depth: true });
+      f.device.beginFrame(2, 2);
+      f.device.setRenderTarget(target);
+      pass.setSpec(grounded(), 0);
+      pass.drawSky(IDENTITY);
+      pass.setSpec({ ...grounded(), bands: [{ elevationDeg: 10, widthDeg: 5, color: "#ff00ff", intensity: 1 }] }, 0);
+      pass.drawSky(IDENTITY);
+      pass.setSpec(grounded(), 0);
+      pass.drawSky(IDENTITY);
+      const fragments = f.submissions.filter(record => record.vertices === 3).map(draw => draw.pipeline!.descriptor.fragment.module.code);
+      expect(fragments[0]).not.toContain("u_bandColors");
+      expect(fragments[1]).toContain("u_bandColors");
+      expect(fragments[2]).toBe(fragments[0]);
+    } finally {
+      pass.dispose();
+      f.device.dispose();
     }
   });
 });
