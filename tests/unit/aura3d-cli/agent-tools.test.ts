@@ -178,6 +178,9 @@ void app.ready();
     expect(report.ok).toBe(false);
     expect(report.findings.find((f) => f.code === "VALIDATE_COLOR_INVALID")).toMatchObject({ severity: "error", location: { file: "src/main.ts", line: 4 } });
     for (const f of report.findings) expect(explainCode(f.code), f.code).toBeDefined();
+    // A model whose size the source does not state makes the framing estimate unknowable, so no framing finding.
+    const unknownSize = BAD.replace('.add(primitives.box(', '.add(model(assets.robot)).add(primitives.box(').replace("import { camera,", "import { model, camera,");
+    expect(runValidate({ projectDir: project({ "package.json": "{}", "src/main.ts": unknownSize }), types: false }).findings.map((f) => f.code)).not.toContain("VALIDATE_SUBJECT_SMALL");
     const clean = runValidate({ projectDir: project({ "package.json": "{}", "src/main.ts": GOOD }), types: false });
     expect(clean.findings.map((f) => f.code)).toEqual([]);
     expect(clean.ok).toBe(true);

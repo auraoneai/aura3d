@@ -108,7 +108,8 @@ export function checkColors(file: Parsed): ToolFinding[] {
 // ---- framing, lighting, reflective materials -----------------------------------------------------------------------------
 const GROUND_NAME = /ground|floor|plane|terrain|water|ocean|sea|sky|backdrop|stage|wall|room|dome|grid|road|track|arena/i;
 
-interface Subject { readonly size: number; readonly node: ts.Node; readonly label: string }
+/** `height`: the size is an authored height (targetHeight), not a largest dimension. `unknown`: a model whose size the source does not state. */
+interface Subject { readonly size: number; readonly node: ts.Node; readonly label: string; readonly height?: boolean; readonly unknown?: boolean }
 
 function subjectOf(call: ts.CallExpression, name: string): Subject | undefined {
   const opts = firstObject(call) ?? firstObject(call, 1);
@@ -116,8 +117,10 @@ function subjectOf(call: ts.CallExpression, name: string): Subject | undefined {
   const label = nameNode ? literalColor(nameNode) ?? "" : "";
   if (GROUND_NAME.test(label)) return undefined;
   if (/(^|\.)model$|assets\.node$/.test(name)) {
-    const h = num(opts ? getProp(opts, "targetHeight") : undefined) ?? num(opts ? getProp(opts, "targetSize") : undefined);
-    return h !== undefined ? { size: h, node: call, label: label || name } : undefined;
+    const h = num(opts ? getProp(opts, "targetHeight") : undefined);
+    const d = num(opts ? getProp(opts, "targetSize") : undefined) ?? num(opts ? getProp(opts, "targetMaxDimension") : undefined);
+    if (h !== undefined) return { size: h, node: call, label: label || name, height: true };
+    return d !== undefined ? { size: d, node: call, label: label || name } : { size: 0, node: call, label: label || name, unknown: true };
   }
   const kind = /primitives\.(\w+)$/.exec(name)?.[1];
   if (!kind || /plane|ground|floor|sky|water|terrain/i.test(kind) || !opts) return kind && !opts && /box|cube|sphere/.test(kind) ? { size: 1, node: call, label: label || name } : undefined;
@@ -190,14 +193,15 @@ export function checkSceneHints(files: readonly Parsed[], allCallees: readonly s
     };
     visit(file.sf);
   }
-  if (!frames && cameras.length === 1 && subjects.length > 0) {
+  // Only judge framing when every subject's size is stated in source and the scene is not a kit/game rig with its own camera logic.
+  if (!frames && !usesKit && cameras.length === 1 && subjects.length > 0 && !subjects.some((s) => s.unknown)) {
     const cam = cameras[0]!;
     const subject = subjects.reduce((a, b) => (b.size > a.size ? b : a));
     const viewHeight = 2 * cam.distance * Math.tan((cam.fov * Math.PI) / 360);
     const fill = subject.size / viewHeight;
     const pct = `${Math.round(fill * 100)}%`;
     if (fill < 0.2) out.push(finding("VALIDATE_SUBJECT_SMALL", `The largest subject (${subject.label}, about ${subject.size.toFixed(2)} units) fills about ${pct} of the frame height from ${cam.distance.toFixed(1)} units at fov ${cam.fov}. Products and characters read best at 45-70%.`, loc(cam.file, cam.call)));
-    else if (fill > 1.4) out.push(finding("VALIDATE_SUBJECT_CROPPED", `The largest subject (${subject.label}, about ${subject.size.toFixed(2)} units) is about ${pct} of the frame height from ${cam.distance.toFixed(1)} units at fov ${cam.fov}, so it is cropped.`, loc(cam.file, cam.call)));
+    else if (fill > 1.4 && subject.height) out.push(finding("VALIDATE_SUBJECT_CROPPED", `The largest subject (${subject.label}, about ${subject.size.toFixed(2)} units) is about ${pct} of the frame height from ${cam.distance.toFixed(1)} units at fov ${cam.fov}, so it is cropped.`, loc(cam.file, cam.call)));
   }
   return out;
 }
