@@ -276,6 +276,13 @@ describe("WebGPU point quads through ForwardPass", () => {
     const material = new UnlitMaterial();
     try {
       f.begin();
+      // 5.2.1: outside strict mode a WebGPU point caster is left out of depth and shadow passes (WEBGPU_POINT_DEPTH_SKIPPED
+      // warning) instead of failing the frame; strict mode keeps the guard.
+      for (const clippingPass of ["depth", "shadow"] as const) {
+        const pass = new DepthPass({ casters: [{ geometry, material }], clippingPass, checkedSubmission: true });
+        expect(() => pass.prepare({ device: f.device, width: WIDTH, height: HEIGHT })).not.toThrow();
+      }
+      setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), f.device);
       for (const clippingPass of ["depth", "shadow"] as const) {
         const pass = new DepthPass({ casters: [{ geometry, material }], clippingPass, checkedSubmission: true });
         expect(() => pass.prepare({ device: f.device, width: WIDTH, height: HEIGHT })).toThrow(/WebGPU point depth requires/i);

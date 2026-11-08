@@ -3282,6 +3282,15 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "return () => { throw unavailable(`${key}()`); };",
     ]
   },
+  {
+    file: "packages/rendering/src/webgl2/LegacyPost.ts",
+    reason: "5.2.1 P3 safe fallback: a Display-P3 request on a post chain without an OutputPass route opens the sRGB fallback scope and records this fallbackReason instead of failing the mount; describes a real fallback, not a missing feature",
+    expires: EXPIRES,
+    reviewer: "agent (release 5.2.1 safety lane, 2026-11-08)",
+    markers: [
+      "if (!p3TailFallback) tailOutputScope = host.device.beginSrgbOutputFallbackScope(\"Display-P3 is unavailable for this post chain\");",
+    ]
+  },
 ];
 
 export const runtimeEdgeAllowlistMarkers: readonly string[] = runtimeEdgeAllowlist.flatMap((group) =>
