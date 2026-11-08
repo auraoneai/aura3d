@@ -28,7 +28,7 @@ import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import type { GhostPose } from "./progress";
-import { atmosphereSpec, mineralSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
+import { atmosphereSpec, mineralSpec, pointQuadSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
@@ -36,6 +36,7 @@ import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+import { quadGeometryInput, quadUpdater } from "./point-quads";
 
 export { lehmer };
 
@@ -106,6 +107,15 @@ const SHADOW_WIDTH = 1.5;
 const solidMaterial = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}) => material.custom(solidSpec(base, glow, glowAmount, banding, extra, activeLook));
 const mineralMaterial = (base: Rgb, opal: boolean) => material.custom(mineralSpec(base, opal, activeLook));
 const pointsMaterial = (additive: boolean) => material.custom(pointsSpec(additive));
+/**
+ * Sprite draws (stars, stardust, exhaust): `gl_PointSize` points by default; with a lab backend requested
+ * (`?backend=webgpu|auto`) the same sprites as screen-aligned quads (point-quads.ts), since WebGPU has no point size.
+ * Set once per `buildWorld`; the default scene is unchanged.
+ */
+let spriteQuads = false;
+const spriteGeometry = (input: Parameters<typeof geometry.dynamic>[0] & { positions: Float32Array; attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> }) =>
+  spriteQuads ? geometry.dynamic(quadGeometryInput(input.positions, input.attributes)) : geometry.dynamic(input);
+const spriteMaterial = (additive: boolean) => spriteQuads ? material.custom(pointQuadSpec(additive)) : pointsMaterial(additive);
 
 function hslToRgb(h: number, s: number, l: number): Rgb {
   const k = (n: number): number => (n + h * 12) % 12;
@@ -242,6 +252,7 @@ export function buildWorld(options: WorldOptions): World {
   const high = options.quality === "high";
   const look: OrbitLook = options.look ?? "gouache";
   activeLook = look;
+  spriteQuads = readLabFlags().backend !== undefined;
   /** Debug switch: `?off=lights,bloom,grade,vignette,sky,atmo,stars2,rocks,lintel` disables individual look upgrades (bisecting a render problem). */
   const off = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("off") ?? "" : "").split(",").filter(Boolean));
   const builder: Scene = scene()
@@ -363,7 +374,7 @@ export function buildWorld(options: WorldOptions): World {
     starPositions.push(r * k * Math.cos(a), r * y, r * k * Math.sin(a));
     starTints.push(...c);
   }
-  builder.add(geometry.custom(geometry.dynamic({
+  builder.add(geometry.custom(spriteGeometry({
     positions: f32(starPositions),
     topology: "points",
     attributes: {
@@ -371,7 +382,7 @@ export function buildWorld(options: WorldOptions): World {
       tint: { itemSize: 3, data: f32(starTints) },
       fade: { itemSize: 1, data: f32(Array.from({ length: starCount }, () => 1)) }
     }
-  }), { name: "stars", material: pointsMaterial(false) }));
+  }), { name: "stars", material: spriteMaterial(false) }));
 
   /* bright foreground stars with a warm/cool spread (picked up by bloom) */
   const rand2 = lehmer(991);
@@ -386,7 +397,7 @@ export function buildWorld(options: WorldOptions): World {
     brightTints.push(...(warm ? hexLinear("#ffd9ae") : hexLinear("#b8d4ff")).map((v) => v * (1.3 + rand2() * 1.2)));
     brightSizes.push(2.6 + rand2() * 3.4);
   }
-  if (!off.has("stars2")) builder.add(geometry.custom(geometry.dynamic({
+  if (!off.has("stars2")) builder.add(geometry.custom(spriteGeometry({
     positions: f32(brightPositions),
     topology: "points",
     attributes: {
@@ -394,7 +405,7 @@ export function buildWorld(options: WorldOptions): World {
       tint: { itemSize: 3, data: f32(brightTints) },
       fade: { itemSize: 1, data: f32(Array.from({ length: brightCount }, () => 1)) }
     }
-  }), { name: "stars-bright", material: pointsMaterial(true) }));
+  }), { name: "stars-bright", material: spriteMaterial(true) }));
 
   /* ---- checkpoints: veils + pillars ---- */
   GATES.forEach((gate, i) => {
@@ -540,7 +551,7 @@ export function buildWorld(options: WorldOptions): World {
   });
   /** Each item's bob axis, computed once here instead of a `routeFrame` per item per frame (SO-E1). */
   const dustUp = Float32Array.from(dustFrames.flatMap((f) => [f.up.x, f.up.y, f.up.z]));
-  builder.add(geometry.custom(geometry.dynamic({
+  builder.add(geometry.custom(spriteGeometry({
     positions: f32(dustBase.flatMap((p) => [p.x, p.y, p.z])),
     topology: "points",
     attributes: {
@@ -548,14 +559,14 @@ export function buildWorld(options: WorldOptions): World {
       tint: { itemSize: 3, data: f32(dustItems.flatMap(() => [...hexLinear("#ffd9a0")])) },
       fade: { itemSize: 1, data: f32(dustItems.map(() => 1)) }
     }
-  }), { name: "stardust", material: pointsMaterial(true) }).runtime({ id: "stardust" }));
+  }), { name: "stardust", material: spriteMaterial(true) }).runtime({ id: "stardust" }));
 
   /* ---- exhaust ---- */
   // Original keeps its point exhaust; gouache replaces that draw with one
   // atlas batch (smoke while cruising, flame while boosting).
   const EXHAUST = look === "original" ? 160 : 0;
   if (EXHAUST > 0) {
-    builder.add(geometry.custom(geometry.dynamic({
+    builder.add(geometry.custom(spriteGeometry({
       positions: f32(Array.from({ length: EXHAUST * 3 }, () => 0)),
       topology: "points",
       attributes: {
@@ -563,7 +574,7 @@ export function buildWorld(options: WorldOptions): World {
         tint: { itemSize: 3, data: f32(Array.from({ length: EXHAUST }, () => [...hexLinear("#ffe1a1")]).flat()) },
         fade: { itemSize: 1, data: f32(Array.from({ length: EXHAUST }, () => 0)) }
       }
-    }), { name: "exhaust", material: pointsMaterial(true) }).runtime({ id: "exhaust" }));
+    }), { name: "exhaust", material: spriteMaterial(true) }).runtime({ id: "exhaust" }));
   }
 
   /* ---- riders ---- */
@@ -667,7 +678,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, quads: spriteQuads, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows });
     }
   };
 }
@@ -682,6 +693,8 @@ interface BindInput {
   readonly reducedMotion: boolean;
   readonly dustItems: ReturnType<typeof collectibles>;
   readonly exhaust: number;
+  /** The sprites are quads (lab backend): point attribute writes go to the four corners. */
+  readonly quads: boolean;
   readonly look: OrbitLook;
   readonly high: boolean;
   readonly headlight: boolean;
@@ -699,6 +712,13 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     let h = handles.get(id);
     if (!h) handles.set(id, h = app.nodes.require(id));
     return h;
+  };
+  const spriteUpdaters = new Map<string, ReturnType<typeof quadUpdater>>();
+  const spriteNode = (id: string) => {
+    if (!input.quads) return node(id);
+    let u = spriteUpdaters.get(id);
+    if (!u) spriteUpdaters.set(id, u = quadUpdater(node(id), { position: 3, tint: 3, size: 1, fade: 1 }));
+    return u;
   };
   const gateVeils = GATES.map((_, i) => node(`gate-veil-${i}`));
   const gatePulse = GATES.map(() => 0);
@@ -1053,7 +1073,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     }
 
     /* stardust: hide collected, bob the rest */
-    const dust = node("stardust");
+    const dust = spriteNode("stardust");
     const positions = dustPositions;
     const ups = input.dustUp;
     for (let i = 0; i < input.dustBase.length; i++) {
@@ -1190,7 +1210,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       exhaustFade[k] = alive ? (1 - exhaustAge[k]!) * 0.7 : 0;
     }
     if (input.exhaust > 0) {
-      const ex = node("exhaust");
+      const ex = spriteNode("exhaust");
       ex.updateAttribute?.("position", { array: exhaustPos, offset: 0 });
       ex.updateAttribute?.("size", { array: exhaustSize, offset: 0 });
       ex.updateAttribute?.("fade", { array: exhaustFade, offset: 0 });

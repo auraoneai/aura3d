@@ -633,7 +633,7 @@ async function boot(): Promise<void> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    // Lab flags (?backend=webgpu, ?worker=1, ?gamut=p3) are all off by default; this port keeps its GLSL, so WebGPU falls back to WebGL2.
+    // Lab flags (?backend=webgpu, ?worker=1, ?gamut=p3) are all off by default; the custom shaders carry WGSL twins (shaders-wgsl.ts) for WebGPU.
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.

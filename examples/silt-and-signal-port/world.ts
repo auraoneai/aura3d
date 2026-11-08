@@ -15,6 +15,7 @@ import { CHAPTERS } from "./chapters-data";
 import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
+import { SKY_FRAGMENT_WGSL, SKY_INK_FRAGMENT_WGSL, SKY_VERTEX_WGSL } from "./shaders-wgsl";
 import { createSiltFx, type SiltFx } from "./fx";
 import { waterGraphMaterial } from "./water-graph";
 import { portableWaterMaterial } from "./portable-water";
@@ -55,6 +56,7 @@ export const skySpec = (chapter: number, look: SiltLookMode = "original"): Custo
   const c = skyColors(chapter);
   return {
     glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+    wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
     uniforms: {
       skyTop: { type: "color3", value: [...c.top] },
       skyBottom: { type: "color3", value: [...c.bottom] },
@@ -70,6 +72,7 @@ export const inkSkySpec = (chapter: number): CustomSpec => {
   const look = chapterLook(chapter);
   return {
     glsl: { vertex: SKY_VERTEX, fragment: SKY_INK_FRAGMENT },
+    wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_INK_FRAGMENT_WGSL },
     uniforms: {
       skyTop: { type: "color3", value: linearOf(look.sky.top) },
       skyBottom: { type: "color3", value: linearOf(look.sky.horizon) },
