@@ -85,6 +85,63 @@
       #btn-pause { left: calc(68px + env(safe-area-inset-left)); }
       #render-error { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; background: #fdf3df; }
       #render-error .overlay-card { max-width: 440px; }
+      /* How to play: rules panel (src/howto.ts fills colours and numbers from look.ts + sim.ts CONFIG) */
+      .btn-ghost { min-height: 44px; padding: 8px 20px; font-size: 16px; font-weight: 700; font-family: inherit; color: #1f2a44; background: #fff6e8;
+        border: 3px solid #1f2a44; border-radius: 40px; cursor: pointer; box-shadow: 0 4px 0 #1f2a44; margin-top: clamp(6px, 1.6vh, 12px); }
+      .btn-ghost:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f2a44; }
+      button:focus-visible { outline: 3px solid #2f6fe4; outline-offset: 3px; }
+      .howto-card:focus { outline: none; }
+      #howto-screen { z-index: 20; background: rgba(31,42,68,0.6); padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)); box-sizing: border-box; }
+      .howto-card { position: relative; background: #fff6e8; border: 4px solid #1f2a44; border-radius: 22px; box-shadow: 10px 12px 0 rgba(31,42,68,0.3);
+        width: min(940px, 100%); max-height: 100%; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; text-align: left;
+        padding: 18px 26px 0; color: #1f2a44; outline: none; -webkit-overflow-scrolling: touch; }
+      .howto-card h2 { font-size: clamp(26px, 5vh, 38px); margin: 0; line-height: 1.05; text-align: center; letter-spacing: 0.02em; }
+      .howto-card h2 .red { color: #c0271f; } .howto-card h2 .blue { color: #2f6fe4; }
+      .howto-goal { font-size: 16px; line-height: 1.35; margin: 6px auto 12px; text-align: center; max-width: 780px; }
+      .howto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+      .howto-sec { border: 3px solid #1f2a44; border-radius: 14px; padding: 8px 12px 10px; background: #fffaf2; }
+      .howto-sec.wide { grid-column: 1 / -1; }
+      .howto-sec h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5e06; }
+      .howto-sec ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+      .howto-sec li { display: flex; align-items: center; gap: 9px; font-size: 14px; line-height: 1.3; }
+      .howto-sec li > span:last-child { flex: 1; }
+      .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+      .howto-cols h4 { margin: 0 0 4px; font-size: 14px; }
+      .keys { display: inline-flex; gap: 3px; flex: 0 0 108px; flex-wrap: wrap; }
+      kbd { font-family: inherit; font-size: 12px; font-weight: 700; min-width: 22px; padding: 2px 6px 3px; text-align: center; box-sizing: border-box;
+        background: #fff; color: #1f2a44; border: 2px solid #1f2a44; border-radius: 6px; box-shadow: 0 2px 0 #1f2a44; }
+      .sw { flex: none; width: 24px; height: 24px; box-sizing: border-box; border: 3px solid #1f2a44; background: var(--sw, #fff); display: inline-block; }
+      .sw.round { border-radius: 50%; } .sw.square { border-radius: 4px; }
+      .sw.tri { border: 0; background: #1f2a44; clip-path: polygon(50% 0, 100% 100%, 0 100%); position: relative; }
+      .sw.tri::after { content: ""; position: absolute; inset: 5px 4px 2px; background: var(--sw, #fff); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+      .sw.morph { border-radius: 50%; background: conic-gradient(var(--c0) 0 120deg, var(--c1) 120deg 240deg, var(--c2) 240deg 360deg); }
+      .sw.wall { border-radius: 4px; background: repeating-linear-gradient(135deg, #fdf6ea 0 4px, #d9c5a4 4px 7px); }
+      .sw.pip-on { border-radius: 50%; background: #e8453c; }
+      .howto-foot { position: sticky; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 12px -26px 0; padding: 10px 16px 14px;
+        background: linear-gradient(180deg, rgba(255,246,232,0), #fff6e8 26%); }
+      #btn-howto-close { min-height: 48px; padding: 8px 40px; font-size: clamp(18px, 3.4vh, 24px); }
+      .howto-foot .hint { margin: 2px 0 0; font-size: 12px; }
+      @media (max-width: 640px) {
+        .howto-card { padding: 14px 14px 0; border-radius: 18px; }
+        .howto-grid, .howto-cols { grid-template-columns: 1fr; }
+        .howto-foot { margin: 10px -14px 0; }
+        .howto-goal { font-size: 15px; }
+      }
+      /* phones and tablets: list the touch controls first */
+      @media (hover: none) and (pointer: coarse) { .howto-cols > div:first-child { order: 2; } }
+      @media (max-height: 760px) and (min-width: 641px) {
+        .howto-card { padding-top: 12px; }
+        .howto-goal { margin: 4px auto 8px; font-size: 15px; }
+        .howto-grid { gap: 8px 14px; }
+        .howto-sec { padding: 6px 10px 8px; }
+        .howto-sec ul { gap: 4px; }
+        .howto-sec li { font-size: 13px; }
+        .howto-sec h3 { margin-bottom: 4px; }
+        .howto-card h2 { font-size: 30px; }
+        kbd { padding: 1px 6px 2px; }
+        .howto-foot { margin-top: 4px; padding: 6px 16px 6px; }
+        #btn-howto-close { min-height: 46px; padding: 6px 40px; }
+      }
       .hidden { display: none !important; }
       @media (max-width: 520px) {
         .overlay-card { width: calc(100vw - 28px); max-width: calc(100vw - 28px); padding-left: 16px; padding-right: 16px; }
@@ -124,6 +181,7 @@
         <div id="splash-best"></div>
         <button id="btn-start" class="btn no-steer" type="button">PLAY NOW</button>
         <div id="load-bar" class="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <button id="btn-howto-splash" class="btn-ghost no-steer" type="button" data-howto-open aria-haspopup="dialog">How to play</button>
         <div class="settings no-steer">
           <button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Shape symbols: off</button>
           <button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button>
@@ -144,11 +202,84 @@
       <div class="overlay-card">
         <h1><span class="blue">PAUSED</span></h1>
         <button id="btn-resume" class="btn" type="button">RESUME</button>
+        <button id="btn-howto-pause" class="btn-ghost" type="button" data-howto-open aria-haspopup="dialog">How to play</button>
         <div class="settings">
           <button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Shape symbols: off</button>
           <button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button>
         </div>
         <p class="hint keys-only">P or Esc to resume</p>
+      </div>
+    </div>
+    <div id="howto-screen" class="overlay hidden no-steer" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal">
+      <div class="howto-card" tabindex="-1">
+        <h2 id="howto-title"><span class="red">HOW TO</span> <span class="blue">PLAY</span></h2>
+        <p id="howto-goal" class="howto-goal">Roll as far as you can: every wall has three holes, so steer into the one that matches your current shape.</p>
+        <div class="howto-grid">
+          <section class="howto-sec wide" aria-labelledby="howto-h-controls">
+            <h3 id="howto-h-controls">Controls</h3>
+            <div class="howto-cols">
+              <div>
+                <h4>Keyboard</h4>
+                <ul>
+                  <li><span class="keys"><kbd aria-label="Left arrow">&larr;</kbd><kbd aria-label="Right arrow">&rarr;</kbd><kbd>A</kbd><kbd>D</kbd></span><span>Steer left / right</span></li>
+                  <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Start, or play again after a splat</span></li>
+                  <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume</span></li>
+                  <li><span class="keys"><kbd>M</kbd></span><span>Sound on / off</span></li>
+                  <li><span class="keys"><kbd>C</kbd></span><span>Shape symbols on / off</span></li>
+                </ul>
+              </div>
+              <div>
+                <h4>Touch &amp; mouse</h4>
+                <ul>
+                  <li><span class="keys"><kbd>Drag</kbd></span><span>Drag left / right anywhere to steer</span></li>
+                  <li><span class="keys"><kbd>Tap</kbd></span><span>Tap PLAY NOW (or the screen) to start</span></li>
+                  <li><span class="keys"><kbd aria-label="Pause button">&#x23F8;&#xFE0E;</kbd></span><span>Pause button, bottom left</span></li>
+                  <li><span class="keys"><kbd aria-label="Sound button">&#x1F50A;</kbd></span><span>Sound button, bottom left</span></li>
+                  <li><span class="keys"><kbd>Again</kbd></span><span>PLAY AGAIN restarts after a splat</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+          <section class="howto-sec" aria-labelledby="howto-h-walls">
+            <h3 id="howto-h-walls">Walls &amp; holes</h3>
+            <ul>
+              <li><span class="sw round" data-swatch="shape0" aria-hidden="true"></span><span><b>Sphere</b> hole: fits a red sphere</span></li>
+              <li><span class="sw square" data-swatch="shape1" aria-hidden="true"></span><span><b>Cube</b> hole: fits a yellow cube</span></li>
+              <li><span class="sw tri" data-swatch="shape2" aria-hidden="true"></span><span><b>Cone</b> hole: fits a blue cone</span></li>
+              <li><span class="sw wall" aria-hidden="true"></span><span>Wrong hole or solid wall: <b>OUCH</b>, you lose a life. The rim that fits you glows; your shape is shown top right.</span></li>
+            </ul>
+          </section>
+          <section class="howto-sec" aria-labelledby="howto-h-pickups">
+            <h3 id="howto-h-pickups">Pickups (roll through the orb)</h3>
+            <ul>
+              <li><span class="sw morph" aria-hidden="true"></span><span><b>Morph</b> (colour-cycling): switches you to a different shape</span></li>
+              <li><span class="sw round" data-swatch="wildcard" aria-hidden="true"></span><span><b>Any shape</b> (purple): every hole fits for <b data-fact="WILDCARD_DURATION">5</b>s</span></li>
+              <li><span class="sw round" data-swatch="shield" aria-hidden="true"></span><span><b>Shield</b> (teal): blocks your next miss</span></li>
+              <li><span class="sw round" data-swatch="x2" aria-hidden="true"></span><span><b>x2 score</b> (orange): double points for <b data-fact="X2_DURATION">7</b>s</span></li>
+            </ul>
+          </section>
+          <section class="howto-sec" aria-labelledby="howto-h-score">
+            <h3 id="howto-h-score">Scoring &amp; combos</h3>
+            <ul>
+              <li><span>Fit through a hole: <b data-fact="POINTS_GATE">40</b> &times; multiplier. Dead centre is a <b>PERFECT</b>: <b data-fact="POINTS_PERFECT">60</b> &times; multiplier.</span></li>
+              <li><span>Every <b data-fact="COMBO_PER_MULT">3</b> fits in a row add +1 to the multiplier, up to <b data-fact="MAX_MULT_X">x5</b>. A miss resets it to x1.</span></li>
+              <li><span>Every <b data-fact="MILESTONE">750</b> points: <b data-fact="MILESTONE_BONUS">+100</b> milestone bonus.</span></li>
+              <li><span>Each fit grows your ball and adds speed; the road keeps getting faster.</span></li>
+            </ul>
+          </section>
+          <section class="howto-sec" aria-labelledby="howto-h-lives">
+            <h3 id="howto-h-lives">Lives &amp; the end of a run</h3>
+            <ul>
+              <li><span class="sw pip-on" aria-hidden="true"></span><span>You start with <b data-fact="MAX_LIVES">3</b> lives (red dots, top left).</span></li>
+              <li><span>Each miss costs one life, shrinks your ball and breaks your combo.</span></li>
+              <li><span>Lose the last one and it's <b>SPLAT!</b> The run ends; beat your best score.</span></li>
+            </ul>
+          </section>
+        </div>
+        <div class="howto-foot">
+          <button id="btn-howto-close" class="btn" type="button">GOT IT</button>
+          <p class="hint keys-only">Esc, Enter or Space to close</p>
+        </div>
       </div>
     </div>
     <div id="render-error">
