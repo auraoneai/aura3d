@@ -13,11 +13,7 @@ import { invertMat4 } from "@aura3d/scene";
 import { standardViewProjection } from "../DepthConvention";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
 import { SKY_SHADER_MARKER, skyClipZ, skyClipZLiteral, skyFragmentSource, skyVertexSource } from "./sky.glsl";
-import {
-  GRADIENT_SKY_FOG_PORTABLE_BINDINGS,
-  GRADIENT_SKY_PORTABLE_BINDINGS,
-  gradientSkyWgsl
-} from "./sky.wgsl";
+import { gradientSkyPortableBindings, gradientSkyWgsl } from "./sky.wgsl";
 import type { PackedFogUniforms } from "./HeightFog";
 import { A3D_MAX_FOG_VOLUMES } from "./FogVolumes";
 import { starVisibilityAtSunElevation } from "./StarField";
@@ -170,8 +166,8 @@ export class SkyBackgroundPass {
         fragment: skyFragmentSource(defines),
         marker: SKY_SHADER_MARKER,
         ...(this.device.kind === "webgpu" ? {
-          webgpu: gradientSkyWgsl(defines.fog, clipZLiteral),
-          portableBindings: defines.fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS
+          webgpu: gradientSkyWgsl(defines.fog, clipZLiteral, defines.clouds),
+          portableBindings: gradientSkyPortableBindings(defines.fog, defines.clouds)
         } : {})
       });
       this.programs.set(key, p);
@@ -215,7 +211,6 @@ function assertNativeGradientSky(frame: SkyFrame, defines: ReturnType<typeof sky
   if (frame.model !== "gradient" || !frame.gradient) unsupported.push(`model:${frame.model}`);
   if ((frame.gradient?.bands.length ?? 0) > 0) unsupported.push("bands");
   if (defines.stars) unsupported.push("stars");
-  if (defines.clouds) unsupported.push("clouds");
   if (defines.moon) unsupported.push("moon");
   if (defines.fog) unsupported.push(...unsupportedNativeFog(fog));
   if (unsupported.length) {

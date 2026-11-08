@@ -10423,9 +10423,13 @@ export class WebGPUDevice implements RenderDevice {
           throw new RenderDeviceError("Texture dimension does not match shader binding", "WEBGPU_TEXTURE_DIMENSION_MISMATCH", { binding: descriptor.name });
         }
         const actual = this.createNativeSampledTextureBinding(binding, allowUnfilterable);
+        // Optional bindings the draw leaves empty get a 1x1 stand-in: white 2D,
+        // or a zero cube (the environment background binds only the texture
+        // its projection uses).
         const sampled = actual ?? (descriptor.required === false
-          && descriptor.kind === "texture2d"
-          ? this.createNativeFallbackSampledTextureBinding("portable-white", [255, 255, 255, 255], "linear")
+          ? descriptor.kind === "texture2d"
+            ? this.createNativeFallbackSampledTextureBinding("portable-white", [255, 255, 255, 255], "linear")
+            : descriptor.kind === "texture-cube" ? this.createNativeFallbackCubeBinding() : null
           : null);
         if (!sampled) {
           throw new RenderDeviceError("Portable texture binding is unavailable", "WEBGPU_TEXTURE_BINDING_REQUIRED", { binding: descriptor.name });

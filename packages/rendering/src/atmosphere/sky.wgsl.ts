@@ -2,8 +2,8 @@ import type { NativeShaderStages, PortableShaderBinding } from "../RenderDevice"
 import { A3D_MAX_FOG_VOLUMES } from "./FogVolumes";
 
 /**
- * The native sky variants cover a gradient without bands, stars, clouds or
- * moon. The fogged variant uses the same packed atmosphere inputs as the
+ * The native sky variants cover a gradient without bands, stars or moon,
+ * optionally with clouds. The fogged variant uses the same packed atmosphere inputs as the
  * WebGL sky. The host checks the supported combinations before every draw.
  */
 export const GRADIENT_SKY_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
@@ -31,6 +31,22 @@ export const GRADIENT_SKY_FOG_PORTABLE_BINDINGS: readonly PortableShaderBinding[
   { name: "u_sunColor", kind: "vec3" },
   { name: "u_fogBackgroundDistance", kind: "float" }
 ];
+
+/** Cloud-layer inputs (same uniforms the WebGL sky declares). */
+export const GRADIENT_SKY_CLOUD_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
+  { name: "u_time", kind: "float" },
+  { name: "u_cloudCoverage", kind: "float" },
+  { name: "u_cloudDensity", kind: "float" },
+  { name: "u_cloudElevation", kind: "float" },
+  { name: "u_cloudScaleSpeed", kind: "vec2" },
+  { name: "u_cloudTint", kind: "vec3" }
+];
+
+/** Portable bindings for a native gradient sky variant. */
+export function gradientSkyPortableBindings(fog: boolean, clouds: boolean): readonly PortableShaderBinding[] {
+  if (!clouds) return fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS;
+  return [...(fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS), ...GRADIENT_SKY_CLOUD_PORTABLE_BINDINGS];
+}
 
 const skyVertex = (clipZ: string): string => /* wgsl */ `
 // aura3d.prd07.sky vertex
@@ -171,11 +187,49 @@ fn skyApplyFog(color: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
   return mix(color, inscatter, amount);
 }`;
 
-function gradientFragment(fog: boolean): string {
+// WGSL port of the GLSL sky's value-noise cloud layer (hash2/vnoise/fbm and
+// the MODEL_GRADIENT cloud colour).
+const SKY_CLOUDS = /* wgsl */ `
+fn skyHash2(p: vec2<f32>) -> f32 { return fract(sin(dot(p, vec2<f32>(127.1, 311.7))) * 43758.5453123); }
+fn skyValueNoise(p: vec2<f32>) -> f32 {
+  let i = floor(p);
+  var f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  let a = skyHash2(i);
+  let b = skyHash2(i + vec2<f32>(1.0, 0.0));
+  let c = skyHash2(i + vec2<f32>(0.0, 1.0));
+  let d = skyHash2(i + vec2<f32>(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+fn skyFbm(start: vec2<f32>) -> f32 {
+  var p = start;
+  var v = 0.0;
+  var a = 0.5;
+  for (var i = 0; i < 5; i += 1) { v += a * skyValueNoise(p); p *= 2.0; a *= 0.5; }
+  return v;
+}
+fn skyApplyClouds(color: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
+  if (direction.y <= 0.0 || aura.u_cloudCoverage <= 0.0) { return color; }
+  let elevation = mix(1.0, 0.1, aura.u_cloudElevation);
+  var cloudUV = direction.xz / (direction.y * elevation) * aura.u_cloudScaleSpeed.x;
+  cloudUV += aura.u_time * aura.u_cloudScaleSpeed.y;
+  var cloudNoise = skyFbm(cloudUV * 1000.0) + 0.5 * skyFbm(cloudUV * 2000.0 + 3.7);
+  cloudNoise = cloudNoise * 0.5 + 0.5;
+  var cloudMask = smoothstep(1.0 - aura.u_cloudCoverage, 1.0 - aura.u_cloudCoverage + 0.3, cloudNoise);
+  cloudMask *= smoothstep(0.0, 0.1 + 0.2 * aura.u_cloudElevation, direction.y);
+  let daylight = max(0.0, aura.u_sunDirection.y * 2.0);
+  // A gradient sky has no sun irradiance; light the clouds from the gradient.
+  var cloudColor = mix(color, vec3<f32>(aura.u_intensity), 0.6) * mix(0.55, 1.0, clamp(daylight, 0.0, 1.0));
+  cloudColor *= aura.u_cloudTint;
+  return mix(color, cloudColor, cloudMask * aura.u_cloudDensity);
+}`;
+
+function gradientFragment(fog: boolean, clouds = false): string {
   return /* wgsl */ `
 // aura3d.prd07.sky fragment
 /* @aura3d-bindings */
 ${fog ? SKY_FOG : ""}
+${clouds ? SKY_CLOUDS : ""}
 @fragment fn fs_main(@location(0) clip: vec2<f32>) -> @location(0) vec4<f32> {
   let world = aura.u_invViewProj * vec4<f32>(clip, 1.0, 1.0);
   let direction = normalize(world.xyz / world.w);
@@ -194,9 +248,13 @@ ${fog ? SKY_FOG : ""}
     let t = clamp(-y * 3.0, 0.0, 1.0);
     color = mix(aura.u_horizon, aura.u_ground, t);
   }
-  ${fog
-    ? "return vec4<f32>(skyApplyFog(color * aura.u_intensity, direction), 1.0);"
-    : "return vec4<f32>(color * aura.u_intensity, 1.0);"}
+  ${clouds
+    // Clouds mix against the intensity-scaled gradient, as in the GLSL sky.
+    ? `color = skyApplyClouds(color * aura.u_intensity, direction);
+  ${fog ? "return vec4<f32>(skyApplyFog(color, direction), 1.0);" : "return vec4<f32>(color, 1.0);"}`
+    : fog
+      ? "return vec4<f32>(skyApplyFog(color * aura.u_intensity, direction), 1.0);"
+      : "return vec4<f32>(color * aura.u_intensity, 1.0);"}
 }`;
 }
 
@@ -214,9 +272,9 @@ export const GRADIENT_SKY_FOG_WGSL: NativeShaderStages = {
 
 /**
  * Native gradient sky stages whose far-plane triangle sits at `clipZLiteral`
- * (see `skyClipZ`); the standard literal returns the shared constants.
+ * (see `skyClipZ`); the standard cloudless literal returns the shared constants.
  */
-export function gradientSkyWgsl(fog: boolean, clipZLiteral: string): NativeShaderStages {
-  if (clipZLiteral === "0.999999") return fog ? GRADIENT_SKY_FOG_WGSL : GRADIENT_SKY_WGSL;
-  return { vertex: skyVertex(clipZLiteral), fragment: gradientFragment(fog) };
+export function gradientSkyWgsl(fog: boolean, clipZLiteral: string, clouds = false): NativeShaderStages {
+  if (clipZLiteral === "0.999999" && !clouds) return fog ? GRADIENT_SKY_FOG_WGSL : GRADIENT_SKY_WGSL;
+  return { vertex: clipZLiteral === "0.999999" ? SKY_VERTEX : skyVertex(clipZLiteral), fragment: gradientFragment(fog, clouds) };
 }
