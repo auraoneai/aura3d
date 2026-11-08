@@ -22,6 +22,9 @@ const DIRECTIONAL_KEYS = ["name", "position", "target", "intensity", "color", "s
 const POINT_KEYS = ["name", "position", "target", "intensity", "power", "distance", "decay", "color", "shadow", "castShadow", "photometricProfile"] as const;
 const SPOT_KEYS = ["name", "position", "target", "angle", "penumbra", "distance", "decay", "intensity", "power", "color", "shadow", "castShadow", "photometricProfile", "projectedImage"] as const;
 
+/** `lights.key` shadow: a constant depth bias of 0.002 clears acne on wide receivers at any scene scale (bias 0 stripes walls). */
+const KEY_SHADOW: AuraDirectionalShadowOptions = { bias: 0.002 };
+
 /** three.js `light.castShadow = true`: `castShadow: true` is `shadow: true`; an explicit `shadow` wins. */
 function resolveShadow<T>(shadow: T | undefined, castShadow: boolean | undefined): T | boolean | undefined {
   return shadow !== undefined ? shadow : castShadow === true ? true : undefined;
@@ -115,6 +118,26 @@ export const lights = {
       color: options.color ?? "#ffffff",
       shadow: resolveShadow(options.shadow, options.castShadow)
     }),
+  /**
+   * N4 (5.4.0): the key light of the standard creation path. A directional
+   * light that casts a shadow by default, lit from a three-quarter angle above
+   * `target` (default `[0, 0, 0]`), with a small depth bias so wide receivers
+   * (floors, walls) show a clean shadow instead of acne. Primitives and models
+   * receive shadows by default, so a ground plane under the subject shows it.
+   * Every option of `lights.directional` is accepted; `shadow: false` turns the
+   * shadow off and a `shadow` object replaces the default one.
+   */
+  key: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraDirectionalShadowOptions } = {}) => {
+    const target = options.target ?? [0, 0, 0];
+    return lights.directional({
+      name: options.name ?? "key light",
+      position: options.position ?? [target[0] + 3, target[1] + 5, target[2] + 3.5],
+      target,
+      intensity: options.intensity ?? 3,
+      ...(options.color !== undefined ? { color: options.color } : {}),
+      shadow: options.shadow === undefined || options.shadow === true ? KEY_SHADOW : options.shadow
+    });
+  },
   point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly power?: number; readonly distance?: number; readonly decay?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; /** three.js `castShadow`: alias of `shadow: true`. */ readonly castShadow?: boolean; readonly photometricProfile?: AuraPhotometricProfile } = {}) => {
     validateProfile(options.photometricProfile);
     return new AuraNodeBuilder<AuraLightNode>({

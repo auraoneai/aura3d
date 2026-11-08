@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "a74a1803a5ef357ec78b80d45329fbf2b999b0d34fc059f81453ed3be3b3cf5a" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "92d19e8d42fcb0830fe2c677b5fb71d476fe587eeb4206e88f5b47d258584cdc" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -184,7 +184,7 @@
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
         { "path": "packages/create-aura3d/templates/arena-shooter/index.html", "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930" },
-        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06" }
+        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a" }
       ],
       "regions": [
         {
@@ -321,7 +321,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -842,7 +842,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -904,7 +904,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1171,7 +1171,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1240,7 +1240,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1309,7 +1309,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1378,7 +1378,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1447,7 +1447,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -1496,7 +1496,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1562,7 +1562,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1838,7 +1838,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -2699,7 +2699,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -2786,7 +2786,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -3043,7 +3043,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -3176,7 +3176,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -3238,7 +3238,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3304,7 +3304,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -3366,7 +3366,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3432,7 +3432,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3502,7 +3502,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/RootGeometry.ts",
@@ -3576,7 +3576,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -3638,7 +3638,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3720,7 +3720,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -3798,7 +3798,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -4640,7 +4640,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/camera.ts",
@@ -7283,7 +7283,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -7351,7 +7351,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [
@@ -8228,7 +8228,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "42b942f1e567c080b68536ede2e70da6d9e714cb640927fe8e891c81dfec7e8a"
         }
       ],
       "regions": [

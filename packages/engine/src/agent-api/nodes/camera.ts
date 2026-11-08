@@ -12,6 +12,7 @@ import { resolveQrFlags } from "../../contracts/flags.js";
 import { smoothingToHalflife } from "../camera/Spring.js";
 import { frameCameraPose, type AuraFrameBounds, type AuraFramePose } from "../camera/frameSubject.js";
 import { isGroundLikeNode, worldBoundsOfNodes, type AuraCameraFrameOptions, type AuraFrameSubject } from "../camera/frameNodes.js";
+import { markAutoFrameSpec, type AuraCameraAutoOptions } from "../camera/autoFrame.js";
 
 function frameBoundsOf(subject: AuraFrameSubject | readonly AuraFrameSubject[] | AuraFrameBounds, options: AuraCameraFrameOptions, scene: boolean): AuraFrameBounds {
   const isBounds = !Array.isArray(subject) && Array.isArray((subject as AuraFrameBounds).min) && Array.isArray((subject as AuraFrameBounds).max) && (subject as { kind?: unknown }).kind === undefined;
@@ -270,6 +271,17 @@ export const camera = lazyNamespace(() => ({
     const pose = frameCameraPose(frameBoundsOf(subject, options, true), options);
     return camera.orbit({ target: pose.target, position: pose.position, distance: pose.distance, fov: pose.fov, near: pose.near, far: pose.far });
   },
+  /**
+   * Frame whatever the scene holds, with no hand-placed camera:
+   * `scene().add(...).camera(camera.auto())`. The scene builder solves the
+   * pose from its own nodes when it serialises (the `camera.frameScene` maths:
+   * subject fills `fill`, default 0.6, of the limiting frame axis; ground
+   * planes and ground-named nodes are left out of the box). Solved for
+   * `aspect`, else the window aspect at mount, else 16/9. Orbit controls start
+   * framed. A scene that never sets a camera is framed the same way.
+   */
+  auto: (options: AuraCameraAutoOptions = {}): AuraCameraSpec =>
+    markAutoFrameSpec(camera.orbit(options.autoRotate !== undefined ? { autoRotate: options.autoRotate } : {}), options),
   /** The pose `camera.frame` would use, without building a spec: `app.camera?.setPose({ position, target, fov })`. */
   /**
    * World bounds `camera.frame` uses for a subject (`{ min, max }`), e.g. to

@@ -8,6 +8,7 @@ import { envSourceBuilders } from "./environments.js";
 import { isStudioMaterial } from "./studioMaterial.js";
 import { camera } from "./camera.js";
 import { applyOrbitInteraction } from "./orbitInteraction.js";
+import { autoFrameOptionsOf, resolveAutoFrameSpec } from "../camera/autoFrame.js";
 import { isPositiveFinite, lowerLookNode } from "../sceneMath.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
@@ -179,6 +180,8 @@ export class AuraSceneBuilder {
   // `scene.background` accepting a texture/cubemap (never enables IBL).
   private backgroundImageSpec: AuraSceneBackgroundImage | undefined;
   private cameraSpec: AuraCameraSpec = camera.orbit();
+  // N4: false until the author sets a camera; an unset camera frames the scene's nodes like `camera.auto()`.
+  private cameraChosen = false;
   private timelineSpec: AuraTimelineSpec | undefined;
   private physicsController: AuraPhysicsWorldController | undefined;
   private diagnosticsEnabled = false;
@@ -257,6 +260,7 @@ export class AuraSceneBuilder {
   camera(next: AuraCameraSpec): this {
     resolveCameraClipping(next);
     this.cameraSpec = next;
+    this.cameraChosen = true;
     return this;
   }
 
@@ -288,7 +292,7 @@ export class AuraSceneBuilder {
       background: this.backgroundExplicit ? this.backgroundColor : (looksFlagOn() ? lookBackdrop(this.nodes) : undefined) ?? this.backgroundColor,
       ...(this.backgroundImageSpec ? { backgroundImage: this.backgroundImageSpec } : {}),
       ...(this.backgroundToneMapped ? {} : { backgroundToneMapped: false as const }),
-      camera: applyOrbitInteraction(this.cameraSpec, this.nodes),
+      camera: applyOrbitInteraction(this.resolvedCamera(), this.nodes),
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
       ...(this.overrideMaterialSpec ? { overrideMaterial: snapshotMaterial(this.overrideMaterialSpec) } : {}),
@@ -297,6 +301,13 @@ export class AuraSceneBuilder {
         enabled: this.diagnosticsEnabled
       }
     };
+  }
+
+  /** The authored camera, or for `camera.auto()` / no camera at all, the pose that frames the scene's nodes. */
+  private resolvedCamera(): AuraCameraSpec {
+    const auto = this.cameraChosen ? autoFrameOptionsOf(this.cameraSpec) : {};
+    if (!auto) return this.cameraSpec;
+    return resolveAutoFrameSpec(this.nodes, auto, (pose) => camera.orbit(pose)) ?? this.cameraSpec;
   }
 
   getPhysicsController(): AuraPhysicsWorldController | undefined {
