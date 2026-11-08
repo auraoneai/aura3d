@@ -1030,7 +1030,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "1292c8854bc55c8e112b568e4f4cc426ddec16c5bd5afe86f1dc67735f890268"
+          "sha256": "41180717c773d0f2a570604d7900f0af668599948fcf39dc299e1e46d5838d63"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
+          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
+          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
         }
       ],
       "regions": [
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
+          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
+          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
         }
       ],
       "regions": [
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "c8569f1abaadd81ae494506a9bdc5a93805bbeee80859487185506f5fe9e0ca3"
+          "sha256": "d2c5a8255cd21cab2362f97640540d9ebeb33440b6b918fe23c3a6f31406dee3"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
