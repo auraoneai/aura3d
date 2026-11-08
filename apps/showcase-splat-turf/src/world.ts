@@ -11,7 +11,7 @@ import {
 import { CONFIG, type SplatTurfSim } from "./sim";
 import { LOOK, linear, paintColorFor } from "./look";
 import {
-  BALL_RADIUS, ballMesh, botMesh, canMesh, cellMesh, edgeMesh, finishMesh, quadMesh, roadMesh, sphereMesh, stripMesh,
+  BALL_RADIUS, ballMesh, botMesh, canMesh, cellMesh, edgeMesh, finishMesh, propMesh, quadMesh, roadMesh, sphereMesh, stripMesh,
   type MeshData
 } from "./meshes";
 import type { CameraPose, Shown } from "./presentation";
@@ -22,7 +22,15 @@ export const EDGE_X = 3.35;
 export const CELL_Y = 0.02;
 export const GRID_CELLS = CONFIG.RUN_LENGTH * CONFIG.GRID_COLS;
 
-export const BATCH_IDS = ["road", "edges", "paint", "strips", "cans", "bots", "particles"] as const;
+export const BATCH_IDS = ["road", "edges", "props", "paint", "strips", "cans", "bots", "particles"] as const;
+
+/** Roadside paint pots: one every PROP_SPACING m on each side, sized and tinted from the row (no RNG). */
+export const PROP_SPACING = 6;
+
+function propHash(row: number, side: number): number {
+  const h = Math.sin(row * 12.9898 + side * 78.233) * 43758.5453;
+  return h - Math.floor(h);
+}
 
 export interface WorldOptions {
   sim: SplatTurfSim;
@@ -52,6 +60,7 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
   return [
     { name: "sky", spec: skySpec(gradientSkyFragment(LOOK.skyStops)) },
     { name: "toon", spec: toonSpec(linear(LOOK.road)) },
+    { name: "turf", spec: toonSpec(linear(LOOK.turf)) },
     { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
     { name: "flat", spec: flatSpec(linear(LOOK.solvent), 0.55) },
     { name: "shadow", spec: shadowSpec() }
@@ -85,11 +94,13 @@ export function buildWorld(options: WorldOptions): World {
 
   add("sky", sphereMesh(150, 32, 24), skySpec(gradientSkyFragment(LOOK.skyStops)));
   add("ball", ballMesh(), toonSpec(linear(LOOK.ball)));
+  add("ground", quadMesh(320, 320), toonSpec(linear(LOOK.turf)));
   add("ball-shadow", quadMesh(1.6, 1.6), shadowSpec());
   add("finish", finishMesh(), toonSpec(linear(LOOK.finish)));
 
   const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS);
   const edges = new Batch(edgeMesh(), CONFIG.POOL_SEGMENTS * 2);
+  const props = new Batch(propMesh(), CONFIG.POOL_SEGMENTS * 2, [1, 1, 1]);
   const paint = new Batch(cellMesh(), GRID_CELLS, [1, 1, 1]);
   const strips = new Batch(stripMesh(), CONFIG.POOL_STRIPS);
   const cans = new Batch(canMesh(), CONFIG.POOL_CANS);
@@ -98,6 +109,7 @@ export function buildWorld(options: WorldOptions): World {
 
   addBatch("road", road, toonSpec(linear(LOOK.road)));
   addBatch("edges", edges, toonSpec(linear(LOOK.roadEdge)));
+  addBatch("props", props, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   addBatch("paint", paint, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   addBatch("strips", strips, flatSpec(linear(LOOK.solvent), 0.55));
   addBatch("cans", cans, toonSpec(linear(LOOK.can)));
@@ -174,6 +186,15 @@ export function buildWorld(options: WorldOptions): World {
           road.place(i, 0, -0.15, -seg.row - 0.5, 0, 1, 1, 1);
           edges.place(i * 2, -EDGE_X, -0.12, -seg.row - 0.5, 0, 1, 1, 1);
           edges.place(i * 2 + 1, EDGE_X, -0.12, -seg.row - 0.5, 0, 1, 1, 1);
+          for (let side = 0; side < 2; side++) {
+            const slot = i * 2 + side;
+            if (seg.row < 0 || ((seg.row + side * 3) % PROP_SPACING) !== 0) { props.collapse(slot); continue; }
+            const h = propHash(seg.row, side);
+            const x = (side === 0 ? -1 : 1) * (EDGE_X + 1.6 + h * 3.2);
+            const sc = 0.8 + h * 0.9;
+            props.place(slot, x, -0.35, -seg.row - 0.5, h * 6.28, sc, sc * (0.8 + propHash(seg.row + 7, side) * 1.2), sc);
+            props.setTone(slot, linear(LOOK.paintColors[Math.floor(propHash(seg.row + 3, side) * LOOK.paintColors.length)] as string));
+          }
         }
 
         updatePaint(sim, distance);
@@ -228,8 +249,10 @@ export function buildWorld(options: WorldOptions): World {
         // Scrolling frame: one node transform per batch.
         for (const id of BATCH_IDS) node(id).setPosition(0, 0, roadZ);
         node("finish").setPosition(0, 0, roadZ - CONFIG.RUN_LENGTH);
+        node("ground").setPosition(0, -0.35, -60);
         road.flush(node("road"));
         edges.flush(node("edges"));
+        props.flush(node("props"));
         paint.flush(node("paint"), false);
         strips.flush(node("strips"), false);
         cans.flush(node("cans"));
@@ -242,7 +265,7 @@ export function buildWorld(options: WorldOptions): World {
         const gone = o.phase === "gameOver";
         const scale = bursting ? 1 + (1 - o.burstTimer / CONFIG.BURST_SECONDS) * 0.6 : 1;
         node("ball").setPosition(laneOffset, BALL_RADIUS * scale, 0).setRotation(distance / BALL_RADIUS, 0, 0).setScale(scale).setVisible(!gone);
-        node("ball-shadow").setPosition(laneOffset, 0.01, 0).setScale(scale).setVisible(!gone);
+        node("ball-shadow").setPosition(laneOffset, CELL_Y + 0.015, 0).setScale(scale).setVisible(!gone);
 
         // Camera: chase pose (presenter-interpolated), deterministic shake, speed FOV — all presentation only.
         const c = view.camera ?? { x: 0.5 * laneOffset, y: 5, z: 9, lookX: laneOffset, lookY: 0.5, lookZ: -10 };
@@ -259,7 +282,7 @@ export function buildWorld(options: WorldOptions): World {
         }, { cut: false });
       }
 
-      const batches = [road, edges, paint, strips, cans, bots, particles];
+      const batches = [road, edges, props, paint, strips, cans, bots, particles];
       function warm(on: boolean): void {
         // Park one instance of each pooled batch below the road so every program compiles before frame one.
         if (on) {

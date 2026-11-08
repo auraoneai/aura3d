@@ -349,7 +349,8 @@ function restart(): void {
   presenter.reset();
   steady.reset(sim);
   prevFrame = null;
-  lastPhase = "playing";
+  // Leave lastPhase alone: the next updateHud sees the phase change and clears the burst/finish
+  // reveal layer, the popups and the music intensity (setting it here left the reveal over the game).
   $("splash-screen").classList.remove("on");
   $("gameover-screen").classList.remove("on");
   $("hud").classList.add("on");

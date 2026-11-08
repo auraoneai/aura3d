@@ -24,6 +24,8 @@ export const LOOK = {
   ink: "#3b1f47",
   paper: "#fff8f2",
   wipeWash: "#bff2f2",
+  /** Soft turf the road runs across (horizon and motion read). */
+  turf: "#9fe0c4",
   /** Trail paint cycles per 25 m stretch so the coverage map reads as a carnival rainbow. */
   paintColors: ["#ff3d8b", "#ffb400", "#14c9c9", "#7a4fd0", "#5fd400", "#ff6a00"] as readonly string[],
   sun: sunDirection(55, 25)
