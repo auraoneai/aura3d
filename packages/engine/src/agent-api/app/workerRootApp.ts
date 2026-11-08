@@ -469,17 +469,25 @@ export function createWorkerRootApp(
   // fill its request queue). Explicit steps force a flush so their frame
   // always sees every change.
   let patchesInFlight = 0;
+  // A scene replacement is posted through the request queue, so it can still
+  // be waiting there when new-scene ops are recorded. Those ops are held until
+  // the replacement settles; posted earlier they would land on the old
+  // registry (and be lost with it, or fail on unknown ids).
+  let sceneReplacementsPending = 0;
   const flushPatches = (force = false): Promise<void> | undefined => {
     if (disposed) return undefined;
     const camera = JSON.stringify(mirror.scene.camera ?? null);
     if (camera !== sentCamera) { sentCamera = camera; mirror.setCamera(mirror.scene.camera); }
-    if (mirror.pending === 0 || (!force && patchesInFlight > 0)) return undefined;
+    if (mirror.pending === 0 || sceneReplacementsPending > 0 || (!force && patchesInFlight > 0)) return undefined;
     const ops = mirror.drain();
     // Posted now (not when the queue reaches it) so ops always precede any
-    // later scene replacement and follow any earlier one.
+    // later scene replacement; earlier replacements are awaited above.
     const sent = worker.patch(ops);
     patchesInFlight += 1;
-    void sent.finally(() => { patchesInFlight -= 1; }).catch(() => undefined);
+    // Ops that coalesced while this patch was in flight go out as soon as it
+    // returns, so the last changes arrive even when no further frame runs
+    // (a paused game, a removed frame callback).
+    void sent.finally(() => { patchesInFlight -= 1; if (patchesInFlight === 0) flushPatches(); }).catch(() => undefined);
     void sent.catch((error: unknown) => {
       if (disposed) return;
       if ((error as AuraWorkerError)?.code === "disposed" || (error as AuraWorkerError)?.code === "cancelled") return;
@@ -592,7 +600,12 @@ export function createWorkerRootApp(
       mirror = createWorkerNodeMirror(nextSnapshot, hostFlags);
       sentCamera = JSON.stringify(nextSnapshot.camera ?? null);
       publishTermination({ state: "superseded", revision: previousRevision }, false);
+      sceneReplacementsPending += 1;
+      // Release held ops inside the queued operation, so they are posted
+      // before any later queued request (a stepAsync frame) starts.
+      const releaseHeldPatches = () => { sceneReplacementsPending -= 1; if (sceneReplacementsPending === 0) flushPatches(); };
       void enqueue(async () => {
+       try {
         if (serial !== sceneSerial) return;
         try {
           await worker.setScene(nextSnapshot, {
@@ -627,6 +640,7 @@ export function createWorkerRootApp(
         // commit above remains the rollback owner unless a newer local commit
         // has already arrived.
         markReady(serial);
+       } finally { releaseHeldPatches(); }
       }).catch((error: unknown) => {
         if (!disposed && serial === sceneSerial) { mountPending = false; if (!failure) reportFailure(error); }
       });

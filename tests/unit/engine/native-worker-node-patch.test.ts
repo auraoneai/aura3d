@@ -221,15 +221,16 @@ describe("worker app node patches, host frames and picking (K1-K3)", () => {
     app.onFrame(() => { app.nodes.require("mover").translate(1, 0, 0); app.nodes.require("other").setPosition(9, 9, 9); });
     for (let i = 0; i < 5; i += 1) app.step(1 / 60);
     expect(f.host.sent.filter((message) => message.type === "patch")).toHaveLength(1);
+    // No further frame runs: the coalesced ops still go out once the in-flight patch returns.
     await flush();
-    app.step(1 / 60);
     await flush();
     const patches = f.host.sent.filter((message) => message.type === "patch") as Array<{ ops: unknown[] }>;
     expect(patches).toHaveLength(2);
     // The second patch carries the four coalesced frames: translates kept, setPosition merged.
-    expect(patches[1]!.ops.filter((op) => (op as { call?: string }).call === "translate")).toHaveLength(5);
+    expect(patches[1]!.ops.filter((op) => (op as { call?: string }).call === "translate")).toHaveLength(4);
     expect(patches[1]!.ops.filter((op) => (op as { call?: string }).call === "setPosition")).toHaveLength(1);
-    expect(f.mounted.nodes!.require("mover").position).toEqual([6, 0, 0]);
+    expect(f.mounted.nodes!.require("mover").position).toEqual([5, 0, 0]);
+    expect(f.mounted.nodes!.require("other").position).toEqual([9, 9, 9]);
     await app.disposeAsync();
     await f.stop();
   });
@@ -249,6 +250,27 @@ describe("worker app node patches, host frames and picking (K1-K3)", () => {
     await app.stepAsync(0);
     expect(f.mounted.nodes!.require("mover").position).toEqual([0, 0, 0]);
     expect(f.mounted.nodes!.require("other").position).toEqual([1, 1, 1]);
+    await app.disposeAsync();
+    await f.stop();
+  });
+
+  it("holds new-scene ops until the queued scene replacement reaches the worker", async () => {
+    const f = workerFixture();
+    const app = createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
+      scene: boxScene(), autoStart: false, worker: { createWorker: f.createWorker }
+    });
+    await app.readyStrict();
+    app.setScene(boxScene());
+    // Written before the replacement was posted (no await): must not land on the old registry.
+    app.nodes.require("mover").setPosition(4, 0, 0);
+    app.step(0);
+    await app.stepAsync(0);
+    const order = f.host.sent.map((message) => message.type);
+    expect(order.lastIndexOf("scene")).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf("patch")).toBeGreaterThan(order.lastIndexOf("scene"));
+    expect(order.indexOf("patch")).toBeLessThan(order.lastIndexOf("frame"));
+    expect(f.mounted.nodes!.require("mover").position).toEqual([4, 0, 0]);
+    expect(app.diagnostics().errors ?? []).toEqual([]);
     await app.disposeAsync();
     await f.stop();
   });
