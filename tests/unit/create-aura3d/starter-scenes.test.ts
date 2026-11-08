@@ -20,6 +20,7 @@ describe("create-aura3d starter scenes", () => {
     for (const template of STARTERS) {
       const source = main(template);
       const look = (TEMPLATE_LOOK_FLOOR as Record<string, { look: string }>)[template]!.look;
+      // invariant: every starter scaffolds its look through LOOK_ID + looks.appOptions and flags data-aura3d-ready; the look floor and the readiness probe read exactly these lines
       expect(source, template).toContain(`const LOOK_ID = "${look}" as const;`);
       expect(source, template).toContain("...looks.appOptions(LOOK_ID)");
       expect(source, template).not.toMatch(/lights\.ambient\(|from "three"|\.glb["']/);

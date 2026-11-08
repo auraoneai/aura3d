@@ -97,6 +97,7 @@ describe("import-three regenerate command", () => {
 
 describe("import-three packaging", () => {
   it("keeps three out of @aura3d/cli dependencies", () => {
+    // invariant: the CLI package must not depend on three; import-three reads three.js projects as data, never as a runtime dependency
     const pkg = JSON.parse(readFileSync("packages/aura3d-cli/package.json", "utf8")) as { dependencies?: Record<string, string> };
     expect(Object.keys(pkg.dependencies ?? {})).not.toContain("three");
   });
