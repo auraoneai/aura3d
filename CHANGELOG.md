@@ -6,16 +6,47 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## Unreleased (5.3.0)
 
+Everything on the 5.3 candidate branch since 5.2.0: WebGPU parity work, render-worker and Display-P3 output, reversed depth in all 30 games, the 5.4 agent-authoring lanes (N1 to N7, B1, C1), five new games from main, and the integration fixes. Unless stated otherwise, measurements are single-machine (Apple M4 Max, headless Chrome, ANGLE Metal) and are not public claims.
+
+### Rendering and runtime
+
+- WebGPU parity: native WebGPU SSAO/GTAO, screen-space reflections, depth of field (combining with AO, SSR, god rays, motion blur, pre-DoF passes and a LUT in the WebGL2 v2 order), god rays, motion blur and volumetric light; WGSL twins for the sky, environment background, light beams, particles, ribbons, fog, sprites and wind; the v2 bloom and S10 grade on WebGPU; rgba16f shadow depth; generated WebGPU PBR fixes (instance colour targets, IOR/specular defaults, alpha-to-coverage, emissive-strength bits). All 25 original showcase games render correctly with `?backend=webgpu`; WebGPU stays opt-in except in the three games below.
+- Render workers: `?worker=1` renders in a worker for 11 more games; worker patches replay dynamic geometry, live canvas textures cross the worker boundary, and patches wait for queued scene replacements.
+- Display-P3 output admits grade, FXAA, vignette, grain, SMAA and LUT; a P3-only request without an OutputPass route falls back to sRGB instead of throwing.
+- Reversed depth is the default in all 30 showcase games (`?depth=standard` opts out); generated-program fog reads standard window depth under reversed depth.
+- WebGPU backend fallback is announced and chosen before a WebGPU context is taken; WebGPU mounts with probe capture switch to asynchronous frames instead of failing.
+- Multiple scattering on the plain look path (integration fix for the N3 review): the direct-light broad multiple-scattering lobe was coloured by the mean Fresnel once, which is right for metals but about 25x too much for a 0.04 dielectric, so rough dielectrics under a lone directional light gained about 0.025 linear of white (black roughness-1 ground: sRGB 53 vs three.js single-scatter 27). Apps on the plain look path now colour it with Kulla-Conty (and the image-based term with Fdez-Aguera, as three.js does); every app with an authored look or output, so every game, keeps the old math. Garden ground saturation 0.41 -> 0.48 (three.js analytic 0.55).
+
+### Agent authoring (5.4 lanes)
+
+- N1 colours: every CSS colour form (hex, `rgb()`, `hsl()`, names, ...) parses wherever colours are accepted (fog, skies, particle ramps, toon ink, custom `color3` uniforms, every material preset); invalid values throw `COLOR_INVALID` naming the value and option.
+- N2 environment: bare scenes and missing environments use the structured studio room generated in code (embedded softbox probe, no fetch) instead of the uniform neutral floor; a missing `/aura-environments` preset logs `ENV_PRESET_MISSING` once and degrades to the room (studio family) or a procedural probe; a late-bound environment probe schedules a frame.
+- N3 plain look: a lit scene with no authored look, output, lighting or post effect renders through the PBR Neutral output, and `environments.neutral()` next to a hemisphere or ambient light yields its diffuse fill to that light. `looks.preset("plain")` asks for it explicitly; `createAuraApp({ plainLook: false })`, `?a3d-plain-look=0` or `A3D_PLAIN_LOOK=0` opts out. Integration: a bare scene (geometry only) now gets the cold-start hero stage over the N2 room and the same plain neutral output; it renders closer to the authored colours but darker than the 5.2 ACES cold-start frame.
+- N4 framing and shadows: `camera.auto({ subject, angle, fill })`, `camera.framePose` and `measureFrameFill`; `lights.key` casts a shadow by default with an acne-free bias and primitives receive shadows by default; the custom-scene and procedural-scene templates and the cheat sheet use `camera.auto`. Ten games compared against the live site were unchanged.
+- N5 starters: five new `create-aura3d` templates, `starter-product`, `starter-outdoor`, `starter-interior`, `starter-game` and `starter-presentation`, each built with Vite, passing `checkDeploy` and captured on a real GPU.
+- N6 agent tools: `aura3d info` (installed API surface, `--name` members and suggestions), `aura3d examples` (offline search over recipes and templates), `aura3d validate` (lint, colour grammar, unknown names, framing, lighting, nothing-to-reflect) and `aura3d render` (screenshot plus luma, saturation and subject fill).
+- N7 guessed names: `handle.setColor`, `setIntensity`, `setOpacity` and `setEmissive` (unsupported kinds throw `HANDLE_METHOD_UNSUPPORTED`), `material.standard` (= `material.pbr`), and tone-mapping spellings (`"aces-filmic"`, `ACESFilmicToneMapping`, `AgX`, ...) mapping to the operator; unknown names throw `TONE_MAPPING_UNKNOWN`. `"filmic"` and `"uncharted2"` throw because they are postprocess-only curves. Games pass canonical names and are unaffected: Pip's Big Leap, Aura Diamond, Teleoperator, Bunker Zero, Aura Links and Aura Hoops were paired against the live site and the pre-lane build after integration with no change attributable to it (`evidence/guessed-names-n7/integration/`).
+- B1 three.js asset bridge (prototype): `aura3d import-three` runs a structured three.js scene factory headless at build time, exports it through GLTFExporter, admits the GLB and emits a regenerated bridge file plus a write-once native scene with a supported / approximated / unsupported report. No Aura3D package depends on three.
+- C1 fixed comparison harness (`tools/agent-eval/c1`): three arms (Aura3D, three.js, Aura3D + bridge), eight frozen tasks with follow-up edits, billed cost, tool time, real-GPU load / fps / size, functional probes and blind pairs. Only a stub-model dry run has been recorded; there are no comparison results yet.
+
+### Integration fixes on this branch
+
+- The N4 examples (`auto-frame-clock`, `auto-frame-bird`) and the N3 `plain-look` pages used a top-level `await app.ready()`. Under Vite's default chunk splitting every lazily loaded engine chunk imports the entry chunk back, so that entry never finishes evaluating and the page stays black. They now use `void app.ready().then(...)`, as every `create-aura3d` template already does (`starter-game` built with its own `vite.config.ts` renders).
+- `aura3d import-three` and the N6 agent-tools commands are both registered in the CLI.
+
 ### Showcase games: experimental features on by default where they passed a real-GPU check
 
 - WebGPU is now the default backend in Chroma Roll, Dot Dash 3D and Cumulus Dash (`backend: "auto"`, WebGL2 stays the automatic fallback; `?backend=webgl2` forces WebGL2). They rendered the same frame as WebGL2 and kept at least 0.9x its frame rate (paired-run ratios 1.04, 1.04 and 0.90; Cumulus Dash is borderline). Every other showcase game stays on WebGL2 by default because WebGPU ran at 0.28x to 0.88x of WebGL2 there, even though all 25 original games render correctly with `?backend=webgpu`. Measured headless on one Apple M4 Max under heavy machine load, title screen, 1280x720; these are not public performance claims. Per-game table in `docs/upgrade-5.0.0/README.md`.
 - Reversed depth is the default in the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); `?depth=standard` opts out. Their title frames match standard depth (static diff 0.0 to 0.3).
 - The five new games accept `?backend=webgpu|auto`, but they fall back to WebGL2 (`CUSTOM_SHADER_WGSL_MISSING`: their runner-kit and scenery GLSL materials have no WGSL twins yet), so they stay on WebGL2.
 - Lab flags (`apps/showcase-port-shared/lab-flags.ts`): `?backend=webgl2` is now an accepted value meaning "force WebGL2"; `labAppOptions(flags, { backend: "auto", createWorker })` takes a per-game default backend (the old `labAppOptions(flags, createWorker)` form still works); `resolveLabBackend(flags, default)` gives the requested backend for code that switches on it (point-sprite quads, async frames), so `?backend=webgl2` no longer turns those WebGPU paths on.
+- From main: five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper) with How to play panels; Beat Hopper hops on Space, ArrowUp or W keydown.
 
 ### Known limits
 
+- The docs and `llms.txt` snippets still end with a top-level `await app.ready()`. In a production Vite build with default chunking that deadlocks the same way as the examples above (black page); `vite dev` is unaffected. Not changed here.
 - Dot Dash 3D re-captures its `update: "once"` reflection probe (all six faces plus a CPU prefilter) on every WebGL2 frame, which dominates its frame time (CPU profile); the likely cause is that every scene change publishes a new atmosphere snapshot and the probe host disposes its probes when the snapshot identity changes. Thermal Drift and Pip's Big Leap are also very slow headless (2 to 5 fps) for other reasons not yet profiled. Not fixed here.
+- The plain-path multiple-scattering switch is chosen at mount; an app that boots on the plain path and later `setScene`s to an authored look keeps it.
 
 ## 5.2.0 (2026-11-07)
 
