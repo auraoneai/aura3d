@@ -175,7 +175,8 @@ function reactToFrame(): void {
   fx.vignette(o.mult, o.scoreX2Timer > 0, performance.now() / 1000);
   if (o.phase !== lastPhase) {
     if (o.phase === "bursting") fx.reveal(true);
-    if (o.phase === "splash" || o.phase === "playing") fx.reveal(false);
+    // The red burst disc covers the frame only while bursting; it fades on the results screen so the city shows through the translucent panel.
+    if (o.phase === "splash" || o.phase === "playing" || o.phase === "gameOver") fx.reveal(false);
     $("splash-screen").hidden = o.phase !== "splash";
     $("gameover-screen").hidden = o.phase !== "gameOver";
     if (o.phase === "gameOver") showResults();
