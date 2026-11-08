@@ -52,9 +52,11 @@ precision highp float;
 in vec2 v_uv;
 uniform highp sampler2D u_src;
 uniform vec2 u_depthUnpack;   // near, far — packed to RGBA8 for storage
+uniform float u_depthReversed; // 1: reversed depth (window depth is 1 - standard)
 out vec4 o_color;
 void main() {
   float z = texture(u_src, v_uv).r;
+  if (u_depthReversed > 0.5) z = 1.0 - z;
   float lin = (2.0 * u_depthUnpack.x * u_depthUnpack.y) / max(u_depthUnpack.y + u_depthUnpack.x - (z * 2.0 - 1.0) * (u_depthUnpack.y - u_depthUnpack.x), 1e-6);
   float n = clamp(lin / u_depthUnpack.y, 0.0, 1.0);
   // pack linear depth into RGBA8 (16.16 fixed-ish: R=high byte, G=low byte)
@@ -181,7 +183,8 @@ export function sceneCopyFallbackPass(ctx: FrameContributorContext): RenderPass 
           shader: s.programDepth,
           uniforms: new Map<string, UniformValue>([
             ["u_src", new TextureBinding({ name: "u_src", texture: depthSrc, sampler: COPY_SAMPLER })],
-            ["u_depthUnpack", new Float32Array([ctx.sceneDepth.linearize.near, ctx.sceneDepth.linearize.far])]
+            ["u_depthUnpack", new Float32Array([ctx.sceneDepth.linearize.near, ctx.sceneDepth.linearize.far])],
+            ["u_depthReversed", ctx.sceneDepth.linearize.depth?.mode === "reversed" ? 1 : 0]
           ])
         });
         device.setRenderTarget(previousTarget);

@@ -302,3 +302,20 @@ export function reconstructViewPosition(
 export function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number {
   return -reconstructViewPosition(depth, 0, 0, inverseProjection, convention, range)[2];
 }
+
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export function sceneDepthLinearizeUniform(linearize: {
+  readonly near: number;
+  readonly far: number;
+  readonly orthographic: boolean;
+  readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number] {
+  return [linearize.near, linearize.far, linearize.orthographic ? 1 : 0, linearize.depth?.mode === "reversed" ? 1 : 0];
+}

@@ -118,7 +118,7 @@ uniform float u_fogDensity;
 uniform float u_outputColorSpace;
 #if SOFT_PARTICLES
 uniform highp sampler2D u_sceneDepth;
-uniform vec4 u_depthLinearize; // near, far, orthographic, unused
+uniform vec4 u_depthLinearize; // near, far, orthographic, reversed
 #endif
 
 in vec2 v_uv0;
@@ -147,6 +147,7 @@ vec3 a3dParticleEncodeOutput(vec3 linearColor) {
 
 #if SOFT_PARTICLES
 float a3dSceneViewZ(float depth) {
+  if (u_depthLinearize.w > 0.5) depth = 1.0 - depth; // reversed depth: back to standard window depth
   if (u_depthLinearize.z > 0.5) return mix(u_depthLinearize.x, u_depthLinearize.y, depth);
   return u_depthLinearize.x * u_depthLinearize.y /
     max(u_depthLinearize.y - depth * (u_depthLinearize.y - u_depthLinearize.x), 1e-4);

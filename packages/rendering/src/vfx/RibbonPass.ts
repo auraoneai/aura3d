@@ -10,6 +10,7 @@ import { VertexFormat } from "../VertexFormat";
 import { RibbonBatch, RIBBON_VERTEX_FLOATS, type RibbonGeometry } from "./RibbonBatch";
 import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import { RIBBON_SHADER_MARKER, ribbonFragmentSource, ribbonProgramKey, ribbonVertexSource } from "./shaders/ribbon.glsl";
+import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 export const RIBBON_VERTEX_FORMAT = new VertexFormat(
   [
@@ -53,7 +54,7 @@ export class RibbonPass {
     ]);
     if (softParticles && depth) {
       uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture!, sampler: PRD07_DEPTH_SAMPLER }));
-      uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
+      uniforms.set("u_depthLinearize", sceneDepthLinearizeUniform(depth.source.linearize));
     }
     this.device.draw({
       label: `prd07.ribbons.${geometry.orientation}`,
