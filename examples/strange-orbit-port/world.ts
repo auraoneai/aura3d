@@ -35,7 +35,7 @@ import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
-import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";
 
 export { lehmer };
@@ -252,7 +252,7 @@ export function buildWorld(options: WorldOptions): World {
   const high = options.quality === "high";
   const look: OrbitLook = options.look ?? "gouache";
   activeLook = look;
-  spriteQuads = readLabFlags().backend !== undefined;
+  spriteQuads = resolveLabBackend(readLabFlags()) !== undefined;
   /** Debug switch: `?off=lights,bloom,grade,vignette,sky,atmo,stars2,rocks,lintel` disables individual look upgrades (bisecting a render problem). */
   const off = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("off") ?? "" : "").split(",").filter(Boolean));
   const builder: Scene = scene()

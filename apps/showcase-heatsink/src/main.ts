@@ -1,5 +1,5 @@
 import "../../showcase-port-shared/quickbar.css";
-import { readLabFlags, labAppOptions } from "../../showcase-port-shared/lab-flags";
+import { readLabFlags, labAppOptions, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { createAuraApp, createFixedStepLoop, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -129,7 +129,7 @@ async function boot(): Promise<void> {
     // A WebGPU backend (?backend=webgpu, or ?backend=auto when it resolves to WebGPU) cannot capture the pit-lane reflection
     // probe on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so either flag also asks for async
     // frames. Absent the flag: unchanged.
-    ...(lab.backend ? { frameMode: "async" as const } : {}),
+    ...(resolveLabBackend(lab) ? { frameMode: "async" as const } : {}),
     ...(labOptions.worker ? { worker: labOptions.worker } : {}),
     qualityRebuild: { flags: ["game"] },
     ...(labClustered ? { lighting: { clustered: { enabled: true, fallback: "forward" as const } } } : {}),

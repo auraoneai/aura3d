@@ -20,7 +20,7 @@ import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
 import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import "./enamel.css";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
@@ -310,7 +310,7 @@ let freshFrame = false;
  * on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED). While one is in flight the next render is skipped (the scene
  * may not be mutated under a pending submission). Absent the flag every render is the synchronous `app.step(0)` as before.
  */
-const LAB_ASYNC_FRAMES = readLabFlags().backend !== undefined;
+const LAB_ASYNC_FRAMES = resolveLabBackend(readLabFlags()) !== undefined;
 let asyncFrame: Promise<void> | null = null;
 /** A failed async frame (e.g. a mount failure) is reported once, not on every later frame; frames keep being attempted. */
 let asyncFrameErrorReported = false;

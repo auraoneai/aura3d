@@ -1,10 +1,13 @@
 /**
  * Shared lab-flag parser for the showcase games (work package W-8, owner decision D1).
  *
- * EXPERIMENTAL 5.0 features never ship as a game default. They are reachable only through query-string flags, all off by
- * default, and the parser only maps them to the app options; it never enables anything on its own:
+ * Experimental features are reachable through query-string flags. Owner decision 2026-11-07: a feature that passes a
+ * real-GPU check is on by default for that game, passed as the game's default (`labAppOptions(flags, { backend: "auto" })`,
+ * `labCameraOptions(flags, "reversed")`); the flag then overrides or opts out. Without a game default the parser enables
+ * nothing on its own:
  *
- *   ?backend=auto | webgpu        renderer.backend      (WebGL2 is the default; invalid values are ignored)
+ *   ?backend=auto | webgpu | webgl2   renderer.backend  (auto/webgpu keep the WebGL2 fallback; webgl2 forces WebGL2 and is
+ *                                     the opt-out for games that default to auto; invalid values are ignored)
  *   ?worker=1                     worker-owned rendering (main-thread fallback kept)
  *   ?depth=reversed | logarithmic | standard   camera.depth.mode (standard opts out of a game default)
  *   ?gamut=p3                     output.outputColorSpace = "display-p3"
@@ -15,12 +18,14 @@
  */
 
 export type LabBackend = "auto" | "webgpu";
+/** `webgl2` is the explicit opt-out for games whose default backend is `auto` (WebGL2 is the engine default). */
+export type LabBackendRequest = LabBackend | "webgl2";
 export type LabDepthMode = "reversed" | "logarithmic";
 /** `standard` is the explicit opt-out for games that default to a non-standard depth mode. */
 export type LabDepthRequest = LabDepthMode | "standard";
 
 export interface LabFlags {
-  readonly backend?: LabBackend;
+  readonly backend?: LabBackendRequest;
   readonly worker: boolean;
   readonly depth?: LabDepthRequest;
   readonly gamut?: "p3";
@@ -46,6 +51,13 @@ export interface LabAppOptionsWithWorker extends Omit<LabAppOptions, "worker"> {
   readonly worker?: { readonly fallback: "main-thread"; readonly createWorker: () => Worker };
 }
 
+/** Per-game defaults for `labAppOptions` (a game's verified experimental defaults). */
+export interface LabAppDefaults {
+  /** Backend used when `?backend` is absent; `?backend=webgl2` opts out. Absent means WebGL2. */
+  readonly backend?: LabBackend;
+  readonly createWorker?: () => Worker;
+}
+
 export function parseLabFlags(search: string | URLSearchParams | undefined): LabFlags {
   const params = typeof search === "string" ? new URLSearchParams(search) : (search ?? new URLSearchParams());
   const ignored: string[] = [];
@@ -60,7 +72,7 @@ export function parseLabFlags(search: string | URLSearchParams | undefined): Lab
     ignored.push(key);
     return undefined;
   };
-  const backend = pick("backend", ["auto", "webgpu"] as const);
+  const backend = pick("backend", ["auto", "webgpu", "webgl2"] as const);
   const depth = pick("depth", ["reversed", "logarithmic", "standard"] as const);
   const gamut = pick("gamut", ["p3"] as const);
   const workerRaw = read("worker");
@@ -75,14 +87,29 @@ export function readLabFlags(): LabFlags {
 }
 
 /**
+ * The backend a game requests: `?backend=` when given, else the game default. `undefined` means WebGL2 (no renderer
+ * fragment), which is also what `?backend=webgl2` yields.
+ */
+export function resolveLabBackend(flags: LabFlags, defaultBackend?: LabBackend): LabBackend | undefined {
+  const backend = flags.backend ?? defaultBackend;
+  return backend === "webgl2" ? undefined : backend;
+}
+
+/**
  * Maps flags to `createAuraApp` option fragments to spread into the app options. Every experimental backend keeps its
- * WebGL2 fallback (`allowFallback: true`, worker `main-thread`). Returns `{}` when no flag is active.
+ * WebGL2 fallback (`allowFallback: true`, worker `main-thread`). The second argument is either the game's `createWorker`
+ * or its defaults (`{ backend: "auto", createWorker }`). Returns `{}` when no flag is active and no default applies.
  */
 export function labAppOptions(flags: LabFlags): LabAppOptions;
 export function labAppOptions(flags: LabFlags, createWorker: () => Worker): LabAppOptionsWithWorker;
-export function labAppOptions(flags: LabFlags, createWorker?: () => Worker): LabAppOptions {
+export function labAppOptions(flags: LabFlags, defaults: LabAppDefaults & { readonly createWorker: () => Worker }): LabAppOptionsWithWorker;
+export function labAppOptions(flags: LabFlags, defaults: LabAppDefaults): LabAppOptions;
+export function labAppOptions(flags: LabFlags, defaultsOrWorker?: LabAppDefaults | (() => Worker)): LabAppOptions {
+  const defaults: LabAppDefaults = typeof defaultsOrWorker === "function" ? { createWorker: defaultsOrWorker } : (defaultsOrWorker ?? {});
+  const { createWorker } = defaults;
+  const backend = resolveLabBackend(flags, defaults.backend);
   return {
-    ...(flags.backend ? { renderer: { backend: flags.backend, allowFallback: true as const } } : {}),
+    ...(backend ? { renderer: { backend, allowFallback: true as const } } : {}),
     ...(flags.worker ? { worker: { fallback: "main-thread" as const, ...(createWorker ? { createWorker } : {}) } } : {}),
     ...(flags.gamut ? { output: { outputColorSpace: "display-p3" as const } } : {})
   };

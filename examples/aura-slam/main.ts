@@ -24,11 +24,13 @@ export interface NativeRenderer extends SlamRenderer {
  * A3/A10 lab flags, all off by default: `?backend=auto|webgpu` (WebGL2 fallback kept) and `?gamut=p3` (falls back to sRGB).
  * Same mapping as apps/showcase-port-shared/lab-flags.ts, kept local so the example stays self-contained. EXPERIMENTAL.
  */
-export function labAppOptions(search: string): { appOptions?: NonNullable<SceneRendererOptions["appOptions"]> } {
+export function labAppOptions(search: string, defaultBackend?: "auto" | "webgpu"): { appOptions?: NonNullable<SceneRendererOptions["appOptions"]> } {
   const params = new URLSearchParams(search);
-  const backend = params.get("backend")?.trim().toLowerCase();
+  const raw = params.get("backend")?.trim().toLowerCase();
+  // `?backend=webgl2` forces WebGL2 (the opt-out when `defaultBackend` is set); unknown values fall back to the default.
+  const backend = raw === "auto" || raw === "webgpu" || raw === "webgl2" ? raw : defaultBackend;
   const gamut = params.get("gamut")?.trim().toLowerCase();
-  const renderer = backend === "auto" || backend === "webgpu" ? { backend: backend as "auto" | "webgpu", allowFallback: true as const } : undefined;
+  const renderer = backend === "auto" || backend === "webgpu" ? { backend, allowFallback: true as const } : undefined;
   const output = gamut === "p3" ? { outputColorSpace: "display-p3" as const } : undefined;
   return renderer || output ? { appOptions: { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) } } : {};
 }

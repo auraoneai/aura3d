@@ -23,7 +23,7 @@ import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTe
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
-import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";
 
 type Scene = ReturnType<typeof scene>;
@@ -296,7 +296,7 @@ export const LOOK = parseLook(QUERY.get("look"));
  * Weather and mote sprites: `gl_PointSize` points by default; with a lab backend requested (`?backend=webgpu|auto`) the
  * same sprites as screen-aligned quads (point-quads.ts), since WebGPU has no point size. The default scene is unchanged.
  */
-const SPRITE_QUADS = readLabFlags().backend !== undefined;
+const SPRITE_QUADS = resolveLabBackend(readLabFlags()) !== undefined;
 const spriteGeometry = (input: Parameters<typeof geometry.dynamic>[0] & { positions: Float32Array; attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> }) =>
   SPRITE_QUADS ? geometry.dynamic(quadGeometryInput(input.positions, input.attributes)) : geometry.dynamic(input);
 const spriteMaterial = (tint: readonly [number, number, number]) => material.custom(SPRITE_QUADS ? pointQuadSpec(tint) : pointsSpec(tint));

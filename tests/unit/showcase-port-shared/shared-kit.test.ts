@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { formatBackendSelection, publishBackendReport, readBackendSelection, readReadiness } from "../../../apps/showcase-port-shared/backend-report";
-import { labAppOptions, labCameraOptions, parseLabFlags } from "../../../apps/showcase-port-shared/lab-flags";
+import { labAppOptions, labCameraOptions, parseLabFlags, resolveLabBackend } from "../../../apps/showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../../apps/showcase-port-shared/loading-progress";
 
 describe("lab flags (W-8)", () => {
@@ -24,10 +24,39 @@ describe("lab flags (W-8)", () => {
     expect(parseLabFlags(new URLSearchParams("backend=auto")).backend).toBe("auto");
   });
 
-  it("ignores and reports unknown values; webgl2 and worker=0 are not flags", () => {
-    const flags = parseLabFlags("backend=webgl2&worker=0&depth=near&gamut=rec2020");
+  it("ignores and reports unknown values; worker=0 is not a flag", () => {
+    const flags = parseLabFlags("backend=vulkan&worker=0&depth=near&gamut=rec2020");
     expect(flags.any).toBe(false);
     expect(flags.ignored).toEqual(["backend", "depth", "gamut", "worker"]);
+  });
+
+  it("accepts ?backend=webgl2 as the force-WebGL2 opt-out (no renderer fragment)", () => {
+    const flags = parseLabFlags("?backend=WebGL2");
+    expect(flags).toMatchObject({ backend: "webgl2", any: true, ignored: [] });
+    expect(labAppOptions(flags)).toEqual({});
+    expect(labAppOptions(flags, { backend: "auto" })).toEqual({});
+    expect(resolveLabBackend(flags, "auto")).toBeUndefined();
+  });
+
+  it("applies a game's default backend with the WebGL2 fallback unless ?backend= overrides it", () => {
+    expect(labAppOptions(parseLabFlags(""), { backend: "auto" })).toEqual({ renderer: { backend: "auto", allowFallback: true } });
+    expect(labAppOptions(parseLabFlags("?backend=webgpu"), { backend: "auto" })).toEqual({ renderer: { backend: "webgpu", allowFallback: true } });
+    expect(labAppOptions(parseLabFlags("?backend=bogus"), { backend: "auto" })).toEqual({ renderer: { backend: "auto", allowFallback: true } });
+    expect(labAppOptions(parseLabFlags(""), {})).toEqual({});
+    expect(resolveLabBackend(parseLabFlags(""))).toBeUndefined();
+    expect(resolveLabBackend(parseLabFlags(""), "auto")).toBe("auto");
+    expect(resolveLabBackend(parseLabFlags("?backend=auto"))).toBe("auto");
+  });
+
+  it("carries createWorker in both call forms", () => {
+    const createWorker = (): Worker => ({}) as Worker;
+    const flags = parseLabFlags("?worker=1");
+    expect(labAppOptions(flags, createWorker)).toEqual({ worker: { fallback: "main-thread", createWorker } });
+    expect(labAppOptions(flags, { backend: "auto", createWorker })).toEqual({
+      renderer: { backend: "auto", allowFallback: true },
+      worker: { fallback: "main-thread", createWorker }
+    });
+    expect(labAppOptions(parseLabFlags("?backend=webgl2&worker=1"), { backend: "auto", createWorker })).toEqual({ worker: { fallback: "main-thread", createWorker } });
   });
 
   it("applies a game's default depth mode unless ?depth= overrides it; standard opts out", () => {

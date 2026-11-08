@@ -21,7 +21,7 @@ import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupM
 import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { pointQuadArrays, quadUpdater } from "./point-quads";
-import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
 import { lookFromSearch, lowTier, SHADER_SUN_DIR, type HeatsinkLookRow } from "./art/look";
@@ -125,7 +125,7 @@ export interface BuildWorldOptions {
 
 export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string, options: BuildWorldOptions = {}): World {
   const high = quality === "high";
-  const quads = options.pointQuads ?? readLabFlags().backend !== undefined;
+  const quads = options.pointQuads ?? resolveLabBackend(readLabFlags()) !== undefined;
   /* the sprite attributes as quad corners (four per point) or as points */
   const spriteGeometry = (n: number) => {
     const attrs = (count: number) => ({
