@@ -3,7 +3,9 @@ import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagno
 import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSize } from "./canvas.js";
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
-import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
+import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
+import { applyWorkerNodePatch } from "./workerPatch.js";
+import type { AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import { Texture, type TexturePixelData } from "@aura3d/rendering";
@@ -30,6 +32,8 @@ export interface AuraWorkerRendererOptions {
    * At most 32 MiB of texture snapshots may be in flight per worker handle. */
   readonly sceneTransfer?: Transferable[];
   readonly renderer?: AuraCreateAppRendererOptions;
+  /** Quality-rebuild flags and animation mixer the worker renderer resolves (the host app's options). */
+  readonly flags?: AuraWorkerRenderFlags;
   /** Asset/decoder options, including an explicit same-origin codec base when supplied. */
   readonly assets?: AuraAssetsOption;
   readonly size?: OffscreenCanvasSize;
@@ -61,6 +65,8 @@ export interface AuraWorkerRenderer {
   }): Promise<void>;
   setInput(input: AuraWorkerInput): Promise<void>;
   flushInput(): Promise<void>;
+  /** K1: send batched node/camera changes; they apply between worker frames. */
+  patch(ops: readonly AuraWorkerNodePatchOp[]): Promise<void>;
   resize(size: OffscreenCanvasSize): Promise<void>;
   setVisible(visible: boolean): Promise<void>;
   pause(): Promise<void>;
@@ -361,6 +367,7 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
     });
   };
   const ready = send({ type: "init", canvas: offscreen, scene: initialScene, renderer: options.renderer, assets: assetOptions, size, autoStart: options.autoStart !== false,
+    ...(options.flags ? { flags: options.flags } : {}),
     ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
     if (options.prepareLocalScene && (response.syncLocalScenes !== true || response.sceneRevision !== 1)) {
       throw new AuraWorkerError("Worker does not support synchronized local scene replacement.", "scene-sync-unsupported");
@@ -416,6 +423,7 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
       return send({ type: "input", input }).then(() => undefined);
     },
     flushInput: () => flushHostInput(),
+    patch: (ops) => ops.length === 0 ? Promise.resolve() : send({ type: "patch", ops }).then(() => undefined),
     resize(next) {
       try { workerCanvasBackingSize(next); } catch (error) { return Promise.reject(error); }
       return send({ type: "resize", size: next }).then(() => undefined);
@@ -513,6 +521,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   let scene: AuraSceneSnapshot | undefined;
   let rendererOptions: AuraCreateAppRendererOptions | undefined;
   let assetOptions: AuraAssetsOption | undefined;
+  let renderFlags: AuraWorkerRenderFlags | undefined;
   let renderer: WebGLSceneRenderer | undefined;
   let sceneTextures = new Set<TextureHandle>();
   let subscriptions: (() => void)[] = [];
@@ -587,10 +596,10 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     if (failures.length) throw new AggregateError(failures, "Worker renderer cleanup failed.");
   };
   const createRenderer: WorkerRendererFactory = options.createRenderer ?? (async (target, next, configuration, signal, context) => {
-    const [{ createProductionRuntimeSceneRenderer }, { analyzeProductionBridgeEligibility }, { groups }, { normalizeCreateAppRendererOptions }, { resolveQrFlags }, actorAnimation, actorFlags, colorPolicy, shaderFailures] = await Promise.all([
+    const [{ createProductionRuntimeSceneRenderer }, { analyzeProductionBridgeEligibility }, { groups }, { normalizeCreateAppRendererOptions }, { resolveQrFlags, qrFlagsWithAnimationMixer }, actorAnimation, actorFlags, colorPolicy, shaderFailures, { createAuraRuntimeNodeRegistry }] = await Promise.all([
       import("../compiler/renderer.js"), import("../compiler/observations.js"), import("../nodes/groups.js"), import("./rendererOptions.js"),
       import("../../contracts/flags.js"), import("./actorAnimationHandle.js"), import("../../production-runtime/actor/extensions.js"),
-      import("../compiler/color.js"), import("../lazy/renderingLazy.js")
+      import("../compiler/color.js"), import("../lazy/renderingLazy.js"), import("./runtimeNodes.js")
     ]);
     if (signal.aborted) throw cancelled();
     // Keep the scene admission checks applied by the DOM mount wrapper; GPU
@@ -602,7 +611,10 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     // The compiler uses this canvas for its backing dimensions, context and
     // per-canvas state; the worker does not mount DOM overlays.
     const owner = {};
-    const flags = resolveQrFlags({});
+    // The host app's qualityRebuild flags and animation mixer (absent: the defaults, as before).
+    const flags = qrFlagsWithAnimationMixer(resolveQrFlags({ ...(renderFlags?.qualityRebuild === undefined ? {} : { options: renderFlags.qualityRebuild }), ...(renderFlags?.url === undefined ? {} : { url: renderFlags.url }) }), renderFlags?.animationMixer);
+    // K1: the registry node patches write through, read by the renderer every frame.
+    const runtimeNodes = createAuraRuntimeNodeRegistry(next, { flags }) as AuraRuntimeNodeRegistry & { dispose?: () => void };
     const animation = actorAnimation.createActorAnimationContext(flags);
     actorAnimation.bindActorAnimationContext(owner, animation);
     actorFlags.setTypedGLBActorQrFlags(flags, owner);
@@ -617,9 +629,10 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       actorFlags.clearTypedGLBActorQrFlags(owner);
       releaseColor();
       actorAnimation.disposeActorAnimationContext(animation);
+      try { runtimeNodes.dispose?.(); } catch { /* registry cleanup is best effort */ }
     };
     try {
-      const mounted = await createProductionRuntimeSceneRenderer(target, next, configuration, undefined, flags, undefined, undefined, {
+      const mounted = await createProductionRuntimeSceneRenderer(target, next, configuration, runtimeNodes, flags, undefined, undefined, {
         runtimeOwner: owner,
         ownRenderInputCache: true,
         request: context?.request ?? { signal },
@@ -633,6 +646,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
         try { dispose(); } finally { cleanup(); }
       };
       if (signal.aborted) { mounted.dispose(); await mounted.whenDisposed?.(); throw cancelled(); }
+      workerRendererNodes.set(mounted, runtimeNodes);
       return mounted;
     } catch (error) {
       cleanup();
@@ -901,6 +915,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           if (canvas) throw new AuraWorkerError("Canvas ownership was already initialized.", "already-initialized");
           // Direct protocol users do not pass through the host-side preflight.
           assetOptions = snapshotAuraAssetsOption(message.assets);
+          renderFlags = message.flags;
           canvas = message.canvas; rendererOptions = message.renderer; runRequested = message.autoStart;
           syncLocalScenes = message.syncLocalScenes === true;
           resizeOffscreenCanvas(canvas, message.size);
@@ -935,6 +950,15 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           finally { if (canResume && wasRunning && runRequested && !closing && renderer && !renderer.deviceLost?.() && !scheduler.status().terminal) scheduler.resume(); }
           break;
         }
+        case "patch":
+          // Serialize with automatic frames so a batch never lands inside an
+          // asynchronous submission; the next frame sees all of it.
+          await scheduler.runExclusive(() => {
+            const current = renderer;
+            const nodes = current ? workerRendererNodes.get(current) ?? (current as { runtimeNodes?: AuraRuntimeNodeRegistry }).runtimeNodes : undefined;
+            applyWorkerNodePatch(nodes, scene, message.ops);
+          });
+          break;
         case "input": {
           const { pointerEvents: events, pointerEventsOverflow, keyEvents: keySamples, keyEventsOverflow, ...snapshot } = message.input;
           scheduler.setInput(snapshot);
@@ -1038,6 +1062,9 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   endpoint.addEventListener("message", onMessage);
   return stop;
 }
+
+/** Runtime node registry of each default-mounted worker renderer (K1 patch target). */
+const workerRendererNodes = new WeakMap<object, AuraRuntimeNodeRegistry>();
 
 function cancelled(): AuraWorkerError { return new AuraWorkerError("Worker request cancelled.", "cancelled", "recoverable"); }
 function knownWorkerError(error: unknown): AuraWorkerError | undefined {

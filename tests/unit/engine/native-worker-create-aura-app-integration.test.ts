@@ -289,9 +289,9 @@ describe("createAuraApp worker integration", () => {
     await expect(first).resolves.toEqual({ state: "ready", stage: "first-frame", backend: "webgl2" });
     expect(app.runtime).toMatchObject({ paused: true, frame: 1, time: 0.25 });
     expect(f.render).toHaveBeenCalledOnce();
-    expect(() => app.step()).toThrow(/stepAsync/);
     expect(() => app.screenshot()).toThrow(/screenshotAsync/);
-    expect(() => app.onFrame(() => {})).toThrow(/worker/i);
+    // K2: frame callbacks run on the host; they no longer throw.
+    expect(typeof app.onFrame(() => {})).toBe("function");
     await expect(app.screenshotAsync!()).resolves.toMatchObject({ dataUrl: "data:image/png;base64,iVBORw==", width: 8, height: 4 });
     expect(app.runtime.frame).toBe(1);
     await app.disposeAsync();
@@ -319,10 +319,10 @@ describe("createAuraApp worker integration", () => {
     const first = app.readiness({ stage: "first-frame" });
     let settled = false;
     void first.then(() => { settled = true; });
-    const scheduled = callbacks.entries().next().value as [number, (time: number) => void];
-    expect(scheduled).toBeDefined();
-    callbacks.delete(scheduled[0]);
-    scheduled[1](100);
+    // The worker frame and, when an extension armed host frame callbacks, the host loop share this rAF stub.
+    const scheduled = [...callbacks.entries()];
+    expect(scheduled.length).toBeGreaterThan(0);
+    for (const [id, callback] of scheduled) { callbacks.delete(id); callback(100); }
     await flush();
     expect(renderAsync).toHaveBeenCalledOnce();
     expect(settled).toBe(false);

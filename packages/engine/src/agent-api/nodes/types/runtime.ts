@@ -400,6 +400,13 @@ export interface AuraApp {
   offFrame(callback: AuraFrameCallback): void;
   input(options: GameInputOptions): ReturnType<typeof createGameInput>;
   workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+  /**
+   * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+   * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+   */
+  pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+  /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+  viewProjection?(): Float32Array;
   recoverWorker?(): Promise<void>;
   pause(): void;
   resume(): void;

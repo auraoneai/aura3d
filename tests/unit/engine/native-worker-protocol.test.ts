@@ -10,7 +10,8 @@ vi.mock("../../../packages/engine/src/agent-api/compiler/renderer.js", () => ({ 
 vi.mock("../../../packages/engine/src/agent-api/compiler/observations.js", () => ({ analyzeProductionBridgeEligibility: () => ({ eligible: true, reasons: [] }) }));
 vi.mock("../../../packages/engine/src/agent-api/nodes/groups.js", () => ({ groups: { flatten: (nodes: unknown) => nodes } }));
 vi.mock("../../../packages/engine/src/agent-api/app/rendererOptions.js", () => ({ normalizeCreateAppRendererOptions: () => ({ mode: "production" }) }));
-vi.mock("../../../packages/engine/src/contracts/flags.js", () => ({ resolveQrFlags: () => ({ on: () => false }) }));
+vi.mock("../../../packages/engine/src/contracts/flags.js", () => ({ resolveQrFlags: () => ({ on: () => false }), qrFlagsWithAnimationMixer: (flags: unknown) => flags }));
+vi.mock("../../../packages/engine/src/agent-api/app/runtimeNodes.js", () => ({ createAuraRuntimeNodeRegistry: () => ({ dispose: vi.fn() }) }));
 vi.mock("../../../packages/engine/src/agent-api/app/actorAnimationHandle.js", () => ({ createActorAnimationContext: () => ({}), bindActorAnimationContext: vi.fn(), disposeActorAnimationContext: production.disposeAnimation }));
 vi.mock("../../../packages/engine/src/production-runtime/actor/extensions.js", () => ({ setTypedGLBActorQrFlags: production.bind, clearTypedGLBActorQrFlags: production.clear }));
 vi.mock("../../../packages/engine/src/agent-api/compiler/color.js", () => ({ setPrd01ColorParsing: () => production.releaseColor }));
