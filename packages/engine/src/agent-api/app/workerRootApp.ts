@@ -464,15 +464,22 @@ export function createWorkerRootApp(
   let mirror: AuraWorkerNodeMirror = createWorkerNodeMirror(snapshot, hostFlags);
   let sentCamera = JSON.stringify(snapshot.camera ?? null);
   /** Queue the mirror's ops (and a changed camera spec) as one patch message, in call order. */
-  const flushPatches = (): Promise<void> | undefined => {
+  // Backpressure: while a patch is in flight, host frames keep coalescing
+  // into the mirror queue instead of posting (a slow worker would otherwise
+  // fill its request queue). Explicit steps force a flush so their frame
+  // always sees every change.
+  let patchesInFlight = 0;
+  const flushPatches = (force = false): Promise<void> | undefined => {
     if (disposed) return undefined;
     const camera = JSON.stringify(mirror.scene.camera ?? null);
     if (camera !== sentCamera) { sentCamera = camera; mirror.setCamera(mirror.scene.camera); }
-    if (mirror.pending === 0) return undefined;
+    if (mirror.pending === 0 || (!force && patchesInFlight > 0)) return undefined;
     const ops = mirror.drain();
     // Posted now (not when the queue reaches it) so ops always precede any
     // later scene replacement and follow any earlier one.
     const sent = worker.patch(ops);
+    patchesInFlight += 1;
+    void sent.finally(() => { patchesInFlight -= 1; }).catch(() => undefined);
     void sent.catch((error: unknown) => {
       if (disposed) return;
       if ((error as AuraWorkerError)?.code === "disposed" || (error as AuraWorkerError)?.code === "cancelled") return;
@@ -501,6 +508,7 @@ export function createWorkerRootApp(
   const requestPresent = (dt: number): void => {
     if (presentInFlight) { presentQueuedDt = (presentQueuedDt ?? 0) + dt; return; }
     presentInFlight = true;
+    flushPatches(true);
     void enqueue(async () => {
       requireRenderer();
       await worker.flushInput();
@@ -713,7 +721,7 @@ export function createWorkerRootApp(
       if (!Number.isFinite(dt) || dt < 0) throw new RangeError("advance requires a finite non-negative delta.");
       if (disposed) throw new AuraWorkerError("Worker app is disposed.", "disposed");
       runCallbacks(dt, "manual");
-      flushPatches();
+      flushPatches(true);
     },
     /**
      * Run frame callbacks synchronously, then present asynchronously: a
@@ -724,6 +732,7 @@ export function createWorkerRootApp(
       if (!Number.isFinite(dt) || dt < 0) throw new RangeError("step requires a finite non-negative delta.");
       if (disposed) throw new AuraWorkerError("Worker app is disposed.", "disposed");
       runCallbacks(dt, "manual");
+      // Coalesce like the host loop; a manual present below flushes first.
       flushPatches();
       if (paused && !mounting && !failure && !lost) requestPresent(dt);
     },
@@ -731,7 +740,7 @@ export function createWorkerRootApp(
       if (!Number.isFinite(dt) || dt < 0) return Promise.reject(new RangeError("stepAsync requires a finite non-negative delta."));
       if (disposed) return Promise.reject(new AuraWorkerError("Worker app is disposed.", "disposed"));
       pendingSteps += 1;
-      flushPatches();
+      flushPatches(true);
       return enqueue(async () => {
         requireRenderer();
         await worker.flushInput();

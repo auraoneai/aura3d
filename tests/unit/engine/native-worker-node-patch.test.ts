@@ -210,6 +210,30 @@ describe("worker app node patches, host frames and picking (K1-K3)", () => {
     await f.stop();
   });
 
+  it("keeps at most one host-loop patch in flight and coalesces the rest (backpressure)", async () => {
+    const f = workerFixture();
+    const app = createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
+      scene: boxScene(), autoStart: false, worker: { createWorker: f.createWorker }
+    });
+    await app.readyStrict();
+    app.resume(); // a running worker presents on its own clock; step() only patches
+    await flush();
+    app.onFrame(() => { app.nodes.require("mover").translate(1, 0, 0); app.nodes.require("other").setPosition(9, 9, 9); });
+    for (let i = 0; i < 5; i += 1) app.step(1 / 60);
+    expect(f.host.sent.filter((message) => message.type === "patch")).toHaveLength(1);
+    await flush();
+    app.step(1 / 60);
+    await flush();
+    const patches = f.host.sent.filter((message) => message.type === "patch") as Array<{ ops: unknown[] }>;
+    expect(patches).toHaveLength(2);
+    // The second patch carries the four coalesced frames: translates kept, setPosition merged.
+    expect(patches[1]!.ops.filter((op) => (op as { call?: string }).call === "translate")).toHaveLength(5);
+    expect(patches[1]!.ops.filter((op) => (op as { call?: string }).call === "setPosition")).toHaveLength(1);
+    expect(f.mounted.nodes!.require("mover").position).toEqual([6, 0, 0]);
+    await app.disposeAsync();
+    await f.stop();
+  });
+
   it("drops queued ops on scene replacement and patches the new scene afterwards", async () => {
     const f = workerFixture();
     const app = createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
