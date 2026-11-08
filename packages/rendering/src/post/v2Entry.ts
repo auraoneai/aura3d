@@ -22,7 +22,7 @@ export { DEPTH_LINEARIZE_GLSL, DEPTH_MINMAX_HALF_GLSL, CAMERA_VELOCITY_GLSL } fr
 export { GTAO_GLSL } from "./shaders/gtao.glsl";
 export { GTAO_DENOISE_GLSL, GTAO_APPLY_GLSL } from "./shaders/gtaoDenoise.glsl";
 export { GODRAYS_GLSL } from "./shaders/godrays.glsl";
-export { runV2HdrStages, runV2LdrTail, v2NeedsLdrTail, prepareP3DisplayTail, releaseV2Target, acquireV2Target, acquireV2TargetLease,
+export { runV2HdrStages, runV2LdrTail, v2NeedsLdrTail, prepareP3DisplayTail, p3DisplayTailBlocker, releaseV2Target, acquireV2Target, acquireV2TargetLease,
   releaseNativePostEffectView, releaseNativePostEffectScope, disposeNativePostEffects } from "./v2Stages";
 export type { PostColorInput, DeferredAfterBloomStage, RunV2HdrStagesOptions } from "./v2Stages";
 export { DisplayLutCache, displayGradeKey, type DisplayGradeParams } from "./DisplayLutCache";

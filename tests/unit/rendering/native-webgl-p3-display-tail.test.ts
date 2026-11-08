@@ -421,7 +421,6 @@ describe("WebGL P3 encoded display tails", () => {
   const custom: PostPassDescriptor = { id: "test.display", owner: "prd03", flag: "A3D_QR_POST", insertAt: "after-tonemap", space: "display",
     inputs: ["color"], fragment: { glsl: "void main() {}" }, gpuOnly: true };
   it.each([
-    ["LUT", { lut: { source: "fixture.cube", status: "pending" } }],
     ["custom display pass", { customPasses: [custom] }],
     ["upscale", { renderScale: 0.75 }]
   ] as const)("keeps unsupported %s combinations on an honestly reported sRGB fallback", (_name, options) => {
@@ -727,11 +726,20 @@ describe("WebGL P3 route admits the legacy colour grade, FXAA and display tail s
     } finally { f.device.dispose(); }
   });
 
-  it("keeps the grade but falls back to an sRGB OutputPass for a P3 chain with a LUT", () => {
+  it("admits a user LUT on the P3 tail (fetched on the sRGB re-encoding)", () => {
     const f = fixture();
     try {
       f.run({ outputColorSpace: "display-p3", lut: { source: "fixture.cube", status: "pending" } }, 1, postV2, undefined, [grade]);
-      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: expect.any(String) });
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "display-p3" });
+      expect(finalDraw(f.state.draws)?.colorSpace).toBe("display-p3");
+    } finally { f.device.dispose(); }
+  });
+
+  it("keeps the grade but falls back to an sRGB OutputPass for a P3 chain with an upscale, naming the blocker", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3", renderScale: 0.75, filmGrain: { intensity: 0.1 } }, 1, postV2, undefined, [grade]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: expect.stringMatching(/tail: render-scale$/) });
       const output = outputDraw(f.state.draws);
       expect(output?.source).toContain("#define OUTPUT_COLOR_GRADE");
       expect(output?.source).not.toContain("#define OUTPUT_DISPLAY_P3");

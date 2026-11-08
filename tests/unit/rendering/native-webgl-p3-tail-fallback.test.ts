@@ -210,7 +210,7 @@ describe("WebGL display-tail output fallback", () => {
           frameContext: f.frame(1)
         });
       } finally { f.device.endFrame(); }
-      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: "Display-P3 is unavailable for this post chain" });
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: "Display-P3 is unavailable for this post chain: passes:color-grade(sharpening or invalid option)" });
       expect(f.state.colorSpace).toBe("srgb");
       expect(f.state.draws.filter(draw => draw.framebuffer === null).length).toBeGreaterThan(0);
       // The scope was released: a later frame may renegotiate P3.

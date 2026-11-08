@@ -2100,18 +2100,27 @@ function snapshotDisplayStage(options: unknown, numeric: readonly string[], with
 
 /**
  * Snapshot the bounded display-P3 tail before any encoded P3 scratch is written. The admitted stages are gamut-agnostic
- * kernels on encoded display values (display vignette, film grain, SMAA, FXAA, pixelation, glitch, afterimage); a user
- * LUT (authored for sRGB primaries), an upscale/RCAS pass and after-tonemap custom passes keep the sRGB fallback.
+ * kernels on encoded display values (display vignette, film grain, SMAA, FXAA, pixelation, glitch, afterimage) plus a
+ * user LUT, fetched on the sRGB re-encoding of each colour (`u_lutP3`). An upscale/RCAS pass, other native effects
+ * and after-tonemap custom passes keep the sRGB fallback.
  */
+/** Why a pipeline's LDR tail cannot run on an encoded Display-P3 surface, or undefined when it can. */
+export function p3DisplayTailBlocker(pipeline: PostPipelineOptions, token?: PostDiagnosticToken, postScopeId?: object): string | undefined {
+  if (pipeline.outputColorSpace !== "display-p3") return "not-requested";
+  if (pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "msaa" && pipeline.antiAliasing !== "taa"
+      && pipeline.antiAliasing !== "smaa" && pipeline.antiAliasing !== "fxaa") return `anti-aliasing:${String(pipeline.antiAliasing)}`;
+  if (pipeline.renderScale !== undefined && (!Number.isFinite(pipeline.renderScale) || pipeline.renderScale < 1)) return "render-scale";
+  if (typeof pipeline.dither !== "boolean") return "dither-undeclared";
+  if (pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque" && pipeline.alphaMode !== "straight" && pipeline.alphaMode !== "premultiplied") return "alpha-mode";
+  if (pipeline.nativeEffects !== undefined && !Array.isArray(pipeline.nativeEffects)) return "native-effects";
+  const unadmitted = (pipeline.nativeEffects ?? []).find((effect) => effect.kind !== "pixelation" && effect.kind !== "glitch" && effect.kind !== "afterimage");
+  if (unadmitted) return `native-effect:${unadmitted.kind}`;
+  if (mergedCustomPasses(pipeline, token, postScopeId).some(pass => pass.insertAt === "after-tonemap")) return "after-tonemap-custom-pass";
+  return undefined;
+}
+
 export function prepareP3DisplayTail(pipeline: PostPipelineOptions, token?: PostDiagnosticToken, postScopeId?: object): PostPipelineOptions | undefined {
-  if (pipeline.outputColorSpace !== "display-p3" || pipeline.lut
-      || (pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "msaa" && pipeline.antiAliasing !== "taa"
-        && pipeline.antiAliasing !== "smaa" && pipeline.antiAliasing !== "fxaa")
-      || (pipeline.renderScale !== undefined && (!Number.isFinite(pipeline.renderScale) || pipeline.renderScale < 1))
-      || typeof pipeline.dither !== "boolean"
-      || (pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque" && pipeline.alphaMode !== "straight" && pipeline.alphaMode !== "premultiplied")
-      || (pipeline.nativeEffects !== undefined && !Array.isArray(pipeline.nativeEffects))
-      || mergedCustomPasses(pipeline, token, postScopeId).some(pass => pass.insertAt === "after-tonemap")) return undefined;
+  if (p3DisplayTailBlocker(pipeline, token, postScopeId) !== undefined) return undefined;
   const effects: NativePostEffect[] = [];
   for (const effect of pipeline.nativeEffects ?? []) {
     let copy: NativePostEffect;
@@ -2187,6 +2196,7 @@ export function runV2LdrTail(
     g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), lut ? 1 : 0);
     g.uniform1i(g.getUniformLocation(prog, "u_lutLattice"), lut ? 1 : 0);
     g.uniform1f(g.getUniformLocation(prog, "u_lutBypass"), lut?.bypass ?? 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_lutP3"), p3 && lut ? 1 : 0);
   };
   // GU47 E-C stage trace: the display stages that draw this frame.
   const vignetteOn = (vignette?.intensity ?? 0) > 0;

@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { OUTPUT_VERTEX_GLSL, outputFragmentGlsl, TONE_MAP_OPERATOR_FUNCTIONS } from "../../../packages/rendering/src/output/ToneMappingOperators.glsl";
 import { createOutputWgsl } from "../../../packages/rendering/src/output/ToneMappingOperators.wgsl";
+import { DISPLAY_GRADE_GLSL } from "../../../packages/rendering/src/post/shaders/displayGrade.glsl";
+import { FINALIZE_FXAA_FUSED_GLSL, FINALIZE_P3_GLSL } from "../../../packages/rendering/src/post/shaders/finalize.glsl";
 
 const hasGlslang = spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).status === 0;
 const base = { backgroundCoverage: false, overlay: false, fullCoverage: true } as const;
@@ -46,6 +48,19 @@ describe("OutputPass colour-grade epilogue (OUTPUT_COLOR_GRADE)", () => {
           expect(reflection).toContain("u_gradeB");
         }
       }
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  it.skipIf(!hasGlslang)("compiles the P3 tail shaders that now carry film grain and the P3 LUT fetch", () => {
+    const dir = mkdtempSync(join(tmpdir(), "aura3d-p3-tail-"));
+    try {
+      for (const [name, source] of [["grade", DISPLAY_GRADE_GLSL], ["finalize-p3", FINALIZE_P3_GLSL], ["fxaa-fused", FINALIZE_FXAA_FUSED_GLSL]] as const) {
+        const fragment = join(dir, `${name}.frag`);
+        writeFileSync(fragment, source);
+        expect(() => execFileSync("glslangValidator", [fragment], { encoding: "utf8" })).not.toThrow();
+      }
+      expect(FINALIZE_P3_GLSL).toContain("filmGrain(gl_FragCoord.xy");
+      expect(DISPLAY_GRADE_GLSL).toContain("uniform int u_lutP3;");
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 });
