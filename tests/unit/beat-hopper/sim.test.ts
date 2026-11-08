@@ -378,6 +378,35 @@ describe("beat-hopper sim", () => {
     expect(sim.o.pose).toBe("duck");
   });
 
+  it("a fast flick steers even when its movement lands in the press step and its release in the next (never a hop)", () => {
+    const sim = running();
+    sim.o.spawnedThroughBeat = 100000;
+    sim.advance({ ...IDLE, down: true, dx: -(CONFIG.LANE_SWIPE_PX + 12) });
+    expect(sim.o.lane).toBe(-1);
+    expect(sim.o.steering).toBe(true);
+    sim.advance({ ...IDLE, up: true, dx: -10 });
+    expect(sim.o.pose).toBe("grounded");
+    // Movement in the release step still counts towards the gesture: 8 px + 8 px passes the slop, so no hop.
+    sim.advance({ ...IDLE, down: true, dx: CONFIG.TAP_SLOP_PX - 4 });
+    sim.advance({ ...IDLE, up: true, dx: 8 });
+    for (let i = 0; i < 3; i++) sim.advance(IDLE);
+    expect(sim.o.pose).toBe("grounded");
+    expect(sim.o.lane).toBe(-1);
+  });
+
+  it("a duck key (ArrowDown/S) ducks on the press step and a quick tap of it never hops", () => {
+    const sim = running();
+    sim.o.spawnedThroughBeat = 100000;
+    sim.advance({ ...IDLE, down: true, duck: true });
+    expect(sim.o.pose).toBe("duck");
+    expect(sim.o.duckStart).toBeCloseTo(sim.o.t, 9);
+    sim.advance(UP);
+    expect(sim.o.pose).toBe("grounded");
+    for (let i = 0; i < 5; i++) sim.advance(IDLE);
+    expect(sim.o.pose).toBe("grounded");
+    expect(sim.o.y).toBe(0);
+  });
+
   it("walls: a blocked lane is a MISS, a free lane is a DODGE (+20 x mult, combo +1)", () => {
     const hit = withObstacle("wall", 1.5, laneBit(0));
     advanceTo(hit, 1.6);

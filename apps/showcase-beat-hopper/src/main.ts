@@ -166,7 +166,7 @@ const loop = createFixedStepLoop({
   isActive: () => ready && !paused,
   step() {
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
-    pending.start = pending.down = pending.up = false;
+    pending.start = pending.down = pending.up = pending.duck = false;
     pending.dx = 0;
     pending.lane = 0;
     if (deferredUp) { pending.up = true; deferredUp = false; }
@@ -278,6 +278,7 @@ canvas.addEventListener("lostpointercapture", () => { if (dragging) release(); }
 
 const held = new Set<string>();
 const PRESS_KEYS = ["Space", "ArrowUp", "KeyW", "ArrowDown", "KeyS"];
+const DUCK_KEYS = ["ArrowDown", "KeyS"];
 const STEER_KEYS: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
 function dropInput(): void {
   held.clear();
@@ -308,7 +309,11 @@ addEventListener("keydown", (e) => {
     e.preventDefault();
     if (sim.o.phase !== "playing") return;
     held.add(e.code);
-    if (held.size === 1) pending.down = true;
+    if (held.size === 1) {
+      pending.down = true;
+      // ArrowDown/S duck straight away (a quick tap of them must never hop into a bar).
+      if (DUCK_KEYS.includes(e.code)) pending.duck = true;
+    }
   }
 });
 addEventListener("keyup", (e) => {

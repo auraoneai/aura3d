@@ -75,6 +75,8 @@ export interface Input {
   tap: boolean;
   /** Whole-lane steps (keys / autopilot): -1 left, +1 right. Never cancels a hop or duck press. */
   lane: number;
+  /** With `down`: a dedicated duck press (ArrowDown/S) that ducks at once and never hops on release. */
+  duck?: boolean;
 }
 export const IDLE: Input = { start: false, down: false, up: false, dx: 0, tap: false, lane: 0 };
 
@@ -435,9 +437,14 @@ export class BeatHopperSim {
     }
 
     // Steering: whole-lane steps (keys) and drag travel while pressed. A press whose drag travel passes the tap slop
-    // becomes a steer gesture: it stops counting as a tap (no hop on release) or a hold (no duck).
+    // becomes a steer gesture: it stops counting as a tap (no hop on release) or a hold (no duck). The step's drag
+    // belongs to whichever press is live: the one being released this step, else the one starting this step (a fast
+    // flick's first movement often lands in the same frame as its press and must still steer).
     if (input.lane !== 0) o.lane = Math.max(-1, Math.min(1, o.lane + Math.round(input.lane)));
-    if (input.dx !== 0 && o.holding) {
+    let dragDone = false;
+    const drag = (): void => {
+      dragDone = true;
+      if (input.dx === 0 || !o.holding) return;
       o.dragTravel += Math.abs(input.dx);
       o.dragAcc += input.dx;
       if (o.dragTravel > CONFIG.TAP_SLOP_PX && !o.steering) {
@@ -449,13 +456,11 @@ export class BeatHopperSim {
         o.lane = Math.max(-1, Math.min(1, o.lane + dir));
         o.dragAcc -= dir * CONFIG.LANE_SWIPE_PX;
       }
-    }
-    const targetX = laneX(o.lane);
-    const step = CONFIG.LANE_SPEED * CONFIG.DT;
-    o.laneOffset = Math.abs(targetX - o.laneOffset) <= step ? targetX : o.laneOffset + Math.sign(targetX - o.laneOffset) * step;
+    };
 
     // Input: release first so a duck can end and a fresh tap can start in the same frame.
     if (input.up) {
+      if (o.holding) drag();
       const wasTap = o.holding && !o.steering && o.holdT < CONFIG.DUCK_HOLD;
       o.holding = false;
       o.steering = false;
@@ -472,9 +477,14 @@ export class BeatHopperSim {
     }
     if (input.down && !o.holding) {
       o.holding = true;
-      o.holdT = 0;
+      // A dedicated duck key skips the tap/hold discrimination: it ducks this step and its release never hops.
+      o.holdT = input.duck ? CONFIG.DUCK_HOLD : 0;
     }
+    if (!dragDone) drag();
     if (o.holding && !o.steering) o.holdT += CONFIG.DT;
+    const targetX = laneX(o.lane);
+    const step = CONFIG.LANE_SPEED * CONFIG.DT;
+    o.laneOffset = Math.abs(targetX - o.laneOffset) <= step ? targetX : o.laneOffset + Math.sign(targetX - o.laneOffset) * step;
 
     // Pose physics.
     if (o.pose === "air") {
