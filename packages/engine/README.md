@@ -56,7 +56,7 @@ Kit documentation: [`docs/api/game-kit.md`](https://github.com/auraoneai/aura3d/
 
 ## Readiness and top-level await
 
-`app.ready()` resolves once the renderer has mounted and a frame can be drawn. Wait for it inside a function or chain on it; never `await` it at module top level:
+`app.ready()` resolves once the renderer mount settles, so a frame can be drawn. It also resolves, rather than rejects, if the mount fails (the failure is in `app.diagnostics().errors`; use `readyStrict()` to get a rejection). Wait for it inside a function or chain on it; never `await` it at module top level:
 
 ```ts
 import { createAuraApp, scene } from "@aura3d/engine";
