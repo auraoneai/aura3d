@@ -18,6 +18,7 @@ import { createWorkerNodeMirror, type AuraWorkerNodeMirror } from "./workerNodes
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { collectGameRuntimeEvidence } from "../GameEvidence.js";
+import { watchReadyStall } from "./readyStallWarning.js";
 
 /** App extensions that only need app.onFrame, app.nodes and app.scene, so they run on the host of a worker app. */
 const WORKER_HOST_EXTENSIONS = new Set(["camera", "time"]);
@@ -665,7 +666,7 @@ export function createWorkerRootApp(
     workerInput() { return structuredClone(inputSnapshot); },
     pause() { if (!disposed && !paused) { paused = true; stopHostLoop(); control(() => worker.pause()); } },
     resume() { if (!disposed && paused) { paused = false; control(() => worker.resume()); scheduleHostLoop(); } },
-    ready() { return readiness.renderer.promise.then(() => undefined); },
+    ready() { return watchReadyStall(readiness.renderer.promise.then(() => undefined)); },
     readiness(readinessOptions: AuraReadinessOptions = {}) {
       if (disposed) return Promise.resolve({ state: "disposed" });
       if (readinessOptions.signal?.aborted) return Promise.resolve({ state: "cancelled" });

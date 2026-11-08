@@ -38,6 +38,7 @@ import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, registerManagedRootApp, reserveRootCanvas, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import type { PhysicsWorldAccess } from "../physics/PhysicsWorldAccess.js";
 import { isPhysicsBackendMissing } from "../physics/backendMissing.js";
+import { watchReadyStall } from "./readyStallWarning.js";
 import { createOnDemandPhysicsFacade, type OnDemandPhysicsFacade } from "../physics/onDemandPhysics.js";
 import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
@@ -2385,11 +2386,15 @@ export function createAuraAppWithPhysicsWorldAccess(
         animationHandle = requestAnimationFrame(render);
       }
     },
-    async ready() {
+    ready() {
       // Resolves when the in-flight mount settles; immediate when there is none. See AuraApp.ready.
-      await productionMountSettled;
-      // On-demand physics only: also wait for a backend load in flight (its failure is reported in diagnostics).
-      if (physicsLoad) await physicsLoad.catch(() => undefined);
+      // watchReadyStall only logs AURA_READY_STALLED if this stays pending ~10 s on a visible page
+      // (a top-level await deadlocking the bundle); it never rejects or delays the promise.
+      return watchReadyStall((async () => {
+        await productionMountSettled;
+        // On-demand physics only: also wait for a backend load in flight (its failure is reported in diagnostics).
+        if (physicsLoad) await physicsLoad.catch(() => undefined);
+      })());
     },
     readiness(readinessOptions: AuraReadinessOptions = {}) {
       if (disposed) return Promise.resolve({ state: "disposed" } as const);
