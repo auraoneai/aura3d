@@ -1074,7 +1074,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "bb51a1479635dc18102dcb7afe138c163cb23dcf1ee70ff59f94e4a2940e2407"
+          "sha256": "58ac7314eab11f0e5f893cbdae9b5155fcbe548b18c1cfd3c0c4ec1ff9a7e2ce"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
@@ -2001,7 +2001,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "f5250900ed32b4a68e488523fb07c38f43c88ba874210fdf6ff76d2369456322"
+        "sha256": "51823ca6cf011f3c0a584f98c10f583af2cd66d3ec250e982950811e0b7f8855"
       },
       "sourceDependencies": [
         {
@@ -2231,12 +2231,12 @@
       },
       "source": {
         "path": "apps/showcase-cross-hop/src/main.ts",
-        "sha256": "a540343e9842894884a09688d4426d7507eb0ec38fd8c912926f0de325f3f90e"
+        "sha256": "6b8869999c6037229feb650733b40aab796a29ec8488d5ad47879c86ce1f449d"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-cross-hop/src/game/core.ts",
-          "sha256": "2a804c71de18846ab980111275ac6efcb0162608e87b506885267dc4437e7a70"
+          "sha256": "45855e59dcc4b986f0e716545c9a5987aa2c8615e1010110eecdf4775e4690a0"
         },
         {
           "path": "apps/showcase-cross-hop/src/game/world.ts",
@@ -2403,7 +2403,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "6225e681a98db571913fc4062d415a2f904317e5d6000c6edb7232dcea8f14f5"
+        "sha256": "52157a10aa2bc06fc3c90d9cfdfad12927eb2743a96f6b497d06ea5fd2386e69"
       },
       "sourceDependencies": [
         {
@@ -2518,7 +2518,7 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "27559fdfb861e15ca67c40bfb3ccd576f243baa0e9181d98ff9578ec9d4adb27"
+        "sha256": "c351dbdb7c0e1e6358156609f6c726a81043d855dbe8a5c2915cb9c40c6ff2b0"
       },
       "sourceDependencies": [
         {
@@ -2923,7 +2923,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "bb51a1479635dc18102dcb7afe138c163cb23dcf1ee70ff59f94e4a2940e2407"
+          "sha256": "58ac7314eab11f0e5f893cbdae9b5155fcbe548b18c1cfd3c0c4ec1ff9a7e2ce"
         }
       ],
       "regions": [
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
+          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
+          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
         }
       ],
       "regions": [
@@ -3848,7 +3848,7 @@
       },
       "source": {
         "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "4f3311eb4a7c0ae12dfa27aff453f68e9d6a927c952d7a4c09553f7aee0aed48"
+        "sha256": "2fa063a39a5d7550d09ad165e223674f0736415ccee13165e84c284f6fe92f47"
       },
       "sourceDependencies": [
         {
@@ -3947,7 +3947,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "666c695662a61ca6d078341a7960b78878c2e8e1e93926ef8135a93690188a9f"
+        "sha256": "c9d12ae897108faa791cf57845516bb600f93f94344b06d39809d71372d030e0"
       },
       "sourceDependencies": [
         {
@@ -4051,7 +4051,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-links-3d/src/main.ts",
-        "sha256": "4ac98f0cccad046b7667e4e1d24a523fea459eea0016598b0e912830b34d429d"
+        "sha256": "7890ef2a9c9684688677b9a5b61947384b4af03b3914316f68ffba77ec8ed3d9"
       },
       "sourceDependencies": [
         {
@@ -4330,7 +4330,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/canvas.ts",
-          "sha256": "db3029ef4ce93c343aba14e92a2b29169bcc9bfc264fc3befb6837e027035891"
+          "sha256": "db3b8a1380299f33cd1b72a3ee2cf3b076363e416b2eb56da496e290d4f89301"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4384,7 +4384,7 @@
       },
       "source": {
         "path": "apps/showcase-roadster-rush/src/main.ts",
-        "sha256": "22ee137bfec8076b238ffdb587836b190e7b6a5e1cd2a07c63e1bfee07cfb6bf"
+        "sha256": "d772732960d16d0ba09ed15d43a551a20cbf64327f0afa31bfccd1581a3df032"
       },
       "sourceDependencies": [
         {
@@ -4471,7 +4471,7 @@
       },
       "source": {
         "path": "apps/showcase-teleoperator/src/main.ts",
-        "sha256": "cae5cbad09cf34399f7bfaf7fed611927aba6bea2de623787cb7fff7fcf16d56"
+        "sha256": "13382b65e24c506232f46a782751890904c7cbcf7b82713ce04725d565fb7f07"
       },
       "sourceDependencies": [
         {
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "1f69923bae53c29d2277dd61aa428ca0632a243973802192477dd84c5758af70"
+          "sha256": "2dce870ec75529f93c428d748397bf18219be1b645a1d9bac4bc229e59572d4e"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4818,7 +4818,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "1f69923bae53c29d2277dd61aa428ca0632a243973802192477dd84c5758af70"
+          "sha256": "2dce870ec75529f93c428d748397bf18219be1b645a1d9bac4bc229e59572d4e"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -5313,7 +5313,7 @@
       },
       "source": {
         "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-        "sha256": "54633c9bc3100336b07c2adbd7849553f6d2aa971c1fc3df12965bfb97847677"
+        "sha256": "8ad4f2ba4f693852184f272fd19d1e6fdb925990bd66f005ef3913fc41f94ac1"
       },
       "sourceDependencies": [
         {
@@ -5439,7 +5439,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-          "sha256": "54633c9bc3100336b07c2adbd7849553f6d2aa971c1fc3df12965bfb97847677"
+          "sha256": "8ad4f2ba4f693852184f272fd19d1e6fdb925990bd66f005ef3913fc41f94ac1"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
+          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
+          "sha256": "90702d353ce8dbad4de6861ba31a6ecf8aa6c9904b13e059b51614c6adf9d45a"
         }
       ],
       "regions": [
@@ -8506,7 +8506,7 @@
       },
       "source": {
         "path": "apps/showcase-heatsink/src/main.ts",
-        "sha256": "070bbd8d438484469ce867a36a1e36fc2508bf2b49ad5d7be0b9fcfe347c5bde"
+        "sha256": "6f5b097d3f06e509021d623d08f3adf52accf7abec764d442596a26cdcc0ac70"
       },
       "sourceDependencies": [
         {
@@ -8535,7 +8535,7 @@
         },
         {
           "path": "apps/showcase-heatsink/src/shaders.ts",
-          "sha256": "f0649f55e9a701d6b4c4b8b9d8490a17b78edd81c3cf3ac209f4c2357d63f8be"
+          "sha256": "3b30d1ecea533be336bea7de8d7c270307353b0d35a416f349676ed750b68bba"
         },
         {
           "path": "apps/showcase-heatsink/src/look.ts",
@@ -8605,7 +8605,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-diamond-3d/src/main.ts",
-        "sha256": "3e6676a05df89f57e54833bc9ffc20515d3628f0e5730bb20303b0612bfc625f"
+        "sha256": "1f5620cb596846f79837687d8127992711e373b22d90558aeb9222028cea614d"
       },
       "sourceDependencies": [
         {
@@ -8885,7 +8885,7 @@
         },
         {
           "path": "packages/rendering/src/ShaderLibraryCore.ts",
-          "sha256": "1c0d57018ee856f729fd61cab20698a327c69ddf5cbb86ec2d97e5fe8cda0b96"
+          "sha256": "8a09531817692cce24e19da849e167eec0127809de9d7a7856204c3b5b519fa6"
         },
         {
           "path": "packages/rendering/src/ShaderChunks.ts",
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "23f0e140856df7c70647f4dc3393a76308778be556e6371c6f71cf5a11a7724b"
+          "sha256": "6a3c9833d8f431df9d0e6edfef7df8c2e4d7c84b9394e2c85e7943310c231c43"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
