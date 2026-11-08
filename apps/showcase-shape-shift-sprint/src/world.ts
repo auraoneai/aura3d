@@ -87,11 +87,15 @@ export function buildWorld(options: WorldOptions): World {
     .background(LOOK.skyStops[LOOK.skyStops.length - 1].hex)
     .camera(camera.perspective({ position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 600 }));
 
+  // Blended overlays (contact strips, the ball's ground shadow, the shield bubble, the wildcard ring) never cast:
+  // a blended caster has no alpha-hashed depth path, so it would draw into the sun shadow map as an opaque block
+  // (and log DEPTH_ALPHA_HASH_DEGRADED on every load).
+  const noCast = (spec: CustomSpec) => (spec.transparent ? { castShadow: false } : {});
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
-    builder.add(geometry.custom(dyn(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
+    builder.add(geometry.custom(dyn(mesh), { name: id, material: material.custom(spec), ...noCast(spec) }).runtime({ id }));
   };
   const addBatch = (id: string, batch: Batch, spec: CustomSpec): void => {
-    builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
+    builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec), ...noCast(spec) }).runtime({ id }));
   };
 
   add("sky", sphereMesh(280, 32, 20), toySkySpec());

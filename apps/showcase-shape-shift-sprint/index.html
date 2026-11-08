@@ -92,6 +92,8 @@
         #score { font-size: clamp(18px, 5.2vw, 26px); }
       }
       @media (max-height: 420px) { .hint { display: none; } }
+      /* keyboard-only hints mean nothing on a phone or tablet */
+      @media (hover: none) and (pointer: coarse) { .hint.keys-only { display: none; } }
       @media (prefers-reduced-motion: reduce) {
         .popup { animation-duration: 0.01s; }
         #combo-fill, .load-bar::after, .load-bar[data-complete="true"] { transition: none; }
@@ -135,7 +137,7 @@
         <p id="final-score"></p>
         <p id="final-stats"></p>
         <button id="btn-restart" class="btn no-steer" type="button">PLAY AGAIN</button>
-        <p class="hint">Space or Enter to play again</p>
+        <p class="hint keys-only">Space or Enter to play again</p>
       </div>
     </div>
     <div id="pause-screen" class="overlay hidden no-steer">
@@ -146,7 +148,7 @@
           <button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Shape symbols: off</button>
           <button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button>
         </div>
-        <p class="hint">P or Esc to resume</p>
+        <p class="hint keys-only">P or Esc to resume</p>
       </div>
     </div>
     <div id="render-error">
