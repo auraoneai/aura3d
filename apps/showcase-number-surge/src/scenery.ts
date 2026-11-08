@@ -633,7 +633,8 @@ export function islePose(p: Isle, scroll: number, time: number) {
 export const SCENERY_BATCHES = ["grid", "mountains-far", "mountains-near", "towers", "pylons", "motes"] as const;
 
 export interface SceneryRuntime {
-  update(scroll: number, time: number): void;
+  /** `travelled` is the shown distance down the road (grows as the ball moves forward). */
+  update(travelled: number, time: number): void;
 }
 
 /** Programs for the shader compile test. */
@@ -701,7 +702,9 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
       for (const id of SCENERY_BATCHES) node(id);
       node("pylon-caps");
 
-      function update(scroll: number, time: number): void {
+      function update(travelled: number, time: number): void {
+        // Ahead of the ball is −z (the camera looks down −z), so run space decreases as the ball travels.
+        const scroll = -travelled;
         /* towers: ring per row in run space (world z = runZ - scroll, ahead is runZ < scroll) */
         for (let r = 0; r < ROWS.length; r++) {
           const row = ROWS[r]!;
@@ -751,10 +754,10 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
         pylons.flush(node("pylons"));
         pylonCap.flush(node("pylon-caps"));
         motes.flush(node("motes"), false);
-        grid.setUniform?.("nsScroll", scroll % 6000);
+        grid.setUniform?.("nsScroll", travelled % 6000);
 
         for (const isle of ISLES) {
-          const pose = islePose(isle, scroll, time);
+          const pose = islePose(isle, travelled, time);
           const visible = pose.fade > 0.02;
           const s = Math.max(0.001, pose.fade);
           node(`${isle.id}-rock`).setVisible(visible).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(s);

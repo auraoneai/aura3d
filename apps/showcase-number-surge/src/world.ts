@@ -297,11 +297,14 @@ export function buildWorld(options: WorldOptions): World {
         const distance = view.shown?.distance ?? o.distance;
         const back = view.shown?.back ?? 0;
         const laneX = view.shown?.laneOffset ?? o.laneOffset;
-        const scroll = distance - back;
+        // The camera looks down −z, so travelling forward means run space decreases: scroll = −(shown distance), and
+        // something `d` ahead of the ball sits at world z = −d. Road-frame nodes therefore move toward the camera.
+        const travelled = distance - back;
+        const scroll = -travelled;
         const frameZ = -scroll;
         const time = view.shown?.time ?? o.time;
 
-        sceneryRuntime.update(scroll, time);
+        sceneryRuntime.update(travelled, time);
 
         /* road ring: segment j sits at run-space z = j * SEGMENT_LENGTH (world z = runZ - scroll, so ahead of the ball is
          * runZ < scroll), slot = j mod SEGMENTS; the ring keeps 10 segments behind the camera and the rest ahead. */
@@ -329,7 +332,7 @@ export function buildWorld(options: WorldOptions): World {
         for (const gate of liveGates) {
           const { slot, fresh } = gateSlots.use(gate);
           if (slot < 0) continue;
-          const runZ = gate.z + o.distance;
+          const runZ = -(gate.z + o.distance);
           if (fresh || gateRunZ[slot] !== runZ) {
             gateRunZ[slot] = runZ;
             const z = scrollFrameZ(runZ, 0);
@@ -346,7 +349,7 @@ export function buildWorld(options: WorldOptions): World {
             paintOpLabel(opCanvases[slot]!.g, text);
             opTextures[slot]!.needsUpdate = true;
           }
-          node(`op-label-${slot}`).setVisible(true).setPosition(gate.x, 0, gate.z + back);
+          node(`op-label-${slot}`).setVisible(true).setPosition(gate.x, 0, -(gate.z + back));
         }
 
         /* boss walls */
@@ -360,7 +363,7 @@ export function buildWorld(options: WorldOptions): World {
         for (const wall of liveWalls) {
           const { slot, fresh } = wallSlots.use(wall);
           if (slot < 0) continue;
-          const runZ = wall.z + o.distance;
+          const runZ = -(wall.z + o.distance);
           if (fresh || wallRunZ[slot] !== runZ) {
             wallRunZ[slot] = runZ;
             walls.place(slot, 0, 0, scrollFrameZ(runZ, 0), 0, 1, 1, 1);
@@ -371,7 +374,7 @@ export function buildWorld(options: WorldOptions): World {
             paintWallHp(wallCanvases[slot]!.g, wall.hp);
             wallTextures[slot]!.needsUpdate = true;
           }
-          node(`wall-label-${slot}`).setVisible(true).setPosition(0, 0, wall.z + back);
+          node(`wall-label-${slot}`).setVisible(true).setPosition(0, 0, -(wall.z + back));
         }
 
         /* powerups: bob and spin in place */
@@ -384,7 +387,7 @@ export function buildWorld(options: WorldOptions): World {
         for (const p of livePowerups) {
           const { slot, fresh } = powerupSlots.use(p);
           if (slot < 0) continue;
-          const runZ = p.z + o.distance;
+          const runZ = -(p.z + o.distance);
           if (fresh || powerupRunZ[slot] !== runZ) {
             powerupRunZ[slot] = runZ;
           }
@@ -398,7 +401,7 @@ export function buildWorld(options: WorldOptions): World {
 
         /* ball, decal, shadow, shield */
         const ballY = DIMS.BALL_RADIUS;
-        const roll = -scroll / DIMS.BALL_RADIUS;
+        const roll = -travelled / DIMS.BALL_RADIUS;
         node("ball").setPosition(laneX, ballY, 0).setRotation(roll, 0, 0);
         if (o.number !== lastNumber) {
           lastNumber = o.number;
@@ -421,7 +424,7 @@ export function buildWorld(options: WorldOptions): World {
             continue;
           }
           const s = Math.max(0.05, p.life / p.maxLife);
-          particles.place(i, p.x, p.y, p.z, 0, s, s, s);
+          particles.place(i, p.x, p.y, -p.z, 0, s, s, s);
           particles.setTone(i, toneOf(p.color));
         }
         for (let i = 0; i < CONFIG.SHARDS; i++) {
@@ -431,7 +434,7 @@ export function buildWorld(options: WorldOptions): World {
             continue;
           }
           const k = Math.max(0.05, s.life / s.maxLife);
-          shards.place(i, s.x, s.y, s.z, s.spin * (s.maxLife - s.life), k, k, k);
+          shards.place(i, s.x, s.y, -s.z, s.spin * (s.maxLife - s.life), k, k, k);
         }
 
         /* scrolling-frame node offsets + dirty-range uploads */
