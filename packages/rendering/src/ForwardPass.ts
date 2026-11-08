@@ -2886,21 +2886,7 @@ export class ForwardPass extends BaseRenderPass {
         throw new RenderDeviceError("Diffuse transmission requires its selected texture coordinate attributes", "DIFFUSE_TRANSMISSION_UV_UNAVAILABLE", { material: material.name });
       }
     }
-    const deform = record.features["prd06.deform"];
-    const skin = typeof deform === "string" ? /(?:^|\|)skin([48])(?:\||$)/.exec(deform) : null;
-    if (item && skin) {
-      const influences = Number(skin[1]) as 4 | 8;
-      const attributes = item.geometry.vertexBuffer.format.attributes;
-      const kind = (semantic: "joints" | "joints1"): "float" | "uint" | "sint" => {
-        const attribute = attributes.find((candidate) => candidate.semantic === semantic);
-        return !attribute?.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint";
-      };
-      if (attributes.some((attribute) => (attribute.semantic === "weights" || (influences === 8 && attribute.semantic === "weights1")) && attribute.integer)) {
-        throw new RenderDeviceError("Generated skinning weights require float or normalized inputs", "GENERATED_SKINNING_WEIGHT_INPUT_UNSUPPORTED", { material: material.name });
-      }
-      record = { ...record, skinning: { influences, palette: "texture" }, features: { ...record.features,
-        "prd06.joint0Type": kind("joints"), ...(influences === 8 ? { "prd06.joint1Type": kind("joints1") } : {}) } };
-    }
+    if (item) record = generatedSkinningForGeometry(record, item.geometry, material.name);
     if (item && record.features["prd04.geometryTangent"] === true) {
       const tangent = item.geometry.vertexBuffer.format.attributes.find((attribute) => attribute.semantic === "tangent" || attribute.shaderName === "a_tangent");
       if (!tangent || tangent.components !== 4 || tangent.shaderLocation !== 3 || tangent.integer
@@ -3711,6 +3697,27 @@ export function nativeUnlitPrimitiveForGeometry(
 }
 
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T {
+  const deform = record.features["prd06.deform"];
+  const skin = typeof deform === "string" ? /(?:^|\|)skin([48])(?:\||$)/.exec(deform) : null;
+  if (!skin) return record;
+  const influences = Number(skin[1]) as 4 | 8;
+  const attributes = geometry.vertexBuffer.format.attributes;
+  const kind = (semantic: "joints" | "joints1"): "float" | "uint" | "sint" => {
+    const attribute = attributes.find((candidate) => candidate.semantic === semantic);
+    return !attribute?.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint";
+  };
+  if (attributes.some((attribute) => (attribute.semantic === "weights" || (influences === 8 && attribute.semantic === "weights1")) && attribute.integer)) {
+    throw new RenderDeviceError("Generated skinning weights require float or normalized inputs", "GENERATED_SKINNING_WEIGHT_INPUT_UNSUPPORTED", { material: materialName });
+  }
+  return { ...record, skinning: { influences, palette: "texture" }, features: { ...record.features,
+    "prd06.joint0Type": kind("joints"), ...(influences === 8 ? { "prd06.joint1Type": kind("joints1") } : {}) } };
+}
+
 export function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean {
   const color = geometry.vertexBuffer.format.attributes.find((attribute) => attribute.semantic === "color" || attribute.shaderName === "a_color");
   if (!color) return false;

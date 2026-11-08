@@ -113,6 +113,11 @@ export interface GeneratedPbrProgram {
   readonly skinning: 4 | 8 | null;
   readonly morph: GeneratedPbrMorph | null;
   readonly transmission: boolean;
+  /**
+   * A transmission lobe without a scoped captured target: drawn without refraction, as the WebGL2 program does.
+   * The device then accepts the material's transmission, volume and dispersion inputs and leaves them unsampled.
+   */
+  readonly transmissionDegraded: boolean;
   readonly transmissionMap: boolean;
   readonly materialVolume: boolean;
   readonly thicknessMap: boolean;
@@ -218,7 +223,10 @@ const MATERIAL_FIELDS: readonly { readonly name: string; readonly type: ShaderDa
   // PRD-10 wind (`prd10.wind`): u_windDirStrength, u_windGust and (u_windAssetHeight, -, -, -).
   { name: "windDirStrength", type: vec4, wgsl: "vec4f" },
   { name: "windGust", type: vec4, wgsl: "vec4f" },
-  { name: "windParams", type: vec4, wgsl: "vec4f" }
+  { name: "windParams", type: vec4, wgsl: "vec4f" },
+  // PRD-04 rim (`prd04.rim`): (u_prd04RimColor, u_prd04RimStrength) and (u_prd04RimPower, -, -, -).
+  { name: "rim", type: vec4, wgsl: "vec4f" },
+  { name: "rimParams", type: vec4, wgsl: "vec4f" }
 ];
 export const GENERATED_PBR_MATERIAL_LAYOUT = deriveShaderDataLayout({
   kind: "struct", fields: MATERIAL_FIELDS.map(({ name, type }) => ({ name, type }))
@@ -251,7 +259,7 @@ function canonicalLobe(name: string): string {
 /** Reject unimplemented program axes and contradictory producer metadata. */
 type LobeMapSlot = "specular" | "specularColor" | "sheenColor" | "sheenRoughness" | "clearcoat" | "clearcoatRoughness" | "clearcoatNormal" | "iridescence" | "iridescenceThickness" | "anisotropy" | "transmission" | "volumeThickness" | "diffuseTransmission" | "diffuseTransmissionColor";
 type LobeMaps = Partial<Record<LobeMapSlot, 0 | 1>>;
-function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: boolean; normalMap: boolean; diffuseMap: boolean; bumpMap: boolean; metalRoughMap: boolean; occlusionMap: boolean; emissiveMap: boolean; lobeMaps: LobeMaps; uv0: boolean; uv1: boolean; ibl: boolean; sampled: "none" | "cube" | "equirect"; procedural: boolean; localProbe: boolean; volume: boolean; advanced: "none" | "probe" | "voxel" | "lightmap"; lightmapUv: 0 | 1; lightmapAdd: boolean; directBound: number; sheen: boolean; coat: boolean; iridescence: boolean; anisotropy: boolean; transmission: boolean; diffuseTransmission: boolean; materialVolume: boolean; dispersion: boolean; tangent: boolean; fraction: boolean; outputSrgb: boolean; wetness: boolean; prd07Fog: boolean; wind: boolean; alphaToCoverage: boolean; skinning: 4 | 8 | null; morph: GeneratedPbrMorph | null; jointKinds: readonly ("float" | "uint" | "sint" | null)[] } {
+function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: boolean; normalMap: boolean; diffuseMap: boolean; bumpMap: boolean; metalRoughMap: boolean; occlusionMap: boolean; emissiveMap: boolean; lobeMaps: LobeMaps; uv0: boolean; uv1: boolean; ibl: boolean; sampled: "none" | "cube" | "equirect"; procedural: boolean; localProbe: boolean; volume: boolean; advanced: "none" | "probe" | "voxel" | "lightmap"; lightmapUv: 0 | 1; lightmapAdd: boolean; directBound: number; sheen: boolean; coat: boolean; iridescence: boolean; anisotropy: boolean; transmission: boolean; transmissionDegraded: boolean; diffuseTransmission: boolean; materialVolume: boolean; dispersion: boolean; tangent: boolean; fraction: boolean; outputSrgb: boolean; wetness: boolean; prd07Fog: boolean; wind: boolean; rim: boolean; alphaToCoverage: boolean; skinning: 4 | 8 | null; morph: GeneratedPbrMorph | null; jointKinds: readonly ("float" | "uint" | "sint" | null)[] } {
   const f = descriptor.features;
   if (!f || f.pass !== "forward" || f.lighting !== "lit") unsupported("pass", "anything except forward lit materials");
   const depthCoverageIssue = depthCoverageUnsupportedReason(f);
@@ -279,10 +287,10 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const active = new Map<string, string | number | boolean>();
   for (const item of descriptor.activeFeatures) {
     if (active.has(item.id)) unsupported("activeFeatures", `duplicate contributor ${item.id}`);
-    if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness", "prd07.fog", "prd10.wind", ALPHA_TO_COVERAGE_FEATURE].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
+    if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness", "prd07.fog", "prd10.wind", "prd04.rim", ALPHA_TO_COVERAGE_FEATURE].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
     active.set(item.id, item.value);
   }
-  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", "prd07.fog", "prd10.wind", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
+  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", "prd07.fog", "prd10.wind", "prd04.rim", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !structural.has(name)) unsupported(`features.${name}`, `feature ${name}`);
     if ((name === "prd02.localProbe" || name === "prd02.irradianceVolume" || name === "prd04.geometryTangent" || name === "a3d.output.srgb" || name === "a3d.clipping" || name === "a3d.packedLoopColor" || name === "a3d.independentPhysicalPreview" || name === "a3d.photometricProfile" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name} feature`);
@@ -311,6 +319,14 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (wind && !descriptor.verifiedFeatures?.includes("prd10.wind")) unsupported("activeFeatures", "a replaced or unverified prd10.wind contributor");
   // With prd06.deform the GLSL chunks compose through A3D_DEFORM_ENTRY; the native template has no such composition yet.
   if (wind && active.has("prd06.deform")) unsupported("prd10.wind", "wind combined with skinning or morph deformation");
+  // PRD-04 rim: the stock feature (value true), its bit and its define agree; the WGSL emissive term replaces its GLSL chunk.
+  const rim = active.has("prd04.rim");
+  if ((rim && active.get("prd04.rim") !== true) || (f.features["prd04.rim"] === true) !== rim
+    || (f.features["prd04.rim"] !== undefined && f.features["prd04.rim"] !== false && f.features["prd04.rim"] !== true)) {
+    unsupported("features.prd04.rim", "inconsistent rim metadata");
+  }
+  if (rim && !descriptor.verifiedFeatures?.includes("prd04.rim")) unsupported("activeFeatures", "a replaced or unverified prd04.rim contributor");
+  if (rim && descriptor.defines.A3D_PRD04_RIM !== 1 && descriptor.defines.A3D_PRD04_RIM !== true) unsupported("defines.A3D_PRD04_RIM", "invalid rim define");
   const packedLoopColor = active.get("a3d.packedLoopColor") === true;
   if ((active.has("a3d.packedLoopColor") && !packedLoopColor) || (f.features["a3d.packedLoopColor"] === true) !== packedLoopColor) unsupported("features.a3d.packedLoopColor", "inactive packed member color");
   const deform = active.get("prd06.deform");
@@ -369,7 +385,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const coat = extensionIds.has("clearcoat");
   const iridescence = extensionIds.has("iridescence");
   const anisotropy = extensionIds.has("anisotropy");
-  const transmission = extensionIds.has("transmission");
+  const transmissionLobe = extensionIds.has("transmission");
   const diffuseTransmission = extensionIds.has("diffuse-transmission");
   const materialVolume = extensionIds.has("volume"), dispersion = extensionIds.has("dispersion");
   // The independent preview is an opt-in source variant (part of the cache
@@ -383,8 +399,14 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     || (f.features["a3d.legacySpotShadow"] !== undefined && !spotShadow) || (spotShadow && !f.lights.spot)) {
     unsupported("features", "standalone shadow metadata without its matching light");
   }
-  if (transmission !== (active.get("prd04.transmissionTarget") === true)) unsupported("prd04.transmissionTarget", "transmission without a scoped captured target");
-  if ((materialVolume || dispersion) && !transmission) unsupported("activeExtensions", "volume or dispersion without transmission");
+  const transmissionTarget = active.get("prd04.transmissionTarget") === true;
+  if (active.has("prd04.transmissionTarget") && !transmissionTarget) unsupported("prd04.transmissionTarget", "invalid transmission target metadata");
+  if (transmissionTarget && !transmissionLobe) unsupported("prd04.transmissionTarget", "a captured transmission target without a transmission lobe");
+  if ((materialVolume || dispersion) && !transmissionLobe) unsupported("activeExtensions", "volume or dispersion without transmission");
+  // Like the WebGL2 program (its refraction call is guarded by A3D_TRANSMISSION), a transmission lobe without a
+  // scoped captured target draws without refraction; ForwardPass reports TRANSMISSION_DEGRADED for that draw.
+  const transmission = transmissionLobe && transmissionTarget;
+  const transmissionDegraded = transmissionLobe && !transmissionTarget;
   const tangentFrame = active.has("prd04.tangentFrame");
   const geometryTangent = f.features["prd04.geometryTangent"] === true;
   const tangent = geometryTangent || morph?.tangents === true;
@@ -403,7 +425,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     unsupported("advancedLighting", "invalid advanced diffuse-lighting metadata");
   }
   const advanced: "none" | "probe" | "voxel" | "lightmap" = probe === true ? "probe" : voxel === true ? "voxel" : lightmap ? "lightmap" : "none";
-  if (Number(probe === true) + Number(voxel === true) + Number(Boolean(lightmap)) + Number(volume) > 1 || (lightmap && (transmission || diffuseTransmission)) || (diffuseTransmission && materialVolume)) {
+  if (Number(probe === true) + Number(voxel === true) + Number(Boolean(lightmap)) + Number(volume) > 1 || (lightmap && (transmissionLobe || diffuseTransmission)) || (diffuseTransmission && materialVolume)) {
     unsupported("advancedLighting", "conflicting advanced diffuse-lighting sources");
   }
   const baseMap = Boolean(f.maps.baseColor);
@@ -442,7 +464,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     DOUBLE_SIDED: f.doubleSided, SPECULAR_AA: f.specularAntialiasing, SHADOW_CONTACT: f.shadows.contact,
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height", A3D_CLIPPING: f.features["a3d.clipping"] === true,
     A3D_PHOTOMETRIC_PROFILE: photometric, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_WETNESS: wetness,
-    A3D_FOG: prd07Fog !== undefined, A3D_FOG_FROXEL_TIER: prd07Fog === "volumetric", A3D_PRD10_WIND: wind,
+    A3D_FOG: prd07Fog !== undefined, A3D_FOG_FROXEL_TIER: prd07Fog === "volumetric", A3D_PRD10_WIND: wind, A3D_PRD04_RIM: rim,
     A3D_LOG_DEPTH: f.features[PROGRAM_LOG_DEPTH_FEATURE] === true,
     A3D_PRD04_ALPHA_TO_COVERAGE: alphaToCoverage, ALPHA_TO_COVERAGE: alphaToCoverage,
     A3D_LEGACY_POINT_SHADOW: pointShadow, A3D_LEGACY_SPOT_SHADOW: spotShadow,
@@ -454,11 +476,11 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     A3D_LOCAL_DIFFUSE_IRRADIANCE: volume || advanced === "probe" || advanced === "voxel",
     A3D_LOBE_SHEEN: sheen, A3D_LOBE_EMISSIVE_STRENGTH: extensionIds.has("emissive-strength"), A3D_LOBE_EMISSIVE_STRENGTH_MAP: emissiveLobeMap,
     A3D_LOBE_IOR: extensionIds.has("ior"), A3D_LOBE_IOR_IOR: Boolean(iorBit), A3D_LOBE_SPECULAR: extensionIds.has("specular"),
-    A3D_LOBE_TRANSMISSION: transmission, A3D_LOBE_TRANSMISSION_MAP: lobeMaps.transmission !== undefined, A3D_TRANSMISSION: transmission,
+    A3D_LOBE_TRANSMISSION: transmissionLobe, A3D_LOBE_TRANSMISSION_MAP: lobeMaps.transmission !== undefined, A3D_TRANSMISSION: transmissionTarget,
     A3D_LOBE_DIFFUSE_TRANSMISSION: diffuseTransmission, A3D_LOBE_DIFFUSE_TRANSMISSION_MAP: lobeMaps.diffuseTransmission !== undefined,
     A3D_LOBE_DIFFUSE_TRANSMISSION_COLOR_MAP: lobeMaps.diffuseTransmissionColor !== undefined,
     A3D_LOBE_VOLUME: materialVolume, A3D_LOBE_VOLUME_THICKNESS_MAP: lobeMaps.volumeThickness !== undefined, A3D_LOBE_DISPERSION: dispersion,
-    A3D_INSTANCE_VOLUME_TRANSFORM: Boolean(f.instancing && transmission && materialVolume),
+    A3D_INSTANCE_VOLUME_TRANSFORM: Boolean(f.instancing && transmissionLobe && materialVolume),
     A3D_LOBE_SPECULAR_SPECULAR_MAP: lobeMaps.specular !== undefined, A3D_LOBE_SPECULAR_SPECULAR_COLOR_MAP: lobeMaps.specularColor !== undefined,
     A3D_LOBE_SHEEN_COLOR_MAP: lobeMaps.sheenColor !== undefined, A3D_LOBE_SHEEN_ROUGHNESS_MAP: lobeMaps.sheenRoughness !== undefined,
     A3D_LOBE_CLEARCOAT: coat, A3D_LOBE_CLEARCOAT_MAP: lobeMaps.clearcoat !== undefined,
@@ -483,7 +505,10 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (f.shadows.cascades && descriptor.defines.NUM_SHADOW_CASCADES !== f.shadows.cascades) unsupported("defines.NUM_SHADOW_CASCADES", "inconsistent shadow cascade metadata");
   if (f.shadows.localShadows && descriptor.defines.NUM_LOCAL_SHADOWS !== f.shadows.localShadows) unsupported("defines.NUM_LOCAL_SHADOWS", "inconsistent local shadow metadata");
   if (fraction && f.alphaMode !== "blend" && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on a direct presentation output");
-  return { baseMap, normalMap, diffuseMap, bumpMap, metalRoughMap, occlusionMap, emissiveMap, lobeMaps, uv0, uv1, ibl, sampled, procedural, localProbe, volume, advanced, lightmapUv: lightmapUv === 1 ? 1 : 0, lightmapAdd: lightmap === "add-indirect", directBound, sheen, coat, iridescence, anisotropy, transmission, diffuseTransmission, materialVolume, dispersion, tangent, fraction, outputSrgb, wetness, prd07Fog: prd07Fog !== undefined, wind, alphaToCoverage, skinning, morph, jointKinds };
+  // A degraded transmission lobe samples none of its refraction inputs (the GLSL twin reads them but discards the result).
+  const shadedLobeMaps: LobeMaps = { ...lobeMaps };
+  if (transmissionDegraded) { delete shadedLobeMaps.transmission; delete shadedLobeMaps.volumeThickness; }
+  return { baseMap, normalMap, diffuseMap, bumpMap, metalRoughMap, occlusionMap, emissiveMap, lobeMaps: shadedLobeMaps, uv0, uv1, ibl, sampled, procedural, localProbe, volume, advanced, lightmapUv: lightmapUv === 1 ? 1 : 0, lightmapAdd: lightmap === "add-indirect", directBound, sheen, coat, iridescence, anisotropy, transmission, transmissionDegraded, diffuseTransmission, materialVolume: materialVolume && transmission, dispersion: dispersion && transmission, tangent, fraction, outputSrgb, wetness, prd07Fog: prd07Fog !== undefined, wind, rim, alphaToCoverage, skinning, morph, jointKinds };
 }
 
 
@@ -1512,7 +1537,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let transmitted = (vec3f(1.0) - transReflectance) * diffuseColor * transmittedScene${sheenView};
   indirectDiffuse = mix(directDiffuse + indirectDiffuse, transmitted, clamp(material.transmission.x${mode.lobeMaps.transmission !== undefined ? " * transmissionSample" : ""}, 0.0, 1.0));
   directDiffuse = vec3f(0.0);` : ""}
-  let ${f.fog === "none" && !mode.prd07Fog ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
+  let ${f.fog === "none" && !mode.prd07Fog ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}${mode.rim ? " + material.rim.rgb * (material.rim.a * pow(1.0 - clamp(dot(n, view), 0.0, 1.0), max(material.rimParams.x, 0.01)))" : ""}, vec3f(0.0));
   ${mode.prd07Fog ? "let color = a3dPrd07ApplyFog(unfoggedColor, input.worldPosition);" : ""}
   ${f.fog !== "none" && !mode.prd07Fog ? `let fogDepth = input.position.z / input.position.w;
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let fogDensity = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.worldPosition.y, 0.0) * material.fogParams.w)" : ""};
@@ -1534,7 +1559,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     resources, requiredVertexLocations: [0, 1, ...(mode.uv0 ? [2] : []), ...(mode.tangent ? [3] : []), ...(f.vertexColors ? [4] : []), ...(mode.skinning ? [5, 6] : []), ...(mode.uv1 ? [7] : []), ...(mode.skinning === 8 ? [8, 9] : [])],
     requiredInstanceLocations: f.instancing ? [instanceLocation, instanceLocation + 1, instanceLocation + 2, instanceLocation + 3, ...(f.instancing.color ? [instanceLocation + 4] : [])] : [],
     skinning: mode.skinning, directLightBound: mode.directBound, clustered: f.lights.clustered, rectLights: f.lights.rect > 0,
-    morph: mode.morph, transmission: mode.transmission, transmissionMap: mode.lobeMaps.transmission !== undefined, contactShadow: f.shadows.contact,
+    morph: mode.morph, transmission: mode.transmission, transmissionDegraded: mode.transmissionDegraded, transmissionMap: mode.lobeMaps.transmission !== undefined, contactShadow: f.shadows.contact,
     pointShadow, spotShadow,
     diffuseTransmission: mode.diffuseTransmission, diffuseTransmissionMap: mode.lobeMaps.diffuseTransmission !== undefined, diffuseTransmissionColorMap: mode.lobeMaps.diffuseTransmissionColor !== undefined,
     fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, prd07Fog: mode.prd07Fog, wind: mode.wind, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage: mode.alphaToCoverage, // validateDescriptor has rejected volumetric fog.
@@ -1783,6 +1808,8 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     windDirStrength: numbers(uniforms, "u_windDirStrength", 4, [0, 0, 0, 0]),
     windGust: numbers(uniforms, "u_windGust", 4, [0, 0, 0, 0]),
     windParams: [scalar(uniforms, "u_windAssetHeight", 0), 0, 0, 0],
+    rim: [...vec3(uniforms, "u_prd04RimColor", [1, 1, 1]), scalar(uniforms, "u_prd04RimStrength", 0)],
+    rimParams: [scalar(uniforms, "u_prd04RimPower", 3), 0, 0, 0],
     lights: Array.from({ length: 96 }, (_, index) => lights.slice(index * 4, index * 4 + 4))
   });
 }

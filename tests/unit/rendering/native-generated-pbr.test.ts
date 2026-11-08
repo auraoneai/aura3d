@@ -522,7 +522,22 @@ describe("generated native PBR program contract", () => {
     const view = new DataView(packed.buffer, packed.byteOffset, packed.byteLength);
     expect([0, 1, 2].map(index => view.getFloat32(GENERATED_PBR_MATERIAL_OFFSETS.transmission! + index * 4, true))).toEqual([0.75, 8, 4]);
     const missingCapture = { ...source, activeFeatures: source.activeFeatures.filter(item => item.id !== "prd04.transmissionTarget") };
-    expect(() => createGeneratedPbrProgram(missingCapture)).toThrow(/captured target/);
+    expect(() => createGeneratedPbrProgram(missingCapture)).toThrow(/A3D_TRANSMISSION/);
+    expect(() => createGeneratedPbrProgram(generateProgramImpl(normalizeProgramFeatures({ ...features, extensions: [] }), { flags }).descriptor!)).toThrow(/without a transmission lobe/);
+    // A lobe without a scoped capture: WebGL2 skips the refraction (A3D_TRANSMISSION is undefined) and so does WGSL.
+    const degradedFeatures = normalizeProgramFeatures({ ...features, features: {}, extensions: [
+      { lobe: "transmission", bits: { map: true }, maps: ["transmission"], mapUvSets: { transmission: 1 } },
+      { lobe: "volume", bits: { thicknessMap: true }, maps: ["volumeThickness"], mapUvSets: { volumeThickness: 0 } },
+      { lobe: "dispersion", bits: {}, maps: [] }
+    ] });
+    const degradedGenerated = generateProgramImpl(degradedFeatures, { flags });
+    expect(degradedGenerated.descriptor!.defines.A3D_TRANSMISSION).toBeUndefined();
+    const degraded = createGeneratedPbrProgram(degradedGenerated.descriptor!);
+    expect([degraded.transmission, degraded.transmissionDegraded, degraded.transmissionMap, degraded.materialVolume, degraded.thicknessMap, degraded.dispersion])
+      .toEqual([false, true, false, false, false, false]);
+    expect(degraded.resources.some(resource => ["a3d_prd04_transmissionSampler", "u_transmissionTexture", "u_volumeThicknessTexture"].includes(resource.uniform))).toBe(false);
+    expect(degraded.fragment).not.toContain("transmittedScene");
+    expect(program.transmissionDegraded).toBe(false);
     const mappedFeatures = normalizeProgramFeatures({ ...features, extensions: [
       { lobe: "transmission", bits: { map: true }, maps: ["transmission"], mapUvSets: { transmission: 1 } },
       { lobe: "volume", bits: { thicknessMap: true }, maps: ["volumeThickness"], mapUvSets: { volumeThickness: 0 } },
