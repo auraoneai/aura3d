@@ -299,5 +299,6 @@ export { bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabel
 export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "./spatialInteraction.js";
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
+export type { AuraCameraAutoOptions } from "./camera/autoFrame.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";

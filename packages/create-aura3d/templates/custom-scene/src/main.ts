@@ -14,7 +14,9 @@ createAuraApp("#app", {
     // model() fits a GLB to ~1.55 m by default; the pirate ship is 4.8×11×10.6 m native, so ask for a 7 m sailboat explicitly.
     .add(model(assets.ship, { name: "migrated ship mesh", targetMaxDimension: 7 }).position(0, 0.12, -0.4).rotate(0, -0.5, 0))
     .add(interactions.orbit({ target: "migrated ship mesh" }))
-    .camera(camera.orbit({ target: [0, 2.4, 0], distance: 13, fov: 40 }))
+    // No hand-placed camera: camera.auto frames the ship's bounding box at 90% of the frame (the hull and sails
+    // read at about 60%: the box of a turned ship is larger than its silhouette); the water stays in shot.
+    .camera(camera.auto({ subject: "migrated ship mesh", fill: 0.9, fov: 40 }))
 });
 
 (window as unknown as { __AURA3D_CUSTOM_THREEJS_MIGRATION__?: unknown }).__AURA3D_CUSTOM_THREEJS_MIGRATION__ = {

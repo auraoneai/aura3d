@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "a74a1803a5ef357ec78b80d45329fbf2b999b0d34fc059f81453ed3be3b3cf5a" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "92d19e8d42fcb0830fe2c677b5fb71d476fe587eeb4206e88f5b47d258584cdc" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -184,7 +184,7 @@
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
         { "path": "packages/create-aura3d/templates/arena-shooter/index.html", "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930" },
-        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06" }
+        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939" }
       ],
       "regions": [
         {
@@ -321,7 +321,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -842,7 +842,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -904,7 +904,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1171,7 +1171,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1211,7 +1211,7 @@
       "id": "template:custom-scene",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png through the production actor/frame-input path and the frame's own view-projection; bands are the hull and sail texels addressed by the GLB UVs, excluding the authored #28506b water. No reference capture. The subject is small at the authored 13 m orbit; lighting, grade and rendered appearance remain unverified.",
+      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png: the camera is solved by camera.auto from the ship's drawn bounds (bounding box at 0.9 of the frame, centred), so the hull and sails sit at the frame centre; bands are the hull and sail texels addressed by the GLB UVs, excluding the authored #28506b water. No reference capture is stored (the region was eyeballed once on a real-GPU frame); lighting, grade and rendered appearance remain unverified.",
       "subject": "Kenney Pirate Kit medium ship (typed, colormap-textured) on the harbour plane",
       "surface": {
         "kind": "canvas",
@@ -1219,7 +1219,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/custom-scene/src/main.ts",
-        "sha256": "9af5bcb023e075913a2d6febae8bb1f84b26fb513e80593ce775e82432571d3e"
+        "sha256": "262a57a757a6cc269112f20f6424079a2eed14550167514ae011b022b75bd695"
       },
       "sourceDependencies": [
         {
@@ -1240,7 +1240,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1250,10 +1250,10 @@
       "regions": [
         {
           "label": "subject",
-          "x": 612,
-          "y": 400,
-          "width": 66,
-          "height": 62,
+          "x": 600,
+          "y": 300,
+          "width": 200,
+          "height": 140,
           "minContrast": 8,
           "colors": [
             {
@@ -1309,7 +1309,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1378,7 +1378,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1447,7 +1447,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -1475,7 +1475,7 @@
       "id": "template:procedural-scene",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",
-      "provenance": "Estimated from the template's own authored orbit camera ([3, 1.5, 4.2] looking at [0, 1, 0], fov 36) and the robot torso and glow-core primitives (steel #b9c1ce, emissive #8fefff); the region sits inside the projected torso. No reference capture. Lighting, shadows, grade and rendered appearance remain unverified.",
+      "provenance": "Estimated from the template's camera.auto pose (the robot group framed at 0.7 of the frame, centred, fov 36) and the robot torso and glow-core primitives (steel #b9c1ce, emissive #8fefff); the region sits inside the projected torso. No reference capture is stored (eyeballed once on a real-GPU frame). Lighting, shadows, grade and rendered appearance remain unverified.",
       "subject": "Primitive-built jointed robot torso (steel body and emissive core) under the character-showcase look",
       "surface": {
         "kind": "canvas",
@@ -1483,7 +1483,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/procedural-scene/src/main.ts",
-        "sha256": "0d11664f1c670658c85bc46cecc1ecca85f39d051100a10e1970470c282465b9"
+        "sha256": "a4be5b7d4658234a0696c03633f12e8d3563f152050f379e00cb549cf085d85b"
       },
       "sourceDependencies": [
         {
@@ -1496,7 +1496,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1562,7 +1562,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1838,7 +1838,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -2699,7 +2699,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -2786,7 +2786,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3043,7 +3043,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3176,7 +3176,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3238,7 +3238,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3304,7 +3304,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3366,7 +3366,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3432,7 +3432,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3502,7 +3502,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/RootGeometry.ts",
@@ -3576,7 +3576,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3638,7 +3638,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3720,7 +3720,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3798,7 +3798,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -4640,7 +4640,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/camera.ts",
@@ -7283,7 +7283,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -7351,7 +7351,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -8228,7 +8228,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [

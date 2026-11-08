@@ -53,6 +53,7 @@ createAuraApp("#app", {
 
 - A `looks.preset` supplies image-based light, a shadow-casting key, fog, background and a post grade as one unit. Never wire `lights.ambient()` as the only fill.
 - Never a solid void background; the look's sky, biome or studio backdrop owns it.
+- Never a hand-placed camera for the subject: `.camera(camera.auto())` frames what the scene holds (`{ subject: "name", fill }` for one node). Hand-built light: `lights.key({ target })` casts the shadow; give it a ground plane.
 - Never `pixelRatio`, `qualityProfile`, `safe-basic`, FXAA or `replaceTextures: true` overrides; `looks.appOptions(id)` carries the renderer contract.
 - Hero subject: use `model(assets.x)` with a typed asset when one exists or the prompt names a real object. With no admitted model (a world, a creature, a prop set, an abstract piece) build it procedurally as in recipes 8 to 15, never as a flat placeholder.
 - Never emissive cards or sprites faking reflections, puddles or glows; use the look's grade and `effects.*`.

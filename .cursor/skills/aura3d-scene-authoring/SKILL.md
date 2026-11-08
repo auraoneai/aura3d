@@ -102,7 +102,8 @@ look renders flat on a void.
    `@aura3d/engine/devtools`; the root export is deprecated) or the kit evidence, run `npm run build`, and hand screenshots and route health to
    `aura3d-evidence-review`. The template `npm run test` gate runs Playwright;
    run it in CI or on a remote runner, not on the local machine.
-9. Weak screenshot: fix the single biggest issue (tighter framing, foreground
+9. Weak screenshot: fix the single biggest issue (tighter framing with
+   `camera.auto({ subject, fill })` rather than a hand-placed camera, foreground
    and background structure, key/fill/rim contrast, visible state) or switch
    back to the matching kit before changing any label or claim.
 

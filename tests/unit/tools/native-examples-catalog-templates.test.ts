@@ -148,7 +148,7 @@ describe("source-backed template catalog expectations", () => {
       template: "custom-scene",
       pins: [
         'model(assets.ship, { name: "migrated ship mesh", targetMaxDimension: 7 }).position(0, 0.12, -0.4).rotate(0, -0.5, 0)',
-        "camera.orbit({ target: [0, 2.4, 0], distance: 13, fov: 40 })",
+        'camera.auto({ subject: "migrated ship mesh", fill: 0.9, fov: 40 })',
         'material.pbr({ color: "#28506b", roughness: 0.35, metallic: 0.15 })'
       ],
       bands: [{ name: "tan hull", minShare: 0.3 }, { name: "white sails", minShare: 0.08 }]
