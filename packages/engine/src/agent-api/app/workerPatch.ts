@@ -19,7 +19,7 @@ export function isReplayableExtensionMethod(member: string): boolean {
 export const WORKER_PATCH_METHODS = [
   "setPosition", "setPivot", "setTransform", "translate", "setRotation", "setScale", "setVisible",
   "setText", "setMaterial", "setLight", "setInstances", "setInstanceMatrices",
-  "play", "setAnimation", "setMorphTarget", "setMorphTargets", "morphInfluence", "setUniform"
+  "play", "setAnimation", "setAnimationPose", "setAnimationBinding", "setMorphTarget", "setMorphTargets", "morphInfluence", "setUniform"
 ] as const;
 /** Handle properties whose assignment can be replayed in the worker. */
 export const WORKER_PATCH_PROPERTIES = ["position", "rotation", "scale", "visible", "renderOrder", "frustumCulled"] as const;
@@ -56,6 +56,7 @@ export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
     case "setVisible": return `${op.id}\u0000visible`;
     case "setInstanceMatrices":
     case "setInstanceTransforms": return `${op.id}\u0000instanceMatrices`;
+    case "setAnimationPose": return `${op.id}\u0000animationPose`;
     case "setMorphTarget": return `${op.id}\u0000morph\u0000${String(op.args[0])}`;
     case "setUniform": return `${op.id}\u0000uniform\u0000${String(op.args[0])}`;
     default: return undefined;
