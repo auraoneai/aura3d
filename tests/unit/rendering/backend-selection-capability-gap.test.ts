@@ -8,6 +8,7 @@ const createSelectedProductionRenderer = (publicSelect as unknown as Record<symb
 void createProductionRuntimePostprocess;
 import { resolveBackendOptions } from "../../../packages/engine/src/agent-api/app/rendererOptions";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
+import { effects, primitives, scene } from "../../../packages/engine/src/agent-api/index";
 
 const gap = () => ({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] });
 const fakeCreate = () => {
@@ -110,4 +111,43 @@ describe("backend selection: the gap check sees context recorded synchronously a
       expect(result.selection).toMatchObject({ active: "webgl2", fallbackReason: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missingFeatures: ["vignette"] });
     } finally { warn.mockRestore(); }
   });
+});
+
+describe("backend selection: ambient occlusion is no longer a WebGPU gap", () => {
+  it("passes an ambient-occlusion scene through the post pre-check", () => {
+    const postGap = (createProductionRuntimePostprocess as unknown as Record<symbol, (snapshot: unknown, canvas: unknown) => unknown>)[
+      Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")]!;
+    const canvas = { width: 64, height: 64 };
+    const ao = scene().add(primitives.box()).add(effects.ambientOcclusion({ radius: 0.5, intensity: 0.4 })).toJSON();
+    expect(createProductionRuntimePostprocess(ao, [], 64, 64, true, { canvas: canvas as never }).ssao).toBeTruthy();
+    expect(postGap(ao, canvas)).toBeUndefined();
+    // A stage without a WebGPU twin is still a gap, and the report names it.
+    const ssr = scene().add(primitives.box()).add(effects.ambientOcclusion()).add(effects.screenSpaceReflections()).toJSON();
+    expect(postGap(ssr, canvas)).toEqual({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", "legacy-ssr"] });
+  }, 30_000);
+});
+
+describe("backend selection: ambient occlusion on a multisampled forward target", () => {
+  it("passes a v2 GTAO scene on msaa, and keeps the gap for a legacy-only ssao on msaa", async () => {
+    const { resolveQrFlags } = await import("../../../packages/engine/src/contracts/flags");
+    const { recordAuthoredPostContext } = await import("../../../packages/engine/src/agent-api/postBridge");
+    const postGap = (createProductionRuntimePostprocess as unknown as Record<symbol, (snapshot: unknown, canvas: unknown) => unknown>)[
+      Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")]!;
+    const flags = resolveQrFlags({ options: ["post"] });
+    const ao = scene().add(primitives.box()).add(effects.ambientOcclusion({ radius: 0.5, intensity: 0.4 })).toJSON();
+    // Strict v2 (High tier): 4x forward target and a pipeline.ao stage, which the native GTAO reads multisampled.
+    const strict = { width: 640, height: 360 };
+    recordAuthoredPostContext({ flags, options: {} }, { canvas: strict } as never);
+    const v2 = createProductionRuntimePostprocess(ao, [], 640, 360, true, { canvas: strict as never });
+    expect(v2.sampleCount).toBe(4);
+    expect((v2.pipeline as { ao?: unknown }).ao).toBeTruthy();
+    expect(postGap(ao, strict)).toBeUndefined();
+    // compat.post "3.0": the same 4x target but only the legacy ssao pass, which needs single-sample depth.
+    const compat = { width: 640, height: 360 };
+    recordAuthoredPostContext({ flags, options: { compat: { post: "3.0" } } }, { canvas: compat } as never);
+    const legacy = createProductionRuntimePostprocess(ao, [], 640, 360, true, { canvas: compat as never });
+    expect(legacy.sampleCount).toBe(4);
+    expect(legacy.v2).not.toBe(true);
+    expect(postGap(ao, compat)).toEqual({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", "legacy-ssao-msaa"] });
+  }, 60_000);
 });

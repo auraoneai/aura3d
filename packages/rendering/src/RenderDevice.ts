@@ -320,6 +320,29 @@ export interface NativeWebGPUDofFrameSubmission {
   readonly effectSubmitted: boolean;
 }
 
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+  readonly options: {
+    readonly radius?: number;
+    readonly intensity?: number;
+    readonly falloff?: number;
+    readonly directions?: number;
+    readonly steps?: number;
+    readonly multiBounce?: boolean;
+    readonly fallbackStrength?: number;
+  };
+  readonly camera: {
+    readonly projectionMatrix: ArrayLike<number>;
+    readonly projectionMatrixInverse?: ArrayLike<number>;
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+  };
+}
+
 export interface LdrPostprocessPresentationOptions {
   readonly passes: readonly LdrPostprocessPassDescriptor[];
   readonly outputTarget?: RenderTarget;
@@ -328,6 +351,8 @@ export interface LdrPostprocessPresentationOptions {
   readonly autoExposure?: Partial<AutoExposureOptionsV2>;
   /** Native HDR DoF before exposure, bloom and output conversion. */
   readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+  /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+  readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
   /** Ordered native display effects; texture inputs remain borrowed. */
   readonly nativeEffects?: readonly NativePostEffect[];
   /** Stable scope/view identity for temporal effects and explicit camera cuts. */

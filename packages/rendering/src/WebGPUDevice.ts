@@ -22,6 +22,7 @@ import {
   type NativeWebGPUDofFrame,
   type NativeWebGPUDofFrameDescriptor,
   type ShaderReflection,
+  type NativeAmbientOcclusionRequest,
   type ShaderCompilationDiagnostic,
   type ShaderSources,
   type UniformValue,
@@ -76,6 +77,10 @@ import { WebGPULinearDepth, linearizeWebGPUDepthSample, type WebGPULinearDepthDr
 import { WebGPUDepthOfField, nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions, type WebGPUDepthOfFieldDraw } from "./post/WebGPUDepthOfField";
 import { validateNativePostEffect, type NativePostEffect } from "./post/NativeEffectShaders";
 import { NATIVE_EFFECT_WGSL } from "./webgpu/NativeEffectShaders.wgsl";
+import { invertMat4, type Mat4 } from "@aura3d/scene";
+import { normalizeWebGPUGtaoOptions, normalizeWebGPUSsaoOptions, packWebGPUAoApplyUniforms, packWebGPUAoDenoiseUniforms, packWebGPUAoLinearDepthUniforms,
+  packWebGPUGtaoUniforms, packWebGPUSsaoUniforms, webgpuGtaoFragment, WEBGPU_AO_APPLY_FRAGMENT, WEBGPU_AO_DENOISE_FRAGMENT, webgpuAoLinearDepthFragment,
+  WEBGPU_AO_MINMAX_HALF_FRAGMENT, WEBGPU_SSAO_FRAGMENT } from "./webgpu/WebGPUAmbientOcclusion";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
 import { createGeneratedPbrProgram, packGeneratedPbrMaterialUniforms, validateGeneratedPbrTarget, validateGeneratedPhotometricPacket, type GeneratedPbrProgram } from "./webgpu/GeneratedPbrProgram";
 import { createGeneratedUnlitProgram, packGeneratedUnlitMaterialUniforms, GENERATED_UNLIT_MATERIAL_OFFSETS, type GeneratedUnlitProgram } from "./webgpu/GeneratedUnlitProgram";
@@ -896,6 +901,12 @@ function nativeColorSlice(target: WebGPURenderTarget | null | undefined): { read
   return target?.nativeDepthSlice === undefined ? {} : { depthSlice: target.nativeDepthSlice };
 }
 
+/** Native AO writes a target in its color source's renderable format. */
+function nativeAmbientOcclusionFormat(format: string): "rgba8" | "rgba16f" | "rgba32f" {
+  if (format === "rgba8" || format === "rgba16f" || format === "rgba32f") return format;
+  throw new RenderDeviceError("Native WebGPU ambient occlusion requires an rgba8, rgba16f or rgba32f color source", "WEBGPU_POSTPROCESS_UNSUPPORTED", { format });
+}
+
 class WebGPURenderTarget implements RenderTarget {
   public disposed = false;
   private disposing = false;
@@ -1347,6 +1358,8 @@ export class WebGPUDevice implements RenderDevice {
   private nativeBloomPasses = 0;
   private nativeColorGradePasses = 0;
   private nativeFxaaPasses = 0;
+  private nativeSsaoPasses = 0;
+  private nativeAmbientOcclusionPasses = 0;
   private nativeTaaPasses = 0;
   private nativeTemporalBindings = 0;
   private readonly webgpuPostPipelines = new Map<string, WebGPURenderPipelineLike>();
@@ -2721,6 +2734,10 @@ export class WebGPUDevice implements RenderDevice {
         "spot-shadow-maps",
         "point-shadow-maps",
         "hdr-image-based-lighting",
+        // Single-sample depth attachments carry TEXTURE_BINDING and are read
+        // through depth-only views by the native SSAO/GTAO, depth-of-field
+        // and deferred passes. Multisampled targets still reject `depth: "texture"`.
+        ...(supportsNativeRenderPipeline ? ["depth-textures" as const] : []),
         ...(supportsNativeRenderPipeline ? ["native-render-pipeline" as const] : []),
         ...(hasNativeSampledTextureBinding(device) ? ["native-sampled-textures" as const] : []),
         ...(supportsNativeTextureReadback ? ["native-texture-readback" as const] : []),
@@ -2728,7 +2745,7 @@ export class WebGPUDevice implements RenderDevice {
       ],
       limitations: [
         "Synchronous readPixels/readFloatPixels throw WEBGPU_SYNC_READBACK_UNSUPPORTED; use readPixelsAsync/readFloatPixelsAsync for native texture-to-buffer readback.",
-        "Sampleable WebGPU depth render-target textures are not advertised until native texture binding and depth readback evidence exists.",
+        "Sampleable WebGPU depth render-target textures are single-sample only and have no CPU depth readback.",
         "Display-P3 requires a confirmed opaque unorm canvas and a supported output pass or HDR tone route; offscreen P3, direct scene output, preserved alpha and additional post combinations are unavailable.",
         ...(supportsNativeRenderPipeline ? [] : ["native WebGPU render-pipeline submission requires createRenderPipeline, createTexture, and createCommandEncoder."]),
         ...(hasNativeSampledTextureBinding(device) ? [] : ["native WebGPU sampled texture binding requires createSampler, createTexture, and queue.writeTexture."]),
@@ -4972,6 +4989,8 @@ export class WebGPUDevice implements RenderDevice {
       ["nativeBloomPasses", this.nativeBloomPasses],
       ["nativeColorGradePasses", this.nativeColorGradePasses],
       ["nativeFxaaPasses", this.nativeFxaaPasses],
+      ["nativeSsaoPasses", this.nativeSsaoPasses],
+      ["nativeAmbientOcclusionPasses", this.nativeAmbientOcclusionPasses],
       ["nativeTaaPasses", this.nativeTaaPasses],
       ["nativeTemporalBindings", this.nativeTemporalBindings],
       ["canvasSubmissions", this.canvasSubmissions]
@@ -5266,6 +5285,115 @@ export class WebGPUDevice implements RenderDevice {
     } catch (error) {
       out.dispose();
       throw error;
+    }
+  }
+
+  /**
+   * Depth-only view of a single-sample hardware depth attachment, for the
+   * native ambient-occlusion passes, plus the attachment's encoding.
+   */
+  private nativeAmbientOcclusionDepth(depthSource: RenderTarget, pass: string, allowMultisampled = false): { readonly view: unknown; readonly reversed: boolean; readonly multisampled: boolean } {
+    const target = this.requireRenderTarget(depthSource);
+    // A 4x attachment carries TEXTURE_BINDING too; it is read as a multisampled depth texture.
+    const multisampled = allowMultisampled && target.sampleCount === 4 && Boolean(target.multisampledDepthTexture && !target.multisampledDepthTexture.disposed);
+    if (!target.nativeDepthTexture || (!multisampled && (target.sampleCount !== 1 || !target.depthTexture || target.depthTexture.disposed))) {
+      throw new RenderDeviceError(`Native WebGPU ${pass} requires a single-sample sampleable depth attachment`, "WEBGPU_AO_DEPTH_UNAVAILABLE", { pass, label: target.label });
+    }
+    const mode = this.depthConvention.mode;
+    if (mode !== "standard" && mode !== "reversed") {
+      throw new RenderDeviceError(`Native WebGPU ${pass} does not decode ${mode} depth`, "WEBGPU_AO_DEPTH_ENCODING_UNSUPPORTED", { pass, mode });
+    }
+    return { view: target.nativeDepthTexture.createView({ aspect: "depth-only" }), reversed: mode === "reversed", multisampled };
+  }
+
+  /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
+  executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options: Readonly<Record<string, unknown>> = {}): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    let normalized: ReturnType<typeof normalizeWebGPUSsaoOptions>;
+    try { normalized = normalizeWebGPUSsaoOptions(options); }
+    catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "INVALID_POSTPROCESS_OPTIONS"); }
+    const src = this.requireRenderTarget(source);
+    if (!src.nativeView) throw new RenderDeviceError("WebGPU SSAO source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    const depth = this.nativeAmbientOcclusionDepth(depthSource, "ssao");
+    if (depthSource.width !== src.width || depthSource.height !== src.height) {
+      throw new RenderDeviceError("WebGPU SSAO depth and color sizes differ", "WEBGPU_AO_DEPTH_UNAVAILABLE");
+    }
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ssao" });
+    try {
+      this.runWebGPUFullscreenPass({ label: "webgpu-ssao", fragment: WEBGPU_SSAO_FRAGMENT, entryPoint: "fs_ssao",
+        uniforms: packWebGPUSsaoUniforms(src.width, src.height, normalized, depth.reversed),
+        views: [src.nativeView, depth.view], target: out, textureLoadBindings: true });
+      this.nativeSsaoPasses += 1;
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
+    }
+  }
+
+  /**
+   * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
+   * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
+   * apply. Returns a caller-owned target in the source's format.
+   */
+  executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest,
+    frameIndex = 0, diagnosticToken?: PostDiagnosticToken): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(source);
+    if (!src.nativeView) throw new RenderDeviceError("WebGPU ambient occlusion source has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    if (depthSource.width !== src.width || depthSource.height !== src.height) {
+      throw new RenderDeviceError("WebGPU ambient occlusion depth and color sizes differ", "WEBGPU_AO_DEPTH_UNAVAILABLE");
+    }
+    const camera = request.camera;
+    const projection = Array.from({ length: 16 }, (_value, index) => Number(camera?.projectionMatrix?.[index]));
+    if (!camera || projection.some(value => !Number.isFinite(value))) {
+      throw new RenderDeviceError("WebGPU ambient occlusion requires the frame projection", "WEBGPU_AO_CAMERA_REQUIRED");
+    }
+    const inverse = camera.projectionMatrixInverse ? Array.from({ length: 16 }, (_value, index) => Number(camera.projectionMatrixInverse![index])) : invertMat4(projection as unknown as Mat4);
+    const options = normalizeWebGPUGtaoOptions(request.options);
+    const depth = this.nativeAmbientOcclusionDepth(depthSource, "ambient-occlusion", true);
+    let linearUniforms: Float32Array, gtaoUniforms: Float32Array;
+    try {
+      linearUniforms = packWebGPUAoLinearDepthUniforms({ near: camera.near, far: camera.far, orthographic: camera.orthographic, reversed: depth.reversed });
+      gtaoUniforms = packWebGPUGtaoUniforms({ projectionMatrix: projection, projectionMatrixInverse: inverse, orthographic: camera.orthographic }, options, frameIndex);
+    } catch (error) {
+      throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "WEBGPU_AO_CAMERA_REQUIRED");
+    }
+    const w = src.width, h = src.height, hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
+    const scratch: RenderTarget[] = [];
+    const scratchTarget = (width: number, height: number, format: "rgba32f" | "rgba8", label: string): WebGPURenderTarget => {
+      const target = this.createRenderTarget({ width, height, format, depth: false, label });
+      scratch.push(target);
+      return this.requireRenderTarget(target);
+    };
+    const out = this.createRenderTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
+    try {
+      const linear = scratchTarget(w, h, "rgba32f", "a3d-webgpu-ao-linear-depth");
+      this.runWebGPUFullscreenPass({ label: "webgpu-ao-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
+        uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true, ...(depth.multisampled ? { multisampledDepthViews: [0] } : {}) });
+      const minmax = scratchTarget(hw, hh, "rgba32f", "a3d-webgpu-ao-minmax-half");
+      this.runWebGPUFullscreenPass({ label: "webgpu-ao-minmax-half", fragment: WEBGPU_AO_MINMAX_HALF_FRAGMENT, entryPoint: "fs_ao_minmax_half",
+        uniforms: new Float32Array(4), views: [linear.nativeView], target: minmax, textureLoadBindings: true });
+      if (diagnosticToken) recordPostStage("S1:depth-prep", diagnosticToken);
+      const aoRaw = scratchTarget(hw, hh, "rgba8", "a3d-webgpu-ao-raw");
+      this.runWebGPUFullscreenPass({ label: `webgpu-gtao-${options.directions}x${options.steps}`, fragment: webgpuGtaoFragment(options.directions, options.steps), entryPoint: "fs_gtao",
+        uniforms: gtaoUniforms, views: [minmax.nativeView], target: aoRaw, textureLoadBindings: true });
+      const aoHalf = scratchTarget(hw, hh, "rgba8", "a3d-webgpu-ao-denoise");
+      this.runWebGPUFullscreenPass({ label: "webgpu-ao-denoise-h", fragment: WEBGPU_AO_DENOISE_FRAGMENT, entryPoint: "fs_ao_denoise",
+        uniforms: packWebGPUAoDenoiseUniforms(true), views: [aoRaw.nativeView, minmax.nativeView], target: aoHalf, textureLoadBindings: true });
+      this.runWebGPUFullscreenPass({ label: "webgpu-ao-denoise-v", fragment: WEBGPU_AO_DENOISE_FRAGMENT, entryPoint: "fs_ao_denoise",
+        uniforms: packWebGPUAoDenoiseUniforms(false), views: [aoHalf.nativeView, minmax.nativeView], target: aoRaw, textureLoadBindings: true });
+      this.runWebGPUFullscreenPass({ label: "webgpu-ao-apply", fragment: WEBGPU_AO_APPLY_FRAGMENT, entryPoint: "fs_ao_apply",
+        uniforms: packWebGPUAoApplyUniforms(camera.far, options),
+        views: [src.nativeView, aoRaw.nativeView, linear.nativeView, minmax.nativeView], target: out, textureLoadBindings: true });
+      if (diagnosticToken) recordPostStage(`S2:gtao-${options.directions}x${options.steps}`, diagnosticToken);
+      this.nativeAmbientOcclusionPasses += 1;
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
+    } finally {
+      for (const target of scratch) target.dispose();
     }
   }
 
@@ -5578,7 +5706,7 @@ export class WebGPUDevice implements RenderDevice {
       }
       exposureFrame = { ...frame, timeSeconds: frame.timeSeconds };
     }
-    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa"]);
+    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa", "ssao"]);
     for (const pass of options.passes) {
       if (!supported.has(pass.name)) throw new RenderDeviceError(`Native WebGPU postprocess does not support ${pass.name}`, "WEBGPU_POSTPROCESS_UNSUPPORTED", { pass: pass.name });
       if (pass.name === "taa" && (pass.options.temporal as WebGPUTemporalInputs | undefined)?.v2) {
@@ -5707,6 +5835,10 @@ export class WebGPUDevice implements RenderDevice {
           try { this.releaseNativePostEffectView(scopeId, viewId); } catch { /* Preserve the validation diagnostic. */ }
         };
       }
+      // v2 S2: ambient occlusion composes in linear HDR, before TAA, bloom and tone.
+      if (options.nativeAmbientOcclusion) {
+        track(this.executeWebGPUAmbientOcclusion(current, source, options.nativeAmbientOcclusion, options.postFrameContext?.frameId ?? 0, diagnosticToken));
+      }
       for (let passIndex = 0; passIndex < options.passes.length; passIndex += 1) {
         assertDofCurrent?.();
         runCustomsAt(passIndex);
@@ -5715,6 +5847,7 @@ export class WebGPUDevice implements RenderDevice {
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));
         else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
+        else if (pass.name === "ssao") track(this.executeWebGPUSsao(current, source, pass.options));
         else if (pass.name === "taa") {
           const temporal = pass.options.temporal as WebGPUTemporalInputs | undefined;
           if (!temporal) throw new RenderDeviceError("Native WebGPU TAA requires GPU temporal bindings", "TEMPORAL_NATIVE_REQUIRED");
@@ -6300,6 +6433,10 @@ export class WebGPUDevice implements RenderDevice {
     readonly targetViewOverride?: unknown;
     readonly nativeEffectBindings?: boolean;
     readonly exposureBindings?: boolean;
+    /** Explicit layout: uniforms at 0, 1-4 `unfilterable-float` textures from binding 2, no sampler. */
+    readonly textureLoadBindings?: boolean;
+    /** Per-view override for `textureLoadBindings`: a 4x depth attachment bound as `texture_depth_multisampled_2d`. */
+    readonly multisampledDepthViews?: readonly number[];
     readonly reuseUniforms?: boolean;
     readonly accesses?: readonly { readonly resource: object; readonly mode: "read" | "write" | "readwrite" }[];
     /** Internal resource lease and frame validation for externally visible presentation. */
@@ -6315,12 +6452,16 @@ export class WebGPUDevice implements RenderDevice {
     if (!targetView) {
       throw new RenderDeviceError("WebGPU post target has no native view", "NATIVE_POST_UNSUPPORTED", { label: target?.label ?? "canvas" });
     }
+    const loadBindings = Boolean(args.exposureBindings || args.textureLoadBindings);
     if (!this.device.createShaderModule || !this.device.createRenderPipeline || !this.device.createCommandEncoder
-      || (!args.exposureBindings && !this.device.createSampler) || !this.device.createBuffer || !this.device.createBindGroup) {
+      || (!loadBindings && !this.device.createSampler) || !this.device.createBuffer || !this.device.createBindGroup) {
       throw new RenderDeviceError("WebGPU fullscreen post requires shader/pipeline/buffer natives", "NATIVE_POST_UNSUPPORTED", { label: args.label });
     }
     if (args.exposureBindings && (!this.device.createBindGroupLayout || !this.device.createPipelineLayout || args.views.length < 1 || args.views.length > 2)) {
       throw new RenderDeviceError("Auto exposure requires explicit texture-load layouts", "WEBGPU_AUTO_EXPOSURE_LAYOUT_UNAVAILABLE");
+    }
+    if (args.textureLoadBindings && (!this.device.createBindGroupLayout || !this.device.createPipelineLayout || args.views.length < 1 || args.views.length > 4)) {
+      throw new RenderDeviceError("This post pass requires explicit texture-load layouts", "WEBGPU_TEXTURE_LOAD_LAYOUT_UNAVAILABLE", { label: args.label });
     }
     const scopeDevice = this.device as unknown as {
       pushErrorScope?(scope: string): void;
@@ -6332,16 +6473,18 @@ export class WebGPUDevice implements RenderDevice {
     try {
       const format = target ? webgpuTextureFormat(target.colorTexture.format) : this.presentationFormat;
       // Bind convention and source count change the pipeline layout.
-      const cacheKey = `${args.label}:${args.entryPoint}:${format}:${args.exposureBindings ? `exposure:${args.views.length}` : args.nativeEffectBindings ? "effect" : "sampled"}:${args.fragment}`;
+      const cacheKey = `${args.label}:${args.entryPoint}:${format}:${args.exposureBindings ? `exposure:${args.views.length}` : args.textureLoadBindings ? `load:${args.views.length}:${(args.multisampledDepthViews ?? []).join(",")}` : args.nativeEffectBindings ? "effect" : "sampled"}:${args.fragment}`;
       let pipeline = this.webgpuPostPipelines.get(cacheKey);
       if (!pipeline) {
         const vertexModule = this.device.createShaderModule({ label: `${args.label}-vs`, code: WEBGPU_POST_VERTEX_WGSL });
         const fragmentModule = this.device.createShaderModule({ label: `${args.label}-fs`, code: args.fragment });
-        const layout = args.exposureBindings
+        const layout = loadBindings
           ? this.device.createPipelineLayout!({ label: `${args.label}-pipeline-layout`, bindGroupLayouts: [this.device.createBindGroupLayout!({
             label: `${args.label}-texture-load-layout`, entries: [
               { binding: 0, visibility: 2, buffer: { type: "uniform" } },
-              ...args.views.map((_view, index) => ({ binding: index + 2, visibility: 2, texture: { sampleType: "unfilterable-float" as const, viewDimension: "2d" as const } }))
+              ...args.views.map((_view, index) => ({ binding: index + 2, visibility: 2, texture: args.multisampledDepthViews?.includes(index)
+                ? { sampleType: "depth" as const, viewDimension: "2d" as const, multisampled: true }
+                : { sampleType: "unfilterable-float" as const, viewDimension: "2d" as const } }))
             ]
           })] }) : "auto";
         pipeline = this.device.createRenderPipeline({
@@ -6353,7 +6496,7 @@ export class WebGPUDevice implements RenderDevice {
         this.nativeRenderPipelinesCreated += 1;
         this.webgpuPostPipelines.set(cacheKey, pipeline);
       }
-      if (!args.exposureBindings && !this.webgpuPostLinearSampler) {
+      if (!loadBindings && !this.webgpuPostLinearSampler) {
         this.webgpuPostLinearSampler = this.device.createSampler!({
           minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge"
         });
@@ -6377,7 +6520,7 @@ export class WebGPUDevice implements RenderDevice {
         const layout = pipeline.getBindGroupLayout?.(0);
         if (!layout) throw new RenderDeviceError("WebGPU post pipeline has no bind-group layout", "NATIVE_POST_UNSUPPORTED", { label: args.label });
         const group = this.device.createBindGroup({ label: `${args.label}-bind`, layout,
-          entries: args.exposureBindings
+          entries: loadBindings
             ? [{ binding: 0, resource: { buffer: uniformBuffer } }, ...args.views.map((view, index) => ({ binding: index + 2, resource: view }))]
             : args.nativeEffectBindings
               ? [...args.views.map((view, index) => ({ binding: index, resource: view })),

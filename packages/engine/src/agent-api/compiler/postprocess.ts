@@ -439,17 +439,32 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
 }
 
 /**
- * True when the post bag this scene would submit needs a sampleable depth texture that the WebGPU device does not
- * advertise. Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy
- * passes, and on the v2 chain the ao / god-rays / motion-blur / ssr / taa stages. Depth of field is exempt because the
- * WebGPU device runs it natively.
+ * True when the post bag this scene would submit needs a depth-reading stage the WebGPU device has no native pass for.
+ * Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy passes,
+ * and on the v2 chain the god-rays / motion-blur / ssr / taa stages. Depth of field and ambient occlusion (the legacy
+ * ssao pass and the v2 ao stage) are exempt because the WebGPU device runs them natively on its sampleable depth.
  */
 function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
-  if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
-      (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth)) return true;
-  if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
-  const bag = post.pipeline as { ao?: unknown; godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
-  return [bag.ao, bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
+  return webgpuDepthStagesMissing(post).length > 0;
+}
+
+/** The depth-reading stages behind `postLacksWebgpuDepth`, named for the fallback report. */
+function webgpuDepthStagesMissing(post: RendererPostProcessOptions): string[] {
+  const missing: string[] = [];
+  if (post.volumetricLight && !post.volumetricLight.depth) missing.push("volumetric-light");
+  if (post.contactShadow && !post.contactShadow.depth) missing.push("contact-shadow");
+  if (post.ssr && !post.ssr.depth) missing.push("legacy-ssr");
+  const v2Bag = post.v2 === true && post.pipeline !== null && typeof post.pipeline === "object";
+  // The native legacy ssao pass reads single-sample depth only; on a 4x forward target only the v2 GTAO stage
+  // (which loads the multisampled attachment) replaces it, so a legacy-only ssao on msaa still needs WebGL2.
+  if (post.ssao && !post.ssao.depth && (post.sampleCount ?? 1) > 1 && !(v2Bag && (post.pipeline as { ao?: unknown }).ao)) missing.push("legacy-ssao-msaa");
+  if (!v2Bag) return missing;
+  const bag = post.pipeline as { godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
+  if (bag.godRays) missing.push("god-rays");
+  if (bag.motionBlur) missing.push("motion-blur");
+  if (bag.ssr) missing.push("ssr");
+  if (bag.taa || bag.antiAliasing === "taa") missing.push("taa");
+  return missing;
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };
@@ -466,7 +481,8 @@ function webgpuPostGapForPostprocess(
 ): WebgpuPostGap | undefined {
   let post: RendererPostProcessOptions;
   try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return undefined; }
-  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
+  // "depth-textures" stays first for existing readers; the stage names say which pass lacks a WebGPU twin.
+  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", ...webgpuDepthStagesMissing(post)] };
   try { return dofGap?.(post); } catch { return undefined; }
 }
 

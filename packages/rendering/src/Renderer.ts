@@ -5854,6 +5854,9 @@ export class Renderer {
   }
   /** Allocates the shared forward-color target once per distinct configuration. */
   private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number, nativeDepthCoverage = false): RenderTarget {
+    // WebGPU cannot resolve depth into a public sampleable texture. Its 4x depth attachment stays
+    // bindable, and the native depth readers (ambient occlusion) load it as a multisampled texture.
+    if (requiresDepthTexture && sampleCount > 1 && this.device.kind === "webgpu") requiresDepthTexture = false;
     const depthPrecision = this.frameDepthPrecision();
     const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}:${nativeDepthCoverage ? "coverage" : "color"}:${depthPrecision.depthPrecision ?? "fixed"}`;
     const cached = this.forwardColorTarget;
