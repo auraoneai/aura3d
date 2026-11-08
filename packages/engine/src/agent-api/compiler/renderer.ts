@@ -647,8 +647,10 @@ export async function createProductionRuntimeSceneRenderer(
         : colorToAcesInputClearColor(snapshot.background ?? "#070b12")),
     // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
     // background; alpha carries `background(c, { toneMapped })` coverage.
-    outputClearColor: withPrd01ColorParsing(runtimeOwner, () => isPlainDefaultOutput(requestedOutput)
-      ? [...colorToNeutralInputClearColor(snapshot.background ?? "#070b12").slice(0, 3), snapshot.backgroundToneMapped === false ? 0 : 1] as unknown as readonly [number, number, number, number]
+    // Plain look: a tone-mapped clear (alpha 1) goes through PBR Neutral in the output pass, so it pre-inverts that
+    // curve; `background(c, { toneMapped: false })` (alpha 0) is written unmapped and keeps the linear colour.
+    outputClearColor: withPrd01ColorParsing(runtimeOwner, () => isPlainDefaultOutput(requestedOutput) && snapshot.backgroundToneMapped !== false
+      ? [...colorToNeutralInputClearColor(snapshot.background ?? "#070b12").slice(0, 3), 1] as unknown as readonly [number, number, number, number]
       : outputClearColor(snapshot)),
     // T0-28: the app's resolved flags bind to this renderer's device, so two
     // apps on one page never read each other's flags through FrameGraph.
