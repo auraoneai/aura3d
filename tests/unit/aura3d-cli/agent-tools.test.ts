@@ -232,6 +232,18 @@ void notAnExport;
     expect(await validateCommand(["--no-types", "--strict"], io(warnOnly))).toBe(1);
     expect(await validateCommand(["missing.ts"], io(dir))).toBe(2);
   });
+
+  test("module-level await on app.ready() is an error (a default vite build deadlocks: black page), also for a named file outside src/", async () => {
+    const tla = GOOD.replace("void app.ready();", "await app.ready();");
+    const report = runValidate({ projectDir: project({ "package.json": "{}", "src/main.ts": tla }), types: false });
+    expect(report.findings.find((f) => f.code === "LINT_TOP_LEVEL_AWAIT_READY")).toMatchObject({ severity: "error", location: { file: "src/main.ts", line: 9 } });
+    expect(report.ok).toBe(false);
+    const dir = project({ "package.json": "{}", "src/main.ts": GOOD, "examples/demo/main.ts": tla });
+    const named = io(dir);
+    expect(await validateCommand(["examples/demo/main.ts", "--no-types"], named)).toBe(1);
+    expect(named.out[0]).toMatch(/LINT_TOP_LEVEL_AWAIT_READY examples\/demo\/main.ts:9/);
+    expect(runValidate({ projectDir: project({ "package.json": "{}", "src/main.ts": GOOD.replace("void app.ready();", "void app.ready().then(() => {});") }), types: false }).ok).toBe(true);
+  });
 });
 
 // ---- render ------------------------------------------------------------------------------------------------------------

@@ -75,6 +75,11 @@ describe("verify lint rules", () => {
     // module-level await can deadlock a single-entry bundle
     expect(codes(`const app = createAuraApp("#app", {}); await app.ready();`)).toEqual(["LINT_TOP_LEVEL_AWAIT_READY"]);
     expect(codes(`const app = createAuraApp("#app", {}); app.ready().then(() => {});`)).toEqual([]);
+    // anything awaited at module scope that waits on the mount deadlocks the same way
+    for (const wait of ["app.ready().then(() => {})", "Promise.all([app.ready(), 1])", "app.readyStrict()", "app.readiness({ stage: \"first-frame\" })", "game.ready()", "warmPrograms(app)", "app.precompile()"]) {
+      expect(codes(`const app = createAuraApp("#app", {}); void app.ready(); await ${wait};`), wait).toEqual(["LINT_TOP_LEVEL_AWAIT_READY"]);
+    }
+    expect(codes(`const app = createAuraApp("#app", {}); void app.ready(); await fetch("/x"); const later = async () => { await app.ready(); };`)).toEqual([]);
     expect(codes(`const app = createAuraApp("#app", {}); app.ready();`)).toEqual(["LINT_READY_NOT_AWAITED"]);
   });
 

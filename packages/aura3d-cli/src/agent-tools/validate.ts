@@ -284,6 +284,9 @@ export function runValidate(options: ValidateOptions): ValidateReport {
   const findings: ToolFinding[] = [];
   const lints = all.length ? lintProject(projectDir) : lintSources(targets, { fileExists: (url) => existsSync(join(projectDir, "public", url.replace(/^\//, "").replace(/\?.*$/, ""))) });
   for (const lint of lints) if (inTargets(lint.location.file)) findings.push(finding(lint.code, lint.message, lint.location));
+  // A named file the src/ walker did not collect (examples/x.ts in a project with src/) still gets the per-file lint rules.
+  const uncollected = all.length ? targets.filter((t) => !all.some((s) => s.path === t.path)) : [];
+  if (uncollected.length) for (const lint of lintSources(uncollected, { group: "scene" })) findings.push(finding(lint.code, lint.message, lint.location));
   for (const file of parsed) findings.push(...checkColors(file));
   findings.push(...checkSceneHints(parsed, callees).filter((f) => inTargets(f.location?.file)));
   let typeCheck: ValidateReport["typeCheck"] = "skipped";
