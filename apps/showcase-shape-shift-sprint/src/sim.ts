@@ -152,6 +152,10 @@ export class ShapeShiftSim {
     for (let i = 0; i < POOL.particles; i++) {
       this.particles.push({ visible: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, max: 1, scale: 0, color: "#ffffff" });
     }
+    // Lay the road for the title screen so the menu sits over the 3D scene, not an empty sky.
+    // fillRoad draws no RNG, so the gameplay stream is unchanged; begin() rebuilds the road.
+    this.lastSegmentZ = 20;
+    this.fillRoad();
   }
 
   /** Start or restart: full state reset, steering target AND drag state re-centred (C4). */

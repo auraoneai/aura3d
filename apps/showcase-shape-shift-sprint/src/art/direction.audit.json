@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-shape-shift-sprint/src/art/direction.ts",
-  "sourceSha256": "d57303653baf6614793d6e1cb7ca0511424ceff7443c0cbb1a91003eb2a2a180",
+  "sourceSha256": "8110a0d68267a8d52ba7816f54d4edc1b93362310ce88ac1d1a83bf6a6c364d1",
   "id": "shape-shift-sprint",
   "genre": "platformer",
   "signatureEffect": "Candy primaries on cream: morph burst and shape-confetti trail behind the player, hole rims glowing in the matching shape colour under a day gradient sky.",
@@ -39,7 +39,7 @@
   "direction": {
     "id": "shape-shift-sprint",
     "genre": "platformer",
-    "fantasy": "Sprint a shape-shifting toy down a cream candy road, fitting through the hole that matches your form under a bright day sky.",
+    "fantasy": "Sprint a shape-shifting toy along a candy sky bridge past floating toy islands, fitting through the hole that matches your form.",
     "rebuildTier": "S-presentation",
     "wave": 4,
     "references": [
