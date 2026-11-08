@@ -1074,11 +1074,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "919fa735f1901b3c3fff00f495c807422f26b63ff724ba80e5f5cd59ebf9ffad"
+          "sha256": "bb51a1479635dc18102dcb7afe138c163cb23dcf1ee70ff59f94e4a2940e2407"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "2ced99c21035e7c33b2330aae4823e2429d3c46eef479893a120a3a9ed9827e4"
+          "sha256": "d056bf5c3adb144a83cce71b637ef55b2f971fd3b0515e3c95a112b636095df3"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
@@ -1102,7 +1102,7 @@
         },
         {
           "path": "packages/game/src/createGameCore.ts",
-          "sha256": "304828cf5a28c2a433aba808ed76e4e25f8d57622ff6b0f1f2f29bf631799a58"
+          "sha256": "5e85dec2a44037a642382077d653c4d26cccec3240bdb67767cd9a2ab8048b6a"
         },
         {
           "path": "packages/game/src/touch/TouchControls.ts",
@@ -2087,7 +2087,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "4721677ad5d02552448df65cad7df9b09a40e7c0d9c575c6461c1e5ecba02670"
+        "sha256": "29b532645405c31c7f790c30351b895102ced4cbd7ad750f33703423902d9868"
       },
       "sourceDependencies": [
         {
@@ -2403,7 +2403,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "a08a4a70de5f6ac367d9bec5e1eaecc595423d0be1e5f59270dc344625300394"
+        "sha256": "6225e681a98db571913fc4062d415a2f904317e5d6000c6edb7232dcea8f14f5"
       },
       "sourceDependencies": [
         {
@@ -2923,7 +2923,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "919fa735f1901b3c3fff00f495c807422f26b63ff724ba80e5f5cd59ebf9ffad"
+          "sha256": "bb51a1479635dc18102dcb7afe138c163cb23dcf1ee70ff59f94e4a2940e2407"
         }
       ],
       "regions": [
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
         }
       ],
       "regions": [
@@ -3848,7 +3848,7 @@
       },
       "source": {
         "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "2791060dfc76f3cab79809e88cfb905c072fd8a44cc2a37d0cdb14a4da99a22b"
+        "sha256": "4f3311eb4a7c0ae12dfa27aff453f68e9d6a927c952d7a4c09553f7aee0aed48"
       },
       "sourceDependencies": [
         {
@@ -4384,7 +4384,7 @@
       },
       "source": {
         "path": "apps/showcase-roadster-rush/src/main.ts",
-        "sha256": "bef48af1f1804afbd9c887ad29d405111054fbc64152a27a54dd0072b7d708b1"
+        "sha256": "22ee137bfec8076b238ffdb587836b190e7b6a5e1cd2a07c63e1bfee07cfb6bf"
       },
       "sourceDependencies": [
         {
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cbe47d9aa126ba78f67f82e1368fabbf8d5fd24ea612dff87a07e94376d24561"
+          "sha256": "6249ee5735fd7c14cf326d3f02e05bab67c2371ce4493c0a65990c43703f100d"
         }
       ],
       "regions": [
@@ -8055,7 +8055,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/customMaterial.ts",
-          "sha256": "27c7b230c4e9aeb90e575ac9170750c43a7e67ec9e4a78f013e17c4d8fd2f98d"
+          "sha256": "80f0b76fddc45bb3f8d69194ae54dc9a605d6d8c0af77a24034e7ffd25aeeed1"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "4e382709833f60ead4d04790b78f4cc4619054a72ce22b15c9a9af9b9a55e712"
+          "sha256": "23f0e140856df7c70647f4dc3393a76308778be556e6371c6f71cf5a11a7724b"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
