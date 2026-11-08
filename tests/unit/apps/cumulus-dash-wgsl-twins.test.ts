@@ -13,8 +13,8 @@ const specs: readonly (readonly [string, AuraCustomMaterialSpec, boolean])[] = [
 describe("Cumulus Dash WGSL twins (A3/W6: sky dome and cloud-shadowed valley)", () => {
   it.each(specs)("%s: the WGSL twin matches the GLSL program's inputs and bindings", checkWgslTwin);
   it("keeps the GLSL stages the WebGL2 backend draws byte for byte", () => checkGlslUnchanged(specs));
-  it("lists the programs still without a twin (they keep ?backend=webgpu on the WebGL2 fallback)", () => {
+  it("only the default gl_PointSize sprites lack a twin (a requested WebGPU backend draws their quad variants instead)", () => {
     const missing = allProgramSpecs().filter(({ spec }) => !spec.wgsl).map(({ name }) => name);
-    expect(missing).toEqual(["puddle", "water", "waterfall", "ball", "scenery", "scenery-original", "warn", "shadow", "glow", "puff"]);
+    expect(missing).toEqual(["glow", "puff"]);
   });
 });

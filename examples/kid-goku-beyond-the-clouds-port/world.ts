@@ -28,6 +28,7 @@ import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, build
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
 import { buildWaterfall, waterfallLip, waterfallPath } from "./waterfall";
+import { spritePoolGeometry, spritePoolHandle, spriteQuads } from "./sprites";
 import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
@@ -45,7 +46,6 @@ function meshGeometry(m: Mesh) {
   return geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), attributes: { tone: { itemSize: 3, data: tone } } });
 }
 const plainGeometry = (m: Mesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
-
 export interface WorldStats { drawNodes: number; chunks: number; triangles: number }
 /** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
 export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; /** Share of the legs driven by the planted-foot IK gait (0 = clip only, 1 = fully planted). */ weight: number; /** Steps per second. */ cadence: number; /** Seconds a foot stays planted. */ stance: number; /** Forward lean of the hips (rad). */ lean: number; overspeed: boolean }
@@ -214,6 +214,7 @@ const HUT_HEIGHT = 5.4;
 const HUT_SINK = 0.15;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
+  const quads = spriteQuads();
   const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
   addLookNodes(b, ACTIVE_LOOK);
   let triangles = 0, chunks = 0, drawNodes = 0;
@@ -363,24 +364,21 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const rexCreature = ch.creatures.find((c) => c.type === "trex");
   [...(rexCreature?.bites ?? []).map((s) => ({ s, kind: "bite" })), ...(rexCreature?.swipes ?? []).map((s) => ({ s, kind: "swipe" }))].sort((x, y) => x.s - y.s).forEach((_, i) => warn(`warn-rex-${i}`, false));
 
-  b.add(geometry.custom(geometry.dynamic({
-    positions: f32(new Array(ORB_CAP * 3).fill(0)), topology: "points",
-    attributes: { tone: { itemSize: 3, data: f32(new Array(ORB_CAP * 3).fill(1)) }, aSize: { itemSize: 1, data: f32(new Array(ORB_CAP).fill(0)) }, aAlpha: { itemSize: 1, data: f32(new Array(ORB_CAP).fill(0)) } }
-  }), { name: "orbs", material: material.custom(glowSpec()) }).runtime({ id: "orbs" }));
-  const fx = new Fx();
+  b.add(geometry.custom(spritePoolGeometry(ORB_CAP, quads), { name: "orbs", material: material.custom(glowSpec(quads)) }).runtime({ id: "orbs" }));
+  const fx = new Fx(quads);
   fx.addTo(b);
 
-  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }, cullables) };
+  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }, cullables, quads) };
 }
 
 /* ------------------------------------------------------------------------------------- runtime */
-function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, cullables: readonly Cullable[]): WorldRuntime {
+function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, cullables: readonly Cullable[], quads = false): WorldRuntime {
   const cam = app.camera;
   if (!cam) throw new Error("cloud-runner port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
   const hero = node("hero"), cloud = node("sky-cloud"), staff = node("staff"), sky = node("sky"), valley = node("valley");
-  const orbs = node("orbs");
+  const orbs = spritePoolHandle(node("orbs"), quads);
   const orbPos = new Float32Array(ORB_CAP * 3), orbTone = new Float32Array(ORB_CAP * 3), orbSize = new Float32Array(ORB_CAP), orbAlpha = new Float32Array(ORB_CAP);
   const rexAttacks = [...(ch.creatures.find((c) => c.type === "trex")?.bites ?? []).map((s) => ({ s, kind: "bite" as const })), ...(ch.creatures.find((c) => c.type === "trex")?.swipes ?? []).map((s) => ({ s, kind: "swipe" as const }))].sort((x, y) => x.s - y.s);
   const dives = ch.creatures.filter((c) => c.type === "pteranodon");
