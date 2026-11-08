@@ -75,6 +75,8 @@ export interface VerifyOptions {
   readonly chromePath?: string;
   readonly softwareGl?: boolean;
   readonly route?: string;
+  /** Render an already running page (a dev server, a preview URL) instead of serving `dist/`. The serve step is then a no-op. */
+  readonly url?: string;
   readonly width?: number;
   readonly height?: number;
   readonly settleMs?: number;
@@ -200,7 +202,11 @@ export async function runVerify(options: VerifyOptions): Promise<VerifyReport> {
   const wantsBrowser = !skip.has("render") || !skip.has("inspect");
   await step("serve", async () => {
     if (!wantsBrowser) return "no browser step requested";
-    if (!existsSync(join(distDir, "index.html"))) { findings.push(makeFinding("SERVE_FAILED", `No index.html in ${basename(distDir)}/ (did the build step run?).`)); return; }
+    if (options.url) { origin = options.url; return `external page ${options.url}`; }
+    // A multi-page dist may have no root index.html; then the requested route's own page must exist.
+    const routePath = (options.route ?? "/").replace(/[?#].*$/, "");
+    const entryHtml = /\.html?$/.test(routePath) ? routePath.replace(/^\//, "") : join(routePath.replace(/^\//, ""), "index.html");
+    if (!existsSync(join(distDir, "index.html")) && !existsSync(join(distDir, entryHtml))) { findings.push(makeFinding("SERVE_FAILED", `No index.html in ${basename(distDir)}/ (did the build step run?).`)); return; }
     try { ({ server, origin } = await startStaticServer(distDir)); return origin; }
     catch (error) { findings.push(makeFinding("SERVE_FAILED", String((error as Error).message ?? error))); }
   });
@@ -217,7 +223,7 @@ export async function runVerify(options: VerifyOptions): Promise<VerifyReport> {
     await step("render", async () => {
       if (!origin) return "no server";
       try {
-        capture = await driver.capture(`${origin}${options.route ?? "/"}`, { ...viewport, settleMs: options.settleMs ?? 2_000, motionGapMs: options.motionGapMs ?? 1_000, timeoutMs: options.timeoutMs ?? 30_000, readyTimeoutMs: options.readyTimeoutMs ?? 12_000 });
+        capture = await driver.capture(options.url ?? `${origin}${options.route ?? "/"}`, { ...viewport, settleMs: options.settleMs ?? 2_000, motionGapMs: options.motionGapMs ?? 1_000, timeoutMs: options.timeoutMs ?? 30_000, readyTimeoutMs: options.readyTimeoutMs ?? 12_000 });
       } catch (error) {
         const message = String((error as Error).message ?? error).split("\n")[0]!;
         findings.push(makeFinding(error instanceof BrowserUnavailableError ? "BROWSER_UNAVAILABLE" : "RENDER_NAVIGATION_FAILED", message));

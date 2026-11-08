@@ -23,6 +23,7 @@ Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.
 | Models (catalog, your GLB, Meshy) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
 | Shipping it | [`verification.md`](verification.md), [`deployment.md`](deployment.md), [`rendering-proof-required.md`](rendering-proof-required.md) |
 | One-command check of a project (typecheck, assets, lint, build, render in Chrome, inspect; one JSON report) | [`verify-loop.md`](verify-loop.md) (`aura3d verify --json`, `--explain <code>`) |
+| Installed API surface, a working example to copy, static checks, a screenshot with diagnostics | [`agent-tools.md`](agent-tools.md) (`aura3d info`, `examples`, `validate`, `render`) |
 
 Skills hold the procedures; load one when its signal matches (canonical sources `packages/aura3d-cli/skills/`; `pnpm skills:sync` mirrors them to `.cursor/skills`, `.claude/skills`, `.agents/skills` and the `create-aura3d` bundle; `pnpm check:skills` gates them; downstream projects get them from `npx @aura3d/cli@latest init --agent all --skills core|all|none`):
 
