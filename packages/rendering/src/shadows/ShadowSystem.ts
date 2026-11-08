@@ -483,7 +483,7 @@ export class Prd02ShadowSystem {
       const plan = pass.prepare(context);
       const draw = { pass, plan, context };
       all.push(draw);
-      pass.validatePrepared(context, plan);
+      // Validated once below, after every plan exists (a later preparation can invalidate an earlier plan anyway).
       return draw;
     };
     try {
@@ -512,7 +512,8 @@ export class Prd02ShadowSystem {
         if (skip?.has(fit.index)) continue;
         const draw = prepared?.cascades.get(fit.index);
         if (prepared && !draw) throw new RenderDeviceError("Prepared cascade depth is missing", "SHADOW_PREPARED_PLAN_MISSING", { cascade: fit.index });
-        if (draw) draw.pass.validatePrepared(draw.context, draw.plan);
+        // Checked after the target switch (which could affect shared resources) and again by executePrepared after
+        // the clear; a stale plan throws either way and the finally block restores the previous target.
         this.device.setRenderTarget(target);
         if (draw) draw.pass.validatePrepared(draw.context, draw.plan);
         this.device.clearRenderTarget?.([1, 1, 1, 1]);
@@ -532,7 +533,6 @@ export class Prd02ShadowSystem {
     const target = this.ensureAtlasTarget();
     const prevTarget = this.device.getRenderTarget?.() ?? null;
     try {
-      for (const draw of prepared?.tiles ?? []) draw.pass.validatePrepared(draw.context, draw.plan);
       this.device.setRenderTarget(target);
       for (const draw of prepared?.tiles ?? []) draw.pass.validatePrepared(draw.context, draw.plan);
       this.device.clearRenderTarget?.([1, 1, 1, 1]);

@@ -166,6 +166,13 @@ function joinPath(parent: string, key: string | number | undefined): string {
   return key === undefined ? parent : typeof key === "number" ? `${parent}[${key}]` : `${parent}.${key}`;
 }
 
+const memberNameSets = new WeakMap<ShaderDataLayout, ReadonlySet<string>>();
+function memberNames(layout: ShaderDataLayout): ReadonlySet<string> {
+  let names = memberNameSets.get(layout);
+  if (!names) { names = new Set(layout.members!.map((member) => member.name)); memberNameSets.set(layout, names); }
+  return names;
+}
+
 const LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
 
 /** The success condition of `sequence`, without a path. */
@@ -291,7 +298,18 @@ export function writeShaderData(
       case "array": {
         const items = values(input, type.length, parent, key);
         const path = joinPath(parent, key);
-        for (let i = 0; i < type.length; i += 1) store(current.element!, items[i], offset + i * current.stride!, path, i);
+        const element = current.element!, stride = current.stride!, elementType = element.type;
+        if (typeof elementType !== "string" && elementType.kind === "vector" && elementType.element === "f32") {
+          // Arrays of f32 vectors (sample kernels, packed light data) without a recursive call per element.
+          const width = elementType.length;
+          for (let i = 0; i < type.length; i += 1) {
+            const at = offset + i * stride;
+            const vector = values(items[i], width, path, i);
+            for (let c = 0; c < width; c += 1) storeF32(vector[c], at + c * 4, path, i, c);
+          }
+          return;
+        }
+        for (let i = 0; i < type.length; i += 1) store(element, items[i], offset + i * stride, path, i);
         return;
       }
       case "struct": {
@@ -306,9 +324,8 @@ export function writeShaderData(
           }
           store(member.layout, record[member.name], offset + member.offset, path, member.name);
         }
-        for (const key of Object.keys(record)) {
-          if (!current.members!.some((member) => member.name === key)) fail("SHADER_DATA_VALUE", `${path}.${key}`, "unknown field");
-        }
+        const names = memberNames(current);
+        for (const key of Object.keys(record)) if (!names.has(key)) fail("SHADER_DATA_VALUE", `${path}.${key}`, "unknown field");
       }
     }
   }
