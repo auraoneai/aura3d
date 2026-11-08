@@ -5,10 +5,44 @@
  */
 import type { AuraTransformSpec } from "@aura3d/engine";
 import { TAIL_TRAIL } from "./vfx";
+import { WGSL_CLIP, WGSL_INSTANCE_INPUTS, wgslStage } from "../../showcase-port-shared/wgsl-twins";
 
 export const TAIL_TRAIL_ID = "player-tail-trails";
 const SEGMENTS = 10;
 export const TAIL_TRAIL_CAPACITY = SEGMENTS * 2;
+
+/** A3/W6: the WGSL twin of the strip program for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). */
+const TAIL_TRAIL_WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct TailTrailVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) across: f32,
+  @location(1) along: f32,
+  @location(2) strength: f32,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, ${WGSL_INSTANCE_INPUTS}) -> TailTrailVarying {
+  var out: TailTrailVarying;
+  let m = aura.u_modelMatrix * mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let center = (m * vec4<f32>(0.0, 0.0, 0.0, 1.0)).xyz;
+  let axis = a3dMat3Mul(aura.u_modelMatrix, a_instanceMatrix2.xyz);
+  let width = length(a_instanceMatrix0.xyz);
+  out.strength = length(a_instanceMatrix1.xyz);
+  var p = center + axis * a_position.z;
+  var side = cross(axis, aura.u_cameraPosition - p);
+  let sideLen = length(side);
+  side = select(vec3<f32>(1.0, 0.0, 0.0), side / sideLen, sideLen > 1e-5);
+  p = p + side * a_position.x * width;
+  out.across = a_position.x * 2.0;
+  out.along = a_position.z + 0.5;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * vec4<f32>(p, 1.0));
+  return out;
+}`);
+
+const TAIL_TRAIL_WGSL_FRAGMENT = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vAcross: f32, @location(1) vAlong: f32, @location(2) vStrength: f32) -> @location(0) vec4<f32> {
+  let edge = max(0.0, 1.0 - vAcross * vAcross);
+  let alpha = clamp(vStrength, 0.0, 1.0) * edge * edge * mix(0.8, 1.0, vAlong);
+  return vec4<f32>(vec3<f32>(1.4, 0.035, 0.02), alpha);
+}`);
 
 /** Camera-facing additive strips; instance y-scale carries the fading strength. */
 export function tailTrailMaterial() {
@@ -44,6 +78,7 @@ void main() {
   outColor = vec4(vec3(1.4, 0.035, 0.02), alpha);
 }`
     },
+    wgsl: { vertex: TAIL_TRAIL_WGSL_VERTEX, fragment: TAIL_TRAIL_WGSL_FRAGMENT },
     uniforms: {},
     transparent: true,
     depthWrite: false,

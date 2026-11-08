@@ -4,6 +4,7 @@
  * programs are exercised by the headlight beam on the same page.
  */
 import type { CustomSpec } from "./headlights";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_FOG, WGSL_MATH, WGSL_NOISE, WGSL_SKY, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
 
 export const SUN_DIR: readonly [number, number, number] = (() => {
   const v = [88, 38, 50];
@@ -37,8 +38,38 @@ void main() {
   outColor = vec4(col, 1.0);
 }`;
 
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+export const SKY_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct SkyVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) w: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>) -> SkyVarying {
+  var out: SkyVarying;
+  let wp = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
+  out.w = wp.xyz;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * wp);
+  return out;
+}`);
+
+export const SKY_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_COLOR], /* wgsl */ `
+fn lin(c: vec3<f32>) -> vec3<f32> { return a3dSrgbToLinear(c); }
+@fragment fn fs_main(@location(0) vW: vec3<f32>) -> @location(0) vec4<f32> {
+  let dir = normalize(vW - aura.u_cameraPosition);
+  let h = max(dir.y, 0.0);
+  let horizon = lin(vec3<f32>(0.941, 0.863, 0.753));
+  let mid = lin(vec3<f32>(0.961, 0.835, 0.690));
+  let top = lin(vec3<f32>(0.914, 0.753, 0.549));
+  var col = mix(horizon, mid, vec3<f32>(smoothstep(0.0, 0.22, h)));
+  col = mix(col, top, vec3<f32>(smoothstep(0.18, 0.85, h)));
+  let s = max(dot(dir, normalize(aura.u_sunDirection)), 0.0);
+  col = col + lin(vec3<f32>(1.0, 0.82, 0.55)) * (0.55 * a3dPow(s, 18.0) + 0.9 * a3dPow(s, 220.0));
+  return vec4<f32>(col, 1.0);
+}`);
+
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
   uniforms: { sunDirection: { type: "color3", value: [SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]] } },
   depthWrite: false,
   depthTest: true,
@@ -60,8 +91,27 @@ void main() {
   outColor = vec4(a3dSrgbToLinear(texture(farPalette, vUv).rgb), 1.0);
 }`;
 
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+export const FAR_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct FarVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> FarVarying {
+  var out: FarVarying;
+  out.uv = a_uv;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)));
+  return out;
+}`);
+
+export const FAR_FRAGMENT_WGSL = wgslStage([WGSL_COLOR], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  return vec4<f32>(a3dSrgbToLinear(textureSample(u_farPaletteTexture, u_farPaletteSampler, vUv).rgb), 1.0);
+}`);
+
 export const farCitySpec = (palette: unknown): CustomSpec => ({
   glsl: { vertex: FAR_VERTEX, fragment: FAR_FRAGMENT },
+  wgsl: { vertex: FAR_VERTEX_WGSL, fragment: FAR_FRAGMENT_WGSL },
   uniforms: { farPalette: { type: "texture2d", value: palette as never } },
   side: "double"
 });
@@ -100,6 +150,28 @@ void main() {
   outColor = vec4(col, 1.0);
 }`;
 
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+export const SHIFT_SKY_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_SKY], /* wgsl */ `
+@fragment fn fs_main(@location(0) vW: vec3<f32>) -> @location(0) vec4<f32> {
+  let dir = normalize(vW - aura.u_cameraPosition);
+  let h = max(dir.y, 0.0);
+  var col = mix(aura.u_skyHorizon, aura.u_skyMid, vec3<f32>(smoothstep(0.0, 0.2, h)));
+  col = mix(col, aura.u_skyTop, vec3<f32>(smoothstep(0.16, 0.8, h)));
+  let sd = normalize(aura.u_sunDirection);
+  let glow = a3dSunGlow(dir, sd, 6.0) * 0.55 + a3dSunGlow(dir, sd, 40.0) * 0.6;
+  col = col + aura.u_skyGlow * glow * smoothstep(-0.12, 0.05, sd.y);
+  col = col + aura.u_skyGlow * 3.0 * a3dSunDisc(dir, sd, 0.012) * smoothstep(-0.02, 0.02, sd.y);
+  let cp = dir.xz / max(dir.y + 0.12, 0.05) * 0.9 + vec2<f32>(aura.u_skyDrift, 0.0);
+  let n = a3dFbm2(cp, 5);
+  let cov = smoothstep(1.0 - aura.u_skyClouds, 1.0 - aura.u_skyClouds + 0.32, n) * smoothstep(0.02, 0.2, h);
+  let lit = 0.55 + 0.45 * clamp(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z) + vec3<f32>(1e-4)), normalize(vec3<f32>(sd.x, 0.0, sd.z) + vec3<f32>(1e-4))), 0.0, 1.0);
+  let cloud = mix(aura.u_skyMid * 0.85, aura.u_skyGlow * 1.1, vec3<f32>(lit * 0.6)) * (0.75 + 0.25 * n);
+  col = mix(col, cloud, vec3<f32>(cov * 0.85));
+  let stars = a3dStars(dir, 0.0035) * smoothstep(0.17, 0.35, h) * aura.u_skyStars * (1.0 - cov);
+  col = col + vec3<f32>(0.85, 0.9, 1.0) * stars * 1.6;
+  return vec4<f32>(col, 1.0);
+}`);
+
 export interface ShiftSkyUniforms {
   sunDirection: readonly [number, number, number];
   skyHorizon: readonly [number, number, number];
@@ -113,6 +185,7 @@ export interface ShiftSkyUniforms {
 
 export const shiftSkySpec = (u: ShiftSkyUniforms): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SHIFT_SKY_FRAGMENT },
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SHIFT_SKY_FRAGMENT_WGSL },
   uniforms: {
     sunDirection: { type: "color3", value: [...u.sunDirection] },
     skyHorizon: { type: "color3", value: [...u.skyHorizon] },
@@ -161,6 +234,34 @@ void main() {
   outColor = vec4(a3dFogExp2(base, farFogColor, dist, farFogDensity), 1.0);
 }`;
 
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+export const SHIFT_FAR_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct ShiftFarVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+  @location(1) w: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> ShiftFarVarying {
+  var out: ShiftFarVarying;
+  out.uv = a_uv;
+  let wp = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
+  out.w = wp.xyz;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * wp);
+  return out;
+}`);
+
+export const SHIFT_FAR_FRAGMENT_WGSL = wgslStage([WGSL_COLOR, WGSL_NOISE, WGSL_FOG], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>, @location(1) vW: vec3<f32>) -> @location(0) vec4<f32> {
+  var base = a3dSrgbToLinear(textureSample(u_farPaletteTexture, u_farPaletteSampler, vUv).rgb) * aura.u_farLight;
+  let cell = floor(vec2<f32>((vW.x + vW.z) / 6.0, vW.y / 3.5));
+  let lit = step(1.0 - aura.u_farLitFraction, a3dHash21(cell)) * step(6.0, vW.y);
+  let f = fract(vec2<f32>((vW.x + vW.z) / 6.0, vW.y / 3.5));
+  let pane = step(0.25, f.x) * step(f.x, 0.75) * step(0.3, f.y) * step(f.y, 0.8);
+  base = base + vec3<f32>(1.0, 0.72, 0.38) * lit * pane * aura.u_farWindows * 2.2;
+  let dist = length(vW - aura.u_cameraPosition);
+  return vec4<f32>(a3dFogExp2(base, aura.u_farFogColor, dist, aura.u_farFogDensity), 1.0);
+}`);
+
 export interface ShiftFarUniforms {
   farLight: number;
   farFogColor: readonly [number, number, number];
@@ -171,6 +272,7 @@ export interface ShiftFarUniforms {
 
 export const shiftFarSpec = (palette: unknown, u: ShiftFarUniforms): CustomSpec => ({
   glsl: { vertex: SHIFT_FAR_VERTEX, fragment: SHIFT_FAR_FRAGMENT },
+  wgsl: { vertex: SHIFT_FAR_VERTEX_WGSL, fragment: SHIFT_FAR_FRAGMENT_WGSL },
   uniforms: {
     farPalette: { type: "texture2d", value: palette as never },
     farLight: { type: "f32", value: u.farLight },
