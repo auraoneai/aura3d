@@ -1,6 +1,7 @@
 import { camera } from "@aura3d/engine";
 import type { Vec3 } from "../contract/units";
 import { lookMode } from "../ui/lookMode";
+import { labCameraOptions, readLabFlags } from "../../shared/lab-flags";
 
 export const CAMERA_EYE: Vec3 = [0, 25.5, 37.1];
 export const CAMERA_TARGET: Vec3 = [0, 0, 0.7];
@@ -77,7 +78,7 @@ export function cameraFovForAspect(aspect: number, rig: BroadcastCameraRig = CAM
 }
 
 export function cameraNode(rig: BroadcastCameraRig = CAMERA_CLASSIC) {
-  return camera.perspective({ fov: rig.fovDeg, near: CAMERA_NEAR, far: CAMERA_FAR, position: [...rig.eye], target: [...rig.target] });
+  return camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), fov: rig.fovDeg, near: CAMERA_NEAR, far: CAMERA_FAR, position: [...rig.eye], target: [...rig.target] });
 }
 
 /**

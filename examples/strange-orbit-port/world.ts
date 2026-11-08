@@ -35,6 +35,7 @@ import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 export { lehmer };
 
@@ -245,7 +246,7 @@ export function buildWorld(options: WorldOptions): World {
   const off = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("off") ?? "" : "").split(",").filter(Boolean));
   const builder: Scene = scene()
     .background("#05060d")
-    .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: 72, near: 0.15, far: 2400 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 40, 0], target: [0, 0, 0], fov: 72, near: 0.15, far: 2400 }));
   // GU47 SO47-L1/L2: the rig comes from the look table. The custom shaders read these same lights (a3d_lights/a3d_scene),
   // so the GLBs and the painted surfaces share one key. Gouache: raking 18-degree white key from the left of the start
   // grid with 3 PCSS cascades, warm unshadowed planetshine from the gas giant, cool hemisphere ground. `?look=original`
