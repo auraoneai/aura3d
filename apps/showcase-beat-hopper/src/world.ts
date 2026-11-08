@@ -3,7 +3,9 @@
  * a synthwave night stage (`stage.ts`: striped sunset sun, neon grid floor, city, palms, arches, floating islands,
  * LED equalizer meters, searchlights, haze) around an elevated track, plus bloom, grade and vignette. Road tiles live in a scrolling frame (written once, node moved by
  * `dist % SEGMENT_LENGTH`); beat stripes and obstacles are placed per frame from the deterministic beat-grid formula
- * `z = (crossTime - t) * speed`. Particles and pulse rings are presentation-only pools with their own LCG — they never
+ * `z = (crossTime - t) * speed`. Three lanes read from dashed lavender dividers; every obstacle row draws one lane-wide
+ * piece per blocked lane (crates, trenches, duck bars, tall red walls) so the open lanes are obvious, and beat orbs
+ * float in their lanes. Particles and pulse rings are presentation-only pools with their own LCG — they never
  * consume gameplay RNG draws. The whole world pulses on the sim beat; PERFECT judgements fire expanding timing rings.
  */
 import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
@@ -11,10 +13,11 @@ import {
   Batch, flatSpec, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
 } from "../../../examples/shared/runner-kit/index";
-import { CONFIG, obstacleZ, type BeatHopperSim, type ObstacleType } from "./sim";
+import { CONFIG, LANES, laneBit, laneX, obstacleZ, type BeatHopperSim, type ObstacleType } from "./sim";
 import { LOOK, beatPulse, linear } from "./look";
 import {
-  PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH, barMesh, blockMesh, boxMesh, gapMesh, mergeMeshes, playerMesh, ringMesh, sphereMesh
+  DASH_SIZE, ORB_RADIUS, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
+  barMesh, blockMesh, boxMesh, gapMesh, mergeMeshes, playerMesh, ringMesh, sphereMesh, wallMesh
 } from "./meshes";
 import { poseScale, type CameraPose, type Shown } from "./presentation";
 import { addStage, transformMesh } from "./stage";
@@ -24,6 +27,12 @@ type Scene = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
 const STRIPES = 40;
+/** Lane divider dashes: two lines, DASHES each, one every DASH_PERIOD metres. */
+const DASHES = 36;
+const DASH_PERIOD = 4;
+/** Obstacle pieces: one per lane per pool slot. */
+const PIECES = CONFIG.POOL_OBSTACLES * 3;
+const ORB_Y = 0.95;
 const SKY_RADIUS = 360;
 
 /** Distance haze bands (presentation): near layers, the static far skyline and the horizon ridges. */
@@ -79,7 +88,7 @@ const dynamicFrom = (m: MeshData) => geometry.dynamic({
   uvs: Float32Array.from(m.uvs), indices: Uint32Array.from(m.indices)
 });
 
-export const BATCH_IDS = ["stripes", "blocks", "bars", "gaps", "rings", "particles"] as const;
+export const BATCH_IDS = ["stripes", "lane-dashes", "blocks", "bars", "gaps", "walls", "orbs", "rings", "particles"] as const;
 
 /** Every custom program the world draws (the shaders-compile test bakes each one). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
@@ -190,18 +199,28 @@ export function buildWorld(options: WorldOptions): World {
   const stripes = new Batch(boxMesh(ROAD_WIDTH, 0.02, 0.22), STRIPES, linear(LOOK.roadLine));
   addBatch("stripes", stripes, flatSpec([1, 1, 1], 0.85, true));
 
+  /* lane dividers: dashed neon lines between the three lanes, scrolling with the run */
+  const dashes = new Batch(boxMesh(DASH_SIZE.w, DASH_SIZE.h, DASH_SIZE.d), DASHES * 2, linear(LOOK.laneLine));
+  addBatch("lane-dashes", dashes, flatSpec([1, 1, 1], 0.95, true));
+
   /* the hopper + contact shadow */
   add("player", playerMesh(), heroSpec(linear(LOOK.player)));
   add("player-gear", headphonesMesh(), stageLitSpec({ base: linear("#2a1a5a"), haze: HAZE, emissive: linear("#ff2fb3"), rim: linear("#ff8fd8"), toneless: true }));
   add("player-shadow", boxMesh(1.7, 0.002, 1.7), shadowSpec());
 
-  /* obstacles: one batch per type, slots mirror the sim pool */
-  const blocks = new Batch(blockMesh(), CONFIG.POOL_OBSTACLES);
-  const bars = new Batch(barMesh(), CONFIG.POOL_OBSTACLES);
-  const gaps = new Batch(gapMesh(), CONFIG.POOL_OBSTACLES);
+  /* obstacles: one batch per type, one lane-wide piece per blocked lane (instance = slot * 3 + lane + 1) */
+  const blocks = new Batch(blockMesh(), PIECES);
+  const bars = new Batch(barMesh(), PIECES);
+  const gaps = new Batch(gapMesh(), PIECES);
+  const walls = new Batch(wallMesh(), PIECES);
   addBatch("blocks", blocks, toonSpec(linear(LOOK.block), undefined, linear(LOOK.block)));
   addBatch("bars", bars, toonSpec(linear(LOOK.bar), undefined, linear(LOOK.bar)));
   addBatch("gaps", gaps, flatSpec(linear(LOOK.gap), 1));
+  addBatch("walls", walls, toonSpec(linear(LOOK.wall), undefined, linear(LOOK.wall)));
+
+  /* beat orbs: glowing pickups floating in their lanes */
+  const orbs = new Batch(sphereMesh(ORB_RADIUS, 12, 8), CONFIG.POOL_ORBS, linear(LOOK.orb));
+  addBatch("orbs", orbs, flatSpec([1, 1, 1], 1, true));
 
   /* PERFECT timing rings + event particles (presentation pools) */
   const rings = new Batch(ringMesh(0.8, 1, 32), CONFIG.POOL_RINGS, linear(LOOK.perfect));
@@ -239,14 +258,18 @@ export function buildWorld(options: WorldOptions): World {
       let lastT = -1;
       let lastJudgeAt = -10;
       let lastMilestones = 0;
+      let lastOrbs = 0;
       const partShown: boolean[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => false);
       const partColor: string[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => "");
       const ringShown: boolean[] = Array.from({ length: CONFIG.POOL_RINGS }, () => false);
       const obstacleShown: Record<ObstacleType, boolean[]> = {
-        gap: Array.from({ length: CONFIG.POOL_OBSTACLES }, () => false),
-        block: Array.from({ length: CONFIG.POOL_OBSTACLES }, () => false),
-        bar: Array.from({ length: CONFIG.POOL_OBSTACLES }, () => false)
+        gap: Array.from({ length: PIECES }, () => false),
+        block: Array.from({ length: PIECES }, () => false),
+        bar: Array.from({ length: PIECES }, () => false),
+        wall: Array.from({ length: PIECES }, () => false)
       };
+      const orbShown: boolean[] = Array.from({ length: CONFIG.POOL_ORBS }, () => false);
+      let px = 0;
 
       const burst = (count: number, color: string, y: number, speed: number): void => {
         let spawned = 0;
@@ -254,7 +277,7 @@ export function buildWorld(options: WorldOptions): World {
           if (spawned >= count) break;
           if (p.alive) continue;
           p.alive = true;
-          p.x = 0; p.y = y; p.z = 0;
+          p.x = px; p.y = y; p.z = 0;
           const a = jitter() * Math.PI * 2;
           const r = (0.4 + jitter() * 0.6) * speed;
           p.vx = Math.cos(a) * r;
@@ -271,7 +294,7 @@ export function buildWorld(options: WorldOptions): World {
         const slot = ringPool.find((r) => !r.alive) ?? ringPool[0];
         if (!slot) return;
         slot.alive = true;
-        slot.x = 0; slot.y = y; slot.z = 0;
+        slot.x = px; slot.y = y; slot.z = 0;
         slot.age = 0;
         slot.color = color;
       };
@@ -283,7 +306,13 @@ export function buildWorld(options: WorldOptions): World {
         const dist = shown?.dist ?? o.dist;
         const y = shown?.y ?? o.y;
         const pose = shown?.pose ?? o.pose;
+        px = shown?.x ?? o.laneOffset;
         const reduced = view.reducedMotion === true;
+        if (t < lastT) {
+          /* restart or reset: clear the presentation pools so the last run's rings and sparks never linger */
+          for (const r of ringPool) r.alive = false;
+          for (const p of parts) p.alive = false;
+        }
         const dt = lastT < 0 || t < lastT ? 0 : Math.min(0.1, t - lastT);
         lastT = t;
         const pulse = reduced ? 0 : beatPulse(t, CONFIG.BEAT);
@@ -308,6 +337,15 @@ export function buildWorld(options: WorldOptions): World {
         }
         stripes.flush(node("stripes"), false);
 
+        /* lane dividers between the lanes, scrolling with the run */
+        const dashShift = dist % DASH_PERIOD;
+        for (let i = 0; i < DASHES; i++) {
+          const z = 12 - i * DASH_PERIOD + dashShift;
+          dashes.place(i, -CONFIG.LANE_WIDTH / 2, 0.014, z, 0, 1, 1, 1);
+          dashes.place(DASHES + i, CONFIG.LANE_WIDTH / 2, 0.014, z, 0, 1, 1, 1);
+        }
+        dashes.flush(node("lane-dashes"), false);
+
         /* stage scenery: presentation clock from the wall clock (never the sim) */
         const wall = typeof performance !== "undefined" ? performance.now() / 1000 : t;
         clock += lastWall < 0 ? 0 : Math.min(0.1, Math.max(0, wall - lastWall));
@@ -321,32 +359,51 @@ export function buildWorld(options: WorldOptions): World {
         const scale = poseScale(pose, sim.o.vy);
         const bodyColor = pose === "duck" ? LOOK.playerDuck : LOOK.player;
         const rgb = linear(bodyColor);
-        node("player").setPosition(0, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
-        node("player-gear").setPosition(0, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
+        node("player").setPosition(px, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
+        node("player-gear").setPosition(px, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
         node("player").setUniform?.("baseColor", [...rgb]);
         node("player").setUniform?.("emissive", [rgb[0] * (0.3 + gain * 0.7), rgb[1] * (0.3 + gain * 0.7), rgb[2] * (0.3 + gain * 0.7)]);
-        node("player-shadow").setPosition(0, 0.02, 0).setScale(1 / (1 + 0.25 * y));
+        node("player-shadow").setPosition(px, 0.02, 0).setScale(1 / (1 + 0.25 * y));
         node("player-shadow").setUniform?.("alpha", 0.34 / (1 + 0.4 * y));
 
         /* obstacles: deterministic beat-grid distance ahead (world -z, towards the horizon), collapsed when the slot is free */
-        const batches: Record<ObstacleType, Batch> = { gap: gaps, block: blocks, bar: bars };
+        const batches: Record<ObstacleType, Batch> = { gap: gaps, block: blocks, bar: bars, wall: walls };
         for (let i = 0; i < CONFIG.POOL_OBSTACLES; i++) {
           const slot = o.obstacles[i];
-          for (const type of ["gap", "block", "bar"] as const) {
-            const batch = batches[type];
-            const shownHere = slot && slot.active && slot.type === type;
-            if (shownHere) {
-              batch.place(i, 0, 0, -obstacleZ(o, slot), 0, 1, 1, 1);
-              obstacleShown[type][i] = true;
-            } else if (obstacleShown[type][i]) {
-              batch.collapse(i);
-              obstacleShown[type][i] = false;
+          for (const lane of LANES) {
+            const piece = i * 3 + lane + 1;
+            for (const type of ["gap", "block", "bar", "wall"] as const) {
+              const batch = batches[type];
+              const shownHere = slot && slot.active && slot.type === type && (slot.lanes & laneBit(lane)) !== 0;
+              if (shownHere) {
+                batch.place(piece, laneX(lane), 0, -obstacleZ(o, slot), 0, 1, 1, 1);
+                obstacleShown[type][piece] = true;
+              } else if (obstacleShown[type][piece]) {
+                batch.collapse(piece);
+                obstacleShown[type][piece] = false;
+              }
             }
           }
         }
         blocks.flush(node("blocks"));
         bars.flush(node("bars"));
         gaps.flush(node("gaps"), false);
+        walls.flush(node("walls"));
+        node("walls").setUniform?.("emissive", [linear(LOOK.wall)[0] * (0.4 + gain * 0.6), linear(LOOK.wall)[1] * (0.4 + gain * 0.6), linear(LOOK.wall)[2] * (0.4 + gain * 0.6)]);
+
+        /* beat orbs: bob and swell on the beat; collected or passed orbs fold away */
+        for (let i = 0; i < CONFIG.POOL_ORBS; i++) {
+          const orb = o.orbSlots[i];
+          if (orb && orb.active && !orb.collected && o.t <= orb.crossTime + 0.25) {
+            const k = 1 + 0.25 * pulse;
+            orbs.place(i, laneX(orb.lane), ORB_Y + (reduced ? 0 : 0.12 * Math.sin(orb.beat * 1.7 + t * 4)), -obstacleZ(o, orb), 0, k, k, k);
+            orbShown[i] = true;
+          } else if (orbShown[i]) {
+            orbs.collapse(i);
+            orbShown[i] = false;
+          }
+        }
+        orbs.flush(node("orbs"), false);
         node("blocks").setUniform?.("emissive", [linear(LOOK.block)[0] * (0.25 + gain * 0.5), linear(LOOK.block)[1] * (0.25 + gain * 0.5), linear(LOOK.block)[2] * (0.25 + gain * 0.5)]);
         node("bars").setUniform?.("emissive", [linear(LOOK.bar)[0] * (0.3 + gain * 0.5), linear(LOOK.bar)[1] * (0.3 + gain * 0.5), linear(LOOK.bar)[2] * (0.3 + gain * 0.5)]);
 
@@ -360,10 +417,17 @@ export function buildWorld(options: WorldOptions): World {
           } else if (j.kind === "good") {
             spawnRing(LOOK.good, 0.06);
             burst(8, LOOK.good, 0.7 + y, 2.2);
-          } else {
+          } else if (j.kind === "dodge") {
+            burst(8, LOOK.laneLine, 0.8 + y, 2.4);
+          } else if (j.kind === "miss") {
             burst(14, LOOK.miss, 0.8 + y, 3.6);
           }
         }
+        if (o.orbs > lastOrbs) {
+          lastOrbs = o.orbs;
+          burst(10, LOOK.orb, ORB_Y, 2.6);
+        }
+        if (o.orbs < lastOrbs) lastOrbs = o.orbs;
         if (o.milestones > lastMilestones) {
           lastMilestones = o.milestones;
           burst(20, LOOK.gold, 1.2, 4);
@@ -429,7 +493,7 @@ export function buildWorld(options: WorldOptions): World {
         controller.setPose({ position: [c.x, c.y, c.z], target: [c.lookX, c.lookY, c.lookZ], up: [0, 1, 0], fov }, { cut: false });
       }
 
-      const parked = ["blocks", "bars", "gaps", "rings", "particles"];
+      const parked = ["blocks", "bars", "gaps", "walls", "orbs", "rings", "particles"];
       function warm(on: boolean): void {
         for (const id of parked) {
           /* parked far away while the programs warm, then back in place and visible (they were left hidden) */
@@ -439,7 +503,7 @@ export function buildWorld(options: WorldOptions): World {
         }
       }
 
-      const batches = [stripes, blocks, bars, gaps, rings, particles];
+      const batches = [stripes, dashes, blocks, bars, gaps, walls, orbs, rings, particles];
       return {
         update,
         warm,

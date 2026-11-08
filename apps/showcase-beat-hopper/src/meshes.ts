@@ -115,13 +115,21 @@ export function translateMesh(m: MeshData, tx: number, ty: number, tz: number): 
 
 /* ------------------------------------------------------------------ the pinned game pieces */
 
-export const ROAD_WIDTH = 4;
+/** Three 2 m lanes plus a 0.2 m shoulder each side. */
+export const LANE_WIDTH = 2;
+export const ROAD_WIDTH = 3 * LANE_WIDTH + 0.4;
 export const SEGMENT_LENGTH = 2;
 export const PLAYER_RADIUS = 0.42;
 export const PLAYER_LENGTH = 0.5;
-export const BLOCK_SIZE = { w: 1.7, h: 0.95, d: 0.9 } as const;
-export const BAR_SIZE = { w: 3.6, h: 0.3, d: 0.3, y: 1.12, postW: 0.16 } as const;
-export const GAP_SIZE = { w: ROAD_WIDTH, h: 0.12, d: 1.5 } as const;
+/** Obstacle pieces are one lane wide; a row draws one piece per blocked lane. */
+export const BLOCK_SIZE = { w: 1.5, h: 0.95, d: 0.9 } as const;
+export const BAR_SIZE = { w: 1.86, h: 0.3, d: 0.3, y: 1.12, postW: 0.16 } as const;
+export const GAP_SIZE = { w: LANE_WIDTH, h: 0.12, d: 1.5 } as const;
+/** Dodge obstacle: a tall lane wall (too high to hop) with a bright cap bar. */
+export const WALL_SIZE = { w: 1.7, h: 2.3, d: 0.45, capH: 0.16 } as const;
+/** Lane divider dash on the deck. */
+export const DASH_SIZE = { w: 0.13, h: 0.02, d: 1.7 } as const;
+export const ORB_RADIUS = 0.36;
 
 /** The hopper: a neon capsule, base at y = 0. */
 export const playerMesh = (): MeshData => translateMesh(capsuleMesh(PLAYER_RADIUS, PLAYER_LENGTH, 16, 6), 0, PLAYER_RADIUS + PLAYER_LENGTH / 2, 0);
@@ -138,3 +146,9 @@ export const barMesh = (): MeshData => mergeMeshes([
 
 /** Gap obstacle: a dark trench patch with the road missing under it (hop over). */
 export const gapMesh = (): MeshData => translateMesh(boxMesh(GAP_SIZE.w, GAP_SIZE.h, GAP_SIZE.d), 0, GAP_SIZE.h / 2 + 0.01, 0);
+
+/** Wall obstacle: slab plus a glowing cap, base at y = 0 (48 verts). */
+export const wallMesh = (): MeshData => mergeMeshes([
+  translateMesh(boxMesh(WALL_SIZE.w, WALL_SIZE.h, WALL_SIZE.d), 0, WALL_SIZE.h / 2, 0),
+  translateMesh(boxMesh(WALL_SIZE.w + 0.1, WALL_SIZE.capH, WALL_SIZE.d + 0.1), 0, WALL_SIZE.h + WALL_SIZE.capH / 2, 0)
+]);

@@ -374,7 +374,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Rhythm-timed obstacle runner on a 132 BPM beat grid: tap to hop over blocks and gaps or hold to duck under bars inside PERFECT and GOOD timing windows. Procedural geometry and sim-driven synth sequencer; see evidence/beat-hopper/README.md."
+    notes: "Three-lane rhythm runner on a 132 BPM beat grid: swipe or press left/right to change lanes and dodge walls, tap to hop over blocks and gaps or hold to duck under bars inside PERFECT and GOOD timing windows, and grab beat orbs. Procedural geometry and sim-driven synth sequencer; see evidence/beat-hopper/README.md."
   }
 ] as const;
 

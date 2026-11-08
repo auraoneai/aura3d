@@ -1,6 +1,10 @@
 /**
  * Beat Hopper — pure deterministic sim (no DOM, no engine imports; GameRng wraps the counted stream).
  * One fixed 1/60 s step. Obstacles live on a 132 BPM beat grid, seeded per 8-bar (32-beat) phrase.
+ * Three lanes: the hopper steers between them (drag `dx` in CSS px, or whole-lane `lane` steps from keys) with a
+ * fixed-speed tween and snaps to the nearest lane for judging. Every obstacle blocks a lane mask: gaps/blocks (hop)
+ * and bars (duck) may span one to three lanes, walls (dodge) one or two, so every row has an answer. Beat orbs sit
+ * in lanes and pay combo + score when the hopper is in their lane on their beat.
  * Judgement happens once per obstacle at its crossing step (C16); popups drain by monotonic seq (C2);
  * begin() re-centres all input/drag state (C4).
  */
@@ -33,7 +37,17 @@ export const CONFIG = {
   POOL_SEGMENTS: 220,
   POOL_OBSTACLES: 24,
   POOL_PARTICLES: 90,
-  POOL_RINGS: 8
+  POOL_RINGS: 8,
+  /** Three lanes, LANE_WIDTH apart, centred on x = 0 (lane -1 left, 0 centre, 1 right). */
+  LANE_WIDTH: 2,
+  /** Lane tween speed (m/s): one lane in 0.125 s. */
+  LANE_SPEED: 16,
+  /** Horizontal drag travel (CSS px) that steps one lane; a press that travels past TAP_SLOP_PX is a steer, not a hop/duck. */
+  LANE_SWIPE_PX: 48,
+  TAP_SLOP_PX: 12,
+  POINTS_DODGE: 20,
+  POINTS_ORB: 15,
+  POOL_ORBS: 24
 } as const;
 
 /** Time from jump start to apex — the ideal hop puts the apex exactly on the crossing. */
@@ -41,30 +55,59 @@ export const APEX_T = CONFIG.JUMP_VY / CONFIG.GRAVITY;
 
 export type Phase = "splash" | "playing" | "bursting" | "gameOver";
 export type Pose = "grounded" | "air" | "duck";
-export type ObstacleType = "gap" | "block" | "bar";
-export type Judgement = "perfect" | "good" | "miss";
+export type ObstacleType = "gap" | "block" | "bar" | "wall";
+/** perfect/good: timed hop or duck; dodge: a wall passed in a free lane; clear: a hop/duck row passed in a free lane untimed. */
+export type Judgement = "perfect" | "good" | "miss" | "dodge" | "clear";
+export const LANES = [-1, 0, 1] as const;
+/** Lane mask bits: 1 = left, 2 = centre, 4 = right. */
+export const ALL_LANES = 7;
+export const laneBit = (lane: number): number => 1 << (lane + 1);
+export const laneX = (lane: number): number => lane * CONFIG.LANE_WIDTH;
+/** The lane the hopper occupies for judging: nearest lane centre to its x (lane snapping). */
+export const laneAt = (x: number): number => Math.max(-1, Math.min(1, Math.round(x / CONFIG.LANE_WIDTH))) || 0;
 
 export interface Input {
   start: boolean;
   down: boolean;
   up: boolean;
+  /** Horizontal pointer drag since the last step, CSS px (only counts while pressed). */
   dx: number;
   tap: boolean;
+  /** Whole-lane steps (keys / autopilot): -1 left, +1 right. Never cancels a hop or duck press. */
+  lane: number;
 }
-export const IDLE: Input = { start: false, down: false, up: false, dx: 0, tap: false };
+export const IDLE: Input = { start: false, down: false, up: false, dx: 0, tap: false, lane: 0 };
 
 export interface ObstacleSlot {
   active: boolean;
   beat: number;
   type: ObstacleType;
+  /** Blocked lanes (bit mask, see laneBit). */
+  lanes: number;
   crossTime: number;
   resolved: boolean;
   judgement: Judgement | null;
 }
 
+export interface OrbSlot {
+  active: boolean;
+  beat: number;
+  lane: number;
+  crossTime: number;
+  collected: boolean;
+  resolved: boolean;
+}
+
+export interface PlanCell {
+  type: ObstacleType;
+  lanes: number;
+}
+
 export interface PhrasePlan {
   index: number;
-  cells: (ObstacleType | null)[];
+  cells: (PlanCell | null)[];
+  /** Orb lane per beat (null = no orb). */
+  orbs: (number | null)[];
 }
 
 export interface GameState {
@@ -86,7 +129,17 @@ export interface GameState {
   holdT: number;
   airStart: number;
   duckStart: number;
+  /** Current x (m), tweening towards laneX(lane). */
   laneOffset: number;
+  /** Target lane (-1, 0, 1). */
+  lane: number;
+  /** Drag travel this press (px, signed accumulator towards the next lane step, and absolute travel). */
+  dragAcc: number;
+  dragTravel: number;
+  /** The current press became a steer gesture: its release does not hop and it never ducks. */
+  steering: boolean;
+  dodges: number;
+  orbs: number;
   perfect: number;
   good: number;
   miss: number;
@@ -96,6 +149,7 @@ export interface GameState {
   burstT: number;
   lastJudge: { kind: Judgement | null; at: number; beat: number };
   obstacles: ObstacleSlot[];
+  orbSlots: OrbSlot[];
   plans: PhrasePlan[];
   spawnedThroughBeat: number;
   spawnSkipped: number;
@@ -104,22 +158,36 @@ export interface GameState {
 
 export const TRACE_COLUMNS = [
   "score", "lives", "combo", "mult", "beatIndex", "phraseIndex", "pose",
-  "y", "vy", "dist", "perfect", "good", "miss", "milestones", "rngCount"
+  "y", "vy", "dist", "perfect", "good", "miss", "milestones", "rngCount",
+  "lane", "laneOffset", "dodges", "orbs"
 ] as const;
 
 const POSE_CODE: Record<Pose, number> = { grounded: 0, air: 1, duck: 2 };
 
 function emptySlot(): ObstacleSlot {
-  return { active: false, beat: -1, type: "gap", crossTime: 0, resolved: false, judgement: null };
+  return { active: false, beat: -1, type: "gap", lanes: ALL_LANES, crossTime: 0, resolved: false, judgement: null };
+}
+function emptyOrb(): OrbSlot {
+  return { active: false, beat: -1, lane: 0, crossTime: 0, collected: false, resolved: false };
 }
 
-/** Ideal action moment (pose-entry time) for an obstacle: apex over hops, engaged duck before bars. */
+/** Ideal action moment (pose-entry time) for an obstacle: apex over hops, engaged duck before bars (walls: the crossing). */
 export function idealMoment(type: ObstacleType, crossTime: number): number {
+  if (type === "wall") return crossTime;
   return type === "bar" ? crossTime - CONFIG.DUCK_LEAD : crossTime - APEX_T;
 }
 
+/** Hop obstacles (gap, block) need airtime; bars need a duck; walls can only be dodged by changing lane. */
+export const isHop = (type: ObstacleType): boolean => type === "gap" || type === "block";
+
+export const laneCount = (mask: number): number => (mask & 1) + ((mask >> 1) & 1) + ((mask >> 2) & 1);
+/** Free lanes of a mask, left to right. */
+export function freeLanes(mask: number): number[] {
+  return LANES.filter((l) => (mask & laneBit(l)) === 0);
+}
+
 /** Scroll-space z of an obstacle relative to the player (negative = behind). Deterministic per §3.6. */
-export function obstacleZ(o: GameState, slot: ObstacleSlot): number {
+export function obstacleZ(o: GameState, slot: { readonly crossTime: number }): number {
   return (slot.crossTime - o.t) * o.speed;
 }
 
@@ -131,6 +199,7 @@ export class BeatHopperSim {
   private seq = 0;
   private genLastBeat = -10;
   private genLastType: ObstacleType = "bar";
+  private genLastWall = -10;
 
   constructor(seed: number) {
     this.seed = seed;
@@ -141,14 +210,17 @@ export class BeatHopperSim {
   private freshState(phase: Phase): GameState {
     const obstacles: ObstacleSlot[] = [];
     for (let i = 0; i < CONFIG.POOL_OBSTACLES; i++) obstacles.push(emptySlot());
+    const orbSlots: OrbSlot[] = [];
+    for (let i = 0; i < CONFIG.POOL_ORBS; i++) orbSlots.push(emptyOrb());
     return {
       phase, t: 0, dist: 0, speed: CONFIG.SPEED_INIT, beatIndex: 0, phraseIndex: 0,
       score: 0, lives: CONFIG.MAX_LIVES, combo: 0, maxCombo: 0, mult: 1,
       pose: "grounded", y: 0, vy: 0, holding: false, holdT: 0, airStart: -10, duckStart: -10,
-      laneOffset: 0, perfect: 0, good: 0, miss: 0, milestones: 0,
+      laneOffset: 0, lane: 0, dragAcc: 0, dragTravel: 0, steering: false, dodges: 0, orbs: 0,
+      perfect: 0, good: 0, miss: 0, milestones: 0,
       milestoneTarget: CONFIG.MILESTONE, shakeAt: -10, burstT: 0,
       lastJudge: { kind: null, at: -10, beat: -1 },
-      obstacles, plans: [], spawnedThroughBeat: -1, spawnSkipped: 0, rngCount: 0
+      obstacles, orbSlots, plans: [], spawnedThroughBeat: -1, spawnSkipped: 0, rngCount: 0
     };
   }
 
@@ -159,6 +231,7 @@ export class BeatHopperSim {
     this.rng = new GameRng(this.seed);
     this.genLastBeat = -10;
     this.genLastType = "bar";
+    this.genLastWall = -10;
   }
 
   private popup(text: string, color: string, size: number): void {
@@ -166,28 +239,53 @@ export class BeatHopperSim {
     if (this.popups.length > POPUP_LIMIT) this.popups.splice(0, this.popups.length - POPUP_LIMIT);
   }
 
-  /** Seeded 32-beat phrase: density ramps one-per-2-beats → one-per-beat; hop→hop keeps ≥2 beats (airtime). */
+  /**
+   * Seeded 32-beat phrase: density ramps one-per-2-beats → one-per-beat; hop→hop keeps ≥2 beats (airtime).
+   * Lanes ramp too: phrase 0 is mostly full-width hops/ducks plus single-lane walls; later phrases narrow the
+   * hop/duck rows and widen walls to two lanes. Walls never span all three lanes and keep ≥2 beats between them.
+   * Orbs ride free lanes of walls and empty beats so moving pays.
+   */
   private generatePlan(index: number): PhrasePlan {
-    const cells: (ObstacleType | null)[] = new Array(CONFIG.BEATS_PER_PHRASE).fill(null);
+    const cells: (PlanCell | null)[] = new Array(CONFIG.BEATS_PER_PHRASE).fill(null);
+    const orbs: (number | null)[] = new Array(CONFIG.BEATS_PER_PHRASE).fill(null);
     const base = index * CONFIG.BEATS_PER_PHRASE;
+    const rng = this.rng;
+    const pickLane = (): number => (LANES[Math.min(2, Math.floor(rng.next() * 3))] as number);
     let b = index === 0 ? CONFIG.FIRST_OBSTACLE_BEAT : 0;
     while (b < CONFIG.BEATS_PER_PHRASE) {
       const absBeat = base + b;
       if (absBeat - this.genLastBeat >= 1) {
-        const r = this.rng.next();
-        let type: ObstacleType = r < 0.4 ? "gap" : r < 0.7 ? "block" : "bar";
-        const hop = this.genLastType !== "bar";
-        if (hop && type !== "bar" && absBeat - this.genLastBeat < 2) type = "bar";
-        cells[b] = type;
+        const r = rng.next();
+        const wallChance = index === 0 ? 0.22 : 0.3;
+        let type: ObstacleType = r < wallChance ? "wall" : r < wallChance + (1 - wallChance) * 0.38 ? "gap" : r < wallChance + (1 - wallChance) * 0.68 ? "block" : "bar";
+        if (type === "wall" && absBeat - this.genLastWall < 2) type = "bar";
+        const hop = isHop(this.genLastType);
+        if (hop && isHop(type) && absBeat - this.genLastBeat < 2) type = "bar";
+        let lanes: number;
+        if (type === "wall") {
+          const two = index >= 1 && rng.next() < Math.min(0.6, 0.2 + 0.1 * index);
+          const free = pickLane();
+          lanes = two ? ALL_LANES & ~laneBit(free) : laneBit(pickLane());
+          this.genLastWall = absBeat;
+          const open = freeLanes(lanes);
+          if (rng.next() < 0.6) orbs[b] = open[Math.min(open.length - 1, Math.floor(rng.next() * open.length))] as number;
+        } else {
+          const full = rng.next() < Math.max(0.35, 0.8 - 0.1 * index);
+          if (full) lanes = ALL_LANES;
+          else lanes = rng.next() < 0.5 ? ALL_LANES & ~laneBit(pickLane()) : laneBit(pickLane());
+        }
+        cells[b] = { type, lanes };
         this.genLastBeat = absBeat;
         this.genLastType = type;
       }
       let step = 2;
       if (index >= 4) step = 1;
-      else if (index >= 2) step = this.rng.next() < 0.5 ? 1 : 2;
+      else if (index >= 2) step = rng.next() < 0.5 ? 1 : 2;
+      // An empty off-beat between two rows may carry an orb.
+      if (step === 2 && b + 1 < CONFIG.BEATS_PER_PHRASE && rng.next() < 0.45) orbs[b + 1] = pickLane();
       b += step;
     }
-    return { index, cells };
+    return { index, cells, orbs };
   }
 
   private planFor(index: number): PhrasePlan {
@@ -205,13 +303,14 @@ export class BeatHopperSim {
     const o = this.o;
     for (let b = Math.max(0, o.spawnedThroughBeat + 1); b <= beat; b++) {
       const plan = this.planFor(Math.floor(b / CONFIG.BEATS_PER_PHRASE));
-      const type = plan.cells[b % CONFIG.BEATS_PER_PHRASE];
-      if (type) {
+      const cell = plan.cells[b % CONFIG.BEATS_PER_PHRASE];
+      if (cell) {
         const slot = o.obstacles.find((s) => !s.active);
         if (slot) {
           slot.active = true;
           slot.beat = b;
-          slot.type = type;
+          slot.type = cell.type;
+          slot.lanes = cell.lanes;
           slot.crossTime = b * CONFIG.BEAT;
           slot.resolved = false;
           slot.judgement = null;
@@ -219,22 +318,67 @@ export class BeatHopperSim {
           o.spawnSkipped++;
         }
       }
+      const orbLane = plan.orbs[b % CONFIG.BEATS_PER_PHRASE];
+      if (orbLane !== null && orbLane !== undefined) {
+        const orb = o.orbSlots.find((s) => !s.active);
+        if (orb) {
+          orb.active = true;
+          orb.beat = b;
+          orb.lane = orbLane;
+          orb.crossTime = b * CONFIG.BEAT;
+          orb.collected = false;
+          orb.resolved = false;
+        }
+      }
       o.spawnedThroughBeat = b;
+    }
+  }
+
+  private collect(orb: OrbSlot): void {
+    const o = this.o;
+    orb.resolved = true;
+    if (laneAt(o.laneOffset) !== orb.lane) return;
+    orb.collected = true;
+    o.orbs++;
+    o.combo++;
+    o.maxCombo = Math.max(o.maxCombo, o.combo);
+    o.mult = Math.min(CONFIG.MAX_MULT, 1 + Math.floor(o.combo / CONFIG.COMBO_PER_MULT));
+    const pts = CONFIG.POINTS_ORB * o.mult;
+    o.score += pts;
+    this.popup(`+${pts}`, "#b4f8ff", 0.85);
+    this.milestoneCheck();
+  }
+
+  private milestoneCheck(): void {
+    const o = this.o;
+    while (o.score >= o.milestoneTarget) {
+      o.score += CONFIG.MILESTONE_BONUS;
+      o.milestoneTarget += CONFIG.MILESTONE;
+      o.milestones++;
+      this.popup(`+${CONFIG.MILESTONE_BONUS} BONUS`, "#ffd166", 1.35);
     }
   }
 
   private judge(slot: ObstacleSlot): void {
     const o = this.o;
     slot.resolved = true;
-    const ideal = idealMoment(slot.type, slot.crossTime);
-    const poseOk = slot.type === "bar" ? o.pose === "duck" : o.pose === "air";
-    const actionStart = slot.type === "bar" ? o.duckStart : o.airStart;
-    const delta = Math.abs(actionStart - ideal);
+    const blocked = (slot.lanes & laneBit(laneAt(o.laneOffset))) !== 0;
     let kind: Judgement = "miss";
-    if (poseOk && delta <= CONFIG.GOOD_WINDOW) {
-      kind = delta <= CONFIG.PERFECT_WINDOW ? "perfect" : "good";
+    if (slot.type === "wall") {
+      kind = blocked ? "miss" : "dodge";
+    } else {
+      const ideal = idealMoment(slot.type, slot.crossTime);
+      const poseOk = slot.type === "bar" ? o.pose === "duck" : o.pose === "air";
+      const actionStart = slot.type === "bar" ? o.duckStart : o.airStart;
+      const delta = Math.abs(actionStart - ideal);
+      if (poseOk && delta <= CONFIG.GOOD_WINDOW) {
+        kind = delta <= CONFIG.PERFECT_WINDOW ? "perfect" : "good";
+      } else if (!blocked) {
+        kind = "clear";
+      }
     }
     slot.judgement = kind;
+    if (kind === "clear") return;
     o.lastJudge = { kind, at: o.t, beat: slot.beat };
     if (kind === "miss") {
       o.miss++;
@@ -251,21 +395,20 @@ export class BeatHopperSim {
       o.combo++;
       o.maxCombo = Math.max(o.maxCombo, o.combo);
       o.mult = Math.min(CONFIG.MAX_MULT, 1 + Math.floor(o.combo / CONFIG.COMBO_PER_MULT));
-      const pts = (kind === "perfect" ? CONFIG.POINTS_PERFECT : CONFIG.POINTS_GOOD) * o.mult;
+      const base = kind === "perfect" ? CONFIG.POINTS_PERFECT : kind === "good" ? CONFIG.POINTS_GOOD : CONFIG.POINTS_DODGE;
+      const pts = base * o.mult;
       o.score += pts;
       if (kind === "perfect") {
         o.perfect++;
         this.popup(`PERFECT +${pts}`, "#ffd166", 1.25);
-      } else {
+      } else if (kind === "good") {
         o.good++;
         this.popup(`GOOD +${pts}`, "#5eead4", 1);
+      } else {
+        o.dodges++;
+        this.popup(`DODGE +${pts}`, "#c9a7ff", 1);
       }
-      while (o.score >= o.milestoneTarget) {
-        o.score += CONFIG.MILESTONE_BONUS;
-        o.milestoneTarget += CONFIG.MILESTONE;
-        o.milestones++;
-        this.popup(`+${CONFIG.MILESTONE_BONUS} BONUS`, "#ffd166", 1.35);
-      }
+      this.milestoneCheck();
     }
   }
 
@@ -291,10 +434,33 @@ export class BeatHopperSim {
       o.speed = Math.min(CONFIG.MAX_SPEED, CONFIG.SPEED_INIT + phrase);
     }
 
+    // Steering: whole-lane steps (keys) and drag travel while pressed. A press whose drag travel passes the tap slop
+    // becomes a steer gesture: it stops counting as a tap (no hop on release) or a hold (no duck).
+    if (input.lane !== 0) o.lane = Math.max(-1, Math.min(1, o.lane + Math.round(input.lane)));
+    if (input.dx !== 0 && o.holding) {
+      o.dragTravel += Math.abs(input.dx);
+      o.dragAcc += input.dx;
+      if (o.dragTravel > CONFIG.TAP_SLOP_PX && !o.steering) {
+        o.steering = true;
+        if (o.pose !== "duck") o.holdT = 0;
+      }
+      while (Math.abs(o.dragAcc) >= CONFIG.LANE_SWIPE_PX) {
+        const dir = Math.sign(o.dragAcc);
+        o.lane = Math.max(-1, Math.min(1, o.lane + dir));
+        o.dragAcc -= dir * CONFIG.LANE_SWIPE_PX;
+      }
+    }
+    const targetX = laneX(o.lane);
+    const step = CONFIG.LANE_SPEED * CONFIG.DT;
+    o.laneOffset = Math.abs(targetX - o.laneOffset) <= step ? targetX : o.laneOffset + Math.sign(targetX - o.laneOffset) * step;
+
     // Input: release first so a duck can end and a fresh tap can start in the same frame.
     if (input.up) {
-      const wasTap = o.holding && o.holdT < CONFIG.DUCK_HOLD;
+      const wasTap = o.holding && !o.steering && o.holdT < CONFIG.DUCK_HOLD;
       o.holding = false;
+      o.steering = false;
+      o.dragAcc = 0;
+      o.dragTravel = 0;
       if (o.pose === "duck") {
         o.pose = "grounded";
       } else if (wasTap && o.pose === "grounded") {
@@ -308,7 +474,7 @@ export class BeatHopperSim {
       o.holding = true;
       o.holdT = 0;
     }
-    if (o.holding) o.holdT += CONFIG.DT;
+    if (o.holding && !o.steering) o.holdT += CONFIG.DT;
 
     // Pose physics.
     if (o.pose === "air") {
@@ -334,6 +500,11 @@ export class BeatHopperSim {
     }
 
     this.spawnUpTo(beat + CONFIG.SPAWN_AHEAD_BEATS);
+    for (const orb of o.orbSlots) {
+      if (!orb.active) continue;
+      if (!orb.resolved && o.t + 1e-9 >= orb.crossTime) this.collect(orb);
+      if (o.t > orb.crossTime + 2 * CONFIG.BEAT) orb.active = false;
+    }
     for (const slot of o.obstacles) {
       if (!slot.active) continue;
       if (!slot.resolved && o.t + 1e-9 >= slot.crossTime) this.judge(slot);
@@ -347,7 +518,8 @@ export class BeatHopperSim {
     const o = this.o;
     return [
       o.score, o.lives, o.combo, o.mult, o.beatIndex, o.phraseIndex, POSE_CODE[o.pose],
-      o.y, o.vy, o.dist, o.perfect, o.good, o.miss, o.milestones, o.rngCount
+      o.y, o.vy, o.dist, o.perfect, o.good, o.miss, o.milestones, o.rngCount,
+      o.lane, o.laneOffset, o.dodges, o.orbs
     ];
   }
 }

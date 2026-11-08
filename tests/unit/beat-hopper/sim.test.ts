@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  APEX_T, CONFIG, IDLE, BeatHopperSim, idealMoment, replay, type Input, type ObstacleType
+  ALL_LANES, APEX_T, CONFIG, IDLE, BeatHopperSim, idealMoment, laneAt, laneBit, laneCount, laneX, replay,
+  type Input, type ObstacleType, type PlanCell
 } from "../../../apps/showcase-beat-hopper/src/sim";
 import { Autopilot } from "../../../apps/showcase-beat-hopper/src/autopilot";
 
@@ -16,13 +17,15 @@ const running = (seed = 7): BeatHopperSim => {
 };
 
 /** A sim with one hand-placed obstacle and the spawner disabled (pool test keeps its own schedule). */
-const withObstacle = (type: ObstacleType, crossTime: number): BeatHopperSim => {
+const withObstacle = (type: ObstacleType, crossTime: number, lanes = ALL_LANES): BeatHopperSim => {
   const sim = running();
   for (const s of sim.o.obstacles) s.active = false;
+  for (const s of sim.o.orbSlots) s.active = false;
   sim.o.spawnedThroughBeat = 100000;
   const slot = sim.o.obstacles[0]!;
   slot.active = true;
   slot.type = type;
+  slot.lanes = lanes;
   slot.beat = Math.round(crossTime / CONFIG.BEAT);
   slot.crossTime = crossTime;
   slot.resolved = false;
@@ -75,7 +78,7 @@ describe("beat-hopper sim", () => {
     const a = replay(42, 30, inputs);
     const b = replay(42, 30, inputs);
     expect(a.trace.length).toBe(b.trace.length);
-    const floatCols = new Set([7, 8, 9]); // y, vy, dist
+    const floatCols = new Set([7, 8, 9, 16]); // y, vy, dist, laneOffset
     for (let i = 0; i < a.trace.length; i++) {
       for (let c = 0; c < a.trace[i]!.length; c++) {
         if (floatCols.has(c)) expect(Math.abs(a.trace[i]![c]! - b.trace[i]![c]!)).toBeLessThan(1e-9);
@@ -261,7 +264,7 @@ describe("beat-hopper sim", () => {
   it("phrase schedule: beat grid, min 1-beat spacing, hop→hop ≥2 beats, density ramps 2→1, speed +1 per phrase", () => {
     const sim = running();
     sim.o.lives = 100000;
-    const plans = new Map<number, (ObstacleType | null)[]>();
+    const plans = new Map<number, (PlanCell | null)[]>();
     for (let i = 0; i < 3600; i++) {
       sim.advance(IDLE);
       for (const p of sim.o.plans) if (!plans.has(p.index)) plans.set(p.index, p.cells.slice());
@@ -274,12 +277,13 @@ describe("beat-hopper sim", () => {
       let count = 0;
       let lastLocal = -10;
       for (let b = 0; b < cells.length; b++) {
-        const type = cells[b];
+        const type = cells[b]?.type;
         if (!type) continue;
         count++;
         const abs = index * CONFIG.BEATS_PER_PHRASE + b;
         expect(abs - prevBeat).toBeGreaterThanOrEqual(1);
-        if (prevType !== "bar" && type !== "bar") expect(abs - prevBeat).toBeGreaterThanOrEqual(2);
+        const hop = (t: ObstacleType): boolean => t === "gap" || t === "block";
+        if (hop(prevType) && hop(type)) expect(abs - prevBeat).toBeGreaterThanOrEqual(2);
         if (index === 0 && lastLocal >= 0) expect(b - lastLocal).toBe(2);
         if (index >= 4 && lastLocal >= 0) expect(b - lastLocal).toBe(1);
         lastLocal = b;
@@ -311,5 +315,173 @@ describe("beat-hopper sim", () => {
     expect(peak).toBeGreaterThan(1.4);
     expect(peak).toBeLessThan(APEX_T * CONFIG.JUMP_VY);
     expect(sim.o.pose).toBe("grounded");
+  });
+  it("lanes: keys step one lane at a time, clamp at the edges, tween at LANE_SPEED and snap for judging", () => {
+    const sim = running();
+    sim.o.spawnedThroughBeat = 100000;
+    expect(sim.o.lane).toBe(0);
+    sim.advance({ ...IDLE, lane: -1 });
+    expect(sim.o.lane).toBe(-1);
+    expect(sim.o.laneOffset).toBeCloseTo(-CONFIG.LANE_SPEED * DT, 9);
+    expect(laneAt(sim.o.laneOffset)).toBe(0); // still nearest the centre lane mid-tween
+    const frames = Math.ceil(CONFIG.LANE_WIDTH / (CONFIG.LANE_SPEED * DT));
+    for (let i = 0; i < frames; i++) sim.advance(IDLE);
+    expect(sim.o.laneOffset).toBe(laneX(-1));
+    expect(laneAt(sim.o.laneOffset)).toBe(-1);
+    sim.advance({ ...IDLE, lane: -1 });
+    expect(sim.o.lane).toBe(-1);
+    sim.advance({ ...IDLE, lane: 1 });
+    sim.advance({ ...IDLE, lane: 1 });
+    sim.advance({ ...IDLE, lane: 1 });
+    expect(sim.o.lane).toBe(1);
+    for (let i = 0; i < 3 * frames; i++) sim.advance(IDLE);
+    expect(sim.o.laneOffset).toBe(laneX(1));
+    expect(sim.o.pose).toBe("grounded");
+  });
+
+  it("input discrimination: a drag steers (no hop, no duck); a short still press hops; a still hold ducks", () => {
+    const sim = running();
+    sim.o.spawnedThroughBeat = 100000;
+    // Drag right one lane: press, move past the swipe distance, keep holding past the duck time, release.
+    sim.advance(DOWN);
+    sim.advance({ ...IDLE, dx: CONFIG.LANE_SWIPE_PX + 2 });
+    expect(sim.o.lane).toBe(1);
+    expect(sim.o.steering).toBe(true);
+    for (let i = 0; i < 20; i++) sim.advance(IDLE);
+    expect(sim.o.pose).toBe("grounded");
+    sim.advance(UP);
+    expect(sim.o.pose).toBe("grounded");
+    expect(sim.o.steering).toBe(false);
+    // A long drag crosses two lanes but clamps at the edge.
+    sim.advance(DOWN);
+    sim.advance({ ...IDLE, dx: -3 * CONFIG.LANE_SWIPE_PX });
+    expect(sim.o.lane).toBe(-1);
+    sim.advance(UP);
+    expect(sim.o.pose).toBe("grounded");
+    // A tap with a little jitter under the slop still hops.
+    sim.advance(DOWN);
+    sim.advance({ ...IDLE, dx: CONFIG.TAP_SLOP_PX - 4 });
+    sim.advance(UP);
+    expect(sim.o.lane).toBe(-1);
+    expect(sim.o.pose).toBe("air");
+    // Pointer movement without a press never steers.
+    while (sim.o.pose === "air") sim.advance(IDLE);
+    sim.advance({ ...IDLE, dx: 200 });
+    expect(sim.o.lane).toBe(-1);
+    // Keys steer while a duck is held and keep the duck.
+    sim.advance(DOWN);
+    for (let i = 0; i < 12; i++) sim.advance(IDLE);
+    expect(sim.o.pose).toBe("duck");
+    sim.advance({ ...IDLE, lane: 1 });
+    sim.advance(IDLE);
+    expect(sim.o.lane).toBe(0);
+    expect(sim.o.pose).toBe("duck");
+  });
+
+  it("walls: a blocked lane is a MISS, a free lane is a DODGE (+20 x mult, combo +1)", () => {
+    const hit = withObstacle("wall", 1.5, laneBit(0));
+    advanceTo(hit, 1.6);
+    expect(hit.o.miss).toBe(1);
+    expect(hit.o.lives).toBe(2);
+    const dodge = withObstacle("wall", 1.5, laneBit(0) | laneBit(1));
+    dodge.advance({ ...IDLE, lane: -1 });
+    advanceTo(dodge, 1.6);
+    expect(dodge.o.miss).toBe(0);
+    expect(dodge.o.dodges).toBe(1);
+    expect(dodge.o.combo).toBe(1);
+    expect(dodge.o.score).toBe(CONFIG.POINTS_DODGE);
+    expect(dodge.o.obstacles[0]!.judgement).toBe("dodge");
+    expect(dodge.popups.some((p) => p.text.startsWith("DODGE"))).toBe(true);
+  });
+
+  it("hop/duck rows that block some lanes: free lane passes untimed (clear), blocked lane still needs the beat", () => {
+    const clear = withObstacle("block", 1.5, laneBit(0));
+    clear.o.combo = 3;
+    clear.advance({ ...IDLE, lane: 1 });
+    advanceTo(clear, 1.6);
+    expect(clear.o.miss).toBe(0);
+    expect(clear.o.combo).toBe(3);
+    expect(clear.o.score).toBe(0);
+    expect(clear.o.obstacles[0]!.judgement).toBe("clear");
+    const blocked = withObstacle("bar", 1.5, laneBit(-1) | laneBit(0));
+    advanceTo(blocked, 1.6);
+    expect(blocked.o.miss).toBe(1);
+    // A timed hop still scores in a free lane: the beat always pays.
+    const timed = withObstacle("gap", 2, laneBit(1));
+    tapAt(timed, idealMoment("gap", 2));
+    advanceTo(timed, 2 + DT);
+    expect(timed.o.perfect).toBe(1);
+  });
+
+  it("beat orbs pay combo and score only in their lane on their beat", () => {
+    const sim = withObstacle("wall", 50, laneBit(0));
+    const orb = sim.o.orbSlots[0]!;
+    Object.assign(orb, { active: true, beat: 3, lane: 1, crossTime: 3 * CONFIG.BEAT, collected: false, resolved: false });
+    const miss = sim.o.orbSlots[1]!;
+    Object.assign(miss, { active: true, beat: 5, lane: -1, crossTime: 5 * CONFIG.BEAT, collected: false, resolved: false });
+    sim.advance({ ...IDLE, lane: 1 });
+    advanceTo(sim, 6 * CONFIG.BEAT);
+    expect(orb.collected).toBe(true);
+    expect(miss.collected).toBe(false);
+    expect(sim.o.orbs).toBe(1);
+    expect(sim.o.combo).toBe(1);
+    expect(sim.o.score).toBe(CONFIG.POINTS_ORB);
+    expect(sim.o.miss).toBe(0);
+  });
+
+  it("lane schedule: walls block 1-2 lanes, ≥2 beats apart, every row has an answer, orbs sit in free lanes", () => {
+    const sim = running(11);
+    sim.o.lives = 100000;
+    const plans = new Map<number, { cells: (PlanCell | null)[]; orbs: (number | null)[] }>();
+    for (let i = 0; i < 6000 && sim.o.phraseIndex < 7; i++) {
+      sim.advance(IDLE);
+      for (const p of sim.o.plans) if (!plans.has(p.index)) plans.set(p.index, { cells: p.cells.slice(), orbs: p.orbs.slice() });
+    }
+    let walls = 0, partial = 0, orbs = 0, lastWall = -10;
+    for (const [index, plan] of [...plans.entries()].sort((a, b) => a[0] - b[0])) {
+      plan.cells.forEach((cell, b) => {
+        const orb = plan.orbs[b];
+        if (orb !== null && orb !== undefined) {
+          orbs++;
+          expect([-1, 0, 1]).toContain(orb);
+          if (cell) expect(cell.type).toBe("wall");
+          if (cell) expect(cell.lanes & laneBit(orb)).toBe(0);
+        }
+        if (!cell) return;
+        expect(cell.lanes).toBeGreaterThan(0);
+        expect(cell.lanes).toBeLessThanOrEqual(ALL_LANES);
+        if (cell.type === "wall") {
+          walls++;
+          expect(laneCount(cell.lanes)).toBeLessThanOrEqual(2);
+          const abs = index * CONFIG.BEATS_PER_PHRASE + b;
+          expect(abs - lastWall).toBeGreaterThanOrEqual(2);
+          lastWall = abs;
+        } else if (cell.lanes !== ALL_LANES) partial++;
+      });
+    }
+    expect(walls).toBeGreaterThan(10);
+    expect(partial).toBeGreaterThan(10);
+    expect(orbs).toBeGreaterThan(10);
+    expect([...plans.get(0)!.cells].some((c) => c?.type === "wall")).toBe(true);
+  });
+
+  it("the autopilot steers: dodges walls, collects orbs and never misses over 60 s; begin() re-centres the lane", () => {
+    const sim = new BeatHopperSim(20261101);
+    const pilot = new Autopilot();
+    for (let i = 0; i < 3600; i++) {
+      sim.advance(pilot.next(sim, i));
+      pilot.observe(sim);
+    }
+    expect(sim.o.phase).toBe("playing");
+    expect(sim.o.miss).toBe(0);
+    expect(sim.o.dodges).toBeGreaterThan(5);
+    expect(sim.o.orbs).toBeGreaterThan(5);
+    expect(sim.o.perfect).toBeGreaterThan(20);
+    sim.o.lane = 1;
+    sim.o.laneOffset = 2;
+    sim.begin();
+    expect(sim.o.lane).toBe(0);
+    expect(sim.o.laneOffset).toBe(0);
+    expect(sim.o.steering).toBe(false);
   });
 });
