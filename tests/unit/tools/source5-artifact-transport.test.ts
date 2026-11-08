@@ -208,6 +208,30 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
     for (const file of index.files) expect(sha256(readFileSync(join(m.dest, file.path)))).toBe(file.sha256);
   });
 
+  it('stores a file repeated across retained projects once (shared chunk range), caps the stored bytes and still extracts every copy', () => {
+    const root = job();
+    const tarball = Buffer.alloc(300, 7);
+    for (const template of ['mini-game', 'starter-game', 'starter-product']) {
+      put(root, `tests/reports/native-consumers/${RUN}/projects/templates/${template}/demo/.aura3d-candidate/aura3d-engine-5.3.0.tgz`, tarball);
+      put(root, `tests/reports/native-consumers/${RUN}/projects/templates/${template}/demo/dist/aura-assets/sky.hdr`, tarball);
+    }
+    const { out, index } = upload(root, 400);
+    const copies = index.files.filter((f: { sha256: string }) => f.sha256 === sha256(tarball));
+    expect(copies).toHaveLength(6);
+    expect(new Set(copies.map((f: { chunk: string; offset: number }) => `${f.chunk}@${f.offset}`)).size).toBe(1);
+    expect(index.totalBytes).toBe(index.files.reduce((sum: number, f: { size: number }) => sum + f.size, 0));
+    expect(index.storedBytes).toBe(index.chunks.reduce((sum: number, c: { size: number }) => sum + c.size, 0));
+    expect(index.totalBytes - index.storedBytes).toBe(5 * tarball.length);
+    // The cap applies to stored bytes, not to the logical total of every copy.
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('o'), 'cap'), maxBytes: index.storedBytes })).not.toThrow();
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('o'), 'cap2'), maxBytes: index.storedBytes - 1 })).toThrow(/exceed/);
+    const m = mac();
+    const result = verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN });
+    expect(result.problems).toEqual([]);
+    expect(result).toMatchObject({ ok: true, files: index.files.length, bytes: index.totalBytes });
+    for (const file of index.files) expect(sha256(readFileSync(join(m.dest, file.path)))).toBe(file.sha256);
+  });
+
   it('round-trips packed-c\'s example bundle (its own kind and extraction directory) and refuses a bundle of the other kind', () => {
     const root = job();
     const out = join(temp('upload'), 'examples');
