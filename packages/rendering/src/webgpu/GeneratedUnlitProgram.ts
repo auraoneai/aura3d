@@ -275,7 +275,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   ${alphaToCoverage ? GENERATED_ALPHA_TO_COVERAGE_WGSL("base.a", "material.alphaControls.x") : f.alphaMode === "mask" ? "if (base.a < material.alphaControls.x) { discard; }" : ""}
   let ${f.fog === "none" && !prd07Fog ? "color" : "unfogged"} = max(base.rgb + material.emissive.rgb * material.emissive.a${emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
   ${prd07Fog ? "let color = a3dPrd07ApplyFog(unfogged, input.world);" : ""}
-  ${f.fog !== "none" && !prd07Fog ? `let fogDepth = input.position.z / input.position.w;
+  ${f.fog !== "none" && !prd07Fog ? `let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w;
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let density = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.world.y, 0.0) * material.fogParams.w)" : ""}; let distance = density * fogDepth; let fogAmount = clamp(1.0 - exp(-distance * distance), 0.0, 1.0);`}
   let color = mix(unfogged, material.fogColor.rgb, fogAmount);` : ""}
   ${clipping ? "if (!generatedUnlitClipRetains(input.world, input.local)) { discard; }" : ""}
