@@ -239,7 +239,15 @@ const WEBGPU_MIP_AREA_FRAGMENT = `
  }
  return total / max((hi.x - lo.x) * (hi.y - lo.y), 0.000001);
 }`;
+// ACES is the WebGL2 output curve (ACES_FILMIC_GLSL): the 1/0.6 viewing scale, the ACES working-gamut rows, Hill's
+// RRT+ODT fit and the display rows, so a WebGPU frame tone-maps like the default backend.
 const WEBGPU_NATIVE_TONE_FRAGMENT = `
+fn a3dNativeToneAces(color: vec3<f32>) -> vec3<f32> {
+ let v = color / 0.6;
+ let w = vec3<f32>(dot(vec3<f32>(0.59719, 0.35458, 0.04823), v), dot(vec3<f32>(0.07600, 0.90834, 0.01566), v), dot(vec3<f32>(0.02840, 0.13383, 0.83777), v));
+ let f = ((w + vec3<f32>(0.0245786)) * w - vec3<f32>(0.000090537)) / ((0.983729 * w + vec3<f32>(0.432951)) * w + vec3<f32>(0.238081));
+ return clamp(vec3<f32>(dot(vec3<f32>(1.60475, -0.53108, -0.07367), f), dot(vec3<f32>(-0.10208, 1.10813, -0.00605), f), dot(vec3<f32>(-0.00327, -0.07276, 1.07602), f)), vec3<f32>(0.0), vec3<f32>(1.0));
+}
 @group(0) @binding(0) var<uniform> params: vec4<f32>;
 @group(0) @binding(1) var linearSampler: sampler;
 @group(0) @binding(2) var source: texture_2d<f32>;
@@ -248,7 +256,7 @@ const WEBGPU_NATIVE_TONE_FRAGMENT = `
  var c = max(sample.rgb * params.x / params.w, vec3<f32>(0.0));
  if (params.y > 5.5) { c = min(vec3<f32>(1.0), (c * (vec3<f32>(1.0) + c / 7.5)) / (vec3<f32>(1.0) + c)); }
  else if (params.y > 2.5) { let toe=max(c-vec3<f32>(0.004),vec3<f32>(0.0)); c=min((toe*(6.2*toe+vec3<f32>(0.5)))/(toe*(6.2*toe+vec3<f32>(1.7))+vec3<f32>(0.06)),c*1.08); }
- else if (params.y > 1.5) { c = clamp((c * (2.51 * c + vec3<f32>(0.03))) / (c * (2.43 * c + vec3<f32>(0.59)) + vec3<f32>(0.14)), vec3<f32>(0.0), vec3<f32>(1.0)); }
+ else if (params.y > 1.5) { c = a3dNativeToneAces(c); }
  else if (params.y > 0.5) { c = c / (vec3<f32>(1.0) + c); }
  if (params.z > 0.5) { c = select(1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055), c * 12.92, c <= vec3<f32>(0.0031308)); }
  return vec4<f32>(c, sample.a);
@@ -5541,8 +5549,9 @@ export class WebGPUDevice implements RenderDevice {
     stages: NativeDofDisplayStages, frameIndex: number): RenderTarget {
     this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
-    if (!src.nativeView || src.sampleCount !== 1) {
-      throw new RenderDeviceError("Native depth-of-field display stage needs a single-sample source", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    // `nativeView` is the single-sample (resolved) color of a multisampled target, as the other post stages sample it.
+    if (!src.nativeView) {
+      throw new RenderDeviceError("Native display stage needs a sampleable source", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     }
     this.flushNativeRenderTargetClear(src);
     const format = stage === "ca" && (src.colorTexture.format === "rgba16f" || src.colorTexture.format === "rgba32f") ? src.colorTexture.format : "rgba8";
@@ -5902,6 +5911,8 @@ export class WebGPUDevice implements RenderDevice {
         ...(options.autoExposure ? { autoExposure: { ...options.autoExposure } } : {}),
         nativeDepthOfField: { frame: options.nativeDepthOfField.frame, options: { ...options.nativeDepthOfField.options } },
         ...(options.nativeDofDisplay ? { nativeDofDisplay: snapshotNativeDofDisplay(options.nativeDofDisplay) } : {}) };
+    } else if (options.nativeDofDisplay) {
+      options = { ...options, nativeDofDisplay: snapshotNativeDofDisplay(options.nativeDofDisplay) };
     }
     this.reclaimWebGPUPostUniformBuffers();
     const diagnosticToken = options.postFrameContext?.diagnosticToken;
@@ -5992,8 +6003,10 @@ export class WebGPUDevice implements RenderDevice {
      * silently, never as a GLSL fallback.
      */
     const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId);
-    const dofDisplay = options.nativeDepthOfField ? options.nativeDofDisplay : undefined;
-    if (dofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+    // CA / vignette / finalize (the v2 display stages) run with or without native depth of field; without it a
+    // Display-P3 chain omits them as before, with it P3 stays refused.
+    if (options.nativeDepthOfField && options.nativeDofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+    const dofDisplay = displayP3 ? undefined : options.nativeDofDisplay;
     const dofFrameIndex = Number.isSafeInteger(options.postFrameContext?.frameId) ? options.postFrameContext!.frameId : 0;
     let vignetteRun = false;
     const runDofVignette = (): void => {
