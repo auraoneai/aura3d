@@ -271,6 +271,19 @@ describe("app-bound VFX renderer frames", () => {
       await renderProductionSourceWithProbesAsync(entry.renderer, periodic, camera, entry.flags, periodicOwner, () => false);
       await renderProductionSourceWithProbesAsync(entry.renderer, periodic, camera, entry.flags, periodicOwner, () => false);
       expect(faces.mock.calls.map((call) => call[1])).toEqual([0, 0, 1]);
+      // A completed `update: "once"` cube survives later revisions (they arrive on every scene edit): no recapture.
+      faces.mockClear();
+      const onceOwner = {};
+      const once = { ...source, "prd02.probes.once": {
+        kind: "probe", probe: "reflection", name: "once",
+        options: { position: [0, 0, 2], boxHalfExtents: [2, 2, 2], resolution: 64, update: "once" }
+      } };
+      await renderProductionSourceWithProbesAsync(entry.renderer, once, camera, entry.flags, onceOwner, () => false);
+      app.atmosphere!.setWetness(0.65);
+      await renderProductionSourceWithProbesAsync(entry.renderer, once, camera, entry.flags, onceOwner, () => false);
+      app.atmosphere!.setWetness(0.7);
+      await renderProductionSourceWithProbesAsync(entry.renderer, once, camera, entry.flags, onceOwner, () => false);
+      expect(faces.mock.calls.map((call) => call[1])).toEqual([0, 1, 2, 3, 4, 5]);
       faces.mockRestore();
       await app.stepAsync(0);
       expect(wetness(entry.device)).toBe(0.7);

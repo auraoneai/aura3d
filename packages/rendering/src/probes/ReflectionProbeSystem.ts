@@ -113,6 +113,15 @@ export class ReflectionProbeSystem {
     if (entry) { entry.dirty = true; entry.dirtyRevision += 1; }
   }
 
+  /**
+   * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+   * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+   */
+  restartPartialCaptures(): void {
+    this.assertAlive();
+    for (const entry of this.entries.values()) entry.slice = null;
+  }
+
   probes(): readonly EnvironmentProbe[] {
     return [...this.entries.values()].flatMap((e) => (e.probe ? [e.probe] : []));
   }

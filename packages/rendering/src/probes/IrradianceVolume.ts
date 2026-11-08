@@ -91,6 +91,9 @@ export class IrradianceVolumeSystem {
 
   updateProbe(): void { this.assertAlive(); this.dirty = true; this.updateRevision += 1; }
 
+  /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+  restartPartialCapture(): void { this.assertAlive(); this.job = null; }
+
   get(): IrradianceVolume | null { return this.volume; }
   get maxUpdatesPerFrame(): number { return this.pending?.maxUpdatesPerFrame ?? 4; }
 

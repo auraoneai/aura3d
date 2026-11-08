@@ -64,7 +64,7 @@ import { bindPostDiagnosticReader } from "../postBridge.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import type { ProjectedSpotResource as RendererProjectedSpotResource } from "@aura3d/rendering";
-import { disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
+import { disposePrd02Probes, restartPrd02PartialProbeCaptures, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
 import { rendererQrFlags, setDirectMultiscatterModel, setRendererQrFlags } from "@aura3d/rendering";
 import { isPlainDefaultOutput } from "../looks/plainLook.js";
 import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginPrd07RendererOperation, bindPrd07RendererAuthority,
@@ -88,11 +88,14 @@ const emptyProbeLockSource: ProductionRendererInput["source"] = {};
 function alignPrd07ProbeSnapshot(renderer: Renderer, owner: object, operation: Prd07RendererOperation | undefined): void {
   if (!operation) return;
   const previous = prd07ProbeSnapshots.get(owner);
-  // Periodic probes deliberately keep partial cube faces between frames. A
-  // changed atmosphere must restart that capture, not complete a mixed cube.
-  if (previous && previous.device === renderer.device &&
-      (previous.renderer !== renderer || previous.snapshot !== operation.snapshot)) {
-    disposePrd02Probes(renderer.device, owner);
+  if (previous && previous.device === renderer.device) {
+    // A different renderer owns different capture resources.
+    if (previous.renderer !== renderer) disposePrd02Probes(renderer.device, owner);
+    // Periodic probes deliberately keep partial cube faces between frames. A changed atmosphere must restart that
+    // capture, not complete a mixed cube. Completed captures stay: the snapshot is re-issued on every scene change
+    // (per frame in animated games), and disposing here re-captured and re-prefiltered `update: "once"` probes
+    // every frame.
+    else if (previous.snapshot !== operation.snapshot) restartPrd02PartialProbeCaptures(renderer.device, owner);
   }
   prd07ProbeSnapshots.set(owner, { renderer, device: renderer.device, snapshot: operation.snapshot });
 }

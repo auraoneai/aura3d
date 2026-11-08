@@ -28,7 +28,7 @@ import {
 import {
   createPrd02ProbesContributor, probeNodesFromSource,
   applyProbeEnvironmentCubes, prd02ItemProbeBindings, prd02ItemIrradianceBindings, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY,
-  IRRADIANCE_VOLUMES_BLACKBOARD_KEY, disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, prd02IrradianceVolumes, withPrd02ProbeFrameLock,
+  IRRADIANCE_VOLUMES_BLACKBOARD_KEY, disposePrd02Probes, restartPrd02PartialProbeCaptures, prd02BeforeFrame, prd02BeforeFrameAsync, prd02IrradianceVolumes, withPrd02ProbeFrameLock,
   ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY,
   PROBE_RENDER_FACE_KEY
 } from "../../../../packages/rendering/src/probes/Prd02ProbesContributor";
@@ -469,6 +469,41 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     expect(sizes).toHaveLength(6);
     prd02BeforeFrame(renderer, source, flags);
     expect(sizes).toHaveLength(7);
+    disposePrd02Probes(device);
+    device.dispose();
+  });
+
+  it("keeps a completed once probe across scene-snapshot restarts and restarts only partial periodic cubes", async () => {
+    const device = new MockRenderDevice();
+    const owner = {};
+    const runtime = new Prd02LightingRuntime(undefined, owner);
+    const source = probeSource({
+      "prd02.probes.board": { kind: "probe", probe: "reflection", name: "board", options: { position: [0, 0, 0], resolution: 64, update: "once" } },
+      "prd02.probes.sweep": { kind: "probe", probe: "reflection", name: "sweep", options: { position: [4, 0, 0], resolution: 64, update: { everyNFrames: 100 } } }
+    });
+    const flags = ctxFor(source).flags;
+    const faces: string[] = [];
+    const renderer = { device, renderProbeFace: (_source: unknown, face: number, target: RenderTarget) => {
+      void _source; faces.push(`${target.label ?? ""}:${face}`);
+    } };
+    const once = () => faces.filter((f) => f.startsWith("probe-board")).length;
+    const sweep = () => faces.filter((f) => f.startsWith("probe-sweep")).length;
+    // One probe per frame: frame 1 captures the once cube, frames 2-3 the first two periodic faces.
+    for (let frame = 0; frame < 3; frame += 1) prd02BeforeFrame(renderer, source, flags, owner);
+    expect(once()).toBe(6);
+    expect(sweep()).toBe(2);
+    // The atmosphere snapshot changes on every scene edit: once stays captured, the half-done cube restarts at face 0.
+    for (let frame = 0; frame < 3; frame += 1) {
+      restartPrd02PartialProbeCaptures(device, owner);
+      prd02BeforeFrame(renderer, source, flags, owner);
+    }
+    expect(once()).toBe(6);
+    expect(faces.slice(-3)).toEqual(["probe-sweep-f0:0", "probe-sweep-f0:0", "probe-sweep-f0:0"]);
+    // Explicit invalidation still recaptures a once probe.
+    await runtime.updateProbe("board");
+    prd02BeforeFrame(renderer, source, flags, owner);
+    expect(once()).toBe(12);
+    restartPrd02PartialProbeCaptures(device, {});
     disposePrd02Probes(device);
     device.dispose();
   });

@@ -160,6 +160,19 @@ export function disposePrd02Probes(device: RenderDevice, owner?: object): void {
   if (owner === undefined || owner === device) pendingUpdates.delete(device);
 }
 
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void {
+  const state = systems.get(device)?.get(owner);
+  if (!state) return;
+  state.reflections.restartPartialCaptures();
+  for (const volume of state.irradiance.values()) volume.restartPartialCapture();
+}
+
 /** Captures currently owned by this device; callers do not own their textures. */
 export function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[] {
   const state = stateAt(device, owner);

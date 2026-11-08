@@ -278,6 +278,7 @@ export {
   queuePrd02ProbeUpdate,
   withPrd02ProbeFrameLock,
   disposePrd02Probes,
+  restartPrd02PartialProbeCaptures,
   applyProbeEnvironmentCubes,
   PROBE_BINDINGS_BLACKBOARD_KEY,
   type Prd02ProbeCaptureRenderer
