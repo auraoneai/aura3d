@@ -1,0 +1,907 @@
+{
+ "head": "278b003ec",
+ "captured": "2026-11-08",
+ "viewport": "960x540 headless Chrome ANGLE Metal, prefers-reduced-motion",
+ "games": [
+  {
+   "slug": "showcase-top-tennis",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.35,
+    "p24": 0.09,
+    "static_frac": 99.9,
+    "static": 0.35,
+    "static_p24": 0.09,
+    "meanA": 80.0,
+    "meanB": 80.0
+   },
+   "webgl2_vs_default": {
+    "all": 0.3,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.3,
+    "static_p24": 0.0,
+    "meanA": 80.0,
+    "meanB": 80.0
+   }
+  },
+  {
+   "slug": "showcase-roadster-rush",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.17,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.17,
+    "static_p24": 0.0,
+    "meanA": 42.3,
+    "meanB": 42.3
+   },
+   "webgl2_vs_default": {
+    "all": 0.17,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.17,
+    "static_p24": 0.0,
+    "meanA": 42.3,
+    "meanB": 42.3
+   }
+  },
+  {
+   "slug": "showcase-heatsink",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.58,
+    "p24": 0.03,
+    "static_frac": 99.4,
+    "static": 0.54,
+    "static_p24": 0.02,
+    "meanA": 21.9,
+    "meanB": 22.0
+   },
+   "webgl2_vs_default": {
+    "all": 0.52,
+    "p24": 0.0,
+    "static_frac": 99.4,
+    "static": 0.51,
+    "static_p24": 0.0,
+    "meanA": 22.0,
+    "meanB": 22.0
+   }
+  },
+  {
+   "slug": "showcase-teleoperator",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 7.44,
+    "p24": 12.6,
+    "static_frac": 55.5,
+    "static": 1.08,
+    "static_p24": 0.11,
+    "meanA": 47.8,
+    "meanB": 46.7
+   },
+   "webgl2_vs_default": {
+    "all": 6.17,
+    "p24": 10.41,
+    "static_frac": 55.9,
+    "static": 0.99,
+    "static_p24": 0.05,
+    "meanA": 47.1,
+    "meanB": 46.7
+   }
+  },
+  {
+   "slug": "showcase-iron-crown",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.72,
+    "p24": 0.59,
+    "static_frac": 96.0,
+    "static": 0.37,
+    "static_p24": 0.0,
+    "meanA": 44.1,
+    "meanB": 44.1
+   },
+   "webgl2_vs_default": {
+    "all": 1.42,
+    "p24": 2.21,
+    "static_frac": 96.1,
+    "static": 0.71,
+    "static_p24": 0.65,
+    "meanA": 44.1,
+    "meanB": 44.1
+   }
+  },
+  {
+   "slug": "showcase-pips-big-leap",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 1.88,
+    "p24": 2.17,
+    "static_frac": 96.3,
+    "static": 0.57,
+    "static_p24": 0.16,
+    "meanA": 93.9,
+    "meanB": 94.0
+   },
+   "webgl2_vs_default": {
+    "all": 1.6,
+    "p24": 1.85,
+    "static_frac": 95.9,
+    "static": 0.46,
+    "static_p24": 0.02,
+    "meanA": 94.0,
+    "meanB": 94.0
+   }
+  },
+  {
+   "slug": "showcase-aura-hoops-3d",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 3.23,
+    "p24": 2.06,
+    "static_frac": 87.5,
+    "static": 1.92,
+    "static_p24": 0.01,
+    "meanA": 70.6,
+    "meanB": 70.4
+   },
+   "webgl2_vs_default": {
+    "all": 2.24,
+    "p24": 0.4,
+    "static_frac": 87.8,
+    "static": 1.86,
+    "static_p24": 0.0,
+    "meanA": 70.4,
+    "meanB": 70.4
+   }
+  },
+  {
+   "slug": "showcase-aura-diamond-3d",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 2.14,
+    "p24": 1.56,
+    "static_frac": 79.1,
+    "static": 2.06,
+    "static_p24": 1.74,
+    "meanA": 78.5,
+    "meanB": 79.0
+   },
+   "webgl2_vs_default": {
+    "all": 7.75,
+    "p24": 12.63,
+    "static_frac": 70.7,
+    "static": 1.88,
+    "static_p24": 0.06,
+    "meanA": 80.3,
+    "meanB": 79.0
+   }
+  },
+  {
+   "slug": "showcase-aura-fc-3d",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.58,
+    "p24": 0.23,
+    "static_frac": 98.7,
+    "static": 0.43,
+    "static_p24": 0.01,
+    "meanA": 60.1,
+    "meanB": 60.1
+   },
+   "webgl2_vs_default": {
+    "all": 0.43,
+    "p24": 0.07,
+    "static_frac": 98.8,
+    "static": 0.38,
+    "static_p24": 0.0,
+    "meanA": 60.1,
+    "meanB": 60.1
+   }
+  },
+  {
+   "slug": "showcase-aura-links-3d",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.36,
+    "p24": 0.02,
+    "static_frac": 99.8,
+    "static": 0.35,
+    "static_p24": 0.0,
+    "meanA": 79.0,
+    "meanB": 79.0
+   },
+   "webgl2_vs_default": {
+    "all": 0.34,
+    "p24": 0.0,
+    "static_frac": 99.9,
+    "static": 0.34,
+    "static_p24": 0.0,
+    "meanA": 79.0,
+    "meanB": 79.0
+   }
+  },
+  {
+   "slug": "showcase-bunker-zero",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.36,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.36,
+    "static_p24": 0.0,
+    "meanA": 23.9,
+    "meanB": 23.5
+   },
+   "webgl2_vs_default": {
+    "all": 0.02,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.02,
+    "static_p24": 0.0,
+    "meanA": 23.5,
+    "meanB": 23.5
+   }
+  },
+  {
+   "slug": "showcase-slingshot-siege",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 28.11,
+    "p24": 38.0,
+    "static_frac": 37.6,
+    "static": 3.04,
+    "static_p24": 3.48,
+    "meanA": 88.8,
+    "meanB": 96.6
+   },
+   "webgl2_vs_default": {
+    "all": 24.26,
+    "p24": 34.74,
+    "static_frac": 36.0,
+    "static": 0.38,
+    "static_p24": 0.0,
+    "meanA": 90.8,
+    "meanB": 96.6
+   }
+  },
+  {
+   "slug": "showcase-dot-dash-3d",
+   "intended": "webgpu",
+   "default_backend": "webgpu",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 2.95,
+    "p24": 2.08,
+    "static_frac": 97.9,
+    "static": 2.67,
+    "static_p24": 1.46,
+    "meanA": 45.2,
+    "meanB": 45.1
+   },
+   "webgl2_vs_default": {
+    "all": 2.93,
+    "p24": 2.06,
+    "static_frac": 98.2,
+    "static": 2.64,
+    "static_p24": 1.43,
+    "meanA": 45.1,
+    "meanB": 45.1
+   }
+  },
+  {
+   "slug": "showcase-cross-hop",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 51.46,
+    "p24": 89.66,
+    "static_frac": 2.2,
+    "static": 2.27,
+    "static_p24": 0.05,
+    "meanA": 39.5,
+    "meanB": 82.1
+   },
+   "webgl2_vs_default": {
+    "all": 16.95,
+    "p24": 28.88,
+    "static_frac": 1.5,
+    "static": 1.26,
+    "static_p24": 0.0,
+    "meanA": 81.5,
+    "meanB": 82.1
+   }
+  },
+  {
+   "slug": "craterline-gp",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 1.38,
+    "p24": 0.0,
+    "static_frac": 98.0,
+    "static": 1.34,
+    "static_p24": 0.0,
+    "meanA": 54.9,
+    "meanB": 54.9
+   },
+   "webgl2_vs_default": {
+    "all": 1.38,
+    "p24": 0.01,
+    "static_frac": 98.0,
+    "static": 1.33,
+    "static_p24": 0.0,
+    "meanA": 54.9,
+    "meanB": 54.9
+   }
+  },
+  {
+   "slug": "chroma-roll",
+   "intended": "webgpu",
+   "default_backend": "webgpu",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 2.63,
+    "p24": 4.38,
+    "static_frac": 81.0,
+    "static": 1.2,
+    "static_p24": 1.57,
+    "meanA": 163.9,
+    "meanB": 163.5
+   },
+   "webgl2_vs_default": {
+    "all": 0.9,
+    "p24": 0.85,
+    "static_frac": 87.5,
+    "static": 0.38,
+    "static_p24": 0.0,
+    "meanA": 163.6,
+    "meanB": 163.5
+   }
+  },
+  {
+   "slug": "serpentine-sky-run",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.3,
+    "p24": 0.35,
+    "static_frac": 99.3,
+    "static": 0.2,
+    "static_p24": 0.15,
+    "meanA": 59.5,
+    "meanB": 59.5
+   },
+   "webgl2_vs_default": {
+    "all": 0.16,
+    "p24": 0.06,
+    "static_frac": 99.4,
+    "static": 0.12,
+    "static_p24": 0.0,
+    "meanA": 59.5,
+    "meanB": 59.5
+   }
+  },
+  {
+   "slug": "gridlock-courier",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.18,
+    "p24": 0.01,
+    "static_frac": 99.9,
+    "static": 0.17,
+    "static_p24": 0.0,
+    "meanA": 51.9,
+    "meanB": 51.9
+   },
+   "webgl2_vs_default": {
+    "all": 0.18,
+    "p24": 0.01,
+    "static_frac": 99.9,
+    "static": 0.17,
+    "static_p24": 0.0,
+    "meanA": 51.9,
+    "meanB": 51.9
+   }
+  },
+  {
+   "slug": "ion-circuit",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.75,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.75,
+    "static_p24": 0.0,
+    "meanA": 39.7,
+    "meanB": 39.8
+   },
+   "webgl2_vs_default": {
+    "all": 0.62,
+    "p24": 0.0,
+    "static_frac": 99.9,
+    "static": 0.62,
+    "static_p24": 0.0,
+    "meanA": 39.8,
+    "meanB": 39.8
+   }
+  },
+  {
+   "slug": "shadowstep-gauntlet",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.11,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.11,
+    "static_p24": 0.0,
+    "meanA": 129.4,
+    "meanB": 129.4
+   },
+   "webgl2_vs_default": {
+    "all": 0.11,
+    "p24": 0.0,
+    "static_frac": 99.9,
+    "static": 0.11,
+    "static_p24": 0.0,
+    "meanA": 129.4,
+    "meanB": 129.4
+   }
+  },
+  {
+   "slug": "lamplight-line",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.74,
+    "p24": 0.01,
+    "static_frac": 100.0,
+    "static": 0.73,
+    "static_p24": 0.0,
+    "meanA": 66.3,
+    "meanB": 66.3
+   },
+   "webgl2_vs_default": {
+    "all": 0.0,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.0,
+    "static_p24": 0.0,
+    "meanA": 66.3,
+    "meanB": 66.3
+   }
+  },
+  {
+   "slug": "saltwind-highway",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 1.47,
+    "p24": 0.99,
+    "static_frac": 97.6,
+    "static": 1.04,
+    "static_p24": 0.15,
+    "meanA": 111.6,
+    "meanB": 111.6
+   },
+   "webgl2_vs_default": {
+    "all": 1.09,
+    "p24": 0.41,
+    "static_frac": 97.6,
+    "static": 0.88,
+    "static_p24": 0.0,
+    "meanA": 111.6,
+    "meanB": 111.6
+   }
+  },
+  {
+   "slug": "the-bellkeepers-walk",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 5.64,
+    "p24": 10.41,
+    "static_frac": 78.8,
+    "static": 1.58,
+    "static_p24": 1.77,
+    "meanA": 144.2,
+    "meanB": 144.1
+   },
+   "webgl2_vs_default": {
+    "all": 2.3,
+    "p24": 3.56,
+    "static_frac": 83.4,
+    "static": 0.53,
+    "static_p24": 0.06,
+    "meanA": 144.1,
+    "meanB": 144.1
+   }
+  },
+  {
+   "slug": "duneglide",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 1.08,
+    "p24": 0.91,
+    "static_frac": 94.9,
+    "static": 0.64,
+    "static_p24": 0.07,
+    "meanA": 56.7,
+    "meanB": 57.1
+   },
+   "webgl2_vs_default": {
+    "all": 0.95,
+    "p24": 0.66,
+    "static_frac": 94.9,
+    "static": 0.59,
+    "static_p24": 0.0,
+    "meanA": 56.7,
+    "meanB": 57.1
+   }
+  },
+  {
+   "slug": "cumulus-dash",
+   "intended": "webgpu",
+   "default_backend": "webgpu",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 11.45,
+    "p24": 23.65,
+    "static_frac": 14.0,
+    "static": 1.79,
+    "static_p24": 0.0,
+    "meanA": 107.1,
+    "meanB": 105.7
+   },
+   "webgl2_vs_default": {
+    "all": 21.25,
+    "p24": 50.65,
+    "static_frac": 7.9,
+    "static": 2.88,
+    "static_p24": 3.48,
+    "meanA": 107.0,
+    "meanB": 105.7
+   }
+  },
+  {
+   "slug": "showcase-shape-shift-sprint",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 7.31,
+    "p24": 12.44,
+    "static_frac": 80.7,
+    "static": 0.78,
+    "static_p24": 1.2,
+    "meanA": 197.8,
+    "meanB": 198.8
+   },
+   "webgl2_vs_default": {
+    "all": 0.05,
+    "p24": 0.1,
+    "static_frac": 86.0,
+    "static": 0.0,
+    "static_p24": 0.0,
+    "meanA": 198.8,
+    "meanB": 198.8
+   }
+  },
+  {
+   "slug": "showcase-number-surge",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.86,
+    "p24": 1.13,
+    "static_frac": 98.1,
+    "static": 0.51,
+    "static_p24": 0.27,
+    "meanA": 70.2,
+    "meanB": 70.2
+   },
+   "webgl2_vs_default": {
+    "all": 0.31,
+    "p24": 0.03,
+    "static_frac": 98.2,
+    "static": 0.28,
+    "static_p24": 0.0,
+    "meanA": 70.2,
+    "meanB": 70.2
+   }
+  },
+  {
+   "slug": "showcase-splat-turf",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.24,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.24,
+    "static_p24": 0.0,
+    "meanA": 129.2,
+    "meanB": 129.2
+   },
+   "webgl2_vs_default": {
+    "all": 0.0,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.0,
+    "static_p24": 0.0,
+    "meanA": 129.2,
+    "meanB": 129.2
+   }
+  },
+  {
+   "slug": "showcase-polarity-orbs",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.06,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.06,
+    "static_p24": 0.0,
+    "meanA": 61.7,
+    "meanB": 61.7
+   },
+   "webgl2_vs_default": {
+    "all": 0.06,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.06,
+    "static_p24": 0.0,
+    "meanA": 61.7,
+    "meanB": 61.7
+   }
+  },
+  {
+   "slug": "showcase-beat-hopper",
+   "intended": "webgl2",
+   "default_backend": "webgl2",
+   "forced_webgl2_backend": "webgl2",
+   "live_backend": "webgl2",
+   "app_errors": {
+    "default": 0,
+    "webgl2": 0,
+    "live": 0
+   },
+   "vs_live": {
+    "all": 0.22,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.22,
+    "static_p24": 0.0,
+    "meanA": 49.0,
+    "meanB": 49.0
+   },
+   "webgl2_vs_default": {
+    "all": 0.22,
+    "p24": 0.0,
+    "static_frac": 100.0,
+    "static": 0.22,
+    "static_p24": 0.0,
+    "meanA": 49.0,
+    "meanB": 49.0
+   }
+  }
+ ]
+}
