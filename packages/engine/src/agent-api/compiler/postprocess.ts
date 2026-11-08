@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraEffectNode, AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
 import type { AuraAntiAliasMode } from "../../contracts/post.js";
 import { colorToRgba } from "../colorUtils.js";
@@ -467,7 +467,37 @@ function webgpuPostGapForPostprocess(
   let post: RendererPostProcessOptions;
   try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return undefined; }
   if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
-  try { return dofGap?.(post); } catch { return undefined; }
+  let gap: WebgpuPostGap | undefined;
+  try { gap = dofGap?.(post); } catch { return undefined; }
+  return gap ?? nativeDofSceneGap(snapshot, post);
+}
+
+/**
+ * Native WebGPU depth of field draws only opaque built-in unlit primitives over
+ * a plain clear (the renderer's NATIVE_DOF_SCENE/FRAME checks). Report any
+ * other content before a WebGPU context is taken, so the app keeps WebGL2
+ * instead of failing every frame once the post combination itself is admitted.
+ */
+function nativeDofSceneGap(snapshot: AuraSceneSnapshot, post: RendererPostProcessOptions): WebgpuPostGap | undefined {
+  const pipeline = post.v2 === true && post.pipeline && typeof post.pipeline === "object" ? post.pipeline as { dof?: unknown } : undefined;
+  if (!pipeline || pipeline.dof === undefined || pipeline.dof === false) return undefined;
+  const missing = new Set<string>();
+  if (snapshot.backgroundImage) missing.add("background-image");
+  // Lit-only factors (roughness/metallic) are ignored by the unlit program.
+  const allowedMaterialKeys = new Set(["unlit", "color", "opacity", "name", "roughness", "metallic", "metalness"]);
+  const visit = (nodes: readonly AuraSceneNode[]): void => {
+    for (const node of nodes) {
+      if (node.kind === "effect" || node.kind === "light" || node.kind === "interaction") continue;
+      if (node.kind === "group") { visit(node.children); continue; }
+      if (node.kind !== "primitive") { missing.add(`node-${node.kind}`); continue; }
+      const material = node.material as Record<string, unknown> | undefined;
+      if (material?.unlit !== true || (material.opacity !== undefined && material.opacity !== 1)
+        || Object.keys(material).some(key => !allowedMaterialKeys.has(key))) missing.add("non-unlit-material");
+      if (node.instances?.length || node.instanceColors?.length) missing.add("instancing");
+    }
+  };
+  visit(snapshot.nodes);
+  return missing.size ? { code: "NATIVE_DOF_SCENE_UNSUPPORTED", missing: [...missing].sort() } : undefined;
 }
 
 Object.defineProperty(createProductionRuntimePostprocess, Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1"), {
