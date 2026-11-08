@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/react",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "type": "module",
   "exports": {
     ".": {
@@ -13,7 +13,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "peerDependencies": {
-    "@aura3d/engine": "^5.2.0",
+    "@aura3d/engine": "^5.2.1",
     "react": "^19.0.0 || ^18.0.0"
   },
   "devDependencies": {
