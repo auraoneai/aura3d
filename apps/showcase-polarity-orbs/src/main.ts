@@ -2,7 +2,7 @@
  * Polarity Orbs boot: loading bar → buildWorld → createAuraApp → bind → warm → fixed-step loop.
  * Splat shell pattern: drag steering with tap-to-flip discrimination (pointer up with |dx| < 8 px, or Space/Enter),
  * pause on P/Esc/hidden tab, adaptive DPR, QA hooks (`window.__AURA_POLARITY_ORBS__`), route-health snapshot and
- * localStorage best/mute/motion under `splatSiblings.polarity-orbs.*` (guarded).
+ * localStorage best/mute/motion/howtoSeen under `splatSiblings.polarity-orbs.*` (guarded).
  *
  * Query parameters: `seed=N`, `manual=1`, `autostart=1`, `autopilot=1`, `warmup=N`, `dpr=N`, `motion=reduced|full`.
  */
@@ -19,6 +19,7 @@ import { Hud } from "./hud";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { createPolaritySound, diffSounds, frameStateOf, type FrameState } from "./audio";
 import { Autopilot } from "./autopilot";
+import { createHowtoDialog } from "./howto";
 
 const config = readQaParams({
   seed: { type: "number", default: 20261124 },
@@ -68,6 +69,7 @@ const store = {
 const KEY_BEST = "splatSiblings.polarity-orbs.best";
 const KEY_MUTE = "splatSiblings.polarity-orbs.mute";
 const KEY_MOTION = "splatSiblings.polarity-orbs.motion";
+const KEY_HOWTO = "splatSiblings.polarity-orbs.howtoSeen";
 let best = Number(store.get(KEY_BEST)) || 0;
 sound.setMuted(store.get(KEY_MUTE) === "1");
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -76,6 +78,7 @@ let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" 
 rig.steady = reducedMotion;
 
 const hud = new Hud();
+const howto = createHowtoDialog($("howto-screen"), $<HTMLButtonElement>("btn-howto-close"));
 document.body.classList.toggle("reduced-motion", reducedMotion);
 
 /* ------------------------------------------------------------------ results */
@@ -278,7 +281,7 @@ addEventListener("pointerdown", (e) => {
   void sound.unlock();
   if (config.manual || pilot) return;
   const target = e.target as HTMLElement | null;
-  if (target?.closest?.(".no-steer")) return;
+  if (howto.isOpen || target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "gameOver" && target?.id !== "btn-restart") return;
   if (paused) return;
   if (sim.o.phase === "splash") pending.start = true;
@@ -385,11 +388,23 @@ function restart(): void {
   $("hud").classList.add("visible");
 }
 
+/** Play from the title: the first time ever, show the rules and start the run when they are dismissed. */
+function requestStart(): void {
+  if (sim.o.phase !== "splash" || !ready || howto.isOpen) return;
+  if (store.get(KEY_HOWTO) === "1") { pending.start = true; return; }
+  store.set(KEY_HOWTO, "1");
+  howto.open("GOT IT — PLAY", () => {
+    if (sim.o.phase === "splash" && ready && !config.manual && !pilot) pending.start = true;
+  });
+}
+
 $("btn-start").addEventListener("click", () => {
   void sound.unlock();
   if (config.manual || pilot || !ready) return;
-  pending.start = true;
+  requestStart();
 });
+$("btn-howto").addEventListener("click", () => howto.open("GOT IT"));
+$("btn-howto-pause").addEventListener("click", () => howto.open("GOT IT"));
 $("btn-restart").addEventListener("click", () => {
   void sound.unlock();
   if (config.manual || pilot) return;
@@ -402,13 +417,14 @@ const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1
 const held = new Set<string>();
 addEventListener("keydown", (e) => {
   void sound.unlock();
+  if (howto.handleKey(e)) return;
   if (config.manual || pilot || e.repeat) return;
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
   if (paused) return;
   if (e.code === "Space" || e.code === "Enter") {
     e.preventDefault();
-    if (sim.o.phase === "splash" && ready) pending.start = true;
+    if (sim.o.phase === "splash" && ready) requestStart();
     else if (sim.o.phase === "playing") pending.tap = true;
     else if (sim.o.phase === "gameOver") restart();
     return;
@@ -542,7 +558,7 @@ const qa = installQaHooks("polarity-orbs", {
       return snapshotState();
     },
     presentation() {
-      return { popupsShown, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, warm: warmResult };
+      return { popupsShown, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, howtoOpen: howto.isOpen, warm: warmResult };
     },
     setting(which: "motion" | "symbols", on: boolean) {
       if (which === "motion") reducedMotion = on;
