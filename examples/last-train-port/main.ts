@@ -305,11 +305,20 @@ function startPlay(goal?: number): void {
 /** `live` draws the tram between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
 /** True from a render until the end of the current task: `pixels()` right after `frame()` (one evaluate) need not render again. */
 let freshFrame = false;
+/**
+ * A lab backend (`?backend=webgpu|auto`) renders with async frames: on WebGPU the station reflection probes cannot capture
+ * on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED). While one is in flight the next render is skipped (the scene
+ * may not be mutated under a pending submission). Absent the flag every render is the synchronous `app.step(0)` as before.
+ */
+const LAB_ASYNC_FRAMES = readLabFlags().backend !== undefined;
+let asyncFrame: Promise<void> | null = null;
 function render(live = false): void {
   if (!app || !runtime) return;
+  if (asyncFrame) return;
   if (!freshFrame) { freshFrame = true; queueMicrotask(() => { freshFrame = false; }); }
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode, reducedMotion: reducedMotion() });
-  app.step(0);
+  if (LAB_ASYNC_FRAMES) asyncFrame = app.stepAsync(0).catch(reportError).finally(() => { asyncFrame = null; });
+  else app.step(0);
 }
 
 /** `speed=N` runs N sim steps per fixed step. The sim steps only in play and never in manual mode; frames always render. */
