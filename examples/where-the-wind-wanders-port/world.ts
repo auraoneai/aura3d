@@ -14,6 +14,10 @@ import { createCameraSequencer, type SequenceId } from "./camera-seq";
 import { WIND_DIR, gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
+import {
+  BLOB_FRAGMENT_WGSL, BLOB_VERTEX_WGSL, GLOW_FRAGMENT_WGSL, GLOW_VERTEX_WGSL, HAZE_FRAGMENT_WGSL, HAZE_VERTEX_WGSL, MOTE_FRAGMENT_WGSL, MOTE_VERTEX_WGSL, PAINT_VERTEX_WGSL, PROP_VERTEX_WGSL,
+  SHAFT_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, STREAM_FRAGMENT_WGSL, TRAVELLER_VERTEX_WGSL, WIND_VERTEX_WGSL, paintFragmentWgsl, propFragmentWgsl, seaFragmentWgsl, windFragmentWgsl
+} from "./shaders-wgsl";
 import { DAYLIGHT_KEYS, ORIGINAL_KEY, TRAVELLER_FILL, createDaylightDriver, daylightKeyFor, frameOfKey, isDuskKey, linearToHex, lookPostFor, type DaylightFrame, type LookPost } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
@@ -67,17 +71,20 @@ export function writeDaylightUniforms(handle: { setUniform?(name: string, value:
 const RECEIVE_DEFINES = { WIND_SUN_SHADOW: 1, WIND_HERO_SHADOW: 1 } as const;
 export const windSpec = (receive = true): CustomSpec => ({
   glsl: { vertex: WIND_VERTEX, fragment: WIND_FRAGMENT },
+  wgsl: { vertex: WIND_VERTEX_WGSL, fragment: windFragmentWgsl(receive) },
   ...(receive ? { defines: RECEIVE_DEFINES } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, gustAmt: { type: "f32", value: 0 }, heroShadowAmt: { type: "f32", value: 0 } },
   side: "double"
 });
 export const paintSpec = (receive = true): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: PAINT_FRAGMENT },
+  wgsl: { vertex: PAINT_VERTEX_WGSL, fragment: paintFragmentWgsl(receive) },
   ...(receive ? { defines: RECEIVE_DEFINES } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, heroShadowAmt: { type: "f32", value: 0 } }
 });
 export const seaSpec = (shoreReflection = true): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: SEA_FRAGMENT },
+  wgsl: { vertex: PAINT_VERTEX_WGSL, fragment: seaFragmentWgsl(shoreReflection) },
   ...(shoreReflection ? { defines: { SHORE_REFLECTION: 1 } } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
@@ -85,6 +92,7 @@ export const seaSpec = (shoreReflection = true): CustomSpec => ({
 });
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
   uniforms: {
     ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
@@ -101,6 +109,7 @@ export const skySpec = (): CustomSpec => ({
 });
 export const propSpec = (castShadow = false, receive = true): CustomSpec => ({
   glsl: { vertex: PROP_VERTEX, fragment: PROP_FRAGMENT },
+  wgsl: { vertex: PROP_VERTEX_WGSL, fragment: propFragmentWgsl(receive) },
   ...(receive ? { defines: { WIND_SUN_SHADOW: 1 } } : {}),
   ...(castShadow ? { castShadow: true } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
@@ -108,6 +117,7 @@ export const propSpec = (castShadow = false, receive = true): CustomSpec => ({
 });
 export const travellerSpec = (): CustomSpec => ({
   glsl: { vertex: TRAVELLER_VERTEX, fragment: PROP_FRAGMENT },
+  wgsl: { vertex: TRAVELLER_VERTEX_WGSL, fragment: propFragmentWgsl(false) },
   uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     playerPos: { type: "vec3", value: [1e4, 0, 1e4] },
@@ -120,6 +130,7 @@ export const travellerSpec = (): CustomSpec => ({
 });
 export const glowSpec = (color: Rgb, amount: number, seed: number): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
+  wgsl: { vertex: GLOW_VERTEX_WGSL, fragment: GLOW_FRAGMENT_WGSL },
   uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     glowColor: { type: "color3", value: [...color] },
@@ -133,6 +144,7 @@ export const glowSpec = (color: Rgb, amount: number, seed: number): CustomSpec =
 });
 export const moteSpec = (): CustomSpec => ({
   glsl: { vertex: MOTE_VERTEX, fragment: MOTE_FRAGMENT },
+  wgsl: { vertex: MOTE_VERTEX_WGSL, fragment: MOTE_FRAGMENT_WGSL },
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false,
@@ -141,6 +153,7 @@ export const moteSpec = (): CustomSpec => ({
 });
 export const hazeSpec = (phase: number): CustomSpec => ({
   glsl: { vertex: HAZE_VERTEX, fragment: HAZE_FRAGMENT },
+  wgsl: { vertex: HAZE_VERTEX_WGSL, fragment: HAZE_FRAGMENT_WGSL },
   uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     hazePhase: { type: "f32", value: phase },
@@ -152,6 +165,7 @@ export const hazeSpec = (phase: number): CustomSpec => ({
 });
 export const streamSpec = (): CustomSpec => ({
   glsl: { vertex: HAZE_VERTEX, fragment: STREAM_FRAGMENT },
+  wgsl: { vertex: HAZE_VERTEX_WGSL, fragment: STREAM_FRAGMENT_WGSL },
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false,
@@ -159,6 +173,7 @@ export const streamSpec = (): CustomSpec => ({
 });
 export const shaftSpec = (seed: number, opacity: number): CustomSpec => ({
   glsl: { vertex: HAZE_VERTEX, fragment: SHAFT_FRAGMENT },
+  wgsl: { vertex: HAZE_VERTEX_WGSL, fragment: SHAFT_FRAGMENT_WGSL },
   uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     shaftSeed: { type: "f32", value: seed },
@@ -170,6 +185,7 @@ export const shaftSpec = (seed: number, opacity: number): CustomSpec => ({
 });
 export const blobSpec = (): CustomSpec => ({
   glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
+  wgsl: { vertex: BLOB_VERTEX_WGSL, fragment: BLOB_FRAGMENT_WGSL },
   uniforms: { shadowOpacity: { type: "f32", value: 0.5 } },
   transparent: true,
   depthWrite: false,
