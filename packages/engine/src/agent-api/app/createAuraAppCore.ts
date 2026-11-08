@@ -2388,13 +2388,15 @@ export function createAuraAppWithPhysicsWorldAccess(
     },
     ready() {
       // Resolves when the in-flight mount settles; immediate when there is none. See AuraApp.ready.
-      // watchReadyStall only logs AURA_READY_STALLED if this stays pending ~10 s on a visible page
-      // (a top-level await deadlocking the bundle); it never rejects or delays the promise.
+      // watchReadyStall only logs an AURA_READY_STALLED hint if this stays pending with no asset activity
+      // for 15 s on a visible page (a top-level await deadlocking the bundle); it never rejects or delays the promise.
       return watchReadyStall((async () => {
         await productionMountSettled;
         // On-demand physics only: also wait for a backend load in flight (its failure is reported in diagnostics).
         if (physicsLoad) await physicsLoad.catch(() => undefined);
-      })());
+      })(), {
+        subscribeActivity: (onActivity) => assetEventScope.subscribe({ onAssetProgress: onActivity, onAssetError: onActivity })
+      });
     },
     readiness(readinessOptions: AuraReadinessOptions = {}) {
       if (disposed) return Promise.resolve({ state: "disposed" } as const);

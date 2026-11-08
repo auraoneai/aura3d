@@ -6,18 +6,23 @@
  * imports the entry chunk back; an entry suspended on top-level await never finishes evaluating,
  * so that chunk never loads, the mount never settles and the page stays black with no error.
  *
- * This watcher only logs: it never rejects, resolves or delays the promise it observes.
+ * This watcher only logs: it never rejects, resolves or delays the promise it observes. A slow but
+ * healthy mount (large models on a slow connection) emits asset progress; each progress or error
+ * event restarts the quiet interval, so the hint only appears after {@link READY_STALL_WARNING_MS}
+ * of visible time with no asset activity at all, which is what the deadlock looks like (the lazy
+ * chunk that would start the downloads never loads).
  */
 
 export const AURA_READY_STALLED = "AURA_READY_STALLED";
-export const READY_STALL_WARNING_MS = 10_000;
+export const READY_STALL_WARNING_MS = 15_000;
 
 export const READY_STALL_MESSAGE =
-  `[aura3d] ${AURA_READY_STALLED}: app.ready() is still pending after ${READY_STALL_WARNING_MS / 1000} s on a visible page. ` +
-  "The usual cause is a top-level `await app.ready()` (or another top-level await on an engine promise) in the entry module: " +
-  "with Vite's default chunk splitting a lazily loaded engine chunk imports the entry chunk back, so the entry never finishes " +
-  "evaluating and the renderer never mounts (black page). Fix: do not await engine work at module top level; use " +
-  "`void app.ready().then(() => { ... })` instead.";
+  `[aura3d] ${AURA_READY_STALLED} (hint, not a failure): app.ready() has been pending for ${READY_STALL_WARNING_MS / 1000} s ` +
+  "on a visible page with no asset progress. If the page is still black, a likely cause is a top-level `await app.ready()` " +
+  "(or another top-level await on an engine promise) in the entry module: with Vite's default chunk splitting a lazily loaded " +
+  "engine chunk imports the entry chunk back, so the entry never finishes evaluating and the renderer never mounts. " +
+  "Fix: do not await engine work at module top level; use `void app.ready().then(() => { ... })` instead. " +
+  "If the scene appears normally, ignore this message; ready() still settles when the mount finishes.";
 
 export interface ReadyStallEnvironment {
   readonly setTimeout?: (callback: () => void, ms: number) => unknown;
@@ -25,6 +30,11 @@ export interface ReadyStallEnvironment {
   /** True when the page is visible (or there is no page). Hidden tabs throttle work; they re-arm instead of logging. */
   readonly isVisible?: () => boolean;
   readonly report?: (message: string) => void;
+  /**
+   * Subscribe to signs of a live mount (asset progress or errors). Each call to `onActivity` restarts the
+   * quiet interval. Returns an unsubscribe function, called once `pending` settles.
+   */
+  readonly subscribeActivity?: (onActivity: () => void) => () => void;
 }
 
 let reportedGlobally = false;
@@ -44,8 +54,8 @@ function defaultReport(message: string): void {
 }
 
 /**
- * Observe `pending`; if it is still unsettled after {@link READY_STALL_WARNING_MS} while the page is
- * visible, report {@link READY_STALL_MESSAGE} once per realm. Returns `pending` itself unchanged.
+ * Observe `pending`; if it is still unsettled after {@link READY_STALL_WARNING_MS} of visible time with no
+ * reported activity, report {@link READY_STALL_MESSAGE} once per realm. Returns `pending` itself unchanged.
  */
 export function watchReadyStall<T>(pending: Promise<T>, environment: ReadyStallEnvironment = {}): Promise<T> {
   if (reportedGlobally) return pending;
@@ -56,6 +66,7 @@ export function watchReadyStall<T>(pending: Promise<T>, environment: ReadyStallE
   const report = environment.report ?? defaultReport;
   let settled = false;
   let handle: unknown;
+  let unsubscribe: (() => void) | undefined;
   const arm = (): void => {
     handle = schedule(() => {
       handle = undefined;
@@ -72,8 +83,19 @@ export function watchReadyStall<T>(pending: Promise<T>, environment: ReadyStallE
     settled = true;
     if (handle !== undefined) cancel(handle);
     handle = undefined;
+    try { unsubscribe?.(); } catch { /* diagnostic only */ }
+    unsubscribe = undefined;
   };
   pending.then(done, done);
   arm();
+  if (environment.subscribeActivity) {
+    try {
+      unsubscribe = environment.subscribeActivity(() => {
+        if (settled || reportedGlobally) return;
+        if (handle !== undefined) cancel(handle);
+        arm();
+      });
+    } catch { /* diagnostic only */ }
+  }
   return pending;
 }
