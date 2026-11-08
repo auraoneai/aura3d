@@ -1,0 +1,98 @@
+{
+ "reviewer": "n3-look independent review, 2026-11-08, headless Chrome ANGLE Metal, 960x540 (example canvas 640x360)",
+ "causeA_rerun": {
+  "spider/n3-default": {
+   "frameLuma": 183.8,
+   "ground": [
+    191,
+    192,
+    195
+   ]
+  },
+  "spider/plain-off(pre-N3)": {
+   "frameLuma": 233.9,
+   "ground": [
+    244,
+    244,
+    244
+   ]
+  },
+  "spider/plain-preset": {
+   "frameLuma": 179.7,
+   "ground": [
+    187,
+    187,
+    189
+   ]
+  },
+  "spider/three(benchmark)": {
+   "frameLuma": 196.1,
+   "ground": [
+    212,
+    211,
+    211
+   ]
+  },
+  "garden/n3-default": {
+   "frameLuma": 106.7,
+   "ground": [
+    109,
+    133,
+    79
+   ],
+   "groundSat": 0.406
+  },
+  "garden/plain-off(pre-N3)": {
+   "frameLuma": 121.4,
+   "ground": [
+    130,
+    162,
+    87
+   ],
+   "groundSat": 0.463
+  },
+  "garden/plain-preset": {
+   "frameLuma": 107.5,
+   "ground": [
+    112,
+    133,
+    84
+   ],
+   "groundSat": 0.368
+  },
+  "garden/three-analytic-same-lights": {
+   "ground": [
+    106,
+    141,
+    63
+   ],
+   "groundSat": 0.55,
+   "note": "three.js NoToneMapping, Lambert, same directional 3 + hemisphere #dfeeff; the benchmark three.js frame used a grass texture so its pixel is not comparable"
+  },
+  "garden/n3 directional only (no sky, no hemisphere)": {
+   "ground": [
+    100,
+    120,
+    72
+   ],
+   "analyticThree": [
+    94,
+    123,
+    52
+   ]
+  }
+ },
+ "gamesLocalVsLive_meanAbsDiff": {
+  "showcase-roadster-rush": 0.17,
+  "showcase-iron-crown": 0.65,
+  "showcase-top-tennis": 0.36,
+  "showcase-aura-links-3d": 0.35,
+  "showcase-pips-big-leap": 0.37,
+  "showcase-slingshot-siege": {
+   "run1": 20.17,
+   "run2": 7.79,
+   "liveVsLiveNoise": 18.08
+  },
+  "showcase-cross-hop": "not comparable: local dist lacks its aura-assets GLBs (HTTP 404, environment)"
+ }
+}
