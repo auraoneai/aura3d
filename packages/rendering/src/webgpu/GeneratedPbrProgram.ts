@@ -332,14 +332,19 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   // GU47 E-D `prd04.instanceColorTarget: "both"`: the instance colour multiplies the base (USE_INSTANCING_COLOR) and the
   // emissive term. "emissive" (a separate a_a3dInstanceEmissive stream) is not implemented natively yet.
   const instanceColorTarget = active.has(INSTANCE_COLOR_TARGET_FEATURE);
-  if ((instanceColorTarget && (active.get(INSTANCE_COLOR_TARGET_FEATURE) !== "both" || f.features[INSTANCE_COLOR_TARGET_FEATURE] !== "both"))
+  const targetValue = active.get(INSTANCE_COLOR_TARGET_FEATURE);
+  if ((instanceColorTarget && ((targetValue !== "both" && targetValue !== "emissive") || f.features[INSTANCE_COLOR_TARGET_FEATURE] !== targetValue))
     || (!instanceColorTarget && f.features[INSTANCE_COLOR_TARGET_FEATURE] !== undefined && f.features[INSTANCE_COLOR_TARGET_FEATURE] !== false)) {
-    unsupported(`features.${INSTANCE_COLOR_TARGET_FEATURE}`, "instance colour targets other than \"both\"");
+    unsupported(`features.${INSTANCE_COLOR_TARGET_FEATURE}`, "instance colour targets other than \"both\" or \"emissive\"");
   }
+  // "emissive": the colours arrive at the instance colour location (ForwardPass binds them as a_instanceColor on WebGPU)
+  // and feed only the emissive term; the program carries no USE_INSTANCING_COLOR base multiply.
+  const emissiveTarget = instanceColorTarget && targetValue === "emissive";
+  if (emissiveTarget && (!f.instancing || f.instancing.color)) unsupported(`features.${INSTANCE_COLOR_TARGET_FEATURE}`, "an emissive instance colour target without an instance stream");
   if (instanceColorTarget && !descriptor.verifiedFeatures?.includes(INSTANCE_COLOR_TARGET_FEATURE)) unsupported("activeFeatures", `a replaced or unverified ${INSTANCE_COLOR_TARGET_FEATURE} contributor`);
   // Like the GLSL call (`#elif defined(USE_INSTANCING_COLOR)`), a program without instance colours (renderer warmup
   // variants) leaves the emissive term unchanged.
-  const instanceEmissive = instanceColorTarget && f.instancing?.color === true;
+  const instanceEmissive = emissiveTarget || (instanceColorTarget && f.instancing?.color === true);
   const packedLoopColor = active.get("a3d.packedLoopColor") === true;
   if ((active.has("a3d.packedLoopColor") && !packedLoopColor) || (f.features["a3d.packedLoopColor"] === true) !== packedLoopColor) unsupported("features.a3d.packedLoopColor", "inactive packed member color");
   const deform = active.get("prd06.deform");
@@ -478,7 +483,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height", A3D_CLIPPING: f.features["a3d.clipping"] === true,
     A3D_PHOTOMETRIC_PROFILE: photometric, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_WETNESS: wetness,
     A3D_FOG: prd07Fog !== undefined, A3D_FOG_FROXEL_TIER: prd07Fog === "volumetric", A3D_PRD10_WIND: wind, A3D_PRD04_RIM: rim,
-    A3D_INSTANCE_COLOR_EMISSIVE: instanceColorTarget, A3D_INSTANCE_EMISSIVE_ATTRIBUTE: false,
+    A3D_INSTANCE_COLOR_EMISSIVE: instanceColorTarget, A3D_INSTANCE_EMISSIVE_ATTRIBUTE: emissiveTarget,
     A3D_LOG_DEPTH: f.features[PROGRAM_LOG_DEPTH_FEATURE] === true,
     A3D_PRD04_ALPHA_TO_COVERAGE: alphaToCoverage, ALPHA_TO_COVERAGE: alphaToCoverage,
     A3D_LEGACY_POINT_SHADOW: pointShadow, A3D_LEGACY_SPOT_SHADOW: spotShadow,
@@ -959,6 +964,7 @@ export function createGeneratedPbrProgram(descriptor: GeneratedPbrDescriptor): G
   const physicalIndirect = packedLoopColor ? "a3dPackedPhysicalIndirect" : "a3dPhysicalIndirect";
   const packedArgument = packedLoopColor ? ", material.packedLoopColor.rgb" : "";
   const instanceLocation = mode.skinning === 8 ? 10 : 8;
+  const instanceStream = f.instancing?.color === true || (mode.instanceEmissive && Boolean(f.instancing));
   const instanceVolume = Boolean(f.instancing && mode.materialVolume);
   const clipping = f.features["a3d.clipping"] === true;
   const instanceVolumeVaryings = instanceVolume ? "@location(6) @interpolate(flat) volume0: vec3f, @location(7) @interpolate(flat) volume1: vec3f, @location(8) @interpolate(flat) volume2: vec3f," : "";
@@ -1049,7 +1055,7 @@ fn generatedMorphFetch(vertex: u32, target: i32, attribute: i32) -> vec3f {
   return textureLoad(u_morphTextureTexture, vec2i(x, y), target, 0).xyz;
 }` : "";
   const vertex = `${MATERIAL_STRUCT}\n${FRAME_STRUCT}\n${ZERO_TO_ONE_PROJECTION_WGSL}\n${skinningWgsl}\n${morphWgsl}\n${mode.wind ? GENERATED_WIND_WGSL : ""}
-struct VertexOutput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
+struct VertexOutput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${instanceStream ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
 fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   let a = transform[0].xyz; let b = transform[1].xyz; let c = transform[2].xyz;
   let crossBC = cross(b, c); let det = dot(a, crossBC);
@@ -1062,7 +1068,7 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   if (lengthSquared > 0.000000000001) { return worldNormal * inverseSqrt(lengthSquared); }
   return vec3f(0.0, 0.0, 1.0);
 }
-@vertex fn vs_main(@location(0) position: vec3f, @location(1) normal: vec3f${mode.uv0 ? ", @location(2) uv: vec2f" : ""}${mode.tangent ? ", @location(3) tangent: vec4f" : ""}${f.vertexColors ? ", @location(4) color: vec4f" : ""}${mode.skinning ? ", @location(5) joints: vec4f, @location(6) weights: vec4f" : ""}${mode.uv1 ? ", @location(7) uv1: vec2f" : ""}${mode.skinning === 8 ? ", @location(8) joints1: vec4f, @location(9) weights1: vec4f" : ""}${f.instancing ? `, @location(${instanceLocation}) instance0: vec4f, @location(${instanceLocation + 1}) instance1: vec4f, @location(${instanceLocation + 2}) instance2: vec4f, @location(${instanceLocation + 3}) instance3: vec4f` : ""}${f.instancing?.color ? `, @location(${instanceLocation + 4}) instanceColor: vec4f` : ""}${mode.morph ? ", @builtin(vertex_index) vertexIndex: u32" : ""}) -> VertexOutput {
+@vertex fn vs_main(@location(0) position: vec3f, @location(1) normal: vec3f${mode.uv0 ? ", @location(2) uv: vec2f" : ""}${mode.tangent ? ", @location(3) tangent: vec4f" : ""}${f.vertexColors ? ", @location(4) color: vec4f" : ""}${mode.skinning ? ", @location(5) joints: vec4f, @location(6) weights: vec4f" : ""}${mode.uv1 ? ", @location(7) uv1: vec2f" : ""}${mode.skinning === 8 ? ", @location(8) joints1: vec4f, @location(9) weights1: vec4f" : ""}${f.instancing ? `, @location(${instanceLocation}) instance0: vec4f, @location(${instanceLocation + 1}) instance1: vec4f, @location(${instanceLocation + 2}) instance2: vec4f, @location(${instanceLocation + 3}) instance3: vec4f` : ""}${instanceStream ? `, @location(${instanceLocation + 4}) instanceColor: vec4f` : ""}${mode.morph ? ", @builtin(vertex_index) vertexIndex: u32" : ""}) -> VertexOutput {
   var output: VertexOutput;
   var deformedPosition = position; var deformedNormal = normal;
   ${mode.tangent ? "var deformedTangent = tangent;" : ""}
@@ -1092,7 +1098,7 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   output.normal = generatedWorldNormal(deformedNormal, localTransform);
   ${mode.uv0 ? "output.uv = uv;" : ""} ${mode.uv1 ? "output.uv1 = uv1;" : ""}
   ${f.vertexColors ? "output.color = color;" : ""}
-  ${f.instancing?.color ? "output.instanceColor = instanceColor;" : ""}
+  ${instanceStream ? "output.instanceColor = instanceColor;" : ""}
   ${instanceVolume ? "let volumeWorld = material.model * localTransform; output.volume0 = volumeWorld[0].xyz; output.volume1 = volumeWorld[1].xyz; output.volume2 = volumeWorld[2].xyz;" : ""}
   ${mode.anisotropy || mode.tangent ? mode.tangent ? `let tangentMatrix = material.model * localTransform;
   let tangentWorld = (tangentMatrix * vec4f(deformedTangent.xyz, 0.0)).xyz;
@@ -1188,7 +1194,7 @@ ${clipping ? CLIPPING_WGSL : ""}
 ${logDepth ? LOG_DEPTH_WGSL : ""}
 ${mode.uv0 || mode.uv1 ? MAP_UV_WGSL : ""}
 ${mode.outputSrgb ? OUTPUT_WGSL : ""}
-struct FragmentInput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
+struct FragmentInput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${instanceStream ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
 ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) color: vec4f, @location(1) depthCoverage: vec4f, };" : ""}
 ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location(0) color: vec4f, @builtin(frag_depth) depth: f32, };" : ""}
 @fragment fn fs_main(input: FragmentInput, @builtin(front_facing) frontFacing: bool) -> ${writesDepthCoverage ? "GeneratedDepthCoverageOutput" : logDepth ? "GeneratedLogDepthOutput" : "@location(0) vec4f"} {
@@ -1553,7 +1559,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   directDiffuse = vec3f(0.0);` : ""}
   let ${f.fog === "none" && !mode.prd07Fog ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + ${mode.instanceEmissive ? "(" : ""}material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}${mode.rim ? " + material.rim.rgb * (material.rim.a * pow(1.0 - clamp(dot(n, view), 0.0, 1.0), max(material.rimParams.x, 0.01)))" : ""}${mode.instanceEmissive ? ") * input.instanceColor.rgb" : ""}, vec3f(0.0));
   ${mode.prd07Fog ? "let color = a3dPrd07ApplyFog(unfoggedColor, input.worldPosition);" : ""}
-  ${f.fog !== "none" && !mode.prd07Fog ? `let fogDepth = input.position.z / input.position.w;
+  ${f.fog !== "none" && !mode.prd07Fog ? `let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w; // reversed depth (P22 > 0) keeps the standard reading, as a3d.reversedFogDepth does on WebGL2
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let fogDensity = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.worldPosition.y, 0.0) * material.fogParams.w)" : ""};
   let fogDistance = fogDensity * fogDepth;
   let fogAmount = clamp(1.0 - exp(-fogDistance * fogDistance), 0.0, 1.0);`}
@@ -1571,7 +1577,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     materialBinding: { group: 0, binding: 0, byteLength: GENERATED_PBR_MATERIAL_LAYOUT.size },
     frameBinding: { group: 1, binding: 0, minimumByteLength: 304 },
     resources, requiredVertexLocations: [0, 1, ...(mode.uv0 ? [2] : []), ...(mode.tangent ? [3] : []), ...(f.vertexColors ? [4] : []), ...(mode.skinning ? [5, 6] : []), ...(mode.uv1 ? [7] : []), ...(mode.skinning === 8 ? [8, 9] : [])],
-    requiredInstanceLocations: f.instancing ? [instanceLocation, instanceLocation + 1, instanceLocation + 2, instanceLocation + 3, ...(f.instancing.color ? [instanceLocation + 4] : [])] : [],
+    requiredInstanceLocations: f.instancing ? [instanceLocation, instanceLocation + 1, instanceLocation + 2, instanceLocation + 3, ...(instanceStream ? [instanceLocation + 4] : [])] : [],
     skinning: mode.skinning, directLightBound: mode.directBound, clustered: f.lights.clustered, rectLights: f.lights.rect > 0,
     morph: mode.morph, transmission: mode.transmission, transmissionDegraded: mode.transmissionDegraded, transmissionMap: mode.lobeMaps.transmission !== undefined, contactShadow: f.shadows.contact,
     pointShadow, spotShadow,

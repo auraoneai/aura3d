@@ -1,4 +1,4 @@
-// Native WebGPU `prd04.instanceColorTarget: "both"` (Lamplight Line, Showcase Dot Dash 3D): the generated WGSL PBR
+// Native WebGPU `prd04.instanceColorTarget` "both" and "emissive" (Lamplight Line, Showcase Dot Dash 3D): the generated WGSL PBR
 // program multiplies the base by the instance colour (as before) and also the emissive term, like
 // a3d_prd04_instance_emissive_frag_call on WebGL2. Source checks only; no GPU execution.
 import { describe, expect, it } from "vitest";
@@ -31,9 +31,17 @@ describe("native WebGPU instance colour target", () => {
     expect(plain.fragment).not.toContain("input.instanceColor.rgb");
   });
 
-  it("leaves the emissive term alone without instance colours; fails closed on \"emissive\" and unverified contributors", () => {
+  it("\"emissive\" reads the colours at the instance colour location and tints only the emissive term", () => {
+    const emissive = generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "emissive" }, false);
+    const program = createGeneratedPbrProgram(emissive);
+    expect(program.vertex).toContain("@location(12) instanceColor: vec4f");
+    expect(program.requiredInstanceLocations).toEqual([8, 9, 10, 11, 12]);
+    expect(program.fragment).not.toContain("* input.instanceColor;");
+    expect(program.fragment).toMatch(/\(material\.emissive\.rgb \* material\.emissive\.a[^;]*\) \* input\.instanceColor\.rgb/);
+  });
+
+  it("leaves the emissive term alone without instance colours; fails closed on unverified contributors", () => {
     expect(createGeneratedPbrProgram(generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "both" }, false)).fragment).not.toContain("input.instanceColor");
-    expect(() => createGeneratedPbrProgram(generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "emissive" }, false))).toThrow(/instance colour targets/);
     const both = generated({ [A3D_INSTANCE_COLOR_TARGET_FEATURE]: "both" });
     expect(() => createGeneratedPbrProgram({ ...both, verifiedFeatures: [] })).toThrow(/unverified prd04.instanceColorTarget/);
   });
