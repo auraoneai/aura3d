@@ -12,6 +12,7 @@ import { RibbonBatch, RIBBON_VERTEX_FLOATS, type RibbonGeometry } from "./Ribbon
 import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import { RIBBON_SHADER_MARKER, ribbonFragmentSource, ribbonProgramKey, ribbonVertexSource } from "./shaders/ribbon.glsl";
 import { sceneDepthLinearizeUniform } from "../DepthConvention";
+import { RIBBON_PORTABLE_BINDINGS, RIBBON_WGSL } from "./shaders/ribbon.wgsl";
 
 export const RIBBON_VERTEX_FORMAT = new VertexFormat(
   [
@@ -29,7 +30,7 @@ export class RibbonPass {
   private indexBuffer: RenderBuffer | null = null;
   private vertexCapacity = 0;
   private indexCapacity = 0;
-  /** Set once a WebGPU device has rejected the GLSL-only ribbon program. */
+  /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
   private wgslUnavailable = false;
 
   constructor(private readonly device: RenderDevice) {}
@@ -100,7 +101,8 @@ export class RibbonPass {
         label: key,
         vertex: ribbonVertexSource(),
         fragment: ribbonFragmentSource(defines),
-        marker: RIBBON_SHADER_MARKER
+        marker: RIBBON_SHADER_MARKER,
+        ...(this.device.kind === "webgpu" ? { webgpu: RIBBON_WGSL, portableBindings: RIBBON_PORTABLE_BINDINGS } : {})
       });
       this.programs.set(key, shader);
     }

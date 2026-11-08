@@ -20,6 +20,7 @@ import {
   particleVertexSource,
   type ParticleProgramDefines
 } from "./shaders/particle.glsl";
+import { particlePortableBindings, particleWgsl } from "./shaders/particle.wgsl";
 import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 const MAX_PARTICLE_PROGRAMS = 12;
@@ -246,7 +247,7 @@ export class ParticleBatchPass {
       fogAnalytic: false,
       straightAlpha: batch.desc.atlasStraightAlpha === true
     };
-    // GLSL-only program: skipped on WebGPU with one warning (glslOnlyVfxProgram), never thrown out of the frame.
+    // WebGPU uses the WGSL twin (shaders/particle.wgsl.ts); a device that still reports WGSL_PROGRAM_MISSING skips with one warning.
     if (this.wgslUnavailable) return;
     const shader = glslOnlyVfxProgram(this.device, "VFX_PARTICLES_WGSL_MISSING", "particle batches", () => this.program(defines));
     if (!shader) {
@@ -306,7 +307,8 @@ export class ParticleBatchPass {
         label: key,
         vertex: particleVertexSource(defines),
         fragment: particleFragmentSource(defines),
-        marker: PARTICLE_SHADER_MARKER
+        marker: PARTICLE_SHADER_MARKER,
+        ...(this.device.kind === "webgpu" ? { webgpu: particleWgsl(defines), portableBindings: particlePortableBindings(defines) } : {})
       });
       this.programs.set(key, shader);
     }

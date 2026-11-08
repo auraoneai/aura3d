@@ -2605,6 +2605,10 @@ export function createAuraAppWithPhysicsWorldAccess(
       await productionController?.whenIdle?.();
       if (productionController && !disposed && !productionController.busy?.()) {
         productionController.render(runtimeTime * 1000);
+        // A WebGPU mount that adopted asynchronous frames for probe capture queues
+        // that render instead of drawing it here: wait for it, so the capture shows
+        // the re-rendered frame and no submission is left pending for the next step().
+        if (!disposed && productionController.busy?.()) await productionController.whenIdle?.();
       }
       return captureAuraScreenshot(canvas);
     },

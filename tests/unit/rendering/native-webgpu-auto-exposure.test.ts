@@ -251,7 +251,9 @@ describe("native WebGPU auto exposure", () => {
       expect(() => f.exposure.execute(source, options as never, frame(scope, "v", 1, 0))).toThrow();
     }
     expect(() => f.exposure.execute(source, {}, { ...frame(scope, "v", 1, 0), timeSeconds: NaN })).toThrow(/captured frame time/);
-    expect(() => f.exposure.execute({ ...source, sampleCount: 4 }, {}, frame(scope, "v", 1, 0))).toThrow(/single-sample/);
+    // 4x scene targets are metered through their single-sample resolve; other counts are rejected.
+    expect(() => f.exposure.execute({ ...source, sampleCount: 8 }, {}, frame(scope, "v", 1, 0))).toThrow(/single-sample/);
+    expect(() => f.exposure.execute({ ...source, sampleCount: 2 }, {}, frame(scope, "v", 1, 0))).toThrow(/single-sample/);
     expect(f.draws).toHaveLength(0);
     expect(normalizeWebGPUAutoExposure({})).toEqual({ minEv: -4, maxEv: 4, speedUp: 3, speedDown: 1, compensationEv: 0, meteringMask: "center-weighted" });
   });
