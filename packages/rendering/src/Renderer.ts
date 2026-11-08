@@ -21,7 +21,7 @@ import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shader
 import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDepthPassesCover, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, nativeDofConflicts, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDepthPassesCover, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
@@ -87,7 +87,7 @@ import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD01_FORWARD_TARGET, PRD03_EXPOSURE, beginRendererQrFlagBinding, rendererQrFlags, setRendererQrFlags, withRendererQrFlags, withRendererQrFrameBegin, withRendererQrProofAccess,
   installRendererPostOwner, removeRendererPostOwner, withRendererPostAccess } from "./renderer/FrameGraph";
-import { clearTaaHistoryWrites, consumePostV2Presented, consumeTaaHistoryWritten, setSelectiveBloomSkipped } from "./renderer/postSkipped";
+import { clearTaaHistoryWrites, consumePostV2Presented, consumeTaaHistoryWritten, recordPostSkipped, setSelectiveBloomSkipped } from "./renderer/postSkipped";
 import { createSelectiveBloomTarget, selectiveBloomDecline, selectiveBloomRequested, selectiveContributorContract, setSelectiveSignalDrawBuffer, transferUnmergedBloomWeights, type SelectiveBloomTarget } from "./renderer/SelectiveBloom";
 import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
@@ -775,6 +775,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
     readonly cameraCut?: boolean;
     /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
     readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+    /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+    readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
     readonly sceneDepth: {
       readonly texture: Texture | null;
       readonly available: boolean;
@@ -2187,16 +2189,40 @@ export class Renderer {
     return preferredFrameDepthStorage(this.device) === "float" ? { depthPrecision: "float" } : {};
   }
 
+  /**
+   * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+   * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+   * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+   * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+   * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+   */
+  private nativeDofRoute: "scene" | "skipped" | undefined;
+
   private planNativeDepthOfField(postprocess: RendererPostProcessOptions | undefined,
     camera: { readonly projectionMetadata?: FrameProjectionMetadata } | undefined,
     forward: { readonly projection?: Mat4; readonly consistent: boolean },
     options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown;
-      readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean }): ReturnType<typeof nativeDofProjection> | undefined {
+      readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean },
+    items?: readonly RenderItem[]): ReturnType<typeof nativeDofProjection> | undefined {
+    this.nativeDofRoute = undefined;
     if (!nativeWebGPUDofRequested(this.device, postprocess)) return undefined;
     const device = this.device;
     const pipeline = postprocess!.pipeline as PostPipelineOptions;
+    const conflicts = nativeDofConflicts(postprocess!, pipeline, this.viewScopeId);
+    if (conflicts.length && device.presentLdrPostprocess && postprocess!.execution !== "cpu-deterministic" && !this.renderingViews) {
+      recordPostSkipped(`WEBGPU_DOF_SKIPPED:${conflicts.join(",")}`, postprocess!.postFrameContext?.diagnosticToken);
+      this.nativeDofRoute = "skipped";
+      return undefined;
+    }
     validateNativeDofRoute(postprocess!, pipeline, this.viewScopeId);
     const flags = rendererQrFlags(device);
+    // The general scene route needs only the native post chain and a full single view.
+    if (device.canPresentNativeDepthOfField?.() === true && device.presentLdrPostprocess && postprocess!.execution !== "cpu-deterministic"
+      && !this.renderingViews && !this.pendingViewState && this.rasterViewportIsFull() && !options.explicitTarget && !options.deferred
+      && !this.nativeDofStrictFrame(pipeline, flags, options, camera, forward, items)) {
+      this.nativeDofRoute = "scene";
+      return undefined;
+    }
     if (device.canPresentNativeDepthOfField?.() !== true || !device.beginNativeDepthOfFieldFrame || !device.sealNativeDepthOfFieldFrame
       || !device.cancelNativeDepthOfFieldFrame || !device.validateNativeDepthOfFieldFrame || !device.clearRenderTarget
       || !device.presentLdrPostprocess || !device.getRenderTarget || postprocess!.execution === "cpu-deterministic"
@@ -2210,6 +2236,26 @@ export class Renderer {
     const plan = nativeDofProjection(camera, forward);
     validateWebGPUDepthOfFieldOptions(pipeline.dof as Partial<DofOptions>, plan.maxGeometryDepthMeters, plan.skyDepthMeters);
     return plan;
+  }
+
+  /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+  private nativeDofStrictFrame(pipeline: PostPipelineOptions, flags: QrFlags,
+    options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown },
+    camera: { readonly projectionMetadata?: FrameProjectionMetadata } | undefined,
+    forward: { readonly projection?: Mat4; readonly consistent: boolean }, items: readonly RenderItem[] | undefined): boolean {
+    const device = this.device;
+    if (!device.beginNativeDepthOfFieldFrame || !device.sealNativeDepthOfFieldFrame || !device.cancelNativeDepthOfFieldFrame
+      || !device.validateNativeDepthOfFieldFrame || !device.clearRenderTarget || !device.getRenderTarget
+      || pipeline.backgroundPassthrough || potentiallyActiveFrameContributors(flags).length > 0
+      || !isTrustedQrFlags(flags) || !qrCoreGeneratorOn(flags) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
+      || options.environmentBackground || options.environmentFog || options.advanced
+      || this.clearColor[3] !== 1 || this.clearColor.slice(0, 3).some(value => !Number.isFinite(value) || value < 0 || value > 1)) return false;
+    try {
+      const plan = nativeDofProjection(camera, forward);
+      validateWebGPUDepthOfFieldOptions(pipeline.dof as Partial<DofOptions>, plan.maxGeometryDepthMeters, plan.skyDepthMeters);
+      if (items) assertNativeDofItems(items, flags);
+    } catch { return false; }
+    return true;
   }
 
   /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
@@ -3722,7 +3768,7 @@ export class Renderer {
       deferredInFrame = false;
     }
     const nativeDofPlan = this.planNativeDepthOfField(routePost, resolvedCamera, forwardCamera,
-      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame });
+      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame }, items);
     if (nativeDofPlan) assertNativeDofItems(items, rendererQrFlags(this.device));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
@@ -3820,7 +3866,7 @@ export class Renderer {
           format
         });
       }
-      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && !webgpuAutoExposureRequested(this.device, postprocess)) {
+      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess)) {
         throw new RenderDeviceError("Renderer HDR postprocess requires tone mapping before presentation or LDR postprocess passes", "HDR_POSTPROCESS_TONEMAPPING_REQUIRED", {
           backend: this.device.kind,
           format
@@ -4357,6 +4403,7 @@ export class Renderer {
             diagnosticToken,
             cameraCut: this.activeCameraCut || temporalAutoReset,
             ...(nativeDofFrame ? { nativeDepthOfFieldFrame: nativeDofFrame } : {}),
+            ...(!nativeDofFrame && this.nativeDofRoute ? { nativeDepthOfFieldRoute: this.nativeDofRoute } : {}),
             sceneDepth: {
               texture: ownedTargets[0]?.depthTexture ?? null,
               available: (ownedTargets[0]?.depthTexture ?? null) !== null,
@@ -4651,7 +4698,7 @@ export class Renderer {
       deferredInFrame = false;
     }
     const nativeDofPlan = this.planNativeDepthOfField(routePost, resolvedCamera, forwardCamera,
-      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame });
+      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame }, items);
     if (nativeDofPlan) assertNativeDofItems(items, rendererQrFlags(this.device));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
@@ -4750,7 +4797,7 @@ export class Renderer {
           format
         });
       }
-      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && !webgpuAutoExposureRequested(this.device, postprocess)) {
+      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess)) {
         throw new RenderDeviceError("Renderer HDR postprocess requires tone mapping before presentation or LDR postprocess passes", "HDR_POSTPROCESS_TONEMAPPING_REQUIRED", {
           backend: this.device.kind,
           format
@@ -5243,6 +5290,7 @@ export class Renderer {
             diagnosticToken,
             cameraCut: this.activeCameraCut || temporalAutoReset,
             ...(nativeDofFrame ? { nativeDepthOfFieldFrame: nativeDofFrame } : {}),
+            ...(!nativeDofFrame && this.nativeDofRoute ? { nativeDepthOfFieldRoute: this.nativeDofRoute } : {}),
             sceneDepth: {
               texture: ownedTargets[0]?.depthTexture ?? null,
               available: (ownedTargets[0]?.depthTexture ?? null) !== null,

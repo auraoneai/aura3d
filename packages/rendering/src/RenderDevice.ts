@@ -320,6 +320,18 @@ export interface NativeWebGPUDofRequest {
   readonly frame: NativeWebGPUDofFrame;
 }
 
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+  readonly options: Partial<DofOptions>;
+  readonly camera: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+  readonly maxGeometryDepthMeters: number;
+  readonly skyDepthMeters: number;
+}
+
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
   readonly depthSubmitted: boolean;
@@ -357,6 +369,8 @@ export interface LdrPostprocessPresentationOptions {
   readonly autoExposure?: Partial<AutoExposureOptionsV2>;
   /** Native HDR DoF before exposure, bloom and output conversion. */
   readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+  /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+  readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
   /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
   readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
   /** Chromatic aberration, vignette and grain stages of a native DoF chain. */

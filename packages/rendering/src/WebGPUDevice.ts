@@ -23,6 +23,7 @@ import {
   type NativeWebGPUDofFrameDescriptor,
   type ShaderReflection,
   type NativeAmbientOcclusionRequest,
+  type NativeSceneDofRequest,
   type ShaderCompilationDiagnostic,
   type ShaderSources,
   type UniformValue,
@@ -217,6 +218,13 @@ function takeNativeDofPrecedingCustoms(customAt: Map<number, PostPassDescriptor[
   return { afterDepth: sorted.filter(pass => pass.insertAt === "after-depth"),
     beforeTaa: sorted.filter(pass => pass.insertAt === "before-taa"), afterTaa: sorted.filter(pass => pass.insertAt === "after-taa") };
 }
+
+/** Single-sample float copy of a (possibly 4x-resolved or rgba8) color source for the scene DoF kernel. */
+const WEBGPU_SCENE_DOF_COLOR_FRAGMENT = /* wgsl */ `@group(0) @binding(2) var u_color: texture_2d<f32>;
+@fragment fn fs_scene_dof_color(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  return textureLoad(u_color, vec2<i32>(position.xy), 0);
+}
+`;
 
 /** One fragment for the 4x DoF producer resolve (see resolveNativeDofMultisampleProducer). */
 function nativeDofMultisampleResolveWgsl(reversed: boolean, clearDepth: number): string {
@@ -6015,8 +6023,8 @@ export class WebGPUDevice implements RenderDevice {
     const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId);
     // Native depth of field: passes anchored before S6 (after-depth, before-taa, after-taa) leave the chain slots and
     // run around the HDR depth stages in the v2 graph order instead (see the try block below).
-    const preDofCustoms = options.nativeDepthOfField ? takeNativeDofPrecedingCustoms(customAt) : undefined;
-    const dofDisplay = options.nativeDepthOfField ? options.nativeDofDisplay : undefined;
+    const preDofCustoms = options.nativeDepthOfField || options.nativeSceneDepthOfField ? takeNativeDofPrecedingCustoms(customAt) : undefined;
+    const dofDisplay = options.nativeDepthOfField || options.nativeSceneDepthOfField ? options.nativeDofDisplay : undefined;
     if (dofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
     const dofFrameIndex = Number.isSafeInteger(options.postFrameContext?.frameId) ? options.postFrameContext!.frameId : 0;
     let vignetteRun = false;
@@ -6130,6 +6138,10 @@ export class WebGPUDevice implements RenderDevice {
         current = dofResult.target;
         linearResult.release(); linearResult = undefined;
       }
+      if (options.nativeSceneDepthOfField && !options.nativeDepthOfField) {
+        track(this.executeWebGPUSceneDepthOfField(current, source, options.nativeSceneDepthOfField));
+        if (diagnosticToken) { recordPostStage("S1:depth-prep", diagnosticToken); recordPostStage("S6:dof", diagnosticToken); }
+      }
       // v2 S7: motion blur follows depth of field, on HDR before bloom.
       if (options.nativeMotionBlur && !depthStagesP3) {
         track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
@@ -6236,6 +6248,52 @@ export class WebGPUDevice implements RenderDevice {
       linearResult?.release();
       dofDriver?.dispose();
       linearDriver?.dispose();
+    }
+  }
+
+  /**
+   * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+   * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+   * a caller-owned target in the color's float format.
+   */
+  private executeWebGPUSceneDepthOfField(color: RenderTarget, depthSource: RenderTarget, request: NativeSceneDofRequest): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(color);
+    if (!src.nativeView) throw new RenderDeviceError("WebGPU depth of field source has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    if (depthSource.width !== src.width || depthSource.height !== src.height) {
+      throw new RenderDeviceError("WebGPU depth of field depth and color sizes differ", "WEBGPU_DOF_DEPTH_UNSUPPORTED");
+    }
+    const depth = this.nativeAmbientOcclusionDepth(depthSource, "depth-of-field", true);
+    let linearUniforms: Float32Array;
+    try { linearUniforms = packWebGPUAoLinearDepthUniforms({ ...request.camera, reversed: depth.reversed }); }
+    catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "WEBGPU_DOF_DEPTH_UNSUPPORTED"); }
+    const w = src.width, h = src.height;
+    const scratch: RenderTarget[] = [];
+    const generation = () => this.generation, isLost = () => this.disposed || this.contextLost;
+    const driver = new WebGPUDepthOfField({ createTarget: descriptor => this.createRenderTarget(descriptor),
+      draw: pass => this.executeNativeDofPass(pass, () => this.assertAlive()), deviceGeneration: generation, isDeviceLost: isLost });
+    let succeeded = false;
+    try {
+      let input: RenderTarget = color;
+      const format = src.colorTexture.format;
+      if ((src.sampleCount ?? 1) !== 1 || (format !== "rgba16f" && format !== "rgba32f") || src.colorTexture.colorSpace !== "linear") {
+        input = this.createRenderTarget({ width: w, height: h, format: "rgba16f", depth: false, label: "a3d-webgpu-scene-dof-color" });
+        scratch.push(input);
+        this.runWebGPUFullscreenPass({ label: "webgpu-scene-dof-color", fragment: WEBGPU_SCENE_DOF_COLOR_FRAGMENT, entryPoint: "fs_scene_dof_color",
+          uniforms: new Float32Array(4), views: [src.nativeView], target: input, textureLoadBindings: true });
+      }
+      const linear = this.createRenderTarget({ width: w, height: h, format: "rgba32f", depth: false, label: "a3d-webgpu-scene-dof-linear-depth" });
+      scratch.push(linear);
+      this.runWebGPUFullscreenPass({ label: "webgpu-scene-dof-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
+        uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true, ...(depth.multisampled ? { multisampledDepthViews: [0] } : {}) });
+      const result = driver.execute({ color: input, alpha: "opaque", depthModel: "single-surface", linearDepth: linear, depthEncoding: "linear-view-metres",
+        maxGeometryDepthMeters: request.maxGeometryDepthMeters, skyDepthMeters: request.skyDepthMeters, options: request.options });
+      succeeded = true;
+      // The driver is dropped without dispose: its output now belongs to the caller's chain.
+      return result.target;
+    } finally {
+      for (const target of scratch) target.dispose();
+      if (!succeeded) { try { driver.dispose(); } catch { /* Preserve the original failure. */ } }
     }
   }
 

@@ -250,3 +250,41 @@ describe("pre-mount WebGPU gap for the W2 combinations", () => {
     expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3" } })).toBeUndefined();
   });
 });
+
+describe("native WebGPU depth of field on the general scene route", () => {
+  const sceneDof = ["fs_ao_linear_depth", "fs_dof_prefilter", "fs_dof_prefilter_coc", "fs_dof_near_tile", "fs_dof_gather", "fs_dof_gather_influence", "fs_dof_composite"];
+
+  it.each([1, 4] as const)("linearizes the frame's own depth (no coverage proof) after AO and before tone (samples=%s)", async sampleCount => {
+    const ao = { radius: 0.5, intensity: 0.8, falloff: 1, directions: 4, steps: 4, multiBounce: true, fallbackStrength: 0.1 };
+    const f = await fixture({ ao, ...(sampleCount === 4 ? msaa : {}) }, { sampleCount });
+    const begin = vi.spyOn(f.renderer.device, "beginNativeDepthOfFieldFrame" as never);
+    try {
+      // A translucent surface is outside the coverage-proof route, so the frame takes the scene route.
+      (f.source.renderItems[0]!.material as UnlitMaterial).color = [0.2, 0.4, 0.6, 0.5];
+      const diagnostics = f.renderer.render(f.source, f.camera);
+      expect(begin).not.toHaveBeenCalled();
+      expect(diagnostics.nativeDepthOfField).toBeUndefined();
+      const draws = f.passes.filter(pass => pass.draws > 0);
+      const names = draws.map(entry);
+      const apply = names.indexOf("fs_ao_apply");
+      const start = names.indexOf("fs_ao_linear_depth", apply);
+      expect(apply).toBeGreaterThan(0);
+      expect(names.slice(start, start + sceneDof.length)).toEqual(sceneDof);
+      expect(names.indexOf("fs_tone")).toBeGreaterThan(start + sceneDof.length - 1);
+      const code = (draws[start]!.pipeline!.descriptor.fragment as { module: { code: string } }).module.code;
+      expect(code).toContain(sampleCount === 4 ? "texture_depth_multisampled_2d" : "texture_2d<f32>");
+      expect(draws.some(pass => pass.pipeline?.descriptor.fragment?.targets.length === 2)).toBe(false);
+    } finally { f.close(); }
+  });
+
+  it("copies a 4x color source to a single-sample float target before the kernel", async () => {
+    const f = await fixture(msaa, { sampleCount: 4 });
+    try {
+      (f.source.renderItems[0]!.material as UnlitMaterial).color = [0.2, 0.4, 0.6, 0.5];
+      f.renderer.render(f.source, f.camera);
+      const names = drawn(f.passes);
+      expect(names.indexOf("fs_scene_dof_color")).toBeGreaterThan(0);
+      expect(names.indexOf("fs_scene_dof_color")).toBeLessThan(names.indexOf("fs_dof_prefilter"));
+    } finally { f.close(); }
+  });
+});
