@@ -21,7 +21,7 @@ import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shader
 import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDepthPassesCover, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
@@ -3831,7 +3831,10 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId);
+      // WebGPU serves god rays, motion blur and legacy volumetric light from the forward target's own depth
+      // attachment (WebGPUDepthEffects), so those frames request no public sampleable depth texture.
+      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId)
+        && !(this.device.kind === "webgpu" && !nativeDofPlan && webgpuNativeDepthPassesCover(postprocess, this.viewScopeId));
       const requiresDepthTexture = requiresPostDepthTexture || (scalarVolumes.length > 0 && scalarVolumeToneMap);
       // W3: an explicit 4x WebGPU frame whose only depth reader is SSR reads the multisampled attachment, no capability needed.
       if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")
@@ -4758,7 +4761,10 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId);
+      // WebGPU serves god rays, motion blur and legacy volumetric light from the forward target's own depth
+      // attachment (WebGPUDepthEffects), so those frames request no public sampleable depth texture.
+      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId)
+        && !(this.device.kind === "webgpu" && !nativeDofPlan && webgpuNativeDepthPassesCover(postprocess, this.viewScopeId));
       const requiresDepthTexture = requiresPostDepthTexture || (scalarVolumes.length > 0 && scalarVolumeToneMap);
       // W3: an explicit 4x WebGPU frame whose only depth reader is SSR reads the multisampled attachment, no capability needed.
       if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")

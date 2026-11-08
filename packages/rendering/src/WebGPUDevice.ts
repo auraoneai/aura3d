@@ -37,6 +37,12 @@ import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceL
 import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
 import { normalizeWebGPUTemporalOptions, WEBGPU_TAA_FRAGMENT, WEBGPU_TAA_OUTPUT_FRAGMENT, type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal";
 import {
+  resolveWebGPUVolumetricLight, webgpuGodRaysFragment, webgpuGodRaysUniforms, webgpuMotionReconstructFragment, webgpuMotionReconstructUniforms,
+  webgpuMotionTileUniforms, webgpuMotionVelocityFragment, webgpuMotionVelocityUniforms, webgpuVolumetricLightFragment, webgpuVolumetricLightUniforms,
+  WEBGPU_GODRAYS_COMPOSITE_FRAGMENT, WEBGPU_MOTION_NEIGHBOR_FRAGMENT, WEBGPU_MOTION_TILE_MAX_FRAGMENT,
+  type WebGPUGodRaysRequest, type WebGPUMotionBlurRequest
+} from "./webgpu/WebGPUDepthEffects";
+import {
   defaultWebGPUBloomWeights,
   normalizeWebGPUColorGradeOptions,
   normalizeWebGPUBloomOptions,
@@ -1405,6 +1411,8 @@ export class WebGPUDevice implements RenderDevice {
   private nativeSsrPasses = 0;
   private nativeTaaPasses = 0;
   private nativeTemporalBindings = 0;
+  /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
+  private nativeDepthStagePasses = 0;
   private readonly webgpuPostPipelines = new Map<string, WebGPURenderPipelineLike>();
   private webgpuPostLinearSampler: WebGPUSamplerLike | null = null;
   private webgpuDeferredProbeSampler: WebGPUSamplerLike | null = null;
@@ -5136,6 +5144,7 @@ export class WebGPUDevice implements RenderDevice {
       ["nativeSsrPasses", this.nativeSsrPasses],
       ["nativeTaaPasses", this.nativeTaaPasses],
       ["nativeTemporalBindings", this.nativeTemporalBindings],
+      ["nativeDepthStagePasses", this.nativeDepthStagePasses],
       ["canvasSubmissions", this.canvasSubmissions]
     ]);
   }
@@ -5932,7 +5941,7 @@ export class WebGPUDevice implements RenderDevice {
       }
       exposureFrame = { ...frame, timeSeconds: frame.timeSeconds };
     }
-    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa", "ssao", "ssr"]);
+    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa", "ssao", "ssr", "volumetric-light"]);
     for (const pass of options.passes) {
       if (!supported.has(pass.name)) throw new RenderDeviceError(`Native WebGPU postprocess does not support ${pass.name}`, "WEBGPU_POSTPROCESS_UNSUPPORTED", { pass: pass.name });
       if (pass.name === "taa" && (pass.options.temporal as WebGPUTemporalInputs | undefined)?.v2) {
@@ -6075,10 +6084,25 @@ export class WebGPUDevice implements RenderDevice {
         if (diagnosticToken) recordPostStage("S6:dof", diagnosticToken);
         current = dofResult.target;
         linearResult.release(); linearResult = undefined;
-        if (dofDisplay?.chromaticAberration) {
-          track(this.executeNativeDofDisplayStage(current, "ca", dofDisplay, dofFrameIndex));
-          if (diagnosticToken) recordPostStage("CA:chromatic-aberration", diagnosticToken);
+      }
+      // Native depth stages (S4 god rays, S7 motion blur) on the HDR source, before bloom: the WebGL2 v2 order.
+      if (options.nativeGodRays || options.nativeMotionBlur) {
+        if (displayP3) recordPostSkipped("WEBGPU_DEPTH_STAGES_P3_UNSUPPORTED", diagnosticToken);
+        else {
+          if (options.nativeGodRays) {
+            track(this.executeWebGPUGodRays(current, source, options.nativeGodRays));
+            recordPostStage(`S4:god-rays-${options.nativeGodRays.samples}`, diagnosticToken);
+          }
+          if (options.nativeMotionBlur) {
+            track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
+            recordPostStage(`S7:motion-blur-${options.nativeMotionBlur.samples}x${options.nativeMotionBlur.tileSize}`, diagnosticToken);
+          }
         }
+      }
+      // The native DoF chain's chromatic aberration follows S7 (HDR, before bloom).
+      if (dofDisplay?.chromaticAberration) {
+        track(this.executeNativeDofDisplayStage(current, "ca", dofDisplay, dofFrameIndex));
+        if (diagnosticToken) recordPostStage("CA:chromatic-aberration", diagnosticToken);
       }
       if (exposureFrame) {
         const { scopeId, viewId } = exposureFrame;
@@ -6097,6 +6121,8 @@ export class WebGPUDevice implements RenderDevice {
         else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
         else if (pass.name === "ssao") track(this.executeWebGPUSsao(current, source, pass.options));
+        // The renderer offers legacy volumetric light only to this WebGPU chain (outside the shared LDR pass-name union).
+        else if ((pass.name as string) === "volumetric-light") track(this.executeWebGPUVolumetricLight(current, source, pass.options, options.depthRange));
         else if (pass.name === "taa") {
           const temporal = pass.options.temporal as WebGPUTemporalInputs | undefined;
           if (!temporal) throw new RenderDeviceError("Native WebGPU TAA requires GPU temporal bindings", "TEMPORAL_NATIVE_REQUIRED");
@@ -6510,6 +6536,115 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeEffectViews.delete(scopeId);
     } finally {
       this.nativePostCleanupDepth -= 1;
+    }
+  }
+
+  /**
+   * The source's own depth attachment for the native depth stages. A 4x
+   * attachment is read at sample 0; no public sampleable depth texture is
+   * required, because the attachment is always created with texture binding.
+   */
+  private webgpuDepthStageDepth(depthSource: RenderTarget): { readonly view: unknown; readonly multisampled: boolean } {
+    const owned = this.requireRenderTarget(depthSource);
+    const depth = owned.nativeDepthTexture;
+    if (!depth) throw new RenderDeviceError("Native depth post stages need the source depth attachment", "WEBGPU_DEPTH_STAGE_DEPTH_UNAVAILABLE", { label: owned.label });
+    this.resourceInterop.assertUsable(depth);
+    return { view: depth.createView({ aspect: "depth-only" }), multisampled: (owned.sampleCount ?? 1) > 1 };
+  }
+
+  private webgpuDepthStageColor(current: RenderTarget, format: "rgba16f" | "rgba8", stage: string): WebGPURenderTarget {
+    const color = this.requireRenderTarget(current);
+    if (!color.nativeView || color.colorTexture.disposed || color.colorTexture.format !== format) {
+      throw new RenderDeviceError(`Native ${stage} requires a live ${format} source`, "WEBGPU_DEPTH_STAGE_SOURCE_UNSUPPORTED", { stage, format: color.colorTexture.format });
+    }
+    this.flushNativeRenderTargetClear(color);
+    return color;
+  }
+
+  /** S4 god rays: half-res radial march from depth, then an additive full-res composite. Returns a caller-owned target. */
+  private executeWebGPUGodRays(current: RenderTarget, depthSource: RenderTarget, request: WebGPUGodRaysRequest): RenderTarget {
+    const color = this.webgpuDepthStageColor(current, "rgba16f", "god rays");
+    const depth = this.webgpuDepthStageDepth(depthSource);
+    const width = color.width, height = color.height;
+    const halfWidth = Math.max(1, width >> 1), halfHeight = Math.max(1, height >> 1);
+    const shafts = this.createRenderTarget({ width: halfWidth, height: halfHeight, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays-half" });
+    let out: RenderTarget | undefined;
+    try {
+      this.runWebGPUFullscreenPass({ label: depth.multisampled ? "webgpu-godrays-ms" : "webgpu-godrays", fragment: webgpuGodRaysFragment(depth.multisampled),
+        entryPoint: "fs_godrays", uniforms: webgpuGodRaysUniforms(request, width, halfWidth, halfHeight), views: [color.nativeView, depth.view], target: shafts });
+      out = this.createRenderTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays" });
+      this.runWebGPUFullscreenPass({ label: "webgpu-godrays-composite", fragment: WEBGPU_GODRAYS_COMPOSITE_FRAGMENT, entryPoint: "fs_godrays_composite",
+        uniforms: new Float32Array([1 / width, 1 / height, 0, 0]), views: [color.nativeView, this.requireRenderTarget(shafts).nativeView], target: out });
+      this.nativeDepthStagePasses += 2;
+      return out;
+    } catch (error) {
+      out?.dispose();
+      throw error;
+    } finally {
+      shafts.dispose();
+    }
+  }
+
+  /** S7 camera motion blur: depth-reprojected velocity, tile max, 3x3 neighbour max, McGuire reconstruction. */
+  private executeWebGPUMotionBlur(current: RenderTarget, depthSource: RenderTarget, request: WebGPUMotionBlurRequest): RenderTarget {
+    const color = this.webgpuDepthStageColor(current, "rgba16f", "motion blur");
+    const depth = this.webgpuDepthStageDepth(depthSource);
+    const width = color.width, height = color.height;
+    const depthOwner = this.requireRenderTarget(depthSource);
+    if (depthOwner.width !== width || depthOwner.height !== height) {
+      throw new RenderDeviceError("Native motion blur depth must match the color size", "WEBGPU_DEPTH_STAGE_SOURCE_UNSUPPORTED");
+    }
+    const tileWidth = Math.max(1, Math.ceil(width / request.tileSize)), tileHeight = Math.max(1, Math.ceil(height / request.tileSize));
+    const scratch: RenderTarget[] = [];
+    const make = (w: number, h: number, label: string): RenderTarget => {
+      const target = this.createRenderTarget({ width: w, height: h, format: "rgba16f", depth: false, label });
+      scratch.push(target);
+      return target;
+    };
+    let out: RenderTarget | undefined;
+    try {
+      const velocity = make(width, height, "a3d-webgpu-motion-velocity");
+      this.runWebGPUFullscreenPass({ label: depth.multisampled ? "webgpu-motion-velocity-ms" : "webgpu-motion-velocity", fragment: webgpuMotionVelocityFragment(depth.multisampled),
+        entryPoint: "fs_motion_velocity", uniforms: webgpuMotionVelocityUniforms(request, width, height), views: [depth.view], target: velocity });
+      const tiles = make(tileWidth, tileHeight, "a3d-webgpu-motion-tiles");
+      this.runWebGPUFullscreenPass({ label: "webgpu-motion-tile", fragment: WEBGPU_MOTION_TILE_MAX_FRAGMENT, entryPoint: "fs_motion_tile",
+        uniforms: webgpuMotionTileUniforms(request), views: [this.requireRenderTarget(velocity).nativeView], target: tiles });
+      const neighbor = make(tileWidth, tileHeight, "a3d-webgpu-motion-neighbor");
+      this.runWebGPUFullscreenPass({ label: "webgpu-motion-neighbor", fragment: WEBGPU_MOTION_NEIGHBOR_FRAGMENT, entryPoint: "fs_motion_neighbor",
+        uniforms: webgpuMotionTileUniforms(request), views: [this.requireRenderTarget(tiles).nativeView], target: neighbor });
+      out = this.createRenderTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-motion-blur" });
+      this.runWebGPUFullscreenPass({ label: depth.multisampled ? "webgpu-motion-reconstruct-ms" : "webgpu-motion-reconstruct", fragment: webgpuMotionReconstructFragment(depth.multisampled),
+        entryPoint: "fs_motion_reconstruct", uniforms: webgpuMotionReconstructUniforms(request),
+        views: [color.nativeView, this.requireRenderTarget(neighbor).nativeView, depth.view], target: out });
+      this.nativeDepthStagePasses += 4;
+      return out;
+    } catch (error) {
+      out?.dispose();
+      throw error;
+    } finally {
+      for (const target of scratch) target.dispose();
+    }
+  }
+
+  /** Legacy `volumetric-light` on the display-space frame: a GPU port of the CPU radial kernel. */
+  private executeWebGPUVolumetricLight(current: RenderTarget, depthSource: RenderTarget, options: Readonly<Record<string, unknown>>,
+    depthRange?: { readonly near: number; readonly far: number }): RenderTarget {
+    if (options.depth) throw new RenderDeviceError("Native volumetric light reads the frame depth; a caller depth binding is unsupported", "WEBGPU_POSTPROCESS_UNSUPPORTED", { pass: "volumetric-light" });
+    const input = resolveWebGPUVolumetricLight(options);
+    const color = this.webgpuDepthStageColor(current, "rgba8", "volumetric light");
+    const depth = this.webgpuDepthStageDepth(depthSource);
+    const near = depthRange && Number.isFinite(depthRange.near) && depthRange.near > 0 ? depthRange.near : 0.1;
+    const far = depthRange && Number.isFinite(depthRange.far) && depthRange.far > near ? depthRange.far : 1000;
+    const out = this.createRenderTarget({ width: color.width, height: color.height, format: "rgba8", depth: false, label: "a3d-webgpu-volumetric-light" });
+    try {
+      this.runWebGPUFullscreenPass({ label: depth.multisampled ? "webgpu-volumetric-light-ms" : "webgpu-volumetric-light", fragment: webgpuVolumetricLightFragment(depth.multisampled),
+        entryPoint: "fs_volumetric_light", uniforms: webgpuVolumetricLightUniforms(input, color.width, color.height, { mode: this.depthConvention.mode, near, far }),
+        views: [color.nativeView, depth.view], target: out });
+      this.nativeDepthStagePasses += 1;
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
     }
   }
 

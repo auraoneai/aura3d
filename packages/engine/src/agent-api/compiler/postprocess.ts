@@ -441,8 +441,11 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
 /**
  * True when the post bag this scene would submit needs a depth-reading stage the WebGPU device has no native pass for.
  * Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy passes,
- * and on the v2 chain the god-rays / motion-blur / ssr / taa stages. Depth of field and ambient occlusion (the legacy
- * ssao pass and the v2 ao stage) are exempt because the WebGPU device runs them natively on its sampleable depth.
+ * and on the v2 chain the ssr / taa stages. Exempt because the WebGPU device runs them natively: depth of field,
+ * ambient occlusion (the legacy ssao pass and the v2 ao stage) on its sampleable depth, and god rays, motion blur and
+ * legacy volumetric light, which read the forward target's own depth attachment (`webgpuNativeDepthPassesCover` in the
+ * renderer). A caller-supplied volumetric-light depth array needs no depth texture either: that frame keeps the
+ * per-pass CPU kernel, which consumes the array.
  */
 function postLacksWebgpuDepth(post: RendererPostProcessOptions, nativeDepthStages: readonly string[] = []): boolean {
   return webgpuDepthStagesMissing(post, nativeDepthStages).length > 0;
@@ -455,7 +458,7 @@ function webgpuDepthStagesMissing(post: RendererPostProcessOptions, nativeDepthS
   const ssrMsaa = post.sampleCount === 4 && nativeDepthStages.includes("ssr:msaa");
   const native = (stage: string): boolean => nativeDepthStages.includes(stage) || (stage === "ssr" && ssrMsaa);
   const missing: string[] = [];
-  if (post.volumetricLight && !post.volumetricLight.depth) missing.push("volumetric-light");
+  if (volumetricLightLacksWebgpuDepth(post)) missing.push("volumetric-light");
   if (post.contactShadow && !post.contactShadow.depth) missing.push("contact-shadow");
   if (post.ssr && !post.ssr.depth && !native("ssr")) missing.push("legacy-ssr");
   const v2Bag = post.v2 === true && post.pipeline !== null && typeof post.pipeline === "object";
@@ -463,12 +466,21 @@ function webgpuDepthStagesMissing(post: RendererPostProcessOptions, nativeDepthS
   // (which loads the multisampled attachment) replaces it, so a legacy-only ssao on msaa still needs WebGL2.
   if (post.ssao && !post.ssao.depth && (post.sampleCount ?? 1) > 1 && !(v2Bag && (post.pipeline as { ao?: unknown }).ao)) missing.push("legacy-ssao-msaa");
   if (!v2Bag) return missing;
-  const bag = post.pipeline as { godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
-  if (bag.godRays) missing.push("god-rays");
-  if (bag.motionBlur) missing.push("motion-blur");
+  const bag = post.pipeline as { ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
   if (bag.ssr && !native("ssr")) missing.push("ssr");
   if (bag.taa || bag.antiAliasing === "taa") missing.push("taa");
   return missing;
+}
+
+/**
+ * Legacy volumetric light without a caller depth array runs on the WebGPU native chain only when the frame stays on the
+ * fused device route. A cpu-deterministic frame, or a companion pass outside that route (chromatic aberration, film
+ * grain, contact shadow, SSAO, SSR), sends it to the CPU kernel, which needs the sampleable depth texture. Conservative
+ * superset of the renderer's `webgpuNativeDepthPassesCover`, so the pre-check never passes a frame the renderer rejects.
+ */
+function volumetricLightLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
+  if (!post.volumetricLight || post.volumetricLight.depth) return false;
+  return post.execution === "cpu-deterministic" || Boolean(post.chromaticAberration || post.filmGrain || post.contactShadow || post.ssao || post.ssr);
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };

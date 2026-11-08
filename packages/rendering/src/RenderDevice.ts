@@ -381,6 +381,13 @@ export interface LdrPostprocessPresentationOptions {
    * ranges fall back to the engine perspective defaults (0.1/1000).
    */
   readonly depthRange?: { readonly near: number; readonly far: number };
+  /**
+   * WebGPU only: native S4 god rays on the HDR source, read from the source's
+   * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+   */
+  readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects").WebGPUGodRaysRequest;
+  /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+  readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects").WebGPUMotionBlurRequest;
 }
 
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
