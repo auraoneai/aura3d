@@ -164,6 +164,19 @@ describe("worker node mirror (K1)", () => {
     expect(applyWorkerNodePatch(registry, workerScene, ops)).toBe(1);
   });
 
+  it("replays updateAttribute and keeps no undrained attribute writes on the host mirror", () => {
+    const mirror = createWorkerNodeMirror(normalizeSceneSnapshot(boxScene()));
+    const node = mirror.nodes.require("mover");
+    node.updateAttribute("position", { array: new Float32Array([0, 1, 0]), offset: 0 });
+    const ops = mirror.drain();
+    expect(ops).toEqual([{ id: "mover", call: "updateAttribute", args: ["position", { array: new Float32Array([0, 1, 0]), offset: 0 }] }]);
+    expect((mirror.registry.require("mover") as unknown as { __parityL2AttributeUpdates?: unknown[] }).__parityL2AttributeUpdates).toEqual([]);
+    const snapshot = normalizeSceneSnapshot(boxScene());
+    const registry = createAuraRuntimeNodeRegistry(snapshot);
+    expect(applyWorkerNodePatch(registry, snapshot, ops)).toBe(1);
+    expect((registry.require("mover") as unknown as { __parityL2AttributeUpdates?: unknown[] }).__parityL2AttributeUpdates).toHaveLength(1);
+  });
+
   it("picks on the host against the mirror", () => {
     const mirror = createWorkerNodeMirror(normalizeSceneSnapshot(boxScene()));
     expect(mirror.pick(100, 50, { width: 200, height: 100 })).toMatchObject({ nodeId: "mover" });

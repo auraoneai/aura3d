@@ -19,7 +19,9 @@ export function isReplayableExtensionMethod(member: string): boolean {
 export const WORKER_PATCH_METHODS = [
   "setPosition", "setPivot", "setTransform", "translate", "setRotation", "setScale", "setVisible",
   "setText", "setMaterial", "setLight", "setInstances", "setInstanceMatrices",
-  "play", "setAnimation", "setAnimationPose", "setAnimationBinding", "setMorphTarget", "setMorphTargets", "morphInfluence", "setUniform"
+  "play", "setAnimation", "setAnimationPose", "setAnimationBinding", "setMorphTarget", "setMorphTargets", "morphInfluence", "setUniform",
+  // SG-05 dynamic geometry (particle and FX pools write their attributes every frame).
+  "setGeometry", "updateAttribute"
 ] as const;
 /** Handle properties whose assignment can be replayed in the worker. */
 export const WORKER_PATCH_PROPERTIES = ["position", "rotation", "scale", "visible", "renderOrder", "frustumCulled"] as const;

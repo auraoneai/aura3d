@@ -141,6 +141,9 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
             if (key === "morphInfluence" && args.length < 2) return method.apply(target, args);
             const sent = cloneArgs(args, `node.${key}()`);
             const result = method.apply(target, args);
+            // The host mirror never renders, so nothing drains the attribute
+            // writes it queues for the next frame; keep only the worker's copy.
+            if (key === "updateAttribute" || key === "setGeometry") (target as unknown as { __parityL2AttributeUpdates?: unknown[] }).__parityL2AttributeUpdates = [];
             record({ id, call: key, args: sent });
             return result === target ? receiver : result;
           };
