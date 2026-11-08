@@ -21,14 +21,19 @@ export function basePackageJson(arm, { auraVersion = AURA_VERSION, tarballs = nu
   const dependencies = { "@aura3d/engine": auraVersion, "@aura3d/assets": auraVersion, vite: "7.3.2", typescript: "5.9.3" };
   // Optional engine peers a scaffolded project ships (for example "@dimforge/rapier3d-compat@0.20.0" for physics), as name@version pairs.
   for (const spec of (process.env.AGENT_EVAL_EXTRA_AURA_DEPS ?? "").split(",").filter(Boolean)) dependencies[spec.slice(0, spec.lastIndexOf("@"))] = spec.slice(spec.lastIndexOf("@") + 1);
-  const pkg = { name: "eval-base-aura", private: true, type: "module", dependencies };
+  // C1 bridge arm: the Aura3D base plus three.js for the asset factories and any bridge packages (AGENT_EVAL_EXTRA_BRIDGE_DEPS, e.g. "@aura3d/cli@5.4.0").
+  if (arm === "bridge") {
+    Object.assign(dependencies, { three: "0.185.1", "@types/three": "0.185.4" });
+    for (const spec of (process.env.AGENT_EVAL_EXTRA_BRIDGE_DEPS ?? "").split(",").filter(Boolean)) dependencies[spec.slice(0, spec.lastIndexOf("@"))] = spec.slice(spec.lastIndexOf("@") + 1);
+  }
+  const pkg = { name: arm === "bridge" ? "eval-base-bridge" : "eval-base-aura", private: true, type: "module", dependencies };
   if (tarballs) {
     const overrides = {};
     for (const file of readdirSync(tarballs).filter((f) => f.endsWith(".tgz"))) {
       const name = `@aura3d/${file.replace(/^aura3d-/, "").replace(/-\d+\.\d+\.\d+.*\.tgz$/, "")}`;
       overrides[name] = `file:${resolve(tarballs, file)}`;
     }
-    for (const dep of ["@aura3d/engine", "@aura3d/assets"]) if (overrides[dep]) dependencies[dep] = overrides[dep];
+    for (const dep of ["@aura3d/engine", "@aura3d/assets", ...(arm === "bridge" ? ["@aura3d/cli"] : [])]) if (overrides[dep]) dependencies[dep] = overrides[dep];
     pkg.overrides = overrides;
   }
   return pkg;
@@ -65,7 +70,7 @@ export function ensureBase(arm, { baseRoot = DEFAULT_BASE_ROOT, auraVersion = AU
     run("npm", ["install", "--no-audit", "--no-fund", "--loglevel=error"], { cwd: baseDir, stdio: "inherit", timeout: 600000 });
   }
   const nm = join(baseDir, "node_modules");
-  const patchResult = arm === "aura" && patch ? applyStockBuildPatch(nm) : "not-applicable";
+  const patchResult = arm !== "three" && patch ? applyStockBuildPatch(nm) : "not-applicable";
   return {
     baseDir,
     patch: patchResult,
