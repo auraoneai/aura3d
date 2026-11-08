@@ -1,0 +1,15 @@
+[
+ {
+  "recipe": "stylized-car",
+  "side": "aura",
+  "url": "http://127.0.0.1:10671/aura.html?recipe=stylized-car",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)",
+   "diag: {\"actors\":[{\"id\":\"stylized-car\",\"activeClip\":\"mixer:wheel_spin\",\"tracksApplied\":69,\"activeActions\":1,\"mixerMs\":0,\"constraintsMs\":0,\"springsMs\":0,\"paletteBytes\":0,\"morphActive\":0,\"morphDropped\":0,\"cpuMs\":0.10000002384185791}]}"
+  ],
+  "readyMs": 3111
+ }
+]

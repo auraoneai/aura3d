@@ -19,5 +19,6 @@ import "./prd15/index.js";
 import "./assets/index.js";
 import "./evidence/index.js";
 import "./verify/index.js";
+import "./import-three/index.js";
 
 export {};

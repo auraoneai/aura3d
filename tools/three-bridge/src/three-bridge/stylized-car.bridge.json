@@ -1,0 +1,65 @@
+{
+  "bridgeVersion": 1,
+  "name": "stylized-car",
+  "generator": {
+    "path": "recipes/stylized-car.mjs",
+    "sha256": "3631df89cf90eb178fb4812bca4bf1495ba0bdbbad209cfe567502e5819f4779",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "paint": "#2a6fd2",
+    "wheelBase": 2.4
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/stylized-car.glb",
+    "sha256": "ea5fb0acbcaf9d739885f82c08a779f528816f51cf3f00177222a09cd9b5b617",
+    "bytes": 65772
+  },
+  "nodeIds": [
+    "car",
+    "car__body",
+    "car__cabin",
+    "car__windows",
+    "car__headlamp_l",
+    "car__taillamp_l",
+    "car__headlamp_r",
+    "car__taillamp_r",
+    "car__bumper",
+    "car__wheel_fr",
+    "car__wheel_fr__tyre",
+    "car__wheel_fr__hub",
+    "car__wheel_fl",
+    "car__wheel_fl__tyre",
+    "car__wheel_fl__hub",
+    "car__wheel_rr",
+    "car__wheel_rr__tyre",
+    "car__wheel_rr__hub",
+    "car__wheel_rl",
+    "car__wheel_rl__tyre",
+    "car__wheel_rl__hub",
+    "turntable",
+    "hemispherelight",
+    "key"
+  ],
+  "materials": [
+    "paint",
+    "glass",
+    "headlamp",
+    "taillamp",
+    "chrome",
+    "rubber",
+    "turntable"
+  ],
+  "clips": [
+    "wheel_spin"
+  ],
+  "counts": {
+    "supported": 13,
+    "approximated": 1,
+    "unsupported": 0
+  }
+}
