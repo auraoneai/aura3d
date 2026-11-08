@@ -79,7 +79,7 @@ import { validateNativePostEffect, type NativePostEffect } from "./post/NativeEf
 import { NATIVE_EFFECT_WGSL } from "./webgpu/NativeEffectShaders.wgsl";
 import { invertMat4, type Mat4 } from "@aura3d/scene";
 import { normalizeWebGPUGtaoOptions, normalizeWebGPUSsaoOptions, packWebGPUAoApplyUniforms, packWebGPUAoDenoiseUniforms, packWebGPUAoLinearDepthUniforms,
-  packWebGPUGtaoUniforms, packWebGPUSsaoUniforms, webgpuGtaoFragment, WEBGPU_AO_APPLY_FRAGMENT, WEBGPU_AO_DENOISE_FRAGMENT, WEBGPU_AO_LINEAR_DEPTH_FRAGMENT,
+  packWebGPUGtaoUniforms, packWebGPUSsaoUniforms, webgpuGtaoFragment, WEBGPU_AO_APPLY_FRAGMENT, WEBGPU_AO_DENOISE_FRAGMENT, webgpuAoLinearDepthFragment,
   WEBGPU_AO_MINMAX_HALF_FRAGMENT, WEBGPU_SSAO_FRAGMENT } from "./webgpu/WebGPUAmbientOcclusion";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
 import { createGeneratedPbrProgram, packGeneratedPbrMaterialUniforms, validateGeneratedPbrTarget, validateGeneratedPhotometricPacket, type GeneratedPbrProgram } from "./webgpu/GeneratedPbrProgram";
@@ -5292,16 +5292,18 @@ export class WebGPUDevice implements RenderDevice {
    * Depth-only view of a single-sample hardware depth attachment, for the
    * native ambient-occlusion passes, plus the attachment's encoding.
    */
-  private nativeAmbientOcclusionDepth(depthSource: RenderTarget, pass: string): { readonly view: unknown; readonly reversed: boolean } {
+  private nativeAmbientOcclusionDepth(depthSource: RenderTarget, pass: string, allowMultisampled = false): { readonly view: unknown; readonly reversed: boolean; readonly multisampled: boolean } {
     const target = this.requireRenderTarget(depthSource);
-    if (!target.nativeDepthTexture || target.sampleCount !== 1 || !target.depthTexture || target.depthTexture.disposed) {
+    // A 4x attachment carries TEXTURE_BINDING too; it is read as a multisampled depth texture.
+    const multisampled = allowMultisampled && target.sampleCount === 4 && Boolean(target.multisampledDepthTexture && !target.multisampledDepthTexture.disposed);
+    if (!target.nativeDepthTexture || (!multisampled && (target.sampleCount !== 1 || !target.depthTexture || target.depthTexture.disposed))) {
       throw new RenderDeviceError(`Native WebGPU ${pass} requires a single-sample sampleable depth attachment`, "WEBGPU_AO_DEPTH_UNAVAILABLE", { pass, label: target.label });
     }
     const mode = this.depthConvention.mode;
     if (mode !== "standard" && mode !== "reversed") {
       throw new RenderDeviceError(`Native WebGPU ${pass} does not decode ${mode} depth`, "WEBGPU_AO_DEPTH_ENCODING_UNSUPPORTED", { pass, mode });
     }
-    return { view: target.nativeDepthTexture.createView({ aspect: "depth-only" }), reversed: mode === "reversed" };
+    return { view: target.nativeDepthTexture.createView({ aspect: "depth-only" }), reversed: mode === "reversed", multisampled };
   }
 
   /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
@@ -5349,7 +5351,7 @@ export class WebGPUDevice implements RenderDevice {
     }
     const inverse = camera.projectionMatrixInverse ? Array.from({ length: 16 }, (_value, index) => Number(camera.projectionMatrixInverse![index])) : invertMat4(projection as unknown as Mat4);
     const options = normalizeWebGPUGtaoOptions(request.options);
-    const depth = this.nativeAmbientOcclusionDepth(depthSource, "ambient-occlusion");
+    const depth = this.nativeAmbientOcclusionDepth(depthSource, "ambient-occlusion", true);
     let linearUniforms: Float32Array, gtaoUniforms: Float32Array;
     try {
       linearUniforms = packWebGPUAoLinearDepthUniforms({ near: camera.near, far: camera.far, orthographic: camera.orthographic, reversed: depth.reversed });
@@ -5367,8 +5369,8 @@ export class WebGPUDevice implements RenderDevice {
     const out = this.createRenderTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
     try {
       const linear = scratchTarget(w, h, "rgba32f", "a3d-webgpu-ao-linear-depth");
-      this.runWebGPUFullscreenPass({ label: "webgpu-ao-linear-depth", fragment: WEBGPU_AO_LINEAR_DEPTH_FRAGMENT, entryPoint: "fs_ao_linear_depth",
-        uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true });
+      this.runWebGPUFullscreenPass({ label: "webgpu-ao-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
+        uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true, ...(depth.multisampled ? { multisampledDepthViews: [0] } : {}) });
       const minmax = scratchTarget(hw, hh, "rgba32f", "a3d-webgpu-ao-minmax-half");
       this.runWebGPUFullscreenPass({ label: "webgpu-ao-minmax-half", fragment: WEBGPU_AO_MINMAX_HALF_FRAGMENT, entryPoint: "fs_ao_minmax_half",
         uniforms: new Float32Array(4), views: [linear.nativeView], target: minmax, textureLoadBindings: true });
@@ -6433,6 +6435,8 @@ export class WebGPUDevice implements RenderDevice {
     readonly exposureBindings?: boolean;
     /** Explicit layout: uniforms at 0, 1-4 `unfilterable-float` textures from binding 2, no sampler. */
     readonly textureLoadBindings?: boolean;
+    /** Per-view override for `textureLoadBindings`: a 4x depth attachment bound as `texture_depth_multisampled_2d`. */
+    readonly multisampledDepthViews?: readonly number[];
     readonly reuseUniforms?: boolean;
     readonly accesses?: readonly { readonly resource: object; readonly mode: "read" | "write" | "readwrite" }[];
     /** Internal resource lease and frame validation for externally visible presentation. */
@@ -6469,7 +6473,7 @@ export class WebGPUDevice implements RenderDevice {
     try {
       const format = target ? webgpuTextureFormat(target.colorTexture.format) : this.presentationFormat;
       // Bind convention and source count change the pipeline layout.
-      const cacheKey = `${args.label}:${args.entryPoint}:${format}:${args.exposureBindings ? `exposure:${args.views.length}` : args.textureLoadBindings ? `load:${args.views.length}` : args.nativeEffectBindings ? "effect" : "sampled"}:${args.fragment}`;
+      const cacheKey = `${args.label}:${args.entryPoint}:${format}:${args.exposureBindings ? `exposure:${args.views.length}` : args.textureLoadBindings ? `load:${args.views.length}:${(args.multisampledDepthViews ?? []).join(",")}` : args.nativeEffectBindings ? "effect" : "sampled"}:${args.fragment}`;
       let pipeline = this.webgpuPostPipelines.get(cacheKey);
       if (!pipeline) {
         const vertexModule = this.device.createShaderModule({ label: `${args.label}-vs`, code: WEBGPU_POST_VERTEX_WGSL });
@@ -6478,7 +6482,9 @@ export class WebGPUDevice implements RenderDevice {
           ? this.device.createPipelineLayout!({ label: `${args.label}-pipeline-layout`, bindGroupLayouts: [this.device.createBindGroupLayout!({
             label: `${args.label}-texture-load-layout`, entries: [
               { binding: 0, visibility: 2, buffer: { type: "uniform" } },
-              ...args.views.map((_view, index) => ({ binding: index + 2, visibility: 2, texture: { sampleType: "unfilterable-float" as const, viewDimension: "2d" as const } }))
+              ...args.views.map((_view, index) => ({ binding: index + 2, visibility: 2, texture: args.multisampledDepthViews?.includes(index)
+                ? { sampleType: "depth" as const, viewDimension: "2d" as const, multisampled: true }
+                : { sampleType: "unfilterable-float" as const, viewDimension: "2d" as const } }))
             ]
           })] }) : "auto";
         pipeline = this.device.createRenderPipeline({

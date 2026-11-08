@@ -159,7 +159,14 @@ export function packWebGPUAoLinearDepthUniforms(encoding: WebGPUAoDepthEncoding)
   return new Float32Array([nearValue, farValue, orthographic ? 0 : 1, encoding.reversed ? 1 : 0, 0, 0, 0, 0]);
 }
 
-export const WEBGPU_AO_LINEAR_DEPTH_FRAGMENT = /* wgsl */ `struct AoLinearDepthParams {
+/**
+ * Linear view depth from the hardware depth attachment. A 4x attachment is
+ * read at sample 0, the sample a WebGL2 depth blit keeps.
+ */
+export function webgpuAoLinearDepthFragment(multisampled: boolean): string {
+  const binding = multisampled ? "texture_depth_multisampled_2d" : "texture_2d<f32>";
+  const load = multisampled ? "textureLoad(u_depth, vec2<i32>(position.xy), 0)" : "textureLoad(u_depth, vec2<i32>(position.xy), 0).r";
+  return /* wgsl */ `struct AoLinearDepthParams {
   near_value: f32,
   far_value: f32,
   perspective: f32,
@@ -168,13 +175,13 @@ export const WEBGPU_AO_LINEAR_DEPTH_FRAGMENT = /* wgsl */ `struct AoLinearDepthP
 };
 
 @group(0) @binding(0) var<uniform> u_params: AoLinearDepthParams;
-@group(0) @binding(2) var u_depth: texture_2d<f32>;
+@group(0) @binding(2) var u_depth: ${binding};
 
 const AO_SKY_DEPTH = 3e38;
 
 @fragment
 fn fs_ao_linear_depth(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
-  let d = textureLoad(u_depth, vec2<i32>(position.xy), 0).r;
+  let d = ${load};
   let reversed = u_params.reversed > 0.5;
   // Depth alone cannot tell a fragment exactly on the far plane from a clear.
   if ((reversed && d <= 0.0) || (!reversed && d >= 1.0)) {
@@ -190,6 +197,9 @@ fn fs_ao_linear_depth(@builtin(position) position: vec4<f32>) -> @location(0) ve
   return vec4<f32>(depth, 0.0, 0.0, 1.0);
 }
 `;
+}
+
+export const WEBGPU_AO_LINEAR_DEPTH_FRAGMENT = webgpuAoLinearDepthFragment(false);
 
 export const WEBGPU_AO_MINMAX_HALF_FRAGMENT = /* wgsl */ `@group(0) @binding(2) var u_linear_depth: texture_2d<f32>;
 
