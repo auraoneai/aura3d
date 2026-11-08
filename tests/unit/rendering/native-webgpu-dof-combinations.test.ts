@@ -202,4 +202,10 @@ describe("pre-mount WebGPU gap for the W2 combinations", () => {
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, lut: {} } })).toMatchObject({
       code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["motion-blur", "anti-aliasing-smaa", "lut"] });
   });
+
+  it("reports display stages on Display-P3 output, which the device refuses", () => {
+    expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3", vignette: { intensity: 0.3 } } })).toMatchObject({
+      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["display-p3-display-stages"] });
+    expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3" } })).toBeUndefined();
+  });
 });

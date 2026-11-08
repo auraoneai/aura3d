@@ -478,6 +478,8 @@ function webgpuPostGapForPostprocess(
  * other content before a WebGPU context is taken, so the app keeps WebGL2
  * instead of failing every frame once the post combination itself is admitted.
  */
+const NATIVE_DOF_SCENE_EFFECTS: ReadonlySet<string> = new Set(["fog", "rain", "snow", "particles", "flipbook-sprite", "light-beam", "fogVolume", "volumetric-fog"]);
+
 function nativeDofSceneGap(snapshot: AuraSceneSnapshot, post: RendererPostProcessOptions): WebgpuPostGap | undefined {
   const pipeline = post.v2 === true && post.pipeline && typeof post.pipeline === "object" ? post.pipeline as { dof?: unknown } : undefined;
   if (!pipeline || pipeline.dof === undefined || pipeline.dof === false) return undefined;
@@ -487,7 +489,10 @@ function nativeDofSceneGap(snapshot: AuraSceneSnapshot, post: RendererPostProces
   const allowedMaterialKeys = new Set(["unlit", "color", "opacity", "name", "roughness", "metallic", "metalness"]);
   const visit = (nodes: readonly AuraSceneNode[]): void => {
     for (const node of nodes) {
-      if (node.kind === "effect" || node.kind === "light" || node.kind === "interaction") continue;
+      // Post effects are handled by the post route; effects that draw scene
+      // content (fog, particles, weather, sprites, beams) are not unlit primitives.
+      if (node.kind === "effect") { if (NATIVE_DOF_SCENE_EFFECTS.has(node.effect)) missing.add(`effect-${node.effect}`); continue; }
+      if (node.kind === "light" || node.kind === "interaction") continue;
       if (node.kind === "group") { visit(node.children); continue; }
       if (node.kind !== "primitive") { missing.add(`node-${node.kind}`); continue; }
       const material = node.material as Record<string, unknown> | undefined;

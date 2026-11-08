@@ -24,5 +24,7 @@ describe("pre-mount native depth-of-field scene gap", () => {
     expect(postGap(lit, canvas, dofGap)).toEqual({ code: "NATIVE_DOF_SCENE_UNSUPPORTED", missing: ["non-unlit-material"] });
     const noDof = scene().add(effects.antiAlias({ mode: "off" })).add(primitives.box({ material: material.pbr({ color: "#ff8800" }) })).toJSON();
     expect(postGap(noDof, canvas, dofGap)).toBeUndefined();
+    const foggy = post().add(effects.fog({ density: 0.02 })).add(primitives.box({ material: material.pbr({ unlit: true, color: "#ff8800" }) })).toJSON();
+    expect(postGap(foggy, canvas, dofGap)).toEqual({ code: "NATIVE_DOF_SCENE_UNSUPPORTED", missing: ["effect-fog"] });
   });
 });
