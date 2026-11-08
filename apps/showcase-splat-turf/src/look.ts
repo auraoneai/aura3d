@@ -7,13 +7,29 @@ import { hexToLinear, sunDirection, type Rgb, type SkyStop } from "../../../exam
 
 export const LOOK = {
   id: "splat-turf",
-  background: "#ffd9a8",
+  background: "#ffc2bc",
+  /** Sunset dome: violet zenith, rose band, gold horizon line (t = 0.5 is the horizon). */
   skyStops: [
-    { t: 0, hex: "#4f2a8f" },
-    { t: 0.4, hex: "#b06ae0" },
-    { t: 0.72, hex: "#ff9fc8" },
-    { t: 1, hex: "#ffd9a8" }
+    { t: 0, hex: "#2c1866" },
+    { t: 0.28, hex: "#6a3fb8" },
+    { t: 0.43, hex: "#d47acc" },
+    { t: 0.49, hex: "#ffaab4" },
+    { t: 0.52, hex: "#ffd0a0" },
+    { t: 0.6, hex: "#f6aac2" },
+    { t: 1, hex: "#b98ad6" }
   ] as readonly SkyStop[],
+  /** Horizon haze every lit surface fades towards (matches the sky's horizon band). */
+  haze: "#ffbcbc",
+  /** Low sun ahead and to the right of the run (world direction), warm white. */
+  sunDir: [0.42, 0.1, -1] as readonly [number, number, number],
+  sunColor: "#fff0c8",
+  /** Lavender keel under the deck: the road reads as a floating ribbon. */
+  keel: "#a88ad8",
+  post: {
+    bloom: { intensity: 0.55, threshold: 0.9, scatter: 0.6 },
+    grade: { contrast: 1.08, saturation: 1.1, temperature: 0.03, gain: 1 },
+    vignette: { intensity: 0.24, color: "#3a2148" }
+  },
   road: "#ffffff",
   roadEdge: "#3b1f47",
   ball: "#ff3d8b",
