@@ -1147,10 +1147,10 @@ export class ForwardPass extends BaseRenderPass {
    * GU47 E-D: per-execute values the `material.custom` built-ins share (`u_lightCount`/`u_lightData` for
    * `#include <a3d_lights>`, `u_a3dInverseViewProjection` for `a3dFragWorldPosition`), computed once on first use.
    */
-  private customFrame: { lights?: ReturnType<typeof LightUniforms.pack>; inverseViewProjection?: Float32Array } = {};
+  private customFrame: { lights?: ReturnType<typeof LightUniforms.pack>; inverseViewProjection?: Float32Array; depth?: Pick<DepthConvention, "mode" | "clipRange"> } = {};
   private readonly customFrameCache: CustomShaderFrameCache = {
     lights: () => (this.customFrame.lights ??= LightUniforms.pack(this.shadedLights())),
-    inverseViewProjection: () => (this.customFrame.inverseViewProjection ??= customShaderInverseViewProjection(this.options))
+    inverseViewProjection: () => (this.customFrame.inverseViewProjection ??= customShaderInverseViewProjection(this.options, this.customFrame.depth))
   };
 
   /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
@@ -1345,7 +1345,7 @@ export class ForwardPass extends BaseRenderPass {
     if (this.options.frameContext && this.options.frameContext.device !== context.device) {
       throw new RenderDeviceError("Forward frame context belongs to another device", "FRAME_CONTEXT_DEVICE_MISMATCH");
     }
-    this.customFrame = {};
+    this.customFrame = context.device.kind === "webgl2" ? { depth: context.device.getDepthConvention?.() } : {};
     this.shadedLightsMemo = undefined;
     this.photometricCache = undefined;
     this.skinningPaletteUploads.beginFrame();
@@ -5140,13 +5140,20 @@ export interface CustomShaderFrameCache {
 
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
 export function customShaderInverseViewProjection(
-  options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">
+  options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">,
+  depth?: Pick<DepthConvention, "mode" | "clipRange">
 ): Float32Array {
   const view = Array.from(options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix ?? identityMatrix());
   const projection = Array.from(options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix ?? identityMatrix());
   if (view.length !== 16 || projection.length !== 16 || !isFiniteArrayLike(view) || !isFiniteArrayLike(projection)) return new Float32Array(identityMatrix());
   try {
-    const inverse = invertMat4(multiplyMat4(projection as Mat4, view as Mat4));
+    const viewProjection = Array.from(multiplyMat4(projection as Mat4, view as Mat4));
+    // `a3dFragWorldPosition` decodes gl_FragCoord.z * 2 - 1. A WebGL2 reversed zero-to-one frame (EXT_clip_control) stores
+    // clip z / w directly, so the z row r is re-expressed as 2r - w; minus-one-to-one frames (standard or reversed) already match.
+    if (depth?.mode === "reversed" && depth.clipRange === "zero-to-one") {
+      for (let column = 0; column < 4; column++) viewProjection[column * 4 + 2] = 2 * viewProjection[column * 4 + 2]! - viewProjection[column * 4 + 3]!;
+    }
+    const inverse = invertMat4(viewProjection as Mat4);
     return new Float32Array(isFiniteArrayLike(inverse) ? inverse : identityMatrix());
   } catch {
     // Singular camera (degenerate projection): `a3dFragWorldPosition` reads clip space instead of NaN.

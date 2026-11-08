@@ -26,6 +26,7 @@ import { clipRangeFromViewProjection, fitDirectionalCascades, standardViewProjec
 import { zeroToOneReversedRasterCamera } from "../../../packages/rendering/src/renderer/FrameDepthConvention";
 import { volumetricApplyFragmentSource } from "../../../packages/rendering/src/atmosphere/shaders/volumetric-apply.glsl";
 import type { RenderItem } from "../../../packages/rendering/src/contracts/renderItem";
+import { customShaderInverseViewProjection } from "../../../packages/rendering/src/ForwardPass";
 
 const glslangAvailable = !spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).error;
 const dir = mkdtempSync(join(tmpdir(), "a3d-reversed-consumers-"));
@@ -184,6 +185,38 @@ describe("5. shadow cascade fit under a reversed camera", () => {
         expect(cascade.radius).toBeCloseTo(expected[index]!.radius, 2);
         close(cascade.center, expected[index]!.center, 1e-2);
       });
+    }
+  });
+});
+
+describe("6. material.custom a3dFragWorldPosition under reversed depth", () => {
+  // The chunk decodes vec4(ndc, gl_FragCoord.z * 2 - 1, 1) through u_a3dInverseViewProjection.
+  const decode = (inverse: ArrayLike<number>, ndc: readonly [number, number], fragZ: number) => {
+    const v = [ndc[0], ndc[1], fragZ * 2 - 1, 1];
+    const o = [0, 1, 2, 3].map((r) => v.reduce((sum, value, c) => sum + inverse[c * 4 + r]! * value, 0));
+    return [o[0]! / o[3]!, o[1]! / o[3]!, o[2]! / o[3]!];
+  };
+  const project = (vp: ArrayLike<number>, p: readonly number[]) =>
+    [0, 1, 2, 3].map((r) => vp[r]! * p[0]! + vp[4 + r]! * p[1]! + vp[8 + r]! * p[2]! + vp[12 + r]!);
+  const world = [1, 0.5, -3] as const;
+
+  it("standard and reversed minus-one-to-one keep inverse(P * V); reversed zero-to-one decodes clip z / w as window depth", () => {
+    const standard = camera();
+    const options = { cameraViewMatrix: standard.viewMatrix, auraFrameCamera: { projectionMatrix: standard.projectionMatrix } } as never;
+    expect(Array.from(customShaderInverseViewProjection(options, { mode: "standard", clipRange: "minus-one-to-one" }))).toEqual(Array.from(customShaderInverseViewProjection(options)));
+    const reversed = camera({ mode: "reversed" });
+    const raster = zeroToOneReversedRasterCamera({
+      viewProjectionMatrix: reversed.viewProjectionMatrix, viewMatrix: reversed.viewMatrix, projectionMatrix: reversed.projectionMatrix,
+      projectionMetadata: reversed.projectionMetadata as never
+    });
+    for (const [vp, view, projection, depth, window] of [
+      [reversed.viewProjectionMatrix, reversed.viewMatrix, reversed.projectionMatrix, { mode: "reversed", clipRange: "minus-one-to-one" }, (c: number[]) => (c[2]! / c[3]! + 1) / 2],
+      [raster.viewProjectionMatrix, raster.viewMatrix!, raster.projectionMatrix!, { mode: "reversed", clipRange: "zero-to-one" }, (c: number[]) => c[2]! / c[3]!]
+    ] as const) {
+      const clip = project(vp, world);
+      const inverse = customShaderInverseViewProjection({ cameraViewMatrix: view, auraFrameCamera: { projectionMatrix: projection } } as never, depth);
+      const decoded = decode(inverse, [clip[0]! / clip[3]!, clip[1]! / clip[3]!], window(clip));
+      decoded.forEach((value, i) => expect(value).toBeCloseTo(world[i]!, 2));
     }
   });
 });
