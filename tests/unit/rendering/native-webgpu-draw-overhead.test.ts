@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { Texture } from "../../../packages/rendering/src/Texture";
 import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
-import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
+import { WebGPUDevice, fastPortableUniformPlan, writeFastPortableUniforms, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
+import { createUniformDataWriter, writeUniformData, type UniformBlockLayout } from "../../../packages/rendering/src/program/UniformLayout";
 import { WebGPUResourceInterop } from "../../../packages/rendering/src/webgpu/ResourceInterop";
 import { TRANSMISSION_COPY_FRAGMENT, TRANSMISSION_COPY_MARKER, TRANSMISSION_COPY_VERTEX } from "../../../packages/rendering/src/shaders/physical/transmission_copy.glsl";
 import { TRANSMISSION_COPY_WGSL_FRAGMENT, TRANSMISSION_COPY_WGSL_VERTEX } from "../../../packages/rendering/src/shaders/physical/transmission_copy.wgsl";
@@ -150,13 +151,27 @@ describe("WebGPU per-draw overhead", () => {
     expect(f.device.pendingBatchedDraws).toBe(0);
     expect(f.submit.mock.calls.length).toBe(submits + 1);
     expect(f.events.at(-1)).toBe("submit:1");
-    // The next batch reuses the pooled buffers and their cached bind groups.
-    const groups = f.groups.length;
+    // A second batch in the same frame takes further buffers: batched buffers return to the pool at endFrame.
     f.device.beginDrawBatch();
     for (let i = 0; i < 3; i += 1) f.device.drawChecked(draw);
     f.device.endDrawBatch();
-    expect(f.uniformBuffers()).toHaveLength(3);
+    expect(f.uniformBuffers()).toHaveLength(6);
+    f.device.endFrame();
+    // The next frame's draws take the same buffers in the same order, reuse their cached bind groups, and skip
+    // rewriting unchanged bytes.
+    f.device.beginFrame(2, 2); f.device.setRenderTarget(target);
+    const groups = f.groups.length;
+    f.events.length = 0;
+    f.device.beginDrawBatch();
+    for (let i = 0; i < 3; i += 1) f.device.drawChecked(draw);
+    f.device.endDrawBatch();
+    f.device.beginDrawBatch();
+    for (let i = 0; i < 3; i += 1) f.device.drawChecked(draw);
+    f.device.endDrawBatch();
+    expect(f.uniformBuffers()).toHaveLength(6);
     expect(f.groups.length).toBe(groups);
+    expect(f.events.filter(event => event.endsWith("-portable-uniforms"))).toEqual([]);
+    expect(f.events).toEqual(["submit:1", "submit:1"]);
     f.device.endFrame(); f.device.dispose(); f.finish();
   });
 
@@ -220,6 +235,54 @@ describe("WebGPU per-draw overhead", () => {
     f.device.endDrawBatch();
     expect(f.device.pendingBatchedDraws).toBe(0);
     f.device.endFrame(); f.device.dispose(); f.finish();
+  });
+});
+
+describe("portable uniform fast writer", () => {
+  const bindings = [
+    { name: "u_scalar", kind: "float" as const }, { name: "u_dir", kind: "vec3" as const }, { name: "u_model", kind: "mat4" as const },
+    { name: "u_instances", kind: "mat4" as const, arrayLength: 4 }, { name: "u_colors", kind: "vec4" as const, arrayLength: 3 },
+    { name: "u_weights", kind: "float" as const, arrayLength: 5 }, { name: "u_pair", kind: "vec2" as const }
+  ];
+  const block: UniformBlockLayout = { name: "Aura3DPortableUniforms", group: 0, binding: 0, members: [
+    { name: "u_scalar", type: "f32" }, { name: "u_dir", type: { kind: "vector", element: "f32", length: 3 } },
+    { name: "u_model", type: { kind: "matrix", columns: 4, rows: 4 } },
+    { name: "u_instances", type: { kind: "array", element: { kind: "matrix", columns: 4, rows: 4 }, length: 4 } },
+    { name: "u_colors", type: { kind: "array", element: { kind: "vector", element: "f32", length: 4 }, length: 3 } },
+    { name: "u_weights", type: { kind: "array", element: "f32", length: 5 } },
+    { name: "u_pair", type: { kind: "vector", element: "f32", length: 2 } }
+  ] };
+  const chunk = (values: readonly number[], size: number, count: number) => Array.from({ length: count }, (_, index) => {
+    const part = values.slice(index * size, (index + 1) * size);
+    return part.length ? [...part, ...Array(size - part.length).fill(0)] : Array(size).fill(0);
+  });
+
+  it("writes the same bytes as the validating layout writer, zero-filling partial arrays and missing values", () => {
+    const writer = createUniformDataWriter(block, "wgsl-uniform");
+    const plan = fastPortableUniformPlan(writer.layout, bindings);
+    expect(plan).not.toBeNull();
+    const model = Array.from({ length: 16 }, (_, index) => index * 0.5 - 3);
+    const instances = new Float32Array(Array.from({ length: 32 }, (_, index) => Math.sin(index)));
+    const colors = Array.from({ length: 12 }, (_, index) => index / 7);
+    const weights = [0.1, 0.2, 0.3, 0.4, 0.5];
+    const uniforms = new Map<string, unknown>([["u_scalar", 2.5], ["u_dir", [1, -2, 3]], ["u_model", model], ["u_instances", instances],
+      ["u_colors", colors], ["u_weights", weights]]);
+    const fast = writeFastPortableUniforms(writer.layout.size, plan!, uniforms)!;
+    const expected = writeUniformData(block, "wgsl-uniform", {
+      u_scalar: 2.5, u_dir: [1, -2, 3], u_model: model, u_instances: chunk(Array.from(instances), 16, 4),
+      u_colors: chunk(colors, 4, 3), u_weights: weights, u_pair: [0, 0]
+    });
+    expect(Array.from(fast)).toEqual(Array.from(expected));
+  });
+
+  it("declines non-float blocks and malformed values so the validating path reports them", () => {
+    const writer = createUniformDataWriter(block, "wgsl-uniform");
+    const plan = fastPortableUniformPlan(writer.layout, bindings)!;
+    for (const bad of [["u_dir", [1, 2]], ["u_dir", [1, Number.NaN, 3]], ["u_model", 4], ["u_colors", [[1, 2, 3, 4]]], ["u_scalar", true], ["u_weights", new Array(6).fill(0)]] as const) {
+      expect(writeFastPortableUniforms(writer.layout.size, plan, new Map<string, unknown>([bad]))).toBeNull();
+    }
+    const intBlock: UniformBlockLayout = { name: "Aura3DPortableUniforms", group: 0, binding: 0, members: [{ name: "u_count", type: "i32" }] };
+    expect(fastPortableUniformPlan(createUniformDataWriter(intBlock, "wgsl-uniform").layout, [{ name: "u_count", kind: "i32" }])).toBeNull();
   });
 });
 

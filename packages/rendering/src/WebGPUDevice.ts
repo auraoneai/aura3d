@@ -85,7 +85,7 @@ import { convertNativeVertexRecords, needsNativeVertexConversion, planNativeVert
 import { assertRgba8Level, filterNativeDataMip, planNativeDataMipmaps } from "./webgpu/NativeDataMipmaps";
 import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention, type DepthPrecisionSupport, type DepthStorage } from "./DepthConvention";
 import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "./webgpu/ShaderDataLayout";
-import { deriveUniformDataLayout, emitWgslStruct, writeUniformData, type UniformBlockLayout } from "./program/UniformLayout";
+import { createUniformDataWriter, deriveUniformDataLayout, emitWgslStruct, type UniformBlockLayout, type UniformDataWriter } from "./program/UniformLayout";
 import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts } from "./webgpu/NativeRenderState";
 import { warmNativePipelineVariants, type NativePipelineWarmupJob, type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup";
 import { PostViewHistory, type PostHistoryLease } from "./post/PostGraph";
@@ -1569,6 +1569,16 @@ export class WebGPUDevice implements RenderDevice {
    */
   readonly #transientUniformFree = new Map<number, WebGPUBufferLike[]>();
   readonly #transientUniformOwned = new Map<WebGPUBufferLike, number>();
+  /**
+   * Last bytes written to each pooled uniform buffer (batching only). Batched draws take pooled buffers in draw order, so
+   * an unchanged draw usually finds its previous frame's bytes already in its buffer and skips the queue write.
+   */
+  readonly #transientUniformContents = new WeakMap<WebGPUBufferLike, Uint8Array>();
+  /**
+   * Uniform buffers of submitted batches, returned to the pool at `endFrame` in reverse so the next frame's draws take
+   * the same buffers in the same order (and so mostly find their own previous bytes).
+   */
+  #frameUniformReleases: WebGPUBufferLike[] = [];
   /** Samplers are immutable and never destroyed, so one per descriptor serves every draw on this device. */
   readonly #nativeSamplers = new Map<string, WebGPUSamplerLike>();
   /** `getBindGroupLayout` returns a fresh wrapper per call; keep one per pipeline and group. */
@@ -5230,6 +5240,9 @@ export class WebGPUDevice implements RenderDevice {
 
   endFrame(): void {
     this.flushDrawBatch();
+    const released = this.#frameUniformReleases;
+    this.#frameUniformReleases = [];
+    for (let index = released.length - 1; index >= 0; index -= 1) this.releaseTransientUniform(released[index]!);
     this.assertFrame();
     this.assertOutsideMrtSubmission();
     this.assertOutsideGaussianSplatDraw();
@@ -9834,7 +9847,8 @@ export class WebGPUDevice implements RenderDevice {
       }
     } finally {
       this.#drawBatchFlushing = false;
-      for (const buffer of batch.releaseUniforms) this.releaseTransientUniform(buffer);
+      if (this.frameActive) this.#frameUniformReleases.push(...batch.releaseUniforms);
+      else for (let index = batch.releaseUniforms.length - 1; index >= 0; index -= 1) this.releaseTransientUniform(batch.releaseUniforms[index]!);
       for (const resource of batch.retirements) this.retireNative(resource);
     }
   }
@@ -9877,9 +9891,19 @@ export class WebGPUDevice implements RenderDevice {
       try { (buffer as { label?: string }).label = label; } catch { /* Labels are diagnostic only. */ }
     }
     try {
-      this.device.queue.writeBuffer(buffer, 0, data);
+      if (this.#drawBatchingEnabled) {
+        const bytes = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        const previous = this.#transientUniformContents.get(buffer);
+        if (previous && sameBytes(previous, bytes)) return buffer;
+        this.device.queue.writeBuffer(buffer, 0, data);
+        if (previous) previous.set(bytes);
+        else this.#transientUniformContents.set(buffer, bytes.slice());
+      } else {
+        this.device.queue.writeBuffer(buffer, 0, data);
+      }
       return buffer;
     } catch (error) {
+      this.#transientUniformContents.delete(buffer);
       this.#transientUniformOwned.delete(buffer);
       this.retireNative(buffer);
       throw error;
@@ -10748,9 +10772,14 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   private createNativeGeneratedPbrUniformBuffer(command: DrawCommand): WebGPUBufferLike {
-    const uniforms = new Map(command.uniforms ?? []);
-    if (command.shader && this.requireShader(command.shader).generatedPbr?.transmission) uniforms.set("u_webgpuTransmissionViewport", this.normalizedTransmissionViewport());
     const program = command.shader ? this.requireShader(command.shader).generatedPbr : undefined;
+    // Copy the uniform map only when this draw adds the transmission viewport to it.
+    let uniforms: NonNullable<DrawCommand["uniforms"]> = command.uniforms ?? new Map();
+    if (program?.transmission) {
+      const copy = new Map(uniforms);
+      copy.set("u_webgpuTransmissionViewport", this.normalizedTransmissionViewport());
+      uniforms = copy;
+    }
     const data = packGeneratedPbrMaterialUniforms(uniforms, Boolean(program?.packedLoopColor), Boolean(program?.photometricProfile));
     return this.acquireTransientUniform(`${command.label ?? "draw"}-generated-pbr-material`, data);
   }
@@ -10980,29 +11009,39 @@ export class WebGPUDevice implements RenderDevice {
     readonly actualTextureCount: number;
   } | null {
     if (!this.device.createBindGroup) return null;
-    const numericBindings = bindings.filter((binding) => !isPortableTexture(binding.kind));
-    const block = portableUniformBlock(bindings);
-    const layout = deriveUniformDataLayout(block, "wgsl-uniform");
+    let prepared = portableUniformWriters.get(bindings);
+    if (!prepared) {
+      const numeric = bindings.filter((binding) => !isPortableTexture(binding.kind));
+      const writer = createUniformDataWriter(portableUniformBlock(bindings), "wgsl-uniform");
+      prepared = { numeric, writer, fast: fastPortableUniformPlan(writer.layout, numeric) };
+      portableUniformWriters.set(bindings, prepared);
+    }
+    const numericBindings = prepared.numeric;
+    const layout = prepared.writer.layout;
     for (const name of ["maxBufferSize", "maxUniformBufferBindingSize"] as const) {
       const limit = this.device.limits?.[name] ?? (name === "maxUniformBufferBindingSize" ? 65536 : undefined);
       if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < layout.size)) {
         throw new RenderDeviceError("Portable uniforms exceed the WebGPU device limit", "WEBGPU_PORTABLE_UNIFORM_LIMIT", { name, limit, byteLength: layout.size });
       }
     }
-    const values: Record<string, ShaderDataValue> = Object.create(null);
-    if (!numericBindings.length) values.a3d_dummy = 0;
-    for (const binding of numericBindings) {
-      const value = command.uniforms?.get(binding.name);
-      values[binding.name] = portableUniformValue(binding, value);
-    }
-    let bytes: Uint8Array;
-    try {
-      bytes = writeUniformData(block, "wgsl-uniform", values);
-    } catch (error) {
-      throw new RenderDeviceError(
-        `Invalid portable uniform data: ${error instanceof Error ? error.message : String(error)}`,
-        "WEBGPU_PORTABLE_UNIFORM_VALUE_INVALID"
-      );
+    // Float-only blocks with well-formed values take the direct writer; anything else (and every invalid value, so
+    // that it reports the same error) goes through portableUniformValue and the validating layout writer.
+    let bytes: Uint8Array | null = prepared.fast ? writeFastPortableUniforms(layout.size, prepared.fast, command.uniforms) : null;
+    if (!bytes) {
+      const values: Record<string, ShaderDataValue> = Object.create(null);
+      if (!numericBindings.length) values.a3d_dummy = 0;
+      for (const binding of numericBindings) {
+        const value = command.uniforms?.get(binding.name);
+        values[binding.name] = portableUniformValue(binding, value);
+      }
+      try {
+        bytes = prepared.writer.write(values);
+      } catch (error) {
+        throw new RenderDeviceError(
+          `Invalid portable uniform data: ${error instanceof Error ? error.message : String(error)}`,
+          "WEBGPU_PORTABLE_UNIFORM_VALUE_INVALID"
+        );
+      }
     }
     const buffer = this.acquireTransientUniform(`${command.label ?? "draw"}-portable-uniforms`, bytes);
     try {
@@ -11980,6 +12019,99 @@ function snapshotPortableBindings(bindings: readonly PortableShaderBinding[]): r
     validatePortableDataIdentifiers(logical.type);
     return binding.kind === "data" ? { ...binding, dataType: logical.type } : { ...binding };
   });
+}
+
+/** Equal-length byte views compare equal (word-wise when both are 4-byte aligned). */
+function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.byteLength !== b.byteLength) return false;
+  if ((a.byteOffset & 3) === 0 && (b.byteOffset & 3) === 0 && (a.byteLength & 3) === 0) {
+    const x = new Uint32Array(a.buffer, a.byteOffset, a.byteLength >> 2), y = new Uint32Array(b.buffer, b.byteOffset, b.byteLength >> 2);
+    for (let i = 0; i < x.length; i += 1) if (x[i] !== y[i]) return false;
+    return true;
+  }
+  for (let i = 0; i < a.byteLength; i += 1) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+/** Portable binding lists are fixed per shader program: derive their numeric members and uniform layout once. */
+const portableUniformWriters = new WeakMap<readonly PortableShaderBinding[], {
+  readonly numeric: readonly PortableShaderBinding[];
+  readonly writer: UniformDataWriter;
+  readonly fast: readonly FastPortableMember[] | null;
+}>();
+
+/** One float, vector, matrix or array-of-those member of a portable uniform block, with its byte placement. */
+interface FastPortableMember {
+  readonly name: string;
+  readonly offset: number;
+  /** Floats per element (1, 2, 3, 4 or 16). */
+  readonly count: number;
+  readonly rows: number;
+  readonly columnStride: number;
+  readonly elements: number;
+  readonly elementStride: number;
+  readonly array: boolean;
+}
+
+/** A direct write plan when every numeric binding is f32-based (no data structs, integers or booleans); else null. */
+export function fastPortableUniformPlan(layout: ShaderDataLayout, numeric: readonly PortableShaderBinding[]): FastPortableMember[] | null {
+  if (typeof layout.type === "string" || layout.type.kind !== "struct" || !layout.members) return null;
+  const plan: FastPortableMember[] = [];
+  for (const binding of numeric) {
+    if (binding.kind === "data") return null;
+    const member = layout.members.find((candidate) => candidate.name === binding.name);
+    if (!member) return null;
+    let element = member.layout, elements = 1, elementStride = 0;
+    const array = typeof element.type !== "string" && element.type.kind === "array";
+    if (array) {
+      if (typeof element.type === "string" || element.type.kind !== "array" || !element.element || element.stride === undefined) return null;
+      elements = element.type.length; elementStride = element.stride; element = element.element;
+    }
+    const type = element.type;
+    let rows = 1, columns = 1, columnStride = 0;
+    if (type === "f32") { /* scalar */ }
+    else if (typeof type !== "string" && type.kind === "vector" && type.element === "f32") rows = type.length;
+    else if (typeof type !== "string" && type.kind === "matrix" && element.stride !== undefined) { columns = type.columns; rows = type.rows; columnStride = element.stride; }
+    else return null;
+    const count = rows * columns;
+    const expected = binding.kind === "vec2" ? 2 : binding.kind === "vec3" ? 3 : binding.kind === "vec4" ? 4 : binding.kind === "mat4" ? 16 : binding.kind === "float" ? 1 : 0;
+    if (expected !== count || array !== (binding.arrayLength !== undefined) || (array && elements !== binding.arrayLength)) return null;
+    plan.push({ name: binding.name, offset: member.offset, count, rows, columnStride, elements, elementStride, array });
+  }
+  return plan;
+}
+
+/**
+ * Write a float-only portable block straight into its byte image. Returns null for anything but a well-formed value
+ * (missing values stay zero, as portableUniformValue zero-fills them); the caller then takes the validating path, which
+ * produces the same bytes or the same error.
+ */
+export function writeFastPortableUniforms(size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null {
+  const bytes = new Uint8Array(size);
+  if (size % 4 !== 0) return null;
+  const floats = new Float32Array(bytes.buffer);
+  for (const member of plan) {
+    const value = uniforms?.get(member.name);
+    if (value === undefined) continue;
+    const expected = member.count * member.elements;
+    let source: ArrayLike<unknown>;
+    if (typeof value === "number") {
+      if (expected !== 1) return null;
+      source = [value];
+    } else if (Array.isArray(value) || value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array) {
+      source = value as ArrayLike<unknown>;
+    } else return null;
+    const length = source.length;
+    if (length !== expected && !(member.array && length <= expected && length % member.count === 0)) return null;
+    for (let index = 0; index < length; index += 1) {
+      const component = source[index];
+      if (typeof component !== "number" || !Number.isFinite(component) || !Number.isFinite(Math.fround(component))) return null;
+      const element = Math.floor(index / member.count), within = index - element * member.count;
+      const column = Math.floor(within / member.rows), row = within - column * member.rows;
+      floats[(member.offset + element * member.elementStride + column * member.columnStride + row * 4) >> 2] = component;
+    }
+  }
+  return bytes;
 }
 
 function portableUniformBlock(bindings: readonly PortableShaderBinding[]): UniformBlockLayout {
