@@ -11,6 +11,7 @@ import {
   ATMOS_FRAGMENT_WGSL, ATMOS_VERTEX_WGSL, NEBULA_VERTEX_WGSL, OBJECT_VERTEX_WGSL, POINTS_FRAGMENT_WGSL, POINTS_VERTEX_WGSL, RIDER_SHADOW_FRAGMENT_WGSL,
   TRACK_VERTEX_WGSL, UV_VERTEX_WGSL, VEIL_FRAGMENT_WGSL, mineralFragmentWgsl, nebulaFragmentWgsl, solidFragmentWgsl, trackFragmentWgsl
 } from "./shaders-wgsl";
+import { POINT_QUAD_SHADERS } from "./point-quads";
 import type { OrbitLook } from "./art/look";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
@@ -73,6 +74,16 @@ export const pointsSpec = (additive: boolean): CustomSpec => ({
   blending: additive ? "additive" : "normal"
 });
 
+/** The sprite quads a requested lab backend draws instead of the points (point-quads.ts; WebGPU has no point size). */
+export const pointQuadSpec = (additive: boolean): CustomSpec => ({
+  glsl: POINT_QUAD_SHADERS.glsl,
+  wgsl: POINT_QUAD_SHADERS.wgsl,
+  uniforms: { additive: { type: "f32", value: additive ? 1 : 0 } },
+  transparent: true,
+  depthWrite: false,
+  blending: additive ? "additive" : "normal"
+});
+
 /** The veil's uniforms are not named `time`/`pulse`: those lower to `u_time`, which the engine prelude already declares. */
 export const veilSpec = (): CustomSpec => ({
   glsl: { vertex: VEIL_VERTEX, fragment: VEIL_FRAGMENT },
@@ -127,6 +138,8 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "mineral-plain", spec: mineralSpec([0.8, 0.75, 0.7], false) },
   { name: "points-additive", spec: pointsSpec(true) },
   { name: "points-normal", spec: pointsSpec(false) },
+  { name: "point-quads-additive", spec: pointQuadSpec(true) },
+  { name: "point-quads-normal", spec: pointQuadSpec(false) },
   { name: "veil", spec: veilSpec() },
   { name: "sky", spec: skySpec() },
   { name: "sky-gouache", spec: skySpec(0, "gouache") },
