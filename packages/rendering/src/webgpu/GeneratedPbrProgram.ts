@@ -438,7 +438,9 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const ibl = active.has("prd02.ibl");
   const fraction = active.has("prd03.indirectFraction");
   const outputSrgb = f.features["a3d.output.srgb"] === true;
-  const alphaToCoverage = generatedAlphaToCoverage(active, f, writesDepthCoverage || (fraction && f.alphaMode !== "blend"), unsupported);
+  // Like the WebGL2 write chunk (`#if !defined(ALPHA_BLEND) && !defined(ALPHA_TO_COVERAGE)`), an alpha-to-coverage draw
+  // keeps its coverage alpha and carries no indirect-fraction tag (Slingshot Siege foliage), so the tag does not reserve it.
+  const alphaToCoverage = generatedAlphaToCoverage(active, f, writesDepthCoverage, unsupported);
   const localProbe = f.features["prd02.localProbe"] === true;
   const volume = f.features["prd02.irradianceVolume"] === true;
   const probe = f.features["a3d.nativeProbeGrid"], voxel = f.features["a3d.nativeVoxelIndirect"], lightmap = f.features["a3d.nativeBakedLightmap"];
@@ -529,7 +531,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   }
   if (f.shadows.cascades && descriptor.defines.NUM_SHADOW_CASCADES !== f.shadows.cascades) unsupported("defines.NUM_SHADOW_CASCADES", "inconsistent shadow cascade metadata");
   if (f.shadows.localShadows && descriptor.defines.NUM_LOCAL_SHADOWS !== f.shadows.localShadows) unsupported("defines.NUM_LOCAL_SHADOWS", "inconsistent local shadow metadata");
-  if (fraction && f.alphaMode !== "blend" && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on a direct presentation output");
+  if (fraction && f.alphaMode !== "blend" && !alphaToCoverage && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on a direct presentation output");
   // A degraded transmission lobe samples none of its refraction inputs (the GLSL twin reads them but discards the result).
   const shadedLobeMaps: LobeMaps = { ...lobeMaps };
   if (transmissionDegraded) { delete shadedLobeMaps.transmission; delete shadedLobeMaps.volumeThickness; }
@@ -1132,7 +1134,7 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   let authoredFrame = a3dAuthoredTangentFrame(geometryNormal, input.tangent, ${faceDirection});` : "";
   const uv = (slot: "baseColor" | "normal" | "metallicRoughness" | "occlusion" | "emissive" | "diffuseRoughness" | "bump") => f.maps[slot]?.uvSet === 1 ? "input.uv1" : "input.uv";
   const lobeUv = (slot: LobeMapSlot) => mode.lobeMaps[slot] === 1 ? "input.uv1" : "input.uv";
-  const fraction = mode.fraction && f.alphaMode !== "blend";
+  const fraction = mode.fraction && f.alphaMode !== "blend" && !mode.alphaToCoverage;
   const advancedDiffuse = mode.advanced === "probe" || mode.advanced === "voxel";
   const localDiffuse = mode.volume || advancedDiffuse;
   const irradiance = (global: string, normalDirection = "n"): string => mode.volume ? `generatedVolumeIrradiance(input.worldPosition, ${normalDirection}, ${global})`

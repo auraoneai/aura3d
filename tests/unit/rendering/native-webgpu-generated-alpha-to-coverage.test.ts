@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import "../../../packages/rendering/src/lanes/prd01";
+import "../../../packages/rendering/src/lanes/prd03";
 import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core";
 import { registerPrd04ShaderFeatures } from "../../../packages/rendering/src/materials/features";
 import { registerPrd04MaterialLobes } from "../../../packages/rendering/src/materials/lobes";
@@ -15,11 +16,12 @@ beforeAll(() => {
   registerPrd04ShaderFeatures();
 });
 
-const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_MATERIALS: true });
+const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_MATERIALS: true, A3D_QR_POST: true });
 
-function descriptor(lighting: "unlit" | "lit", alphaMode: "mask" | "opaque" | "blend", a2c: boolean) {
+function descriptor(lighting: "unlit" | "lit", alphaMode: "mask" | "opaque" | "blend", a2c: boolean, fraction = false) {
   return generateProgramImpl(normalizeProgramFeatures({ lighting, alphaMode, target: "wgsl",
-    features: { ...(lighting === "unlit" ? { "a3d.nativePrimitive": "triangles" } : {}), ...(a2c ? { "prd04.alphaToCoverage": true } : {}) } }), { flags }).descriptor!;
+    features: { ...(lighting === "unlit" ? { "a3d.nativePrimitive": "triangles" } : {}), ...(a2c ? { "prd04.alphaToCoverage": true } : {}),
+      ...(fraction ? { "prd03.indirectFraction": "indirectFraction" } : {}) } }), { flags }).descriptor!;
 }
 
 describe("generated WebGPU alpha-to-coverage", () => {
@@ -41,6 +43,17 @@ describe("generated WebGPU alpha-to-coverage", () => {
     expect(program.alphaToCoverage).toBe(false);
     expect(program.fragment).not.toContain("a3dCoverage");
     expect(program.fragment).toMatch(/\.a < material\.(alphaControls|controls)\.x\) \{ discard; \}/);
+  });
+
+  it.each(["unlit", "lit"] as const)("keeps coverage alpha and drops the indirect-fraction tag like the WebGL2 chunk (%s, Slingshot Siege)", (lighting) => {
+    const source = descriptor(lighting, "mask", true, true);
+    const program = lighting === "unlit" ? createGeneratedUnlitProgram(source) : createGeneratedPbrProgram(source);
+    expect(program.alphaToCoverage).toBe(true);
+    expect(program.requiresFloatColorAttachment).toBe(false);
+    expect(program.fragment).toMatch(/a3dCoverage\)|alpha = a3dCoverage/);
+    expect(program.fragment).not.toContain("2.0 + clamp(");
+    const tagged = descriptor(lighting, "mask", false, true);
+    expect((lighting === "unlit" ? createGeneratedUnlitProgram(tagged) : createGeneratedPbrProgram(tagged)).requiresFloatColorAttachment).toBe(true);
   });
 
   it("refuses coverage metadata outside MASK or without its define", () => {

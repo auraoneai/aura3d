@@ -200,7 +200,8 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   // WebGL2 rebuilds clipped sprite positions with CPU inverses (u_a3dSpriteViewToWorld); the native path has no twin.
   if (sprite && clipping) unsupported("features.prd15.paritySprite", "clipped billboard sprites");
   const outputSrgb = f.features["a3d.output.srgb"] === true;
-  const alphaToCoverage = generatedAlphaToCoverage(active, f, isPoint || writesDepthCoverage || (fraction && f.alphaMode !== "blend"), unsupported);
+  // As on WebGL2, alpha-to-coverage draws keep coverage alpha and skip the indirect-fraction tag.
+  const alphaToCoverage = generatedAlphaToCoverage(active, f, isPoint || writesDepthCoverage, unsupported);
   const baseMap = f.maps.baseColor, emissiveMap = f.maps.emissive;
   const uv0 = baseMap?.uvSet === 0 || emissiveMap?.uvSet === 0;
   const uv1 = baseMap?.uvSet === 1 || emissiveMap?.uvSet === 1;
@@ -230,7 +231,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   }
   const allowedDefines = new Set([...Object.keys(expected), "A3D_NUM_DIRECT_LIGHTS", "NUM_DIR_LIGHTS", "NUM_POINT_LIGHTS", "NUM_SPOT_LIGHTS", "NUM_RECT_LIGHTS", "NUM_SHADOW_CASCADES", "NUM_LOCAL_SHADOWS", "SHADOW_PCF_TAPS", "A3D_SHADOW_FILTER"]);
   for (const name of Object.keys(descriptor.defines)) if (!allowedDefines.has(name)) unsupported(`defines.${name}`, `define ${name}`);
-  const tagged = fraction && f.alphaMode !== "blend";
+  const tagged = fraction && f.alphaMode !== "blend" && !alphaToCoverage;
   if (tagged && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on direct output");
 
   const resources: GeneratedUnlitTextureResource[] = [];
