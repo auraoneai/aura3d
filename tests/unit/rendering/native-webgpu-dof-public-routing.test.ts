@@ -77,7 +77,8 @@ describe("native depth of field through the public renderer", () => {
     try {
       const diagnostics = asynchronous ? await f.renderer.renderAsync(f.source, f.camera) : f.renderer.render(f.source, f.camera);
       expect(diagnostics.nativeDepthOfField).toEqual({ requested: true, depthPreparation: "submitted", effect: "submitted", pixelValidation: "not-established" });
-      expect(f.renderer.device.info.capabilities).not.toContain("depth-textures");
+      // Single-sample depth is sampleable (native SSAO/GTAO); DoF still routes through its own frame proof.
+      expect(f.renderer.device.info.capabilities).toContain("depth-textures");
       expect(diagnostics.postprocessTextures).toBe(3);
       const clears = f.passes.filter(pass => pass.descriptor.colorAttachments?.[0]?.loadOp === "load" && pass.descriptor.colorAttachments?.[1]?.loadOp === "clear");
       expect(clears).toHaveLength(1);
