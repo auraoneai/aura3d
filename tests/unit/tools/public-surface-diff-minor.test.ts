@@ -212,6 +212,29 @@ export declare function createGame<TCue extends string>(options: GameOptions<TCu
     expect(declarationTextsEqualIgnoringComments(["interface A {}"], ["interface A {}", "interface A {}"])).toBe(false);
   });
 
+  it("fails closed on texts that only reprint equal through parser error recovery", () => {
+    // An unterminated block comment swallows the members after it; a stray token is dropped by recovery.
+    expect(declarationTextsEqualIgnoringComments(["interface A { a: string; }"], ["interface A { a: string; /* }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A { a: string; b: number; }"], ["interface A { a: string; /* b: number; }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["declare const x: { a: string }"], ["declare const x: { a: string } }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A { a: string }"], ["interface A { a: string } @@@"])).toBe(false);
+    // A variable's closure text is its bare declarator: compared inside a `declare const`, every type token counts.
+    expect(declarationTextsEqualIgnoringComments(["make: <T>(options: Options<T>) => Game<T>"], ["make: /** doc */ <T>(options: Options<T>) => Game<T>"])).toBe(true);
+    expect(declarationTextsEqualIgnoringComments(["make: <T>(options: Options<T>) => Game<T>"], ["make: /** doc */ <T>(options: Options<T>) => Game<string>"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["make: (options?: Options) => void"], ["make: /** doc */ (options: Options) => void"])).toBe(false);
+  });
+
+  it("still fails a comment-only closure change next to a member removed from a nested type", () => {
+    const removed = DOC_BEFORE.replace("/** Games always render on the main thread. */", "/** Changed. */").replace("readonly worker?: { readonly fallback: \"main-thread\" };", "readonly worker?: {};");
+    const change = diff(DOC_BEFORE, removed, "1.1.0", "minor").changes.find((entry) => entry.name === "createGame");
+    expect(change?.classification.breaking).toBe(true);
+    // A comment edit on a non-generic exported variable whose function type narrowed its parameter.
+    const VAR_BEFORE = `export interface Options { readonly id?: string }\n/** Make. */\nexport declare const make: (options?: Options) => void;\n`;
+    const narrowedVar = VAR_BEFORE.replace("/** Make. */", "/** Make it. */").replace("(options?: Options)", "(options: Options)");
+    const varChange = diff(VAR_BEFORE, narrowedVar, "1.1.0", "minor").changes.find((entry) => entry.name === "make");
+    expect(varChange?.classification.breaking).toBe(true);
+  }, 60000);
+
   it("fails removals in a minor", () => {
     const report = diff(
       "export declare const kept: number; export declare const lost: number; export interface Options { a: string; b: string; nested: { c: string; d: string } } export interface Deep { nested: { c: string; d: string } }",

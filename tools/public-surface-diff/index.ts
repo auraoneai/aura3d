@@ -737,10 +737,21 @@ export function declarationTextsEqualIgnoringComments(before: readonly string[],
     for (let token = scanner.scan(); token !== ts.SyntaxKind.EndOfFileToken; token = scanner.scan()) if (token === ts.SyntaxKind.SingleLineCommentTrivia) return true;
     return false;
   };
-  const strip = (text: string) => commentFreePrinter.printFile(ts.createSourceFile("declaration.d.ts", text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS));
+  // A text that does not parse cleanly fails closed: error recovery (an unterminated comment, a stray token) can drop
+  // tokens from the reprint, so two different texts could otherwise print the same. A variable's closure text is
+  // its declarator alone (`name: Type`), which only parses inside a `declare const`.
+  const reprint = (text: string): string | undefined => {
+    const file = ts.createSourceFile("declaration.d.ts", text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+    const parseDiagnostics = (file as ts.SourceFile & { readonly parseDiagnostics?: readonly ts.Diagnostic[] }).parseDiagnostics;
+    if (!parseDiagnostics || parseDiagnostics.length > 0) return undefined;
+    return commentFreePrinter.printFile(file);
+  };
+  const strip = (text: string): string | undefined => reprint(text) ?? reprint(`declare const ${text};`);
   return before.every((text, index) => {
     const next = after[index]!;
-    return !hasLineComment(text) && !hasLineComment(next) && strip(text) === strip(next);
+    if (hasLineComment(text) || hasLineComment(next)) return false;
+    const oldText = strip(text), newText = strip(next);
+    return oldText !== undefined && oldText === newText;
   });
 }
 /** A retarget is conservatively treated as a break: matching declarations do
