@@ -585,11 +585,75 @@ export const PIECES: readonly ScenePiece[] = (() => {
   return out;
 })();
 
-/** World z of a piece for a given road scroll: wraps inside the layer's loop, ahead of the camera. */
-export function pieceZ(p: ScenePiece, scroll: number): number {
+/** Drift speed of the backdrop at parallax 1 (units per second, about the road's mean speed). */
+export const DRIFT_SPEED = 20;
+
+/** World z of a piece at clock `t` (the drift program's formula on the CPU, for tests and tooling). */
+export function pieceZ(p: ScenePiece, t: number): number {
   const { k, span, near } = LAYERS[p.layer];
   const far = near - span;
-  return ((((p.z0 + scroll * k) % span) + span) % span) + far;
+  return ((((p.z0 + t * DRIFT_SPEED * k) % span) + span) % span) + far;
+}
+
+/**
+ * Drift vertex program: every piece of a layer lives in one static mesh (no runtime node, so nothing is snapshotted or
+ * uploaded per frame). Per-vertex `drift` = (z0, speed, span, far) and `anchor` = (x, y, bob phase, bob amplitude); the
+ * GPU wraps each piece along z on uTime, bobs it, and grows it in over the first 24 units after it re-enters far away.
+ */
+const DRIFT_VERTEX = /* glsl */ `
+in vec3 tone;
+in vec4 drift;
+in vec4 anchor;
+out vec3 vNormal;
+out vec3 vWorld;
+out vec2 vUv;
+out vec3 vTone;
+void main() {
+  vUv = uv;
+  vTone = tone;
+  float z = mod(drift.x + uTime * drift.y, drift.z) + drift.w;
+  float grow = smoothstep(drift.w, drift.w + 24.0, z);
+  vec3 local = position - vec3(anchor.xy, 0.0);
+  vec3 p = vec3(anchor.xy, 0.0) + local * max(grow, 0.001);
+  p.z += z;
+  p.y += sin(uTime * 0.7 + anchor.z) * anchor.w;
+  vWorld = (modelMatrix * vec4(p, 1.0)).xyz;
+  vNormal = normalize(normalMatrix * normal);
+  gl_Position = projectionMatrix * viewMatrix * vec4(vWorld, 1.0);
+}`;
+
+export function driftSpec(rim: number): CustomSpec {
+  const base = toyToonSpec([1, 1, 1], { tone: true, rim });
+  return { ...base, glsl: { vertex: DRIFT_VERTEX, fragment: base.glsl!.fragment } } as CustomSpec;
+}
+
+/** One parallax layer's pieces merged into a single static mesh with the drift attributes. */
+export function layerGeometry(layer: 0 | 1 | 2) {
+  const { k, span, near } = LAYERS[layer];
+  const far = near - span;
+  const positions: number[] = [], normals: number[] = [], uvs: number[] = [], indices: number[] = [], tones: number[] = [], drift: number[] = [], anchor: number[] = [];
+  for (const piece of PIECES) {
+    if (piece.layer !== layer) continue;
+    const t = piece.variant === "puff" ? puffMesh(piece.z0 | 0) : islandMesh(piece.variant, Math.round(piece.z0) % 7);
+    const m = xform(t.mesh, { sx: piece.scale, sy: piece.scale, sz: piece.scale, ry: piece.yaw, tx: piece.x, ty: piece.y });
+    const base = positions.length / 3;
+    positions.push(...m.positions); normals.push(...m.normals); uvs.push(...m.uvs); tones.push(...t.tones);
+    for (const i of m.indices) indices.push(base + i);
+    const amp = piece.variant === "puff" ? 0.35 : 0.3 * piece.scale;
+    for (let v = 0; v < m.positions.length / 3; v++) {
+      drift.push(piece.z0, DRIFT_SPEED * k, span, far);
+      anchor.push(piece.x, piece.y, piece.z0, amp);
+    }
+  }
+  return geometry.dynamic({
+    positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices: Uint32Array.from(indices),
+    bounds: { min: [-1e4, -1e3, -1e4], max: [1e4, 1e3, 1e4] },
+    attributes: {
+      tone: { itemSize: 3, data: Float32Array.from(tones) },
+      drift: { itemSize: 4, data: Float32Array.from(drift) },
+      anchor: { itemSize: 4, data: Float32Array.from(anchor) }
+    }
+  });
 }
 
 export const PILLAR_SPACING = 26;
@@ -603,7 +667,8 @@ export function sceneryProgramSpecs(): readonly { readonly name: string; readonl
     { name: "toy-toon", spec: toyToonSpec([1, 1, 1]) },
     { name: "toy-toon-tone", spec: toyToonSpec([1, 1, 1], { tone: true }) },
     { name: "toy-toon-stripes", spec: toyToonSpec([1, 1, 1], { stripes: [[1, 0, 0], [1, 1, 1], 4] }) },
-    { name: "contact", spec: contactSpec() }
+    { name: "contact", spec: contactSpec() },
+    { name: "drift", spec: driftSpec(0.2) }
   ];
 }
 

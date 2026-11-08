@@ -13,7 +13,7 @@ import {
 import { CONFIG, POOL, type ShapeShiftSim, type Segment, type Token, type WallRow } from "./sim";
 import { LOOK, SHAPE_LINEAR, ROAD_LINEAR, WALL_LINEAR, TOKEN_LINEAR, SUN_DIRECTION } from "./look";
 import {
-  PIECES, PILLAR_COUNT, PILLAR_SPACING, SEA_TILE, SCENERY, cloudSeaTile, contactSpec, ringSpec, islandMesh, pieceZ, pillarMesh, puffMesh,
+  PILLAR_COUNT, PILLAR_SPACING, SEA_TILE, SCENERY, cloudSeaTile, contactSpec, driftSpec, layerGeometry, ringSpec, pillarMesh,
   sceneryProgramSpecs, skirtMesh, SKIRT_DIMS, tonedGeometry, toySkySpec, toyToonSpec, wallContactMesh
 } from "./scenery";
 import {
@@ -146,11 +146,9 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 0; i < PILLAR_COUNT; i++) {
     builder.add(group(`pillar-${i}`, [geometry.custom(tonedGeometry(pillar), { name: `pillar-${i}-mesh`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.15 })) })]).runtime({ id: `pillar-${i}` }));
   }
-  for (const piece of PIECES) {
-    const mesh = piece.variant === "puff" ? puffMesh(piece.z0 | 0) : islandMesh(piece.variant, Math.round(piece.z0) % 7);
-    // A runtime group around a static mesh: the renderer snapshots each runtime node every frame and re-derives a mesh
-    // node's bounds from all of its vertices, while a group's snapshot is cheap; moving the group moves the mesh.
-    builder.add(group(piece.id, [geometry.custom(tonedGeometry(mesh), { name: `${piece.id}-mesh`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: piece.variant === "puff" ? 0.35 : 0.2 })) })]).runtime({ id: piece.id }));
+  // Floating toy islands and puffs: one static mesh per parallax layer, drifted on the GPU (scenery.ts DRIFT_VERTEX).
+  for (const layer of [0, 1, 2] as const) {
+    builder.add(geometry.custom(layerGeometry(layer), { name: `isles-${layer}`, material: material.custom(driftSpec(0.2)) }));
   }
 
   /* Post: gentle bloom on the sun glow, glowing rims and confetti; warm grade; soft vignette. */
@@ -202,14 +200,8 @@ export function buildWorld(options: WorldOptions): World {
         cloudsPlaced = true;
       }
 
-      /** Scenery: pure function of the road scroll and the clock (islands bob, puffs drift; reduced motion stills them). */
-      function updateScenery(scrollNow: number, t: number, still: boolean): void {
-        const bobT = still ? 0 : t;
-        for (const piece of PIECES) {
-          const z = pieceZ(piece, scrollNow);
-          const bob = Math.sin(bobT * 0.7 + piece.z0) * (piece.variant === "puff" ? 0.35 : 0.3 * piece.scale);
-          node(piece.id).setPosition(piece.x, piece.y + bob, z).setRotation(0, piece.yaw + bobT * 0.03 * (piece.layer === 0 ? 1 : 0.5), 0).setScale(piece.scale);
-        }
+      /** Bridge pillars travel with the road scroll (the island layers drift on the GPU clock). */
+      function updateScenery(scrollNow: number): void {
         const pillarSpan = PILLAR_SPACING * PILLAR_COUNT;
         for (let i = 0; i < PILLAR_COUNT; i++) {
           const z = ((((i * PILLAR_SPACING + scrollNow) % pillarSpan) + pillarSpan) % pillarSpan) - pillarSpan + 30;
@@ -370,7 +362,7 @@ export function buildWorld(options: WorldOptions): World {
         particles.flush(node("particles"));
 
         if (!cloudsPlaced) placeClouds();
-        updateScenery(scroll, elapsed, reduced);
+        updateScenery(scroll);
 
         /* camera */
         const pose = view.camera ?? view.shown?.camera ?? { x: 0.5 * p.x, y: p.y + 5, z: p.z + 9, lookX: p.x, lookY: p.y, lookZ: p.z - 10 };
