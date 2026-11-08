@@ -7,7 +7,7 @@ import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } fr
 import { groups } from "../nodes/groups.js";
 import { normalizeSceneSnapshot } from "../sceneMath.js";
 import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
-import { resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
+import { applyWorkerCanvasCssDefaults, isOffscreenCanvas, resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { computeRuntimeAlpha } from "./frameAlpha.js";
 import { AURA_APP_CANVAS } from "./screenshot.js";
@@ -165,6 +165,7 @@ export function createWorkerRootApp(
   if (typeof structuredClone !== "function") {
     return fallback(new AuraWorkerError("Worker rendering requires structuredClone.", "worker-unsupported"));
   }
+  if (!isOffscreenCanvas(canvas) && typeof (canvas as HTMLCanvasElement).style === "object") applyWorkerCanvasCssDefaults(canvas as HTMLCanvasElement);
 
   const snapshot = normalizeSceneSnapshot(options.scene);
   try { validateWorkerScene(snapshot, options.diagnostics); }

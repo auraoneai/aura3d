@@ -63,6 +63,7 @@ import {
 import { createShown, blendShown, writeShown, type Shown } from "./shown";
 import { loadRecord, saveRecord } from "./records";
 import { TrackView, sectorNameAt, type TrackPose } from "./track";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
 
@@ -114,9 +115,9 @@ async function boot(): Promise<void> {
   };
   // A1: shared loading helper. It only keeps `--aura3d-loading` / aria-valuenow on the existing boot card in step; no new pixels.
   const loading = createLoadingProgress({ ...(document.getElementById("boot") ? { element: document.getElementById("boot") as HTMLElement } : {}) });
-  // W-8 lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 only. Worker and depth flags are not wired here.
+  // W-8 lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu, ?gamut=p3 and ?worker=1 (worker rendering, main-thread fallback kept). The depth flag is not wired here.
   const lab = readLabFlags();
-  const labOptions = labAppOptions(lab);
+  const labOptions = labAppOptions(lab, createWorkerRendererWorker);
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
     // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
@@ -129,6 +130,7 @@ async function boot(): Promise<void> {
     // probe on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so either flag also asks for async
     // frames. Absent the flag: unchanged.
     ...(lab.backend ? { frameMode: "async" as const } : {}),
+    ...(labOptions.worker ? { worker: labOptions.worker } : {}),
     qualityRebuild: { flags: ["game"] },
     ...(labClustered ? { lighting: { clustered: { enabled: true, fallback: "forward" as const } } } : {}),
     // A2: the engine diagnostics overlay only with ?diag=1 (off by default, nothing drawn otherwise).

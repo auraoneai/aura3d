@@ -37,6 +37,7 @@ import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress.js";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags.js";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
 
@@ -158,8 +159,9 @@ declare global {
 const pipsGame = createGame({
   id: "showcase-pips-big-leap",
   target: "#app",
-  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=auto|webgpu (WebGL2 fallback kept); defaults unchanged.
-  ...(() => { const { output, renderer } = labAppOptions(readLabFlags()); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}) }; })(),
+  // Lab flags ?gamut=p3 (Display-P3 canvas), ?backend=auto|webgpu (WebGL2 fallback kept) and ?worker=1 (worker rendering,
+  // main-thread fallback kept); defaults unchanged.
+  ...(() => { const { output, renderer, worker } = labAppOptions(readLabFlags(), createWorkerRendererWorker); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}), ...(worker ? { worker } : {}) }; })(),
   autoStart: true,
   input: {
     actions: {

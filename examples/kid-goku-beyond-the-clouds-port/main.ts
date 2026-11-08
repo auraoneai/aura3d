@@ -325,12 +325,14 @@ async function boot(): Promise<void> {
   grassMap.wrapS = "repeat"; grassMap.wrapT = "repeat";
   const world = buildWorld(CH, rockMap, grassMap);
   /* Lab flags (?backend=, ?gamut=) are parsed by the app wrapper (apps/showcase-cloud-runner-port/src/lab.ts); absent = default WebGL2 path */
-  const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown> } }).__AURA_LAB_APP_OPTIONS__ ?? {};
+  const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown>; worker?: { fallback: "main-thread"; createWorker?: () => Worker } } }).__AURA_LAB_APP_OPTIONS__ ?? {};
   app = createAuraApp(canvas, {
     autoStart: false,
     pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "aces", dither: false, ...lab.output },
+    // `?worker=1` (lab, default off; the showcase wrapper supplies createWorker): render in a worker, fallback kept.
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await app.ready();
