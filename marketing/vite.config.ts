@@ -343,6 +343,8 @@ export default defineConfig({
     copyMarketingPublicFiles()
   ],
   worker: {
+    // K4: module workers with dynamic imports (the render worker) need ES output.
+    format: "es",
     plugins: () => [resolveRetargetWorker(), ...(rootConfig.plugins ?? [])]
   },
   resolve: rootConfig.resolve,
