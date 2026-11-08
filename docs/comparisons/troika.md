@@ -1,6 +1,6 @@
 # Aura3D And Troika
 
-Version: 5.2.0
+Version: 5.2.1
 
 ## What you get with Aura3D
 

@@ -1,6 +1,6 @@
 # Changelog
 
-Version: 5.2.0
+Version: 5.2.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -59,6 +59,28 @@ Everything on the 5.3 candidate branch since 5.2.0: WebGPU parity work, render-w
 - The plain-path multiple-scattering switch is chosen at mount; an app that boots on the plain path and later `setScene`s to an authored look keeps it.
 - Dot Dash 3D re-captures its `update: "once"` reflection probe (all six faces plus a CPU prefilter) on every WebGL2 frame, which dominates its frame time (CPU profile); the likely cause is that every scene change publishes a new atmosphere snapshot and the probe host disposes its probes when the snapshot identity changes. Not fixed here. Lamplight Line does the same on both backends (on WebGPU each face is an asynchronous readback), and its first WebGPU frames can still stall for 15 s or more while Metal compiles pipelines. Thermal Drift and Pip's Big Leap are also very slow headless (2 to 5 fps) for other reasons not yet profiled.
 - The WebGPU/WebGL2 ratio of the fastest games (Craterline GP, Shadowstep Gauntlet, Roadster Rush) is lower on an idle machine than under load: the remaining WebGPU cost is fixed per draw (render-state resolution, uniform packing, about 25 post-processing error scopes per frame).
+
+## 5.2.1 (2026-11-08)
+
+A patch release: safe fallbacks for WebGPU and Display P3 requests, reversed depth fixed across the WebGL2 depth consumers and turned on by default in 24 showcase games, and smaller type declarations for the embedded softbox. No public API is added or removed.
+
+### Fixes and behaviour changes
+
+- WebGPU: `?backend=webgpu` (and a WebGPU renderer request) now decides on the fallback before a WebGPU context is taken, so a canvas that falls back to WebGL2 is never left holding a WebGPU context; the fallback is logged once as a `BACKEND_FALLBACK` console warning.
+- WebGPU: portable array uniforms accept a whole-element prefix: a partly filled array (for example `u_instanceMatrices` with fewer instances than declared) is zero-filled like the WebGL upload instead of failing the draw with `WEBGPU_PORTABLE_UNIFORM_VALUE_INVALID`.
+- Display P3: a P3-only output request on a post chain without an output pass route now falls back to sRGB instead of failing to mount.
+- Reversed depth (WebGL2): contact shadows decode reversed depth in either clip range (they used to refuse to mount); the sky far-plane triangle and the sky / environment background follow the depth convention; fog, soft particles, ribbons, beams, the low-res composite and the water depth copy linearize reversed depth; SSAO, SSR and depth of field decode the frame's depth convention; shadow cascade fitting works from a reversed camera matrix (car and pole shadows no longer vanish); `material.custom` world position decodes reversed depth; generated-program default fog reads the right depth. Logarithmic depth is unchanged: still off by default and still refused by contact shadows.
+- `SOFTBOX_SPECULAR_GZIP_BASE64` is typed as `string`, so the published declarations no longer inline the embedded blob.
+
+### Showcase games
+
+- Reversed depth is on by default in 24 showcase games (the 22 that passed a real-GPU check, plus Gridlock Courier and Cumulus Dash, which were checked for this release). It is a depth-precision change with no intended visible change; `?depth=standard` restores standard depth and `?depth=reversed|logarithmic` still overrides. Logarithmic depth stays off.
+- Gridlock Courier and Cumulus Dash check (local headless Chrome, ANGLE Metal): reversed depth active (zero-to-one clip control, depth cleared to 0, `GEQUAL`), no errors, same diagnostic codes as 5.2.0. The Gridlock Courier frame is pixel-identical to standard depth and to the live 5.2.0 site; in Cumulus Dash the reversed-versus-standard difference is smaller than the run-to-run difference of standard depth alone (the scene is animated).
+- The portable shader-graph pilots (Last Train cloud sea, Silt and Signal water) are on by default; `?portable=0` restores the original GLSL materials.
+
+### Known limits
+
+- The games' default depth mode was checked on one Apple GPU (ANGLE Metal) only.
 
 ## 5.2.0 (2026-11-07)
 

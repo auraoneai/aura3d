@@ -12,7 +12,7 @@ import { RenderDeviceError, type RenderBuffer, type RenderDevice, type RenderTar
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
 import { Sampler } from "../Sampler";
-import { CONTACT_SHADOW_CHUNK_GLSL } from "../shaders/chunks/contact_shadow.glsl";
+import { CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE as CONTACT_SHADOW_CHUNK_GLSL } from "../shaders/chunks/contact_shadow.glsl";
 import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import type { RenderItem } from "../ForwardPass";
 import { DepthPass, type DepthPassOptions } from "../DepthPass";
