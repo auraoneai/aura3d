@@ -1,6 +1,7 @@
 /**
  * W4: the pre-mount WebGPU gap check no longer sends volumetric light, god rays or motion blur to WebGL2, because the
- * WebGPU native chain serves them from the forward depth attachment. SSAO still needs the public depth capability.
+ * WebGPU native chain serves them from the forward depth attachment. Native SSAO runs on its own pass, but it takes the
+ * frame off the fused route that serves volumetric light, so volumetric light then needs the public depth capability.
  */
 import { describe, expect, it } from "vitest";
 import { createProductionRuntimePostprocess } from "../../../packages/engine/src/agent-api/compiler/postprocess";
@@ -23,8 +24,8 @@ describe("WebGPU post gap: natively served depth readers", () => {
     expect(gapCheck(snapshot, canvas())).toBeUndefined();
   });
 
-  it("still reports the depth gap for ambient occlusion", () => {
+  it("still reports the depth gap for volumetric light combined with ambient occlusion", () => {
     const snapshot = scene(effects.volumetricFog({ density: 0.4 }), effects.ambientOcclusion({ intensity: 0.5 }));
-    expect(gapCheck(snapshot, canvas())).toEqual({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] });
+    expect(gapCheck(snapshot, canvas())).toEqual({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", "volumetric-light"] });
   });
 });

@@ -188,7 +188,11 @@ describe("W3 pre-mount check", () => {
     // "ssr:msaa" only covers an explicit 4x frame (the tier's resolved MSAA); this bag resolves no sample count.
     expect((createProductionRuntimePostprocess(ssrScene(), [], 640, 360, true, { canvas }) as { sampleCount?: number }).sampleCount).toBeUndefined();
     expect(gapFn(ssrScene(), canvas, undefined, ["ssr:msaa"])).toMatchObject({ code: "DEPTH_POSTPROCESS_UNSUPPORTED" });
-    expect(gapFn(scene().add(primitives.box()).add(effects.ambientOcclusion({})).toJSON(), canvas, undefined, ["ssr"])).toMatchObject({ code: "DEPTH_POSTPROCESS_UNSUPPORTED" });
+    // "ssr" exempts only SSR: volumetric light beside SSR leaves the fused route and still needs sampleable depth.
+    expect(gapFn(scene().add(primitives.box()).add(effects.screenSpaceReflections({ intensity: 0.6 })).add(effects.volumetricFog({ density: 0.4 })).toJSON(), canvas, undefined, ["ssr"]))
+      .toMatchObject({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", "volumetric-light"] });
+    // Ambient occlusion has its own native WebGPU pass (wgpu-ssao lane), so it is no gap on a single-sample frame.
+    expect(gapFn(scene().add(primitives.box()).add(effects.ambientOcclusion({})).toJSON(), canvas, undefined, ["ssr"])).toBeUndefined();
   });
 
   it("the renderer reports ssr only once the device advertises depth textures", () => {

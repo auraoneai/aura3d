@@ -199,8 +199,9 @@ describe("pre-mount WebGPU gap for the W2 combinations", () => {
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, vignette: { intensity: 0.3 }, filmGrain: { intensity: 0.1 }, chromaticAberration: { intensity: 0.002 } } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1], targets: ["ball"] } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1] } })).toMatchObject({ missing: ["outline"] });
-    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, lut: {} } })).toMatchObject({
-      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["motion-blur", "anti-aliasing-smaa", "lut"] });
+    // Motion blur and god rays combine since W4 (native depth stages after DoF); ao still does not.
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, lut: {} } })).toMatchObject({
+      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["ao", "anti-aliasing-smaa", "lut"] });
   });
 
   it("reports display stages on Display-P3 output, which the device refuses", () => {
