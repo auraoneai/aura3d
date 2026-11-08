@@ -312,12 +312,19 @@ let freshFrame = false;
  */
 const LAB_ASYNC_FRAMES = readLabFlags().backend !== undefined;
 let asyncFrame: Promise<void> | null = null;
+/** A failed async frame (e.g. a mount failure) is reported once, not on every later frame; frames keep being attempted. */
+let asyncFrameErrorReported = false;
+const reportAsyncFrameError = (error: unknown): void => {
+  if (asyncFrameErrorReported) return;
+  asyncFrameErrorReported = true;
+  reportError(error);
+};
 function render(live = false): void {
   if (!app || !runtime) return;
   if (asyncFrame) return;
   if (!freshFrame) { freshFrame = true; queueMicrotask(() => { freshFrame = false; }); }
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode, reducedMotion: reducedMotion() });
-  if (LAB_ASYNC_FRAMES) asyncFrame = app.stepAsync(0).catch(reportError).finally(() => { asyncFrame = null; });
+  if (LAB_ASYNC_FRAMES) asyncFrame = app.stepAsync(0).catch(reportAsyncFrameError).finally(() => { asyncFrame = null; });
   else app.step(0);
 }
 
