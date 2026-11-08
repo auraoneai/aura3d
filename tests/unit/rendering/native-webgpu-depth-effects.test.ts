@@ -212,6 +212,29 @@ describe("WebGPU depth stage routing", () => {
     expect(webgpuNativeDepthPassesCover({ volumetricLight: {}, ssao: {} })).toBe(false);
     expect(webgpuNativeDepthPassesCover({ v2: true, pipeline: { motionBlur: {}, antiAliasing: "taa" } })).toBe(false);
   });
+
+  it("still needs the depth texture where volumetric light leaves the native chain (review fixes)", () => {
+    // A companion pass outside the fused device chain sends the frame to the per-pass CPU kernel, which reads renderer depth.
+    expect(webgpuNativeDepthPassesCover({ toneMapping: {}, volumetricLight: {}, chromaticAberration: true })).toBe(false);
+    expect(webgpuNativeDepthPassesCover({ toneMapping: {}, volumetricLight: {}, filmGrain: true })).toBe(false);
+    // cpu-deterministic frames never reach the native chain.
+    expect(webgpuNativeDepthPassesCover({ volumetricLight: {}, execution: "cpu-deterministic" })).toBe(false);
+    expect(webgpuNativeDepthPassesCover({ v2: true, execution: "cpu-deterministic", pipeline: { godRays: {} } })).toBe(false);
+  });
+
+  it("keeps caller-depth volumetric light and cpu-deterministic frames off the native WebGPU volumetric pass (review fixes)", () => {
+    const depth = { width: 1, height: 1, data: new Float32Array(1) };
+    const callerDepth = routeFixture("webgpu");
+    try {
+      try { callerDepth.post.executePostprocess({ toneMapping: { operator: "aces" }, volumetricLight: { samples: 16, depth } as never }, [callerDepth.target]); } catch { /* mock readback; only the route matters */ }
+      expect(callerDepth.present.mock.calls.every(call => !call[1].passes.some(pass => (pass.name as string) === "volumetric-light"))).toBe(true);
+    } finally { callerDepth.dispose(); }
+    const cpu = routeFixture("webgpu");
+    try {
+      try { cpu.post.executePostprocess({ execution: "cpu-deterministic", toneMapping: { operator: "aces" }, volumetricLight: { samples: 16 } }, [cpu.target]); } catch { /* mock readback */ }
+      expect(cpu.present.mock.calls.every(call => !call[1].passes.some(pass => (pass.name as string) === "volumetric-light"))).toBe(true);
+    } finally { cpu.dispose(); }
+  });
 });
 
 async function deviceFixture(sampleCount: 1 | 4) {

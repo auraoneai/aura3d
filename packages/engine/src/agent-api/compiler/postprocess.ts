@@ -443,15 +443,26 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
  * advertise. Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy
  * passes, and on the v2 chain the ao / ssr / taa stages. Exempt because the WebGPU device runs them natively: depth of
  * field, and god rays, motion blur and legacy volumetric light, which read the forward target's own depth attachment
- * (`webgpuNativeDepthPassesCover` in the renderer). A caller-supplied volumetric-light depth array stays a gap: the
- * native pass reads only the frame depth.
+ * (`webgpuNativeDepthPassesCover` in the renderer). A caller-supplied volumetric-light depth array needs no depth
+ * texture either: that frame keeps the per-pass CPU kernel, which consumes the array.
  */
 function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
-  if ((post.volumetricLight && post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
+  if (volumetricLightLacksWebgpuDepth(post) || (post.contactShadow && !post.contactShadow.depth) ||
       (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth)) return true;
   if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
   const bag = post.pipeline as { ao?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
   return [bag.ao, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
+}
+
+/**
+ * Legacy volumetric light without a caller depth array runs on the WebGPU native chain only when the frame stays on the
+ * fused device route. A cpu-deterministic frame, or a companion pass outside that route (chromatic aberration, film
+ * grain, contact shadow, SSAO, SSR), sends it to the CPU kernel, which needs the sampleable depth texture. Conservative
+ * superset of the renderer's `webgpuNativeDepthPassesCover`, so the pre-check never passes a frame the renderer rejects.
+ */
+function volumetricLightLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
+  if (!post.volumetricLight || post.volumetricLight.depth) return false;
+  return post.execution === "cpu-deterministic" || Boolean(post.chromaticAberration || post.filmGrain || post.contactShadow || post.ssao || post.ssr);
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };

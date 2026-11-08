@@ -179,8 +179,10 @@ export function collectPostprocess(source: RenderSource | Iterable<RenderItem> |
   return source.postprocess;
 }
 
-function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPostProcessPassPlan[], deviceKind?: string): boolean {
-  return canFusePasses(isHdrRenderTarget(source), passes, deviceKind === "webgpu");
+function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPostProcessPassPlan[], deviceKind?: string, forceCpuDeterministic = false): boolean {
+  // The native volumetric-light pass exists only on the WebGPU device chain; the CPU fused kernel has none, so a
+  // cpu-deterministic frame keeps the per-pass CPU route that runs `volumetricLightPixels`.
+  return canFusePasses(isHdrRenderTarget(source), passes, deviceKind === "webgpu" && !forceCpuDeterministic);
 }
 
 export function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean {
@@ -282,11 +284,11 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
   // webgpuNativePostOptions already validated that any legacy twin is the
   // unchanged root-authored pair before this native-only filter runs.
   const routed = nativePost?.nativeDepthOfField ? passes.filter(pass => pass.name !== "depth-of-field") : passes;
-  if (device?.kind !== "webgpu") return routed;
+  if (device?.kind !== "webgpu" || postprocess.execution === "cpu-deterministic") return routed;
   // WebGPU serves motion blur as the native S7 stage (`nativeMotionBlur`), or records it skipped; never as an LDR pass.
   // Legacy volumetric light runs natively too, but only where WebGL2 runs its kernel: with the post flag on, WebGL2
   // records and skips it (`postCpuPassSkipped`), so WebGPU skips it as well and both backends show the same frame.
-  const skipVolumetric = postprocess.execution !== "cpu-deterministic" && Boolean(rendererQrFlags(device)?.on("A3D_QR_POST"))
+  const skipVolumetric = Boolean(rendererQrFlags(device)?.on("A3D_QR_POST"))
     && routed.some(pass => pass.name === "volumetric-light");
   if (skipVolumetric) recordPostSkipped("WEBGPU_VOLUMETRIC_LIGHT_SKIPPED:post-chain", postprocess.postFrameContext?.diagnosticToken);
   return routed.filter(pass => pass.name !== "motion-blur" && !(skipVolumetric && pass.name === "volumetric-light"));
@@ -301,11 +303,23 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
  * target (which would also forbid MSAA) for them.
  */
 export function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOptions, postScopeId?: object): boolean {
+  // cpu-deterministic frames never reach the native chain; they keep the CPU kernels and their depth requirement.
+  if (postprocess.execution === "cpu-deterministic") return false;
+  // Legacy volumetric light runs natively only inside the fused device chain. A plan pass outside that chain
+  // (chromatic aberration, film grain, contact shadow, SSAO, SSR) sends the frame down the per-pass CPU route,
+  // whose volumetric kernel reads the renderer-owned sampleable depth, so it still needs the depth texture.
+  const volumetricNative = Boolean(postprocess.volumetricLight && !postprocess.volumetricLight.depth)
+    && createRendererPostprocessPasses(postprocess).every(pass => WEBGPU_NATIVE_VOLUMETRIC_COMPANIONS.has(pass.name));
   const pipeline = postprocess.v2 === true && postprocess.pipeline !== null && typeof postprocess.pipeline === "object"
     ? { ...(postprocess.pipeline as Record<string, unknown>), godRays: undefined, motionBlur: undefined }
     : postprocess.pipeline;
-  return !postprocessRequiresDepthTexture({ ...postprocess, volumetricLight: false, pipeline }, postScopeId);
+  return !postprocessRequiresDepthTexture({ ...postprocess, ...(volumetricNative ? { volumetricLight: false } : {}), pipeline }, postScopeId);
 }
+
+/** Plan passes that keep a WebGPU frame on the fused native chain (`canFusePasses` with the native flag). */
+const WEBGPU_NATIVE_VOLUMETRIC_COMPANIONS: ReadonlySet<string> = new Set([
+  "bloom", "tone-mapping", "volumetric-light", "color-grade", "depth-of-field", "motion-blur", "taa", "outline", "fxaa"
+]);
 
 /**
  * Under the post flag the renderer commits a frame's temporal history only when the frame's S7 actually presented
@@ -529,7 +543,8 @@ function canFusePasses(sourceIsHdr: boolean, passes: readonly RendererPostProces
     && (!sourceIsHdr || passes[0]?.name === "tone-mapping" || (passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping"))
     && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa" || pass.name === "outline" || pass.name === "fxaa"
       // The WebGPU native chain runs legacy volumetric light on the GPU (WebGPUDepthEffects); WebGL2 keeps its CPU route.
-      || (webgpuNative && pass.name === "volumetric-light"))
+      // A caller-supplied depth array keeps the per-pass CPU route, which consumes that array directly.
+      || (webgpuNative && pass.name === "volumetric-light" && !postprocessPassHasDepth(pass.options)))
     && passes.every((pass, index) => {
       const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);
       return ldrFusionPassRank(pass.name) >= previousRank;
@@ -1096,7 +1111,7 @@ export class RendererPostprocessPipeline {
   ): boolean {
     const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
     if (nativeHdrBloom && (forceCpuDeterministic || !this.host.device.presentLdrPostprocess)) return false;
-    if (!canFuseLdrPostprocess(current, passes, this.host.device.kind)) return false;
+    if (!canFuseLdrPostprocess(current, passes, this.host.device.kind, forceCpuDeterministic)) return false;
     if (!forceCpuDeterministic && !this.host.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
     // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
     // depth renderbuffer, because `postprocessRequiresDepthTexture` only requests a
@@ -1281,7 +1296,7 @@ export class RendererPostprocessPipeline {
   ): Promise<boolean> {
     const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
     if (nativeHdrBloom && (forceCpuDeterministic || !this.host.device.presentLdrPostprocess)) return false;
-    if (!canFuseLdrPostprocess(current, passes, this.host.device.kind)) return false;
+    if (!canFuseLdrPostprocess(current, passes, this.host.device.kind, forceCpuDeterministic)) return false;
     if (!forceCpuDeterministic && !this.host.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
     // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
     // depth renderbuffer, because `postprocessRequiresDepthTexture` only requests a
