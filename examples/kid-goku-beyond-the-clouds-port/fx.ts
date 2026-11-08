@@ -4,6 +4,7 @@
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { glowSpec, puffSpec } from "./materials";
+import { spritePoolGeometry, spritePoolHandle } from "./sprites";
 import { hex } from "./mesh";
 import type { V3 } from "./course";
 
@@ -40,16 +41,20 @@ class Pool {
 }
 
 export class Fx {
+  /** `quads`: draw the pools as quads (a requested WebGPU backend; see sprites.ts `spriteQuads`). */
+  constructor(private readonly quads = false) {}
+  private handles = new Map<string, ReturnType<typeof spritePoolHandle>>();
   private glow = new Pool(520);
   private puff = new Pool(260);
   private rnd = (() => { let s = 4242; return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0), s / 4294967296); })();
 
   addTo(builder: { add(n: unknown): unknown }): void {
-    for (const [id, pool, spec] of [["fx-glow", this.glow, glowSpec()], ["fx-puff", this.puff, puffSpec()]] as const) {
-      builder.add(geometry.custom(geometry.dynamic({
+    for (const [id, pool, spec] of [["fx-glow", this.glow, glowSpec(this.quads)], ["fx-puff", this.puff, puffSpec(this.quads)]] as const) {
+      const shape = this.quads ? spritePoolGeometry(pool.cap, true) : geometry.dynamic({
         positions: pool.pos.slice(), topology: "points",
         attributes: { tone: { itemSize: 3, data: pool.tone.slice() }, aSize: { itemSize: 1, data: pool.size.slice() }, aAlpha: { itemSize: 1, data: pool.alpha.slice() } }
-      }), { name: id, material: material.custom(spec) }).runtime({ id }));
+      });
+      builder.add(geometry.custom(shape, { name: id, material: material.custom(spec) }).runtime({ id }));
     }
   }
 
@@ -97,7 +102,8 @@ export class Fx {
   update(dt: number, app: AuraApp): void {
     this.glow.step(dt); this.puff.step(dt);
     for (const [id, pool] of [["fx-glow", this.glow], ["fx-puff", this.puff]] as const) {
-      const n = app.nodes.require(id);
+      let n = this.handles.get(id);
+      if (!n) this.handles.set(id, n = spritePoolHandle(app.nodes.require(id), this.quads));
       n.updateAttribute?.("position", { array: pool.pos, offset: 0 });
       n.updateAttribute?.("tone", { array: pool.tone, offset: 0 });
       n.updateAttribute?.("aSize", { array: pool.size, offset: 0 });

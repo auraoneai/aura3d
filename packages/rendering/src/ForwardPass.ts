@@ -2531,6 +2531,10 @@ export class ForwardPass extends BaseRenderPass {
     const extra = createExtraInstanceAttributeBindings(device, item, count, false);
     // GU47 E-D: `instanceColorTarget: "emissive"` — the colours feed the emissive term only (prd04.instanceColorTarget).
     const colorAttribute = materialInstanceColorTarget(item.material) === "emissive" ? A3D_INSTANCE_EMISSIVE_ATTRIBUTE : "a_instanceColor";
+    // WebGL2 binds instance streams by name, so a program that never reads the colours (a `material.custom` twin with
+    // only the matrix inputs, e.g. Cross Hop's sun-shade decal) silently skips them. WebGPU validates every stream against
+    // the shader's inputs, so the unread colour stream is left out there instead of failing the mount.
+    const bindColors = bound.colorBuffer !== undefined && (device.kind !== "webgpu" || shader.reflection.attributes.has(colorAttribute));
     return {
       count,
       attributes: [
@@ -2542,7 +2546,7 @@ export class ForwardPass extends BaseRenderPass {
           stride: 64,
           divisor: 1
         })),
-        ...(bound.colorBuffer ? [{
+        ...(bindColors && bound.colorBuffer ? [{
           buffer: bound.colorBuffer,
           shaderName: colorAttribute,
           components: 4 as const,
