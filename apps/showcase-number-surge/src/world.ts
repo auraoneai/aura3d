@@ -321,7 +321,8 @@ export function buildWorld(options: WorldOptions): World {
         }
 
         /* gates (scrolling frame; tone by op sign; canvas label repainted on op change) */
-        const liveGates = o.gates.filter((g) => g.active);
+        // A row's gates leave the world once it resolves at the ball, so passed panels never sweep across the camera.
+        const liveGates = o.gates.filter((g) => g.active && !o.rows[g.row]?.resolved);
         gateSlots.retain(liveGates, (slot) => {
           panels.collapse(slot);
           frames.collapse(slot);
