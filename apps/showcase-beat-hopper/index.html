@@ -42,9 +42,11 @@
       z-index: 20;
     }
     .hidden { display: none !important; }
-    #splash-screen { background: rgba(20, 8, 46, 0.92); }
-    #gameover-screen { background: rgba(255, 47, 179, 0.94); color: #14082e; }
-    #pause-screen { background: rgba(20, 8, 46, 0.85); }
+    /* translucent menus: the synthwave stage stays visible behind the title, results and pause cards */
+    #splash-screen { background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(20, 8, 46, 0.78) 0%, rgba(20, 8, 46, 0.5) 55%, rgba(20, 8, 46, 0.12) 100%); }
+    #splash-screen .instructions, #splash-screen .hint, #splash-screen .toggles { text-shadow: 0 1px 6px rgba(8, 3, 22, 0.9); }
+    #gameover-screen { background: radial-gradient(ellipse 65% 75% at 50% 50%, rgba(255, 47, 179, 0.93) 0%, rgba(255, 47, 179, 0.82) 60%, rgba(160, 20, 120, 0.55) 100%); color: #14082e; }
+    #pause-screen { background: rgba(20, 8, 46, 0.62); }
     h1 { font-size: clamp(34px, 7vw, 64px); letter-spacing: 0.02em; color: var(--accent-2); text-shadow: 0 0 24px rgba(35, 230, 255, 0.55); }
     #gameover-screen h1 { color: #14082e; text-shadow: none; }
     .instructions { max-width: 420px; font-size: clamp(15px, 2.6vw, 19px); color: var(--ink); line-height: 1.45; }
