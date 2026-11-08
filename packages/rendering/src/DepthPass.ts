@@ -217,6 +217,19 @@ function warnDepthDegradedOnce(code: string, label: string | undefined, detail: 
   depthDegradedWarned.add(code);
   console.warn(`${code}: "${label ?? "unlabelled item"}" ${detail}`);
 }
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean {
+  if (device.kind !== "webgpu" || isEnginePackedBatchItem(source) || rendererQrFlags(device).on("A3D_QR_STRICT")) return false;
+  const pointProxy = source.shadowGeometry?.topology === "points"
+    && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry;
+  if (source.geometry.topology !== "points" && !pointProxy) return false;
+  warnDepthDegradedOnce("WEBGPU_POINT_DEPTH_SKIPPED", source.label, "is a point caster; WebGPU has no point depth program yet, so it is left out of depth and shadow passes.");
+  return true;
+}
 function warnAlphaHashDegradedOnce(label: string | undefined): void {
   warnDepthDegradedOnce("DEPTH_ALPHA_HASH_DEGRADED", label, "is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.");
 }
@@ -753,6 +766,7 @@ export class DepthPass extends BaseRenderPass {
         throw new RenderDeviceError("Legacy depth fallback cannot submit a packed caster", "DEPTH_LEGACY_FALLBACK_UNSUPPORTED", { label: caster.label });
       }
       if (caster.instanceTransforms !== undefined && caster.instanceTransforms.length === 0) continue;
+      if (skipWebGPUPointDepthCaster(caster, context.device)) continue;
       if (isEnginePackedBatchItem(caster) || (caster as RenderItem & { readonly multiDraw?: unknown }).multiDraw !== undefined) {
         throw new RenderDeviceError("Legacy depth fallback cannot submit a packed caster", "DEPTH_LEGACY_FALLBACK_UNSUPPORTED", { label: caster.label });
       }
@@ -859,6 +873,7 @@ export class DepthPass extends BaseRenderPass {
       const casters = expandLogicalBatchItems(this.options.casters);
       this.assertBatchClippingCallback(casters, this.options.materialClippingFor);
       for (const source of casters) {
+        if (skipWebGPUPointDepthCaster(source, device)) continue;
         const entry = this.preflightCasterClipping(device, source);
         if (entry) {
           entries.push(entry);

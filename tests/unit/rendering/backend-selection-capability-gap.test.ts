@@ -7,6 +7,7 @@ const createSelectedProductionRenderer = (publicSelect as unknown as Record<symb
   Symbol.for("@aura3d/root-renderer/select-with-webgpu-gap/v1")] as (...args: unknown[]) => ReturnType<typeof publicSelect>;
 void createProductionRuntimePostprocess;
 import { resolveBackendOptions } from "../../../packages/engine/src/agent-api/app/rendererOptions";
+import { Renderer } from "../../../packages/rendering/src/Renderer";
 
 const gap = () => ({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] });
 const fakeCreate = () => {
@@ -51,5 +52,45 @@ describe("backend selection: scene capability the WebGPU device cannot provide",
     const strict = vi.fn(gap);
     await createSelectedProductionRenderer({} as never, resolveBackendOptions({ backend: "webgl2" } as never), create as never, strict);
     expect(strict).not.toHaveBeenCalled();
+  });
+});
+
+describe("backend selection: fallback is announced and native DoF combinations are pre-checked", () => {
+  it("warns once with the requested backend, code and missing features on a capability-gap fallback", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const { create } = fakeCreate();
+      await createSelectedProductionRenderer({} as never, resolveBackendOptions({ backend: "webgpu", allowFallback: true } as never), create as never, gap);
+      expect(warn.mock.calls.filter(([line]) => String(line).includes("BACKEND_FALLBACK"))).toEqual([
+        ["[aura3d] BACKEND_FALLBACK: requested webgpu, using webgl2 (DEPTH_POSTPROCESS_UNSUPPORTED: depth-textures)"]
+      ]);
+    } finally { warn.mockRestore(); }
+  });
+
+  it("warns when WebGPU initialization fails and WebGL2 takes over", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const create = vi.fn(async (options: { backend?: string }) => {
+        if (options.backend === "webgpu") throw Object.assign(new Error("no adapter"), { code: "WEBGPU_ADAPTER_UNAVAILABLE" });
+        return { device: { kind: "webgl2", info: { capabilities: [] } }, dispose() {} } as never;
+      });
+      const result = await createSelectedProductionRenderer({} as never, resolveBackendOptions({ backend: "auto" } as never), create as never);
+      expect(result.selection).toMatchObject({ active: "webgl2", fallbackReason: "WEBGPU_ADAPTER_UNAVAILABLE" });
+      expect(warn).toHaveBeenCalledWith("[aura3d] BACKEND_FALLBACK: requested auto, using webgl2 (WEBGPU_ADAPTER_UNAVAILABLE)");
+    } finally { warn.mockRestore(); }
+  });
+
+  it("reports the native DoF combination gap from the final post bag before any WebGPU context", () => {
+    const dofGap = (Renderer as unknown as Record<symbol, (post: unknown) => { code: string; missing: string[] } | undefined>)[
+      Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1")];
+    const dof = { focusDistance: 4, aperture: 2.8 };
+    const base = { v2: true, pipeline: { antiAliasing: "off", dof } };
+    expect(dofGap(base)).toBeUndefined();
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, vignette: { intensity: 0.3 }, filmGrain: { intensity: 0.1 } } })).toEqual({
+      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["anti-aliasing-msaa", "film-grain", "vignette"]
+    });
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof }, outline: { color: [1, 1, 1, 1] } })).toMatchObject({ missing: ["outline"] });
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "off" } })).toBeUndefined();
+    expect(dofGap({ pipeline: { dof } })).toBeUndefined();
   });
 });
