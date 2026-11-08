@@ -8,7 +8,7 @@
  * moved from GLSL1 `varying`/`gl_FragColor` to GLSL 300 es.
  */
 import type { material } from "@aura3d/engine";
-import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../shared/wgsl-twins";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 

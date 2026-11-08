@@ -6,11 +6,8 @@
  * The page publishes the renderer's native DoF diagnostics on
  * `document.body.dataset` for capture scripts.
  */
-import "../../packages/rendering/src/lanes/prd01";
-import { Geometry } from "../../packages/rendering/src/Geometry";
-import { Renderer, type CameraLike } from "../../packages/rendering/src/Renderer";
-import { UnlitMaterial } from "../../packages/rendering/src/UnlitMaterial";
-import { createTrustedQrFlags } from "../../packages/rendering/src/contracts/core";
+import { Geometry, UnlitMaterial, Renderer, type CameraLike } from "@aura3d/rendering";
+import { createTrustedQrFlags } from "@aura3d/rendering/contracts";
 
 const params = new URLSearchParams(location.search);
 const backend = params.get("backend") === "webgl2" ? "webgl2" : "webgpu";

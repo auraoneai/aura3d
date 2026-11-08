@@ -13,7 +13,7 @@
  *   - Point sprites: WebGPU has no `gl_PointSize` / `gl_PointCoord`, so the points twin draws one-pixel points
  *     (`@aura3d-point-list`) with the sprite centre's value (the documented WebGPU difference).
  */
-import { WGSL_CLIP, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, wgslStage } from "../shared/wgsl-twins";
 import { WGSL_A3D_LIGHTS, WGSL_A3D_SCENE, WGSL_A3D_SHADOW } from "../shared/wgsl-author-lights";
 import { GIANT_POSITION, LOOKS } from "./art/look";
 import { TRACK_GLAZE, TRACK_MARK_WARP } from "./shaders";

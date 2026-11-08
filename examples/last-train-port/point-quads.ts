@@ -7,7 +7,7 @@
  * `smoothstep(1, 0, d) * fade`, colour the sRGB-decoded `weatherTint`). The GLSL half draws the same quads if the request
  * falls back to WebGL2. Corner/array helpers: ../shared/sprite-quads.ts.
  */
-import { WGSL_CLIP, WGSL_COLOR, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, WGSL_COLOR, wgslStage } from "../shared/wgsl-twins";
 
 export { quadGeometryInput, quadUpdater } from "../shared/sprite-quads";
 

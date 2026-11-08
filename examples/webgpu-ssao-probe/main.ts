@@ -11,12 +11,8 @@
  * the fused-chain ssao pass. The page publishes the native AO pass counters
  * on `document.body.dataset` for capture scripts.
  */
-import "../../packages/rendering/src/lanes/prd01";
-import "../../packages/rendering/src/lanes/prd03";
-import { Geometry } from "../../packages/rendering/src/Geometry";
-import { Renderer, type CameraLike } from "../../packages/rendering/src/Renderer";
-import { PBRMaterial } from "../../packages/rendering/src/PBRMaterial";
-import { createTrustedQrFlags } from "../../packages/rendering/src/contracts/core";
+import { Geometry, PBRMaterial, Renderer, type CameraLike } from "@aura3d/rendering";
+import { createTrustedQrFlags } from "@aura3d/rendering/contracts";
 
 const params = new URLSearchParams(location.search);
 const backend = params.get("backend") === "webgl2" ? "webgl2" : "webgpu";
