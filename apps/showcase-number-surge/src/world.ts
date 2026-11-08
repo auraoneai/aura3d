@@ -5,15 +5,16 @@
  * once per appearance, node moved by the scroll), canvas-text op labels and a
  * ball-number decal repainted only when the value changes.
  */
-import { camera, environments, geometry, lights, material, scene, texture, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, texture, type AuraApp } from "@aura3d/engine";
 import {
-  Batch, Slots, scrollFrameZ, flatSpec, shadowSpec, skySpec, gradientSkyFragment, toonSpec,
+  Batch, Slots, mergeMeshes, scrollFrameZ, flatSpec, shadowSpec, skySpec, gradientSkyFragment, toonSpec,
   hexToLinear, type CustomSpec, type MeshData, type Rgb
 } from "../../../examples/shared/runner-kit/index";
 import { CONFIG, opLabel, type BossWall, type Gate, type NumberSurgeSim, type Powerup } from "./sim";
 import { DIMS, ballMesh, ballLabelMesh, gateFrameMesh, gatePanelMesh, groundQuad, opLabelMesh, particleMesh, powerupMesh, roadDashMesh, roadEdgeMesh, roadSegmentMesh, shardMesh, shadowMesh, sphereMesh, wallLabelMesh, wallMesh } from "./meshes";
 import { LINEAR, LOOK, PALETTE, SKY_STOPS } from "./look";
 import type { Shown } from "./presentation";
+import { addScenery, deckSpec, edgeGlowSpec, sceneryProgramSpecs, stripSpec, synthSkySpec } from "./scenery";
 
 type Scene = ReturnType<typeof scene>;
 type TextureHandle = ReturnType<typeof texture.canvas>;
@@ -63,7 +64,8 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "flat-tone", spec: flatSpec([1, 1, 1], 1, true) },
   { name: "shadow", spec: shadowSpec() },
   { name: "sky", spec: skySpec(gradientSkyFragment(SKY_STOPS)) },
-  { name: "label", spec: labelSpec(texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle) }
+  { name: "label", spec: labelSpec(texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle) },
+  ...sceneryProgramSpecs()
 ];
 
 /* ------------------------------------------------------------ canvas painters */
@@ -176,7 +178,7 @@ export function buildWorld(options: WorldOptions): World {
   const look = options.look ?? LOOK;
   const builder: Scene = scene()
     .background(look.background)
-    .camera(camera.perspective({ position: [0, LOOK.camera.height, LOOK.camera.back], target: [0, 1, LOOK.camera.lookAheadZ], fov: LOOK.camera.fovDeg, near: 0.1, far: 300 }));
+    .camera(camera.perspective({ position: [0, LOOK.camera.height, LOOK.camera.back], target: [0, 1, LOOK.camera.lookAheadZ], fov: LOOK.camera.fovDeg, near: 0.1, far: 320 }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
@@ -185,7 +187,8 @@ export function buildWorld(options: WorldOptions): World {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
   };
 
-  add("sky", sphereMesh(120, 32, 16), skySpec(gradientSkyFragment(SKY_STOPS)));
+  // Synthwave dome (striped sun, stars) sized inside the far plane so the scenery in front of it is never overdrawn.
+  add("sky", sphereMesh(300, 48, 24), synthSkySpec());
 
   // Art-direction rig: one shadowed dusk key + preset IBL fill (the kit toon programs
   // shade themselves; the rig lights any future GLB and satisfies the scene audit).
@@ -196,9 +199,12 @@ export function buildWorld(options: WorldOptions): World {
   const deck = new Batch(roadSegmentMesh(), CONFIG.SEGMENTS);
   const edges = new Batch(roadEdgeMesh(), CONFIG.SEGMENTS);
   const dashes = new Batch(roadDashMesh(), CONFIG.SEGMENTS);
-  addBatch("deck", deck, toonSpec(LINEAR.road));
-  addBatch("edges", edges, flatSpec(LINEAR.roadEdge, 0.9));
-  addBatch("dashes", dashes, flatSpec(LINEAR.roadStripe, 0.65));
+  addBatch("deck", deck, deckSpec(LINEAR.road, LINEAR.roadStripe));
+  addBatch("edges", edges, stripSpec(LINEAR.roadEdge, 1.8, 0.95));
+  addBatch("dashes", dashes, stripSpec(LINEAR.roadStripe, 1.5, 0.8));
+  // Painted neon glow either side of the edge trims (the bloom pass is not available on this output path).
+  const edgeGlow = new Batch(mergeMeshes([groundQuad(1.6, DIMS.SEGMENT_LENGTH, -DIMS.EDGE_X), groundQuad(1.6, DIMS.SEGMENT_LENGTH, DIMS.EDGE_X)]), CONFIG.SEGMENTS);
+  addBatch("edge-glow", edgeGlow, edgeGlowSpec(LINEAR.roadEdge, 0.55));
 
   const panels = new Batch(gatePanelMesh(), CONFIG.GATES, LINEAR.gateGood);
   const frames = new Batch(gateFrameMesh(), CONFIG.GATES, LINEAR.gateGood);
@@ -237,8 +243,16 @@ export function buildWorld(options: WorldOptions): World {
   const shards = new Batch(shardMesh(), CONFIG.SHARDS, LINEAR.shard);
   addBatch("shards", shards, toonSpec([1, 1, 1], undefined, [0.05, 0.02, 0.1], true));
 
-  // Ground plane far below the road so the horizon never shows the clear colour.
-  add("underlay", groundQuad(240, 480, 0, -0.4, -120), toonSpec(hexToLinear("#141133")));
+  // Ground plane under the grid floor so the horizon never shows the clear colour.
+  add("underlay", groundQuad(240, 480, 0, -15, -120), toonSpec(hexToLinear("#141133")));
+
+  const scenery = addScenery(builder);
+
+  // Post: a cool grade and a violet vignette (the bloom pass is skipped on this fused-LDR output path, so glows are
+  // painted in the sky, edge-glow and halo shaders instead). Tone mapping stays "none" (main.ts).
+  builder
+    .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.12, temperature: -0.02, gain: 1.05 }))
+    .add(effects.vignette({ name: "vignette", intensity: 0.24, color: "#140a2e" }));
 
   return {
     scene: builder,
@@ -253,6 +267,7 @@ export function buildWorld(options: WorldOptions): World {
       if (!maybeController) throw new Error("number-surge: the app exposes no camera controller");
       const controller: NonNullable<typeof maybeController> = maybeController;
 
+      const sceneryRuntime = scenery.bind(app, node);
       const gateSlots = new Slots<Gate>(CONFIG.GATES);
       const wallSlots = new Slots<BossWall>(CONFIG.WALLS);
       const powerupSlots = new Slots<Powerup>(CONFIG.POWERUPS);
@@ -286,8 +301,11 @@ export function buildWorld(options: WorldOptions): World {
         const frameZ = -scroll;
         const time = view.shown?.time ?? o.time;
 
-        /* road ring: segment j sits at run-space z = j * SEGMENT_LENGTH, slot = j mod SEGMENTS */
-        const jStart = Math.floor(scroll / DIMS.SEGMENT_LENGTH) - 10;
+        sceneryRuntime.update(scroll, time);
+
+        /* road ring: segment j sits at run-space z = j * SEGMENT_LENGTH (world z = runZ - scroll, so ahead of the ball is
+         * runZ < scroll), slot = j mod SEGMENTS; the ring keeps 10 segments behind the camera and the rest ahead. */
+        const jStart = Math.floor(scroll / DIMS.SEGMENT_LENGTH) - (CONFIG.SEGMENTS - 10);
         for (let j = jStart; j < jStart + CONFIG.SEGMENTS; j++) {
           const slot = ((j % CONFIG.SEGMENTS) + CONFIG.SEGMENTS) % CONFIG.SEGMENTS;
           if (segmentJ[slot] === j) continue;
@@ -295,6 +313,7 @@ export function buildWorld(options: WorldOptions): World {
           const z = j * DIMS.SEGMENT_LENGTH;
           deck.place(slot, 0, 0, z, 0, 1, 1, 1);
           edges.place(slot, 0, 0.02, z, 0, 1, 1, 1);
+          edgeGlow.place(slot, 0, 0.03, z, 0, 1, 1, 1);
           dashes.place(slot, 0, 0.02, z, 0, 1, 1, 1);
         }
 
@@ -416,11 +435,12 @@ export function buildWorld(options: WorldOptions): World {
         }
 
         /* scrolling-frame node offsets + dirty-range uploads */
-        for (const id of ["deck", "edges", "dashes", "gate-panels", "gate-frames", "walls", "powerups"] as const) {
+        for (const id of ["deck", "edges", "edge-glow", "dashes", "gate-panels", "gate-frames", "walls", "powerups"] as const) {
           node(id).setPosition(0, 0, frameZ);
         }
         deck.flush(node("deck"));
         edges.flush(node("edges"), false);
+        edgeGlow.flush(node("edge-glow"), false);
         dashes.flush(node("dashes"), false);
         panels.flush(node("gate-panels"));
         frames.flush(node("gate-frames"));
