@@ -14,10 +14,56 @@ import type { RenderItem } from "../contracts/renderItem";
 import type { Geometry } from "../Geometry";
 import { skinnedItemLocalBounds } from "../renderer/SkinnedBounds";
 
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+  readonly mode: string;
+  readonly clipRange: string;
+}
+
 export interface CascadeFitterCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
   readonly near?: number;
   readonly far?: number;
+  /**
+   * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+   * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+   * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+   */
+  readonly depth?: CascadeFitterCameraDepth;
+}
+
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined {
+  if (!camera || typeof camera !== "object") return undefined;
+  const c = camera as { readonly projectionMetadata?: CascadeFitterCameraDepth; readonly depthConvention?: CascadeFitterCameraDepth; readonly depth?: CascadeFitterCameraDepth };
+  for (const candidate of [c.depth, c.projectionMetadata, c.depthConvention]) {
+    if (candidate && typeof candidate.mode === "string" && typeof candidate.clipRange === "string") return { mode: candidate.mode, clipRange: candidate.clipRange };
+  }
+  return undefined;
+}
+
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export function standardViewProjection(
+  viewProjection: Float32Array | readonly number[],
+  depth: CascadeFitterCameraDepth | undefined
+): Float32Array | readonly number[] {
+  if (depth?.mode !== "reversed") return viewProjection;
+  const m = Array.from(viewProjection);
+  for (let column = 0; column < 4; column++) {
+    const z = m[column * 4 + 2]!, w = m[column * 4 + 3]!;
+    m[column * 4 + 2] = depth.clipRange === "zero-to-one" ? w - 2 * z : -z;
+  }
+  return m;
 }
 
 export interface DirectionalCascadeFit {
@@ -107,10 +153,11 @@ type Vec3Tuple = readonly [number, number, number];
  */
 export function clipRangeFromViewProjection(
   viewProjection: Float32Array | readonly number[],
-  eye: readonly [number, number, number]
+  eye: readonly [number, number, number],
+  depth?: CascadeFitterCameraDepth
 ): { near: number; far: number } | null {
   let inv: Float32Array;
-  try { inv = invertMat4(viewProjection); } catch { return null; }
+  try { inv = invertMat4(standardViewProjection(viewProjection, depth)); } catch { return null; }
   const n = ndcToWorld(inv, 0, 0, -1);
   const f = ndcToWorld(inv, 0, 0, 1);
   const near = Math.hypot(n[0] - eye[0], n[1] - eye[1], n[2] - eye[2]);
@@ -337,8 +384,10 @@ function resolveClipRange(nearCorners: readonly Vec3Tuple[], farCorners: readonl
 
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[] {
-  const vp = options.camera.viewProjectionMatrix;
-  if (!vp || vp.length < 16) throw new Error("CascadeFitter requires camera.viewProjectionMatrix (16 numbers)");
+  const authoredVp = options.camera.viewProjectionMatrix;
+  if (!authoredVp || authoredVp.length < 16) throw new Error("CascadeFitter requires camera.viewProjectionMatrix (16 numbers)");
+  // Reversed cameras: corners below are the standard NDC near (-1) and far (+1) planes.
+  const vp = standardViewProjection(authoredVp, options.camera.depth);
   const invVp = invertMat4(vp);
   const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
   const farCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, 1)));

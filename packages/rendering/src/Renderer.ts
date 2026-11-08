@@ -27,6 +27,7 @@ import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
 import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
 import { shadowFrameCamera, type Prd02BridgeFrameCamera } from "./shadows/Prd02ShadowBridge";
+import { cameraDepthOf } from "./shadows/DirectionalCascadeFitter";
 import { type RenderSource } from "./contracts/renderSource";
 import { createClippingBinding, validateClippingGroup, type ClippingGroupInput, type ClippingScope } from "./ClippingPlanes";
 import { assertDepthClippingSupported } from "./DepthPass";
@@ -3949,7 +3950,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -3961,7 +3962,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         });
       const shadowWrites = frameHooks.addPasses(this.graph, "shadows", items);
@@ -4838,7 +4839,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -4850,7 +4851,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         });
       const shadowWrites = frameHooks.addPasses(this.graph, "shadows", items);

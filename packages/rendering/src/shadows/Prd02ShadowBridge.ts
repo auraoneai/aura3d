@@ -40,7 +40,7 @@ import type { RenderSource } from "../contracts/renderSource";
 import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/Prd02SubFlags";
 import { sceneFromSource } from "../renderer/RenderShared";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem";
-import { clipRangeFromViewProjection } from "./DirectionalCascadeFitter";
+import { cameraDepthOf, clipRangeFromViewProjection, type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter";
 
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
@@ -263,7 +263,7 @@ export function takePrd02BridgedShadowFrame(device: RenderDevice): Prd02BridgedS
  * declares the lookup chunk.
  */
 interface Prd02FrameObservation {
-  readonly camera: { readonly viewProjectionMatrix: Float32Array | readonly number[]; readonly near?: number; readonly far?: number; readonly position?: readonly [number, number, number] } | null;
+  readonly camera: { readonly viewProjectionMatrix: Float32Array | readonly number[]; readonly near?: number; readonly far?: number; readonly position?: readonly [number, number, number]; readonly depth?: CascadeFitterCameraDepth } | null;
   readonly lookupConsumer: boolean;
 }
 
@@ -317,6 +317,8 @@ export interface Prd02BridgeFrameCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
   readonly near?: number;
   readonly far?: number;
+  /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+  readonly depth?: CascadeFitterCameraDepth;
   /**
    * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
    * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -332,11 +334,12 @@ export interface Prd02BridgeFrameCamera {
 export function shadowFrameCamera(
   viewProjection: Float32Array | readonly number[] | undefined,
   eye: readonly [number, number, number] | undefined,
-  viewMatrix?: Float32Array | readonly number[]
+  viewMatrix?: Float32Array | readonly number[],
+  depth?: CascadeFitterCameraDepth
 ): Prd02BridgeFrameCamera | undefined {
   if (!viewProjection || viewProjection.length < 16) return undefined;
-  const range = eye ? clipRangeFromViewProjection(viewProjection, eye) : null;
-  const extra = { ...(eye ? { eye } : {}), ...(viewMatrix ? { viewMatrix } : {}) };
+  const range = eye ? clipRangeFromViewProjection(viewProjection, eye, depth) : null;
+  const extra = { ...(eye ? { eye } : {}), ...(viewMatrix ? { viewMatrix } : {}), ...(depth?.mode === "reversed" ? { depth } : {}) };
   return range ? { viewProjectionMatrix: viewProjection, near: range.near, far: range.far, ...extra } : { viewProjectionMatrix: viewProjection, ...extra };
 }
 
@@ -390,7 +393,8 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   // The fitter lerps between the VP's near/far corners, so it gets the
   // camera's real clip range; `config.maxDistance` caps the cascade splits.
   const uniforms = system.update({
-    camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near, far: camera.far ?? 200 },
+    // A reversed camera's matrix is re-expressed in standard depth by the fitter.
+    camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near, far: camera.far ?? 200, ...(cameraDepthOf(camera) ? { depth: cameraDepthOf(camera) } : {}) },
     cameraPosition: eye,
     timeSeconds: input.timeSeconds,
     sun: sun ? { direction: sun } : null,
