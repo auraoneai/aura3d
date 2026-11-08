@@ -18,6 +18,7 @@ import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, PAINT_POT_PIECES, PIECES, addBackd
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
 import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 type Rgb = readonly [number, number, number];
 type Scene = ReturnType<typeof scene>;
@@ -715,7 +716,7 @@ export function buildWorld(options: WorldOptions): World {
   const rampTex = texture.canvas({ canvas: paintRampCanvas(sim), colorSpace: "linear" });
   const builder: Scene = scene()
     .background(look.background)
-    .camera(camera.perspective({ position: [0, 15, 18], target: [0, 0, 0], fov: 55, near: 0.1, far: CAMERA_FAR }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 15, 18], target: [0, 0, 0], fov: 55, near: 0.1, far: CAMERA_FAR }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));

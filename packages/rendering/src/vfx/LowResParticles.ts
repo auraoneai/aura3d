@@ -19,6 +19,7 @@ import {
   type LowResCompositeDefines
 } from "./shaders/lowresComposite.glsl";
 import type { ResolvedSceneDepth } from "./SceneDepthAdapter";
+import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 /** §6.2 particle GPU budget per tier (ms). Custom tier settings fall back to
  *  matching by `particleBudget`, then to the `high` budget. */
@@ -115,7 +116,7 @@ export class LowResParticleTarget {
     ]);
     if (bilateral && depth?.source.texture) {
       uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture, sampler: PRD07_DEPTH_SAMPLER }));
-      uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
+      uniforms.set("u_depthLinearize", sceneDepthLinearizeUniform(depth.source.linearize));
       uniforms.set("u_lowTexel", [1 / this.target.width, 1 / this.target.height]);
       uniforms.set("u_lowSize", [this.target.width, this.target.height]);
       uniforms.set("u_bilateralSharpness", 0.5);

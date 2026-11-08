@@ -48,7 +48,7 @@ import {
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
-import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { formatBackendSelection, publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { assets } from "./aura-assets";
@@ -1200,7 +1200,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
 
 /** The hole's opening camera (the address cam takes over on the first frame). */
 function holeOpeningCamera(terrain: HoleTerrain) {
-  return camera.perspective({
+  return camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
     position: [terrain.tee[0] - 2.0, terrain.tee[1] + 5.8, terrain.tee[2] - 8.6],
     target: [terrain.tee[0] + Math.sin(terrain.lineYaw) * 40, terrain.tee[1] + 0.5, terrain.tee[2] + Math.cos(terrain.lineYaw) * 40],
     fov: 40

@@ -27,6 +27,7 @@ import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
 import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
 import { shadowFrameCamera, type Prd02BridgeFrameCamera } from "./shadows/Prd02ShadowBridge";
+import { cameraDepthOf, standardViewProjection } from "./shadows/DirectionalCascadeFitter";
 import { type RenderSource } from "./contracts/renderSource";
 import { createClippingBinding, validateClippingGroup, type ClippingGroupInput, type ClippingScope } from "./ClippingPlanes";
 import { assertDepthClippingSupported, skipWebGPUPointDepthCaster } from "./DepthPass";
@@ -2977,7 +2978,7 @@ export class Renderer {
     const clear = this.directLinearClearValid ? this.outputClearColor ?? this.clearColor : this.clearColor;
     const opaque = new ForwardPass({ ...shared, outputColorSpace: "linear", inputColorResource: undefined });
     const sky = background ? new EnvironmentBackgroundPass({ ...background, outputColorSpace: "linear",
-      inverseViewProjectionMatrix: background.inverseViewProjectionMatrix ?? invertMat4(toMat4(viewProjection ?? identityMat4(), "viewProjection")), shaderLibrary: this.shaderLibrary }) : undefined;
+      inverseViewProjectionMatrix: background.inverseViewProjectionMatrix ?? invertMat4(toMat4(standardViewProjection(viewProjection ?? identityMat4(), this.device.getDepthConvention?.()), "viewProjection")), shaderLibrary: this.shaderLibrary }) : undefined;
     return { name: "prd04.direct-linear-opaque", reads, writes: ["prd04.direct-linear-opaque"], execute: context => {
       if (!this.directTransmissionReplaySafe(shared.items, rendererQrFlags(this.device))) {
         throw new RenderDeviceError("Direct transmission replay state changed before the prepass", "TRANSMISSION_REPLAY_UNSUPPORTED");
@@ -3949,7 +3950,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -3961,7 +3962,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         });
       const shadowWrites = frameHooks.addPasses(this.graph, "shadows", items);
@@ -4032,7 +4033,8 @@ export class Renderer {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
           outputColorSpace: postprocess || qrOutput ? "linear" : environmentBackground.outputColorSpace,
-          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(cameraViewProjection ?? identityMat4()),
+          // The background shader unprojects standard NDC z (-1 near, +1 far); a reversed camera is re-expressed first.
+          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(toMat4(standardViewProjection(cameraViewProjection ?? identityMat4(), cameraDepthOf(resolvedCamera)), "viewProjection")),
           shaderLibrary: this.shaderLibrary
         }));
         frameHooks.addPasses(this.graph, "background", items);
@@ -4838,7 +4840,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -4850,7 +4852,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         });
       const shadowWrites = frameHooks.addPasses(this.graph, "shadows", items);
@@ -4909,7 +4911,8 @@ export class Renderer {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
           outputColorSpace: postprocess || qrOutput ? "linear" : environmentBackground.outputColorSpace,
-          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(cameraViewProjection ?? identityMat4()),
+          // The background shader unprojects standard NDC z (-1 near, +1 far); a reversed camera is re-expressed first.
+          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(toMat4(standardViewProjection(cameraViewProjection ?? identityMat4(), cameraDepthOf(resolvedCamera)), "viewProjection")),
           shaderLibrary: this.shaderLibrary
         }));
         frameHooks.addPasses(this.graph, "background", items);

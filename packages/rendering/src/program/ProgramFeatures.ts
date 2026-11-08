@@ -25,6 +25,11 @@ export const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 
 /** Structural axes for the optional per-frame advanced diffuse sources. */

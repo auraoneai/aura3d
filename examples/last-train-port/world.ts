@@ -23,6 +23,7 @@ import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTe
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 type Scene = ReturnType<typeof scene>;
 
@@ -344,7 +345,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   const towns = data.tables.towns;
   const b: Scene = scene()
     .background(row ? row.sky.top : night ? "#0b1230" : "#a9d4ee")
-    .camera(camera.perspective({ position: [0, 30, 60], target: [0, 20, 0], fov: 58, near: 0.3, far: 7500 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 30, 60], target: [0, 20, 0], fov: 58, near: 0.3, far: 7500 }));
 
   if (row) addBandLighting(b, data, row.id);
   else {

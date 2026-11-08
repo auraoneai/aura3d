@@ -27,6 +27,7 @@ import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, RIM_IDS, stageLightNodes, 
 import { ORIGINAL_LOOKS, ORIGINAL_VIGNETTE, type VenueLookMode } from "./originalLook";
 import { groundDressing, markDeckPracticals, refinedLook, refinedLookOverrides, type RefinedVenueLook } from "./refinedLook";
 import type { IronStage } from "./stages";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 export type Vec3 = readonly [number, number, number];
 
@@ -177,7 +178,7 @@ export function buildOriginalArenaScene(o: ArenaOptions) {
       lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 12, color: s.palette.warning, ...photometry(o) }),
       lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 9, color: accent, ...photometry(o) })
     ])
-    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }
 
 /** The refined look group; under a follow-spot the look's sun is dropped (the spot is the one shadowed key). */
@@ -247,7 +248,7 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
       lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringKey.intensity, color: look.ringKey.color, ...photometry(o) }).toJSON(),
       lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringFill.intensity, color: look.ringFill.color, ...photometry(o) }).toJSON()
     ])
-    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }
 
 /** The venue's base vignette for the cinematic post cue (4.6.2, refined or GU47 look). */
@@ -278,5 +279,5 @@ export function buildArenaScene(o: ArenaOptions) {
       koScorchNode(),
       ...arenaPostNodes(row, o.contactShadows)
     ])
-    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }

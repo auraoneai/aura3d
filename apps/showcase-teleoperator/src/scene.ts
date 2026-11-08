@@ -6,6 +6,7 @@ import { MANHOLES } from "./vfx";
 import { TAIL_TRAIL_CAPACITY, TAIL_TRAIL_ID, tailTrailMaterial } from "./tailTrails";
 import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, crossStreetName, signNodeId } from "./dressing";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
+import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 export const HIDDEN_POS: Vec3 = [0, -90, 140];
@@ -406,7 +407,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   const look = SKY_LOOKS[weather];
   const s = scene()
     .background(w.sky)
-    .camera(camera.perspective({ fov: SCENE_CAM_FOV_DEG, near: 0.25, far: 620, position: SCENE_CAM_POS, target: SCENE_CAM_TARGET }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), fov: SCENE_CAM_FOV_DEG, near: 0.25, far: 620, position: SCENE_CAM_POS, target: SCENE_CAM_TARGET }))
     // No ambient light: the sky's HDRI fills the shadows, and an extra ambient blew out the white hero car (C14).
     .addMany([...skyRig(look)])
     .add(marineHaze(look))

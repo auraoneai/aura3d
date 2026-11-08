@@ -343,8 +343,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         far: 550,
         position: [0, 3.6, 5.2],
         target: [0, 0.6, -6.0],
-        // A9 (EXPERIMENTAL, lab only): `?depth=reversed|logarithmic`; absent means the unchanged standard depth.
-        ...labCameraOptions(readLabFlags())
+        // A9: reversed depth by default (real-GPU checked); `?depth=standard` opts out, `?depth=logarithmic` overrides.
+        ...labCameraOptions(readLabFlags(), "reversed")
       })
     )
     // Camera-side fill: the sun is dead ahead, so the faces the chase camera sees are lit by this unshadowed 0.6 fill from

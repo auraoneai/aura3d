@@ -10,13 +10,13 @@ import { Geometry } from "../Geometry";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
 import { invertMat4 } from "@aura3d/scene";
+import { standardViewProjection } from "../DepthConvention";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
-import { SKY_SHADER_MARKER, skyFragmentSource, skyVertexSource } from "./sky.glsl";
+import { SKY_SHADER_MARKER, skyClipZ, skyClipZLiteral, skyFragmentSource, skyVertexSource } from "./sky.glsl";
 import {
   GRADIENT_SKY_FOG_PORTABLE_BINDINGS,
-  GRADIENT_SKY_FOG_WGSL,
   GRADIENT_SKY_PORTABLE_BINDINGS,
-  GRADIENT_SKY_WGSL
+  gradientSkyWgsl
 } from "./sky.wgsl";
 import type { PackedFogUniforms } from "./HeightFog";
 import { A3D_MAX_FOG_VOLUMES } from "./FogVolumes";
@@ -105,8 +105,10 @@ export class SkyBackgroundPass {
 
   /**
    * Fullscreen draw into the current target with the given VP matrix.
-   * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-   * depth-tests less-equal against the bound forward depth, so it fills only
+   * `depthTested` (after-opaque sky): the far-plane triangle (standard
+   * z = 0.999999; reversed depth puts it at the reversed far plane, see
+   * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+   * it for reversed depth) against the bound forward depth, so it fills only
    * pixels no opaque geometry covered.
    */
   drawSky(viewProjection: Float32Array, depthTested = false): void {
@@ -116,7 +118,7 @@ export class SkyBackgroundPass {
     const fog = this.fog;
     const defines = skyProgramDefines(frame, { fog: fog !== null });
     this.assertNativeSky(frame, fog);
-    const program = this.program(defines);
+    const program = this.program(defines, skyClipZ(this.device.getDepthConvention?.()));
     const geometry = this.fullscreen ?? (this.fullscreen = fullscreenTriangle());
     const invVp = invert(viewProjection);
     const uniforms = skyUniforms(frame, invVp, this.time);
@@ -148,12 +150,14 @@ export class SkyBackgroundPass {
     });
   }
 
-  private program(defines: ReturnType<typeof skyProgramDefines>): RenderShaderProgram {
+  private program(defines: ReturnType<typeof skyProgramDefines>, clipZ: number): RenderShaderProgram {
     if (this.programGeneration !== this.device.generation) {
       this.disposePrograms();
       this.programGeneration = this.device.generation;
     }
-    const key = skyProgramKey(defines);
+    const clipZLiteral = skyClipZLiteral(clipZ);
+    // Standard keeps the historical program key; other far planes get their own program.
+    const key = clipZLiteral === "0.999999" ? skyProgramKey(defines) : `${skyProgramKey(defines)}|z=${clipZLiteral}`;
     let p = this.programs.get(key);
     if (p?.disposed) {
       this.programs.delete(key);
@@ -162,11 +166,11 @@ export class SkyBackgroundPass {
     if (!p) {
       p = this.device.createShaderProgram({
         label: key,
-        vertex: skyVertexSource(),
+        vertex: skyVertexSource(clipZ),
         fragment: skyFragmentSource(defines),
         marker: SKY_SHADER_MARKER,
         ...(this.device.kind === "webgpu" ? {
-          webgpu: defines.fog ? GRADIENT_SKY_FOG_WGSL : GRADIENT_SKY_WGSL,
+          webgpu: gradientSkyWgsl(defines.fog, clipZLiteral),
           portableBindings: defines.fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS
         } : {})
       });
@@ -421,5 +425,10 @@ export function gradientSunfade(grad: { readonly sunDirection: readonly [number,
 
 /** View-projection for the current context's camera (identity when absent). */
 export function contextViewProjection(ctx: FrameContributorContext): Float32Array {
-  return ctx.camera?.viewProjectionMatrix ?? IDENTITY;
+  const vp = ctx.camera?.viewProjectionMatrix;
+  if (!vp) return IDENTITY;
+  // The sky unprojects clip z = 1 as the far plane to get a view direction; a reversed camera maps z = 1 to its near
+  // plane (whose world point is about the eye, not a direction), so it is re-expressed in standard depth first.
+  const standard = standardViewProjection(vp, ctx.camera?.depth);
+  return standard === vp ? vp : Float32Array.from(standard);
 }
