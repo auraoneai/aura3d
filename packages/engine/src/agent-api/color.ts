@@ -45,9 +45,28 @@ export class AuraColorParseError extends Error {
 export function assertAuraColorOption(value: unknown, where: string): void {
   if (value === undefined || (typeof value !== "string" && typeof value !== "number")) return;
   try { parseAuraColorSrgb(value); } catch (error) {
-    if (error instanceof AuraColorParseError) throw new AuraColorParseError(error.input, where);
+    // Name the whole authored value, not the inner token that failed (`rgb(1, 2, x)`, not `x`).
+    if (error instanceof AuraColorParseError) throw new AuraColorParseError(value, where);
     throw error;
   }
+}
+
+const HEX6 = /^#[0-9a-f]{6}$/i;
+
+/**
+ * Normalise an authored colour to `#rrggbb` for consumers that only read six-digit hex (sky, fog, volumetric fog,
+ * effect ramps). `#rrggbb` strings, arrays and non-colour values pass through unchanged (so existing hex scenes stay
+ * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
+ */
+export function auraColorToHex<T>(value: T, where: string): T | string {
+  if (typeof value === "string" ? HEX6.test(value) : typeof value !== "number") return value;
+  let rgba: readonly [number, number, number, number];
+  try { rgba = parseAuraColorSrgb(value as unknown as AuraColorInput); } catch (error) {
+    if (error instanceof AuraColorParseError) throw new AuraColorParseError(value, where);
+    throw error;
+  }
+  const byte = (channel: number): string => Math.round(Math.max(0, Math.min(1, channel)) * 255).toString(16).padStart(2, "0");
+  return `#${byte(rgba[0])}${byte(rgba[1])}${byte(rgba[2])}`;
 }
 
 /** The 148 CSS named colors (sRGB hex, alpha 1). */
@@ -118,13 +137,28 @@ function parseAlpha(token: string | undefined): number {
 
 function splitFunctionArgs(body: string): string[] {
   // Comma syntax: rgb(r, g, b[, a]); space syntax: rgb(r g b / a).
+  let args: string[];
   if (body.includes(",")) {
-    return body.split(",").map((part) => part.trim());
+    args = body.split(",").map((part) => part.trim());
+  } else {
+    const slash = body.split("/").map((part) => part.trim());
+    if (slash.length > 2) throw new AuraColorParseError(body);
+    args = slash[0].split(/\s+/).filter((part) => part.length > 0);
+    if (slash.length > 1) args.push(slash[1]);
   }
-  const slash = body.split("/").map((part) => part.trim());
-  const first = slash[0].split(/\s+/).filter((part) => part.length > 0);
-  if (slash.length > 1) first.push(slash[1]);
-  return first;
+  // `Number("")` is 0: an empty channel (`rgb(1,,2)`) must not silently read as black.
+  if (args.some((part) => part.length === 0)) throw new AuraColorParseError(body);
+  return args;
+}
+
+/** CSS hue: bare degrees or `deg` / `turn` / `rad` / `grad`. */
+function parseHue(token: string): number {
+  const t = token.trim().toLowerCase();
+  if (t.endsWith("deg")) return Number(t.slice(0, -3));
+  if (t.endsWith("grad")) return Number(t.slice(0, -4)) * 0.9;
+  if (t.endsWith("rad")) return (Number(t.slice(0, -3)) * 180) / Math.PI;
+  if (t.endsWith("turn")) return Number(t.slice(0, -4)) * 360;
+  return Number(t);
 }
 
 function parseFunctionColor(name: string, body: string): readonly [number, number, number, number] {
@@ -136,8 +170,7 @@ function parseFunctionColor(name: string, body: string): readonly [number, numbe
   if (name === "oklch") return parseOklch(name, body);
   if (name === "hsl" || name === "hsla") {
     if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
-    const hRaw = args[0].trim();
-    const hDeg = hRaw.endsWith("deg") ? Number(hRaw.slice(0, -3)) : hRaw.endsWith("turn") ? Number(hRaw.slice(0, -4)) * 360 : Number(hRaw);
+    const hDeg = parseHue(args[0]);
     const s = args[1].trim().endsWith("%") ? Number(args[1].trim().slice(0, -1)) / 100 : Number(args[1]);
     const l = args[2].trim().endsWith("%") ? Number(args[2].trim().slice(0, -1)) / 100 : Number(args[2]);
     if (!Number.isFinite(hDeg) || !Number.isFinite(s) || !Number.isFinite(l)) throw new AuraColorParseError(`${name}(${body})`);
@@ -177,8 +210,7 @@ function parseOklch(name: string, body: string): readonly [number, number, numbe
     const v = t.trim();
     return v.endsWith("%") ? (Number(v.slice(0, -1)) / 100) * pctScale : Number(v);
   };
-  const hRaw = args[2]!.trim();
-  const hue = hRaw.endsWith("deg") ? Number(hRaw.slice(0, -3)) : hRaw.endsWith("turn") ? Number(hRaw.slice(0, -4)) * 360 : Number(hRaw);
+  const hue = parseHue(args[2]!);
   const l = num(args[0]!, 1), c = num(args[1]!, 0.4);
   if (!Number.isFinite(l) || !Number.isFinite(c) || !Number.isFinite(hue)) throw new AuraColorParseError(`${name}(${body})`);
   return oklchToSrgb(Math.max(0, Math.min(1, l)), Math.max(0, c), hue, parseAlpha(args[3]));
@@ -230,7 +262,10 @@ export function parseAuraColorSrgb(color: AuraColorInput): readonly [number, num
   const hexMatch = /^#([0-9a-f]+)$/i.exec(input);
   if (hexMatch) return parseHex(hexMatch[1]);
   const fnMatch = /^(rgb|rgba|hsl|hsla|oklch)\((.+)\)$/i.exec(input);
-  if (fnMatch) return parseFunctionColor(fnMatch[1].toLowerCase(), fnMatch[2]);
+  if (fnMatch) {
+    // Report the whole authored value, not the inner token that failed.
+    try { return parseFunctionColor(fnMatch[1].toLowerCase(), fnMatch[2]); } catch { throw new AuraColorParseError(color); }
+  }
   if (input.toLowerCase() === "transparent") return [0, 0, 0, 0];
   const named = NAMED_COLORS[input.toLowerCase()];
   if (named !== undefined) {

@@ -12,12 +12,15 @@ import { PARTICLE_DEFAULT_ALPHA_OVER_LIFE, PARTICLE_DEFAULT_SIZE_OVER_LIFE } fro
 import { lazyNamespace } from "../lazyNamespace.js";
 import { assertWeatherTransformFields } from "../../production-runtime/effects/WeatherTransform.js";
 import { ignoredOptionsNote } from "./optionDiagnostics.js";
-import { assertAuraColorOption } from "../color.js";
+import { auraColorToHex } from "../color.js";
 
-/** Validate `effects.fog({ color })` at its API entry (throws COLOR_INVALID naming the option); contributes no fields. */
-function fogColorChecked(color: unknown): Record<string, never> {
-  assertAuraColorOption(color, "effects.fog({ color })");
-  return {};
+/**
+ * `effects.fog({ color })` at its API entry: any CSS colour form is normalised to `#rrggbb` (the height-fog path
+ * reads six-digit hex only); `"sky"`, arrays and `#rrggbb` pass through unchanged; an invalid value throws
+ * COLOR_INVALID naming the option.
+ */
+function fogColor(color: unknown, where: string): unknown {
+  return color === "sky" ? color : auraColorToHex(color, where);
 }
 
 /**
@@ -160,13 +163,15 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * maxOpacity 1). Flag-off compile reads `?? 0.12`/`?? "#9fb7d9"` so the
    * uniforms are unchanged.
    */
-  fog: (options: FogNodeOptions = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>(
+  fog: (rawOptions: FogNodeOptions = {}) => {
+    const options: FogNodeOptions = rawOptions.color === undefined
+      ? rawOptions
+      : { ...rawOptions, color: fogColor(rawOptions.color, "effects.fog({ color })") as string };
+    return new AuraNodeBuilder<AuraEffectNode>(
       withEmitterOptions(
         {
           kind: "effect",
           effect: "fog",
-          ...fogColorChecked(options.color),
           ...(options.density !== undefined ? { density: options.density as number } : {}),
           ...(options.color !== undefined ? { color: options.color as string } : {}),
           intensity: options.intensity,
@@ -176,7 +181,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
         },
         options as Readonly<Record<string, unknown>>
       )
-    ),
+    );
+  },
   cinematicBloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     effects.bloom({
       intensity: options.intensity ?? 0.58,
@@ -200,7 +206,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       effect: "volumetric-fog",
       name: options.name ?? "volumetric fog inscatter",
       density: options.density ?? 0.18,
-      color: options.color ?? "#6f84b9",
+      color: options.color === undefined ? "#6f84b9" : fogColor(options.color, "effects.volumetricFog({ color })") as string,
       intensity: options.intensity ?? 0.7,
       ...(options.volumetricQuality ? { volumetricQuality: options.volumetricQuality } : {}),
       ...(options.lightPosition ? { lightPosition: options.lightPosition } : {}),
