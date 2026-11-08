@@ -277,6 +277,18 @@ describe("native WebGPU depth of field on the general scene route", () => {
     } finally { f.close(); }
   });
 
+  it.each([false, true])("sends a strict-eligible frame with clipping to the scene route instead of throwing (async=%s)", async asynchronous => {
+    const f = await fixture();
+    const begin = vi.spyOn(f.renderer.device, "beginNativeDepthOfFieldFrame" as never);
+    try {
+      // Opaque unlit content passes every strict-route check except clipping, which the strict route refuses later.
+      const source = { ...f.source, globalClipping: { planes: [[1, 0, 0, 4]] as [number, number, number, number][], space: "world" as const } };
+      if (asynchronous) await f.renderer.renderAsync(source, f.camera); else f.renderer.render(source, f.camera);
+      expect(begin).not.toHaveBeenCalled();
+      expect(drawn(f.passes)).toEqual(expect.arrayContaining(["fs_ao_linear_depth", "fs_dof_composite"]));
+    } finally { f.close(); }
+  });
+
   it("copies a 4x color source to a single-sample float target before the kernel", async () => {
     const f = await fixture(msaa, { sampleCount: 4 });
     try {

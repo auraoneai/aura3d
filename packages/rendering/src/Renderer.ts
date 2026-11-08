@@ -2202,7 +2202,9 @@ export class Renderer {
     camera: { readonly projectionMetadata?: FrameProjectionMetadata } | undefined,
     forward: { readonly projection?: Mat4; readonly consistent: boolean },
     options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown;
-      readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean },
+      readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean;
+      /** Clipping or splats this frame: the strict route refuses them later, so they take the scene route (transmission is lit, already off it). */
+      readonly strictSceneExtras?: () => boolean },
     items?: readonly RenderItem[]): ReturnType<typeof nativeDofProjection> | undefined {
     this.nativeDofRoute = undefined;
     if (!nativeWebGPUDofRequested(this.device, postprocess)) return undefined;
@@ -2240,7 +2242,7 @@ export class Renderer {
 
   /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
   private nativeDofStrictFrame(pipeline: PostPipelineOptions, flags: QrFlags,
-    options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown },
+    options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown; readonly strictSceneExtras?: () => boolean },
     camera: { readonly projectionMetadata?: FrameProjectionMetadata } | undefined,
     forward: { readonly projection?: Mat4; readonly consistent: boolean }, items: readonly RenderItem[] | undefined): boolean {
     const device = this.device;
@@ -2249,7 +2251,8 @@ export class Renderer {
       || pipeline.backgroundPassthrough || potentiallyActiveFrameContributors(flags).length > 0
       || !isTrustedQrFlags(flags) || !qrCoreGeneratorOn(flags) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
       || options.environmentBackground || options.environmentFog || options.advanced
-      || this.clearColor[3] !== 1 || this.clearColor.slice(0, 3).some(value => !Number.isFinite(value) || value < 0 || value > 1)) return false;
+      || this.clearColor[3] !== 1 || this.clearColor.slice(0, 3).some(value => !Number.isFinite(value) || value < 0 || value > 1)
+      || options.strictSceneExtras?.() === true) return false;
     try {
       const plan = nativeDofProjection(camera, forward);
       validateWebGPUDepthOfFieldOptions(pipeline.dof as Partial<DofOptions>, plan.maxGeometryDepthMeters, plan.skyDepthMeters);
@@ -3768,7 +3771,8 @@ export class Renderer {
       deferredInFrame = false;
     }
     const nativeDofPlan = this.planNativeDepthOfField(routePost, resolvedCamera, forwardCamera,
-      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame }, items);
+      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame,
+        strictSceneExtras: () => clippingFrame.mayClip || collectGaussianSplatDraws(source).length > 0 }, items);
     if (nativeDofPlan) assertNativeDofItems(items, rendererQrFlags(this.device));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
@@ -4698,7 +4702,8 @@ export class Renderer {
       deferredInFrame = false;
     }
     const nativeDofPlan = this.planNativeDepthOfField(routePost, resolvedCamera, forwardCamera,
-      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame }, items);
+      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame,
+        strictSceneExtras: () => clippingFrame.mayClip || collectGaussianSplatDraws(source).length > 0 }, items);
     if (nativeDofPlan) assertNativeDofItems(items, rendererQrFlags(this.device));
     const frameHooks = createRendererFrameHooks({
       device: this.device,

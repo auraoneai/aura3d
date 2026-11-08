@@ -232,7 +232,7 @@ export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipe
   // display stages (webgpu/NativeDofDisplayStages.ts); legacy twins do not.
   add(postprocess.chromaticAberration, "chromatic-aberration");
   add(postprocess.filmGrain, "film-grain");
-  // pipeline.lut: the WebGPU chain has no LUT stage on any route; native DoF does not change that.
+  // pipeline.lut: the WebGPU chain applies it as the S10b stage after tone mapping and the grade (webgpuNativeLut).
   // The device refuses the display stages on Display-P3 output; report it before mount.
   add((pipeline as { outputColorSpace?: unknown }).outputColorSpace === "display-p3" && nativeDofDisplayStagesFor(pipeline), "display-p3-display-stages");
   add(pipeline.bloom && !postprocess.bloom, "bloom"); add(pipeline.grade && !postprocess.colorGrade, "grade");
