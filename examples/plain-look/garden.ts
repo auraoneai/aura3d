@@ -243,6 +243,9 @@ for (let i = 0; i < 26; i += 1) {
 }
 
 (window as unknown as { __auraApp?: unknown }).__auraApp = app;
-await app.ready();
-ready = true;
-window.__EVAL_READY__ = true;
+// No top-level await: with Vite's default chunk splitting, a lazily loaded engine chunk imports this entry chunk back,
+// so an entry suspended on `await app.ready()` never finishes evaluating and the page stays black.
+void app.ready().then(() => {
+  ready = true;
+  window.__EVAL_READY__ = true;
+});

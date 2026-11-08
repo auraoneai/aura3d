@@ -88,7 +88,10 @@ const place = (t: number): void => {
 };
 
 app.onFrame((f) => place(f.time % LOOP));
-await app.ready();
-place(0);
-// Evidence: the fill the solved chase pose gives the bird's body box (read live: it holds every frame).
-(window as unknown as { __AURA_AUTO_FRAME__?: unknown }).__AURA_AUTO_FRAME__ = { requestedFill: FILL, get fill() { return lastFill; }, get camera() { return app.camera?.presented() ?? app.scene.camera; } };
+// No top-level await: with Vite's default chunk splitting, a lazily loaded engine chunk imports this entry chunk back,
+// so an entry suspended on `await app.ready()` never finishes evaluating and the page stays black.
+void app.ready().then(() => {
+  place(0);
+  // Evidence: the fill the solved chase pose gives the bird's body box (read live: it holds every frame).
+  (window as unknown as { __AURA_AUTO_FRAME__?: unknown }).__AURA_AUTO_FRAME__ = { requestedFill: FILL, get fill() { return lastFill; }, get camera() { return app.camera?.presented() ?? app.scene.camera; } };
+});

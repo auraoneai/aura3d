@@ -72,9 +72,12 @@ app.onFrame((f) => {
   app.nodes.require("weight right").setPosition(0.1, 1.15 - sink * 0.7, 0.19);
 });
 
-await app.ready();
-// Evidence: the fill the mounted camera actually gives the clock, measured on the canvas aspect.
-const canvas = document.querySelector<HTMLCanvasElement>("#app")!;
-const cam = app.scene.camera;
-const fill = measureFrameFill(camera.worldBounds(clock), { position: cam.position!, target: cam.target!, fov: cam.fov! }, canvas.clientWidth / canvas.clientHeight);
-(window as unknown as { __AURA_AUTO_FRAME__?: unknown }).__AURA_AUTO_FRAME__ = { requestedFill: 0.8, fill, camera: cam };
+// No top-level await: with Vite's default chunk splitting, a lazily loaded engine chunk imports this entry chunk back,
+// so an entry suspended on `await app.ready()` never finishes evaluating and the page stays black.
+void app.ready().then(() => {
+  // Evidence: the fill the mounted camera actually gives the clock, measured on the canvas aspect.
+  const canvas = document.querySelector<HTMLCanvasElement>("#app")!;
+  const cam = app.scene.camera;
+  const fill = measureFrameFill(camera.worldBounds(clock), { position: cam.position!, target: cam.target!, fov: cam.fov! }, canvas.clientWidth / canvas.clientHeight);
+  (window as unknown as { __AURA_AUTO_FRAME__?: unknown }).__AURA_AUTO_FRAME__ = { requestedFill: 0.8, fill, camera: cam };
+});
