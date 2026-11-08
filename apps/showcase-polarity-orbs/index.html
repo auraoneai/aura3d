@@ -160,6 +160,82 @@
       }
       #render-error.visible { display: flex; }
 
+
+      /* How to play: a scrollable card over the world; same font, ink, paper and gold as the rest of the UI. */
+      .ghost-btn {
+        font-family: inherit; font-weight: 700; font-size: 15px;
+        min-height: 44px; padding: 10px 22px; border-radius: 999px;
+        border: 2px solid var(--ink); background: rgba(36,18,38,0.72); color: var(--ink); cursor: pointer;
+      }
+      .ghost-btn:focus-visible, .big-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+      #howto-screen {
+        z-index: 50; justify-content: center;
+        background: rgba(20,10,24,0.66); backdrop-filter: blur(2px);
+      }
+      .howto-card {
+        width: min(760px, 100%); max-height: 100%;
+        display: flex; flex-direction: column;
+        background: rgba(36,18,38,0.94); border: 2px solid rgba(255,244,236,0.28);
+        border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        text-align: left; overflow: hidden;
+      }
+      .howto-body {
+        overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+        padding: 20px 22px 8px; display: flex; flex-direction: column; gap: 14px;
+        -webkit-user-select: text; user-select: text;
+      }
+      .howto-body h2#howto-title { font-size: clamp(26px, 4.4vw, 34px); letter-spacing: 1px; }
+      .howto-body h2 .red { color: var(--red); }
+      .howto-body h2 .blue { color: var(--blue); }
+      .howto-body p.howto-goal { font-size: 16px; line-height: 1.45; max-width: none; }
+      .howto-body h3 {
+        font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--gold);
+        margin-bottom: 6px;
+      }
+      .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
+      .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 14px; line-height: 1.35; }
+      .howto-list li { display: flex; align-items: flex-start; gap: 9px; }
+      .howto-list .keys { flex: none; display: inline-flex; gap: 4px; flex-wrap: wrap; }
+      /* Key-chip lists line their descriptions up in one column. */
+      .howto-list.keyed { display: grid; grid-template-columns: max-content 1fr; gap: 7px 10px; }
+      .howto-list.keyed li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; gap: inherit; align-items: start; }
+      kbd {
+        font-family: inherit; font-weight: 700; font-size: 12px; line-height: 1;
+        display: inline-block; min-width: 24px; padding: 5px 7px; text-align: center;
+        border-radius: 6px; background: var(--ink); color: var(--paper);
+        box-shadow: 0 2px 0 rgba(0,0,0,0.45);
+      }
+      .swatch {
+        flex: none; width: 22px; height: 22px; border-radius: 50%; margin-top: -2px;
+        border: 2px solid var(--ink); display: inline-flex; align-items: center; justify-content: center;
+        font-size: 13px; color: var(--paper);
+      }
+      .swatch.gem { border-radius: 4px; transform: rotate(45deg) scale(0.82); }
+      .swatch.gem > span { transform: rotate(-45deg); font-size: 10px; }
+      .swatch.red { background: var(--red); }
+      .swatch.blue { background: var(--blue); }
+      .swatch.gold { background: var(--gold); }
+      .swatch.mint { background: #7ef0c8; }
+      .swatch.purple { background: #c79bff; }
+      .swatch.life { width: 14px; height: 14px; margin-top: 2px; background: var(--red); }
+      .howto-list b { color: var(--gold); font-weight: 700; }
+      .howto-foot {
+        flex: none; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+        padding: 12px 18px 16px; border-top: 1px solid rgba(255,244,236,0.16);
+      }
+      .howto-foot .big-btn { min-height: 48px; padding: 12px 34px; font-size: 19px; }
+      .howto-foot .hint { align-self: center; }
+      .screen-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+      @media (max-width: 560px) {
+        .howto-cols { grid-template-columns: 1fr; }
+        .howto-body { padding: 16px 16px 6px; gap: 12px; }
+        .howto-list { font-size: 13.5px; }
+        .howto-foot .hint { display: none; }
+      }
+      @media (max-height: 560px) {
+        .howto-body { gap: 10px; padding-top: 14px; }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         .popup { animation: none; opacity: 1; }
         #combo-fill, #load-fill { transition: none; }
@@ -203,7 +279,10 @@
       <h1>POLARITY <span class="red">O</span><span class="blue">R</span>BS</h1>
       <p>Drag to steer. Tap to flip polarity. Collect your colour, dodge the rest!</p>
       <div id="splash-best">BEST 0</div>
-      <button type="button" id="btn-start" class="big-btn" aria-busy="true">PLAY NOW</button>
+      <div class="screen-btns">
+        <button type="button" id="btn-start" class="big-btn" aria-busy="true">PLAY NOW</button>
+        <button type="button" id="btn-howto" class="ghost-btn" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
+      </div>
       <div id="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div id="load-fill"></div>
       </div>
@@ -230,8 +309,89 @@
 
     <div id="pause-screen" class="screen no-steer">
       <h1>PAUSED</h1>
-      <button type="button" id="btn-resume" class="big-btn">RESUME</button>
+      <div class="screen-btns">
+        <button type="button" id="btn-resume" class="big-btn">RESUME</button>
+        <button type="button" id="btn-howto-pause" class="ghost-btn" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
+      </div>
       <div class="hint">P / Esc to resume</div>
+    </div>
+
+
+    <div id="howto-screen" class="screen no-steer" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal" hidden>
+      <div class="howto-card">
+        <div class="howto-body" tabindex="-1">
+          <h2 id="howto-title">HOW TO PLAY</h2>
+          <p id="howto-goal" class="howto-goal">Roll down the track and hit the orb that matches your colour in every row: flip between <span style="color: var(--red)">red +</span> and <span style="color: var(--blue)">blue −</span> to match, build a combo and survive as long as you can.</p>
+
+          <div class="howto-cols">
+            <section aria-labelledby="howto-kb">
+              <h3 id="howto-kb">Keyboard</h3>
+              <ul class="howto-list keyed">
+                <li><span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>A</kbd><kbd>D</kbd></span><span>Steer left / right across the three lanes</span></li>
+                <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Flip polarity (red ↔ blue), no cooldown</span></li>
+              </ul>
+            </section>
+            <section aria-labelledby="howto-touch">
+              <h3 id="howto-touch">Touch &amp; mouse</h3>
+              <ul class="howto-list keyed">
+                <li><span class="keys"><kbd>Drag</kbd></span><span>Slide sideways to steer</span></li>
+                <li><span class="keys"><kbd>Tap</kbd></span><span>Tap or click without moving to flip polarity</span></li>
+              </ul>
+            </section>
+          </div>
+
+          <section aria-labelledby="howto-track">
+            <h3 id="howto-track">On the track</h3>
+            <ul class="howto-list">
+              <li><span class="swatch red" aria-hidden="true">+</span><span class="swatch blue" aria-hidden="true">−</span><span>Rows of three orbs. Each row counts the orb nearest to you, so you always hit one: your colour scores, the other colour costs a life.</span></li>
+              <li><span class="swatch blue" aria-hidden="true">−</span><span>A row that is all one colour is always the colour you are <em>not</em> when it appears: flip before you reach it.</span></li>
+              <li><span class="swatch gem gold" aria-hidden="true"><span>★</span></span><span><b>Rainbow</b> (gold gem): for 5 s every orb turns gold and counts as your colour.</span></li>
+              <li><span class="swatch gem mint" aria-hidden="true"><span>◆</span></span><span><b>Shield</b> (mint gem): blocks your next wrong-colour orb, no life lost.</span></li>
+              <li><span class="swatch gem gold" aria-hidden="true"><span>2</span></span><span><b>x2</b> (gold gem): double points for 7 s.</span></li>
+              <li><span class="swatch gem purple" aria-hidden="true"><span>◎</span></span><span><b>Magnet</b> (purple gem): for 6 s nearby orbs of your colour drift into your lane.</span></li>
+              <li><span class="swatch gem gold" aria-hidden="true"></span><span>Gems float between rows: steer through one to grab it. The HUD badges show what is active.</span></li>
+            </ul>
+          </section>
+
+          <section aria-labelledby="howto-score">
+            <h3 id="howto-score">Scoring</h3>
+            <ul class="howto-list keyed">
+              <li><span class="keys"><kbd>+20</kbd></span><span>Each matching orb is worth 20 × your multiplier (doubled under x2). Your orb grows and the track speeds up.</span></li>
+              <li><span class="keys"><kbd>x1–x5</kbd></span><span>Every 3 matches in a row raises the multiplier by one, up to <b>x5</b>. The gold bar under your score fills towards the next step.</span></li>
+              <li><span class="keys"><kbd>+100</kbd></span><span>Milestone bonus every 750 points.</span></li>
+            </ul>
+          </section>
+
+          <section aria-labelledby="howto-lives">
+            <h3 id="howto-lives">Lives &amp; end of run</h3>
+            <ul class="howto-list">
+              <li><span class="swatch life" aria-hidden="true"></span><span>You start with 3 lives. A wrong-colour orb takes one, resets your combo to x1 and shrinks your orb. Lose all three and the run ends.</span></li>
+            </ul>
+          </section>
+
+          <div class="howto-cols">
+            <section aria-labelledby="howto-sys">
+              <h3 id="howto-sys">Pause, sound &amp; restart</h3>
+              <ul class="howto-list keyed">
+                <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume (or the II button)</span></li>
+                <li><span class="keys"><kbd>M</kbd></span><span>Mute / unmute (or the ♪ button)</span></li>
+                <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Play again after game over</span></li>
+              </ul>
+            </section>
+            <section aria-labelledby="howto-opts">
+              <h3 id="howto-opts">Options</h3>
+              <ul class="howto-list">
+                <li><span class="swatch red" aria-hidden="true">+</span><span><b>Polarity symbols</b> on the title screen shows a + or − over your orb as well as its colour.</span></li>
+                <li><span class="swatch purple" aria-hidden="true"></span><span><b>Reduced motion</b> calms camera shake and flashes.</span></li>
+              </ul>
+            </section>
+          </div>
+        </div>
+        <div class="howto-foot">
+          <button type="button" id="btn-howto-close" class="big-btn">GOT IT</button>
+          <span class="hint">Esc / Enter / Space to close</span>
+        </div>
+      </div>
     </div>
 
     <div id="render-error" role="alert">
