@@ -1732,6 +1732,18 @@ describe("generated PBR irradiance-volume WebGPU bindings", () => {
       target.dispose(); geometry.dispose(); material.dispose(); factor.dispose(); color.dispose(); device.dispose();
     }
   });
+
+  it("leaves IOR and specular at the GL default 0 for materials that bind none of them, like the WebGL2 program (FC 3D stands, Iron Crown crowd)", () => {
+    const read = (uniforms: Map<string, UniformValue>): number[] => {
+      const bytes = packGeneratedPbrMaterialUniforms(uniforms);
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      return [8, 12].map((offset) => view.getFloat32(GENERATED_PBR_MATERIAL_OFFSETS.surface! + offset, true))
+        .concat([0, 4, 8].map((offset) => view.getFloat32(GENERATED_PBR_MATERIAL_OFFSETS.specular! + offset, true)));
+    };
+    expect(read(new Map<string, UniformValue>([["u_roughness", 0.9]]))).toEqual([0, 0, 0, 0, 0]);
+    expect(read(new Map<string, UniformValue>([["u_ior", 1.5]]))).toEqual([1.5, 1, 1, 1, 1]);
+    expect(read(new Map<string, UniformValue>([["u_specularFactor", 0.5]]))).toEqual([1.5, 0.5, 1, 1, 1]);
+  });
 });
 
 describe("offline generated PBR shader validation", () => {

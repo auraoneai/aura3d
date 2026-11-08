@@ -1708,6 +1708,11 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
   };
   const morphIndices = morphValues("u_morphActiveIndex4"), morphWeights = morphValues("u_morphActiveWeight4");
   const specularName = uniforms.has("u_specularIntensity") ? "u_specularIntensity" : "u_specularFactor";
+  // A material that binds none of u_ior / u_specularIntensity / u_specularColorFactor (InstancedPBRMaterial,
+  // NormalMappedPBRMaterial) leaves them at the GL default 0 in the WebGL2 program, so its dielectric draws carry no
+  // specular there; mirror that instead of the 1.5 / 1 / white defaults (FC 3D stands and Iron Crown crowd were lit
+  // brown on WebGPU, near-black on WebGL2). Any one of them present keeps the authored-material defaults.
+  const specularDefaults = uniforms.has("u_ior") || uniforms.has(specularName) || uniforms.has("u_specularColorFactor");
   const lightCount = scalar(uniforms, "u_lightCount", 0);
   if (!Number.isInteger(lightCount) || lightCount < 0 || lightCount > 16) throw new RenderDeviceError("Invalid u_lightCount", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_lightCount" });
   const packedLights = uniforms.get("u_lightData");
@@ -1745,8 +1750,8 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     model: numbers(uniforms, "u_modelMatrix", 16, IDENTITY), geometry: numbers(uniforms, "u_geometryMatrix", 16, IDENTITY),
     normal: numbers(uniforms, "u_normalMatrix", 16, IDENTITY), shadowMatrix: numbers(uniforms, "u_shadowMapMatrix", 16, IDENTITY), baseColor: numbers(uniforms, "u_baseColor", 4, [1, 1, 1, 1]),
     emissive: [...vec3(uniforms, "u_emissiveColor"), scalar(uniforms, "u_emissiveStrength", 0)],
-    surface: [scalar(uniforms, "u_metallic", 0), scalar(uniforms, "u_roughness", 1), scalar(uniforms, "u_ior", 1.5), scalar(uniforms, specularName, 1)],
-    specular: [...vec3(uniforms, "u_specularColorFactor", [1, 1, 1]), 0],
+    surface: [scalar(uniforms, "u_metallic", 0), scalar(uniforms, "u_roughness", 1), scalar(uniforms, "u_ior", specularDefaults ? 1.5 : 0), scalar(uniforms, specularName, specularDefaults ? 1 : 0)],
+    specular: [...vec3(uniforms, "u_specularColorFactor", specularDefaults ? [1, 1, 1] : [0, 0, 0]), 0],
     ambient: [...vec3(uniforms, "u_environmentColor"), scalar(uniforms, "u_environmentIntensity", 0)],
     sheen: [...vec3(uniforms, "u_sheenColorFactor"), scalar(uniforms, "u_sheenRoughnessFactor", 0)],
     probe: [scalar(uniforms, "u_envMipCount", 1), scalar(uniforms, "u_envRotation", 0), scalar(uniforms, "u_envDiffuseIntensity", 0), scalar(uniforms, "u_envSpecularIntensity", 0)],
