@@ -151,7 +151,6 @@ describe("N7 tone-mapping names", () => {
   it("maps same-meaning spellings to the operator", () => {
     expect(normalizeToneMappingName("aces-filmic", "t")).toBe("aces");
     expect(normalizeToneMappingName("ACESFilmicToneMapping", "t")).toBe("aces");
-    expect(normalizeToneMappingName("filmic", "t")).toBe("aces");
     expect(normalizeToneMappingName("AgX", "t")).toBe("agx");
     expect(normalizeToneMappingName("NeutralToneMapping", "t")).toBe("neutral");
     expect(normalizeToneMappingName("NoToneMapping", "t")).toBe("none");
@@ -164,6 +163,8 @@ describe("N7 tone-mapping names", () => {
       /TONE_MAPPING_UNKNOWN: createAuraApp\(\{ output \}\) toneMapping "uncharted2".*"none", "linear", "reinhard", "aces", "agx", "neutral", "cineon"/
     );
     expect(() => normalizeToneMappingName(3, "t")).toThrow(RangeError);
+    // Review: "filmic" is its own postprocess curve (LegacyPost / PostProcessPass), not ACES, so it must not alias to "aces".
+    expect(() => normalizeToneMappingName("filmic", "t")).toThrow(/TONE_MAPPING_UNKNOWN.*postprocess toneMapping\.operator curve/);
   });
 
   it("leaves canonical options untouched (same object) and normalises output and renderer.output", () => {

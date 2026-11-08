@@ -13,7 +13,6 @@ export const TONE_MAPPING_OPERATORS: readonly AuraToneMappingOperator[] = ["none
 const TONE_MAPPING_ALIASES: Readonly<Record<string, AuraToneMappingOperator>> = {
   acesfilmic: "aces",
   acesfilmictonemapping: "aces",
-  filmic: "aces",
   aces: "aces",
   agxtonemapping: "agx",
   agx: "agx",
@@ -43,7 +42,11 @@ export function normalizeToneMappingName(value: unknown, where: string): AuraTon
     const alias = TONE_MAPPING_ALIASES[value.toLowerCase().replace(/[-_\s]/g, "")];
     if (alias !== undefined) return alias;
   }
-  throw new RangeError(`TONE_MAPPING_UNKNOWN: ${where} toneMapping ${JSON.stringify(value)} is not a tone-mapping operator. ` +
+  // "filmic" / "uncharted2" are distinct curves of the postprocess `toneMapping.operator`, not names for an output operator:
+  // mapping them to "aces" would silently change the curve, so they throw like any other unknown name.
+  const postOnly = typeof value === "string" && ["filmic", "uncharted2"].includes(value.toLowerCase().replace(/[-_\s]/g, ""))
+    ? ` ${JSON.stringify(value)} is a postprocess toneMapping.operator curve with no output-pass equivalent.` : "";
+  throw new RangeError(`TONE_MAPPING_UNKNOWN: ${where} toneMapping ${JSON.stringify(value)} is not a tone-mapping operator.${postOnly} ` +
     `Use one of ${TONE_MAPPING_OPERATORS.map((name) => `"${name}"`).join(", ")} (three.js ACESFilmicToneMapping is "aces").`);
 }
 
