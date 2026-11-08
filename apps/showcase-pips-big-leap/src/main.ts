@@ -158,8 +158,8 @@ declare global {
 const pipsGame = createGame({
   id: "showcase-pips-big-leap",
   target: "#app",
-  // Lab flag ?gamut=p3 requests a Display-P3 canvas (opt-in; the default output stays sRGB).
-  ...(() => { const { output } = labAppOptions(readLabFlags()); return output ? { output } : {}; })(),
+  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=auto|webgpu (WebGL2 fallback kept); defaults unchanged.
+  ...(() => { const { output, renderer } = labAppOptions(readLabFlags()); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}) }; })(),
   autoStart: true,
   input: {
     actions: {

@@ -112,11 +112,14 @@ function boot(): void {
   document.body.appendChild(loadingBar);
   const loading = createLoadingProgress({ element: loadingBar, onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
   let app: ReturnType<typeof createAuraApp>;
+  const bootLookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look);
   try {
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
       ...labAppOptions(lab),
-      ...looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look),
+      ...bootLookOptions,
+      // The look's renderer options would otherwise replace the lab backend request (?backend=webgpu was ignored).
+      ...(bootLookOptions.renderer || labAppOptions(lab).renderer ? { renderer: { ...bootLookOptions.renderer, ...labAppOptions(lab).renderer } } : {}),
       // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
       // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
       // PRD D11: the 4.6.2 look path set no output preset; `?outputPreset=off` is the QA A/B for the GU47 path.
