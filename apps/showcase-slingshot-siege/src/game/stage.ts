@@ -35,6 +35,7 @@ import { islandSurface } from "../art/surfaces";
 import { SEA_STACK_PLACEMENT, farSetPiecesFor, setPieces } from "../art/setPieces";
 import { levelSignNodes } from "./sign";
 import { BLOCK_FAMILIES, PARKED_BLOCK, blockFamilyNodeId } from "./blockInstances";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 // ----------------------------------------------------------------- pools --
 
@@ -774,7 +775,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   nodes.push(...chapterPost(row, options));
 
   // ---------------------------------------------------------- camera spec ---
-  const cameraSpec = camera.perspective({
+  const cameraSpec = camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
     position: [-2.5, 4.0, 15.5],
     target: [-0.5, 1.5, 0],
     fov: 55

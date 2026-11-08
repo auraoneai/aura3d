@@ -27,6 +27,7 @@ import {
   type CourierPose, type ShotPlan
 } from "./motion.js";
 import { BOARD_BAKE, BOARD_BAKE_LOW, bakeBoardMaps, type BoardMaps } from "./boardMaterial.js";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 /** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
 const lookAssets = defineAuraAssets({
@@ -318,7 +319,7 @@ export function buildScene(): unknown {
     .add(lights.directional({ name: "cool bounce", position: [...BOUNCE.position], target: [...BOUNCE.target], color: BOUNCE.color, intensity: BOUNCE.intensity, shadow: false }))
     // DD47-L2 moving practicals: the courier's cyan point and four pooled event points (parked dark until used).
     .add(lights.point({ name: "courier light", position: [wx(st.maze.spawn.x), PRACTICALS.courier.height, wz(st.maze.spawn.y)], color: PRACTICALS.courier.color, intensity: PRACTICALS.courier.intensity, distance: PRACTICALS.courier.distance, decay: PRACTICALS.courier.decay, shadow: false }).runtime(game.runtimeNode("courier-light")))
-    .camera(camera.perspective({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
   // DD47-V2: dust motes drifting in the lamp cone (60, 30 on reduced motion; additive dust-mote sprite)
   // GU47(E-F): effects.particles intersects AuraEffectNode (speed: number), which rejects the emitter's range fields;
   // the cast passes the documented AuraParticleEmitterOptions through unchanged.
