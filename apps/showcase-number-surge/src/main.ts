@@ -2,7 +2,7 @@
  * Number Surge boot: loading bar → buildWorld → createAuraApp (production) → bind →
  * warmPrograms → createFixedStepLoop. Pointer/keyboard steering, pause/visibility,
  * adaptive DPR, QA hooks (`__AURA_NUMBER_SURGE__`), route health, localStorage
- * best/mute/motion. The sim is pure; everything here is presentation.
+ * best/mute/motion/howtoSeen, and the How to play dialog (auto-opens on the first Play). The sim is pure; everything here is presentation.
  *
  * Query params: seed=N, manual=1, autostart=1, autopilot=1, warmup=N, dpr=N,
  * motion=reduced|full.
@@ -20,6 +20,7 @@ import { NumberSurgeHud } from "./hud";
 import { FxDriver, diffFx } from "./fx";
 import { createNumberSurgeSound, diffSounds, type AudioFrame } from "./audio";
 import { Autopilot } from "./autopilot";
+import { createHowto } from "./howto";
 
 const PHASE_CODE: Record<Phase, number> = { splash: 0, playing: 1, bursting: 2, gameOver: 3 };
 
@@ -87,6 +88,7 @@ const store = {
     }
   }
 };
+const howto = createHowto($("howto-screen"), $<HTMLButtonElement>("btn-howto-close"), store);
 let best = Number(store.get("splatSiblings.number-surge.best")) || 0;
 let biggestSmash = Number(store.get("splatSiblings.number-surge.biggestSmash")) || 0;
 sound.setMuted(store.get("splatSiblings.number-surge.mute") === "1");
@@ -225,7 +227,7 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused,
+  isActive: () => ready && !paused && !howto.isOpen,
   step() {
     if (keyDir !== 0 && sim.o.phase === "playing") pending.dx += keyDir * 0.22;
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
@@ -322,8 +324,10 @@ addEventListener("pointerdown", (e) => {
   const target = e.target as HTMLElement | null;
   if (target?.closest?.(".no-steer")) return;
   if (paused) return;
-  if (sim.o.phase === "splash") pending.start = true;
-  else if (sim.o.phase === "playing") pending.down = true;
+  if (sim.o.phase === "splash") {
+    requestStart();
+    if (howto.isOpen) return;
+  } else if (sim.o.phase === "playing") pending.down = true;
   dragging = true;
   lastX = e.clientX;
   try {
@@ -371,7 +375,7 @@ addEventListener("keydown", (e) => {
   if (paused) return;
   if (e.code === "Space" || e.code === "Enter") {
     e.preventDefault();
-    if (sim.o.phase === "splash") pending.start = true;
+    if (sim.o.phase === "splash") requestStart();
     else if (sim.o.phase === "gameOver") restart();
     return;
   }
@@ -412,6 +416,34 @@ $("btn-pause").addEventListener("click", () => {
   if (!config.manual && !pilot) setPaused(!paused);
 });
 
+/**
+ * Start from the splash. The very first Play (no `howtoSeen` in storage) opens the How to play
+ * dialog instead; its "Got it - Play" button (or Esc/Enter/Space) closes it and starts the run.
+ */
+function requestStart(): void {
+  if (howto.isOpen) return;
+  if (!howto.seen && !config.manual && !pilot) {
+    openHowto("GOT IT — PLAY", () => {
+      if (sim.o.phase === "splash") pending.start = true;
+    });
+    return;
+  }
+  pending.start = true;
+}
+function openHowto(primaryLabel = "GOT IT", then?: () => void): void {
+  if (config.manual || pilot) return;
+  dropInput();
+  howto.open({
+    primaryLabel,
+    onClose: () => {
+      loop.resetAccumulator();
+      then?.();
+    }
+  });
+}
+$("btn-howto").addEventListener("click", () => openHowto());
+$("btn-howto-pause").addEventListener("click", () => openHowto());
+
 function restart(): void {
   sim.begin();
   presenter.reset();
@@ -424,7 +456,7 @@ function restart(): void {
 $("btn-start").addEventListener("click", () => {
   void sound.unlock();
   if (config.manual || pilot) return;
-  if (ready && sim.o.phase === "splash") pending.start = true;
+  if (ready && sim.o.phase === "splash") requestStart();
 });
 $("btn-restart").addEventListener("click", () => {
   if (config.manual || pilot) return;
@@ -567,6 +599,8 @@ const qa = installQaHooks("number-surge", {
         uploadedVertices: runtime?.uploadedVertices ?? 0,
         pixelRatio,
         paused,
+        howtoOpen: howto.isOpen,
+        howtoSeen: howto.seen,
         reducedMotion,
         warm: warmResult,
         look: LOOK.id,
