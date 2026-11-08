@@ -177,7 +177,11 @@ describe("WebGPU light beam", () => {
       expect(recorded).toHaveLength(2);
       const beamFragment = recorded[0]!.pipeline!.descriptor.fragment.module.code;
       const auroraFragment = recorded[1]!.pipeline!.descriptor.fragment.module.code;
-      expect(recorded[0]!.pipeline!.descriptor.vertex.module.code).toContain("@location(4) a_color: vec4<f32>");
+      const beamVertex = recorded[0]!.pipeline!.descriptor.vertex.module.code;
+      expect(beamVertex).toContain("@location(4) a_color: vec4<f32>");
+      // GL clip depth is remapped into WebGPU's [0, w] (zero-to-one reversed frames pass it through).
+      expect(beamVertex).toContain("override a3dZeroToOneProjection: bool = false;");
+      expect(beamVertex).toContain("select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection)");
       expect(beamFragment).toContain("prd07-beam-v1");
       expect(beamFragment).not.toContain("u_sceneDepthTexture");
       expect(beamFragment).not.toContain("curtain folds");

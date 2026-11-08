@@ -6,6 +6,7 @@
 
 import type { NativeShaderStages, PortableShaderBinding } from "../../RenderDevice";
 import { BEAM_SHADER_MARKER } from "./beam.glsl";
+import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "../../webgpu/ProjectionClip";
 
 export interface BeamWgslDefines {
   readonly softParticles?: boolean;
@@ -33,6 +34,7 @@ export function beamPortableBindings(defines: BeamWgslDefines): readonly Portabl
 const VERTEX = /* wgsl */ `
 // ${BEAM_SHADER_MARKER} vertex
 /* @aura3d-bindings */
+${ZERO_TO_ONE_PROJECTION_WGSL}
 struct BeamVertex {
   @builtin(position) position: vec4<f32>,
   @location(0) uv: vec2<f32>,
@@ -51,7 +53,9 @@ struct BeamVertex {
     p.z += sway * 0.35;
   }
   let clip = aura.u_viewProjection * vec4<f32>(p, 1.0);
-  out.position = clip;
+  // Standard frames hand a minus-one-to-one projection (remapped to WebGPU's
+  // [0, w]); zero-to-one reversed frames specialize the override and pass z through.
+  out.position = vec4<f32>(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);
   out.clipW = clip.w;
   return out;
 }`;
