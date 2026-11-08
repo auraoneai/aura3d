@@ -601,6 +601,12 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       import("../../contracts/flags.js"), import("./actorAnimationHandle.js"), import("../../production-runtime/actor/extensions.js"),
       import("../compiler/color.js"), import("../lazy/renderingLazy.js"), import("./runtimeNodes.js")
     ]);
+    // Node-handle extensions whose calls host patches replay (prd09 instance
+    // transforms, used by game FX pools); lanes are not loaded in the worker.
+    const [{ nodeHandleExtensionFor, registerNodeHandleExtension }, { instanceTransformsExtension }] = await Promise.all([
+      import("../../contracts/runtimeNodes.js"), import("../nodes/game/instanceTransforms.js")
+    ]);
+    if (!nodeHandleExtensionFor("setInstanceTransforms")) registerNodeHandleExtension(instanceTransformsExtension);
     if (signal.aborted) throw cancelled();
     // Keep the scene admission checks applied by the DOM mount wrapper; GPU
     // ownership and asset cancellation are passed directly to the compiler.

@@ -20,7 +20,7 @@ import { createViewProjection } from "../sceneMath.js";
 import { raycast, type SceneQueryHit } from "../SceneQueries.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { AuraWorkerError } from "./workerRuntime.js";
-import { WORKER_HOST_READS as READS, WORKER_PATCH_METHOD_SET as METHODS, WORKER_PATCH_PROPERTY_SET as PROPERTIES, coalesceKey, type AuraWorkerNodePatchOp, type AuraWorkerPatchMethod, type AuraWorkerPatchProperty } from "./workerPatch.js";
+import { WORKER_HOST_READS as READS, WORKER_PATCH_METHOD_SET as METHODS, WORKER_PATCH_PROPERTY_SET as PROPERTIES, coalesceKey, isReplayableExtensionMethod, type AuraWorkerNodePatchOp, type AuraWorkerPatchProperty } from "./workerPatch.js";
 
 export type { AuraWorkerNodePatchOp, AuraWorkerPatchMethod, AuraWorkerPatchProperty } from "./workerPatch.js";
 export { applyWorkerNodePatch, WORKER_PATCH_METHODS, WORKER_PATCH_PROPERTIES } from "./workerPatch.js";
@@ -90,7 +90,7 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
     const proxy: AuraRuntimeNodeHandle = new Proxy(handle, {
       get(target, key, receiver) {
         if (typeof key !== "string") return Reflect.get(target, key, target);
-        if (METHODS.has(key)) {
+        if (METHODS.has(key) || (isReplayableExtensionMethod(key) && typeof Reflect.get(target, key, target) === "function")) {
           const method = Reflect.get(target, key, target) as ((...args: unknown[]) => unknown) | undefined;
           if (typeof method !== "function") return method;
           return (...args: unknown[]) => {
@@ -98,7 +98,7 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
             if (key === "morphInfluence" && args.length < 2) return method.apply(target, args);
             const sent = cloneArgs(args, `node.${key}()`);
             const result = method.apply(target, args);
-            record({ id, call: key as AuraWorkerPatchMethod, args: sent });
+            record({ id, call: key, args: sent });
             return result === target ? receiver : result;
           };
         }

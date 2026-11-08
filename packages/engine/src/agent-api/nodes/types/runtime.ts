@@ -683,7 +683,12 @@ export interface AuraPrecompileResult {
 }
 
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-  readonly worker?: never;
+  /**
+   * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+   * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+   * still need the main-thread renderer (use `fallback: "main-thread"`).
+   */
+  readonly worker?: AuraCreateAppOptions["worker"];
   readonly loop?: GameAppRuntimeOptions["loop"];
   readonly input?: GameAppRuntimeOptions["input"];
   readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];

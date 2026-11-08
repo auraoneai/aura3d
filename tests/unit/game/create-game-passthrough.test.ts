@@ -33,8 +33,9 @@ describe("createGame renderer / output / worker passthrough", () => {
     expect("worker" in options).toBe(false);
   });
 
-  it("rejects any other worker request before the app is created", () => {
-    expect(() => factoryOptions({ worker: { createWorker: () => ({}) as Worker } })).toThrowError(/worker rendering/);
+  it("forwards a worker request that carries createWorker (K2) and rejects one that cannot run", () => {
+    const createWorker = () => ({}) as Worker;
+    expect(factoryOptions({ worker: { createWorker, fallback: "main-thread" } }).worker).toEqual({ createWorker, fallback: "main-thread" });
     expect(() => assertGameWorkerRequest({ fallback: "error" })).toThrowError(expect.objectContaining({ name: "AuraWorkerError", code: "worker-unsupported" }));
     expect(() => assertGameWorkerRequest(undefined)).not.toThrow();
   });

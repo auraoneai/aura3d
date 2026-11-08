@@ -4,6 +4,16 @@
  */
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
 import { AuraWorkerError } from "./workerRuntime.js";
+import { nodeHandleExtensionsAll } from "../../contracts/runtimeNodes.js";
+
+/**
+ * Function-valued node-handle extension members (for example prd09
+ * `setInstanceTransforms`, prd08 `teleport`, prd07 `setFog`). Their whole call
+ * is replayed; the worker must have the same extension registered.
+ */
+export function isReplayableExtensionMethod(member: string): boolean {
+  return nodeHandleExtensionsAll().some((extension) => extension.member === member);
+}
 
 /** Handle methods whose effect can be replayed in the worker. */
 export const WORKER_PATCH_METHODS = [
@@ -19,7 +29,7 @@ export type AuraWorkerPatchProperty = (typeof WORKER_PATCH_PROPERTIES)[number];
 
 /** One replayable change. Ops apply in order; `camera` replaces the scene camera spec. */
 export type AuraWorkerNodePatchOp =
-  | { readonly id: string; readonly call: AuraWorkerPatchMethod; readonly args: readonly unknown[] }
+  | { readonly id: string; readonly call: AuraWorkerPatchMethod | (string & {}); readonly args: readonly unknown[] }
   | { readonly id: string; readonly set: AuraWorkerPatchProperty; readonly value: unknown }
   | { readonly camera: AuraSceneSnapshot["camera"] };
 
@@ -44,7 +54,8 @@ export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
     case "setRotation": return `${op.id}\u0000rotation`;
     case "setScale": return `${op.id}\u0000scale`;
     case "setVisible": return `${op.id}\u0000visible`;
-    case "setInstanceMatrices": return `${op.id}\u0000instanceMatrices`;
+    case "setInstanceMatrices":
+    case "setInstanceTransforms": return `${op.id}\u0000instanceMatrices`;
     case "setMorphTarget": return `${op.id}\u0000morph\u0000${String(op.args[0])}`;
     case "setUniform": return `${op.id}\u0000uniform\u0000${String(op.args[0])}`;
     default: return undefined;
@@ -76,8 +87,11 @@ export function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefin
         if (!WORKER_PATCH_PROPERTY_SET.has(op.set)) throw new Error(`Worker patch cannot assign node.${String(op.set)}.`);
         Reflect.set(handle, op.set, op.value, handle);
       } else {
-        if (!WORKER_PATCH_METHOD_SET.has(op.call) || !Array.isArray(op.args)) throw new Error(`Worker patch cannot call node.${String((op as { call?: unknown }).call)}().`);
-        (Reflect.get(handle, op.call, handle) as (...args: unknown[]) => unknown).apply(handle, op.args);
+        if (typeof op.call !== "string" || !Array.isArray(op.args)
+          || (!WORKER_PATCH_METHOD_SET.has(op.call) && !isReplayableExtensionMethod(op.call))) throw new Error(`Worker patch cannot call node.${String((op as { call?: unknown }).call)}().`);
+        const method = Reflect.get(handle, op.call, handle);
+        if (typeof method !== "function") throw new Error(`node.${op.call}() is not available in the render worker (its extension or quality flag is missing there).`);
+        (method as (...args: unknown[]) => unknown).apply(handle, op.args);
       }
       applied += 1;
     } catch (error) {
