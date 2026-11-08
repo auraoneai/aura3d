@@ -10,6 +10,7 @@ import { Geometry } from "../Geometry";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
 import { invertMat4 } from "@aura3d/scene";
+import { standardViewProjection } from "../DepthConvention";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
 import { SKY_SHADER_MARKER, skyClipZ, skyClipZLiteral, skyFragmentSource, skyVertexSource } from "./sky.glsl";
 import {
@@ -424,5 +425,10 @@ export function gradientSunfade(grad: { readonly sunDirection: readonly [number,
 
 /** View-projection for the current context's camera (identity when absent). */
 export function contextViewProjection(ctx: FrameContributorContext): Float32Array {
-  return ctx.camera?.viewProjectionMatrix ?? IDENTITY;
+  const vp = ctx.camera?.viewProjectionMatrix;
+  if (!vp) return IDENTITY;
+  // The sky unprojects clip z = 1 as the far plane to get a view direction; a reversed camera maps z = 1 to its near
+  // plane (whose world point is about the eye, not a direction), so it is re-expressed in standard depth first.
+  const standard = standardViewProjection(vp, ctx.camera?.depth);
+  return standard === vp ? vp : Float32Array.from(standard);
 }

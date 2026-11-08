@@ -19,6 +19,7 @@ import { Texture } from "../../../packages/rendering/src/Texture";
 import { negotiateDepthConvention, sceneDepthLinearizeUniform, type DepthConvention } from "../../../packages/rendering/src/DepthConvention";
 import { CONTACT_MASK_SHADER_SOURCES, ContactShadowPass, contactShadowDepthMode } from "../../../packages/rendering/src/passes/ContactShadowPass";
 import { SKY_STANDARD_CLIP_Z, skyClipZ, skyClipZLiteral, skyVertexSource } from "../../../packages/rendering/src/atmosphere/sky.glsl";
+import { contextViewProjection } from "../../../packages/rendering/src/atmosphere/SkyBackgroundPass";
 import { GRADIENT_SKY_FOG_WGSL, GRADIENT_SKY_WGSL, gradientSkyWgsl } from "../../../packages/rendering/src/atmosphere/sky.wgsl";
 import { legacyPostDepthUniforms } from "../../../packages/rendering/src/webgl2/LegacyPost";
 import { clipRangeFromViewProjection, fitDirectionalCascades, standardViewProjection } from "../../../packages/rendering/src/shadows/DirectionalCascadeFitter";
@@ -100,6 +101,18 @@ describe("2. sky far plane follows the depth convention", () => {
     expect(gradientSkyWgsl(false, "0.999999")).toBe(GRADIENT_SKY_WGSL);
     expect(gradientSkyWgsl(true, "0.999999")).toBe(GRADIENT_SKY_FOG_WGSL);
     expect(gradientSkyWgsl(false, "0.000001").vertex).toContain("vec4<f32>(position, 0.000001, 1.0)");
+  });
+});
+
+describe("2b. sky view direction under a reversed camera", () => {
+  it("hands the sky a standard-depth view-projection (clip z = 1 is the far plane again)", () => {
+    const standard = camera();
+    const reversed = camera({ mode: "reversed" });
+    const ctx = (cam: ReturnType<typeof camera>, depth?: DepthConvention) => ({ camera: { viewProjectionMatrix: cam.viewProjectionMatrix, ...(depth ? { depth } : {}) } }) as never;
+    const vp = standard.viewProjectionMatrix as unknown as Float32Array;
+    expect(contextViewProjection(ctx(standard, convention("standard", "minus-one-to-one")))).toBe(vp);
+    const actual = contextViewProjection(ctx(reversed, convention("reversed", "minus-one-to-one")));
+    for (let i = 0; i < 16; i++) expect(actual[i]!).toBeCloseTo(vp[i]!, 4);
   });
 });
 

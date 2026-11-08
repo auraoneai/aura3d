@@ -8,17 +8,14 @@
  */
 
 import { shadowFitLegacy } from "./shadowLegacy";
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention";
+
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import { instancedWorldBounds } from "../renderer/InstanceBounds";
 import { CascadedShadowMaps } from "../CascadedShadowMaps";
 import type { RenderItem } from "../contracts/renderItem";
 import type { Geometry } from "../Geometry";
 import { skinnedItemLocalBounds } from "../renderer/SkinnedBounds";
-
-/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
-export interface CascadeFitterCameraDepth {
-  readonly mode: string;
-  readonly clipRange: string;
-}
 
 export interface CascadeFitterCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
@@ -32,39 +29,6 @@ export interface CascadeFitterCamera {
   readonly depth?: CascadeFitterCameraDepth;
 }
 
-/**
- * The depth convention a camera-like object declares for its matrices:
- * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
- * or `depth` (frame cameras and fitter cameras).
- */
-export function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined {
-  if (!camera || typeof camera !== "object") return undefined;
-  const c = camera as { readonly projectionMetadata?: CascadeFitterCameraDepth; readonly depthConvention?: CascadeFitterCameraDepth; readonly depth?: CascadeFitterCameraDepth };
-  for (const candidate of [c.depth, c.projectionMetadata, c.depthConvention]) {
-    if (candidate && typeof candidate.mode === "string" && typeof candidate.clipRange === "string") return { mode: candidate.mode, clipRange: candidate.clipRange };
-  }
-  return undefined;
-}
-
-/**
- * Re-express a view-projection in standard depth (near -> clip z -1, far ->
- * +1). Reversed window depth is 1 - standard window depth, so a reversed
- * minus-one-to-one depth row is the negated standard row and a reversed
- * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
- * (standard projection, fragment-encoded depth) cameras are returned as is.
- */
-export function standardViewProjection(
-  viewProjection: Float32Array | readonly number[],
-  depth: CascadeFitterCameraDepth | undefined
-): Float32Array | readonly number[] {
-  if (depth?.mode !== "reversed") return viewProjection;
-  const m = Array.from(viewProjection);
-  for (let column = 0; column < 4; column++) {
-    const z = m[column * 4 + 2]!, w = m[column * 4 + 3]!;
-    m[column * 4 + 2] = depth.clipRange === "zero-to-one" ? w - 2 * z : -z;
-  }
-  return m;
-}
 
 export interface DirectionalCascadeFit {
   readonly index: number;
