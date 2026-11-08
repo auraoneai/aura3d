@@ -15,7 +15,7 @@ vi.mock("../../../packages/engine/src/agent-api/app/runtimeNodes.js", () => ({ c
 vi.mock("../../../packages/engine/src/agent-api/app/actorAnimationHandle.js", () => ({ createActorAnimationContext: () => ({}), bindActorAnimationContext: vi.fn(), disposeActorAnimationContext: production.disposeAnimation }));
 vi.mock("../../../packages/engine/src/production-runtime/actor/extensions.js", () => ({ setTypedGLBActorQrFlags: production.bind, clearTypedGLBActorQrFlags: production.clear }));
 vi.mock("../../../packages/engine/src/agent-api/compiler/color.js", () => ({ setPrd01ColorParsing: () => production.releaseColor }));
-vi.mock("@aura3d/rendering", () => ({ createShaderFailureStore: () => ({}), bindShaderFailureStore: production.bindShader, setShaderFailureMode: vi.fn() }));
+vi.mock("@aura3d/rendering", async (importOriginal) => ({ ...(await importOriginal<typeof import("@aura3d/rendering")>()), createShaderFailureStore: () => ({}), bindShaderFailureStore: production.bindShader, setShaderFailureMode: vi.fn() }));
 
 class Canvas {
   width = 8;
