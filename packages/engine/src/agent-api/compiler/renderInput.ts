@@ -561,7 +561,11 @@ function createProductionRuntimeRendererInputOwned(
   // Root app extensions are bound only to an HTML canvas. A worker canvas
   // still retains its own identity for the compiler and postprocess stores.
   const htmlCanvas = isHtmlCanvas(canvas) ? canvas : undefined;
-  const compatibility = htmlCanvas ? getRootRenderSource(htmlCanvas, owner) : undefined;
+  // A render worker registers its PRD-07 VFX overlay on its OffscreenCanvas
+  // under its private runtime owner (app/workerAtmosphere.ts); only that
+  // owner-scoped slot is read for a non-HTML canvas.
+  const compatibility = htmlCanvas ? getRootRenderSource(htmlCanvas, owner)
+    : owner !== canvas ? getRootRenderSource(canvas as unknown as HTMLCanvasElement, owner) : undefined;
   const attachedItems: readonly RenderItem[] = compatibility ? [...(compatibility.source.collectRenderItems?.() ?? compatibility.source.renderItems ?? [])] : [];
   const items: RenderItem[] = [...attachedItems];
   const queryItems = new Map<AuraRuntimeNodeHandle, RenderItem[]>();

@@ -5,6 +5,7 @@ import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerF
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
 import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
 import { applyWorkerNodePatch } from "./workerPatch.js";
+import { bindWorkerAtmosphere, type WorkerAtmosphereBinding } from "./workerAtmosphere.js";
 import type { AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
@@ -629,21 +630,39 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     shaderFailures.bindShaderFailureStore(owner, failureStore);
     shaderFailures.setShaderFailureMode(configuration?.shaderFailures, failureStore);
     let cleaned = false;
+    // PRD-07: the main-thread app's atmosphere extension (live fog/sky state the compiler reads under A3D_QR_VFX_FOG).
+    let atmosphere: WorkerAtmosphereBinding | null = null;
     const cleanup = (): void => {
       if (cleaned) return;
       cleaned = true;
+      try { atmosphere?.dispose(); } catch { /* atmosphere cleanup is best effort */ }
       actorFlags.clearTypedGLBActorQrFlags(owner);
       releaseColor();
       actorAnimation.disposeActorAnimationContext(animation);
       try { runtimeNodes.dispose?.(); } catch { /* registry cleanup is best effort */ }
     };
     try {
+      // PRD-03: the main-thread `prd03.post` extension records the app's flags and output options per canvas; the
+      // compiler reads them (post v2 chain on/off, exposure, operator). Record them for this worker canvas too.
+      const { recordAuthoredPostContext } = await import("../postBridge.js");
+      recordAuthoredPostContext({ flags, options: { renderer: configuration } }, { canvas: target } as unknown as Parameters<typeof recordAuthoredPostContext>[1]);
+      atmosphere = await bindWorkerAtmosphere(target, owner, next, runtimeNodes, flags);
       const mounted = await createProductionRuntimeSceneRenderer(target, next, configuration, runtimeNodes, flags, undefined, undefined, {
         runtimeOwner: owner,
         ownRenderInputCache: true,
+        ...(atmosphere ? { getPrd07MountAuthority: () => atmosphere?.mountAuthority() } : {}),
         request: context?.request ?? { signal },
         assetOptions: context?.assets
       });
+      if (atmosphere) {
+        const binding = atmosphere;
+        const render = mounted.render.bind(mounted);
+        mounted.render = (time: number) => { binding.tick(time); return render(time); };
+        if (mounted.renderAsync) {
+          const renderAsync = mounted.renderAsync.bind(mounted);
+          mounted.renderAsync = (time: number) => { binding.tick(time); return renderAsync(time); };
+        }
+      }
       const dispose = mounted.dispose.bind(mounted);
       let released = false;
       mounted.dispose = () => {

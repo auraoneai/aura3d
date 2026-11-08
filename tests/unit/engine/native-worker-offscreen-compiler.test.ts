@@ -129,7 +129,9 @@ describe("production compiler with an offscreen worker canvas", () => {
       .add(labels.billboard("DOM only"))
       .add(effects.depthOfField({ focusDistance: 3, maxBlur: 6 })).toJSON();
     const app = createWorkerRenderer({ canvas: offscreen(canvas), worker: host as unknown as AuraWorkerHostEndpoint,
-      scene: snapshot("first"), renderer: { backend: "webgl2" }, autoStart: false });
+      scene: snapshot("first"), renderer: { backend: "webgl2" }, autoStart: false,
+      // The worker now records the authored post context like an app mount; the mock device cannot host PostGraph v2.
+      flags: { qualityRebuild: { A3D_QR_POST: false } } });
     (hostTexture.texture.data as Uint8Array)[0] = 9;
     try {
       await app.ready;
