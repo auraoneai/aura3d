@@ -35,6 +35,14 @@ describe("camera.auto (N4 framing by default)", () => {
     expect(withWall.toJSON().camera).toEqual(without.toJSON().camera);
   });
 
+  test("only the whole word wall is set dressing: a wallet subject is still framed", () => {
+    const wallet = () => primitives.box({ name: "leather wallet", size: [0.2, 0.02, 0.1] }).position(1, 0.01, 0);
+    const snapshot = scene().add(ground()).add(wallet()).camera(camera.auto({ aspect: 16 / 9 })).toJSON();
+    expect(snapshot.camera.target![0]).toBeCloseTo(1, 1);
+    expect(isGroundLikeNode(primitives.box({ name: "walls" }).toJSON() as never)).toBe(true);
+    expect(isGroundLikeNode(primitives.box({ name: "wallpaper roll" }).toJSON() as never)).toBe(false);
+  });
+
   test("follows nodes added after the camera is set", () => {
     const stage = scene().camera(camera.auto({ aspect: 16 / 9 })).add(subject());
     expect(fillOf(stage)).toBeCloseTo(0.6, 2);

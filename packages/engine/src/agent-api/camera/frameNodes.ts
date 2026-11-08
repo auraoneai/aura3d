@@ -21,8 +21,9 @@ export interface AuraFrameNodeFilter {
 }
 
 const UNIT_BOUNDS = { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] } as const;
-// N4: `wall` joins the set dressing a scene-wide frame leaves out (a back wall would otherwise set the size).
-const GROUND_NAME = /ground|floor|terrain|backdrop|skybox|sea|ocean|\bwall/i;
+// N4: `wall`/`walls` (whole word) join the set dressing a scene-wide frame leaves out (a back wall would otherwise
+// set the size); a "wallet" or "wallpaper roll" subject is still framed.
+const GROUND_NAME = /ground|floor|terrain|backdrop|skybox|sea|ocean|\bwalls?\b/i;
 
 /** Node kinds that occupy space. Lights, effects, environments, cameras, labels and the rest never do. */
 function isSpatial(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode {

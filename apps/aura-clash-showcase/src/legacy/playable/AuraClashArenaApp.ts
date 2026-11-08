@@ -1530,7 +1530,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // I03 and the route screenshot contract own typed-crowd adoption. The
     ...((stageSpotlightProbeEnabled) ? [] : publicCrowd.nodes)
   ];
-  const createRootStageScene = () => rootStageSceneNodes().reduce((builder, node) => builder.add(node), scene().background("#020406"))
+  // 5.4 frames a scene with no camera from its nodes; pin the default orbit this stage has always rendered with.
+  const createRootStageScene = () => rootStageSceneNodes().reduce((builder, node) => builder.add(node), scene().background("#020406").camera(camera.orbit()))
     .add(lights.spot({
       name: "Aura Clash overhead stage spotlight", position: [-1.3, 4.4, 2.1],
       target: [0, 0.2, 0], angle: 0.65, penumbra: 0.4, distance: 14,
