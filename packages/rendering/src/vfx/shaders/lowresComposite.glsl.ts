@@ -47,7 +47,7 @@ in vec2 v_uv;
 uniform sampler2D u_lowRes;
 #ifdef BILATERAL
 uniform sampler2D u_sceneDepth;
-uniform vec4 u_depthLinearize; // near, far, orthographic, unused
+uniform vec4 u_depthLinearize; // near, far, orthographic, reversed
 uniform vec2 u_lowTexel;       // 1 / low-res target size
 uniform vec2 u_lowSize;        // low-res target size
 uniform float u_bilateralSharpness;
@@ -55,6 +55,7 @@ uniform float u_bilateralSharpness;
 out vec4 fragColor;
 #ifdef BILATERAL
 float linearizeDepth(float d) {
+  if (u_depthLinearize.w > 0.5) d = 1.0 - d; // reversed depth: back to standard window depth
   float z = d * 2.0 - 1.0;
   return u_depthLinearize.z > 0.5
     ? mix(u_depthLinearize.x, u_depthLinearize.y, d)

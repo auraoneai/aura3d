@@ -220,7 +220,7 @@ export function createPrd02ShadowsContributor(): FrameContributor {
       // (frame camera for structural CameraLikes, lookup consumers among all
       // items, not just casters). Items pass through unchanged.
       recordPrd02FrameObservation(ctx.device, {
-        camera: ctx.camera ? { viewProjectionMatrix: ctx.camera.viewProjectionMatrix, near: ctx.camera.near, far: ctx.camera.far } : null,
+        camera: ctx.camera ? { viewProjectionMatrix: ctx.camera.viewProjectionMatrix, near: ctx.camera.near, far: ctx.camera.far, ...(ctx.camera.depth ? { depth: ctx.camera.depth } : {}) } : null,
         lookupConsumer: prd02LookupConsumerExists(items)
       });
       return items;

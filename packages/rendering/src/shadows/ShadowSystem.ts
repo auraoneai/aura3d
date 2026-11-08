@@ -26,7 +26,7 @@ import type { FrameCamera } from "../contracts/frameGraph";
 import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import { shadowFitLegacy } from "./shadowLegacy";
-import { fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
+import { cameraDepthOf, fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import { unusedCascadeIndices, type CascadeUseCamera } from "./CascadeUse";
 import {
@@ -188,7 +188,8 @@ export class Prd02ShadowSystem {
     const sun = frame.sun ?? null;
     this.lastFits = sun
       ? fitDirectionalCascades({
-          camera,
+          // FrameCamera carries `depth`; a reversed camera's VP is re-expressed in standard depth by the fitter.
+          camera: cameraDepthOf(camera) ? { viewProjectionMatrix: camera.viewProjectionMatrix, near: camera.near, far: camera.far, depth: cameraDepthOf(camera) } : camera,
           lightDirection: sun.direction,
           casters,
           mapSize: this.config.mapSize,

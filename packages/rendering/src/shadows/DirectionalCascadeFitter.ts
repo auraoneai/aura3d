@@ -8,6 +8,9 @@
  */
 
 import { shadowFitLegacy } from "./shadowLegacy";
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention";
+
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import { instancedWorldBounds } from "../renderer/InstanceBounds";
 import { CascadedShadowMaps } from "../CascadedShadowMaps";
 import type { RenderItem } from "../contracts/renderItem";
@@ -18,7 +21,14 @@ export interface CascadeFitterCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
   readonly near?: number;
   readonly far?: number;
+  /**
+   * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+   * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+   * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+   */
+  readonly depth?: CascadeFitterCameraDepth;
 }
+
 
 export interface DirectionalCascadeFit {
   readonly index: number;
@@ -107,10 +117,11 @@ type Vec3Tuple = readonly [number, number, number];
  */
 export function clipRangeFromViewProjection(
   viewProjection: Float32Array | readonly number[],
-  eye: readonly [number, number, number]
+  eye: readonly [number, number, number],
+  depth?: CascadeFitterCameraDepth
 ): { near: number; far: number } | null {
   let inv: Float32Array;
-  try { inv = invertMat4(viewProjection); } catch { return null; }
+  try { inv = invertMat4(standardViewProjection(viewProjection, depth)); } catch { return null; }
   const n = ndcToWorld(inv, 0, 0, -1);
   const f = ndcToWorld(inv, 0, 0, 1);
   const near = Math.hypot(n[0] - eye[0], n[1] - eye[1], n[2] - eye[2]);
@@ -337,8 +348,10 @@ function resolveClipRange(nearCorners: readonly Vec3Tuple[], farCorners: readonl
 
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[] {
-  const vp = options.camera.viewProjectionMatrix;
-  if (!vp || vp.length < 16) throw new Error("CascadeFitter requires camera.viewProjectionMatrix (16 numbers)");
+  const authoredVp = options.camera.viewProjectionMatrix;
+  if (!authoredVp || authoredVp.length < 16) throw new Error("CascadeFitter requires camera.viewProjectionMatrix (16 numbers)");
+  // Reversed cameras: corners below are the standard NDC near (-1) and far (+1) planes.
+  const vp = standardViewProjection(authoredVp, options.camera.depth);
   const invVp = invertMat4(vp);
   const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
   const farCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, 1)));

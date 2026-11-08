@@ -20,6 +20,7 @@ import { HYBRID_BLOB_OPACITY, athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 export { VENUE_LOOKS } from "./look";
 
@@ -1018,7 +1019,7 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
   if (opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
   return s
     .add(effects.bloom({ intensity: bloom.intensity, threshold: bloom.threshold }))
-    .camera(camera.perspective({ position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
 }
 
 /** The slice of `app.post` (E-C runtime post) the venue switches use. */

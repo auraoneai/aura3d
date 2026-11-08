@@ -14,6 +14,7 @@ import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunSh
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 // ---------------- pool capacities ----------------
 const CAP = {
@@ -459,7 +460,7 @@ export function probeScene(level: number): unknown {
   const s = scene()
     .background(THEMES[0].palette.sky)
     .add(buildLookGroup(THEMES[0]))
-    .camera(camera.perspective({ position: [0, 4, 8], target: [0, 0.5, 0], fov: 46 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 4, 8], target: [0, 0.5, 0], fov: 46 }));
   if (level >= 1) {
     s.add(primitives.box({ name: "p1-box", size: [2, 2, 2], material: material.pbr({ color: "#58a75c" }) }).position(0, 1, 0));
   }
@@ -500,7 +501,7 @@ function buildOriginalScene(): unknown {
     // flat diorama depth and unify the textured critters with the lanes.
     .add(lights.directional({ position: [-9, 10, 9], target: [0, 0, -4], color: "#ffd8a6", intensity: 0.78 }))
     .add(lights.directional({ position: [7, 7, -15], target: [0, 0, -2], color: "#8fc8ff", intensity: 0.46 }))
-    .camera(camera.perspective({
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
       position: [0, CAM.y, CAM.back],
       target: [0, CAM.targetY, -CAM.ahead],
       fov: CAM.fov
@@ -604,7 +605,7 @@ function buildVividScene(): unknown {
     .add(effects.contactShadows({ intensity: 0.6, length: 0.3 }))
     .add(effects.bloom({ intensity: V0.bloom.intensity, threshold: V0.bloom.threshold, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.18, smoothness: 0.6 }))
-    .camera(camera.perspective({
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
       position: [0, CAM.y, CAM.back],
       target: [0, CAM.targetY, -CAM.ahead],
       fov: CAM.fov
@@ -649,7 +650,7 @@ function buildDioramaScene(): unknown {
     .add(effects.contactShadows({ intensity: 0.55, length: 0.3 }))
     .add(effects.bloom({ intensity: L0.bloom.intensity, threshold: L0.bloom.threshold, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.14, smoothness: 0.6 }))
-    .camera(camera.perspective({ position: pose.position, target: pose.target, fov: pose.fov }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: pose.position, target: pose.target, fov: pose.fov }));
   if (!reducedMotion) {
     s.add(effects.depthOfField({ name: "cross-hop tilt-shift", maxBlur: L0.tiltShift.maxBlur, tiltShift: { bandCenter: TILT_CENTER0, bandWidth: L0.tiltShift.bandWidth } }));
   }

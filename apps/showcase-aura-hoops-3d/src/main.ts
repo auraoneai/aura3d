@@ -75,7 +75,7 @@ import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, register
 import "../../showcase-port-shared/quickbar.css";
 import "../../showcase-port-shared/diag";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { readIesLabFlag, sodiumFloodProfile } from "./photometric";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
@@ -1007,7 +1007,7 @@ function buildScene(v: VenueSpec): any {
     // GU47 phase 4: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
     .add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.9, length: 0.42, thickness: 0.06, lights: "shadowed" }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
-    .camera(camera.perspective({ position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
     .addMany(buildCourtSurfaces(v))
     .addMany(buildHoopNodes())
     .addMany(buildBallNodes())

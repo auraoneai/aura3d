@@ -25,6 +25,7 @@ import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import { buildArchitecture, farDuneRings, farDunes, orchardTerrainColors, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 type Scene = ReturnType<typeof scene>;
 export type Rgb = readonly [number, number, number];
@@ -486,7 +487,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   const wet = inked && look.rain;
   const builder: Scene = scene()
     .background(inked ? look.sky.horizon : rig.background)
-    .camera(camera.perspective({ position: [0, 14, 60], target: [0, 8, 0], fov: 62, near: 0.3, far: 2700 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 14, 60], target: [0, 8, 0], fov: 62, near: 0.3, far: 2700 }));
   if (inked) {
     // GU47 phase 4: the 4.3.0 cascade fit for the inked look. The default 4.2.0 fit widens every cascade to the bounds of
     // every caster, and here that is the 4200 m sky dome and the course-long terrain and wall meshes: the remote probe

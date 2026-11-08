@@ -20,7 +20,7 @@ const FRAG = `
 precision highp float;
 uniform sampler2D u_integrateAtlas; // (S_acc, T_acc) per tile
 uniform highp sampler2D u_sceneDepth;
-uniform vec4 u_depthLinearize;     // near, far, orthographic, unused
+uniform vec4 u_depthLinearize;     // near, far, orthographic, reversed
 uniform vec2 u_atlasSize;
 uniform vec2 u_tileSize;
 uniform float u_tilesX;
@@ -31,6 +31,7 @@ in vec2 v_uv;
 layout(location=0) out vec4 o_apply;
 
 float a3dSceneViewZ(float depth) {
+  if (u_depthLinearize.w > 0.5) depth = 1.0 - depth; // reversed depth: back to standard window depth
   if (u_depthLinearize.z > 0.5) return mix(u_depthLinearize.x, u_depthLinearize.y, depth);
   return u_depthLinearize.x * u_depthLinearize.y /
     max(u_depthLinearize.y - depth * (u_depthLinearize.y - u_depthLinearize.x), 1e-4);

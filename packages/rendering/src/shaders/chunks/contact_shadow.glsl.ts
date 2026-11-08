@@ -21,13 +21,24 @@ uniform mat4 u_prd02ContactViewProj;             // world -> clip
 uniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space
 uniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)
 uniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read
+uniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth
 
 float a3d_prd02ContactNoise(vec2 px) {
   return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));
 }
 
+// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.
+float a3d_prd02ContactClipZ(float z) {
+  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;
+}
+
+// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.
+float a3d_prd02ContactFarZ() {
+  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;
+}
+
 vec3 a3d_prd02ContactWorld(vec2 uv, float z) {
-  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);
+  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);
   return w.xyz / w.w;
 }
 
@@ -38,7 +49,8 @@ vec3 a3d_prd02ContactWorld(vec2 uv, float z) {
 // view direction recovered from the inverse view-projection instead.
 float a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {
   if (u_prd02ContactNearFar.z > 0.5) {
-    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));
+    float farZ = a3d_prd02ContactFarZ();
+    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));
     return dot(p - blockerPos, viewDir);
   }
   return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;

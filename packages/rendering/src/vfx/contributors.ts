@@ -44,6 +44,7 @@ import { SkyCaptureAdapter, type SkyCaptureAppLike } from "../atmosphere/SkyCapt
 import { ParticleGpuSim, ParticleGpuSimInitializationError, particleGpuSimAvailable, type GpuSimSpec } from "./ParticleGpuSim";
 import { hasPrd07ManagedFrameContext, producePrd07ManagedFrame } from "./Prd07FrameState";
 import { prd07RendererContextSnapshot } from "./Prd07RendererBridge";
+import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 /** §8.3 GPU sim request published per emitter whose sim lowered to "gpu". */
 export interface GpuSimRequest {
@@ -849,7 +850,7 @@ const volumetricContributor: FrameContributor = {
         ? [sceneLighting.ambient[0] / Math.PI, sceneLighting.ambient[1] / Math.PI, sceneLighting.ambient[2] / Math.PI]
         : [0.2, 0.22, 0.26],
       sceneDepth: depth.source.texture,
-      depthLinearize: [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]
+      depthLinearize: sceneDepthLinearizeUniform(depth.source.linearize)
     };
     return [{
       name: "prd07.volumetric",

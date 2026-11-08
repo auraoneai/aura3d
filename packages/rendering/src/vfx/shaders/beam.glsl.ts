@@ -67,10 +67,11 @@ void main() {
 #ifdef SOFT_PARTICLES
   vec2 ndc = gl_FragCoord.xy / vec2(textureSize(u_sceneDepth, 0));
   float d = texture(u_sceneDepth, ndc).r;
+  if (u_depthLinearize.w > 0.5) d = 1.0 - d; // reversed depth: back to standard window depth
   float sceneZ = u_depthLinearize.z > 0.5
     ? mix(u_depthLinearize.x, u_depthLinearize.y, d)
     : (u_depthLinearize.x * u_depthLinearize.y) / max(u_depthLinearize.y - d * (u_depthLinearize.y - u_depthLinearize.x), 1e-4);
-  float fragZ = gl_FragCoord.z / gl_FragCoord.w;
+  float fragZ = (u_depthLinearize.w > 0.5 ? 1.0 - gl_FragCoord.z : gl_FragCoord.z) / gl_FragCoord.w;
   alpha *= clamp((sceneZ - fragZ) / 0.5, 0.0, 1.0);
 #endif
   rgb *= alpha;

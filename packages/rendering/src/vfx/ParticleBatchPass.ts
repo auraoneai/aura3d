@@ -19,6 +19,7 @@ import {
   particleVertexSource,
   type ParticleProgramDefines
 } from "./shaders/particle.glsl";
+import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 const MAX_PARTICLE_PROGRAMS = 12;
 /** Largest on-screen particle diameter (share of the viewport height) for batches that do not set `maxScreen`: nothing grows into a screen-filling disc. */
@@ -261,7 +262,7 @@ export class ParticleBatchPass {
     ]);
     if (softParticles && depth) {
       uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture!, sampler: PRD07_DEPTH_SAMPLER }));
-      uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
+      uniforms.set("u_depthLinearize", sceneDepthLinearizeUniform(depth.source.linearize));
     }
     this.device.draw({
       label: `prd07.particles.${batch.key}`,

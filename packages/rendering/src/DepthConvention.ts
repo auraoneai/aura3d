@@ -302,3 +302,60 @@ export function reconstructViewPosition(
 export function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number {
   return -reconstructViewPosition(depth, 0, 0, inverseProjection, convention, range)[2];
 }
+
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export function sceneDepthLinearizeUniform(linearize: {
+  readonly near: number;
+  readonly far: number;
+  readonly orthographic: boolean;
+  readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number] {
+  return [linearize.near, linearize.far, linearize.orthographic ? 1 : 0, linearize.depth?.mode === "reversed" ? 1 : 0];
+}
+
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+  readonly mode: string;
+  readonly clipRange: string;
+}
+
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined {
+  if (!camera || typeof camera !== "object") return undefined;
+  const c = camera as { readonly projectionMetadata?: CascadeFitterCameraDepth; readonly depthConvention?: CascadeFitterCameraDepth; readonly depth?: CascadeFitterCameraDepth };
+  for (const candidate of [c.depth, c.projectionMetadata, c.depthConvention]) {
+    if (candidate && typeof candidate.mode === "string" && typeof candidate.clipRange === "string") return { mode: candidate.mode, clipRange: candidate.clipRange };
+  }
+  return undefined;
+}
+
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export function standardViewProjection(
+  viewProjection: Float32Array | readonly number[],
+  depth: CascadeFitterCameraDepth | undefined
+): Float32Array | readonly number[] {
+  if (depth?.mode !== "reversed") return viewProjection;
+  const m = Array.from(viewProjection);
+  for (let column = 0; column < 4; column++) {
+    const z = m[column * 4 + 2]!, w = m[column * 4 + 3]!;
+    m[column * 4 + 2] = depth.clipRange === "zero-to-one" ? w - 2 * z : -z;
+  }
+  return m;
+}

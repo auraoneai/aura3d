@@ -20,6 +20,7 @@ import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./loo
 import { chevronHeatMaterial, contactShadowMaterial, moltenMaterial } from "./shaders";
 import { LASER_BOLTS } from "./sim";
 import { skylineNodes } from "./skyline";
+import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 export const ROAD_TILE_COUNT = 16;
 export const ROAD_TILE_SPACING = 12;
@@ -338,7 +339,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
   const reducedMotion = options.reducedMotion === true;
   const s = scene()
     .background(look.fog.color)
-    .camera(camera.perspective({ fov: 68, near: 0.25, far: 650, position: [0, 4.2, 9.5], target: [0, 1.8, -18] }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), fov: 68, near: 0.25, far: 650, position: [0, 4.2, 9.5], target: [0, 1.8, -18] }))
     .add(circuitSky(look))
     .addMany(circuitLights(look))
     .addMany(circuitPost(look, {

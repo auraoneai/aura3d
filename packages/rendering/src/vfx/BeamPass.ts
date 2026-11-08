@@ -11,6 +11,7 @@ import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { RIBBON_VERTEX_FORMAT } from "./RibbonPass";
 import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import { BEAM_SHADER_MARKER, beamFragmentSource, beamProgramKey, beamVertexSource } from "./shaders/beam.glsl";
+import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 export type AuraVec3 = readonly [number, number, number];
 export type AuraVec4 = readonly [number, number, number, number];
@@ -241,7 +242,7 @@ export class BeamPass {
     ]);
     if (softParticles && depth) {
       uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture!, sampler: PRD07_DEPTH_SAMPLER }));
-      uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
+      uniforms.set("u_depthLinearize", sceneDepthLinearizeUniform(depth.source.linearize));
     }
     this.device.draw({
       label: `prd07.beam.${spec.nodeId}`,

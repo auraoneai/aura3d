@@ -1321,6 +1321,21 @@ export class WebGL2LegacyPostPipeline {
     return targetTexture;
   }
 
+  /**
+   * Depth-reading post kernels (SSAO, SSR, depth of field) decode the frame's
+   * depth buffer in the device's active convention: reversed depth stores the
+   * far plane at 0, and a zero-to-one (clip control) projection stores clip z
+   * directly. Standard frames bind 0/0, the kernels' historical arithmetic.
+   */
+  private bindDepthConvention(program: WebGLProgram): void {
+    const uniforms = legacyPostDepthUniforms(this.host.device.getDepthConvention?.());
+    // Not every kernel declares both (SSAO and depth of field only flip reversed samples).
+    const reversed = this.host.gl.getUniformLocation(program, "u_depthReversed");
+    if (reversed) this.host.gl.uniform1i(reversed, uniforms.reversed);
+    const zeroToOne = this.host.gl.getUniformLocation(program, "u_depthZeroToOne");
+    if (zeroToOne) this.host.gl.uniform1i(zeroToOne, uniforms.zeroToOne);
+  }
+
   executeNativeSsaoPass(
     sourceTexture: WebGLTexture,
     depthTexture: WebGLTexture,
@@ -1343,6 +1358,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_radius"), options.radius);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_intensity"), options.intensity);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_bias"), options.bias);
+    this.bindDepthConvention(program);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -1386,6 +1402,7 @@ export class WebGL2LegacyPostPipeline {
     }
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_depthNear"), depthRange.near);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_depthFar"), depthRange.far);
+    this.bindDepthConvention(program);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
   }
 
@@ -1414,6 +1431,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_maxRadius"), options.maxRadius);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_depthNear"), depthRange.near);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_depthFar"), depthRange.far);
+    this.bindDepthConvention(program);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -2248,10 +2266,12 @@ uniform ivec2 u_size;
 uniform int u_radius;
 uniform float u_intensity;
 uniform float u_bias;
+uniform int u_depthReversed; // 1: reversed depth, compared as standard window depth (1 - d)
 out vec4 outColor;
 
 float depthAt(ivec2 coordinate) {
-  return texelFetch(u_depth, clamp(coordinate, ivec2(0), u_size - ivec2(1)), 0).r;
+  float d = texelFetch(u_depth, clamp(coordinate, ivec2(0), u_size - ivec2(1)), 0).r;
+  return u_depthReversed == 1 ? 1.0 - d : d;
 }
 
 void main() {
@@ -2295,15 +2315,23 @@ uniform float u_thickness;
 uniform int u_hasNormalMask;
 uniform mat4 u_projection;
 uniform mat4 u_inverseProjection;
+// Depth convention of the frame matrix and depth buffer: reversed stores the
+// far plane at 0; zero-to-one projections store clip z directly.
+uniform int u_depthReversed;
+uniform int u_depthZeroToOne;
 out vec4 outColor;
 vec3 positionAtDepth(vec2 uv, float depth) {
-  vec4 p = u_inverseProjection * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+  vec4 p = u_inverseProjection * vec4(uv * 2.0 - 1.0, u_depthZeroToOne == 1 ? depth : depth * 2.0 - 1.0, 1.0);
   return p.xyz / p.w;
 }
 vec3 positionAt(vec2 uv) {
   return positionAtDepth(uv, texture(u_depth, uv).r);
 }
+bool isSkyDepth(float depth) {
+  return u_depthReversed == 1 ? depth <= 0.000001 : depth >= 0.999999;
+}
 vec3 viewDirection(vec2 uv) {
+  if (u_depthReversed == 1) return normalize(positionAtDepth(uv, 0.001) - positionAtDepth(uv, 1.0));
   return normalize(positionAtDepth(uv, 0.999) - positionAtDepth(uv, 0.0));
 }
 vec2 projectPosition(vec3 p) {
@@ -2321,7 +2349,7 @@ void main() {
   vec4 normalMask = texture(u_normalMask, uv);
   vec3 normal = u_hasNormalMask == 1 ? normalize(normalMask.xyz * 2.0 - 1.0) : normalize(cross(dFdx(origin), dFdy(origin)));
   float roughness = u_hasNormalMask == 1 ? normalMask.a : 0.25;
-  if (texture(u_depth, uv).r >= 0.999999 || (u_hasNormalMask == 1 && normalMask.a == 0.0) || roughness >= 1.0) return;
+  if (isSkyDepth(texture(u_depth, uv).r) || (u_hasNormalMask == 1 && normalMask.a == 0.0) || roughness >= 1.0) return;
   vec3 ray = normalize(reflect(viewDirection(uv), normal));
   float stepSize = u_maxDistance / float(u_maxSteps);
   vec3 start = origin + normal * u_thickness;
@@ -2331,7 +2359,7 @@ void main() {
     float distanceAlong = float(i) * stepSize;
     vec3 candidate = start + ray * distanceAlong;
     vec4 candidateClip = u_projection * vec4(candidate, 1.0);
-    if (candidateClip.w <= 0.0 || abs(candidateClip.z) >= candidateClip.w) break;
+    if (candidateClip.w <= 0.0 || (u_depthZeroToOne == 1 ? (candidateClip.z < 0.0 || candidateClip.z >= candidateClip.w) : abs(candidateClip.z) >= candidateClip.w)) break;
     vec2 hitUV = projectPosition(candidate);
     if (any(lessThanEqual(hitUV, vec2(0.0))) || any(greaterThanEqual(hitUV, vec2(1.0)))) break;
     float difference = depthDifference(candidate, hitUV);
@@ -2345,7 +2373,7 @@ void main() {
       candidate = start + ray * hi;
       hitUV = projectPosition(candidate);
       difference = depthDifference(candidate, hitUV);
-      if (difference > u_thickness || texture(u_depth, hitUV).r >= 0.999999) break;
+      if (difference > u_thickness || isSkyDepth(texture(u_depth, hitUV).r)) break;
       float edge = smoothstep(0.0, 0.08, min(min(hitUV.x, hitUV.y), min(1.0 - hitUV.x, 1.0 - hitUV.y)));
       float response = clamp(u_intensity * edge * (1.0 - roughness) * (1.0 - hi / u_maxDistance), 0.0, 1.0);
       outColor = vec4(mix(base.rgb, texture(u_source, hitUV).rgb, response), base.a);
@@ -2371,6 +2399,7 @@ uniform float u_focusRange;
 uniform int u_maxRadius;
 uniform float u_depthNear;
 uniform float u_depthFar;
+uniform int u_depthReversed; // 1: reversed depth, linearized as standard window depth (1 - d)
 out vec4 outColor;
 
 // Same linearization contract as the SSR program, except focus is authored
@@ -2380,6 +2409,7 @@ out vec4 outColor;
 // The CPU byte kernel keeps buffer-unit semantics; the divergence is
 // documented at normalizeLdrDepthRange.
 float a3dDofLinearDepth(float depth) {
+  if (u_depthReversed == 1) depth = 1.0 - depth;
   float viewZ = u_depthNear * u_depthFar / max(u_depthFar - depth * (u_depthFar - u_depthNear), 0.0001);
   return clamp((viewZ - u_depthNear) / max(u_depthFar - u_depthNear, 0.0001), 0.0, 1.0);
 }
@@ -3595,3 +3625,12 @@ void main() {
   outColor = sum * 0.25;
 }
 `;
+
+/**
+ * @internal Depth-convention uniforms of the WebGL2 depth-reading post kernels:
+ * reversed 1 when the frame stores reversed depth, zeroToOne 1 when its
+ * projection (and so the stored depth) is zero-to-one.
+ */
+export function legacyPostDepthUniforms(convention: { readonly mode: string; readonly clipRange: string } | undefined): { readonly reversed: 0 | 1; readonly zeroToOne: 0 | 1 } {
+  return { reversed: convention?.mode === "reversed" ? 1 : 0, zeroToOne: convention?.clipRange === "zero-to-one" ? 1 : 0 };
+}

@@ -43,9 +43,10 @@ const lab = readLabFlags();
 if (lab.any) {
   const { renderer, output } = labAppOptions(lab);
   (window as unknown as { __A3D_LAB_APP_OPTIONS__?: unknown }).__A3D_LAB_APP_OPTIONS__ = { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) };
-  // A9: `?depth=reversed|logarithmic` reaches `camera.perspective({ depth })` in world.ts through this global.
-  const cameraOptions = labCameraOptions(lab);
-  if (cameraOptions.depth) (window as unknown as { __A3D_LAB_CAMERA_OPTIONS__?: unknown }).__A3D_LAB_CAMERA_OPTIONS__ = cameraOptions;
 }
+// A9: reversed depth by default (real-GPU checked); `?depth=standard` opts out, `?depth=logarithmic` overrides. The fragment
+// reaches `camera.perspective({ depth })` in world.ts through this global.
+const cameraOptions = labCameraOptions(lab, "reversed");
+if (cameraOptions.depth) (window as unknown as { __A3D_LAB_CAMERA_OPTIONS__?: unknown }).__A3D_LAB_CAMERA_OPTIONS__ = cameraOptions;
 
 import "../../../examples/roadster-hours-port/main";
