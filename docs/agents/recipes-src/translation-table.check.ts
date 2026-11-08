@@ -33,8 +33,8 @@ stage.add(lights.directional({ position: [4, 6, 3], intensity: 3, castShadow: tr
 stage.add(lights.hemisphere({ color: "#bcd7ff", groundColor: "#202428", intensity: 0.6 })); // HemisphereLight(sky, ground) == skyColor
 // 3c 5.4 N7 runtime setters and MeshStandardMaterial spelling (written through setLight / setMaterial)
 void material.standard({ color: "#888888", roughness: 0.4, metalness: 1 }); // == material.pbr(...)
-app.nodes.require("mover").setColor("#ff8800").setOpacity(0.5).setEmissive("#46dcff", 2); // material.color.set / opacity / emissive
-app.nodes.require("sun").setIntensity(2).setColor("#fff4e0"); // light.intensity = v / light.color.set(c)
+app.nodes.require("mover").setColor!("#ff8800").setOpacity!(0.5).setEmissive!("#46dcff", 2); // material.color.set / opacity / emissive
+app.nodes.require("sun").setIntensity!(2).setColor!("#fff4e0"); // light.intensity = v / light.color.set(c)
 
 // 4 Group / Object3D hierarchy (children use local transforms)
 stage.add(group("arm", [primitives.capsule({ size: [0.1, 0.5, 0.1] }).position(0, -0.25, 0)], { position: [0, 1.4, 0] }).runtime({ id: "arm", mutable: true }));

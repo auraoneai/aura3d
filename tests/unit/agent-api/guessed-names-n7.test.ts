@@ -65,7 +65,7 @@ describe("N7 handle setters on light nodes equal setLight", () => {
     const viaAlias = await mountLights([SUN]);
     const viaNative = await mountLights([SUN]);
     viaAlias.frame(0); viaNative.frame(0);
-    viaAlias.registry.require("sun").setIntensity(5).setColor("#ff8800");
+    viaAlias.registry.require("sun").setIntensity!(5).setColor!("#ff8800");
     viaNative.registry.require("sun").setLight!({ intensity: 5 });
     viaNative.registry.require("sun").setLight!({ color: "#ff8800" });
     const alias = sunOf(viaAlias.frame(1 / 60));
@@ -77,17 +77,17 @@ describe("N7 handle setters on light nodes equal setLight", () => {
   it("validates like setLight and refuses mesh-only setters with the native call named", async () => {
     const mounted = await mountLights([SUN]);
     const sun = mounted.registry.require("sun");
-    expect(() => sun.setIntensity(-1)).toThrow(RangeError);
-    expect(() => sun.setColor("not-a-colour")).toThrow();
-    expect(() => sun.setOpacity(0.5)).toThrow(/HANDLE_METHOD_UNSUPPORTED: setOpacity\(\).*"sun" \(light\).*setLight/);
-    expect(() => sun.setEmissive("#ff0000")).toThrow(/setLight\(\{ color, intensity \}\)/);
+    expect(() => sun.setIntensity!(-1)).toThrow(RangeError);
+    expect(() => sun.setColor!("not-a-colour")).toThrow();
+    expect(() => sun.setOpacity!(0.5)).toThrow(/HANDLE_METHOD_UNSUPPORTED: setOpacity\(\).*"sun" \(light\).*setLight/);
+    expect(() => sun.setEmissive!("#ff0000")).toThrow(/setLight\(\{ color, intensity \}\)/);
     mounted.dispose();
   });
 
   it("names the kill switch instead of doing nothing when runtime light control is off", () => {
     const light = createRuntimeNodeHandle({ kind: "light", light: "point", name: "lamp", position: [0, 0, 0] } as never, { id: "lamp" });
     expect(light.setLight).toBeUndefined();
-    expect(() => light.setIntensity(2)).toThrow(/A3D_QR_LIGHTING/);
+    expect(() => light.setIntensity!(2)).toThrow(/A3D_QR_LIGHTING/);
   });
 });
 
@@ -97,13 +97,13 @@ describe("N7 handle setters on mesh nodes equal setMaterial with the current mat
     const alias = meshHandle(base);
     const native = meshHandle(base);
     const spy = vi.spyOn(alias, "setMaterial");
-    expect(alias.setColor("#ff8800")).toBe(alias);
+    expect(alias.setColor!("#ff8800")).toBe(alias);
     native.setMaterial({ ...base, color: "#ff8800" });
     expect(spy).toHaveBeenCalledTimes(1);
     expect(materialOf(alias)).toEqual(materialOf(native));
     expect(materialOf(alias)).toMatchObject({ color: "#ff8800", roughness: 0.3 });
 
-    alias.setOpacity(0.4).setEmissive("#00ffcc", 2.5);
+    alias.setOpacity!(0.4).setEmissive!("#00ffcc", 2.5);
     native.setMaterial({ ...base, color: "#ff8800", opacity: 0.4 });
     native.setMaterial({ ...base, color: "#ff8800", opacity: 0.4, emissive: "#00ffcc", emissiveIntensity: 2.5 });
     expect(materialOf(alias)).toEqual(materialOf(native));
@@ -113,19 +113,19 @@ describe("N7 handle setters on mesh nodes equal setMaterial with the current mat
   it("works on a primitive with no authored material (the renderer default)", () => {
     const alias = meshHandle();
     const native = meshHandle();
-    alias.setColor("#123456");
+    alias.setColor!("#123456");
     native.setMaterial({ color: "#123456" });
     expect(materialOf(alias)).toEqual(materialOf(native));
   });
 
   it("throws with the native call for intensity on meshes, models, groups, shader materials and bad values", () => {
-    expect(() => meshHandle(material.pbr({})).setIntensity(3)).toThrow(/HANDLE_METHOD_UNSUPPORTED: setIntensity\(\).*setEmissive\(color, intensity\)/);
-    expect(() => meshHandle(undefined, "model").setColor("#fff")).toThrow(/handle\.materials/);
-    expect(() => meshHandle(undefined, "group").setOpacity(0.5)).toThrow(/carry a material/);
+    expect(() => meshHandle(material.pbr({})).setIntensity!(3)).toThrow(/HANDLE_METHOD_UNSUPPORTED: setIntensity\(\).*setEmissive\(color, intensity\)/);
+    expect(() => meshHandle(undefined, "model").setColor!("#fff")).toThrow(/handle\.materials/);
+    expect(() => meshHandle(undefined, "group").setOpacity!(0.5)).toThrow(/carry a material/);
     const shader = material.custom({ glsl: { vertex: "void main(){}", fragment: "void main(){}" } });
-    expect(() => meshHandle(shader).setColor("#fff")).toThrow(/setUniform/);
-    expect(() => meshHandle(material.pbr({})).setOpacity(1.5)).toThrow(RangeError);
-    expect(() => meshHandle(material.pbr({})).setColor("hsl(nope")).toThrow();
+    expect(() => meshHandle(shader).setColor!("#fff")).toThrow(/setUniform/);
+    expect(() => meshHandle(material.pbr({})).setOpacity!(1.5)).toThrow(RangeError);
+    expect(() => meshHandle(material.pbr({})).setColor!("hsl(nope")).toThrow();
   });
 
   it("is replayed in a render worker (the setters are worker patch methods)", () => {

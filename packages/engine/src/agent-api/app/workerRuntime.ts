@@ -66,8 +66,11 @@ export interface AuraWorkerRenderer {
   }): Promise<void>;
   setInput(input: AuraWorkerInput): Promise<void>;
   flushInput(): Promise<void>;
-  /** K1: send batched node/camera changes; they apply between worker frames. */
-  patch(ops: readonly AuraWorkerNodePatchOp[]): Promise<void>;
+  /**
+   * K1: send batched node/camera changes; they apply between worker frames. Optional in the type (added in 5.3.0, a
+   * minor release: existing implementations of this interface stay valid); every renderer the engine creates has it.
+   */
+  patch?(ops: readonly AuraWorkerNodePatchOp[]): Promise<void>;
   resize(size: OffscreenCanvasSize): Promise<void>;
   setVisible(visible: boolean): Promise<void>;
   pause(): Promise<void>;

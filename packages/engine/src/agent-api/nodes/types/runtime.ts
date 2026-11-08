@@ -184,14 +184,18 @@ export interface AuraRuntimeNodeHandle {
    * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
    * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
    * RangeError naming the call to use (handle.materials, setUniform).
+   *
+   * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+   * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+   * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
    */
-  setColor(color: AuraColor): this;
+  setColor?(color: AuraColor): this;
   /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
-  setIntensity(intensity: number): this;
+  setIntensity?(intensity: number): this;
   /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
-  setOpacity(opacity: number): this;
+  setOpacity?(opacity: number): this;
   /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
-  setEmissive(color: AuraColor, intensity?: number): this;
+  setEmissive?(color: AuraColor, intensity?: number): this;
   /**
    * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
    * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the

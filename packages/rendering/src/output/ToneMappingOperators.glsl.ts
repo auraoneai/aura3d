@@ -173,34 +173,6 @@ vec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {
   return a3dLinearToSRGB(clamp(c, 0.0, 1.0));
 }
 #endif
-#ifdef OUTPUT_COLOR_GRADE
-uniform vec4 u_gradeA; // x = contrast, y = temperature, z = tint, w = saturation
-uniform vec4 u_gradeB; // x = vibrance, y = display vignette
-vec3 a3dGradeSrgbToLinear(vec3 c) {
-  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
-}
-// The legacy fused present's colour grade (webgl2/LdrPostprocessShader.ts applyColorGrade). It is authored on
-// sRGB-encoded display values, so it runs on the sRGB transfer of the tone-mapped linear-sRGB colour and decodes
-// back; the destination gamut transform and final encode follow. On an sRGB destination this reproduces the
-// fused grade; on Display-P3 the same graded colours land on P3 primaries.
-vec3 a3dOutputColorGrade(vec3 linearSrgb, vec2 uv) {
-  vec3 color = a3dLinearToSRGB(clamp(linearSrgb, 0.0, 1.0));
-  float contrast = u_gradeA.x;
-  float contrastOffset = 0.5 - 0.5 * contrast;
-  float redShift = u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
-  float greenShift = u_gradeA.z * 0.06;
-  float blueShift = -u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
-  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
-  vec3 graded = color * contrast + vec3(contrastOffset + redShift, contrastOffset + greenShift, contrastOffset + blueShift);
-  float distanceFromLuma = min(1.0, abs(graded.r - luma) + abs(graded.g - luma) + abs(graded.b - luma));
-  float vibranceBoost = u_gradeB.x == 0.0 ? 0.0 : u_gradeB.x * (1.0 - distanceFromLuma);
-  float saturation = u_gradeA.w + vibranceBoost;
-  graded = vec3(luma) + (graded - vec3(luma)) * saturation;
-  vec2 centered = uv * 2.0 - 1.0;
-  float vignette = 1.0 - u_gradeB.y * clamp((length(centered) - 0.28) / 1.12, 0.0, 1.0);
-  return a3dGradeSrgbToLinear(clamp(graded * vignette, 0.0, 1.0));
-}
-#endif
 void main() {
   vec4 scene = texture(u_scene, v_uv);
   // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.
@@ -230,9 +202,6 @@ void main() {
   // The legacy opaque coverage mix operates on already-composited RGB. It
   // cannot independently tone-map translucent foreground and a raw background.
   vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);
-#ifdef OUTPUT_COLOR_GRADE
-  display = a3dOutputColorGrade(display, v_uv);
-#endif
   vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));
   if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;
 #ifdef OUTPUT_OVERLAY
@@ -265,6 +234,57 @@ export const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>> = {
   cineon: "CineonToneMapping"
 };
 
+/**
+ * Display-space colour grade spliced into the output epilogue by `outputFragmentGlsl` (5.3.0). Kept out of
+ * `OUTPUT_FRAGMENT_EPILOGUE_GLSL` so that published constant keeps its 5.2 text (its literal type is public API);
+ * both pieces are guarded by `OUTPUT_COLOR_GRADE`, so a shader without that define is unchanged.
+ */
+const OUTPUT_COLOR_GRADE_FUNCTIONS_GLSL = `#ifdef OUTPUT_COLOR_GRADE
+uniform vec4 u_gradeA; // x = contrast, y = temperature, z = tint, w = saturation
+uniform vec4 u_gradeB; // x = vibrance, y = display vignette
+vec3 a3dGradeSrgbToLinear(vec3 c) {
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+// The legacy fused present's colour grade (webgl2/LdrPostprocessShader.ts applyColorGrade). It is authored on
+// sRGB-encoded display values, so it runs on the sRGB transfer of the tone-mapped linear-sRGB colour and decodes
+// back; the destination gamut transform and final encode follow. On an sRGB destination this reproduces the
+// fused grade; on Display-P3 the same graded colours land on P3 primaries.
+vec3 a3dOutputColorGrade(vec3 linearSrgb, vec2 uv) {
+  vec3 color = a3dLinearToSRGB(clamp(linearSrgb, 0.0, 1.0));
+  float contrast = u_gradeA.x;
+  float contrastOffset = 0.5 - 0.5 * contrast;
+  float redShift = u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
+  float greenShift = u_gradeA.z * 0.06;
+  float blueShift = -u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
+  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+  vec3 graded = color * contrast + vec3(contrastOffset + redShift, contrastOffset + greenShift, contrastOffset + blueShift);
+  float distanceFromLuma = min(1.0, abs(graded.r - luma) + abs(graded.g - luma) + abs(graded.b - luma));
+  float vibranceBoost = u_gradeB.x == 0.0 ? 0.0 : u_gradeB.x * (1.0 - distanceFromLuma);
+  float saturation = u_gradeA.w + vibranceBoost;
+  graded = vec3(luma) + (graded - vec3(luma)) * saturation;
+  vec2 centered = uv * 2.0 - 1.0;
+  float vignette = 1.0 - u_gradeB.y * clamp((length(centered) - 0.28) / 1.12, 0.0, 1.0);
+  return a3dGradeSrgbToLinear(clamp(graded * vignette, 0.0, 1.0));
+}
+#endif
+`;
+const OUTPUT_COLOR_GRADE_CALL_GLSL = `#ifdef OUTPUT_COLOR_GRADE
+  display = a3dOutputColorGrade(display, v_uv);
+#endif
+`;
+const OUTPUT_MAIN_ANCHOR = "void main() {\n";
+const OUTPUT_ENCODE_ANCHOR = "  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n";
+function spliceOnce(source: string, anchor: string, insert: string): string {
+  const index = source.indexOf(anchor);
+  if (index < 0 || source.indexOf(anchor, index + 1) >= 0) throw new Error(`Output epilogue anchor must appear exactly once: ${anchor.trim()}`);
+  return source.slice(0, index) + insert + source.slice(index);
+}
+/** The epilogue `outputFragmentGlsl` emits: the published epilogue plus the guarded colour grade. */
+const OUTPUT_FRAGMENT_EPILOGUE_WITH_GRADE_GLSL = spliceOnce(
+  spliceOnce(OUTPUT_FRAGMENT_EPILOGUE_GLSL, OUTPUT_MAIN_ANCHOR, OUTPUT_COLOR_GRADE_FUNCTIONS_GLSL),
+  OUTPUT_ENCODE_ANCHOR,
+  OUTPUT_COLOR_GRADE_CALL_GLSL
+);
 /**
  * Compose one output variant. Alpha-preserving variants consume associated
  * scene-linear RGB with opacity in alpha; opaque variants retain the legacy
@@ -306,6 +326,6 @@ export function outputFragmentGlsl(options: {
     ...defines,
     OUTPUT_FRAGMENT_PROLOGUE_GLSL,
     TONE_MAPPING_OPERATORS_GLSL,
-    OUTPUT_FRAGMENT_EPILOGUE_GLSL
+    OUTPUT_FRAGMENT_EPILOGUE_WITH_GRADE_GLSL
   ].join("\n");
 }

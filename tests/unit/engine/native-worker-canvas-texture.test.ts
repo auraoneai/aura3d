@@ -102,11 +102,11 @@ describe("live canvas textures across the worker boundary", () => {
       mirror.drain();
 
       const revision = workerTexture.revision;
-      await app.patch(ops);
+      await app.patch!(ops);
       expect([...(workerTexture.source as unknown as FakeCanvas).pixels]).toEqual([1, 2, 3, 255, 4, 5, 6, 255]);
       expect(workerTexture.revision).toBeGreaterThan(revision);
       // A size change is rejected (the worker texture keeps its allocation).
-      await expect(app.patch([{ texture: handle.id, width: 1, height: 1, data: new Uint8ClampedArray(4) }])).rejects.toThrow(/2x1 RGBA8/);
+      await expect(app.patch!([{ texture: handle.id, width: 1, height: 1, data: new Uint8ClampedArray(4) }])).rejects.toThrow(/2x1 RGBA8/);
       mirror.dispose();
     } finally {
       await app.dispose();

@@ -484,7 +484,8 @@ export function createWorkerRootApp(
     const ops = mirror.drain();
     // Posted now (not when the queue reaches it) so ops always precede any
     // later scene replacement; earlier replacements are awaited above.
-    const sent = worker.patch(ops);
+    // createWorkerRenderer always provides patch (optional only in the public interface type).
+    const sent = worker.patch!(ops);
     patchesInFlight += 1;
     // Ops that coalesced while this patch was in flight go out as soon as it
     // returns, so the last changes arrive even when no further frame runs
