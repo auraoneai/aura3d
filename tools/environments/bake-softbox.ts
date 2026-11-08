@@ -88,7 +88,7 @@ function main(): void {
 export const SOFTBOX_SPECULAR_SHA256 = "${sha(ktx2)}";
 export const SOFTBOX_FACE_SIZE = ${SOFTBOX_FACE_SIZE};
 export const SOFTBOX_SH9 = [${shLiteral}] as const;
-export const SOFTBOX_SPECULAR_GZIP_BASE64 =
+export const SOFTBOX_SPECULAR_GZIP_BASE64: string =
 ${lines};
 `;
   const outputs = new Map<string, Uint8Array | string>([
