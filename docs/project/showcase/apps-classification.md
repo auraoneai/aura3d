@@ -90,6 +90,13 @@ Each is labelled `development showcase` (Tier 3): playable and public, but with 
 visual approval or launch claim. Promotion requires a fresh `release-ready candidate` gate entry
 with current evidence.
 
+Addendum 2026-11-07 (5.2.0 site, 30 live games). The five original games added by the
+Splat Siblings and Beat Hopper work (`showcase-shape-shift-sprint`, `showcase-number-surge`,
+`showcase-splat-turf`, `showcase-polarity-orbs`, `showcase-beat-hopper`) were checked the same way:
+no `route-gates.json` entry, present in `tools/site/games.catalog.json` and
+`docs/workflows/game-inventory.json` with `status: live` and `verification: playable`, and not
+redirected by `marketing/public/_redirects`. They take the same `development showcase` label.
+
 | Route directory | Classification | Evidence |
 | --- | --- | --- |
 | `showcase-top-tennis` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
@@ -117,6 +124,11 @@ with current evidence.
 | `showcase-where-the-wind-wanders-port` | development showcase | Live in the games catalog under the canonical alias `/apps/the-bellkeepers-walk/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
 | `showcase-silt-and-signal-port` | development showcase | Live in the games catalog under the canonical alias `/apps/duneglide/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
 | `showcase-cloud-runner-port` | development showcase | Live in the games catalog under the canonical alias `/apps/cumulus-dash/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-shape-shift-sprint` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
+| `showcase-number-surge` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
+| `showcase-splat-turf` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
+| `showcase-polarity-orbs` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
+| `showcase-beat-hopper` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
 
 ## Example Diagnostics
 

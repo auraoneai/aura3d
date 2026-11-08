@@ -387,7 +387,9 @@ const expectedGameIds = [
   "showcase-dot-dash-3d", "showcase-cross-hop", "showcase-strange-orbit-port", "showcase-splat-rush-port",
   "showcase-serpentine-sky-run-port", "showcase-drift-and-deliver-port", "showcase-heatsink-port",
   "showcase-ninja-runner-port", "showcase-last-train-port", "showcase-roadster-hours-port",
-  "showcase-where-the-wind-wanders-port", "showcase-silt-and-signal-port", "showcase-cloud-runner-port"
+  "showcase-where-the-wind-wanders-port", "showcase-silt-and-signal-port", "showcase-cloud-runner-port",
+  "showcase-shape-shift-sprint", "showcase-number-surge", "showcase-splat-turf", "showcase-polarity-orbs",
+  "showcase-beat-hopper"
 ];
 const redirectedAliases: Readonly<Record<string, string>> = {
   "showcase-strange-orbit-port": "/apps/craterline-gp/",
@@ -404,7 +406,7 @@ const redirectedAliases: Readonly<Record<string, string>> = {
 };
 
 describe("live game inventory classification", () => {
-  it("covers exactly the 25 generated live game identities", () => {
+  it("covers exactly the 30 generated live game identities", () => {
     expect([...realGames.keys()].sort()).toEqual([...expectedGameIds].sort());
     expect([...realGames.values()].every((game) => game.kind === "game" && game.status === "live")).toBe(true);
     expect(realPlan.aliases.size).toBe(11);
