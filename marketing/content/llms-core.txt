@@ -30,6 +30,7 @@ npm run build && npx @aura3d/cli@latest check-deploy --dist dist
 ```
 
 Other templates: `product-viewer` (default), `cinematic-scene`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, `arena-shooter` (`npx create-aura3d@latest --help`).
+GPU-verified starter scenes to adapt: `starter-product` (product viewer), `starter-outdoor`, `starter-interior`, `starter-game` (small game), `starter-presentation` (animated presentation).
 
 Read next, in this order: `docs/agents/README.md` (index), `docs/agents/agent-quickstart.md` (first scene, step by step), `docs/agents/recipes.md` (copy-and-adapt scenes: PBR cube with orbit, forest of instances, skinned character with crossfade, fixed-step game loop, custom shader on a grid), `docs/agents/claims-and-boundaries.md` (what you may claim). Building a game: read `docs/agents/new-game-checklist.md` and `docs/agents/lessons-learned.md` first, then run `node tools/game-checks/run.mjs <game-slug>`.
 

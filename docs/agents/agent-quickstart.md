@@ -11,7 +11,7 @@ Read first: [`threejs-to-aura3d.md`](threejs-to-aura3d.md) (if you would write X
 ## 1. Scaffold and run
 
 ```bash
-npx create-aura3d@latest my-scene --template product-viewer   # 21 templates: docs/agents/templates.md
+npx create-aura3d@latest my-scene --template product-viewer   # 26 templates: docs/agents/templates.md
 cd my-scene && npm install
 npm run dev        # vite dev server
 npm run build      # typecheck + vite build

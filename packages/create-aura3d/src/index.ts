@@ -26,7 +26,12 @@ export const CREATE_AURA3D_TEMPLATES = [
   "postprocess-scene",
   "custom-scene",
   "large-scene",
-  "procedural-scene"
+  "procedural-scene",
+  "starter-product",
+  "starter-outdoor",
+  "starter-interior",
+  "starter-game",
+  "starter-presentation"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 

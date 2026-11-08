@@ -156,6 +156,29 @@
     "procedural-scene": [
       "aura3d-scene-authoring",
       "aura3d-materials-environments"
+    ],
+    "starter-product": [
+      "aura3d-scene-authoring",
+      "aura3d-materials-environments",
+      "aura3d-assets"
+    ],
+    "starter-outdoor": [
+      "aura3d-scene-authoring",
+      "aura3d-materials-environments",
+      "aura3d-performance"
+    ],
+    "starter-interior": [
+      "aura3d-scene-authoring",
+      "aura3d-materials-environments"
+    ],
+    "starter-game": [
+      "aura3d-browser-game",
+      "aura3d-character-animation",
+      "aura3d-materials-environments"
+    ],
+    "starter-presentation": [
+      "aura3d-scene-authoring",
+      "aura3d-materials-environments"
     ]
   },
   "clients": {
