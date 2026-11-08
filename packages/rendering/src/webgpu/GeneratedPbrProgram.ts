@@ -978,7 +978,7 @@ export function createGeneratedPbrProgram(descriptor: GeneratedPbrDescriptor): G
   }
   if (photometricProfile) resources.push({ uniform: "u_a3dPhotometricAtlas", textureBinding: 75, dimension: "2d", sampleType: "unfilterable-float" });
   if (mode.wind) resources.push({ uniform: "u_windNoise", samplerBinding: 76, textureBinding: 77, dimension: "2d", sampleType: "filterable-float" });
-  if (resources.filter(resource => resource.uniform !== "u_boneTexture" && resource.uniform !== "u_morphTexture").length > 16) unsupported("resources", "more than 16 sampled textures in one generated PBR fragment stage");
+  if (resources.filter(resource => resource.uniform !== "u_boneTexture" && resource.uniform !== "u_morphTexture" && resource.uniform !== "u_windNoise").length > 16) unsupported("resources", "more than 16 sampled textures in one generated PBR fragment stage");
   const textureDecls = resources.filter(resource => resource.uniform !== "u_boneTexture" && resource.uniform !== "u_morphTexture" && resource.uniform !== "u_windNoise").map((r) => !("samplerBinding" in r)
     ? `@group(0) @binding(${r.textureBinding}) var ${r.uniform}Texture: texture_${r.dimension === "2d-array" ? "2d_array" : "2d"}<f32>;`
     : `@group(0) @binding(${r.samplerBinding}) var ${r.uniform}Sampler: sampler;\n@group(0) @binding(${r.textureBinding}) var ${r.uniform}Texture: texture_${r.dimension === "cube" ? "cube" : "2d"}<f32>;`).join("\n");
