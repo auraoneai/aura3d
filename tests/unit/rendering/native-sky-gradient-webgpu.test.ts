@@ -183,7 +183,6 @@ describe("native plain-gradient sky", () => {
       const variants: readonly [string, Readonly<Record<string, unknown>>][] = [
         ["bands", { ...grounded(), bands: [{ elevationDeg: 10, widthDeg: 5, color: "#ff00ff", intensity: 1 }] }],
         ["stars", { ...grounded(), stars: { count: 300 } }],
-        ["clouds", { ...grounded(), clouds: { coverage: 0.3 } }],
         ["moon", { ...grounded(), moon: { elevationDeg: 20, azimuthDeg: 0 } }],
         ["model:preetham", { model: "preetham", sun: { elevationDeg: 20, azimuthDeg: 0 } }],
         ["model:color", { model: "color", color: [1, 0, 0] }],
@@ -262,9 +261,9 @@ describe("native plain-gradient sky", () => {
       const setTarget = f.device.setRenderTarget.bind(f.device);
       const spy = vi.spyOn(f.device, "setRenderTarget").mockImplementation(target => {
         setTarget(target);
-        if (target === face) pass.setSpec({ ...grounded(), clouds: { coverage: 0.5 } }, 0);
+        if (target === face) pass.setSpec({ ...grounded(), stars: { count: 300 } }, 0);
       });
-      expect(() => pass.renderToCubeFace(0, face, IDENTITY)).toThrow(/clouds/);
+      expect(() => pass.renderToCubeFace(0, face, IDENTITY)).toThrow(/stars/);
       expect(f.device.getRenderTarget()).toBe(previous);
       expect(f.modules).toHaveLength(0);
       expect(f.submissions.filter(record => record.vertices !== undefined)).toHaveLength(0);

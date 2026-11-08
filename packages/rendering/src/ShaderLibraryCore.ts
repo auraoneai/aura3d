@@ -1,6 +1,7 @@
 import { ShaderPreprocessor, type ShaderPreprocessOptions } from "./ShaderPreprocessor";
 import type { NativeShaderStages, PortableShaderBinding } from "./RenderDevice";
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
+import { ENVIRONMENT_BACKGROUND_PORTABLE_BINDINGS, ENVIRONMENT_BACKGROUND_WGSL } from "./environment/EnvironmentBackgroundWgsl";
 import { abortTrustedVariantCompile, beginTrustedVariantCompile, completeTrustedVariantCompile, completeTrustedVariantHit, trustedShaderVariantOptions } from "./renderer/TrustedShaderVariants";
 
 // Kept with the shader library so importing the library never evaluates a
@@ -958,6 +959,9 @@ export function registerLeanEnvironmentBackgroundShader(library: ShaderLibrary):
   library.register({
     name: DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME,
     marker: DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER,
+    // WebGPU twin; WebGL2 compiles only the GLSL below.
+    webgpu: ENVIRONMENT_BACKGROUND_WGSL,
+    portableBindings: ENVIRONMENT_BACKGROUND_PORTABLE_BINDINGS,
     vertex: `#version 300 es
 // ${DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER}
 precision highp float;

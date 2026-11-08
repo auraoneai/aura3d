@@ -12,6 +12,7 @@ import {
   DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME
 } from "../ShaderLibraryCore";
 import { SHADER_CHUNKS, validateShaderChunks } from "../ShaderChunks";
+import { ENVIRONMENT_BACKGROUND_LOD_PORTABLE_BINDINGS, ENVIRONMENT_BACKGROUND_LOD_WGSL } from "./EnvironmentBackgroundWgsl";
 
 export function createPrd02EnvironmentBackgroundShaderLibrary(): ShaderLibrary {
   const library = new ShaderLibrary();
@@ -22,6 +23,8 @@ export function createPrd02EnvironmentBackgroundShaderLibrary(): ShaderLibrary {
   library.register({
     name: DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME,
     marker: DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER,
+    webgpu: ENVIRONMENT_BACKGROUND_LOD_WGSL,
+    portableBindings: ENVIRONMENT_BACKGROUND_LOD_PORTABLE_BINDINGS,
     vertex: `#version 300 es
 // ${DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER}
 precision highp float;
