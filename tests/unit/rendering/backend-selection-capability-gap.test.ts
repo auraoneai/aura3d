@@ -121,5 +121,8 @@ describe("backend selection: ambient occlusion is no longer a WebGPU gap", () =>
     const ao = scene().add(primitives.box()).add(effects.ambientOcclusion({ radius: 0.5, intensity: 0.4 })).toJSON();
     expect(createProductionRuntimePostprocess(ao, [], 64, 64, true, { canvas: canvas as never }).ssao).toBeTruthy();
     expect(postGap(ao, canvas)).toBeUndefined();
+    // A stage without a WebGPU twin is still a gap, and the report names it.
+    const ssr = scene().add(primitives.box()).add(effects.ambientOcclusion()).add(effects.screenSpaceReflections()).toJSON();
+    expect(postGap(ssr, canvas)).toEqual({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", "legacy-ssr"] });
   }, 30_000);
 });

@@ -445,11 +445,22 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
  * ssao pass and the v2 ao stage) are exempt because the WebGPU device runs them natively on its sampleable depth.
  */
 function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
-  if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
-      (post.ssr && !post.ssr.depth)) return true;
-  if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
+  return webgpuDepthStagesMissing(post).length > 0;
+}
+
+/** The depth-reading stages behind `postLacksWebgpuDepth`, named for the fallback report. */
+function webgpuDepthStagesMissing(post: RendererPostProcessOptions): string[] {
+  const missing: string[] = [];
+  if (post.volumetricLight && !post.volumetricLight.depth) missing.push("volumetric-light");
+  if (post.contactShadow && !post.contactShadow.depth) missing.push("contact-shadow");
+  if (post.ssr && !post.ssr.depth) missing.push("legacy-ssr");
+  if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return missing;
   const bag = post.pipeline as { godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
-  return [bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
+  if (bag.godRays) missing.push("god-rays");
+  if (bag.motionBlur) missing.push("motion-blur");
+  if (bag.ssr) missing.push("ssr");
+  if (bag.taa || bag.antiAliasing === "taa") missing.push("taa");
+  return missing;
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };
@@ -466,7 +477,8 @@ function webgpuPostGapForPostprocess(
 ): WebgpuPostGap | undefined {
   let post: RendererPostProcessOptions;
   try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return undefined; }
-  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
+  // "depth-textures" stays first for existing readers; the stage names say which pass lacks a WebGPU twin.
+  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", ...webgpuDepthStagesMissing(post)] };
   try { return dofGap?.(post); } catch { return undefined; }
 }
 
