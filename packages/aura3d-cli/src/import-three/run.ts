@@ -252,7 +252,7 @@ export async function importThree(options: ImportThreeOptions): Promise<ImportTh
   const typegenPath = resolve(projectDir, readTypegenPath(projectDir));
   let assetsImport = posix(relative(outDir, typegenPath)).replace(/\.ts$/, "");
   if (!assetsImport.startsWith(".")) assetsImport = `./${assetsImport}`;
-  const regenerateCommand = `aura3d import-three ${manifest.generator.path} --name ${name} --seed ${seed}${Object.keys(options.params ?? {}).length ? ` --params '${JSON.stringify(options.params)}'` : ""}`;
+  const regenerateCommand = formatRegenerateCommand(manifest.generator.path, name, seed, options);
   const bridgeModule = join(outDir, `${name}.bridge.ts`);
   writeFileSync(bridgeModule, emitBridgeModule(analysis.data, { assetKey: name, assetsImport, regenerateCommand }));
   const sceneModule = join(outDir, `${name}.scene.ts`);
@@ -263,6 +263,23 @@ export async function importThree(options: ImportThreeOptions): Promise<ImportTh
   writeFileSync(reportPath, formatCompatReport(name, manifest, rows));
 
   return { name, glbPath, glbSha256: glbSha, bridgeModule, sceneModule, sceneModuleWritten, manifestPath, reportPath, counts: manifest.counts, ids, rows, data: analysis.data, admitted };
+}
+
+/** Shell-quote one argument (POSIX single quotes). */
+function shellArg(value: string): string {
+  return /^[A-Za-z0-9_@%+=:,./-]+$/.test(value) ? value : `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+/** The exact command that reproduces this import, including every non-default location and option. */
+export function formatRegenerateCommand(generatorPath: string, name: string, seed: number, options: Pick<ImportThreeOptions, "params" | "outDir" | "stageDir" | "threeDir" | "admit" | "license">): string {
+  const parts = ["aura3d", "import-three", shellArg(generatorPath), "--name", shellArg(name), "--seed", String(seed)];
+  if (Object.keys(options.params ?? {}).length) parts.push("--params", shellArg(JSON.stringify(options.params)));
+  if (options.outDir) parts.push("--out", shellArg(posix(options.outDir)));
+  if (options.stageDir) parts.push("--stage", shellArg(posix(options.stageDir)));
+  if (options.threeDir) parts.push("--three", shellArg(posix(options.threeDir)));
+  if (options.license) parts.push("--license", shellArg(options.license));
+  if (options.admit === false) parts.push("--no-admit");
+  return parts.join(" ");
 }
 
 function readTypegenPath(projectDir: string): string {

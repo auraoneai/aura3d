@@ -86,6 +86,15 @@ describe("import-three stable ids", () => {
   });
 });
 
+describe("import-three regenerate command", () => {
+  it("records every non-default option and shell-quotes params", async () => {
+    const { formatRegenerateCommand } = await import("../../../packages/aura3d-cli/src/import-three/run");
+    expect(formatRegenerateCommand("recipes/car.mjs", "car", 1, {})).toBe("aura3d import-three recipes/car.mjs --name car --seed 1");
+    expect(formatRegenerateCommand("recipes/car.mjs", "car", 2, { params: { paint: "#fff", label: "it's" }, outDir: "src/bridged", stageDir: "tmp/stage", license: "CC0-1.0", admit: false }))
+      .toBe(`aura3d import-three recipes/car.mjs --name car --seed 2 --params '{"paint":"#fff","label":"it'\\''s"}' --out src/bridged --stage tmp/stage --license CC0-1.0 --no-admit`);
+  }, 60_000);
+});
+
 describe("import-three packaging", () => {
   it("keeps three out of @aura3d/cli dependencies", () => {
     const pkg = JSON.parse(readFileSync("packages/aura3d-cli/package.json", "utf8")) as { dependencies?: Record<string, string> };
@@ -154,6 +163,17 @@ export default function createScene({ THREE, random, params }) {
   const sun = new THREE.DirectionalLight("#ffffff", 2);
   sun.position.set(1, 3, 2);
   scene.add(sun);
+  const lamp = new THREE.PointLight("#ffcc88", 3);
+  lamp.name = "lamp";
+  lamp.position.set(0, 2, 0);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.1), mat);
+  bulb.name = "bulb";
+  lamp.add(bulb);
+  scene.add(lamp);
+  const off = new THREE.SpotLight("#ff0000", 50);
+  off.name = "off";
+  off.visible = false;
+  scene.add(off);
   const clip = new THREE.AnimationClip("bob", 1, [new THREE.VectorKeyframeTrack("block.position", [0, 1], [0, 0, 0, 0, 1, 0])]);
   const camera = new THREE.PerspectiveCamera(45, 1.6, 0.1, 100);
   camera.position.set(4, 4, 8);
@@ -165,13 +185,17 @@ export default function createScene({ THREE, random, params }) {
       expect(first.data.hiddenNodeNames).toEqual(["spare", "sign"]);
       expect(first.data.clips).toEqual(["bob"]);
       expect(first.rows.some((r) => r.status === "unsupported" && r.construct === "ShaderMaterial")).toBe(true);
-      expect(first.data.lights).toHaveLength(1);
+      // A hidden light is not emitted (three does not light with it); a light's child mesh still exports.
+      expect(first.data.lights.map((l) => l.kind)).toEqual(["directional", "point"]);
+      expect(first.data.hiddenNodeNames).not.toContain("off");
       expect(readFileSync(join(dir, "src/aura-assets.ts"), "utf8")).toContain('"blocks"');
       const glb = readFileSync(first.glbPath);
       expect(glb.subarray(0, 4).toString("latin1")).toBe("glTF");
       const json = JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString("utf8")) as { nodes: { name: string }[]; animations?: { channels: unknown[] }[]; extensionsUsed?: string[] };
       expect(json.nodes.map((n) => n.name)).toContain("spare");
       expect(json.nodes.map((n) => n.name)).not.toContain("sun");
+      expect(json.nodes.map((n) => n.name)).toEqual(expect.arrayContaining(["lamp", "lamp__bulb"]));
+      expect(json.nodes.map((n) => n.name)).not.toContain("off");
       expect(json.animations?.[0]?.channels.length).toBe(1);
 
       const sceneFile = first.sceneModule;

@@ -3,7 +3,7 @@
 Generator `recipes/tree-grove.mjs` (sha256 4496aa88efe6), seed 1, params `{"trees":14,"rocks":9,"radius":7}`, three r185.
 GLB `.aura3d/three-bridge/tree-grove.glb` (201088 bytes, sha256 ee99a7195151).
 
-Supported 77, approximated 0, unsupported 0. Nothing is silently substituted: unsupported rows are absent from the Aura3D output.
+Supported 77, approximated 0, unsupported 0. Nothing is silently substituted: unsupported constructs are not reproduced, and each row says what the Aura3D output shows instead (hidden node, detached texture, or the unpatched base material).
 
 ## supported (77)
 

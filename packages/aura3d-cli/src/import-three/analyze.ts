@@ -158,7 +158,13 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
   scene.traverse((object) => {
     if (object === scene) return;
     const id = String(object.userData.auraId ?? object.name);
-    if (!object.visible) {
+    if (object.isLight && !effectivelyVisible(object, scene)) {
+      // three does not light with an invisible light (or one under a hidden parent); emitting it would change the look.
+      detach.push(object);
+      rows.push({ status: "supported", construct: `${object.type}.visible=false`, subject: id, note: "hidden light: not emitted (three renders without it too)" });
+      return;
+    }
+    if (!object.visible && !object.isLight && !object.isCamera) {
       hidden.push(id);
       rows.push({ status: "supported", construct: "Object3D.visible=false", subject: id, note: "exported with onlyVisible:false and hidden again through model({ hiddenNodeNames })" });
     }
@@ -252,11 +258,36 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
     }
   });
 
-  // Lights and cameras leave the export: they are emitted as native nodes instead.
+  // Lights and cameras leave the export: they are emitted as native nodes instead. A light or camera with
+  // children (a bulb mesh under a PointLight, a HUD under the camera) is swapped for an empty node with the same
+  // id and local transform, so its subtree still exports instead of silently disappearing with it.
+  const Object3D = THREE.Object3D as (new () => PlaceholderLike) | undefined;
   for (const light of detach) {
     const parent = light.parent;
     if (!parent) continue;
     const index = parent.children.indexOf(light);
+    const children = [...light.children];
+    if (children.length > 0 && Object3D) {
+      const holder = light as unknown as PlaceholderLike;
+      const placeholder = new Object3D();
+      placeholder.name = light.name;
+      Object.assign(placeholder.userData, light.userData);
+      placeholder.position.copy(holder.position);
+      placeholder.quaternion.copy(holder.quaternion);
+      placeholder.scale.copy(holder.scale);
+      placeholder.visible = light.visible;
+      for (const child of children) placeholder.add(child);
+      parent.children[index] = placeholder;
+      placeholder.parent = parent;
+      (light as { parent: ThreeObjectLike | null }).parent = null;
+      rows.push({ status: "supported", construct: `${light.type}.children`, subject: String(light.userData.auraId ?? light.name), note: `${children.length} child node(s) kept under an empty node with the ${light.isCamera ? "camera" : "light"}'s id and transform` });
+      undo.push(() => {
+        for (const child of children) light.add(child);
+        parent.children[index] = light;
+        (light as { parent: ThreeObjectLike | null }).parent = parent;
+      });
+      continue;
+    }
     light.removeFromParent();
     undo.push(() => { parent.children.splice(index, 0, light); (light as { parent: ThreeObjectLike | null }).parent = parent; });
   }
@@ -332,6 +363,15 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
     rows,
     restore() { for (const fn of undo.reverse()) fn(); }
   };
+}
+
+interface TransformPartLike { copy(source: unknown): unknown }
+type PlaceholderLike = ThreeObjectLike & { position: TransformPartLike; quaternion: TransformPartLike; scale: TransformPartLike; parent: ThreeObjectLike | null };
+
+/** True when the object and every ancestor below `root` are visible (three skips the whole subtree otherwise). */
+function effectivelyVisible(object: ThreeObjectLike, root: ThreeObjectLike): boolean {
+  for (let node: ThreeObjectLike | null = object; node && node !== root; node = node.parent) if (!node.visible) return false;
+  return true;
 }
 
 /** Returns true when the material cannot be carried at all (the meshes using it are hidden, not substituted). */

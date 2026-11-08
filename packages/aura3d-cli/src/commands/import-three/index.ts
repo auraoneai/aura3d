@@ -28,7 +28,7 @@ registerCliCommand({
     const factory = argv.find((arg, i) => !arg.startsWith("--") && !VALUE_FLAGS.has(argv[i - 1] ?? ""));
     if (!factory || argv.includes("--help")) {
       io.stderr(`usage: ${IMPORT_THREE_USAGE}`);
-      return factory ? 0 : 2;
+      return argv.includes("--help") ? 0 : 2;
     }
     const seedText = flag(argv, "--seed");
     const seed = seedText === undefined ? undefined : Number(seedText);
@@ -42,6 +42,9 @@ registerCliCommand({
       try {
         params = JSON.parse(paramsText) as Record<string, unknown>;
       } catch {
+        params = undefined;
+      }
+      if (params === undefined || params === null || typeof params !== "object" || Array.isArray(params)) {
         io.stderr("--params must be a JSON object");
         return 2;
       }
