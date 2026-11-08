@@ -94,3 +94,20 @@ describe("backend selection: fallback is announced and native DoF combinations a
     expect(dofGap({ pipeline: { dof } })).toBeUndefined();
   });
 });
+
+describe("backend selection: the gap check sees context recorded synchronously after the mount starts", () => {
+  it("evaluates the WebGPU gap only after a microtask, so post context recorded right after createAuraApp is visible", async () => {
+    const { create, requests } = fakeCreate();
+    let recorded = false;
+    const lateGap = vi.fn(() => recorded ? { code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["vignette"] } : undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const pending = createSelectedProductionRenderer({} as never, resolveBackendOptions({ backend: "webgpu", allowFallback: true } as never), create as never, lateGap);
+      recorded = true; // what the C-38 post extension does synchronously after the mount begins
+      const result = await pending;
+      expect(lateGap).toHaveBeenCalledTimes(1);
+      expect(requests).toEqual(["webgl2"]);
+      expect(result.selection).toMatchObject({ active: "webgl2", fallbackReason: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missingFeatures: ["vignette"] });
+    } finally { warn.mockRestore(); }
+  });
+});
