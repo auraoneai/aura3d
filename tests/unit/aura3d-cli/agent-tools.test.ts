@@ -186,6 +186,23 @@ void app.ready();
     expect(clean.ok).toBe(true);
   });
 
+  test("colour keys in app data outside engine calls are not judged unless plainly a colour (no false errors on games)", () => {
+    const src = `import { looks, material, materialFactory } from "@aura3d/engine";
+export const ui = { style: { color: "var(--fg)", background: "linear-gradient(150deg,#2b3350,#1a2032)" }, label: { color: "inherit" } };
+export const parts = [{ id: "head", color: "skin" }, { id: "torso", color: "giDark" }];
+export const direction = { environment: { preset: "neutral", background: "sky" } };
+export const slots = { baseColor: \`\${"fox"}_baseColor\`, emissive: "" };
+export const graph = materialFactory.node({ outputs: { color: "tint" } });
+export const look = looks.preset("studio", { background: "look" });
+export const bad = { tint: { color: "#12345" }, legacy: { color: "0xff0000" }, spaced: { color: "light blue" }, lab: { color: "lab(50% 20 30)" } };
+export const strict = material.pbr({ color: "skin" });
+`;
+    const report = runValidate({ projectDir: project({ "package.json": "{}", "src/data.ts": src }), types: false });
+    const colours = report.findings.filter((f) => f.code === "VALIDATE_COLOR_INVALID");
+    expect(colours.map((f) => f.location!.line)).toEqual([8, 8, 8, 8, 9]);
+    expect(colours.find((f) => /0xff0000/.test(f.message))!.message).toMatch(/pass the number 0xff0000/);
+  });
+
   test("unknown options, members and exports come from the TypeScript checker against the installed engine", () => {
     const src = `import { createAuraApp, lights, material, scene, notAnExport } from "@aura3d/engine";
 createAuraApp("#app", { scene: scene({ background: "#000" }).add(lights.directional({ intensity: 2, shadowBias: 1 })).add(material.glassy({})) });

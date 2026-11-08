@@ -10,7 +10,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import ts from "typescript";
 import { explainCode } from "../verify/codes.js";
 import { collectLintSources, lintProject, lintSources, type LintSource } from "../verify/lint.js";
-import { colorStringProblem } from "./color.js";
+import { colorStringProblem, CSS_COLOR_NAMES } from "./color.js";
 import { countSeverities, formatFindings, positionals, type AgentToolIo, type ToolFinding } from "./shared.js";
 
 export const VALIDATE_SCHEMA = "aura3d.validate/1";
@@ -74,29 +74,55 @@ const firstObject = (call: ts.CallExpression, index = 0): ts.ObjectLiteralExpres
 const COLOR_KEY = /(^|[a-z])(colou?r|Colou?r)$|^(background|tint|emissive|albedo)$/;
 const COLOR_LIST_KEY = /colou?rs$|^palette$/i;
 
-/** A literal string, or a template whose substitutions are replaced by "0" (so `hsl(${h}, 60%, 40%)` is checked for shape). */
-function literalColor(node: ts.Expression): string | undefined {
-  const e = unwrap(node);
-  if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return e.text;
-  if (ts.isTemplateExpression(e)) return e.head.text + e.templateSpans.map((s) => `0${s.literal.text}`).join("");
-  return undefined;
+// Colour-valued keys also appear in app data that never reaches the engine: DOM styles (`color: "var(--fg)"`, `background: "linear-gradient(...)"`),
+// palette lookups (`color: "skin"`), art-direction enums (`background: "sky"`), texture slot names (`baseColor: "Fox_baseColor"`) and material-graph
+// node references (`outputs: { color: "tint" }`). So a value is checked against the full engine grammar only when its object literal is an argument of an
+// engine builder call (`material.pbr({...})`, `lights.directional({...})`); anywhere else only an unambiguous colour attempt is checked: a `#` value, a
+// colour function (rgb/hsl/oklch, or lab/lch/hwb/color() the engine lacks), a "0x..." string, or a spaced CSS name such as "light blue".
+const ENGINE_COLOR_CALL = /(^|\.)(material|materials|lights|primitives|environments|sky|looks|effects|fog|water|weather|particles|text3D|instances|prefabs|sceneKits|postprocess|post)\.\w+$/;
+const ENGINE_COLOR_ROOT = /(^|\.)(scene|createAuraApp|createGameApp)$/;
+const NOT_A_COLOR_SINK = /\.(node|graph)$/;
+
+/** True when the property sits (through nested object/array literals) in an argument of an engine builder call. */
+function inEngineCall(prop: ts.PropertyAssignment): boolean {
+  let n: ts.Node | undefined = prop.parent;
+  while (n) {
+    if (ts.isObjectLiteralExpression(n) || ts.isArrayLiteralExpression(n) || ts.isPropertyAssignment(n) || ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isSatisfiesExpression(n) || ts.isSpreadElement(n)) { n = n.parent; continue; }
+    if (ts.isCallExpression(n)) { const name = callee(n); return (ENGINE_COLOR_CALL.test(name) || ENGINE_COLOR_ROOT.test(name)) && !NOT_A_COLOR_SINK.test(name); }
+    return false;
+  }
+  return false;
+}
+
+/** A colour attempt that cannot be anything else (an app token like "sky" or "skin" is not one). */
+function unambiguousColor(value: string): boolean {
+  const v = value.trim();
+  return v.startsWith("#") || /^0x[0-9a-f]+$/i.test(v) || /^(rgba?|hsla?|oklch|oklab|lab|lch|hwb|color|color-mix)\(/i.test(v) || (/[\s_-]/.test(v) && CSS_COLOR_NAMES.has(v.toLowerCase().replace(/[\s_-]+/g, "")));
 }
 
 export function checkColors(file: Parsed): ToolFinding[] {
   const out: ToolFinding[] = [];
-  const check = (key: string, value: ts.Expression): void => {
-    const text = literalColor(value);
-    if (text === undefined) return;
+  const check = (key: string, value: ts.Expression, strict: boolean): void => {
+    const e = unwrap(value);
+    let text: string;
+    if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) text = e.text;
+    // A template is checked for shape only, with each substitution as "0" (`hsl(${h}, 60%, 40%)` passes), and only when it is plainly a colour.
+    else if (ts.isTemplateExpression(e)) { text = e.head.text + e.templateSpans.map((s) => `0${s.literal.text}`).join(""); strict = false; }
+    else return;
+    if (text.trim() === "") return;
+    // In an engine call, `background` also takes keywords (looks: "look"); a bare word there is only judged when it is a spaced colour name.
+    if (!(strict && !(key === "background" && /^[a-z]+$/i.test(text.trim()))) && !unambiguousColor(text)) return;
     const problem = colorStringProblem(text);
     if (problem) out.push(finding("VALIDATE_COLOR_INVALID", `${key}: ${problem}. The engine throws COLOR_INVALID for it at mount.`, loc(file, value)));
   };
   const visit = (node: ts.Node): void => {
     if (ts.isPropertyAssignment(node)) {
       const key = propName(node.name);
-      if (key && COLOR_KEY.test(key)) check(key, node.initializer);
+      if (key && COLOR_KEY.test(key)) check(key, node.initializer, inEngineCall(node));
       else if (key && COLOR_LIST_KEY.test(key)) {
         const arr = unwrap(node.initializer);
-        if (ts.isArrayLiteralExpression(arr)) for (const el of arr.elements) check(key, el as ts.Expression);
+        const strict = inEngineCall(node);
+        if (ts.isArrayLiteralExpression(arr)) for (const el of arr.elements) check(key, el as ts.Expression, strict);
       }
     }
     ts.forEachChild(node, visit);
@@ -114,7 +140,8 @@ interface Subject { readonly size: number; readonly node: ts.Node; readonly labe
 function subjectOf(call: ts.CallExpression, name: string): Subject | undefined {
   const opts = firstObject(call) ?? firstObject(call, 1);
   const nameNode = opts ? getProp(opts, "name") : undefined;
-  const label = nameNode ? literalColor(nameNode) ?? "" : "";
+  const nameExpr = nameNode ? unwrap(nameNode) : undefined;
+  const label = nameExpr && (ts.isStringLiteral(nameExpr) || ts.isNoSubstitutionTemplateLiteral(nameExpr)) ? nameExpr.text : nameExpr && ts.isTemplateExpression(nameExpr) ? nameExpr.head.text : "";
   if (GROUND_NAME.test(label)) return undefined;
   if (/(^|\.)model$|assets\.node$/.test(name)) {
     const h = num(opts ? getProp(opts, "targetHeight") : undefined);

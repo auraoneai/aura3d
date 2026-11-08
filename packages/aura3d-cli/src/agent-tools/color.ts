@@ -23,6 +23,7 @@ export function colorStringProblem(input: string): string | undefined {
   const value = input.trim();
   const hex = /^#([0-9a-f]+)$/i.exec(value);
   if (hex) return [3, 4, 6, 8].includes(hex[1]!.length) ? undefined : `hex colour "${value}" has ${hex[1]!.length} digits (use 3, 4, 6 or 8)`;
+  if (/^0x[0-9a-f]+$/i.test(value)) return `"${value}" is a string; pass the number ${value} (no quotes) or "#${value.slice(2)}"`;
   if (value.startsWith("#")) return `"${value}" is not a hex colour (only 0-9 and a-f after #)`;
   const fn = /^(rgb|rgba|hsl|hsla|oklch)\((.+)\)$/i.exec(value);
   if (fn) {

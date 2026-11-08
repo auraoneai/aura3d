@@ -40,7 +40,7 @@ Static checks in about a second (plus the TypeScript pass). With no argument it 
 
 | Code | Severity | What it catches |
 | --- | --- | --- |
-| `VALIDATE_COLOR_INVALID` | error | A colour option (`color`, `background`, `skyColor`, `emissive`, `colors: [...]` ...) holding a string the engine's colour parser rejects: wrong hex length, `hsl()` with two values, `lab()`, `"light blue"`. Template strings are checked for shape (`hsl(${h}, 60%, 40%)` passes). The engine throws `COLOR_INVALID` for these at mount. |
+| `VALIDATE_COLOR_INVALID` | error | A colour option (`color`, `background`, `skyColor`, `emissive`, `colors: [...]` ...) holding a string the engine's colour parser rejects: wrong hex length, `hsl()` with two values, `lab()`, `"light blue"`. Template strings are checked for shape (`hsl(${h}, 60%, 40%)` passes). Every value is judged inside an engine builder call (`material.pbr({...})`, `lights.*`, `scene({...})`); elsewhere (DOM styles, palette keys like `color: "skin"`, enums like `background: "sky"`) only a plain colour attempt is: a `#` value, a colour function, a `"0x..."` string, or a spaced name. The engine throws `COLOR_INVALID` for these at mount. |
 | `VALIDATE_UNKNOWN_OPTION` | error | TS2353/TS2561 against the installed engine types: an option key the builder does not declare (`lights.directional({ shadowBias })`, `primitives.sphere({ radius })`). |
 | `VALIDATE_UNKNOWN_MEMBER` | error | TS2339/TS2551: a member that does not exist (`material.glassy`, a runtime-handle method on a builder). |
 | `VALIDATE_UNKNOWN_EXPORT` | error | TS2305/TS2724: an import `@aura3d/engine` does not export. |
