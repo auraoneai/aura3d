@@ -50,6 +50,38 @@ export function colorToAcesInputClearColor(color: AuraColor): readonly [number, 
   return [Math.max(0, input[0] * toeCompensation), Math.max(0, input[1] * toeCompensation), Math.max(0, input[2] * toeCompensation), alpha];
 }
 
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number] {
+  const knee = 0.76;
+  const shoulder = 1 - knee;
+  const out = display.map((v) => clampNumber(v, 0, 0.9999)) as [number, number, number];
+  const outPeak = Math.max(out[0], out[1], out[2]);
+  let shifted: [number, number, number] = out;
+  if (outPeak >= knee) {
+    // Forward: o = c + (s * c / p - c) * k with c = compressed peak, k = 1 / (1 + 0.15 (p - c)); the peak channel maps to c.
+    const compressed = outPeak;
+    const peak = shoulder * shoulder / (1 - compressed) - shoulder + knee;
+    const keep = 1 / (1 + 0.15 * (peak - compressed));
+    shifted = out.map((o) => ((o - compressed) / keep + compressed) * (peak / compressed)) as [number, number, number];
+  }
+  // Forward offset from the input minimum m: m (1 - 6.25 m) below 0.08 (so the minimum maps to 6.25 m^2), else 0.04.
+  const shiftedMin = Math.max(0, Math.min(shifted[0], shifted[1], shifted[2]));
+  const inputMin = shiftedMin < 0.04 ? Math.sqrt(shiftedMin / 6.25) : shiftedMin + 0.04;
+  const offset = inputMin < 0.08 ? inputMin * (1 - 6.25 * inputMin) : 0.04;
+  return shifted.map((v) => Math.max(0, v + offset)) as [number, number, number];
+}
+
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number] {
+  const [red, green, blue, alpha] = colorToLinearClearColor(color);
+  const [r, g, b] = neutralToneMapInverse([red, green, blue]);
+  return [r, g, b, alpha];
+}
+
 function smoothstepNumber(edge0: number, edge1: number, value: number): number {
   const t = clampNumber((value - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);

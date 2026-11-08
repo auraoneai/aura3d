@@ -25,6 +25,7 @@ import { TONE_MAP_OPERATOR_FUNCTIONS } from "../output/ToneMappingOperators.glsl
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
 import { ldrFragmentSource, ldrVariantKey, type LdrProgramVariant } from "./LdrPostprocessShader";
+import { neutralToneCurve, type NeutralToneCurve as NeutralToneCurveName } from "../output/neutralToneCurve";
 
 /** A texture the after-bloom hook reads or returns (`PostColorInput` in `post/v2Stages`). */
 export interface LdrPresentColorInput {
@@ -909,10 +910,11 @@ export class WebGL2LegacyPostPipeline {
     const colorOptions = colorPass?.options ?? {};
     const fxaaOptions = fxaaPass?.options ?? {};
     const toneVignette = tonePass ? linearVignetteOption(toneOptions) : undefined;
+    const toneOperator = toneMappingOperatorId(stringOption(toneOptions, "operator", "reinhard"), neutralToneCurve(this.host.device));
     const program = this.ensureLdrPostprocessProgram({
       toneMapping: Boolean(tonePass),
       vignette: toneVignette !== undefined,
-      operator: toneMappingOperatorId(stringOption(toneOptions, "operator", "reinhard")),
+      operator: toneOperator,
       inputSrgb: colorSpaceId(stringOption(toneOptions, "inputColorSpace", "linear")) === 1,
       outputSrgb: colorSpaceId(stringOption(toneOptions, "outputColorSpace", "linear")) === 1,
       grade: Boolean(colorPass),
@@ -926,7 +928,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_source"), 0);
     this.host.gl.uniform2f(this.host.gl.getUniformLocation(program, "u_texelSize"), 1 / width, 1 / height);
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_hasToneMapping"), tonePass ? 1 : 0);
-    this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_toneOperator"), toneMappingOperatorId(stringOption(toneOptions, "operator", "reinhard")));
+    this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_toneOperator"), toneOperator);
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_inputColorSpace"), colorSpaceId(stringOption(toneOptions, "inputColorSpace", "linear")));
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_outputColorSpace"), colorSpaceId(stringOption(toneOptions, "outputColorSpace", "linear")));
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_exposure"), numberOption(toneOptions, "exposure", 1));
@@ -3006,7 +3008,8 @@ function linearVignetteOption(toneOptions: Readonly<Record<string, unknown>>): L
   };
 }
 
-function toneMappingOperatorId(value: string): number {
+function toneMappingOperatorId(value: string, neutralCurve: NeutralToneCurveName = "legacy"): number {
+  if (value === "neutral" && neutralCurve === "khronos") return 7;
   if (value === "linear") return 0;
   if (value === "reinhard") return 1;
   if (value === "aces") return 2;
