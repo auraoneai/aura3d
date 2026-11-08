@@ -163,6 +163,8 @@ export interface BridgeSceneData {
   readonly hiddenNodeNames: readonly string[];
   readonly materials: readonly string[];
   readonly clips: readonly string[];
+  /** ShaderMaterials carried as `material.custom` on the placeholder slot of the same name. */
+  readonly customMaterials: readonly import("./shader.js").BridgeCustomMaterial[];
   readonly lights: readonly BridgeLight[];
   readonly camera?: BridgeCamera;
   readonly background?: string;

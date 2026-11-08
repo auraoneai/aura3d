@@ -22,6 +22,7 @@ import type {
   ThreeObjectLike,
   ThreeVector3Like
 } from "./contract.js";
+import { convertShaderMaterial, type BridgeCustomMaterial } from "./shader.js";
 
 type Vec3 = readonly [number, number, number];
 
@@ -154,6 +155,10 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
   const detach: ThreeObjectLike[] = [];
   const flatBaked = new Map<unknown, unknown>();
   const uncarried = new Set<string>();
+  const customMaterials: BridgeCustomMaterial[] = [];
+  /** ShaderMaterial uuid -> named placeholder exported in its slot (GLTFExporter writes no material for a shader). */
+  const placeholders = new Map<string, unknown>();
+  const MeshBasicMaterial = THREE.MeshBasicMaterial as (new (parameters?: Record<string, unknown>) => { name: string }) | undefined;
 
   scene.traverse((object) => {
     if (object === scene) return;
@@ -235,6 +240,24 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
         unnamedMaterial += 1;
       }
       materialNames.push(material.name);
+      if (material.isShaderMaterial && !material.isNodeMaterial && MeshBasicMaterial) {
+        const converted = convertShaderMaterial(material);
+        if (converted.ok) {
+          customMaterials.push({ name: material.name, spec: converted.spec });
+          placeholders.set(material.uuid, new MeshBasicMaterial({ name: material.name, color: 0xff00ff }));
+          rows.push({
+            status: converted.notes.length > 0 ? "approximated" : "supported",
+            construct: material.type,
+            subject: material.name,
+            note: `carried as material.custom (GLSL pass-through; three built-ins map to the Aura3D prelude aliases) on a placeholder slot of the same name${converted.notes.length > 0 ? `; ${converted.notes.join("; ")}` : ""}`,
+            nativeTarget: "material.custom"
+          });
+        } else {
+          rows.push({ status: "unsupported", construct: material.type, subject: material.name, note: `not carried as material.custom: ${converted.reasons.join("; ")}. Meshes using it are hidden in the Aura3D output (port the shader by hand)`, nativeTarget: "material.custom" });
+          uncarried.add(material.uuid);
+        }
+        continue;
+      }
       if (classifyMaterial(material, MaterialProto, rows)) uncarried.add(material.uuid);
       for (const slot of TEXTURE_SLOTS) {
         const texture = material[slot] as TextureLike | null | undefined;
@@ -251,6 +274,14 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
         undo.push(() => { (material as Record<string, unknown>)[slot] = texture; });
         rows.push({ status: "unsupported", construct: `material.${slot}`, subject: material.name, note: texture.isCompressedTexture ? "compressed textures cannot be re-encoded headless; detached before export" : "image/canvas/video textures cannot be rasterised headless; detached before export (pass a DataTexture, or admit the image as its own texture asset)" });
       }
+    }
+    if (object.isMesh && materials.some((m) => placeholders.has(m.uuid))) {
+      const holder = object as { material?: unknown };
+      const original = holder.material;
+      holder.material = Array.isArray(original)
+        ? original.map((m: ThreeMaterialLike) => placeholders.get(m.uuid) ?? m)
+        : placeholders.get((original as ThreeMaterialLike).uuid);
+      undo.push(() => { holder.material = original; });
     }
     if (object.isMesh && materials.some((m) => uncarried.has(m.uuid)) && object.visible) {
       hidden.push(id);
@@ -351,6 +382,7 @@ export function analyzeAndPrepare(THREE: ThreeLike, name: string, result: ThreeB
       hiddenNodeNames: hidden,
       materials: materialNames,
       clips: clipNames,
+      customMaterials,
       lights,
       ...(camera ? { camera } : {}),
       ...(background ? { background } : {}),
