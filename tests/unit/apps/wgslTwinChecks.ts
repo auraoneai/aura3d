@@ -79,3 +79,31 @@ export function checkGlslUnchanged(specs: readonly (readonly [string, AuraCustom
     }
   }
 }
+
+/**
+ * A `castShadow: true` twin also draws the WebGPU shadow pass: its `<shaderKey>/depth` program is the twin's vertex stage
+ * plus the encoded-depth fragment, and that program's own binding struct (reflected from the GLSL depth pair, which has
+ * no forward fragment) carries every `aura.<member>` the twin vertex reads; a member only the forward fragment declares
+ * would leave the shadow pass without a valid program.
+ */
+export function checkWgslDepthTwin(_name: string, spec: AuraCustomMaterialSpec): void {
+  expect(spec.castShadow).toBe(true);
+  const materialObject = createCustomShaderMaterial(spec, `rr-depth-${_name}`);
+  try {
+    const key = (materialObject as unknown as { customDepthShaderKey?: string }).customDepthShaderKey;
+    expect(key).toBeTruthy();
+    const pair = globalShaderSource(key!)!;
+    expect(pair.webgpu).toBeDefined();
+    expect(pair.webgpu!.vertex).toMatch(/@vertex\s+fn\s+vs_main/);
+    expect(pair.webgpu!.fragment).toMatch(/return vec4f\(a3dFragCoord\.z, a3dFragCoord\.z, a3dFragCoord\.z, 1\.0\)/);
+    const forward = globalShaderSource(materialObject.shaderKey)!;
+    const header = (source: string): string => /@vertex\s+fn\s+vs_main\s*\(([\s\S]*?)\)\s*->/.exec(source)![1]!;
+    expect(header(pair.webgpu!.vertex)).toBe(header(forward.webgpu!.vertex));
+    const bound = new Set([...(pair.portableBindings ?? []).map((binding) => binding.name), ...RENDERER_BUILTINS]);
+    const read = new Set([...pair.webgpu!.vertex.matchAll(/\baura\.(\w+)/g)].map((match) => match[1]!));
+    expect(read.size).toBeGreaterThan(0);
+    for (const name of read) expect([name, bound.has(name)]).toEqual([name, true]);
+  } finally {
+    materialObject.dispose();
+  }
+}

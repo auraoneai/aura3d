@@ -5,7 +5,7 @@ import {
   blobSpec, glowSpec, hazeSpec, moteSpec, paintSpec, propSpec, seaSpec, shaftSpec, skySpec, streamSpec, travellerSpec, windSpec
 } from "../../../examples/where-the-wind-wanders-port/world.js";
 import { paperPass } from "../../../examples/where-the-wind-wanders-port/paper-pass.js";
-import { checkGlslUnchanged, checkWgslTwin } from "./wgslTwinChecks.js";
+import { checkGlslUnchanged, checkWgslDepthTwin, checkWgslTwin } from "./wgslTwinChecks.js";
 
 /** Every distinct program The Bellkeeper's Walk (examples/where-the-wind-wanders-port) draws, with and without its receive defines. */
 const specs: readonly (readonly [string, AuraCustomMaterialSpec, boolean])[] = ([
@@ -37,6 +37,9 @@ describe("The Bellkeeper's Walk WGSL twins (A3/W6: foliage, terrain, sea, sky, s
     expect(fragment("traveller")).not.toMatch(/a3dSunShadowAuto/);
     expect(fragment("sea")).toMatch(/treeTop/);
     expect(fragment("sea-no-shore")).not.toMatch(/treeTop/);
+  });
+  it("the shadow-casting scenery twin gets a WebGPU depth program whose bindings cover its vertex stage", () => {
+    checkWgslDepthTwin("scenery", specs.find(([n]) => n === "scenery")![1]);
   });
   it("the gouache paper pass carries a WebGPU stage reading u_paper / u_paperScale from the custom-pass uniform slots", () => {
     const pass = paperPass(1280, 720);
