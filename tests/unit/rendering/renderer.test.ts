@@ -189,7 +189,8 @@ describe("Renderer", () => {
     const renderer = await Renderer.create({ backend: "webgpu", webgpu: native.gpu, canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement, width: 64, height: 32 });
     renderer.render({ renderItems: [], postprocess: {
       v2: true, pipeline: { toneMapping: "aces", exposure: 1, depthRange: { near: 0.1, far: 100, projection: "perspective" } },
-      targetFormat: "rgba16f", bloom: { threshold: 0.9, intensity: 0.42, knee: 0.5, spread: 0.7 },
+      targetFormat: "rgba16f", // The v2 bag names (knee ratio, spread) are outside the legacy BloomOptions type; the v2 stamp admits them.
+      bloom: { threshold: 0.9, intensity: 0.42, knee: 0.5, spread: 0.7 } as unknown as { threshold: number; intensity: number },
       toneMapping: { operator: "aces", exposure: 1, outputColorSpace: "srgb" }
     } });
     const stages = native.device.renderPasses.map(pass => pass.pipeline ?? "");
