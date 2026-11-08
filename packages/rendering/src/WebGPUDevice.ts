@@ -174,6 +174,11 @@ const WEBGPU_NATIVE_COPY_FRAGMENT = `
 }`;
 /** Detach the per-frame display-stage values from caller-owned objects. */
 function snapshotNativeDofDisplay(stages: NativeDofDisplayStages): NativeDofDisplayStages {
+  const values = [stages.chromaticAberration?.intensity, ...(stages.vignette ? [stages.vignette.intensity, stages.vignette.smoothness,
+    stages.vignette.roundness, ...stages.vignette.color] : []), ...(stages.finalize ? Object.values(stages.finalize) : [])];
+  if (values.some(value => value !== undefined && (typeof value !== "number" || !Number.isFinite(value)))) {
+    throw new RenderDeviceError("Native depth-of-field display stages require finite values", "WEBGPU_DOF_INVALID");
+  }
   return Object.freeze({
     ...(stages.chromaticAberration ? { chromaticAberration: Object.freeze({ intensity: stages.chromaticAberration.intensity }) } : {}),
     ...(stages.vignette ? { vignette: Object.freeze({ intensity: stages.vignette.intensity, smoothness: stages.vignette.smoothness,
