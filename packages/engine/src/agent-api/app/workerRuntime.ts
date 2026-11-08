@@ -1,4 +1,4 @@
-import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraScreenshot, WebGLSceneRenderer } from "../nodes/types.js";
+import type { AuraApp, AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraScreenshot, WebGLSceneRenderer } from "../nodes/types.js";
 import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
 import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSize } from "./canvas.js";
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
@@ -621,7 +621,8 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     // The host app's qualityRebuild flags and animation mixer (absent: the defaults, as before).
     const flags = qrFlagsWithAnimationMixer(resolveQrFlags({ ...(renderFlags?.qualityRebuild === undefined ? {} : { options: renderFlags.qualityRebuild }), ...(renderFlags?.url === undefined ? {} : { url: renderFlags.url }) }), renderFlags?.animationMixer);
     // K1: the registry node patches write through, read by the renderer every frame.
-    const runtimeNodes = createAuraRuntimeNodeRegistry(next, { flags }) as AuraRuntimeNodeRegistry & { dispose?: () => void };
+    // Node-handle extensions replayed from host patches read the app's scene (prd09 setInstanceTransforms).
+    const runtimeNodes = createAuraRuntimeNodeRegistry(next, { flags, app: { scene: next } as unknown as AuraApp }) as AuraRuntimeNodeRegistry & { dispose?: () => void };
     const animation = actorAnimation.createActorAnimationContext(flags);
     actorAnimation.bindActorAnimationContext(owner, animation);
     actorFlags.setTypedGLBActorQrFlags(flags, owner);
@@ -981,7 +982,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           await scheduler.runExclusive(() => {
             const current = renderer;
             const nodes = current ? workerRendererNodes.get(current) ?? (current as { runtimeNodes?: AuraRuntimeNodeRegistry }).runtimeNodes : undefined;
-            applyWorkerNodePatch(nodes, scene, message.ops);
+            applyWorkerNodePatch(nodes, scene, message.ops, (id) => findWorkerCanvasTexture(sceneTextures, id));
           });
           break;
         case "input": {
@@ -1195,10 +1196,58 @@ type WorkerTextureSnapshot = {
   readonly anisotropy: number;
   readonly minFilter: AuraTextureRef["minFilter"];
   readonly magFilter: AuraTextureRef["magFilter"];
+  /**
+   * The host texture is a live 2D image source (`texture.canvas`, an image or
+   * a bitmap). Level 0 carries its pixels read back on the host; the worker
+   * rebuilds a source texture on an OffscreenCanvas, so upload flipY, mips and
+   * colour handling match the host, and later host repaints arrive as
+   * `texture` patch ops.
+   */
+  readonly canvasSource?: true;
 };
 
 function unsupportedWorkerTexture(): AuraWorkerError {
   return new AuraWorkerError("Live texture handles cannot cross worker realms unless they have bounded CPU-backed 2D color pixels. Use a typed texture asset or create the handle in the worker.", "unsupported-worker-resource", "recoverable");
+}
+
+/** A live 2D image source whose pixels the host can read back (canvas, image, bitmap); never a video. */
+export function isWorkerReadableImageTexture(texture: Texture): boolean {
+  const source = texture.source as unknown as Record<string, unknown> | null;
+  if (!source || typeof source !== "object" || texture.dimension !== "2d" || texture.format !== "rgba8") return false;
+  if ("currentTime" in source || "videoWidth" in source) return false;
+  return texture.mipLevels.length === 0 && texture.mipLevelCount === 1
+    && !texture.usage.includes("storage") && !texture.usage.includes("render-attachment")
+    && texture.usage.includes("sampled") && texture.usage.includes("copy-dst");
+}
+
+let readbackCanvas: { canvas: OffscreenCanvas | HTMLCanvasElement; context: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D } | undefined;
+/**
+ * Read a live image source's current pixels (unpremultiplied RGBA8, top row
+ * first). Drawn into a private 2D canvas so the source's own context type is
+ * never touched. Undefined when the source cannot be read (tainted, sized
+ * differently from its texture, or no 2D canvas in this realm).
+ */
+export function readWorkerImageTexturePixels(texture: Texture): Uint8ClampedArray | undefined {
+  const source = texture.source as unknown as CanvasImageSource & { width?: number; height?: number };
+  const { width, height } = texture;
+  if ((typeof source.width === "number" && source.width !== width) || (typeof source.height === "number" && source.height !== height)) return undefined;
+  try {
+    if (!readbackCanvas) {
+      const canvas = typeof OffscreenCanvas === "function" ? new OffscreenCanvas(width, height)
+        : typeof document !== "undefined" ? Object.assign(document.createElement("canvas"), { width, height }) : undefined;
+      const context = canvas?.getContext("2d", { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null | undefined;
+      if (!canvas || !context) return undefined;
+      readbackCanvas = { canvas, context };
+    }
+    const { canvas, context } = readbackCanvas;
+    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+    context.globalCompositeOperation = "copy";
+    context.drawImage(source, 0, 0);
+    const pixels = context.getImageData(0, 0, width, height).data;
+    return pixels.length === width * height * 4 ? pixels : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Copy the underlying bytes, never numerically convert floating-point samples. */
@@ -1256,6 +1305,24 @@ function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly
     if (kind !== "aura-texture-ref") return undefined;
     const ref = value as AuraTextureRef;
     const texture = auraTextureRefTexture(ref);
+    if (texture && texture.source && isWorkerReadableImageTexture(texture) && !backings.has(texture)) {
+      backings.add(texture);
+      const pixels = readWorkerImageTexturePixels(texture);
+      if (!pixels) throw unsupportedWorkerTexture();
+      const snapshot: WorkerTextureSnapshot = {
+        kind: WORKER_TEXTURE_KIND, id: ref.id, width: texture.width, height: texture.height, format: "rgba8",
+        levels: [{ width: texture.width, height: texture.height, data: pixels }], suppliedMipCount: 0,
+        colorSpace: texture.colorSpace, flipY: texture.flipY, generateMipmaps: texture.generateMipmaps, dynamic: texture.dynamic,
+        usage: [...texture.usage] as WorkerTextureSnapshot["usage"],
+        wrapS: ref.wrapS, wrapT: ref.wrapT, repeat: [...ref.repeat], offset: [...ref.offset], center: [...ref.center],
+        rotation: ref.rotation, anisotropy: ref.anisotropy, minFilter: ref.minFilter, magFilter: ref.magFilter, canvasSource: true
+      };
+      const size = validateWorkerTextureSnapshot(snapshot);
+      if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += size) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
+      reserve(size);
+      // The readback is already a private copy.
+      return snapshot;
+    }
     if (!texture || texture.source || texture.dimension !== "2d"
       || !["rgba8", "rgba16f", "rgba32f", "r32f"].includes(texture.format)
       || !Number.isSafeInteger(texture.width) || texture.width < 1 || !Number.isSafeInteger(texture.height) || texture.height < 1
@@ -1467,7 +1534,8 @@ function validateWorkerTextureSnapshot(value: WorkerTextureSnapshot): number {
     || !pair(value.repeat) || !pair(value.offset) || !pair(value.center) || !Number.isFinite(value.rotation)
     || !Number.isFinite(value.anisotropy) || value.anisotropy < 1
     || !["nearest", "linear", "nearest-mipmap-nearest", "linear-mipmap-nearest", "nearest-mipmap-linear", "linear-mipmap-linear"].includes(value.minFilter)
-    || !["nearest", "linear"].includes(value.magFilter)) throw unsupportedWorkerTexture();
+    || !["nearest", "linear"].includes(value.magFilter)
+    || (value.canvasSource !== undefined && (value.canvasSource !== true || value.format !== "rgba8" || value.levels.length !== 1 || value.suppliedMipCount !== 0))) throw unsupportedWorkerTexture();
   const bytesPerPixel = value.format === "rgba16f" ? 8 : value.format === "rgba32f" ? 16 : 4;
   let total = 0;
   for (let index = 0; index < value.levels.length; index++) {
@@ -1490,6 +1558,68 @@ function validateWorkerTextureSnapshot(value: WorkerTextureSnapshot): number {
       || (total += size) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
   }
   return total;
+}
+
+/** Worker-side image texture rebuilt from a host canvas snapshot; host repaints write into `write`. */
+interface WorkerCanvasTexture {
+  readonly hostId: string;
+  readonly width: number;
+  readonly height: number;
+  write(data: Uint8ClampedArray | Uint8Array): void;
+}
+const workerCanvasTextures = new WeakMap<TextureHandle, WorkerCanvasTexture>();
+
+/** Flip rows (data textures ignore flipY; image uploads apply it). */
+function flipRows(data: Uint8ClampedArray | Uint8Array, width: number, height: number): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(data.length);
+  const row = width * 4;
+  for (let y = 0; y < height; y++) out.set(data.subarray(y * row, (y + 1) * row), (height - 1 - y) * row);
+  return out;
+}
+
+function createWorkerCanvasTexture(snapshot: WorkerTextureSnapshot): TextureHandle {
+  const { width, height } = snapshot;
+  const pixels = snapshot.levels[0]!.data as Uint8ClampedArray | Uint8Array;
+  const sampler = { wrapS: snapshot.wrapS, wrapT: snapshot.wrapT, anisotropy: snapshot.anisotropy, minFilter: snapshot.minFilter, magFilter: snapshot.magFilter };
+  const common = { width, height, format: "rgba8" as const, colorSpace: snapshot.colorSpace, generateMipmaps: snapshot.generateMipmaps,
+    usage: snapshot.usage };
+  const canvas = typeof OffscreenCanvas === "function" && typeof ImageData === "function" ? new OffscreenCanvas(width, height) : undefined;
+  const context = canvas?.getContext("2d") as OffscreenCanvasRenderingContext2D | null | undefined;
+  let backing: Texture;
+  let write: (data: Uint8ClampedArray | Uint8Array) => void;
+  if (canvas && context) {
+    const put = (data: Uint8ClampedArray | Uint8Array): void => {
+      context.putImageData(new ImageData(new Uint8ClampedArray(data), width, height), 0, 0);
+    };
+    put(pixels);
+    backing = new Texture({ ...common, source: canvas, dynamic: snapshot.dynamic, flipY: snapshot.flipY, label: "worker-canvas-texture" });
+    write = (data) => { put(data); backing.markNeedsUpdate(); };
+  } else {
+    // No 2D canvas in this realm: a dynamic data texture with flipY applied to the rows.
+    const orient = (data: Uint8ClampedArray | Uint8Array): Uint8ClampedArray => snapshot.flipY ? flipRows(data, width, height) : new Uint8ClampedArray(data);
+    backing = new Texture({ ...common, data: orient(pixels), dynamic: true, label: "worker-canvas-texture" });
+    write = (data) => backing.update(orient(data));
+  }
+  let handle: TextureHandle;
+  try { handle = new TextureHandle(backing, sampler); }
+  catch (error) { backing.dispose(); throw error; }
+  workerCanvasTextures.set(handle, {
+    hostId: snapshot.id, width, height,
+    write: (data) => {
+      if (data.byteLength !== width * height * 4) throw new AuraWorkerError("Worker texture update does not match the texture size.", "invalid-patch", "recoverable");
+      write(data);
+    }
+  });
+  return handle;
+}
+
+/** Resolve a host texture id to the worker's canvas texture among the scene's handles. */
+export function findWorkerCanvasTexture(handles: Iterable<TextureHandle>, hostId: string): WorkerCanvasTexture | undefined {
+  for (const handle of handles) {
+    const entry = workerCanvasTextures.get(handle);
+    if (entry?.hostId === hostId) return entry;
+  }
+  return undefined;
 }
 
 /** Recreate a worker-local backing and retain old ones used by an onFrame scene. */
@@ -1520,6 +1650,12 @@ function rehydrateWorkerScene(scene: AuraSceneSnapshot, owned: ReadonlySet<Textu
       const snapshot = value as WorkerTextureSnapshot;
       const length = validateWorkerTextureSnapshot(snapshot);
       if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += length) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
+      if (snapshot.canvasSource) {
+        const handle = createWorkerCanvasTexture(snapshot);
+        created.add(handle);
+        handle.repeat = [...snapshot.repeat]; handle.offset = [...snapshot.offset]; handle.center = [...snapshot.center]; handle.rotation = snapshot.rotation;
+        return handle;
+      }
       const supplied = snapshot.suppliedMipCount;
       const backing = new Texture({ width: snapshot.width, height: snapshot.height, format: snapshot.format,
         ...(supplied ? { mipLevels: snapshot.levels.slice(0, supplied) as WorkerTextureMip[] } : { data: snapshot.levels[0]!.data }),

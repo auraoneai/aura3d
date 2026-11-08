@@ -4,6 +4,10 @@ import { installWorkerRenderer } from "../../../packages/engine/src/agent-api/ap
 import { applyWorkerNodePatch, createWorkerNodeMirror } from "../../../packages/engine/src/agent-api/app/workerNodes.js";
 import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes.js";
 import { normalizeSceneSnapshot } from "../../../packages/engine/src/agent-api/sceneMath.js";
+import { instances } from "../../../packages/engine/src/agent-api/nodes/instances.js";
+import { nodeHandleExtensionFor, registerNodeHandleExtension } from "../../../packages/engine/src/contracts/runtimeNodes.js";
+import { instanceTransformsExtension } from "../../../packages/engine/src/agent-api/nodes/game/instanceTransforms.js";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags.js";
 import type { AuraWorkerEndpoint, AuraWorkerRequest, AuraWorkerResponse } from "../../../packages/engine/src/agent-api/app/workerProtocol.js";
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot, WebGLSceneRenderer } from "../../../packages/engine/src/agent-api/nodes/types.js";
 
@@ -142,6 +146,22 @@ describe("worker node mirror (K1)", () => {
     ])).toThrow(expect.objectContaining({ code: "invalid-patch", severity: "recoverable" }));
     // The valid op after a bad one still ran.
     expect(registry.require("mover").position).toEqual([1, 2, 3]);
+  });
+
+  it("records and replays setInstanceTransforms (the extension finds its instanced node through the mirror scene)", () => {
+    if (!nodeHandleExtensionFor("setInstanceTransforms")) registerNodeHandleExtension(instanceTransformsExtension);
+    const flags = resolveQrFlags({ options: { A3D_QR_GAME: true } });
+    const pooled = () => normalizeSceneSnapshot(scene().add(instances.box({ name: "pool", size: [1, 1, 1],
+      transforms: [{ position: [0, -999, 0] }, { position: [0, -999, 0] }] }).runtime({ id: "pool" })));
+    const mirror = createWorkerNodeMirror(pooled(), flags);
+    const matrices = new Float32Array(32);
+    matrices.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3, 4, 5, 1]);
+    (mirror.nodes.require("pool") as unknown as { setInstanceTransforms(m: Float32Array, n: number): void }).setInstanceTransforms(matrices, 1);
+    const ops = mirror.drain();
+    expect(ops).toEqual([{ id: "pool", call: "setInstanceTransforms", args: [matrices, 1] }]);
+    const workerScene = pooled();
+    const registry = createAuraRuntimeNodeRegistry(workerScene, { flags, app: { scene: workerScene } as never });
+    expect(applyWorkerNodePatch(registry, workerScene, ops)).toBe(1);
   });
 
   it("picks on the host against the mirror", () => {

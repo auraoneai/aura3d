@@ -14,12 +14,15 @@
  * raycast, using the same view-projection the renderer derives from the scene
  * camera, so no worker round trip is needed.
  */
-import type { AuraRuntimeNodeHandle, AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraApp, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { createViewProjection } from "../sceneMath.js";
 import { raycast, type SceneQueryHit } from "../SceneQueries.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { AuraWorkerError } from "./workerRuntime.js";
+import { AuraWorkerError, isWorkerReadableImageTexture, readWorkerImageTexturePixels } from "./workerRuntime.js";
+import { auraTextureRefTexture } from "../nodes/texture.js";
+import type { AuraTextureRef } from "../nodes/types.js";
+import type { Texture } from "@aura3d/rendering";
 import { WORKER_HOST_READS as READS, WORKER_PATCH_METHOD_SET as METHODS, WORKER_PATCH_PROPERTY_SET as PROPERTIES, coalesceKey, isReplayableExtensionMethod, type AuraWorkerNodePatchOp, type AuraWorkerPatchProperty } from "./workerPatch.js";
 
 export type { AuraWorkerNodePatchOp, AuraWorkerPatchMethod, AuraWorkerPatchProperty } from "./workerPatch.js";
@@ -59,18 +62,58 @@ export interface AuraWorkerPickOptions {
   readonly time?: number;
 }
 
+interface LiveImageTexture { readonly id: string; readonly texture: Texture; revision: number }
+
+/** Live image textures (`texture.canvas`, images, bitmaps) the scene references; their repaints become `texture` ops. */
+function collectLiveImageTextures(scene: AuraSceneSnapshot): LiveImageTexture[] {
+  const found = new Map<Texture, LiveImageTexture>();
+  const seen = new Set<object>();
+  const stack: unknown[] = [scene.nodes];
+  while (stack.length) {
+    const value = stack.pop();
+    if (!value || typeof value !== "object" || seen.has(value) || ArrayBuffer.isView(value) || value instanceof ArrayBuffer) continue;
+    seen.add(value);
+    if ((value as { kind?: unknown }).kind === "aura-texture-ref") {
+      const texture = auraTextureRefTexture(value as AuraTextureRef);
+      if (texture?.source && !found.has(texture) && isWorkerReadableImageTexture(texture)) {
+        found.set(texture, { id: (value as AuraTextureRef).id, texture, revision: texture.revision });
+      }
+      continue;
+    }
+    if (value instanceof Map) { for (const [key, item] of value) stack.push(key, item); continue; }
+    if (value instanceof Set) { for (const item of value) stack.push(item); continue; }
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) continue;
+    for (const key of Object.keys(value)) stack.push((value as Record<string, unknown>)[key]);
+  }
+  return [...found.values()];
+}
+
 /**
  * Build the host mirror for one mounted scene. A new mirror is created for
  * every scene replacement; proxies of an older mirror keep updating that old
  * mirror but no longer record ops (the worker owns a different scene).
  */
 export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags): AuraWorkerNodeMirror {
-  const registry = createAuraRuntimeNodeRegistry(scene, flags ? { flags } : {}) as AuraRuntimeNodeRegistry & { dispose?: () => void };
+  // Node-handle extensions read the app's scene (prd09 setInstanceTransforms finds its instanced node there); the
+  // mirror's scene stands in for the app, as the worker's scene does on the worker side.
+  const app = { scene } as unknown as AuraApp;
+  const registry = createAuraRuntimeNodeRegistry(scene, { ...(flags ? { flags } : {}), app }) as AuraRuntimeNodeRegistry & { dispose?: () => void };
   let ops: (AuraWorkerNodePatchOp | undefined)[] = [];
   let live = 0;
   let index = new Map<string, number>();
   let active = true;
   const proxies = new WeakMap<AuraRuntimeNodeHandle, AuraRuntimeNodeHandle>();
+  // The host never uploads these textures; acknowledging the dirty flag lets
+  // every later `needsUpdate = true` record a new revision to forward.
+  const liveTextures = collectLiveImageTextures(scene);
+  for (const entry of liveTextures) {
+    if (entry.texture.needsUpdate) entry.texture.needsUpdate = false;
+    entry.revision = entry.texture.revision;
+  }
+  const dirtyTextures = (): LiveImageTexture[] => active
+    ? liveTextures.filter((entry) => !entry.texture.disposed && entry.texture.revision !== entry.revision)
+    : [];
   const record = (op: AuraWorkerNodePatchOp): void => {
     if (!active) return;
     const key = coalesceKey(op);
@@ -138,14 +181,22 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
     nodes,
     registry,
     scene,
-    get pending() { return live; },
+    get pending() { return live + dirtyTextures().length; },
     setCamera(camera) {
       const sent = cloneArgs(camera, "camera");
       (scene as { camera: AuraSceneSnapshot["camera"] }).camera = camera;
       record({ camera: sent });
     },
     drain() {
-      const out = ops.filter((op): op is AuraWorkerNodePatchOp => op !== undefined);
+      const out: AuraWorkerNodePatchOp[] = [];
+      for (const entry of dirtyTextures()) {
+        const { texture } = entry;
+        if (texture.needsUpdate) texture.needsUpdate = false;
+        entry.revision = texture.revision;
+        const data = readWorkerImageTexturePixels(texture);
+        if (data) out.push({ texture: entry.id, width: texture.width, height: texture.height, data });
+      }
+      out.push(...ops.filter((op): op is AuraWorkerNodePatchOp => op !== undefined));
       ops = [];
       index = new Map();
       live = 0;
