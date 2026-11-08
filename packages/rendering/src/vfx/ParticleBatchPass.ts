@@ -6,6 +6,7 @@ import type { RenderBuffer, RenderDevice, RenderShaderProgram } from "../RenderD
 import type { FrameContributorContext, TransparentQueueItem } from "../contracts/frameGraph";
 import type { ParticleBatchDescriptor, ParticleBatchHandle } from "../contracts/particles";
 import { TextureBinding } from "../TextureBinding";
+import { glslOnlyVfxProgram } from "./webgpuGlslOnly";
 import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { ParticleInstanceRing, createParticleQuad, particleInstanceAttributes } from "./ParticleInstanceLayout";
 import { consumeBlendFallbackReport, resolveVfxBlend } from "./BlendFallback";
@@ -244,7 +245,14 @@ export class ParticleBatchPass {
       fogAnalytic: false,
       straightAlpha: batch.desc.atlasStraightAlpha === true
     };
-    const shader = this.program(defines);
+    // GLSL-only program: skipped on WebGPU with one warning (glslOnlyVfxProgram), never thrown out of the frame.
+    if (this.wgslUnavailable) return;
+    const shader = glslOnlyVfxProgram(this.device, "VFX_PARTICLES_WGSL_MISSING", "particle batches", () => this.program(defines));
+    if (!shader) {
+      this.wgslUnavailable = true;
+      this.note("VFX_PARTICLES_WGSL_MISSING", null, "particle batches have no WGSL program; they are skipped on WebGPU");
+      return;
+    }
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_view", camera?.viewMatrix ?? IDENTITY],
       ["u_viewProjection", camera?.viewProjectionMatrix ?? IDENTITY],
@@ -281,6 +289,9 @@ export class ParticleBatchPass {
     this.frameDiagnostics.drawCalls += 1;
     this.frameDiagnostics.instancesDrawn += batch.liveCount;
   }
+
+  /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+  private wgslUnavailable = false;
 
   private program(defines: ParticleProgramDefines): RenderShaderProgram {
     const key = particleProgramKey(defines);

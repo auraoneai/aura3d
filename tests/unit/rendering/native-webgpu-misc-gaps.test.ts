@@ -176,3 +176,34 @@ describe("native prd10.wind", () => {
     expect(floats(packed, GENERATED_PBR_MATERIAL_OFFSETS.windParams!, 1)).toEqual([4]);
   });
 });
+
+describe("GLSL-only particle batches on WebGPU", () => {
+  it("are skipped with one warning instead of throwing out of every frame", async () => {
+    const { vi } = await import("vitest");
+    const { MockRenderDevice, RenderDeviceError } = await import("../../../packages/rendering/src/RenderDevice");
+    const { ParticleBatchPass } = await import("../../../packages/rendering/src/vfx/ParticleBatchPass");
+    const { Texture } = await import("../../../packages/rendering/src/Texture");
+    const { QUALITY_TIERS } = await import("../../../packages/rendering/src/contracts/quality");
+    const device = new MockRenderDevice();
+    Object.defineProperty(device, "kind", { value: "webgpu" });
+    const create = vi.spyOn(device, "createShaderProgram").mockImplementation(() => { throw new RenderDeviceError("No WGSL program for shader", "WGSL_PROGRAM_MISSING"); });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const atlas = new Texture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
+    const pass = new ParticleBatchPass(device);
+    try {
+      const handle = pass.upsertBatch({ key: "dust", capacity: 8, source: "cpu", atlas, blend: "alpha", shading: "unlit", softDepth: false, stretch: false, frameBlend: false });
+      const data = new Float32Array(16); data[4] = 1; data.fill(1, 8, 12);
+      pass.writeInstances(handle, data, 1);
+      const ctx = { device, width: 32, height: 32, camera: null, blackboard: new Map(), tier: QUALITY_TIERS.high,
+        sceneDepth: { texture: null, available: false, linearize: { near: 0.1, far: 100, orthographic: false } } } as never;
+      for (let frame = 0; frame < 3; frame += 1) {
+        device.beginFrame(32, 32);
+        for (const item of pass.transparentItems(ctx)) expect(() => item.draw(ctx)).not.toThrow();
+        device.endFrame();
+      }
+      expect(device.drawCommands).toHaveLength(0);
+      expect(create).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls.filter(([line]) => String(line).includes("VFX_PARTICLES_WGSL_MISSING"))).toHaveLength(1);
+    } finally { warn.mockRestore(); pass.dispose(); atlas.dispose(); device.dispose(); }
+  });
+});
