@@ -68,7 +68,7 @@ import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { createWorkerRootApp } from "./workerRootApp.js";
 import { workerCanvasTransferAttempted } from "./workerRuntime.js";
 import { coldStartLookApplies, withColdStartLook } from "../looks/coldStartLook.js";
-import { plainLookForNextScene, resolvePlainLook } from "../looks/plainLook.js";
+import { coldStartPlainOutput, plainLookForNextScene, resolvePlainLook } from "../looks/plainLook.js";
 
 type ReadinessStage = "renderer" | "first-frame";
 type ReadyBackend = "webgl2" | "webgpu";
@@ -311,7 +311,20 @@ export function createAuraAppWithPhysicsWorldAccess(
     options = { ...options, output: plainLook.output };
   }
   // 5.1: scenes that author no look/light/environment get the hero-stage defaults; authored scenes are returned unchanged.
-  if (coldStartLookApplies(options)) snapshot = withColdStartLook(snapshot);
+  // N2 + N3: a bare scene gets the hero stage over the structured room (N2) and, when the author chose no output, the
+  // plain neutral output (N3), so bare geometry and a lit plain scene share one output path.
+  let plainBoot = plainLook !== null;
+  if (coldStartLookApplies(options)) {
+    const staged = withColdStartLook(snapshot);
+    if (staged !== snapshot && !plainLook) {
+      const coldOutput = coldStartPlainOutput(options);
+      if (coldOutput) {
+        options = { ...options, output: coldOutput };
+        plainBoot = true;
+      }
+    }
+    snapshot = staged;
+  }
   /*
    * One top-level node at a time, so the compiled scene can find the children of a mounted group or look by the group's
    * runtime id (`app.nodes.remove`). The concatenation is the same node list as flattening the whole list at once.
@@ -2249,12 +2262,19 @@ export function createAuraAppWithPhysicsWorldAccess(
       // drops the neutral output (its look's own output applies again); a plain scene keeps it. Apps that did not boot on
       // the plain path never gain it here, so existing games that switch scenes keep their look.
       let normalizedNext = normalizeSceneSnapshot(nextScene);
-      if (plainLook) {
+      let nextPlainOutput = false;
+      if (plainBoot) {
         const nextPlain = plainLookForNextScene(normalizedNext, authoredOptions);
         normalizedNext = nextPlain.snapshot;
+        nextPlainOutput = nextPlain.output !== undefined;
         options = nextPlain.output ? { ...authoredOptions, output: nextPlain.output } : authoredOptions;
       }
       const nextSnapshot = coldStartLookApplies(options) ? withColdStartLook(normalizedNext) : normalizedNext;
+      if (plainBoot && !nextPlainOutput && nextSnapshot !== normalizedNext) {
+        // A bare next scene got the hero stage: it takes the plain output too, as at boot.
+        const coldOutput = coldStartPlainOutput(authoredOptions);
+        if (coldOutput) options = { ...authoredOptions, output: coldOutput };
+      }
       assertScenePhysicsPivotSupport(nextSnapshot.nodes);
       const nextRenderSnapshot = flattenForRender(nextSnapshot, true);
       // The preview bridge is a separate world, so prepare it before changing

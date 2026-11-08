@@ -2,8 +2,9 @@
 // look, output or post effect (or to `looks.preset("plain")`); everything authored comes back untouched.
 import { describe, expect, it } from "vitest";
 import { camera, effects, environments, group, lights, looks, material, primitives, scene, sky } from "../../../packages/engine/src/agent-api/index.js";
-import { createPlainOutput, isPlainDefaultOutput, plainLookForNextScene, plainLookOptionsApply, resolvePlainLook, withPlainFillYield } from "../../../packages/engine/src/agent-api/looks/plainLook.js";
+import { coldStartPlainOutput, createPlainOutput, isPlainDefaultOutput, plainLookForNextScene, plainLookOptionsApply, resolvePlainLook, withPlainFillYield } from "../../../packages/engine/src/agent-api/looks/plainLook.js";
 import { explicitEnvironmentResolution, prd02ProbeBindIntensities } from "../../../packages/engine/src/agent-api/compiler/environment.js";
+import { withColdStartLook } from "../../../packages/engine/src/agent-api/looks/coldStartLook.js";
 import { renderPathBlockers } from "../../../packages/engine/src/agent-api/app/renderPath.js";
 import type { AuraSceneNode } from "../../../packages/engine/src/agent-api/nodes/types.js";
 
@@ -146,5 +147,22 @@ describe("plain output on the render path", () => {
     const kept = plainLookForNextScene(plainNext, {});
     expect(isPlainDefaultOutput(kept.output)).toBe(true);
     expect(env(kept.snapshot.nodes).plainDiffuseYield).toBe(true);
+  });
+
+  it("N2 + N3 compose: a bare scene gets the structured room from the cold-start stage and the plain output", () => {
+    const bare = scene().add(cube()).toJSON();
+    // No light: the plain path itself does not claim a bare scene; the cold-start stage does.
+    expect(resolvePlainLook(bare, {})).toBeNull();
+    const staged = withColdStartLook(bare);
+    const room = env(staged.nodes);
+    expect(room.environment).toBe("preset");
+    expect(room.preset).toBe("softbox");
+    const output = coldStartPlainOutput({});
+    expect(output).toEqual({ toneMapping: "neutral", exposure: 1 });
+    expect(isPlainDefaultOutput(output)).toBe(true);
+    // Authored output, plainLook: false or a non-WebGL2 backend keep the earlier default.
+    expect(coldStartPlainOutput({ output: { toneMapping: "aces" } })).toBeNull();
+    expect(coldStartPlainOutput({ plainLook: false })).toBeNull();
+    expect(coldStartPlainOutput({ renderer: { backend: "webgpu" } })).toBeNull();
   });
 });

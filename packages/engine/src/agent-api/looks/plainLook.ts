@@ -168,6 +168,16 @@ export function resolvePlainLook(snapshot: AuraSceneSnapshot, options: PlainLook
   return { source, snapshot: nodes === snapshot.nodes ? snapshot : { ...snapshot, nodes }, output: createPlainOutput() };
 }
 
+/**
+ * N2 + N3: the output for a bare scene that received the cold-start hero stage (over the structured room). Bare geometry
+ * authored no look or output either, so it takes the same PBR Neutral output as a lit plain scene; `null` when the app
+ * authored an output/lighting, opted out (`plainLook: false`, `?a3d-plain-look=0`) or selected a non-default path.
+ */
+export function coldStartPlainOutput(options: PlainLookAppOptions): AuraOutputOptions | null {
+  if (!plainLookOptionsApply(options) || !plainLookEnabled()) return null;
+  return createPlainOutput();
+}
+
 /** Apply the no-stack rule to a later scene (`app.setScene`) of an app already on the plain path. */
 export function withPlainFillYield(snapshot: AuraSceneSnapshot): AuraSceneSnapshot {
   const found: Scan = { plainLook: false, otherLook: false, authored: false, lit: false, fill: false };

@@ -1030,11 +1030,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "41180717c773d0f2a570604d7900f0af668599948fcf39dc299e1e46d5838d63"
+          "sha256": "0d9c2287012bb4541a1129b07a06397ccf969f9780755d04f852d96940e7eeb4"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "94fdc7ab11c1e7d4bbc1e95562efadebb63c18c28546c604202d4e1631c90b90"
+          "sha256": "4a5430ef926f1e304ff75b0276a32954b5608b83de2625f564312885dcefeb89"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1078,11 +1078,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "d056bf5c3adb144a83cce71b637ef55b2f971fd3b0515e3c95a112b636095df3"
+          "sha256": "d858279b5963f10c20fc909e1961b09bd3611aea3b99c1935d54d30bf77951e3"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
-          "sha256": "2e93d2f71742eb19596146cd22789fdc3dfa6295a335e31fefcd15fc1a4d97bd"
+          "sha256": "fa05aaaef4def28b03e63b89318b9b15530545b5afd9384c3596ab33d3e1cc82"
         },
         {
           "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
@@ -1935,7 +1935,7 @@
       },
       "source": {
         "path": "apps/postprocessing-custom/src/main.ts",
-        "sha256": "edd0629e2f9bfb27a03134bcf4eabbd7daf8d703fbd157134927d3e0769957d9"
+        "sha256": "f95198337c20b7e25e0bd1246425db2921668d056d063b72049e75dd15f38dfb"
       },
       "sourceDependencies": [
         {
@@ -3026,7 +3026,7 @@
       "provenance": "Independently derived: primitives.plane is the horizontal X/Z unit quad (compiler/geometry.ts createPlaneGeometry) scaled to 2.4x2.4 by primitiveSize; the authored camera [0, 0.3, 3.1] -> [0, 0, 0], fov 38, sees it at a grazing angle. Projected through the 960x540 #stage canvas at the default 8 px body margin (index.html has no CSS), the plane is a trapezoid spanning page y 257-325; the region is the projection of the interior world rectangle x in [-1.9, -0.4], z in [-0.6, 0.8] (page x 87-404 at y 266, x -155-353 at y 304), clipped inside. Colors are the authored checker texels (235,120,40) and (40,200,235) in sRGB, material color #ffffff, under the authored directional (2.4) and ambient (0.6) lights. No reference capture. Lighting, texture filtering at the grazing angle and rendered appearance remain unverified.",
       "source": {
         "path": "examples/parity-texture-lab/main.ts",
-        "sha256": "bbe952ce934118adbbab66473b88ad1361a5fb11180fa9c85e62926fc5f37931"
+        "sha256": "467c6994088f73bbd002d7e46f678e81cf29a06b1f865247571cabc33abdd759"
       },
       "sourceDependencies": [
         {
@@ -3349,7 +3349,7 @@
       },
       "source": {
         "path": "examples/shader-failure-lab/main.ts",
-        "sha256": "5d1ec793449b33cb65053753c15fc42d629299fc6f3b461e6b64a97e22663ba7"
+        "sha256": "7bcc28ac81a9fb3d5533170f52cc8a2a8592349d6dbc38d382b684501a355482"
       },
       "sourceDependencies": [
         {
@@ -7270,7 +7270,7 @@
       },
       "source": {
         "path": "examples/parity-runtime-lab/main.ts",
-        "sha256": "21c27c73dcb418d5aa4a8cc7c6dd2547e1a1eaccb477296d59a7f3579fca0512"
+        "sha256": "cbe4f116446b5137f2050680c26e5a658c903b356dc8a586e2b5be938a53cbb8"
       },
       "sourceDependencies": [
         {
@@ -8055,7 +8055,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/customMaterial.ts",
-          "sha256": "661bbdb01700c707d8ade10340933a0c7bd97b106edc8cb67f0ca311343f01af"
+          "sha256": "773b2b56ec6ab5fb1d12bc603560605aa87c02107369b6eddbb164f481e5c2a3"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
