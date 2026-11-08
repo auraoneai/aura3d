@@ -172,7 +172,7 @@ function fixture(alphaMode: AlphaMode = "opaque", acceptsP3 = true, leaseBacking
     exposure: 1, toneMapping: "linear", dither: false, ...options
   });
   const run = (options: Partial<PostPipelineOptions>, frameId: number, hooks: typeof postV2 = postV2, outputTarget?: RenderTarget,
-    extraPasses: readonly { name: "color-grade" | "fxaa"; options: Record<string, unknown> }[] = []): void => {
+    extraPasses: readonly { name: "color-grade" | "fxaa" | "ssr"; options: Record<string, unknown> }[] = []): void => {
     device.beginFrame(8, 8);
     try {
       executePostGraphWebGL2(host, source, { v2: hooks, pipeline: pipeline(options),
@@ -758,6 +758,17 @@ describe("WebGL P3 route admits the legacy colour grade, FXAA and display tail s
       expect(f.state.draws.some(draw => draw.source.includes("OUTPUT_COLOR_GRADE"))).toBe(false);
       expect(f.state.draws.some(draw => draw.source.includes("#define LDR_GRADE 1"))).toBe(true);
       expect(finalDraw(f.state.draws)?.colorSpace).toBe("srgb");
+    } finally { f.device.dispose(); }
+  });
+
+  it("does not admit a legacy ssr descriptor when no depth-less HDR stage output owns SSR", () => {
+    const f = fixture();
+    try {
+      // The legacy fused present keeps the descriptor (and its native depth read) instead of the P3 OutputPass silently dropping it.
+      expect(() => f.run({ outputColorSpace: "display-p3", ssr: { intensity: 0.5 } as PostPipelineOptions["ssr"] }, 1, postV2, undefined,
+        [{ name: "ssr", options: {} }])).toThrow(/sampleable depth texture/);
+      expect(f.state.draws.some(draw => draw.source.includes("#define OUTPUT_DISPLAY_P3"))).toBe(false);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: expect.stringMatching(/passes:ssr$/) });
     } finally { f.device.dispose(); }
   });
 

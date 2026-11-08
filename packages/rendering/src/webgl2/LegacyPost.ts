@@ -3100,7 +3100,7 @@ function outputPassRouteTone(
    * `fxaa` descriptor to the v2 tail's fused FXAA. sRGB chains never set this, so their fused present is unchanged.
    */
   admitDisplayPasses = false,
-  /** The v2 HDR stages produced a new (depth-less) target, so S3 owns a declared SSR. */
+  /** The v2 HDR stages produced a new depth-less target (the legacy SSR descriptor would be skipped), so S3 owns a declared SSR. */
   hdrStagesRan = false
 ): OutputPassRouteTone | undefined {
   if (source.colorTexture.format === "rgba8" || !host.device) return undefined;
@@ -3301,7 +3301,8 @@ export function executePostGraphWebGL2(
   // epilogue) and FXAA (run by the v2 tail); sRGB output never takes that route.
   const requiresOutputPolicy = pipeline.outputColorSpace === "display-p3" || (pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque");
   const admitDisplayPasses = pipeline.outputColorSpace === "display-p3" && !request.outputTarget;
-  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host, requiresOutputPolicy, admitDisplayPasses, workSource !== source) : undefined;
+  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host, requiresOutputPolicy, admitDisplayPasses,
+    workSource !== source && !(workSource as WebGL2RenderTarget).depthTextureHandle) : undefined;
   if (outputPassTone?.fxaa) tailPipeline = { ...tailPipeline, antiAliasing: "fxaa" };
   const needsTail = Boolean(v2 && (outputPassTone?.fxaa || v2.v2NeedsLdrTail(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId)));
   ldrTailLease = needsTail && v2
