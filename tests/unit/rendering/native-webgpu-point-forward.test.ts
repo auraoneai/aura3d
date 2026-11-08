@@ -270,15 +270,24 @@ describe("WebGPU point quads through ForwardPass", () => {
     } finally { f.close(); geometry.dispose(); material.dispose(); }
   });
 
-  it("keeps camera-depth and shadow point draws guarded until their coverage path exists", async () => {
+  it("admits unclipped camera-depth and shadow point casters and keeps clipped ones guarded in strict mode", async () => {
     const f = await fixture();
     const geometry = Geometry.points([[0, 0, 0]]);
     const material = new UnlitMaterial();
     try {
       f.begin();
+      // Unclipped point casters draw as one-pixel point lists in depth and shadow passes (WebGL2 parity, 0757c3f93).
       for (const clippingPass of ["depth", "shadow"] as const) {
         const pass = new DepthPass({ casters: [{ geometry, material }], clippingPass, checkedSubmission: true });
-        expect(() => pass.prepare({ device: f.device, width: WIDTH, height: HEIGHT })).toThrow(/WebGPU point depth requires/i);
+        expect(() => pass.prepare({ device: f.device, width: WIDTH, height: HEIGHT })).not.toThrow();
+      }
+      // A clipped point caster has no WebGPU depth twin: strict mode keeps the guard (outside strict it is skipped with
+      // WEBGPU_POINT_DEPTH_SKIPPED instead of failing the frame).
+      setRendererQrFlags(createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_PARITY_LINES: true, A3D_QR_STRICT: true }), f.device);
+      for (const clippingPass of ["depth", "shadow"] as const) {
+        const pass = new DepthPass({ casters: [{ geometry, material }], clippingPass, checkedSubmission: true,
+          globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true } });
+        expect(() => pass.prepare({ device: f.device, width: WIDTH, height: HEIGHT })).toThrow(/WebGPU clipped point depth requires/i);
       }
       expect(geometry.vertexBuffer.hasAttemptedUpload).toBe(false);
       expect(f.submissions).toHaveLength(0);
