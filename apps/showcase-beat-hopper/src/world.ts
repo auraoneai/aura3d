@@ -6,7 +6,7 @@
  * `z = (crossTime - t) * speed`. Particles and pulse rings are presentation-only pools with their own LCG — they never
  * consume gameplay RNG draws. The whole world pulses on the sim beat; PERFECT judgements fire expanding timing rings.
  */
-import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import {
   Batch, flatSpec, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
@@ -79,7 +79,7 @@ const dynamicFrom = (m: MeshData) => geometry.dynamic({
   uvs: Float32Array.from(m.uvs), indices: Uint32Array.from(m.indices)
 });
 
-export const BATCH_IDS = ["deck", "rails", "stripes", "blocks", "bars", "gaps", "rings", "particles"] as const;
+export const BATCH_IDS = ["stripes", "blocks", "bars", "gaps", "rings", "particles"] as const;
 
 /** Every custom program the world draws (the shaders-compile test bakes each one). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
@@ -96,11 +96,22 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
   ];
 }
 
-/** Road deck: dark tiles (per-tile tone) with the stage lighting and haze so the far track melts into the horizon. */
-const deckSpec = (): CustomSpec => stageLitSpec({ base: [1, 1, 1], haze: HAZE, toneBase: 1, rim: [0.25, 0.04, 0.2] });
+/** Road deck: one long slab whose alternating 2 m tiles are shaded from world z and the run scroll (`uTileShift`),
+ * with the stage lighting and haze so the far track melts into the horizon. */
+const deckSpec = (): CustomSpec => stageLitSpec({ base: [1, 1, 1], haze: HAZE, toneless: true, rim: [0.25, 0.04, 0.2], tiles: [linear(LOOK.road), linear("#221748")] });
 
 const stagePrograms = (): { name: string; spec: CustomSpec }[] =>
   addStage(() => undefined, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE }).programs();
+
+const translateBox3 = (w: number, h: number, d: number, x: number, y: number, z: number): MeshData => {
+  const m = boxMesh(w, h, d);
+  for (let i = 0; i < m.positions.length; i += 3) {
+    m.positions[i] = (m.positions[i] as number) + x;
+    m.positions[i + 1] = (m.positions[i + 1] as number) + y;
+    m.positions[i + 2] = (m.positions[i + 2] as number) + z;
+  }
+  return m;
+};
 
 const translateBox = (w: number, h: number, d: number, y: number, z: number): MeshData => {
   const m = boxMesh(w, h, d);
@@ -148,29 +159,32 @@ export function buildWorld(options: WorldOptions): World {
   add("sky", sphereMesh(SKY_RADIUS, 32, 20), stageSkySpec());
 
   /* synthwave stage: floor, ridges, city, palms, arches, islands, equalizer meters, searchlights, motes */
-  const stage = addStage((id, geom, spec) => {
-    builder.add(geometry.custom(geom, { name: id, material: material.custom(spec) }).runtime({ id }));
+  const stageGroups = new Map<string, ReturnType<typeof geometry.custom>[]>();
+  const stage = addStage((id, geom, spec, mount) => {
+    const g = geometry.custom(geom, { name: id, material: material.custom(spec), castShadow: false, receiveShadow: false });
+    if (mount === "live") builder.add(g.runtime({ id }));
+    else if (mount === "static") builder.add(g);
+    else {
+      const list = stageGroups.get(mount.group) ?? [];
+      list.push(g);
+      stageGroups.set(mount.group, list);
+    }
   }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
+  for (const [id, children] of stageGroups) builder.add(group(id, children).runtime({ id }));
 
   /* elevated track girder with a cyan under-glow strip (uniform along z, so it never scrolls) */
   const trackLen = CONFIG.POOL_SEGMENTS * SEGMENT_LENGTH;
   add("girder", translateBox(ROAD_WIDTH + 0.7, 0.55, trackLen, -0.6, 18 - trackLen / 2), stageLitSpec({ base: linear("#1a1038"), haze: HAZE, toneless: true }));
   add("underglow", translateBox(ROAD_WIDTH + 0.78, 0.07, trackLen, -0.42, 18 - trackLen / 2), stageLitSpec({ base: [0, 0, 0], haze: HAZE, emissive: linear("#23e6ff"), toneless: true }));
 
-  /* road tiles + neon rails in the scrolling frame */
-  const deck = new Batch(boxMesh(ROAD_WIDTH, 0.3, SEGMENT_LENGTH), CONFIG.POOL_SEGMENTS, linear(LOOK.road));
-  const rails = new Batch(boxMesh(0.18, 0.34, SEGMENT_LENGTH), CONFIG.POOL_SEGMENTS * 2, linear(LOOK.rail));
-  const tileA = linear(LOOK.road);
-  const tileB = linear("#221748");
-  for (let k = 0; k < CONFIG.POOL_SEGMENTS; k++) {
-    const z = 18 - k * SEGMENT_LENGTH;
-    deck.place(k, 0, -0.15, z, 0, 1, 1, 1);
-    deck.setTone(k, k % 2 === 0 ? tileA : tileB);
-    rails.place(k * 2, -(ROAD_WIDTH / 2 + 0.12), 0.05, z, 0, 1, 1, 1);
-    rails.place(k * 2 + 1, ROAD_WIDTH / 2 + 0.12, 0.05, z, 0, 1, 1, 1);
-  }
-  addBatch("deck", deck, deckSpec());
-  addBatch("rails", rails, toonSpec(linear(LOOK.rail), undefined, linear(LOOK.rail)));
+  /* road deck + neon rails: single slabs along the whole track (the tiles scroll in the deck shader). One node per
+   * slab instead of a 220-tile batch: the renderer snapshots every runtime node's vertices each frame. */
+  const deckZ = 19 - trackLen / 2;
+  add("deck", translateBox(ROAD_WIDTH, 0.3, trackLen, -0.15, deckZ), deckSpec());
+  add("rails", mergeMeshes([
+    translateBox3(0.18, 0.34, trackLen, -(ROAD_WIDTH / 2 + 0.12), 0.05, deckZ),
+    translateBox3(0.18, 0.34, trackLen, ROAD_WIDTH / 2 + 0.12, 0.05, deckZ)
+  ]), toonSpec(linear(LOOK.rail), undefined, linear(LOOK.rail)));
 
   /* beat-grid stripes (world space, placed per frame from the sim clock) */
   const stripes = new Batch(boxMesh(ROAD_WIDTH, 0.02, 0.22), STRIPES, linear(LOOK.roadLine));
@@ -192,7 +206,7 @@ export function buildWorld(options: WorldOptions): World {
   /* PERFECT timing rings + event particles (presentation pools) */
   const rings = new Batch(ringMesh(0.8, 1, 32), CONFIG.POOL_RINGS, linear(LOOK.perfect));
   addBatch("rings", rings, glowSpec({ beam: false, wobble: 0, gain: [1.2, 1.2, 1.2] }));
-  const particles = new Batch(sphereMesh(0.1, 6, 5), CONFIG.POOL_PARTICLES, [1, 1, 1]);
+  const particles = new Batch(sphereMesh(0.1, 4, 3), CONFIG.POOL_PARTICLES, [1, 1, 1]);
   addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
 
   /* post: bloom on the sun, neon and meters; a cool-magenta grade and a soft vignette (tone mapping stays off) */
@@ -275,10 +289,8 @@ export function buildWorld(options: WorldOptions): World {
         const pulse = reduced ? 0 : beatPulse(t, CONFIG.BEAT);
         const gain = LOOK.pulseGain * pulse;
 
-        /* scrolling frame: tiles written once, the node carries the scroll */
-        const roadZ = dist % SEGMENT_LENGTH;
-        node("deck").setPosition(0, 0, roadZ);
-        node("rails").setPosition(0, 0, roadZ);
+        /* road: the deck shader scrolls its tiles; rails are uniform along z */
+        node("deck").setUniform?.("uTileShift", dist % (SEGMENT_LENGTH * 2));
         node("rails").setUniform?.("emissive", [linear(LOOK.rail)[0] * (0.35 + gain), linear(LOOK.rail)[1] * (0.35 + gain), linear(LOOK.rail)[2] * (0.35 + gain)]);
         node("deck").setUniform?.("emissive", [0.02 * gain, 0.05 * gain, 0.09 * gain]);
 
@@ -426,7 +438,7 @@ export function buildWorld(options: WorldOptions): World {
         }
       }
 
-      const batches = [deck, rails, stripes, blocks, bars, gaps, rings, particles];
+      const batches = [stripes, blocks, bars, gaps, rings, particles];
       return {
         update,
         warm,

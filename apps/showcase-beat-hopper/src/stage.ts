@@ -6,8 +6,9 @@
  *   - lit-window towers with neon roof trims (mid city, scrolls 1:1) and a static far skyline
  *   - neon palms along the floor, beat arches over the track, floating islands with palms and speaker stacks
  *     (half-speed parallax), two glowing ridge rings on the horizon, sweeping searchlights and drifting motes
- * Scrolling layers are periodic: the batch is written once and its node moves by `dist mod period`, so nothing is
- * re-uploaded per frame except the equalizer (heights) and searchlights (yaw).
+ * The renderer snapshots every runtime geometry node each frame (a full vertex pass for its bounds), so scenery is
+ * static geometry: scrolling layers are periodic static children of a runtime group that moves by `dist mod period`,
+ * and only the equalizer (heights), searchlights (yaw), floor (grid scroll) and sky are runtime geometry nodes.
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { Batch, type MeshData } from "../../../examples/shared/runner-kit/index";
@@ -86,15 +87,37 @@ function islandMesh(sides: number, depth: number, rand: () => number): MeshData 
   return m;
 }
 
+/** One palm leaf: two flat-shaded triangles folded along the midrib (6 vertices), pointing along -Z. */
+function leafMesh(halfWidth: number, length: number): MeshData {
+  const m = empty();
+  const base = [0, 0, 0], tip = [0, -0.04, -length];
+  const tris = [[base, [-halfWidth, -0.025, -length * 0.42], tip], [base, tip, [halfWidth, -0.025, -length * 0.42]]];
+  for (const [a, b, c] of tris) {
+    const ux = b![0]! - a![0]!, uy = b![1]! - a![1]!, uz = b![2]! - a![2]!;
+    const wx = c![0]! - a![0]!, wy = c![1]! - a![1]!, wz = c![2]! - a![2]!;
+    let nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+    const l = Math.hypot(nx, ny, nz) || 1;
+    nx /= l; ny /= l; nz /= l;
+    const i0 = m.positions.length / 3;
+    for (const [k, p] of [a!, b!, c!].entries()) {
+      m.positions.push(p[0]!, p[1]!, p[2]!);
+      m.normals.push(nx, ny, nz);
+      m.uvs.push(k === 2 ? 1 : 0, 0.5);
+    }
+    m.indices.push(i0, i0 + 1, i0 + 2);
+  }
+  return m;
+}
+
 /** Neon palm: a curved segmented trunk and drooping fronds (base at y = 0, about 1 unit tall). */
 function palmMesh(): MeshData {
   const parts: MeshData[] = [];
-  const segs = 6;
+  const segs = 3;
   let x = 0, y = 0;
   for (let i = 0; i < segs; i++) {
-    const h = 0.17;
-    const w = 0.07 - i * 0.006;
-    const lean = 0.04 + i * 0.03;
+    const h = 0.34;
+    const w = 0.07 - i * 0.012;
+    const lean = 0.05 + i * 0.07;
     parts.push(transformMesh(boxMesh(w, h, w), 0, 0, x, y + h / 2, 0, -lean));
     x += Math.sin(lean) * h;
     y += Math.cos(lean) * h * 0.98;
@@ -102,7 +125,7 @@ function palmMesh(): MeshData {
   const fronds = 7;
   for (let k = 0; k < fronds; k++) {
     const yaw = (k / fronds) * Math.PI * 2 + 0.3;
-    const frond = translateMesh(boxMesh(0.09, 0.012, 0.48), 0, 0, -0.24);
+    const frond = leafMesh(0.09, 0.5);
     parts.push(transformMesh(frond, -0.42 - (k % 2) * 0.18, yaw, x, y, 0));
   }
   return mergeMeshes(parts);
@@ -207,7 +230,11 @@ interface Layer { readonly id: string; readonly period: number; readonly paralla
 const NEAR_Z = 30;
 const FAR_Z = -260;
 
-export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dynamic>, spec: Parameters<typeof material.custom>[0]) => void, o: StageOptions) {
+/** How a stage node is mounted: a runtime node (takes uniforms / vertex writes), a plain static node, or a static
+ * child of a runtime group that carries the layer's scroll. */
+export type StageMount = "live" | "static" | { readonly group: string };
+
+export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dynamic>, spec: Parameters<typeof material.custom>[0], mount: StageMount) => void, o: StageOptions) {
   const rand = lcg(0x5e7a9e);
   const dyn = (m: MeshData) => geometry.dynamic({
     positions: Float32Array.from(m.positions), normals: Float32Array.from(m.normals),
@@ -218,7 +245,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   const span = (period: number) => ({ near: NEAR_Z, far: FAR_Z - period });
 
   /* floor */
-  add("stage-floor", dyn(quadXZ(900, 700, -200, FLOOR_Y)), floorSpec(o.haze));
+  add("stage-floor", dyn(quadXZ(900, 700, -200, FLOOR_Y)), floorSpec(o.haze), "live");
 
   /* ridges */
   const ridgeRand = lcg(0x71d6e);
@@ -246,7 +273,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       positions: ridges.positions.slice(), normals: ridges.normals.slice(), uvs: Float32Array.from(ridges.mesh.uvs),
       indices: Uint32Array.from(ridges.mesh.indices), attributes: { tone: { itemSize: 3, data: Float32Array.from(tones) } }
     });
-    add("stage-ridges", g, ridgeSpec(o.ridgeHaze));
+    add("stage-ridges", g, ridgeSpec(o.ridgeHaze), "static");
   }
 
   /* far skyline (static, beyond the haze knee) */
@@ -261,7 +288,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     farBatch.place(i, Math.sin(a) * r, FLOOR_Y + h / 2, -Math.cos(a) * r, a, w, h, w * (0.7 + rand() * 0.6));
     farBatch.setTone(i, linear(NEON[i % NEON.length] as string));
   }
-  add("stage-far-city", farBatch.geometry(), stageLitSpec({ base: linear("#120a2e"), haze: o.farHaze, windows: true, trim: true }));
+  add("stage-far-city", farBatch.geometry(), stageLitSpec({ base: linear("#120a2e"), haze: o.farHaze, windows: true, trim: true }), "static");
 
   /* mid city: lit-window towers with roof trims, scroll 1:1 */
   const CITY_P = 96;
@@ -287,8 +314,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-city", city.geometry(), stageLitSpec({ base: linear("#1a1040"), haze: o.haze, windows: true, trim: true }));
-    layers.push({ id: "stage-city", period: CITY_P, parallax: 1 });
+    add("stage-city", city.geometry(), stageLitSpec({ base: linear("#1a1040"), haze: o.haze, windows: true, trim: true }), { group: "grp-city" });
+    layers.push({ id: "grp-city", period: CITY_P, parallax: 1 });
   }
 
   /* pylons + crossbeams under the elevated track, every 12 m */
@@ -305,8 +332,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       pylons.place(c, 0, 0, s.near - c * PYLON_P, 0, 1, 1, 1);
       pylons.setTone(c, linear("#23e6ff"));
     }
-    add("stage-pylons", pylons.geometry(), stageLitSpec({ base: linear("#2a1a5a"), haze: o.haze, trim: true }));
-    layers.push({ id: "stage-pylons", period: PYLON_P, parallax: 1 });
+    add("stage-pylons", pylons.geometry(), stageLitSpec({ base: linear("#2a1a5a"), haze: o.haze, trim: true }), { group: "grp-pylons" });
+    layers.push({ id: "grp-pylons", period: PYLON_P, parallax: 1 });
   }
 
   /* palms along the floor, every 16 m each side (staggered) */
@@ -328,8 +355,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-palms", palms.geometry(), stageLitSpec({ base: linear("#0b2a40"), haze: o.haze, rim: linear("#ff4fc0"), emissive: [0.01, 0.035, 0.05], trim: true }));
-    layers.push({ id: "stage-palms", period: PALM_P, parallax: 1 });
+    add("stage-palms", palms.geometry(), stageLitSpec({ base: linear("#0b2a40"), haze: o.haze, rim: linear("#ff4fc0"), emissive: [0.01, 0.035, 0.05], trim: true }), { group: "grp-palms" });
+    layers.push({ id: "grp-palms", period: PALM_P, parallax: 1 });
   }
 
   /* beat arches every 48 m: dark frame + additive neon frame */
@@ -346,9 +373,9 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       arches.setTone(c, linear(c % 2 === 0 ? "#b44dff" : "#23e6ff"));
       glows.setTone(c, linear(c % 2 === 0 ? "#b44dff" : "#23e6ff"));
     }
-    add("stage-arches", arches.geometry(), stageLitSpec({ base: linear("#1c1240"), haze: o.haze, trim: true }));
-    add("stage-arch-glow", glows.geometry(), glowSpec({ beam: false, wobble: 0, gain: [1.3, 1.3, 1.3] }));
-    layers.push({ id: "stage-arches", period: ARCH_P, parallax: 1 }, { id: "stage-arch-glow", period: ARCH_P, parallax: 1 });
+    add("stage-arches", arches.geometry(), stageLitSpec({ base: linear("#1c1240"), haze: o.haze, trim: true }), { group: "grp-arches" });
+    add("stage-arch-glow", glows.geometry(), glowSpec({ beam: false, wobble: 0, gain: [1.3, 1.3, 1.3] }), { group: "grp-arches" });
+    layers.push({ id: "grp-arches", period: ARCH_P, parallax: 1 });
   }
 
   /* floating islands (half-speed parallax) with palms and speaker stacks on top */
@@ -360,9 +387,9 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const isle = islandMesh(9, 1.7, lcg(0x15e));
     const isles = new Batch(isle, copies * per, [1, 1, 1]);
     const palm = palmMesh();
-    const props = new Batch(palm, copies * per * 2, [1, 1, 1]);
+    const props = new Batch(palm, copies * per, [1, 1, 1]);
     const spk = speakerMesh();
-    const speakers = new Batch(spk, copies * per * 2, [1, 1, 1]);
+    const speakers = new Batch(spk, copies * per, [1, 1, 1]);
     const tpl = Array.from({ length: per }, (_, k) => {
       const side = k % 2 === 0 ? -1 : 1;
       return { x: side * (24 + rand() * 26), y: -2.5 + rand() * 8, z: -(k / per) * ISLE_P - rand() * 8, r: 4 + rand() * 4, yaw: rand() * 6.28, tone: linear(NEON[(k + 1) % NEON.length] as string) };
@@ -373,7 +400,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         const z = s.near + t.z - c * ISLE_P;
         isles.place(i, t.x, t.y, z, t.yaw, t.r, t.r, t.r);
         isles.setTone(i, t.tone);
-        for (let q = 0; q < 2; q++) {
+        for (let q = 0; q < 1; q++) {
           const a = t.yaw + q * 2.4;
           const px = t.x + Math.cos(a) * t.r * 0.45, pz = z + Math.sin(a) * t.r * 0.45;
           props.place(j, px, t.y, pz, a, t.r * 1.2, t.r * 1.2, t.r * 1.2);
@@ -386,10 +413,10 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-isles", isles.geometry(), stageLitSpec({ base: linear("#3a1d66"), haze: o.haze, topGrid: true, trim: true, rim: linear("#ff4fc0") }));
-    add("stage-isle-palms", props.geometry(), stageLitSpec({ base: linear("#0b2a40"), haze: o.haze, rim: linear("#ff4fc0"), emissive: [0.01, 0.035, 0.05], trim: true }));
-    add("stage-isle-speakers", speakers.geometry(), stageLitSpec({ base: linear("#140c2c"), haze: o.haze, trim: true }));
-    for (const id of ["stage-isles", "stage-isle-palms", "stage-isle-speakers"]) layers.push({ id, period: ISLE_P, parallax: 0.5 });
+    add("stage-isles", isles.geometry(), stageLitSpec({ base: linear("#3a1d66"), haze: o.haze, topGrid: true, trim: true, rim: linear("#ff4fc0") }), { group: "grp-isles" });
+    add("stage-isle-palms", props.geometry(), stageLitSpec({ base: linear("#0b2a40"), haze: o.haze, rim: linear("#ff4fc0"), emissive: [0.01, 0.035, 0.05], trim: true }), { group: "grp-isles" });
+    add("stage-isle-speakers", speakers.geometry(), stageLitSpec({ base: linear("#140c2c"), haze: o.haze, trim: true }), { group: "grp-isles" });
+    layers.push({ id: "grp-isles", period: ISLE_P, parallax: 0.5 });
   }
 
   /* drifting motes (additive, wobble in the vertex shader) */
@@ -397,8 +424,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   {
     const s = span(MOTE_P);
     const copies = Math.ceil((s.near - s.far) / MOTE_P);
-    const per = 70;
-    const motes = new Batch(sphereMesh(0.07, 4, 3), copies * per, [1, 1, 1]);
+    const per = 45;
+    const motes = new Batch(sphereMesh(0.08, 3, 2), copies * per, [1, 1, 1]);
     const mr = lcg(0x3073);
     const tpl = Array.from({ length: per }, () => ({ x: (mr() - 0.5) * 70, y: FLOOR_Y + 2 + mr() * 18, z: -mr() * MOTE_P, s: 0.6 + mr() * 1.4, c: mr() }));
     let i = 0;
@@ -411,8 +438,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-motes", motes.geometry(), glowSpec({ beam: false, wobble: 0.5, gain: [1, 1, 1] }));
-    layers.push({ id: "stage-motes", period: MOTE_P, parallax: 1 });
+    add("stage-motes", motes.geometry(), glowSpec({ beam: false, wobble: 0.5, gain: [1, 1, 1] }), { group: "grp-motes" });
+    layers.push({ id: "grp-motes", period: MOTE_P, parallax: 1 });
   }
 
   /* searchlights from the far city */
@@ -424,7 +451,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     return { x: side * (40 + (k >> 1) * 22), z: -150 - (k % 3) * 25, phase: k * 1.7, speed: 0.25 + (k % 3) * 0.08, tone: linear(k % 3 === 0 ? "#23e6ff" : k % 3 === 1 ? "#ff2fb3" : "#b44dff") };
   });
   beamBase.forEach((b, k) => beams.setTone(k, [b.tone[0] * 0.10, b.tone[1] * 0.10, b.tone[2] * 0.10]));
-  add("stage-beams", beams.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1, 1, 1] }));
+  add("stage-beams", beams.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1, 1, 1] }), "live");
 
   /* equalizer meters beside the track (heights dance on the beat) */
   const EQ_P = 64;
@@ -436,12 +463,14 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const side = k % 2 === 0 ? -1 : 1;
     return { x: side * (9 + ((k >> 1) % 2) * 3.2 + eqRand() * 0.8), z: -((k >> 1) / (eqPer / 2)) * EQ_P - (side > 0 ? EQ_P / eqPer : 0), base: 2 + eqRand() * 7, phase: eqRand() * Math.PI * 2 };
   });
-  add("stage-eq", eq.geometry(), stageLitSpec({ base: linear("#0c0820"), haze: o.haze, meter: true }));
+  add("stage-eq", eq.geometry(), stageLitSpec({ base: linear("#0c0820"), haze: o.haze, meter: true }), "live");
 
   return {
     bind(node: (id: string) => NodeHandle): StageRuntime {
-      const litIds = ["stage-far-city", "stage-city", "stage-pylons", "stage-palms", "stage-arches", "stage-isles", "stage-isle-palms", "stage-isle-speakers", "stage-eq"];
-      const glowIds = ["stage-arch-glow", "stage-motes", "stage-beams"];
+      /* scrolling layers are static children of runtime groups (the group carries the scroll), so only the equalizer,
+       * beams, floor and sky take per-frame uniforms */
+      const litIds = ["stage-eq"];
+      const glowIds = ["stage-beams"];
       return {
         update(dist, beatPhase, pulse, clock, reduced) {
           for (const l of layers) node(l.id).setPosition(0, 0, (dist * l.parallax) % l.period);

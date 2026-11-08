@@ -4,7 +4,8 @@
  * grid floor far below the elevated track, glowing ridge lines, lit-window towers, LED equalizer meters, neon palms,
  * floating islands, sweeping searchlights and drifting motes. Every lit program shares one distance haze that fades
  * towards the horizon colour, so the layers read as depth. Colours are linear; tone mapping stays off (main.ts) and
- * values above ~0.8 feed the bloom pass.
+ * values above ~0.8 feed the bloom pass. Scrolling layers move by the `uScrollZ` uniform in the vertex stage rather than
+ * a node transform: a transform change makes the runtime re-read every vertex for bounds each frame.
  */
 import type { CustomSpec } from "../../../examples/shared/runner-kit/index";
 import type { Rgb } from "../../../examples/shared/runner-kit/index";
@@ -115,9 +116,11 @@ void main() {
   vUv = uv;
   vTone = tone;
   vLocal = position;
-  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vec3 p = position;
+  p.z += uScrollZ;
+  vWorld = (modelMatrix * vec4(p, 1.0)).xyz;
   vNormal = normalize(normalMatrix * normal);
-  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+  gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);
 }`;
 
 /**
@@ -138,6 +141,7 @@ void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   if (dot(N, V) < 0.0) N = -N;
   vec3 base = baseColor * mix(vec3(1.0), vTone, uToneBase);
+  if (uTiles > 0.5) base *= mix(uTileA, uTileB, step(1.0, mod(floor((vWorld.z - uTileShift) * 0.5), 2.0)));
   vec3 L = normalize(vec3(-0.45, 0.8, 0.4));
   float d = dot(N, L) * 0.5 + 0.5;
   float fw = fwidth(d) * 0.5;
@@ -258,6 +262,7 @@ void main() {
   vec3 p = position;
   p.y += sin(uClock * 0.9 + tone.g * 37.0 + position.x * 0.3) * uWobble;
   p.x += cos(uClock * 0.7 + tone.b * 23.0) * uWobble * 0.6;
+  p.z += uScrollZ;
   vWorld = (modelMatrix * vec4(p, 1.0)).xyz;
   vNormal = normalize(normalMatrix * normal);
   gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);
@@ -312,7 +317,8 @@ export const stageSkySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
   uniforms: { uClock: f32(0), uPulse: f32(0), uSunDir: color3(SUN_DIR) },
   side: "double",
-  depthWrite: false
+  depthWrite: false,
+  castShadow: false
 });
 
 export interface LitOptions {
@@ -326,6 +332,8 @@ export interface LitOptions {
   readonly trim?: boolean;
   readonly topGrid?: boolean;
   readonly meter?: boolean;
+  /** Alternating 2 m road tiles (colours A, B) driven by `uTileShift`. */
+  readonly tiles?: readonly [Rgb, Rgb];
   /** Plain meshes without the per-vertex `tone` attribute (tone reads as white). */
   readonly toneless?: boolean;
 }
@@ -346,26 +354,34 @@ export const stageLitSpec = (o: LitOptions): CustomSpec => ({
     uMeter: f32(o.meter ? 1 : 0),
     uClock: f32(0),
     uPulse: f32(0),
+    uScrollZ: f32(0),
+    uTiles: f32(o.tiles ? 1 : 0),
+    uTileA: color3(o.tiles?.[0] ?? [1, 1, 1]),
+    uTileB: color3(o.tiles?.[1] ?? [1, 1, 1]),
+    uTileShift: f32(0),
     ...hazeUniforms(o.haze)
   },
-  side: "double"
+  side: "double",
+  castShadow: false
 });
 
 export const floorSpec = (haze: Haze): CustomSpec => ({
   glsl: { vertex: FLOOR_VERTEX, fragment: FLOOR_FRAGMENT },
   uniforms: { uScroll: f32(0), uPulse: f32(0), ...hazeUniforms(haze) },
-  side: "double"
+  side: "double",
+  castShadow: false
 });
 
 export const ridgeSpec = (haze: Haze): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX, fragment: RIDGE_FRAGMENT },
-  uniforms: hazeUniforms(haze),
-  side: "double"
+  uniforms: { ...hazeUniforms(haze), uScrollZ: f32(0) },
+  side: "double",
+  castShadow: false
 });
 
 export const glowSpec = (o: { readonly beam: boolean; readonly wobble: number; readonly gain: Rgb }): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
-  uniforms: { baseColor: color3(o.gain), uBeam: f32(o.beam ? 1 : 0), uWobble: f32(o.wobble), uClock: f32(0), uPulse: f32(0) },
+  uniforms: { baseColor: color3(o.gain), uBeam: f32(o.beam ? 1 : 0), uWobble: f32(o.wobble), uClock: f32(0), uPulse: f32(0), uScrollZ: f32(0) },
   blending: "additive",
   transparent: true,
   castShadow: false,
@@ -375,6 +391,6 @@ export const glowSpec = (o: { readonly beam: boolean; readonly wobble: number; r
 
 export const heroSpec = (base: Rgb): CustomSpec => ({
   glsl: { vertex: TONELESS_LIT_VERTEX, fragment: HERO_FRAGMENT },
-  uniforms: { baseColor: color3(base), emissive: color3([0, 0, 0]), alpha: f32(1) },
+  uniforms: { baseColor: color3(base), emissive: color3([0, 0, 0]), alpha: f32(1), uScrollZ: f32(0) },
   side: "double"
 });
