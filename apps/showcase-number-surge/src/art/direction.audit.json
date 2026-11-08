@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-number-surge/src/art/direction.ts",
-  "sourceSha256": "efd51a7c016d94cb1b37f67abb5545ccc22f89d39620dddaa8920b529865ff22",
+  "sourceSha256": "5a7e675f084aa7bfbc271d9eb462ccf4a1f830210bf2e17c7a62fde85bf5778c",
   "id": "number-surge",
   "genre": "platformer",
   "signatureEffect": "Neon-arcade dusk: cyan/magenta arithmetic gates under a deep indigo sky, boss walls shattering into violet shards with a gold score geyser.",
@@ -39,7 +39,7 @@
   "direction": {
     "id": "number-surge",
     "genre": "platformer",
-    "fantasy": "Steer a glowing number ball down a neon dusk highway, pick the better arithmetic gate, and smash boss walls with a bigger number.",
+    "fantasy": "Steer a glowing number ball through a synthwave number city, pick the better arithmetic gate, and smash walls with a bigger number.",
     "rebuildTier": "S-presentation",
     "wave": 4,
     "references": [
