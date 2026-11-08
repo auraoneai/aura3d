@@ -649,7 +649,9 @@ export async function startProductionRender(
       if (probeAsyncFrames) {
         if (disposed) throw new Error("Aura3D renderer is disposed.");
         // Probe-capturing WebGPU mounts present asynchronously: queue this explicit
-        // frame, or coalesce it into the frame already in flight.
+        // frame, or coalesce it into the frame already in flight. app.step() and
+        // app.screenshot() never get here with a frame pending (assertMutableFrame /
+        // busy() guard them); direct controller renders (XR renderFrame) can.
         if (pendingFrames > 0) { frameInvalidated = true; return; }
         void submitAsync(() => time).catch(reportAsyncFrameFailure);
         return;

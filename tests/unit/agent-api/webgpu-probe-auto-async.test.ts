@@ -63,6 +63,7 @@ class FakeCanvas {
   getBoundingClientRect() { return { width: 64, height: 64, left: 0, top: 0 }; }
   hasAttribute() { return false; }
   getContext() { return null; }
+  toDataURL() { return "data:image/png;base64,"; }
   addEventListener() {}
   removeEventListener() {}
 }
@@ -234,5 +235,23 @@ describe("WebGPU probe capture picks asynchronous frames when frameMode is unset
     await app.ready();
     first.syncFrames.push(() => { throw probeAsyncRequired(); });
     expect(() => app.step(0)).toThrow(/WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED/);
+  });
+  it("screenshotAsync waits for the re-render it queues, so the next step does not find a pending frame", async () => {
+    const first = renderer();
+    const counts = counted(first);
+    first.syncFrames.push(() => { throw probeAsyncRequired(); });
+    first.asyncFrames.push(async () => 3);
+    const app = makeApp(first);
+    await app.ready();
+    await app.readiness({ stage: "first-frame" });
+    let screenshotFrameDone = false;
+    first.asyncFrames.push(async () => { await ticks(); screenshotFrameDone = true; return 4; });
+    await app.screenshotAsync!();
+    expect(screenshotFrameDone).toBe(true);
+    expect(counts).toEqual({ sync: 1, async: 2 });
+    first.asyncFrames.push(async () => 5);
+    expect(() => app.step(1 / 60)).not.toThrow();
+    await ticks();
+    expect(counts).toEqual({ sync: 1, async: 3 });
   });
 });
