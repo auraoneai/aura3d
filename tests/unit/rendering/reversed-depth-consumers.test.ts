@@ -27,6 +27,8 @@ import { zeroToOneReversedRasterCamera } from "../../../packages/rendering/src/r
 import { volumetricApplyFragmentSource } from "../../../packages/rendering/src/atmosphere/shaders/volumetric-apply.glsl";
 import type { RenderItem } from "../../../packages/rendering/src/contracts/renderItem";
 import { customShaderInverseViewProjection } from "../../../packages/rendering/src/ForwardPass";
+import { generateProgramImpl } from "../../../packages/rendering/src/program/ProgramGenerator";
+import { normalizeProgramFeatures, PROGRAM_REVERSED_FOG_DEPTH_FEATURE } from "../../../packages/rendering/src/program/ProgramFeatures";
 
 const glslangAvailable = !spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).error;
 const dir = mkdtempSync(join(tmpdir(), "a3d-reversed-consumers-"));
@@ -218,5 +220,17 @@ describe("6. material.custom a3dFragWorldPosition under reversed depth", () => {
       const decoded = decode(inverse, [clip[0]! / clip[3]!, clip[1]! / clip[3]!], window(clip));
       decoded.forEach((value, i) => expect(value).toBeCloseTo(world[i]!, 2));
     }
+  });
+});
+
+describe("7. generated-program default fog under reversed depth", () => {
+  const fragment = (features: Record<string, boolean>) => generateProgramImpl(normalizeProgramFeatures({ lighting: "unlit", fog: "linear", features })).fragment;
+  it("reads the fog distance from standard window depth only when the reversed feature is selected", () => {
+    const standard = fragment({});
+    expect(standard).toContain("float a3dDepth = gl_FragCoord.z / gl_FragCoord.w;");
+    expect(standard).not.toContain("1.0 - gl_FragCoord.z");
+    const reversed = fragment({ [PROGRAM_REVERSED_FOG_DEPTH_FEATURE]: true });
+    expect(reversed).toContain("float a3dDepth = (1.0 - gl_FragCoord.z) / gl_FragCoord.w;");
+    expect(reversed).not.toContain("float a3dDepth = gl_FragCoord.z / gl_FragCoord.w;");
   });
 });

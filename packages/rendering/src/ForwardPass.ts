@@ -45,7 +45,7 @@ import { VertexFormat } from "./VertexFormat";
 import { MAX_LIGHTS_PER_CLUSTER, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { allShaderFeatures, potentiallyActiveShaderFeatures, programCacheSlot, shaderFeaturesFor, type ProgramCacheLike, type ProgramFeatures, type ShaderFeature } from "./contracts/program";
 import { materialLobes, potentiallyActiveMaterialLobes } from "./contracts/materialLobes";
-import { normalizeProgramFeatures, PROGRAM_CLIPPING_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE } from "./program/ProgramFeatures";
+import { normalizeProgramFeatures, PROGRAM_CLIPPING_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, PROGRAM_REVERSED_FOG_DEPTH_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE } from "./program/ProgramFeatures";
 import { weightedTransparencyIneligibility, type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency";
 import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram, withLiveAlphaCutoff } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, makeShaderFeatureReplayGuard, selectShaderFeatureBits, stockArrayMatches, stockFeatureVerifier } from "./program/FeatureSelect";
@@ -2856,6 +2856,9 @@ export class ForwardPass extends BaseRenderPass {
     // The variant follows the active frame convention, never the material.
     delete selectedFeatures[PROGRAM_LOG_DEPTH_FEATURE];
     if (device.getDepthConvention?.()?.mode === "logarithmic") selectedFeatures[PROGRAM_LOG_DEPTH_FEATURE] = true;
+    delete selectedFeatures[PROGRAM_REVERSED_FOG_DEPTH_FEATURE];
+    // WebGL2 generated programs only (WebGPU emits its own WGSL fog).
+    if (device.kind === "webgl2" && device.getDepthConvention?.()?.mode === "reversed") selectedFeatures[PROGRAM_REVERSED_FOG_DEPTH_FEATURE] = true;
     delete selectedFeatures["a3d.nativePrimitive"];
     const nativePrimitive = item && nativeUnlitPrimitiveForGeometry(item.geometry, device, mf.lighting);
     if (nativePrimitive) selectedFeatures["a3d.nativePrimitive"] = nativePrimitive;
