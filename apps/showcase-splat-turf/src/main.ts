@@ -225,7 +225,9 @@ async function boot(): Promise<void> {
   });
   loading.set(0.1);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
-  const lab = labAppOptions(readLabFlags());
+  // WebGPU by default (backend "auto", WebGL2 fallback kept): real-GPU check 2026-11-08 rendered the same frame with the
+  // WGSL twins and kept >= 0.9x the WebGL2 frame rate in play. `?backend=webgl2` forces WebGL2.
+  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,

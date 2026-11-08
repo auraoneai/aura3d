@@ -8,7 +8,7 @@ Decision D1 (superseded by the owner decision of 2026-11-07): an EXPERIMENTAL 5.
 
 ## Lab flags (W-8)
 
-Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`, `resolveLabBackend`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) in Ion Circuit, the other showcase games that pass it and the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`); and the WebGPU backend in Chroma Roll, Dot Dash 3D and Cumulus Dash (`labAppOptions(flags, { backend: "auto" })`, opt out with `?backend=webgl2`). Unknown values are ignored and listed in `flags.ignored`.
+Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`, `resolveLabBackend`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) in Ion Circuit, the other showcase games that pass it and the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`); and the WebGPU backend in Chroma Roll, Dot Dash 3D, Cumulus Dash, Splat Turf and Beat Hopper (`labAppOptions(flags, { backend: "auto" })`, opt out with `?backend=webgl2`). Unknown values are ignored and listed in `flags.ignored`.
 
 | Query | Effect | Option fragment it produces | Label |
 |---|---|---|---|
@@ -43,7 +43,11 @@ Rule: WebGPU becomes the default (`backend: "auto"`, WebGL2 fallback kept) only 
 | The Bellkeeper's Walk | 21.1 | 21.8 | 0.87 (n=5) | WebGL2 |
 | Near misses: Saltwind Highway 0.79, Serpentine Sky Run 0.82, Ion Circuit 0.81, Cross Hop 0.78, Slingshot Siege 0.74, Top Tennis 0.73, Shadowstep Gauntlet 0.72 | | | < 0.9 | WebGL2 |
 | Further below: Roadster Rush 0.69, Teleoperator 0.69, Iron Crown 0.67, Duneglide 0.66, Aura FC 0.65, Aura Diamond 0.62, Gridlock Courier 0.58, Aura Links 0.57, Thermal Drift (showcase-heatsink) 0.54, Aura Hoops 0.50, Bunker Zero 0.44, Craterline GP 0.43, Pip's Big Leap 0.42, Lamplight Line 0.28 | | | < 0.9 | WebGL2 |
-| Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper | | | n/a | WebGL2: `?backend=webgpu` falls back cleanly (`CUSTOM_SHADER_WGSL_MISSING`, about 30 runner-kit / scenery GLSL materials per game have no WGSL twin) |
+| Splat Turf | 10.7 | 10.2 | 1.04 (n=5, in play) | WebGPU (auto) |
+| Beat Hopper | 59.9 | 56.6 | 0.94 (n=5, in play) | WebGPU (auto) |
+| Shape Shift Sprint 0.78 (n=5), Polarity Orbs 0.81 (n=3), Number Surge 0.72 (n=3) | 57.6 / 58.6 / 60.1 | 44.1 / 50.2 / 41.5 | < 0.9 | WebGL2 |
+
+The five new games render the same frame on both backends with their WGSL twins (title-frame mean abs diff 0.2-0.9/255, under 1% of pixels > 16) and idle on the title screen, so they were timed in play (`?autostart=1&autopilot=1&dpr=1&seed=1`, `app.diagnostics().fps`). WebGL2 often sits at the 60 fps vsync cap there, so a WebGPU/WebGL2 ratio against a capped run is an upper bound; Beat Hopper's one uncapped pair gave 0.94 (45.0 vs 42.2 fps); Splat Turf never reaches the cap (about 10 fps on both).
 
 Dot Dash 3D spends most of each WebGL2 frame re-capturing its `update: "once"` reflection probe (6 faces plus a CPU prefilter, from a CPU profile), so its low rate measures that engine cost more than the backend. Thermal Drift and Pip's Big Leap are also 2 to 5 fps headless for reasons not yet profiled.
 
