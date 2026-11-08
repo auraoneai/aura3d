@@ -76,7 +76,9 @@ describe("paused apps hold their render clock", () => {
   it("both render paths restore lastTime around an explicit render", () => {
     // Otherwise the first live frame after resume() computes its delta against a different clock.
     const occurrences = SOURCE.split("lastTime = previousLastTime;").length - 1;
-    expect(occurrences).toBe(3); // Canvas, explicit sync GPU, and completed async GPU bookkeeping.
+    // Canvas, explicit sync GPU, completed async GPU bookkeeping, and the explicit sync frame that switches a
+    // probe-capturing WebGPU mount to asynchronous frames (3fd7b63a9) before handing it to submitAsync.
+    expect(occurrences).toBe(4);
   });
 
   it("explicit paused steps use simulation time and do not read the automatic pause clock", () => {
