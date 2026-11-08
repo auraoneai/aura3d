@@ -6240,12 +6240,14 @@ export class WebGPUDevice implements RenderDevice {
     };
     const runCustomsAt = (position: number): void => {
       const customs = customAt.get(position) ?? [];
-      if (exposureFrame && position === exposurePosition) {
+      if ((exposureFrame || options.nativeHdrGrade) && position === exposurePosition) {
         // Multiple anchors can collapse to one numeric slot when TAA/bloom
-        // are absent. Their graph semantics still straddle exposure.
+        // are absent. Their graph semantics still straddle exposure and the
+        // S10 grade (v2 order: after-taa customs -> S8 -> S10 -> before-tonemap).
         const before = customs.filter(custom => custom.insertAt === "after-depth" || custom.insertAt === "before-taa" || custom.insertAt === "after-taa");
         runCustoms(before);
         runExposure();
+        runHdrGrade();
         runCustoms(customs.filter(custom => !before.includes(custom)));
       } else runCustoms(customs);
     };
@@ -6343,7 +6345,6 @@ export class WebGPUDevice implements RenderDevice {
       for (let passIndex = 0; passIndex < options.passes.length; passIndex += 1) {
         assertDofCurrent?.();
         runCustomsAt(passIndex);
-        if (passIndex >= exposurePosition) runHdrGrade();
         const pass = options.passes[passIndex]!;
         if (pass.name === "fxaa") { runDofVignette(); runEffects(); }
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));

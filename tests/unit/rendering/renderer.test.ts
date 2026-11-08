@@ -57,6 +57,7 @@ import { WebGPUDevice } from "../../../packages/rendering/src/webgpu";
 import { normalizeNativeBloomOptions } from "../../../packages/rendering/src/webgl2/LegacyPost";
 import { normalizeWebGPUBloomV2Options } from "../../../packages/rendering/src/webgpu/WebGPUPostShaders";
 import { resolveHdrGradeUniforms } from "../../../packages/rendering/src/post/shaders/hdrGrade.glsl";
+import { registerPostPass, type PostPassDescriptor } from "../../../packages/rendering/src/contracts/post";
 import {
   bloomPixels,
   colorGradePixels,
@@ -239,6 +240,33 @@ describe("Renderer", () => {
     } });
     expect(plain.device.renderPasses.map(pass => pass.pipeline)).not.toContain("webgpu-hdr-grade-pipeline");
     identity.dispose();
+  });
+
+  // v2 graph order is S8 -> S10 grade -> before-tonemap customs. Without bloom the before-tonemap slot collapses onto
+  // the exposure position, where the grade must still precede the custom pass (as WebGL2 v2 runs it).
+  it("runs the v2 S10 grade before a before-tonemap custom pass that shares its chain slot", async () => {
+    const release = registerPostPass({
+      id: "test.renderer.grade-order", owner: "prd03", flag: "A3D_QR_POST", space: "linear-hdr", insertAt: "before-tonemap", inputs: ["color"],
+      fragment: { glsl: "void main(){}", wgsl: "/* @aura3d-bindings */\n@fragment fn fs_custom(@builtin(position) p: vec4<f32>) -> @location(0) vec4<f32> { return vec4<f32>(1.0); }" },
+      gpuOnly: true
+    } as PostPassDescriptor);
+    try {
+      const native = createNativeFakeWebGPU();
+      const renderer = await Renderer.create({ backend: "webgpu", webgpu: native.gpu, canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement, width: 16, height: 8 });
+      renderer.render({ renderItems: [], postprocess: {
+        v2: true, pipeline: { toneMapping: "aces", exposure: 1, grade: { temperature: 0.12 }, depthRange: { near: 0.1, far: 100, projection: "perspective" } },
+        targetFormat: "rgba16f", toneMapping: { operator: "aces", exposure: 1, outputColorSpace: "srgb" }
+      } });
+      const stages = native.device.renderPasses.map(pass => pass.pipeline ?? "");
+      const gradeIndex = stages.indexOf("webgpu-hdr-grade-pipeline");
+      const customIndex = stages.findIndex(stage => stage.startsWith("webgpu-custom:test.renderer.grade-order"));
+      expect(gradeIndex).toBeGreaterThanOrEqual(0);
+      expect(customIndex).toBeGreaterThan(gradeIndex);
+      expect(stages.indexOf("webgpu-tone-pipeline")).toBeGreaterThan(customIndex);
+      renderer.dispose();
+    } finally {
+      release();
+    }
   });
 
   it("normalizes v2 bloom options exactly as the WebGL2 v2 chain does", () => {
