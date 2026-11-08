@@ -1030,7 +1030,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "713c0c316e8e8a6a26be0a23acb8f49e514cf5145ad5b7d09ca3495b78211308"
+          "sha256": "1292c8854bc55c8e112b568e4f4cc426ddec16c5bd5afe86f1dc67735f890268"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
@@ -5109,7 +5109,7 @@
       },
       "source": {
         "path": "examples/last-train-port/main.ts",
-        "sha256": "53a923fac6d3c4a22c6291caeba239ab05ae6fecdae95b9d47c945f46a8afbea"
+        "sha256": "14a43033ab181c9dd0df1e17c5a3060384b402b67ef7c930c776cf295e81f33b"
       },
       "sourceDependencies": [
         {
@@ -5118,7 +5118,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "a52810e7b3b0b554bbf5c28e1373ed6ceaa1f2e9c6042c1f0ba4e40ef5b133b7"
+          "sha256": "f6e7fab27ee4e3268347141a9ac4fc243ddccc017ca3926cf57a0cc514b4b35d"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5218,11 +5218,11 @@
         },
         {
           "path": "examples/last-train-port/main.ts",
-          "sha256": "53a923fac6d3c4a22c6291caeba239ab05ae6fecdae95b9d47c945f46a8afbea"
+          "sha256": "14a43033ab181c9dd0df1e17c5a3060384b402b67ef7c930c776cf295e81f33b"
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "a52810e7b3b0b554bbf5c28e1373ed6ceaa1f2e9c6042c1f0ba4e40ef5b133b7"
+          "sha256": "f6e7fab27ee4e3268347141a9ac4fc243ddccc017ca3926cf57a0cc514b4b35d"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5322,7 +5322,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "f2263b72962e542268d7ee5fefb46c61dc1e37a0d185af0bc2d695b595334fec"
+          "sha256": "b351f3e716dfa744b329867f68231d412ed173d766adf136a35329be8391debc"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -5443,7 +5443,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "f2263b72962e542268d7ee5fefb46c61dc1e37a0d185af0bc2d695b595334fec"
+          "sha256": "b351f3e716dfa744b329867f68231d412ed173d766adf136a35329be8391debc"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -6075,7 +6075,7 @@
       "sourceDependencies": [
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "c49644c92aeea75e7cac3e9fbe34f7ca397b4308d2dcb55e2beb85b0ae5fddf6"
+          "sha256": "e1134b70e9dee2982013fafe605aa282b04cc61da2d74b1378c5a8d9cc0e34b5"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6182,7 +6182,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "c49644c92aeea75e7cac3e9fbe34f7ca397b4308d2dcb55e2beb85b0ae5fddf6"
+          "sha256": "e1134b70e9dee2982013fafe605aa282b04cc61da2d74b1378c5a8d9cc0e34b5"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6394,7 +6394,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "ee3d74bde898eef9bd4d4147679b016c89e8c61e83559444ebdbd4f2461d64ef"
+          "sha256": "e92054c8c4762dc6fa7ac82388444ae4870004aab01ebf2da2a6c6e443d5f8d5"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -6489,7 +6489,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "ee3d74bde898eef9bd4d4147679b016c89e8c61e83559444ebdbd4f2461d64ef"
+          "sha256": "e92054c8c4762dc6fa7ac82388444ae4870004aab01ebf2da2a6c6e443d5f8d5"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -6567,12 +6567,12 @@
       },
       "source": {
         "path": "examples/strange-orbit-port/main.ts",
-        "sha256": "d55741b0bb1d19d9e59e0cbf3ec66a374e8a67b004fa6edd4140bcb6e8d8ab43"
+        "sha256": "2fb1d89aa0a0c7ef0c1ba8e175be6b638c45b8e483f7cb047c334a359d455a55"
       },
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "feee171efce914176e73cbe63c02933d2e4a70a6a95c764c7243170502c9965a"
+          "sha256": "1a62ad9b2d1a46e04b05a1587c166ea39fe6830f657f5e1fe2dd6a9f592ec3a8"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6659,11 +6659,11 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/main.ts",
-          "sha256": "d55741b0bb1d19d9e59e0cbf3ec66a374e8a67b004fa6edd4140bcb6e8d8ab43"
+          "sha256": "2fb1d89aa0a0c7ef0c1ba8e175be6b638c45b8e483f7cb047c334a359d455a55"
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "feee171efce914176e73cbe63c02933d2e4a70a6a95c764c7243170502c9965a"
+          "sha256": "1a62ad9b2d1a46e04b05a1587c166ea39fe6830f657f5e1fe2dd6a9f592ec3a8"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6753,7 +6753,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "48900797b007f4fd09fede8e1e2a86d13db7cd796004e1c58085801e2bc18d70"
+          "sha256": "60de94eef9d635ce3f5aa0db90a9f9fd905634a0f1f93960b9a3a9890fa71943"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
@@ -6847,7 +6847,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "48900797b007f4fd09fede8e1e2a86d13db7cd796004e1c58085801e2bc18d70"
+          "sha256": "60de94eef9d635ce3f5aa0db90a9f9fd905634a0f1f93960b9a3a9890fa71943"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
@@ -8055,7 +8055,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/customMaterial.ts",
-          "sha256": "80f0b76fddc45bb3f8d69194ae54dc9a605d6d8c0af77a24034e7ffd25aeeed1"
+          "sha256": "661bbdb01700c707d8ade10340933a0c7bd97b106edc8cb67f0ca311343f01af"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "6a3c9833d8f431df9d0e6edfef7df8c2e4d7c84b9394e2c85e7943310c231c43"
+          "sha256": "c8569f1abaadd81ae494506a9bdc5a93805bbeee80859487185506f5fe9e0ca3"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
