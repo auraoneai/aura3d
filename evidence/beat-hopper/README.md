@@ -28,3 +28,16 @@
   the `.webp` previews are Lanczos downscales/encodes of it (python3 + PIL).
 - These frames supersede the software-WebGL2 caveat above for the screens and previews only; the
   claim label is unchanged.
+
+## Lanes recapture (2026-11-07, local real GPU)
+
+- Beat Hopper now has three lanes (drag/swipe, ArrowLeft/ArrowRight or A/D steer; tap hops, still hold ducks;
+  lane-masked crates/trenches/bars, red dodge walls and beat orbs). All `screens/final/` frames and the index
+  previews were recaptured after the change with the same names, sizes and formats, same method as above
+  (`?manual=1`, seed `20261101`, `runAutopilot(60/240/600)`, mistake rows `[0..4]` for results), headless Chrome
+  on ANGLE Metal. The card is now the 1440×900 frame after **342** autopilot steps (hopper in the left lane, red
+  walls blocking the centre lane ahead); `card.jpg` and both `.webp` previews are Lanczos downscales/encodes of it.
+- Real-input play check (not manual mode, raw CDP `Input.dispatchKeyEvent` / `dispatchMouseEvent` /
+  `dispatchTouchEvent`): ArrowLeft, D and ArrowRight each moved one lane and the tween settled on the lane centre;
+  a 160 px mouse drag and 90 px touch swipes changed lanes without hopping; a still mouse tap hopped, a 400 ms
+  still hold ducked, Space hopped; the autopilot then dodged walls and collected orbs with 0 misses; 0 console errors.

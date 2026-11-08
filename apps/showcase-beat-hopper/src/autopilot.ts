@@ -2,9 +2,13 @@
  * Closed-loop rhythm driver (`?autopilot=1`, attract mode and the browser spec): reads the next unresolved obstacle's
  * type and crossing time from the sim and acts at the ideal action moment. Taps hop (down then up one frame later,
  * release fires the jump); holds duck (down DUCK_FRAMES-1 steps before the ideal engage moment, release after the
- * crossing has been judged). Deterministic: no clocks, no randomness.
+ * crossing has been judged). It steers with whole-lane steps: into a free lane before each wall (the orb lane when
+ * there is one), towards the next orb otherwise; a deliberate mistake steers into a blocked lane and does nothing.
+ * Deterministic: no clocks, no randomness.
  */
-import { APEX_T, CONFIG, IDLE, idealMoment, type BeatHopperSim, type Input, type ObstacleSlot } from "./sim";
+import {
+  APEX_T, CONFIG, IDLE, freeLanes, idealMoment, laneBit, LANES, type BeatHopperSim, type Input, type ObstacleSlot, type OrbSlot
+} from "./sim";
 
 const DT = CONFIG.DT;
 /** Steps from a down edge until holdT reaches DUCK_HOLD (holdT counts the down step itself). */
@@ -24,6 +28,18 @@ export function nextObstacle(sim: BeatHopperSim): ObstacleSlot | null {
   }
   return best;
 }
+
+export function nextOrb(sim: BeatHopperSim, before: number): OrbSlot | null {
+  let best: OrbSlot | null = null;
+  for (const s of sim.o.orbSlots) {
+    if (!s.active || s.resolved || s.crossTime > before + 1e-9) continue;
+    if (!best || s.crossTime < best.crossTime) best = s;
+  }
+  return best;
+}
+
+const nearest = (lanes: readonly number[], from: number): number =>
+  lanes.reduce((a, b) => (Math.abs(b - from) < Math.abs(a - from) ? b : a), lanes[0] as number);
 
 export class Autopilot {
   private resolved = 0;
@@ -51,9 +67,35 @@ export class Autopilot {
       }
     }
     const slot = nextObstacle(sim);
-    if (!slot) return this.release();
+    if (!slot) return this.steer(o.lane, this.release());
     const ordinal = this.ordinalOf(slot);
-    if (this.params.mistakeObstacles.includes(ordinal)) return this.release();
+    if (this.params.mistakeObstacles.includes(ordinal)) {
+      const blocked = LANES.filter((l) => (slot.lanes & laneBit(l)) !== 0);
+      return this.steer(nearest(blocked, o.lane), this.release(), o.lane);
+    }
+    const target = this.targetLane(sim, slot);
+    return this.steer(target, this.act(sim, slot), o.lane);
+  }
+
+  /** Lane to be in: a free lane at the next wall (prefer its orb), else the next orb's lane before the obstacle. */
+  private targetLane(sim: BeatHopperSim, slot: ObstacleSlot): number {
+    const o = sim.o;
+    const orb = nextOrb(sim, slot.crossTime);
+    if (slot.type === "wall") {
+      const open = freeLanes(slot.lanes);
+      if (orb && orb.beat === slot.beat && open.includes(orb.lane)) return orb.lane;
+      return nearest(open, o.lane);
+    }
+    return orb ? orb.lane : o.lane;
+  }
+
+  private steer(target: number, input: Input, lane = target): Input {
+    return target === lane ? input : { ...input, lane: Math.sign(target - lane) };
+  }
+
+  private act(sim: BeatHopperSim, slot: ObstacleSlot): Input {
+    const o = sim.o;
+    if (slot.type === "wall") return this.release();
     const tNext = o.t + DT;
     const ideal = idealMoment(slot.type, slot.crossTime);
     if (slot.type === "bar") {

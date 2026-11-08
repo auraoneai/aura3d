@@ -17,6 +17,9 @@ export interface BeatLook {
   readonly gap: string;
   readonly block: string;
   readonly bar: string;
+  readonly wall: string;
+  readonly orb: string;
+  readonly laneLine: string;
   readonly skyline: readonly string[];
   readonly perfect: string;
   readonly good: string;
@@ -49,6 +52,9 @@ export const LOOK: BeatLook = {
   gap: "#0a0518",
   block: "#ff9f1c",
   bar: "#ff2fb3",
+  wall: "#ff3a3a",
+  orb: "#9ffcff",
+  laneLine: "#d58cff",
   skyline: ["#3c1a6e", "#53207f", "#6b2585", "#2a1257"],
   perfect: "#ffd166",
   good: "#5eead4",

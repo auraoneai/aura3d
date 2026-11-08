@@ -1,9 +1,9 @@
 /**
- * Fixed-step presentation: the sim scrolls obstacles toward a fixed hopper; the hopper's y and the chase camera
+ * Fixed-step presentation: the sim scrolls obstacles toward the hopper; the hopper's lane x, y and the chase camera
  * interpolate between the last two steps on high-refresh displays. Interpolated values never feed back into the sim.
  */
 import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
-import { CONFIG, type BeatHopperSim, type Pose } from "./sim";
+import { CONFIG, type BeatHopperSim, type Judgement, type Pose } from "./sim";
 
 export interface CameraPose {
   x: number; y: number; z: number;
@@ -13,6 +13,8 @@ export interface CameraPose {
 export interface Shown {
   t: number;
   dist: number;
+  /** Lane x (m). */
+  x: number;
   y: number;
   pose: Pose;
   camera: CameraPose;
@@ -24,7 +26,7 @@ export const SNAP_DISTANCE = 5;
 const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 
 /**
- * Chase camera: lerps 0.1 per step towards a rig behind and above the hopper, looking 10 m ahead; a 2 s intro
+ * Chase camera: lerps 0.1 per step towards a rig behind and above the hopper (following its lane at 55%), looking 10 m ahead; a 2 s intro
  * eases in from higher and farther. Shake is added at read time only (presentation, never the sim).
  */
 export class ChaseCamera {
@@ -38,7 +40,7 @@ export class ChaseCamera {
     const o = sim.o;
     const e = intro ? Math.max(0, 1 - o.t / 2) : 0;
     const e2 = e * e;
-    return { x: 0, y: o.y * 0.35 + 4.6 + 7 * e2, z: 8.5 + 7 * e2, lookX: 0, lookY: 1 + o.y * 0.3, lookZ: -10 };
+    return { x: o.laneOffset * 0.55, y: o.y * 0.35 + 4.6 + 7 * e2, z: 8.5 + 7 * e2, lookX: o.laneOffset * 0.7, lookY: 1 + o.y * 0.3, lookZ: -10 };
   }
   reset(sim: BeatHopperSim): void {
     this.cur = this.target(sim, true);
@@ -72,7 +74,7 @@ export class ChaseCamera {
 }
 
 export function shownOf(sim: BeatHopperSim, camera: CameraPose): Shown {
-  return { t: sim.o.t, dist: sim.o.dist, y: sim.o.y, pose: sim.o.pose, camera: { ...camera } };
+  return { t: sim.o.t, dist: sim.o.dist, x: sim.o.laneOffset, y: sim.o.y, pose: sim.o.pose, camera: { ...camera } };
 }
 
 export function blendShown(a: Shown, b: Shown, t: number): Shown {
@@ -82,7 +84,7 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
     x: mix(x.x, y.x, t), y: mix(x.y, y.y, t), z: mix(x.z, y.z, t),
     lookX: mix(x.lookX, y.lookX, t), lookY: mix(x.lookY, y.lookY, t), lookZ: mix(x.lookZ, y.lookZ, t)
   });
-  return { t: mix(a.t, b.t, t), dist: b.dist, y: mix(a.y, b.y, t), pose: b.pose, camera: m(a.camera, b.camera) };
+  return { t: mix(a.t, b.t, t), dist: b.dist, x: mix(a.x, b.x, t), y: mix(a.y, b.y, t), pose: b.pose, camera: m(a.camera, b.camera) };
 }
 
 export function createBeatPresenter(snapshot: () => Shown): FixedStepPresenter<Shown> {
@@ -110,8 +112,8 @@ export function poseScale(pose: Pose, vy: number): { sx: number; sy: number; sz:
 }
 
 /** Beat pulse ring spawn helper: seconds since the last judgement, or null when nothing fresh. */
-export function freshJudgement(sim: BeatHopperSim, lastAt: number): { kind: "perfect" | "good" | "miss"; at: number } | null {
+export function freshJudgement(sim: BeatHopperSim, lastAt: number): { kind: Exclude<Judgement, "clear">; at: number } | null {
   const j = sim.o.lastJudge;
-  if (j.kind === null || j.at <= lastAt || sim.o.t - j.at > CONFIG.GOOD_WINDOW) return null;
+  if (j.kind === null || j.kind === "clear" || j.at <= lastAt || sim.o.t - j.at > CONFIG.GOOD_WINDOW) return null;
   return { kind: j.kind, at: j.at };
 }

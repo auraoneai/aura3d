@@ -1,6 +1,8 @@
 /**
- * Beat Hopper boot: loading bar → world → createAuraApp → warm programs → fixed-step loop. One button: tap hops,
- * hold ducks. Music is scheduled from sim beat diffs (audio.ts), never a wall clock.
+ * Beat Hopper boot: loading bar → world → createAuraApp → warm programs → fixed-step loop. Three lanes: a horizontal
+ * drag/swipe or ArrowLeft/ArrowRight/A/D steers, a tap (short, little movement) or Space/ArrowUp/W hops, a still
+ * hold or ArrowDown/S ducks (the sim tells a drag from a tap by travel). Music is scheduled from sim beat diffs
+ * (audio.ts), never a wall clock.
  *
  * Query parameters: `seed=N`, `manual=1` (sim advances only through QA stepFrames), `autostart=1`, `autopilot=1`,
  * `warmup=N` (idle splash frames before autostart, default 30), `dpr=N`, `motion=reduced|full`.
@@ -46,6 +48,12 @@ let steps = 0;
 let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
 let renderFailed = false;
 const pending: Input = { ...IDLE };
+/** A release that arrives in the same step as its press waits one step, so a very quick tap still hops. */
+let deferredUp = false;
+const queueUp = (): void => {
+  if (pending.down) deferredUp = true;
+  else pending.up = true;
+};
 
 const sound = new BeatHopperSound();
 let fx: ScreenFx | undefined;
@@ -68,7 +76,8 @@ let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" 
 
 const frameOf = (): FrameState => {
   const o = sim.o;
-  return { phase: o.phase, beatIndex: o.beatIndex, pose: o.pose, combo: o.combo, mult: o.mult, perfect: o.perfect, good: o.good, miss: o.miss, milestones: o.milestones };
+  // Dodges and orb pickups chime with the GOOD cue.
+  return { phase: o.phase, beatIndex: o.beatIndex, pose: o.pose, combo: o.combo, mult: o.mult, perfect: o.perfect, good: o.good + o.dodges + o.orbs, miss: o.miss, milestones: o.milestones };
 };
 
 /* ------------------------------------------------------------------ results */
@@ -157,7 +166,10 @@ const loop = createFixedStepLoop({
   isActive: () => ready && !paused,
   step() {
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
-    pending.start = pending.down = pending.up = false;
+    pending.start = pending.down = pending.up = pending.duck = false;
+    pending.dx = 0;
+    pending.lane = 0;
+    if (deferredUp) { pending.up = true; deferredUp = false; }
     advance(input);
     presenter.afterStep();
   },
@@ -231,27 +243,46 @@ async function boot(): Promise<void> {
   reactToFrame();
 }
 
-/* ------------------------------------------------------------------ input: tap = hop, hold = duck */
+/* ------------------------------------------------------------------ input: drag = steer, tap = hop, hold = duck */
 
+let dragging = false;
+let lastX = 0;
 addEventListener("pointerdown", (e) => {
   void sound.unlock();
   if (config.manual || pilot || paused) return;
   const target = e.target as HTMLElement | null;
   if (target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "splash") pending.start = true;
-  else if (sim.o.phase === "playing") pending.down = true;
+  else if (sim.o.phase === "playing") {
+    pending.down = true;
+    dragging = true;
+    lastX = e.clientX;
+    if (!target?.closest?.("button")) {
+      try { canvas.setPointerCapture?.(e.pointerId); } catch { /* the pointer is already gone */ }
+    }
+  }
+});
+addEventListener("pointermove", (e) => {
+  if (config.manual || pilot || !dragging) return;
+  pending.dx += e.clientX - lastX;
+  lastX = e.clientX;
 });
 const release = (): void => {
   if (config.manual || pilot) return;
-  pending.up = true;
+  dragging = false;
+  queueUp();
 };
 addEventListener("pointerup", release);
 addEventListener("pointercancel", release);
+canvas.addEventListener("lostpointercapture", () => { if (dragging) release(); });
 
 const held = new Set<string>();
 const PRESS_KEYS = ["Space", "ArrowUp", "KeyW", "ArrowDown", "KeyS"];
+const DUCK_KEYS = ["ArrowDown", "KeyS"];
+const STEER_KEYS: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
 function dropInput(): void {
   held.clear();
+  dragging = false;
   pending.up = true;
 }
 addEventListener("blur", dropInput);
@@ -268,17 +299,27 @@ addEventListener("keydown", (e) => {
     else if (sim.o.phase === "gameOver") restart();
     return;
   }
+  const steer = STEER_KEYS[e.code];
+  if (steer !== undefined) {
+    e.preventDefault();
+    if (sim.o.phase === "playing") pending.lane += steer;
+    return;
+  }
   if (PRESS_KEYS.includes(e.code)) {
     e.preventDefault();
     if (sim.o.phase !== "playing") return;
     held.add(e.code);
-    if (held.size === 1) pending.down = true;
+    if (held.size === 1) {
+      pending.down = true;
+      // ArrowDown/S duck straight away (a quick tap of them must never hop into a bar).
+      if (DUCK_KEYS.includes(e.code)) pending.duck = true;
+    }
   }
 });
 addEventListener("keyup", (e) => {
   if (!PRESS_KEYS.includes(e.code)) return;
   held.delete(e.code);
-  if (held.size === 0) pending.up = true;
+  if (held.size === 0) queueUp();
 });
 
 /* ------------------------------------------------------------------ pause, settings, restart */
@@ -354,7 +395,8 @@ function snapshotState() {
   const o = sim.o;
   return {
     ...o, steps, obstacles: o.obstacles.filter((s) => s.active).map((s) => ({ ...s })),
-    plans: o.plans.map((p) => ({ index: p.index, cells: p.cells.slice() }))
+    orbSlots: o.orbSlots.filter((s) => s.active).map((s) => ({ ...s })),
+    plans: o.plans.map((p) => ({ index: p.index, cells: p.cells.map((c) => (c ? { ...c } : null)), orbs: p.orbs.slice() }))
   };
 }
 

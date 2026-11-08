@@ -3,7 +3,7 @@
   "version": "5.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Beat Hopper showcase: a one-button rhythm platformer. Tap to hop, hold to duck, ride a 132 BPM obstacle grid and chain PERFECT timing into combo multipliers.",
+  "description": "Aura3D Beat Hopper showcase: a three-lane rhythm runner. Swipe between lanes, tap to hop, hold to duck, ride a 132 BPM obstacle grid and chain PERFECT timing into combo multipliers.",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5202",
     "typecheck": "tsc -p tsconfig.json --noEmit",

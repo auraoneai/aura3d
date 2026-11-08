@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  BAR_SIZE, BLOCK_SIZE, GAP_SIZE, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
-  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, playerMesh, ringMesh, sphereMesh, translateMesh
+  BAR_SIZE, BLOCK_SIZE, GAP_SIZE, LANE_WIDTH, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH, WALL_SIZE,
+  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, playerMesh, ringMesh, sphereMesh, translateMesh, wallMesh
 } from "../../../apps/showcase-beat-hopper/src/meshes";
+import { CONFIG } from "../../../apps/showcase-beat-hopper/src/sim";
 
 const extent = (m: { positions: number[] }, axis: 0 | 1 | 2): [number, number] => {
   let min = Infinity, max = -Infinity;
@@ -100,7 +101,7 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(maxZ).toBeCloseTo(BAR_SIZE.d / 2, 9);
   });
 
-  it("gap trench patch: 24 verts / 36 indices spanning ROAD_WIDTH", () => {
+  it("gap trench patch: 24 verts / 36 indices spanning one lane", () => {
     const m = gapMesh();
     expect(m.positions.length / 3).toBe(24);
     expect(m.indices.length).toBe(36);
@@ -113,5 +114,19 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(maxY).toBeCloseTo(GAP_SIZE.h + 0.01, 9);
     expect(minZ).toBeCloseTo(-GAP_SIZE.d / 2, 9);
     expect(maxZ).toBeCloseTo(GAP_SIZE.d / 2, 9);
+  });
+  it("lane pieces fit their lane and the road holds three lanes; walls are too tall to hop", () => {
+    expect(LANE_WIDTH).toBe(CONFIG.LANE_WIDTH);
+    expect(ROAD_WIDTH).toBeGreaterThanOrEqual(3 * LANE_WIDTH);
+    expect(BLOCK_SIZE.w).toBeLessThan(LANE_WIDTH);
+    expect(BAR_SIZE.w).toBeLessThan(LANE_WIDTH);
+    expect(GAP_SIZE.w).toBe(LANE_WIDTH);
+    const m = wallMesh();
+    expect(m.positions.length / 3).toBe(48);
+    const [minY, maxY] = extent(m, 1);
+    expect(minY).toBeCloseTo(0, 9);
+    expect(maxY).toBeCloseTo(WALL_SIZE.h + WALL_SIZE.capH, 9);
+    expect(WALL_SIZE.h).toBeGreaterThan(2);
+    expect(extent(m, 0)[1]).toBeLessThan(LANE_WIDTH / 2);
   });
 });
