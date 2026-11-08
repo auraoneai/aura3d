@@ -1,0 +1,28 @@
+{
+  "run": "integration exp/53f-candidate, 2026-11-08, headless Chrome ANGLE Metal (Apple M4 Max), 960x540, plain vite builds",
+  "loneDirectionalProbe": {
+    "scene": "plane roughness 1, metallic 0, directional intensity 3 from [14,24,10], camera [0,20,24] fov 45, no environment node",
+    "threeSingleScatterAnalytic": { "black": "linear 0.0107 (sRGB ~27)", "#6a8a3c": "sRGB ~[98,126,60] (Lambert + GGX, NoToneMapping)" },
+    "authoredOutputNone": { "black": [53, 53, 53], "#6a8a3c": [105, 130, 73] },
+    "directBroadLobeRemoved(diagnostic patch)": { "black": [28, 28, 28], "#6a8a3c": [96, 124, 59] },
+    "plainPathAfterFix": { "black": [27, 27, 27], "#6a8a3c": [92, 115, 59] },
+    "authoredOutputAfterFix(unchanged)": { "black": [53, 53, 53] },
+    "roughnessSweepBlackBefore": { "0.5": 13, "0.7": 34, "0.9": 50, "1.0": 53, "threeAt0.5": 13, "threeAt0.7": 27 }
+  },
+  "cause": "a3dDirectSpecular (program/chunks/brdf.glsl.ts) adds a broad multiple-scattering lobe coloured by the mean Fresnel once: (F0 + (F90-F0)/21) * (1-Eo)(1-Ei)/pi. Right for metals, ~25x too much for a 0.04 dielectric, so rough dielectrics gain ~0.025 linear of white under a lone directional light. Not an environment or ambient floor (black albedo with light intensity 0 renders 0).",
+  "garden": {
+    "groundRegion": "x 130-170, y 250-280 of the 640x360 canvas",
+    "plainOff(pre-N3)": { "rgb": [130, 162, 87], "S": 0.463 },
+    "n3BeforeFix": { "rgb": [109, 133, 79], "S": 0.406 },
+    "n3AfterFix": { "rgb": [103, 129, 67], "S": 0.481 },
+    "threeAnalyticSameLights(review)": { "rgb": [106, 141, 63], "S": 0.55 }
+  },
+  "bareScene": {
+    "scene": "box #b5532f r0.7, sphere #2f6fb5 r0.25, steel sphere; no lights (cold-start hero stage over the structured room)",
+    "coldStartAces(?a3d-plain-look=0)": { "crateFront": [214, 119, 84], "ball": [116, 170, 217], "floor": [116, 117, 127] },
+    "plainOutputBeforeFix": { "crateFront": [170, 99, 75], "ball": [90, 139, 186], "floor": [99, 100, 108] },
+    "plainOutputAfterFix": { "crateFront": [170, 95, 67], "ball": [90, 139, 186], "floor": [91, 93, 101] },
+    "authoredCrate": [181, 83, 47],
+    "note": "the plain output keeps authored colours closer (crate hue) but the bare frame is darker than the ACES cold-start look"
+  }
+}

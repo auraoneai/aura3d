@@ -54,6 +54,7 @@ import { isPrd04ReplaySafeFeature, isStockPrd04ShaderFeature } from "./materials
 import { isReplaySafePrd04Lobe, isStockPrd04Lobe } from "./materials/lobes";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
+import { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel } from "./program/directMultiscatter";
 import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame } from "./renderer/qrSubFlags";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
 import { PRD02_IBL_FEATURE, type EnvironmentProbe } from "./contracts/environment";
@@ -2021,6 +2022,9 @@ export class ForwardPass extends BaseRenderPass {
     const taggedProbes = prd02ItemProbeBindings(item);
     const environmentItem = taggedProbes ? globalEnvironmentItem(item, taggedProbes) : item;
     applyEnvironmentLightingUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, { conjunction: e3Conjunction, generated });
+    if (shader.reflection.uniforms.has(DIRECT_MULTISCATTER_UNIFORM)) {
+      uniforms.set(DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel(device) === "kulla-conty" ? 1 : 0);
+    }
     if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, drawFlags);
     if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, prd02Ibl);
     if (localProbes) {

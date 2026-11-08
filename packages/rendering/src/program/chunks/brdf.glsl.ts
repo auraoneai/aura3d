@@ -26,6 +26,9 @@ uniform sampler2D u_dfgLut;
 // Both default to zero in WebGL when omitted. Values outside [0,1] are clamped.
 uniform float u_diffuseRoughness;
 uniform float u_retroreflection;
+// Multiple-scattering colour (program/directMultiscatter.ts): 0 = single mean Fresnel, 1 = Kulla-Conty (direct) and
+// Fdez-Aguera (image-based), as three.js computes it.
+uniform float u_a3dMultiscatterKullaConty;
 
 float a3dPow5(float x) { float x2 = x * x; return x2 * x2 * x; }
 vec3 a3dHalfVector(vec3 a, vec3 b, vec3 fallback) {
@@ -130,8 +133,17 @@ vec3 a3dDirectSpecular(vec3 L, vec3 V, vec3 N, PhysicalMaterial m) {
   vec2 lightLut = a3dDFG(m.roughness, nl);
   float viewMissing = 1.0 - saturate(viewLut.x + viewLut.y);
   float lightMissing = 1.0 - saturate(lightLut.x + lightLut.y);
-  vec3 meanFresnel = m.specularColorBlended + (vec3(m.specularF90) - m.specularColorBlended) / 21.0;
-  return single + saturate(meanFresnel) * (viewMissing * lightMissing * RECIPROCAL_PI);
+  vec3 meanFresnel = saturate(m.specularColorBlended + (vec3(m.specularF90) - m.specularColorBlended) / 21.0);
+  vec3 lobeFresnel = meanFresnel;
+  if (u_a3dMultiscatterKullaConty > 0.5) {
+    // Kulla-Conty: light the first bounce misses leaves after at least one more microfacet reflection, so the lobe is
+    // coloured by Favg^2 Eavg / (1 - Favg (1 - Eavg)): 1 for metals, about 0.0035 for a 0.04 dielectric (a single mean
+    // Fresnel adds ~0.025 linear of white to a roughness-1 dielectric under a lone directional light).
+    vec2 averageLut = a3dDFG(m.roughness, 0.7);
+    float averageAlbedo = saturate(averageLut.x + averageLut.y);
+    lobeFresnel = meanFresnel * meanFresnel * averageAlbedo / max(vec3(1.0) - meanFresnel * (1.0 - averageAlbedo), vec3(EPSILON));
+  }
+  return single + lobeFresnel * (viewMissing * lightMissing * RECIPROCAL_PI);
 }
 
 void a3dDirectLight(vec3 L, vec3 radiance, vec3 V, vec3 N, PhysicalMaterial m, inout vec3 diffuseOut, inout vec3 specularOut) {
@@ -156,6 +168,11 @@ void a3dMultiscatter(vec3 N, vec3 V, vec3 specularColor, float specularF90, floa
   vec3 average = saturate(specularColor + (vec3(specularF90) - specularColor) / 21.0);
   // The broad lobe receives at most the energy absent from the first bounce.
   vec3 multiple = min(vec3(1.0) - single, missing * average);
+  if (u_a3dMultiscatterKullaConty > 0.5) {
+    // Fdez-Aguera: the missing energy leaves after further bounces, each weighted by the mean Fresnel, so a dielectric
+    // returns far less of it than a metal (three.js computeMultiscattering).
+    multiple = min(vec3(1.0) - single, single * average * missing / max(vec3(1.0) - missing * average, vec3(EPSILON)));
+  }
   singleScatter += single;
   multiScatter += multiple;
 }

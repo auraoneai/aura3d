@@ -65,7 +65,8 @@ import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import type { ProjectedSpotResource as RendererProjectedSpotResource } from "@aura3d/rendering";
 import { disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
-import { rendererQrFlags, setRendererQrFlags } from "@aura3d/rendering";
+import { rendererQrFlags, setDirectMultiscatterModel, setRendererQrFlags } from "@aura3d/rendering";
+import { isPlainDefaultOutput } from "../looks/plainLook.js";
 import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginPrd07RendererOperation, bindPrd07RendererAuthority,
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
   type Prd07RendererOperation } from "@aura3d/rendering";
@@ -651,6 +652,10 @@ export async function createProductionRuntimeSceneRenderer(
   // native depth of field cannot yet combine with most other stages (WEBGPU_DOF_COMBINATION_UNSUPPORTED at mount).
   // A `material.custom` with GLSL but no WGSL twin has no WebGPU program (its draws would be skipped), so it also falls back.
   () => (isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap, webgpuNativeDepthStages?.())) ?? webgpuCustomShaderGap(snapshot));
+  // N3 plain look path (no authored look or output): direct specular's multiple-scattering lobe takes the Kulla-Conty
+  // colour, so rough dielectrics under a lone directional light are not lifted toward white. Every other app keeps the
+  // single-mean-Fresnel lobe it always had.
+  setDirectMultiscatterModel(productionRenderer.device, isPlainDefaultOutput(requestedOutput) ? "kulla-conty" : "single-fresnel");
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.

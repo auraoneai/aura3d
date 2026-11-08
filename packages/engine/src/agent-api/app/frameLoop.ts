@@ -28,6 +28,7 @@ import { setAdvancedLightingInvalidator } from "./advancedLightingState.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import { isPrd07DeviceLeaseBusy } from "@aura3d/rendering";
 import { RenderDeviceError } from "@aura3d/rendering";
+import { isPlainDefaultOutput } from "../looks/plainLook.js";
 
 function frameSetupCleanupFailure(error: unknown, failures: readonly unknown[]): RenderDeviceError {
   const failure = new RenderDeviceError(
@@ -126,9 +127,12 @@ export async function startProductionRender(
     { strict: options.strict, onDegradation: options.onDegradation },
     {
       preserveDrawingBuffer: wantsPreservedDrawingBuffer(options),
-      ...(options.output !== undefined || options.renderer?.output !== undefined
-        ? { output: { ...options.renderer?.output, ...options.output } }
-        : {})
+      // N3: the plain output object travels as-is, so the renderer can tell it from an authored output.
+      ...(isPlainDefaultOutput(options.output) && options.renderer?.output === undefined
+        ? { output: options.output }
+        : options.output !== undefined || options.renderer?.output !== undefined
+          ? { output: { ...options.renderer?.output, ...options.output } }
+          : {})
     },
     {
       runtimeOwner,

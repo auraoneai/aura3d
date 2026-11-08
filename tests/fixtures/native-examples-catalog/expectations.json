@@ -1078,7 +1078,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "d858279b5963f10c20fc909e1961b09bd3611aea3b99c1935d54d30bf77951e3"
+          "sha256": "9ec0d2a0cc09b7f9892dc478232adcd0d493d364c5075e130c5e83bb96861d26"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "d2c5a8255cd21cab2362f97640540d9ebeb33440b6b918fe23c3a6f31406dee3"
+          "sha256": "c06c560f7f847d15b3e206f9d82b3105bd2b513a33b80a2a900a6645e47db11d"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
