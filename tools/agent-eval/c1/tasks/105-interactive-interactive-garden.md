@@ -1,0 +1,9 @@
+# Task 10: Click-to-plant garden that grows over time
+
+Build a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The app is an interactive 3D garden. A flat ground plane (soil or grass) fills the lower part of the view, with a soft sky or background behind it and a camera looking down at it from an angle so the whole plot is visible.
+
+When the user clicks on the ground, a new plant must be planted at the exact spot that was clicked (the click must be mapped to the ground, not just to the screen centre). Each plant starts as a tiny sprout and grows smoothly over about 8 seconds into a mature plant (for example a stem with leaves and a flower or a small bush) that is visibly larger, with a different shape or colour from the sprout. Plants must keep growing independently, so a plant planted later is smaller than one planted earlier. Vary the flower colour or size between plants so a full garden does not look uniform. Support at least 40 plants at once without dropping below a smooth frame rate, and ignore clicks that do not hit the ground.
+
+Add a small on-screen DOM overlay in a corner showing the text 'Plants: N' where N is the current plant count, and a 'Clear' button that removes all plants. The scene should have lighting and soft shadows so plants look grounded, and it should render correctly on first load with no console errors and with zero plants planted.
+
+Expose a read-only object on window named __TASK_STATE__ with fields: plantCount (number), plants (array of {x, z, growth} where x and z are ground coordinates and growth is a number from 0 to 1), and ready (boolean true after first render). Also expose window.__plantAt(x, z) which plants at the given ground coordinates exactly as a click would. Do not use any external network assets.

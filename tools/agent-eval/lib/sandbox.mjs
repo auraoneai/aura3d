@@ -5,6 +5,8 @@ import { basename, join, relative, resolve, sep } from "node:path";
 import { listCandidateFiles } from "../../remote-acr/source5-files.mjs";
 
 export const ARMS = ["aura", "three"];
+/** C1 fixed comparison adds the three.js + bridge arm (Aura3D docs and engine, three.js for asset factories, bridge_export tool). */
+export const C1_ARMS = ["aura", "three", "bridge"];
 export const AGENT_EVAL_DIR = resolve(import.meta.dirname, "..");
 
 /** Entry docs the docs-only Aura3D arm receives, copied verbatim from the repo. Nothing else from the repo goes in. */
@@ -22,7 +24,8 @@ const SKILLS_DOCS = /(^|\/)skills\//;
 const ALLOWED_TOP_LEVEL = {
   common: ["index.html", "tsconfig.json", "package.json", "TASK.md", "src", "public", "node_modules"],
   aura: ["llms.txt", "AGENTS.md", "docs", ".agents"],
-  three: []
+  three: [],
+  bridge: ["llms.txt", "AGENTS.md", "docs", ".agents", "BRIDGE.md"]
 };
 
 export const TASK_ASSETS = {
@@ -33,7 +36,8 @@ export const TASK_ASSETS = {
 
 export const LIBRARY_LABEL = {
   aura: "Aura3D (`@aura3d/engine`, already installed in node_modules)",
-  three: "three.js 0.185.1 (`three` and `@types/three`, already installed in node_modules)"
+  three: "three.js 0.185.1 (`three` and `@types/three`, already installed in node_modules)",
+  bridge: "Aura3D (`@aura3d/engine`, already installed in node_modules; three.js 0.185.1 is also installed for procedural asset factories, see BRIDGE.md)"
 };
 
 export function readTask(taskNumber, arm, tasksDir = join(AGENT_EVAL_DIR, "tasks")) {
@@ -105,7 +109,7 @@ export function applyCheatsheetEntry({ dir, docsRoot }) {
  * published packages); it is symlinked read-only-by-convention, never copied.
  */
 export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docsRoot = repoRoot, condition = {} }) {
-  if (!ARMS.includes(arm)) throw new Error(`unknown arm ${arm}`);
+  if (!C1_ARMS.includes(arm)) throw new Error(`unknown arm ${arm}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(join(dir, "src"), { recursive: true });
   mkdirSync(join(dir, "public"), { recursive: true });
@@ -119,7 +123,7 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docs
     mkdirSync(join(dir, asset.to, ".."), { recursive: true });
     cpSync(join(repoRoot, asset.from), join(dir, asset.to));
   }
-  if (arm === "aura") {
+  if (arm === "aura" || arm === "bridge") {
     for (const doc of DOC_SOURCES) {
       const source = join(docsRoot, doc.from);
       if (!existsSync(source)) continue;
@@ -135,8 +139,9 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docs
       cpSync(source, join(dir, doc.to), { recursive: true, filter: (src) => !skip(src) });
     }
   }
-  if (arm === "aura" && condition.cheatsheet) applyCheatsheetEntry({ dir, docsRoot });
-  return { dir, docs: arm === "aura" ? docSetFingerprint(dir) : null };
+  if (arm !== "three" && condition.cheatsheet) applyCheatsheetEntry({ dir, docsRoot });
+  if (arm === "bridge" && condition.bridgeGuide) writeFileSync(join(dir, "BRIDGE.md"), condition.bridgeGuide);
+  return { dir, docs: arm === "three" ? null : docSetFingerprint(dir) };
 }
 
 function repoSourceIndex(repoRoot) {

@@ -1,0 +1,302 @@
+{
+ "101": [
+  {
+   "id": "c1",
+   "text": "A canvas with id #app exists and is the render target"
+  },
+  {
+   "id": "c2",
+   "text": "Spider has a body of at least 2 distinct primitives (e.g. abdomen and head)"
+  },
+  {
+   "id": "c3",
+   "text": "Exactly 8 legs, each with at least 2 jointed segments (16+ leg parts), found in source or scene"
+  },
+  {
+   "id": "c4",
+   "text": "Legs are driven by a per-frame time-based function (sinusoidal or equivalent), not a one-shot tween"
+  },
+  {
+   "id": "c5",
+   "text": "Alternating diagonal gait: two leg groups with a half-period phase offset"
+  },
+  {
+   "id": "c6",
+   "text": "Body bob is linked to the gait phase"
+  },
+  {
+   "id": "c7",
+   "text": "Animation loops continuously with a period of roughly 1.5 to 2.5 seconds and no user input needed"
+  },
+  {
+   "id": "c8",
+   "text": "A ground plane and at least one light exist; no external model assets are loaded"
+  },
+  {
+   "id": "c9",
+   "text": "Page loads with no console errors"
+  }
+ ],
+ "102": [
+  {
+   "id": "c1",
+   "text": "Single-page app boots with vite and renders to the canvas with id #app without console errors"
+  },
+  {
+   "id": "c2",
+   "text": "Scene contains a ring-shaped portal frame and a platform or ground made of distinct geometry (not one flat quad)"
+  },
+  {
+   "id": "c3",
+   "text": "The portal disc is a visibly animated surface (rotating or swirling pattern via shader, texture animation, or layered rotating meshes)"
+  },
+  {
+   "id": "c4",
+   "text": "At least 100 particles orbit or spiral toward the portal and at least some rise and fade out"
+  },
+  {
+   "id": "c5",
+   "text": "Portal emits colored light that falls on nearby geometry (a point light or equivalent) and its intensity pulses over time"
+  },
+  {
+   "id": "c6",
+   "text": "Glow or bloom-like emphasis is applied to the portal and particles"
+  },
+  {
+   "id": "c7",
+   "text": "Camera moves slowly (orbit or sway) or is user-orbitable, and ruined pillars or other surrounding props are present"
+  },
+  {
+   "id": "c8",
+   "text": "window.__TASK_STATE__ is updated each frame with portalActive true, a particleCount above 100, and time that increases (probe)"
+  }
+ ],
+ "103": [
+  {
+   "id": "c1",
+   "text": "index.html contains a canvas with id app, and the page is served by vite (vite dev or build output works)"
+  },
+  {
+   "id": "c2",
+   "text": "The canvas fills the viewport and resizes on window resize (renderer size and camera aspect updated)"
+  },
+  {
+   "id": "c3",
+   "text": "Canyon walls are built from multiple distinct rock masses or layered strata, not a single flat plane (source shows more than one wall mesh or a displaced or layered terrain)"
+  },
+  {
+   "id": "c4",
+   "text": "A dusk sky is set up (gradient, sky model or background colour plus a low directional light with warm colour)"
+  },
+  {
+   "id": "c5",
+   "text": "Distance fog or atmospheric haze is enabled and tinted to match the horizon colour"
+  },
+  {
+   "id": "c6",
+   "text": "At least two kinds of ground clutter (for example boulders and shrubs) are placed, in multiple copies"
+  },
+  {
+   "id": "c7",
+   "text": "The camera position is updated every frame along a path that loops (no hard jump visible, no user input required)"
+  },
+  {
+   "id": "c8",
+   "text": "No uncaught errors or failed network requests at load (probe reports zero console errors)"
+  }
+ ],
+ "104": [
+  {
+   "id": "c1",
+   "text": "Moving slab oscillates horizontally and is visible before any input"
+  },
+  {
+   "id": "c2",
+   "text": "Space and canvas click/tap both drop the slab"
+  },
+  {
+   "id": "c3",
+   "text": "Overlap trimming is implemented: the remaining slab width equals the overlap and the overhang becomes a falling piece"
+  },
+  {
+   "id": "c4",
+   "text": "Perfect-drop tolerance keeps full width and awards a bonus"
+  },
+  {
+   "id": "c5",
+   "text": "Total miss sets status to lost; 25 stacked slabs sets status won"
+  },
+  {
+   "id": "c6",
+   "text": "Camera follows the rising tower"
+  },
+  {
+   "id": "c7",
+   "text": "R or click after game end restarts and resets score, height and status"
+  },
+  {
+   "id": "c8",
+   "text": "DOM HUD outside the canvas shows score, session best and status"
+  },
+  {
+   "id": "c9",
+   "text": "window.__TASK_STATE__ exposes status, score, height as specified"
+  }
+ ],
+ "105": [
+  {
+   "id": "c1",
+   "text": "Page loads under vite with a canvas with id #app and no console errors on first load with zero plants."
+  },
+  {
+   "id": "c2",
+   "text": "A click on the canvas plants a new plant at the ground position under the cursor (ray or plane intersection, not a fixed position)."
+  },
+  {
+   "id": "c3",
+   "text": "Plants grow over time from a small sprout to a larger mature form with a visibly different look, with growth running about 8 seconds, driven by elapsed time."
+  },
+  {
+   "id": "c4",
+   "text": "Each plant grows independently from its own plant time (later plants are smaller than earlier ones)."
+  },
+  {
+   "id": "c5",
+   "text": "Appearance varies between plants (colour or size variation)."
+  },
+  {
+   "id": "c6",
+   "text": "DOM overlay shows 'Plants: N' updating on every plant and on Clear, and the Clear button removes all plants."
+  },
+  {
+   "id": "c7",
+   "text": "window.__TASK_STATE__ exposes ready, plantCount and plants[{x,z,growth}] with growth in 0..1, and window.__plantAt(x,z) adds a plant."
+  },
+  {
+   "id": "c8",
+   "text": "Clicks that miss the ground are ignored, and 40+ plants render without obvious frame-rate collapse (instancing or reused geometry preferred)."
+  }
+ ],
+ "106": [
+  {
+   "id": "c1",
+   "text": "Exactly three sphere meshes of equal radius are created and arranged in a row."
+  },
+  {
+   "id": "c2",
+   "text": "The glass sphere uses a transmissive/transparent material with an index of refraction or tint, not an opaque colour."
+  },
+  {
+   "id": "c3",
+   "text": "The metal sphere uses a metallic material with metalness near 1 and a low-to-mid roughness (anisotropy or streaked reflection is a bonus)."
+  },
+  {
+   "id": "c4",
+   "text": "The fabric sphere uses a rough, non-metallic material with a procedural weave/noise texture, bump or normal map, and sheen or rim response."
+  },
+  {
+   "id": "c5",
+   "text": "An environment map or reflection source is configured and applied (procedurally generated, no network)."
+  },
+  {
+   "id": "c6",
+   "text": "Key, fill and rim lights are authored, and shadows or contact shadows on the floor are enabled."
+  },
+  {
+   "id": "c7",
+   "text": "Floor is a curved/seamless backdrop or at least a floor plane with a light-grey material."
+  },
+  {
+   "id": "c8",
+   "text": "The key light position animates over time and window.__TASK_STATE__.keyLightX changes between frames."
+  },
+  {
+   "id": "c9",
+   "text": "Camera is fixed and frames all three spheres."
+  },
+  {
+   "id": "c10",
+   "text": "window.__EVAL_READY__ is set after the first frame."
+  }
+ ],
+ "107": [
+  {
+   "id": "c1",
+   "text": "Page is a vite app with a canvas #app that renders a non-blank 3D frame with no console errors"
+  },
+  {
+   "id": "c2",
+   "text": "Source builds the tower from tapered geometry (cone frustum, lathe, or scaled stacked segments) rather than a single cylinder"
+  },
+  {
+   "id": "c3",
+   "text": "At least 3 tower bands with at least 2 distinct colours are defined in source"
+  },
+  {
+   "id": "c4",
+   "text": "A gallery with railing (multiple posts or a ring) is present near the top"
+  },
+  {
+   "id": "c5",
+   "text": "A lantern room with an emissive or bright lamp element and a roof with finial is present"
+  },
+  {
+   "id": "c6",
+   "text": "At least 4 windows and one door are created"
+  },
+  {
+   "id": "c7",
+   "text": "At least 5 rock pieces with varied scale/rotation form the base, and a cottage exists"
+  },
+  {
+   "id": "c8",
+   "text": "window.__TASK_STATE__ is set after first render with ready === true, partCount >= 30 and bandCount >= 3"
+  },
+  {
+   "id": "c9",
+   "text": "No external asset files are fetched (network requests only for the app's own bundle)"
+  },
+  {
+   "id": "c10",
+   "text": "Camera orbits slowly: frames captured 2 seconds apart differ"
+  }
+ ],
+ "108": [
+  {
+   "id": "c1",
+   "text": "index.html has canvas#app; vite dev and build succeed"
+  },
+  {
+   "id": "c2",
+   "text": "Peg grid has at least 7 staggered rows (alternating 6/7 pegs) built as fixed/static colliders"
+  },
+  {
+   "id": "c3",
+   "text": "Seven bins with divider colliders and visible labels 1-7 exist"
+  },
+  {
+   "id": "c4",
+   "text": "'Drop 20 Balls' button spawns exactly 20 dynamic sphere bodies at a 0.25 s simulated interval with the specified deterministic x offset"
+  },
+  {
+   "id": "c5",
+   "text": "'Reset' button removes all balls and zeroes counts and returns phase to 'ready'"
+  },
+  {
+   "id": "c6",
+   "text": "Fixed timestep physics (source check)"
+  },
+  {
+   "id": "c7",
+   "text": "Live bin counts are rendered on screen (DOM or in-scene text) and match __TASK_STATE__.bins"
+  },
+  {
+   "id": "c8",
+   "text": "window.__TASK_STATE__ exists with phase, spawned, bins (length 7), total, updated every frame"
+  },
+  {
+   "id": "c9",
+   "text": "After dropping, spawned === 20, total === 20 within 40 s, phase 'settled', sum(bins) === 20 and at least 3 different bins are non-empty; running Reset then Drop again yields the identical bins array"
+  }
+ ]
+}

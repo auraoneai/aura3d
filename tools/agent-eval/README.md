@@ -29,3 +29,7 @@ First-try typecheck, first-try build, first-try renders non-black (draft = state
 ## Relation to the T0.4 runner
 
 `run.ts` and `agents.ts` in this directory are the earlier PRD-13 agent-output runner (a scaffolded project, a headless agent CLI, one arm). This harness is separate: two arms, restricted tools, remote scoring. The files do not share code.
+
+## C1 fixed comparison (`c1/`)
+
+Three arms (native Aura3D, three.js, three.js + bridge), 8 frozen tasks with one predefined follow-up edit each, billed cost from provider usage, wall/tool time, real-GPU load time, fps and asset size, scripted functional probes and blind pairwise visual judging. See [`c1/README.md`](c1/README.md) for the task choice, how to launch the real run and its expected cost.
