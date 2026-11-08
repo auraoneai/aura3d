@@ -2001,7 +2001,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "f5250900ed32b4a68e488523fb07c38f43c88ba874210fdf6ff76d2369456322"
+        "sha256": "531ef7934c0d85c24b83e6b1fb54a60dab489a361650da006498a56dbad7f271"
       },
       "sourceDependencies": [
         {
@@ -2403,7 +2403,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "a08a4a70de5f6ac367d9bec5e1eaecc595423d0be1e5f59270dc344625300394"
+        "sha256": "8ffb15b4bbac4ca17b8a8bd5abff31a957d80ac46c8bf0df54ddb0c5b7450f1d"
       },
       "sourceDependencies": [
         {
@@ -3848,7 +3848,7 @@
       },
       "source": {
         "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "2791060dfc76f3cab79809e88cfb905c072fd8a44cc2a37d0cdb14a4da99a22b"
+        "sha256": "d65d72432b927c2e94417d6debaee3bdb01c0e40395d15c86492f8b0fd1479f9"
       },
       "sourceDependencies": [
         {
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "1f69923bae53c29d2277dd61aa428ca0632a243973802192477dd84c5758af70"
+          "sha256": "490ef9e32940198d937c53270835cb277c3b40e45029c2a1d98ddf5e5cbe4aa7"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4818,7 +4818,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "1f69923bae53c29d2277dd61aa428ca0632a243973802192477dd84c5758af70"
+          "sha256": "490ef9e32940198d937c53270835cb277c3b40e45029c2a1d98ddf5e5cbe4aa7"
         },
         {
           "path": "examples/heatsink-port/models.ts",
