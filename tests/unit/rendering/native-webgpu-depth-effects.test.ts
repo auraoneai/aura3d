@@ -9,8 +9,10 @@ import { MockRenderDevice, type LdrPostprocessPresentationOptions, type RenderDe
 import type { RendererPostProcessOptions } from "../../../packages/rendering/src/Renderer";
 import { RendererPostprocessPipeline, webgpuNativeDepthPassesCover } from "../../../packages/rendering/src/renderer/PostprocessExecution";
 import { postDiagnostics } from "../../../packages/rendering/src/renderer/PostDiagnosticsScope";
-import { postSkippedReasons, postStagesRan } from "../../../packages/rendering/src/renderer/postSkipped";
+import { consumePostV2Presented, postSkippedReasons, postStagesRan } from "../../../packages/rendering/src/renderer/postSkipped";
 import type { RendererHost } from "../../../packages/rendering/src/renderer/RendererHost";
+import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
+import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import {
   invertColumnMajor4, resolveWebGPUGodRays, resolveWebGPUMotionBlur, resolveWebGPUVolumetricLight, webgpuGodRaysFragment, webgpuGodRaysUniforms,
@@ -132,7 +134,7 @@ function routeFixture(kind: "webgpu" | "webgl2") {
       motionBlur: { shutter: 0.5, maxBlurPx: 32, samples: 12, tileSize: 16 }, toneMapping: "aces", exposure: 1 },
     cameraFrame: cam as never, postFrameContext: frame as never
   };
-  return { device, present, post, target, v2, token,
+  return { device, present, post, target, v2, token, scopeId,
     dispose: () => { postDiagnostics.resetScope(scopeId); target.dispose(); device.dispose(); } };
 }
 
@@ -147,6 +149,9 @@ describe("WebGPU depth stage routing", () => {
       expect(sent.nativeGodRays).toMatchObject({ samples: 32, intensity: 0.4, decay: 0.94, frameAnchored: false });
       expect(sent.nativeMotionBlur).toMatchObject({ samples: 12, tileSize: 16, maxBlurPx: 32 });
       expect(sent.nativeMotionBlur!.shutter).toBeCloseTo(0.5, 6);
+      // The presented S7 frame lets the renderer commit the temporal history (else the previous view never advances).
+      expect(consumePostV2Presented(f.scopeId, "main", 3)).toBe(true);
+      expect(postStagesRan(f.token).some(stage => /^S1C:reproj-dev=\d\.\d\de-1\d$/.test(stage))).toBe(true);
     } finally { f.dispose(); }
   });
 
@@ -158,6 +163,30 @@ describe("WebGPU depth stage routing", () => {
       expect(sent.nativeMotionBlur).toBeUndefined();
       expect(sent.passes.map(pass => pass.name)).not.toContain("motion-blur");
       expect(postSkippedReasons(f.token)).toContain("S7_VELOCITY_UNAVAILABLE:webgpu");
+    } finally { f.dispose(); }
+  });
+
+  it("skips S7 when the tier dropped pipeline motion blur, and runs it from the legacy twin off the v2 route", () => {
+    const f = routeFixture("webgpu");
+    try {
+      const pipeline = { ...(f.v2.pipeline as Record<string, unknown>), motionBlur: undefined };
+      f.post.executePostprocess({ ...f.v2, pipeline }, [f.target]);
+      expect(f.present.mock.calls[0]![1].nativeMotionBlur).toBeUndefined();
+      expect(postSkippedReasons(f.token)).toContain("S7_TIER_DISABLED:webgpu");
+      f.present.mockClear();
+      f.post.executePostprocess({ ...f.v2, v2: false, pipeline: undefined }, [f.target]);
+      expect(f.present.mock.calls[0]![1].nativeMotionBlur).toMatchObject({ samples: 8 });
+      expect(f.present.mock.calls[0]![1].nativeMotionBlur!.shutter).toBeCloseTo(0.5, 6);
+    } finally { f.dispose(); }
+  });
+
+  it("drops legacy volumetric light on WebGPU where WebGL2 skips its kernel (post flag on)", () => {
+    const f = routeFixture("webgpu");
+    try {
+      setRendererQrFlags(createTrustedQrFlags({ A3D_QR_POST: true }), f.device);
+      f.post.executePostprocess({ toneMapping: { operator: "aces" }, volumetricLight: { samples: 16 }, colorGrade: true, postFrameContext: f.v2.postFrameContext }, [f.target]);
+      expect(f.present.mock.calls[0]![1].passes.map(pass => pass.name)).toEqual(["tone-mapping", "color-grade"]);
+      expect(postSkippedReasons(f.token)).toContain("WEBGPU_VOLUMETRIC_LIGHT_SKIPPED:post-chain");
     } finally { f.dispose(); }
   });
 

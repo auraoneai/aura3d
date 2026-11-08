@@ -19,7 +19,7 @@ import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 import type { TemporalGpuBindings } from "../TemporalHistory";
-import { markPostV2Presented, recordPostSkipped } from "./postSkipped";
+import { markPostV2Presented, recordPostSkipped, recordPostStage } from "./postSkipped";
 import { postDiagnostics, type PostDiagnosticToken } from "./PostDiagnosticsScope";
 import { guardPostprocessPlan } from "../quality/PostprocessGuard";
 import { renderTargetPoolSlot, type RenderTargetPoolLike } from "../contracts/device";
@@ -276,13 +276,19 @@ export function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | und
   return conflicts.length ? { code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: conflicts } : undefined;
 }
 
-function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nativePost: WebgpuNativePostOptions | undefined, deviceKind?: string): readonly RendererPostProcessPassPlan[] {
+function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nativePost: WebgpuNativePostOptions | undefined, device?: RenderDevice): readonly RendererPostProcessPassPlan[] {
   const passes = createRendererPostprocessPasses(postprocess);
   // webgpuNativePostOptions already validated that any legacy twin is the
   // unchanged root-authored pair before this native-only filter runs.
   const routed = nativePost?.nativeDepthOfField ? passes.filter(pass => pass.name !== "depth-of-field") : passes;
+  if (device?.kind !== "webgpu") return routed;
   // WebGPU serves motion blur as the native S7 stage (`nativeMotionBlur`), or records it skipped; never as an LDR pass.
-  return deviceKind === "webgpu" ? routed.filter(pass => pass.name !== "motion-blur") : routed;
+  // Legacy volumetric light runs natively too, but only where WebGL2 runs its kernel: with the post flag on, WebGL2
+  // records and skips it (`postCpuPassSkipped`), so WebGPU skips it as well and both backends show the same frame.
+  const skipVolumetric = postprocess.execution !== "cpu-deterministic" && Boolean(rendererQrFlags(device)?.on("A3D_QR_POST"))
+    && routed.some(pass => pass.name === "volumetric-light");
+  if (skipVolumetric) recordPostSkipped("WEBGPU_VOLUMETRIC_LIGHT_SKIPPED:post-chain", postprocess.postFrameContext?.diagnosticToken);
+  return routed.filter(pass => pass.name !== "motion-blur" && !(skipVolumetric && pass.name === "volumetric-light"));
 }
 
 /**
@@ -298,6 +304,17 @@ export function webgpuNativeDepthPassesCover(postprocess: RendererPostProcessOpt
     ? { ...(postprocess.pipeline as Record<string, unknown>), godRays: undefined, motionBlur: undefined }
     : postprocess.pipeline;
   return !postprocessRequiresDepthTexture({ ...postprocess, volumetricLight: false, pipeline }, postScopeId);
+}
+
+/**
+ * Under the post flag the renderer commits a frame's temporal history only when the frame's S7 actually presented
+ * (`stageTemporalHistory` reads `consumePostV2Presented`). WebGL2 marks it from the v2 seam; the WebGPU native S7 marks
+ * it here, after the device accepted the frame. Without it the previous view-projection never advanced and every
+ * WebGPU frame reprojected to the identity (zero velocity, no blur).
+ */
+function markWebgpuMotionBlurPresented(nativePost: WebgpuNativePostOptions | undefined): void {
+  const frame = nativePost?.postFrameContext;
+  if (nativePost?.nativeMotionBlur && frame) markPostV2Presented(frame.scopeId, frame.viewId, frame.frameId);
 }
 
 /**
@@ -319,7 +336,10 @@ function withWebgpuDepthStages(device: RenderDevice, postprocess: RendererPostPr
     else recordPostSkipped("POST_GRAPH_V2_CAMERA_REQUIRED:webgpu-god-rays", token);
   }
   const legacyBlur = postprocess.motionBlur ? postprocess.motionBlur as { readonly samples?: number; readonly scale?: number; readonly temporal?: TemporalGpuBindings } : undefined;
-  if (pipeline?.motionBlur || legacyBlur) {
+  // On the v2 route the tier owns the stage: a pipeline without motionBlur (below High) means no S7 this frame, even
+  // though the compiler still carries the legacy motion-blur twin.
+  if (postprocess.v2 === true && pipeline && !pipeline.motionBlur && legacyBlur) recordPostSkipped("S7_TIER_DISABLED:webgpu", token);
+  else if (pipeline?.motionBlur || legacyBlur) {
     const temporal = legacyBlur?.temporal ?? (postprocess.taa as { temporal?: TemporalGpuBindings } | undefined)?.temporal;
     if (!temporal?.v2 || !camera) recordPostSkipped("S7_VELOCITY_UNAVAILABLE:webgpu", token);
     else {
@@ -328,6 +348,10 @@ function withWebgpuDepthStages(device: RenderDevice, postprocess: RendererPostPr
         ? pipeline.motionBlur as WebGPUMotionBlurOptions
         : { shutter: legacyBlur?.scale ?? 1, ...(legacyBlur?.samples !== undefined ? { samples: legacyBlur.samples } : {}) };
       nativeMotionBlur = resolveWebGPUMotionBlur(options, temporal.v2, camera);
+      // Same C-31 trace as WebGL2 S1-C: how far the camera reprojection is from the identity (static camera -> 0).
+      let deviation = 0;
+      nativeMotionBlur.reprojection.forEach((value, index) => { deviation = Math.max(deviation, Math.abs(value - (index % 5 === 0 ? 1 : 0))); });
+      recordPostStage(`S1C:reproj-dev=${deviation.toExponential(2)}`, token);
     }
   }
   if (!nativeGodRays && !nativeMotionBlur) return nativePost;
@@ -963,7 +987,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device.kind)), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device)), postprocess, nativePost);
     if (passes.length === 0) {
       // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
       // emits no plan passes — the v2 route still applies its stages.
@@ -972,6 +996,7 @@ export class RendererPostprocessPipeline {
       const outputPolicy = webgpuOutputPolicyRequested(this.host.device, postprocess);
       if ((nativePost?.nativeEffects?.length || nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeGodRays || nativePost?.nativeMotionBlur || outputPolicy) && postprocess.execution !== "cpu-deterministic" && this.host.device.presentLdrPostprocess) {
         this.host.device.presentLdrPostprocess(current, { passes: webgpuNativeOnlyPasses(current, postprocess), ...nativePost, ...(outputTarget ? { outputTarget } : {}), toneMappingDefaults: outputDefaults });
+        markWebgpuMotionBlurPresented(nativePost);
         return;
       }
       if (outputPolicy) throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
@@ -1092,6 +1117,7 @@ export class RendererPostprocessPipeline {
         // CCR-03-1: real camera range for depth-gated native passes.
         ...(depthRange ? { depthRange: { near: depthRange.near, far: depthRange.far } } : {})
       });
+      markWebgpuMotionBlurPresented(nativePost);
       return true;
     }
     this.host.device.setRenderTarget(current);
@@ -1139,7 +1165,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device.kind)), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device)), postprocess, nativePost);
     if (passes.length === 0) {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")
@@ -1150,6 +1176,7 @@ export class RendererPostprocessPipeline {
       const outputPolicy = webgpuOutputPolicyRequested(this.host.device, postprocess);
       if ((nativePost?.nativeEffects?.length || nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeGodRays || nativePost?.nativeMotionBlur || outputPolicy) && postprocess.execution !== "cpu-deterministic" && this.host.device.presentLdrPostprocess) {
         this.host.device.presentLdrPostprocess(current, { passes: webgpuNativeOnlyPasses(current, postprocess), ...nativePost, ...(outputTarget ? { outputTarget } : {}), toneMappingDefaults: outputDefaults });
+        markWebgpuMotionBlurPresented(nativePost);
         return;
       }
       if (outputPolicy) throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
@@ -1275,6 +1302,7 @@ export class RendererPostprocessPipeline {
         // CCR-03-1: real camera range for depth-gated native passes.
         ...(depthRange ? { depthRange: { near: depthRange.near, far: depthRange.far } } : {})
       });
+      markWebgpuMotionBlurPresented(nativePost);
       return true;
     }
     const pixels = fusedLdrPostprocessPixels(
