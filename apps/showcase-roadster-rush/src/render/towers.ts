@@ -7,6 +7,7 @@
  */
 import type { material } from "@aura3d/engine";
 import { HAZE_FLOOR_Y } from "../art/ground";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, WGSL_NOISE, wgslStage } from "../art/wgsl";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 
@@ -162,6 +163,83 @@ void main() {
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
 
+/**
+ * A3/W6: the WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL above (same pixels as before). Input locations
+ * follow the GLSL reflection of the adapter's preamble: position, normal, then the four instance-matrix columns.
+ */
+const WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct TowerVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) w: vec3<f32>,
+  @location(1) n: vec3<f32>,
+  @location(2) facade: vec3<f32>,
+  @location(3) top: f32,
+};
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(1) a_normal: vec3<f32>,
+  @location(2) a_instanceMatrix0: vec4<f32>,
+  @location(3) a_instanceMatrix1: vec4<f32>,
+  @location(4) a_instanceMatrix2: vec4<f32>,
+  @location(5) a_instanceMatrix3: vec4<f32>
+) -> TowerVarying {
+  var out: TowerVarying;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let w = aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0);
+  out.w = w.xyz;
+  out.n = normalize(a3dMat3Mul(aura.u_modelMatrix, a3dMat3Mul(instanceMatrix, a_normal)));
+  let s = vec3<f32>(length(a_instanceMatrix0.xyz), length(a_instanceMatrix1.xyz), length(a_instanceMatrix2.xyz));
+  out.facade = a_position * s;
+  out.top = (0.5 - a_position.y) * s.y;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * w);
+  return out;
+}`);
+
+const WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_COLOR], /* wgsl */ `
+@fragment fn fs_main(@location(0) vW: vec3<f32>, @location(1) vN: vec3<f32>, @location(2) vFacade: vec3<f32>, @location(3) vTop: f32) -> @location(0) vec4<f32> {
+  let n = normalize(vN);
+  let v = normalize(aura.u_cameraPosition - vW);
+  let roof = step(0.5, n.y);
+  let across = select(vFacade.x, vFacade.z, abs(n.x) > 0.5);
+  let grid = vec2<f32>(across / 1.5, vFacade.y / 3.6);
+  let cell = floor(grid);
+  let f = fract(grid);
+  let mullionX = 1.0 - smoothstep(0.0, 0.05, f.x) * (1.0 - smoothstep(0.95, 1.0, f.x));
+  let spandrel = 1.0 - step(0.085, f.y) * (1.0 - step(0.985, f.y));
+  let finCol = 1.0 - step(0.5, a3dModF(cell.x, 3.0));
+  let fin = finCol * (1.0 - smoothstep(0.24, 0.3, f.x));
+  let frameMask = max(max(mullionX, spandrel), fin);
+  let h = a3dHash31(vec3<f32>(cell, floor(vFacade.y / 40.0) + 7.0));
+  let tilt = vec3<f32>((h - 0.5) * 0.08, (fract(h * 13.7) - 0.5) * 0.12, 0.0);
+  let r = reflect(-v, normalize(n + tilt));
+  let sky = mix(a3dSrgbToLinear(aura.u_glassHorizon), a3dSrgbToLinear(aura.u_glassSky), smoothstep(-0.12, 0.18, r.y + (h - 0.5) * 0.2));
+  let fres = 0.24 + 0.55 * a3dPow(1.0 - a3dSaturate(dot(n, v)), 5.0);
+  let body = a3dSrgbToLinear(aura.u_glassBody);
+  var glass = mix(body, sky, fres);
+  let glint = a3dPow(a3dSaturate(dot(r, normalize(aura.u_sunDirection))), 64.0) * aura.u_sunGlint;
+  glass = glass + a3dSrgbToLinear(aura.u_sunTint) * glint;
+  let win = fract(h * 91.7);
+  let litFrac = 0.015 + 0.55 * aura.u_windowsLit * aura.u_windowsLit;
+  let lit = step(1.0 - litFrac, win) * (1.0 - frameMask);
+  glass = glass + mix(vec3<f32>(1.0, 0.7, 0.36), vec3<f32>(0.72, 0.8, 1.0), step(0.8, fract(win * 7.3))) * lit * (0.04 + 0.75 * aura.u_windowsLit);
+  var metal = body * 0.32 + sky * 0.04;
+  let finSun = a3dSaturate(dot(n, normalize(vec3<f32>(aura.u_sunDirection.x, 0.0, aura.u_sunDirection.z))) * 0.5 + 0.5);
+  metal = mix(metal, body * 0.6 + a3dSrgbToLinear(aura.u_sunTint) * 0.18 * finSun * aura.u_sunGlint + sky * 0.12, fin);
+  var col = mix(glass, metal, frameMask * (1.0 - roof));
+  col = mix(col, body * 0.35, roof);
+  let parapet = (1.0 - roof) * (1.0 - step(1.6, vTop));
+  col = mix(col, metal * 0.8, parapet);
+  let crown = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.35, abs(vTop - 2.0)));
+  col = col + a3dSrgbToLinear(aura.u_crownColor) * crown * aura.u_crownGain;
+  let haze = a3dSrgbToLinear(aura.u_hazeColor);
+  let floorHaze = 1.0 - smoothstep(-28.0, -6.0, vW.y);
+  col = mix(col, haze, floorHaze * 0.85);
+  let dist = length(aura.u_cameraPosition - vW);
+  let air = mix(haze, a3dSrgbToLinear(aura.u_glassSky), 0.4);
+  col = mix(col, air, (1.0 - exp(-max(dist - 25.0, 0.0) / 150.0)) * 0.72);
+  return vec4<f32>(a3dFinite3(col), 1.0);
+}`);
+
 /** Curtain-wall glass for one variant (body tint differs per variant so the three read as a kit, not clones). */
 export function towerGlassSpec(variant: TowerVariant): CustomSpec {
   const body: Record<TowerVariant, [number, number, number]> = {
@@ -171,6 +249,7 @@ export function towerGlassSpec(variant: TowerVariant): CustomSpec {
   };
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
+    wgsl: { vertex: WGSL_VERTEX, fragment: WGSL_FRAGMENT },
     uniforms: {
       glassBody: { type: "vec3", value: body[variant] },
       glassSky: { type: "vec3", value: [0.12, 0.25, 0.66] },

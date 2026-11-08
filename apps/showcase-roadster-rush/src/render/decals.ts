@@ -10,6 +10,7 @@
  */
 import type { material } from "@aura3d/engine";
 import { LANE_WIDTH, laneX } from "../native/constants";
+import { WGSL_CLIP, WGSL_ENVIRONMENT_FOG, WGSL_MATH, WGSL_SCENE, wgslStage } from "../art/wgsl";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 
@@ -152,9 +153,82 @@ void main() {
   outColor = vec4(a3dFinite(col), a);
 }`;
 
+/**
+ * A3/W6: the WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL above (same pixels as before). `fog: true`
+ * wraps only the GLSL stage, so the twin applies the same scene fog itself (`a3dApplyEnvironmentFog` on the world position).
+ */
+const WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct DecalVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+  @location(1) kind: f32,
+  @location(2) amt: f32,
+  @location(3) w: vec3<f32>,
+};
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(1) a_instanceMatrix0: vec4<f32>,
+  @location(2) a_instanceMatrix1: vec4<f32>,
+  @location(3) a_instanceMatrix2: vec4<f32>,
+  @location(4) a_instanceMatrix3: vec4<f32>
+) -> DecalVarying {
+  var out: DecalVarying;
+  let m = aura.u_modelMatrix * mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let ys = length(a_instanceMatrix1.xyz);
+  out.kind = floor(ys + 0.5);
+  out.amt = clamp((ys - 4.0) / 0.45, 0.0, 1.0);
+  let w = m * vec4<f32>(a_position.x, 0.0, a_position.z, 1.0);
+  out.w = w.xyz;
+  out.uv = a_position.xz + vec2<f32>(0.5);
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * w);
+  return out;
+}`);
+
+const WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_SCENE, WGSL_ENVIRONMENT_FOG], /* wgsl */ `
+fn dHash(p: vec2<f32>) -> f32 { return fract(sin(dot(p, vec2<f32>(41.3, 289.1))) * 15731.743); }
+@fragment fn fs_main(
+  @builtin(position) fragCoord: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+  @location(1) vKind: f32,
+  @location(2) vAmt: f32,
+  @location(3) vW: vec3<f32>
+) -> @location(0) vec4<f32> {
+  let p = vUv * 2.0 - vec2<f32>(1.0);
+  var albedo = vec3<f32>(0.02);
+  var a = 0.0;
+  if (vKind < 1.5) {
+    let streak = max(1.0 - abs(abs(p.x) - 0.6) / 0.22, 0.0);
+    let along = 1.0 - p.y * p.y;
+    let grain = 0.6 + 0.4 * dHash(floor(vec2<f32>(p.x * 9.0, vUv.y * 60.0)));
+    a = a3dSaturate(streak * along * grain) * 0.62;
+  } else if (vKind < 2.5) {
+    let r = length(p * vec2<f32>(1.0, 1.15)) + 0.12 * sin(atan2(p.y, p.x) * 5.0);
+    a = a3dSaturate((1.0 - smoothstep(0.55, 0.9, r)) * (0.55 + 0.25 * smoothstep(0.4, 0.8, r))) * 0.7;
+    albedo = vec3<f32>(0.012, 0.012, 0.016);
+  } else if (vKind > 3.5) {
+    let r = length(p);
+    a = (1.0 - smoothstep(0.15, 1.0, r)) * 0.78 * vAmt;
+    albedo = vec3<f32>(0.0);
+  } else {
+    let shaft = step(abs(p.x), 0.16) * step(-0.1, p.y) * step(p.y, 0.95);
+    let head = step(-0.95, p.y) * step(p.y, -0.1) * step(abs(p.x), (p.y + 0.95) * 0.9);
+    let paint = max(shaft, head);
+    let worn = 0.7 + 0.3 * dHash(floor(vUv * vec2<f32>(18.0, 70.0)));
+    a = paint * worn * 0.85;
+    albedo = vec3<f32>(0.78, 0.78, 0.74);
+  }
+  let up = vec3<f32>(0.0, 1.0, 0.0);
+  let light = a3dHemiLight(up) + a3dSunRadiance() * max(dot(up, aura.u_a3dSunDirection), 0.0);
+  let dist = length(aura.u_cameraPosition - vW);
+  a = a * (1.0 - smoothstep(aura.u_decalFade.x, aura.u_decalFade.y, dist));
+  let col = albedo * light;
+  return vec4<f32>(a3dApplyEnvironmentFog(a3dFinite3(col), vW, fragCoord.xy), a);
+}`);
+
 export function decalSpec(): CustomSpec {
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
+    wgsl: { vertex: WGSL_VERTEX, fragment: WGSL_FRAGMENT },
     uniforms: {
       decalFade: { type: "vec2", value: [DECAL_FADE[0], DECAL_FADE[1]] }
     },
