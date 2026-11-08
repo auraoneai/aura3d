@@ -288,3 +288,27 @@ describe("native WebGPU depth of field on the general scene route", () => {
     } finally { f.close(); }
   });
 });
+
+describe("WebGPU S10b user LUT", () => {
+  const cube = ["LUT_3D_SIZE 2", "0 0 0", "1 0 0", "0 1 0", "1 1 0", "0 0 1", "1 0 1", "0 1 1", "1 1 1"].join("\n");
+
+  it("applies a loaded .cube after tone mapping and the grade, with the intensity as bypass", async () => {
+    const f = await fixture({ lut: { source: "/luts/a.cube", cube, intensity: 0.8 } }, { colorGrade: { contrast: 1.1, saturation: 1 } });
+    try {
+      f.renderer.render(f.source, f.camera);
+      const names = drawn(f.passes);
+      const lut = names.indexOf("fs_display_lut");
+      expect(lut).toBeGreaterThan(names.indexOf("fs_grade"));
+      expect(names.indexOf("fs_grade")).toBeGreaterThan(names.indexOf("fs_tone"));
+      expect(Array.from(f.writes.get("webgpu-display-lut-uniforms")!).map(v => Math.round(v * 100) / 100)).toEqual([2, 0.2, 0, 0]);
+    } finally { f.close(); }
+  });
+
+  it("renders the identity grade while the .cube is pending", async () => {
+    const f = await fixture({ lut: { source: "/luts/a.cube", status: "pending" } });
+    try {
+      f.renderer.render(f.source, f.camera);
+      expect(drawn(f.passes)).not.toContain("fs_display_lut");
+    } finally { f.close(); }
+  });
+});

@@ -103,6 +103,8 @@ interface NormalizedDof {
   readonly sensorHeightMm: number;
   readonly maxBlurPx: number;
   readonly gatherRings: 1 | 2 | 3;
+  /** [centre, width, angle rad, 1] in band mode, zeros for the thin lens (the WebGL2 `u_tiltShift`). */
+  readonly tiltShift: readonly [number, number, number, number];
 }
 
 function failure(message: string, code = "WEBGPU_DOF_INVALID"): never {
@@ -120,7 +122,17 @@ function normalize(input: DofConfiguration): NormalizedDof {
   const allowed = new Set(["focusDistance", "focalLengthMm", "fStop", "sensorHeightMm", "maxBlurPx", "halfRes", "tiltShift"]);
   if (Object.keys(options).some(key => !allowed.has(key))) failure("Unknown depth-of-field option");
   if (options.halfRes !== undefined && options.halfRes !== true) failure("Depth of field supports only half-resolution processing", "WEBGPU_DOF_OPTION_UNSUPPORTED");
-  if (options.tiltShift !== undefined) failure("Depth of field does not support tilt-shift", "WEBGPU_DOF_OPTION_UNSUPPORTED");
+  let tiltShift: NormalizedDof["tiltShift"] = [0, 0, 0, 0];
+  if (options.tiltShift !== undefined) {
+    const tilt = options.tiltShift as { bandCenter?: unknown; bandWidth?: unknown; angleDeg?: unknown } | null;
+    if (!tilt || typeof tilt !== "object" || typeof tilt.bandCenter !== "number" || !Number.isFinite(tilt.bandCenter)
+      || typeof tilt.bandWidth !== "number" || !Number.isFinite(tilt.bandWidth)
+      || (tilt.angleDeg !== undefined && (typeof tilt.angleDeg !== "number" || !Number.isFinite(tilt.angleDeg)))) {
+      failure("Depth-of-field tilt-shift requires finite bandCenter, bandWidth and angleDeg", "WEBGPU_DOF_OPTION_UNSUPPORTED");
+    }
+    // Same clamps as the WebGL2 `dofTiltShiftUniform`.
+    tiltShift = [Math.min(1, Math.max(0, tilt.bandCenter)), Math.min(1, Math.max(0, tilt.bandWidth)), ((tilt.angleDeg as number | undefined) ?? 0) * Math.PI / 180, 1];
+  }
   if (input.fullCoC !== undefined && input.fullCoC !== false) failure("Depth of field does not support full-resolution CoC", "WEBGPU_DOF_OPTION_UNSUPPORTED");
   const gatherRings = input.gatherRings === undefined ? 3 : input.gatherRings;
   if (gatherRings !== 1 && gatherRings !== 2 && gatherRings !== 3) failure("Depth of field requires 1, 2, or 3 gather rings", "WEBGPU_DOF_OPTION_UNSUPPORTED");
@@ -145,7 +157,7 @@ function normalize(input: DofConfiguration): NormalizedDof {
     || Math.fround(input.maxGeometryDepthMeters) >= Math.fround(input.skyDepthMeters)) {
     failure("Depth of field requires geometry strictly before the representable sky threshold", "WEBGPU_DOF_DEPTH_UNSUPPORTED");
   }
-  return { focusDistance, focalLengthMm, fStop, sensorHeightMm, maxBlurPx, gatherRings };
+  return { focusDistance, focalLengthMm, fStop, sensorHeightMm, maxBlurPx, gatherRings, tiltShift };
 }
 
 /** Validate native DoF controls and depth bounds before allocating or submitting GPU work. */
@@ -170,8 +182,8 @@ function validateTarget(target: RenderTarget, description: string, format?: "rgb
 }
 
 function uniforms(options: NormalizedDof, height: number, skyDepthMeters: number): Uint8Array {
-  const data = new DataView(new ArrayBuffer(32));
-  [options.focusDistance, options.focalLengthMm, options.fStop, options.sensorHeightMm, height, options.maxBlurPx, skyDepthMeters]
+  const data = new DataView(new ArrayBuffer(48));
+  [options.focusDistance, options.focalLengthMm, options.fStop, options.sensorHeightMm, height, options.maxBlurPx, skyDepthMeters, 0, ...options.tiltShift]
     .forEach((value, index) => data.setFloat32(index * 4, value, true));
   return new Uint8Array(data.buffer);
 }

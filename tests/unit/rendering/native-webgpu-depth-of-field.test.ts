@@ -55,7 +55,9 @@ describe("WebGPU depth-of-field host driver", () => {
     expect(() => validateWebGPUDepthOfFieldOptions({ focusDistance: 3, halfRes: true }, 500, 1000)).not.toThrow();
     expect(() => validateWebGPUDepthOfFieldOptions({ fStop: 0 }, 500, 1000)).toThrow();
     expect(() => validateWebGPUDepthOfFieldOptions({ halfRes: false }, 500, 1000)).toThrow();
-    expect(() => validateWebGPUDepthOfFieldOptions({ tiltShift: { bandCenter: .5, bandWidth: .2 } }, 500, 1000)).toThrow();
+    // The WebGL2 S6 tilt-shift band runs in the native kernel; malformed band fields are still rejected.
+    expect(() => validateWebGPUDepthOfFieldOptions({ tiltShift: { bandCenter: .5, bandWidth: .2 } }, 500, 1000)).not.toThrow();
+    expect(() => validateWebGPUDepthOfFieldOptions({ tiltShift: { bandCenter: NaN, bandWidth: .2 } as never }, 500, 1000)).toThrow();
     expect(() => validateWebGPUDepthOfFieldOptions({}, 1000, 1000)).toThrow();
     expect(f.allocations).toHaveLength(0);
     expect(f.draws).toHaveLength(0);
@@ -97,8 +99,9 @@ describe("WebGPU depth-of-field host driver", () => {
     expect(f.draws[5]!.sampler).toEqual({ binding: 4, filter: "linear", addressMode: "clamp-to-edge" });
     const bytes = f.draws[0]!.uniforms!;
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    expect(bytes.byteLength).toBe(32);
-    expect(Array.from({ length: 8 }, (_, index) => view.getFloat32(index * 4, true))).toEqual([7, 35, 4, 18, 17, 12, 1000, 0]);
+    expect(bytes.byteLength).toBe(48);
+    // Thin lens: the trailing tilt-shift vec4 is zero (band mode off).
+    expect(Array.from({ length: 12 }, (_, index) => view.getFloat32(index * 4, true))).toEqual([7, 35, 4, 18, 17, 12, 1000, 0, 0, 0, 0, 0]);
     expect(f.allocations.slice(0, 5).every(t => t.disposed)).toBe(true);
     expect(result.target).toBe(f.allocations[5]);
     expect(result.target.disposed).toBe(false);
@@ -118,7 +121,7 @@ describe("WebGPU depth-of-field host driver", () => {
       { ...base, depthEncoding: "device-depth" },
       { ...base, skyDepthMeters: 500 },
       { ...base, skyDepthMeters: 500.000001 },
-      { ...base, options: { tiltShift: { bandCenter: .5, bandWidth: .2 } } },
+      { ...base, options: { tiltShift: { bandCenter: "middle", bandWidth: .2 } } },
       { ...base, options: { halfRes: false } },
       { ...base, options: { focalLengthMm: NaN } },
       { ...base, options: { maxBlurPx: 65 } },
@@ -213,5 +216,19 @@ describe("WebGPU depth-of-field host driver", () => {
     expect(f.allocations.every(target => target.disposed && target.disposeCount === 1)).toBe(true);
     expect(input.color.disposed).toBe(false);
     expect(input.linearDepth.disposed).toBe(false);
+  });
+});
+
+describe("WebGPU depth-of-field tilt-shift band", () => {
+  it("packs the WebGL2 band uniform (clamped centre/width, angle in radians, band flag)", () => {
+    const f = fixture();
+    const base = f.input();
+    f.driver.execute({ ...base, options: { ...base.options, tiltShift: { bandCenter: 1.4, bandWidth: 0.3, angleDeg: 90 } } } as WebGPUDepthOfFieldInput);
+    const bytes = f.draws[0]!.uniforms!;
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const tilt = Array.from({ length: 4 }, (_, index) => view.getFloat32((8 + index) * 4, true));
+    expect(tilt[0]).toBe(1); expect(tilt[1]).toBeCloseTo(0.3); expect(tilt[2]).toBeCloseTo(Math.PI / 2); expect(tilt[3]).toBe(1);
+    expect(f.draws[0]!.fragment).toContain("independentTiltShiftCoc");
+    f.driver.dispose();
   });
 });

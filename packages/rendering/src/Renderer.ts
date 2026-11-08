@@ -4724,7 +4724,7 @@ export class Renderer {
     const inspectionTiming = this.activeFrameTrace && this.inspectionTimingByTrace.get(this.activeFrameTrace);
     if (inspectionTiming) bindFrameInspectionView(cleanupFrameContext.blackboard, this.inspectionTiming, inspectionTiming, this.activeTemporalReportId);
     await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection,
-      shadowOptions, clippingWasPrewarmed, prd07WarmupContext, nativeWebGPUDofRequested(this.device, routePost));
+      shadowOptions, clippingWasPrewarmed, prd07WarmupContext, Boolean(nativeDofPlan));
     if (prd07View) assertPrd07RendererOperation(prd07View.operation);
     this.assertAuthoredFrameCurrent();
     if (this.disposed || this.device.disposed) {

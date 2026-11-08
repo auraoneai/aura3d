@@ -62,6 +62,8 @@ import { reflectShaderSources } from "./ShaderReflection";
 import { clearPostSkipped, recordPostSkipped, recordPostStage } from "./renderer/postSkipped";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { registeredPostPasses, type PostPassDescriptor } from "./contracts/post";
+import { parseCubeLut } from "./post/CubeLut";
+import type { LutTexture3D } from "./post/PostGraph";
 import type { FrameContributorContext } from "./contracts/frameGraph";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { Texture, bytesPerPixel, claimRenderTargetTextureOwner, compressedTextureByteLength, getRenderTargetTextureOwner, isCompressedTextureFormat, type TextureCubeFace, type TextureFormat, type TexturePixelData } from "./Texture";
@@ -223,6 +225,24 @@ function takeNativeDofPrecedingCustoms(customAt: Map<number, PostPassDescriptor[
 const WEBGPU_SCENE_DOF_COLOR_FRAGMENT = /* wgsl */ `@group(0) @binding(2) var u_color: texture_2d<f32>;
 @fragment fn fs_scene_dof_color(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
   return textureLoad(u_color, vec2<i32>(position.xy), 0);
+}
+`;
+
+/**
+ * The WebGL2 S10b user-LUT fetch on display-referred colour: the `.cube` rows are lattice samples at i/(N-1), so the
+ * coordinate gets the half-texel remap, and `bypass` (1 - intensity) keeps that much of the ungraded colour.
+ */
+const WEBGPU_DISPLAY_LUT_FRAGMENT = /* wgsl */ `struct LutParams { size: f32, bypass: f32, _pad: vec2<f32> };
+@group(0) @binding(0) var<uniform> u_params: LutParams;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+@group(0) @binding(3) var u_lut: texture_3d<f32>;
+@fragment fn fs_display_lut(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let source = textureLoad(u_color, vec2<i32>(position.xy), 0);
+  let n = u_params.size;
+  let coord = clamp(source.rgb, vec3<f32>(0.0), vec3<f32>(1.0)) * ((n - 1.0) / n) + vec3<f32>(0.5 / n);
+  let graded = textureSampleLevel(u_lut, u_sampler, coord, 0.0).rgb;
+  return vec4<f32>(mix(graded, source.rgb, u_params.bypass), source.a);
 }
 `;
 
@@ -1437,6 +1457,9 @@ export class WebGPUDevice implements RenderDevice {
   private nativeSsaoPasses = 0;
   private nativeAmbientOcclusionPasses = 0;
   private nativeSsrPasses = 0;
+  /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+  private readonly webgpuLuts = new Map<string, { readonly texture: WebGPUTextureLike & { destroy(): void }; readonly view: unknown; readonly size: number; readonly generation: number }>();
+  private readonly webgpuLutFailed = new Set<string>();
   private nativeTaaPasses = 0;
   private nativeTemporalBindings = 0;
   /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
@@ -6034,6 +6057,14 @@ export class WebGPUDevice implements RenderDevice {
       track(this.executeNativeDofDisplayStage(current, "vignette", dofDisplay, dofFrameIndex));
       if (diagnosticToken) recordPostStage("S10b:display-grade:vignette", diagnosticToken);
     };
+    let lutRun = false;
+    const runLut = (): void => {
+      if (lutRun || !options.nativeLut) return;
+      lutRun = true;
+      if (displayP3) { recordPostSkipped(`WEBGPU_LUT_P3_UNSUPPORTED:${options.nativeLut.source}`, diagnosticToken); return; }
+      const out = this.executeWebGPUDisplayLut(current, options.nativeLut, diagnosticToken);
+      if (out) { track(out); if (diagnosticToken) recordPostStage("S10b:display-grade:lut", diagnosticToken); }
+    };
     let effectsRun = false;
     const runEffects = (): void => {
       if (effectsRun || effects.length === 0) return;
@@ -6166,7 +6197,7 @@ export class WebGPUDevice implements RenderDevice {
         const pass = options.passes[passIndex]!;
         if (pass.name === "fxaa") { runDofVignette(); runEffects(); }
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));
-        else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
+        else if (pass.name === "color-grade") { track(this.executeWebGPUColorGrade(current, pass.options)); runLut(); }
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
         else if (pass.name === "ssao") track(this.executeWebGPUSsao(current, source, pass.options));
         // The renderer offers legacy volumetric light only to this WebGPU chain (outside the shared LDR pass-name union).
@@ -6200,6 +6231,7 @@ export class WebGPUDevice implements RenderDevice {
                 }
               } } : {}) });
           current = target;
+          if (!options.passes.some(candidate => candidate.name === "color-grade")) runLut();
         }
         assertDofCurrent?.();
       }
@@ -6295,6 +6327,52 @@ export class WebGPUDevice implements RenderDevice {
       for (const target of scratch) target.dispose();
       if (!succeeded) { try { driver.dispose(); } catch { /* Preserve the original failure. */ } }
     }
+  }
+
+  /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+  private executeWebGPUDisplayLut(color: RenderTarget, lut: NonNullable<WebGPUNativePostPresentationOptions["nativeLut"]>,
+    diagnosticToken?: PostDiagnosticToken): RenderTarget | null {
+    const source = lut.source;
+    if (typeof source !== "string" || (typeof lut.cube !== "string" && !lut.data) || this.webgpuLutFailed.has(source)) return null;
+    let entry = this.webgpuLuts.get(source);
+    if (entry && entry.generation !== this.generation) { this.webgpuLuts.delete(source); entry = undefined; }
+    if (!entry) {
+      if (!this.device.createTexture) return null;
+      let parsed: LutTexture3D;
+      try { parsed = lut.data ?? parseCubeLut(lut.cube!); } catch (error) {
+        this.webgpuLutFailed.add(source);
+        const code = error instanceof Error ? /^[A-Z0-9_]+/.exec(error.message)?.[0] ?? "LUT_UPLOAD_FAILED" : "LUT_UPLOAD_FAILED";
+        recordPostSkipped(`LUT_INVALID:${source}:${code}`, diagnosticToken);
+        return null;
+      }
+      const n = parsed.size;
+      const bytes = new Uint8Array(n * n * n * 4);
+      for (let i = 0; i < bytes.length; i += 1) {
+        const v = parsed.data[i] ?? 1;
+        bytes[i] = Math.round(Math.min(1, Math.max(0, Number.isFinite(v) ? v : 0)) * 255);
+      }
+      const texture = this.device.createTexture({ label: "a3d-webgpu-display-lut", size: [n, n, n], dimension: "3d", format: "rgba8unorm",
+        usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST }) as WebGPUTextureLike & { destroy(): void };
+      this.registerNativeCleanup(texture, []);
+      this.device.queue.writeTexture?.({ texture }, bytes, { bytesPerRow: n * 4, rowsPerImage: n }, [n, n, n]);
+      entry = { texture, view: texture.createView({ dimension: "3d" }), size: n, generation: this.generation };
+      this.webgpuLuts.set(source, entry);
+      while (this.webgpuLuts.size > 4) {
+        const [oldest, value] = this.webgpuLuts.entries().next().value!;
+        this.webgpuLuts.delete(oldest);
+        this.retireNative(value.texture);
+      }
+    } else { this.webgpuLuts.delete(source); this.webgpuLuts.set(source, entry); }
+    const src = this.requireRenderTarget(color);
+    if (!src.nativeView) return null;
+    const size = entry.size;
+    const intensity = typeof lut.intensity === "number" && Number.isFinite(lut.intensity) ? Math.min(1, Math.max(0, lut.intensity)) : 1;
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format: src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f", depth: false, label: "a3d-webgpu-display-lut-out" });
+    try {
+      this.runWebGPUFullscreenPass({ label: "webgpu-display-lut", fragment: WEBGPU_DISPLAY_LUT_FRAGMENT, entryPoint: "fs_display_lut",
+        uniforms: new Float32Array([size, 1 - intensity, 0, 0]), views: [src.nativeView, entry.view], target: out });
+    } catch (error) { out.dispose(); throw error; }
+    return out;
   }
 
   private executeWebGPUExposurePass(pass: WebGPUExposureDraw): void {

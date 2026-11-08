@@ -14,7 +14,7 @@ import { qrCoreOutputOn } from "./qrSubFlags";
 import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
 import { type PostPassDescriptor, type PostPipelineOptions, registeredPostPasses } from "../contracts/post";
-import type { DofOptions, GtaoOptions } from "../post/PostGraph";
+import type { DofOptions, GtaoOptions, LutTexture3D } from "../post/PostGraph";
 import { validateWebGPUDepthOfFieldOptions } from "../post/WebGPUDepthOfField";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
@@ -200,7 +200,7 @@ export function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: R
   return value !== undefined && value !== false;
 }
 
-type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeSceneDepthOfField" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
+type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeSceneDepthOfField" | "nativeLut" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
 
 /**
  * The post stages that native WebGPU depth of field cannot yet combine with,
@@ -265,8 +265,6 @@ export function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | und
   if (options === null || typeof options !== "object" || Array.isArray(options)
     || ![Object.prototype, null].includes(Object.getPrototypeOf(options))) return { code: "WEBGPU_DOF_INVALID", missing: ["depth-of-field-options"] };
   const conflicts = nativeDofConflicts(postprocess, pipeline, postprocess.postFrameContext?.scopeId);
-  // The native kernel is thin-lens only; a tilt-shift band keeps WebGL2 (a mounted WebGPU frame records it skipped).
-  if ((options as { tiltShift?: unknown }).tiltShift) conflicts.push("dof-tilt-shift");
   return conflicts.length ? { code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: conflicts } : undefined;
 }
 
@@ -480,12 +478,28 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
   if (autoExposure !== undefined && !frame) throw new RenderDeviceError("WebGPU auto exposure requires a renderer, view and frame identity", "POSTPROCESS_HISTORY_IDENTITY_REQUIRED");
   if (autoExposure !== undefined && !Number.isFinite(frame?.timeSeconds)) throw new RenderDeviceError("WebGPU auto exposure requires a finite frame time", "WEBGPU_AUTO_EXPOSURE_TIME_REQUIRED");
   const nativeAmbientOcclusion = webgpuNativeAmbientOcclusion(device, postprocess, pipeline);
-  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion) return undefined;
+  const nativeLut = webgpuNativeLut(pipeline, context?.diagnosticToken);
+  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion && !nativeLut) return undefined;
   return { ...(effects?.length ? { nativeEffects: effects } : {}), ...(frame ? { postFrameContext: frame as NonNullable<WebgpuNativePostOptions["postFrameContext"]> } : {}),
     ...(autoExposure !== undefined ? { autoExposure: autoExposure as NonNullable<WebgpuNativePostOptions["autoExposure"]> } : {}),
     ...(nativeDepthOfField ? { nativeDepthOfField } : {}), ...(nativeSceneDepthOfField ? { nativeSceneDepthOfField } : {}),
-    ...(nativeDofDisplay ? { nativeDofDisplay } : {}),
+    ...(nativeDofDisplay ? { nativeDofDisplay } : {}), ...(nativeLut ? { nativeLut } : {}),
     ...(nativeAmbientOcclusion ? { nativeAmbientOcclusion } : {}) };
+}
+
+/**
+ * The v2 `pipeline.lut` bag for the WebGPU chain's S10b LUT stage, once its `.cube` text (or parsed data) arrived.
+ * Until then the frame renders the identity grade and records `LUT_PENDING` / `LUT_UNAVAILABLE`, as WebGL2 does.
+ */
+function webgpuNativeLut(pipeline: PostPipelineOptions | undefined, token: PostDiagnosticToken | undefined): LdrPostprocessPresentationOptions["nativeLut"] {
+  const bag = pipeline?.lut as { readonly source?: unknown; readonly cube?: unknown; readonly data?: LutTexture3D; readonly intensity?: unknown; readonly status?: unknown } | undefined;
+  if (!bag || typeof bag !== "object" || typeof bag.source !== "string") return undefined;
+  if (typeof bag.cube !== "string" && !bag.data) {
+    recordPostSkipped(`${bag.status === "failed" ? "LUT_UNAVAILABLE" : "LUT_PENDING"}:${bag.source}`, token);
+    return undefined;
+  }
+  return { source: bag.source, ...(typeof bag.cube === "string" ? { cube: bag.cube } : {}), ...(bag.data ? { data: bag.data } : {}),
+    ...(typeof bag.intensity === "number" ? { intensity: bag.intensity } : {}) };
 }
 
 /** WebGL2 v2 S6 never blurs linear depth at or beyond 990 m (`z_mm >= 9.9e5`), the S1 sky sentinel included. */
@@ -493,7 +507,7 @@ const SCENE_DOF_SKY_DEPTH_METERS = 990;
 
 /**
  * The general-scene native DoF request: the v2 lens fields and the frame camera planes. A frame this route cannot
- * serve (no camera, a non-HDR source, tilt-shift or out-of-range optics) records the reason and renders without DoF
+ * serve (no camera, a non-HDR source or out-of-range optics) records the reason and renders without DoF
  * instead of failing: it is reached only after the canvas holds a WebGPU context (DoF enabled at runtime).
  */
 function webgpuSceneDepthOfField(device: RenderDevice, postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions,
@@ -510,12 +524,12 @@ function webgpuSceneDepthOfField(device: RenderDevice, postprocess: RendererPost
     || (camera.projection === "orthographic" ? !Number.isFinite(camera.far) : !(camera.near > 0))) return skip("camera");
   const dof = depthOfField !== null && typeof depthOfField === "object" ? depthOfField as Partial<DofOptions> : undefined;
   if (!dof) return skip("options");
-  if (dof.tiltShift) return skip("tilt-shift");
   // The native kernel always works at half resolution (the v2 default); `halfRes: false` keeps the half-res kernel.
   const options: Partial<DofOptions> = {
     ...(dof.focusDistance !== undefined ? { focusDistance: dof.focusDistance } : {}), ...(dof.fStop !== undefined ? { fStop: dof.fStop } : {}),
     ...(dof.focalLengthMm !== undefined ? { focalLengthMm: dof.focalLengthMm } : {}), ...(dof.sensorHeightMm !== undefined ? { sensorHeightMm: dof.sensorHeightMm } : {}),
-    ...(dof.maxBlurPx !== undefined ? { maxBlurPx: Math.min(dof.maxBlurPx, 64) } : {})
+    ...(dof.maxBlurPx !== undefined ? { maxBlurPx: Math.min(dof.maxBlurPx, 64) } : {}),
+    ...(dof.tiltShift ? { tiltShift: dof.tiltShift } : {})
   };
   const skyDepthMeters = SCENE_DOF_SKY_DEPTH_METERS, maxGeometryDepthMeters = Math.fround(skyDepthMeters * 0.999);
   try { validateWebGPUDepthOfFieldOptions(options, maxGeometryDepthMeters, skyDepthMeters); } catch { return skip("options"); }

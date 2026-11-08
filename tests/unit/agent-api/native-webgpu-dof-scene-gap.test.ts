@@ -26,8 +26,7 @@ describe("pre-mount native depth-of-field scene gap", () => {
     expect(postGap(foggy, canvas, dofGap)).toBeUndefined();
   });
 
-  it("keeps WebGL2 for a tilt-shift band, which the native kernel does not draw", () => {
-    expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof: { focusDistance: 3, tiltShift: { bandCenter: 0.5, bandWidth: 0.2 } } } }))
-      .toEqual({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["dof-tilt-shift"] });
+  it("admits a tilt-shift band (the native kernel draws the WebGL2 band)", () => {
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof: { focusDistance: 3, tiltShift: { bandCenter: 0.5, bandWidth: 0.2 } } } })).toBeUndefined();
   });
 });
