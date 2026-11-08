@@ -161,3 +161,11 @@ export const stripMesh = (): MeshData => boxMesh(0.98, 0.04, 10);
 export const roadMesh = (): MeshData => boxMesh(6.4, 0.3, 1.02);
 /** Plum road edge rail segment. */
 export const edgeMesh = (): MeshData => boxMesh(0.3, 0.36, 1.02);
+/** Roadside paint pot: a 1 m tall pot (r 0.55) with a dripping paint blob (r 0.62) on top; base at y = 0. Scaled per instance. */
+export function propMesh(): MeshData {
+  return merge([
+    translateMesh(cylinderMesh(0.55, 1, 12), 0, 0.5, 0),
+    translateMesh(cylinderMesh(0.6, 0.1, 12), 0, 1.0, 0),
+    sphereMesh(0.62, 12, 8, 0, 1.25, 0)
+  ]);
+}

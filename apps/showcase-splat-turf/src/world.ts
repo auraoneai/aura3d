@@ -4,17 +4,19 @@
  * cells live in ONE batch with a per-cell `tone` attribute, written once in the scrolling frame; painting
  * and wipes only rewrite tone, and the coverage map persists behind the player for the whole run.
  */
-import { camera, environments, geometry, lights, material, scene, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
 import {
-  Batch, flatSpec, gradientSkyFragment, shadowSpec, skySpec, toonSpec, type CustomSpec
+  Batch, flatSpec, shadowSpec, toonSpec, type CustomSpec
 } from "../../../examples/shared/runner-kit/index";
 import { CONFIG, type SplatTurfSim } from "./sim";
 import { LOOK, linear, paintColorFor } from "./look";
 import {
-  BALL_RADIUS, ballMesh, botMesh, canMesh, cellMesh, edgeMesh, finishMesh, quadMesh, roadMesh, sphereMesh, stripMesh,
+  BALL_RADIUS, ballMesh, botMesh, canMesh, cellMesh, edgeMesh, finishMesh, propMesh, quadMesh, roadMesh, sphereMesh, stripMesh,
   type MeshData
 } from "./meshes";
 import type { CameraPose, Shown } from "./presentation";
+import { glowSpec, hazed, sunsetSkySpec, type Haze } from "./art/haze";
+import { addScenery } from "./scenery";
 
 export const CAMERA_FAR = 400;
 export const ROAD_WIDTH = 6.4;
@@ -22,7 +24,15 @@ export const EDGE_X = 3.35;
 export const CELL_Y = 0.02;
 export const GRID_CELLS = CONFIG.RUN_LENGTH * CONFIG.GRID_COLS;
 
-export const BATCH_IDS = ["road", "edges", "paint", "strips", "cans", "bots", "particles"] as const;
+export const BATCH_IDS = ["road", "edges", "props", "paint", "strips", "cans", "bots", "particles"] as const;
+
+/** Roadside paint pots: one every PROP_SPACING m on each side, sized and tinted from the row (no RNG). */
+export const PROP_SPACING = 10;
+
+function propHash(row: number, side: number): number {
+  const h = Math.sin(row * 12.9898 + side * 78.233) * 43758.5453;
+  return h - Math.floor(h);
+}
 
 export interface WorldOptions {
   sim: SplatTurfSim;
@@ -50,13 +60,29 @@ export interface World {
 /** Every distinct `material.custom` program the game draws with (for the GLSL compile test). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
-    { name: "sky", spec: skySpec(gradientSkyFragment(LOOK.skyStops)) },
-    { name: "toon", spec: toonSpec(linear(LOOK.road)) },
-    { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
+    { name: "sky", spec: PROGRAMS.sky() },
+    { name: "toon", spec: PROGRAMS.toon(LOOK.road) },
+    { name: "toon-tone", spec: PROGRAMS.toonTone() },
+    { name: "cloud", spec: PROGRAMS.cloud() },
+    { name: "far", spec: PROGRAMS.far() },
+    { name: "glow", spec: PROGRAMS.glow() },
     { name: "flat", spec: flatSpec(linear(LOOK.solvent), 0.55) },
     { name: "shadow", spec: shadowSpec() }
   ];
 }
+
+/* Art pass: every lit surface shares the warm sunset rig and the horizon haze (art/haze.ts). */
+const NEAR_HAZE: Haze = { color: linear(LOOK.haze), near: 45, far: 230, max: 0.85 };
+const CLOUD_HAZE: Haze = { color: linear(LOOK.haze), near: 25, far: 220, max: 0.7 };
+const FAR_HAZE: Haze = { color: linear(LOOK.haze), near: 60, far: 330, max: 0.8 };
+const PROGRAMS = {
+  sky: () => sunsetSkySpec(LOOK.skyStops, LOOK.sunDir, LOOK.sunColor),
+  toon: (hex: string) => hazed(toonSpec(linear(hex)), NEAR_HAZE),
+  toonTone: () => hazed(toonSpec([1, 1, 1], undefined, [0, 0, 0], true), NEAR_HAZE),
+  cloud: () => hazed(toonSpec([1, 1, 1], undefined, linear("#2a1420"), true), CLOUD_HAZE),
+  far: () => hazed(toonSpec([1, 1, 1], undefined, linear("#3a1c30"), true), FAR_HAZE),
+  glow: () => glowSpec(2.4)
+};
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
@@ -74,7 +100,7 @@ export function buildWorld(options: WorldOptions): World {
 
   // Audit rig: one shadowed key + neutral IBL preset (the toon programs carry their own light terms).
   builder.add(lights.directional({ name: "key", position: [6, 12, 6], target: [0, 0, 0], intensity: 1.2, color: "#ffffff", shadow: { cascades: 1, maxDistance: 120 } }));
-  builder.add(environments.neutral({ name: "environment", intensity: 0.6 }));
+  builder.add(environments.neutral({ name: "environment", intensity: 0.9 }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
@@ -83,26 +109,39 @@ export function buildWorld(options: WorldOptions): World {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
   };
 
-  add("sky", sphereMesh(150, 32, 24), skySpec(gradientSkyFragment(LOOK.skyStops)));
-  add("ball", ballMesh(), toonSpec(linear(LOOK.ball)));
+  add("sky", sphereMesh(380, 32, 24), PROGRAMS.sky());
+  add("ball", ballMesh(), PROGRAMS.toon(LOOK.ball));
   add("ball-shadow", quadMesh(1.6, 1.6), shadowSpec());
-  add("finish", finishMesh(), toonSpec(linear(LOOK.finish)));
+  add("finish", finishMesh(), PROGRAMS.toon(LOOK.finish));
 
   const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS);
   const edges = new Batch(edgeMesh(), CONFIG.POOL_SEGMENTS * 2);
+  const props = new Batch(propMesh(), CONFIG.POOL_SEGMENTS * 2, [1, 1, 1]);
   const paint = new Batch(cellMesh(), GRID_CELLS, [1, 1, 1]);
   const strips = new Batch(stripMesh(), CONFIG.POOL_STRIPS);
   const cans = new Batch(canMesh(), CONFIG.POOL_CANS);
   const bots = new Batch(botMesh(), CONFIG.POOL_BOTS, linear(LOOK.eraser));
   const particles = new Batch(sphereMesh(0.12, 6, 6), CONFIG.POOL_PARTICLES, [1, 1, 1]);
 
-  addBatch("road", road, toonSpec(linear(LOOK.road)));
-  addBatch("edges", edges, toonSpec(linear(LOOK.roadEdge)));
-  addBatch("paint", paint, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  const scenery = addScenery(builder, addBatch, {
+    toonTone: PROGRAMS.toonTone(), cloud: PROGRAMS.cloud(), far: PROGRAMS.far(), keel: PROGRAMS.toon(LOOK.keel), glow: PROGRAMS.glow()
+  }, CONFIG.POOL_SEGMENTS, EDGE_X);
+
+  addBatch("road", road, PROGRAMS.toon(LOOK.road));
+  addBatch("edges", edges, PROGRAMS.toon(LOOK.roadEdge));
+  addBatch("props", props, PROGRAMS.toonTone());
+  addBatch("paint", paint, PROGRAMS.toonTone());
   addBatch("strips", strips, flatSpec(linear(LOOK.solvent), 0.55));
-  addBatch("cans", cans, toonSpec(linear(LOOK.can)));
-  addBatch("bots", bots, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
-  addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  addBatch("cans", cans, PROGRAMS.toon(LOOK.can));
+  addBatch("bots", bots, PROGRAMS.toonTone());
+  addBatch("particles", particles, PROGRAMS.toonTone());
+
+  // Post: bloom on the sun and bulbs, warm grade, plum vignette, ink outline on the ball and the road entities.
+  builder
+    .add(effects.bloom({ name: "bloom", intensity: LOOK.post.bloom.intensity, threshold: LOOK.post.bloom.threshold, scatter: LOOK.post.bloom.scatter }))
+    .add(effects.colorGrade({ name: "grade", ...LOOK.post.grade }))
+    .add(effects.vignette({ name: "vignette", intensity: LOOK.post.vignette.intensity, color: LOOK.post.vignette.color }))
+    .add(effects.outline({ name: "ink", color: LOOK.ink, width: 2, targets: ["ball", "cans", "bots"] }));
 
   return {
     scene: builder,
@@ -174,6 +213,17 @@ export function buildWorld(options: WorldOptions): World {
           road.place(i, 0, -0.15, -seg.row - 0.5, 0, 1, 1, 1);
           edges.place(i * 2, -EDGE_X, -0.12, -seg.row - 0.5, 0, 1, 1, 1);
           edges.place(i * 2 + 1, EDGE_X, -0.12, -seg.row - 0.5, 0, 1, 1, 1);
+          scenery.placeSegment(i, seg.row);
+          for (let side = 0; side < 2; side++) {
+            const slot = i * 2 + side;
+            if (seg.row < 0 || ((seg.row + side * 3) % PROP_SPACING) !== 0) { props.collapse(slot); continue; }
+            const h = propHash(seg.row, side);
+            const x = (side === 0 ? -1 : 1) * (EDGE_X + 2.2 + h * 3.6);
+            const sc = 0.6 + h * 0.45;
+            props.place(slot, x, -0.35, -seg.row - 0.5, h * 6.28, sc, sc * (0.9 + propHash(seg.row + 7, side) * 0.35), sc);
+            scenery.placeIslet(seg.row, side, x, sc);
+            props.setTone(slot, linear(LOOK.paintColors[Math.floor(propHash(seg.row + 3, side) * LOOK.paintColors.length)] as string));
+          }
         }
 
         updatePaint(sim, distance);
@@ -230,11 +280,13 @@ export function buildWorld(options: WorldOptions): World {
         node("finish").setPosition(0, 0, roadZ - CONFIG.RUN_LENGTH);
         road.flush(node("road"));
         edges.flush(node("edges"));
+        props.flush(node("props"));
         paint.flush(node("paint"), false);
         strips.flush(node("strips"), false);
         cans.flush(node("cans"));
         bots.flush(node("bots"));
         particles.flush(node("particles"));
+        scenery.update(node, roadZ, distance, time, reduced);
         if (!flushedInitial) flushedInitial = true;
 
         // Ball: fixed at the origin of the scrolling frame, rolling with the run.
@@ -242,7 +294,7 @@ export function buildWorld(options: WorldOptions): World {
         const gone = o.phase === "gameOver";
         const scale = bursting ? 1 + (1 - o.burstTimer / CONFIG.BURST_SECONDS) * 0.6 : 1;
         node("ball").setPosition(laneOffset, BALL_RADIUS * scale, 0).setRotation(distance / BALL_RADIUS, 0, 0).setScale(scale).setVisible(!gone);
-        node("ball-shadow").setPosition(laneOffset, 0.01, 0).setScale(scale).setVisible(!gone);
+        node("ball-shadow").setPosition(laneOffset, CELL_Y + 0.015, 0).setScale(scale).setVisible(!gone);
 
         // Camera: chase pose (presenter-interpolated), deterministic shake, speed FOV — all presentation only.
         const c = view.camera ?? { x: 0.5 * laneOffset, y: 5, z: 9, lookX: laneOffset, lookY: 0.5, lookZ: -10 };
@@ -259,7 +311,7 @@ export function buildWorld(options: WorldOptions): World {
         }, { cut: false });
       }
 
-      const batches = [road, edges, paint, strips, cans, bots, particles];
+      const batches = [road, edges, props, paint, strips, cans, bots, particles, ...scenery.batches];
       function warm(on: boolean): void {
         // Park one instance of each pooled batch below the road so every program compiles before frame one.
         if (on) {
