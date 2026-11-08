@@ -624,6 +624,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "wheel_spin"
       ],
       "animationClips": [
+        "wheel_spin"
+      ],
+      "animationClipDetails": [
         {
           "name": "wheel_spin",
           "duration": 1,

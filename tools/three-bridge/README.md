@@ -73,7 +73,7 @@ node capture.mjs http://127.0.0.1:10671 /tmp/three-bridge-frames 10672     # rea
 `three.html?recipe=<name>[&params=<json>]` renders the factory with three's `WebGLRenderer` (same seed);
 `aura.html?recipe=<name>` mounts the emitted `<name>.scene.ts` unchanged. Evidence: `evidence/2026-11-08/README.md`.
 
-Known: `tsc -p tools/three-bridge/tsconfig.json` reports two errors inside the `assets add` typegen output
-(`src/aura-assets.ts`) for the animated car: the CLI writes C-17 `animationClips` as `{ name, duration, channelCount }`
-objects while the engine's `AuraAssetMetadata.animationClips` is typed `readonly string[]`. This affects every
-animated GLB admitted with `assets add`, not only the bridge; the bridge's own emitted modules typecheck clean.
+Typecheck: `tsc -p tools/three-bridge/tsconfig.json` is clean, and the folder's TypeScript is part of the root
+`tsconfig.check.json` program. `assets typegen` writes `metadata.animationClips` as clip names (the engine's
+`AuraAssetMetadata.animationClips` is `readonly string[]`) and keeps the C-17 `{ name, duration, channelCount }` objects
+under `metadata.animationClipDetails`.
