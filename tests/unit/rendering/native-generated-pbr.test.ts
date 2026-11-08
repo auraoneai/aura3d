@@ -630,7 +630,7 @@ describe("generated native PBR program contract", () => {
     }));
     const linear = make("linear");
     expect(linear.fog).toBe("linear");
-    expect(linear.fragment).toContain("let fogDepth = input.position.z / input.position.w");
+    expect(linear.fragment).toContain("let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w");
     expect(linear.fragment).toContain("(fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001)");
     expect(linear.fragment.indexOf("let color = mix(unfoggedColor, material.fogColor.rgb, fogAmount)"))
       .toBeLessThan(linear.fragment.indexOf("generatedEncodeOutput(color)"));
@@ -754,6 +754,13 @@ describe("generated native PBR program contract", () => {
       extensions: [{ lobe: "emissive-strength", maps: ["emissive"], mapUvSets: { emissive: 1 }, bits: { map: true } }] }));
     expect(emissive.requiredVertexLocations).toEqual([0, 1, 7]);
     expect(emissive.fragment).toContain("material.emissive.rgb * material.emissive.a * emissiveSample");
+    // A UV-less geometry drops the emissive map (featuresForGeometry) but leaves the lobe's map bit set; GLSL draws
+    // unmapped emission, and so does WGSL instead of failing the mount (Top Tennis).
+    const dropped = createGeneratedPbrProgram(descriptor({ environment: "none", features: {}, maps: {},
+      extensions: [{ lobe: "emissive-strength", maps: [], bits: { map: true } }] }));
+    expect(dropped.fragment).not.toContain("emissiveSample");
+    expect(() => createGeneratedPbrProgram(descriptor({ environment: "none", features: {}, maps: {},
+      extensions: [{ lobe: "emissive-strength", maps: ["emissive"], bits: { map: true } }] }))).toThrow(/emissive-strength map metadata/);
   });
 
   it("uses independent UV sets, transforms and channels for specular and sheen maps", () => {

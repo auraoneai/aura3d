@@ -364,6 +364,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const extensionIds = new Set<string>();
   let iorBit: string | number | boolean | undefined;
   let emissiveLobeMap = false;
+  let emissiveMapBit = false;
   let iridescenceFilm = false;
   const lobeMaps: LobeMaps = {};
   for (const extension of descriptor.activeExtensions) {
@@ -372,7 +373,12 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     if (!["sheen", "emissive-strength", "ior", "specular", "clearcoat", "iridescence", "anisotropy", "transmission", "diffuse-transmission", "volume", "dispersion"].includes(lobe)) unsupported("activeExtensions", `lobe ${extension.lobe}`);
     if (lobe === "emissive-strength") {
       emissiveLobeMap = extension.maps.length === 1 && extension.maps[0] === "emissive";
-      if ((extension.maps.length > 0 && !emissiveLobeMap) || Boolean(extension.bits.map) !== emissiveLobeMap || (emissiveLobeMap && !f.maps.emissive)
+      // featuresForGeometry drops the emissive map on a geometry without the map's UV set but leaves this lobe's `map`
+      // bit set (the lobe is not in PHYSICAL_LOBE_MAP_BITS); the GLSL call is a no-op and the base path samples no
+      // emissive map, so a stale bit with no map anywhere draws the same unmapped emission (Top Tennis UV-less meshes).
+      const droppedMapBit = extension.bits.map === true && extension.maps.length === 0 && !f.maps.emissive;
+      emissiveMapBit = emissiveLobeMap || droppedMapBit;
+      if ((extension.maps.length > 0 && !emissiveLobeMap) || (Boolean(extension.bits.map) !== emissiveLobeMap && !droppedMapBit) || (emissiveLobeMap && !f.maps.emissive)
         || Object.entries(extension.bits).some(([bit, value]) => bit !== "map" && Boolean(value))) unsupported(`activeExtensions.${extension.lobe}`, `unsupported ${extension.lobe} map metadata`);
     } else {
       const slots: readonly LobeMapSlot[] = lobe === "specular" ? ["specular", "specularColor"] : lobe === "sheen" ? ["sheenColor", "sheenRoughness"] : lobe === "clearcoat" ? ["clearcoat", "clearcoatRoughness", "clearcoatNormal"] : lobe === "iridescence" ? ["iridescence", "iridescenceThickness"] : lobe === "anisotropy" ? ["anisotropy"] : lobe === "transmission" ? ["transmission"] : lobe === "diffuse-transmission" ? ["diffuseTransmission", "diffuseTransmissionColor"] : lobe === "volume" ? ["volumeThickness"] : [];
@@ -493,7 +499,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     A3D_NATIVE_PROBE_GRID: advanced === "probe", A3D_NATIVE_VOXEL_INDIRECT: advanced === "voxel", A3D_NATIVE_BAKED_LIGHTMAP: advanced === "lightmap",
     A3D_NATIVE_LIGHTMAP_ADD: lightmap === "add-indirect", A3D_NATIVE_LIGHTMAP_UV1: advanced === "lightmap" && lightmapUv === 1,
     A3D_LOCAL_DIFFUSE_IRRADIANCE: volume || advanced === "probe" || advanced === "voxel",
-    A3D_LOBE_SHEEN: sheen, A3D_LOBE_EMISSIVE_STRENGTH: extensionIds.has("emissive-strength"), A3D_LOBE_EMISSIVE_STRENGTH_MAP: emissiveLobeMap,
+    A3D_LOBE_SHEEN: sheen, A3D_LOBE_EMISSIVE_STRENGTH: extensionIds.has("emissive-strength"), A3D_LOBE_EMISSIVE_STRENGTH_MAP: emissiveMapBit,
     A3D_LOBE_IOR: extensionIds.has("ior"), A3D_LOBE_IOR_IOR: Boolean(iorBit), A3D_LOBE_SPECULAR: extensionIds.has("specular"),
     A3D_LOBE_TRANSMISSION: transmissionLobe, A3D_LOBE_TRANSMISSION_MAP: lobeMaps.transmission !== undefined, A3D_TRANSMISSION: transmissionTarget,
     A3D_LOBE_DIFFUSE_TRANSMISSION: diffuseTransmission, A3D_LOBE_DIFFUSE_TRANSMISSION_MAP: lobeMaps.diffuseTransmission !== undefined,
