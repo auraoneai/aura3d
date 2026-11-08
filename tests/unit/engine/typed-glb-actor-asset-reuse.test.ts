@@ -107,6 +107,30 @@ describe("typed GLB actor parsed-asset reuse", () => {
     }
   });
 
+  it("applies nodeTransforms to the named node only, actor-locally", async () => {
+    const asset = typedAsset("CrateMoved");
+    const probe = await createActor(asset, "probe-moved");
+    const target = renderNodeNames(probe)[0]!;
+    probe.dispose();
+
+    const moved = await createActor(asset, "crate-moved", { nodeTransforms: { [target]: { position: [0, 3, 0], scale: 2 } } });
+    const plain = await createActor(asset, "crate-unmoved");
+    const worldOf = (actor: TypedGLBActor, name: string) =>
+      actor.pipeline.resources.scene.collectRenderables().find(({ node }) => node.name === name)!.node.transform.worldMatrix;
+    try {
+      const a = worldOf(moved, target);
+      const b = worldOf(plain, target);
+      expect(a).not.toEqual(b);
+      // Scale 2 on the node's local matrix doubles its basis column length.
+      expect(Math.hypot(a[0]!, a[1]!, a[2]!)).toBeCloseTo(2 * Math.hypot(b[0]!, b[1]!, b[2]!), 5);
+      const others = renderNodeNames(plain).filter((name) => name !== target);
+      for (const name of others) expect(worldOf(moved, name)).toEqual(worldOf(plain, name));
+    } finally {
+      moved.dispose();
+      plain.dispose();
+    }
+  });
+
   it("disposing one actor leaves its peers usable and only frees the shared parse last", async () => {
     const asset = typedAsset("CrateHeavy");
     const first = await createActor(asset, "wreck-first");
