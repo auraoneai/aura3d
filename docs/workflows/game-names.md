@@ -16,7 +16,7 @@ Status: 2026-10-24. Every playable game on the showcase index carries its own na
 | `apps/showcase-silt-and-signal-port` | Duneglide | `/apps/duneglide/` | Free-ride flight over a silt world, through ring beacons. |
 | `apps/showcase-cloud-runner-port` | Cumulus Dash | `/apps/cumulus-dash/` | Obstacle runner on a cloud: creatures, boulders, a duel and a finale. |
 | `apps/showcase-shape-shift-sprint` | Shape Shift Sprint | `/apps/showcase-shape-shift-sprint/` | Shape-gate runner: steer into the wall hole matching your current sphere, cube or cone form and grab morph tokens. |
-| `apps/showcase-number-surge` | Number Surge | `/apps/showcase-number-surge/` | Arithmetic-gate runner: pick the stronger operation gate to grow your number and smash boss walls every 400 metres. |
+| `apps/showcase-number-surge` | Number Surge | `/apps/showcase-number-surge/` | Arithmetic-gate runner: pick the stronger operation gate to grow your number and smash boss walls every 300 metres. |
 | `apps/showcase-splat-turf` | Splat Turf | `/apps/showcase-splat-turf/` | Paint-coverage runner over a 1,200-metre course: coat road lanes, refill your tank, and avoid solvent strips and eraser bots. |
 | `apps/showcase-polarity-orbs` | Polarity Orbs | `/apps/showcase-polarity-orbs/` | Dual-polarity runner: steer and tap to flip polarity, collect matching orbs, and dodge opposite charges. |
 | `apps/showcase-beat-hopper` | Beat Hopper | `/apps/showcase-beat-hopper/` | Rhythm-timed obstacle runner on a 132 BPM beat grid: hop or duck inside PERFECT and GOOD timing windows. |

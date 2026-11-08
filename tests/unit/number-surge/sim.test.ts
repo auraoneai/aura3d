@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONFIG, IDLE, NumberSurgeSim, TRACE_COLUMNS, applyOp, opLabel, replay, type Input } from "../../../apps/showcase-number-surge/src/sim";
+import { CONFIG, IDLE, NumberSurgeSim, TRACE_COLUMNS, applyOp, opLabel, replay, wallFloor, wallHp, wallT, type Input } from "../../../apps/showcase-number-surge/src/sim";
 import { Autopilot } from "../../../apps/showcase-number-surge/src/autopilot";
 
 const START: Input = { ...IDLE, start: true };
@@ -181,24 +181,102 @@ describe("number-surge sim: scoring, walls, death, restart", () => {
     expect(smasher.o.shards.filter((s) => s.active).length).toBeGreaterThan(0);
   });
 
-  it("wall HP follows 40 + 30·wallsPassed + floor(rng·20)", () => {
+  it("wall HP rules: distance floor, worst/best blend, always beatable by best picks while t < 1", () => {
+    expect(wallFloor(0, 0)).toBe(CONFIG.WALL_BASE);
+    expect(wallFloor(3, 0)).toBe(Math.round(CONFIG.WALL_BASE * CONFIG.WALL_GROWTH ** 3));
+    expect(wallFloor(3, 0.99)).toBeGreaterThan(wallFloor(3, 0));
+    for (let k = 1; k < 20; k += 1) {
+      expect(wallFloor(k, 0)).toBeGreaterThan(wallFloor(k - 1, 0.99));
+      expect(wallT(k)).toBeGreaterThanOrEqual(wallT(k - 1));
+      expect(wallT(k)).toBeLessThan(1);
+    }
+    // Floor dominates when the reachable numbers are small.
+    expect(wallHp(2, 170, 20, 60)).toBe(170);
+    // Otherwise the wall sits between the worst-pick and best-pick numbers.
+    const hp = wallHp(1, 50, 400, 2000);
+    expect(hp).toBe(Math.ceil(400 + wallT(1) * 1600));
+    expect(hp).toBeGreaterThan(400);
+    expect(hp).toBeLessThan(2000);
+    // No choice to make: the best (= worst) path still clears it.
+    expect(wallHp(4, 10, 900, 900)).toBe(899);
+  });
+
+  it("spawned walls respect the floor and grow with distance", () => {
     const sim = new NumberSurgeSim(11);
     const pilot = new Autopilot();
     const hps: number[] = [];
-    let passed = 0;
+    const seen = new Set<object>();
     for (let i = 0; i < 9000 && (i === 0 || sim.o.phase === "playing"); i += 1) {
       sim.advance(pilot.next(sim, i));
       for (const w of sim.o.walls) {
-        if (w.active && !hps.includes(w.hp)) hps.push(w.hp);
+        if (w.active && !seen.has(w)) {
+          seen.add(w);
+          hps.push(w.hp);
+        }
+        if (!w.active) seen.delete(w);
       }
-      passed = sim.o.wallsPassed;
-      if (passed >= 3) break;
+      if (hps.length >= 4) break;
     }
-    expect(hps.length).toBeGreaterThanOrEqual(2);
-    for (const [i, hp] of hps.entries()) {
-      expect(hp).toBeGreaterThanOrEqual(40 + 30 * i);
-      expect(hp).toBeLessThanOrEqual(40 + 30 * i + 19);
+    expect(hps.length).toBeGreaterThanOrEqual(3);
+    for (const [i, hp] of hps.entries()) expect(hp).toBeGreaterThanOrEqual(wallFloor(i, 0));
+  });
+
+  const playOut = (seed: number, policy: "idle" | "greedy", maxSeconds = 600): { seconds: number; phase: string; peak: number } => {
+    const sim = new NumberSurgeSim(seed);
+    const pilot = new Autopilot();
+    sim.advance(START);
+    let peak = sim.o.number;
+    let steps = 0;
+    for (; steps < maxSeconds * 60 && sim.o.phase === "playing"; steps += 1) {
+      const input = policy === "greedy" ? pilot.next(sim, steps + 1) : steps === 0 ? { ...IDLE, dx: 5 } : IDLE;
+      sim.advance(input);
+      peak = Math.max(peak, sim.o.number);
     }
+    return { seconds: steps / 60, phase: sim.o.phase, peak };
+  };
+
+  it("idle play (parked in one lane) loses within about a minute and never hits the cap", () => {
+    const runs = Array.from({ length: 24 }, (_, i) => playOut(i + 1, "idle"));
+    for (const run of runs) {
+      expect(run.phase).not.toBe("playing");
+      expect(run.seconds).toBeLessThan(120);
+      expect(run.peak).toBeLessThan(CONFIG.NUMBER_CAP);
+    }
+    const underMinute = runs.filter((r) => r.seconds <= 60).length;
+    expect(underMinute / runs.length).toBeGreaterThanOrEqual(0.75);
+  });
+
+  it("best-gate play lasts much longer than idle but still ends, and rarely reaches the cap", () => {
+    const seeds = Array.from({ length: 12 }, (_, i) => i + 1);
+    const greedy = seeds.map((s) => playOut(s, "greedy"));
+    const idle = seeds.map((s) => playOut(s, "idle"));
+    const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length;
+    for (const run of greedy) expect(run.phase).not.toBe("playing");
+    expect(mean(greedy.map((r) => r.seconds))).toBeGreaterThan(2 * mean(idle.map((r) => r.seconds)));
+    expect(greedy.filter((r) => r.peak >= CONFIG.NUMBER_CAP).length).toBeLessThanOrEqual(1);
+  });
+
+  it("×2 gates are the rare draw and +n/−n ranges stay bounded", () => {
+    const sim = running(31);
+    const counts: Record<string, number> = { add: 0, mul2: 0, sub: 0, div2: 0 };
+    const seen = new Set<string>();
+    for (let i = 0; i < 20000; i += 1) {
+      sim.advance(IDLE);
+      if (sim.o.phase === "gameOver") sim.begin();
+      for (let r = 0; r < sim.o.rows.length; r += 1) {
+        const row = sim.o.rows[r]!;
+        if (!row.active || row.resolved) continue;
+        const key = `${r}:${Math.round(row.z + sim.o.distance)}:${sim.o.events.gameover}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        for (const g of [sim.o.gates[r * 2]!, sim.o.gates[r * 2 + 1]!]) if (g.active) counts[g.kind]! += 1;
+      }
+    }
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    expect(total).toBeGreaterThan(200);
+    expect(counts.mul2! / total).toBeLessThan(0.12);
+    expect(counts.mul2!).toBeGreaterThan(0);
+    expect(counts.add!).toBeGreaterThan(counts.sub!);
   });
 
   it("C4: begin re-centres steering target AND drag state", () => {
