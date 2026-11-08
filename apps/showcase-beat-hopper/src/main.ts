@@ -6,7 +6,8 @@
  *
  * Query parameters: `seed=N`, `manual=1` (sim advances only through QA stepFrames), `autostart=1`, `autopilot=1`,
  * `warmup=N` (idle splash frames before autostart, default 30), `dpr=N`, `motion=reduced|full`.
- * Settings persist under `splatSiblings.beat-hopper.best/.mute/.motion` (guarded localStorage).
+ * Settings persist under `splatSiblings.beat-hopper.best/.mute/.motion/.howtoSeen` (guarded localStorage). The How to
+ * play dialog opens on the first Play press; while it is open the loop is held, so the run neither starts nor advances.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
@@ -62,6 +63,7 @@ let prevFrame: FrameState | null = null;
 let lastPhase = "splash";
 let phaseStart = 0;
 let paused = false;
+let howtoOpen = false;
 let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
 
 const store = {
@@ -163,7 +165,7 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused,
+  isActive: () => ready && !paused && !howtoOpen,
   step() {
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
     pending.start = pending.down = pending.up = pending.duck = false;
@@ -249,10 +251,10 @@ let dragging = false;
 let lastX = 0;
 addEventListener("pointerdown", (e) => {
   void sound.unlock();
-  if (config.manual || pilot || paused) return;
+  if (config.manual || pilot || paused || howtoOpen) return;
   const target = e.target as HTMLElement | null;
   if (target?.closest?.(".no-steer")) return;
-  if (sim.o.phase === "splash") pending.start = true;
+  if (sim.o.phase === "splash") requestStart();
   else if (sim.o.phase === "playing") {
     pending.down = true;
     dragging = true;
@@ -289,13 +291,24 @@ addEventListener("blur", dropInput);
 
 addEventListener("keydown", (e) => {
   void sound.unlock();
-  if (config.manual || pilot || e.repeat) return;
+  if (config.manual || pilot) return;
+  if (howtoOpen) {
+    if (e.code === "Escape" || e.code === "Enter" || e.code === "Space") {
+      e.preventDefault();
+      if (!e.repeat) closeHowto();
+    } else if (e.code === "Tab") {
+      e.preventDefault();
+      $("btn-howto-close").focus();
+    }
+    return;
+  }
+  if (e.repeat) return;
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
   if (paused) return;
   if (e.code === "Enter" || (e.code === "Space" && sim.o.phase !== "playing")) {
     e.preventDefault();
-    if (sim.o.phase === "splash") pending.start = true;
+    if (sim.o.phase === "splash") requestStart();
     else if (sim.o.phase === "gameOver") restart();
     return;
   }
@@ -341,6 +354,48 @@ document.addEventListener("visibilitychange", () => {
   } else if (!paused) void sound.resume();
 });
 $("btn-resume").addEventListener("click", () => setPaused(false));
+
+/* ------------------------------------------------------------------ how to play */
+
+const HOWTO_KEY = "splatSiblings.beat-hopper.howtoSeen";
+/** Start the run once the dialog closes (the first-Play path), instead of returning to the screen it opened from. */
+let startAfterHowto = false;
+let howtoReturnFocus: HTMLElement | null = null;
+function openHowto(thenStart: boolean): void {
+  if (howtoOpen) return;
+  howtoOpen = true;
+  startAfterHowto = thenStart;
+  dropInput();
+  pending.start = false;
+  howtoReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  $("btn-howto-close").textContent = thenStart ? "GOT IT \u2014 PLAY" : "GOT IT";
+  $("howto-screen").classList.remove("hidden");
+  $("howto-card").scrollTop = 0;
+  $("btn-howto-close").focus({ preventScroll: true });
+}
+function closeHowto(): void {
+  if (!howtoOpen) return;
+  howtoOpen = false;
+  store.set(HOWTO_KEY, "1");
+  $("howto-screen").classList.add("hidden");
+  loop.resetAccumulator();
+  if (startAfterHowto && sim.o.phase === "splash") {
+    pending.start = true;
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  } else {
+    howtoReturnFocus?.focus?.({ preventScroll: true });
+  }
+  startAfterHowto = false;
+  howtoReturnFocus = null;
+}
+/** Every Play press goes through here: the first one ever shows How to play and starts the run when it closes. */
+function requestStart(): void {
+  if (store.get(HOWTO_KEY) !== "1" && !config.autostart) openHowto(true);
+  else pending.start = true;
+}
+$("btn-howto-close").addEventListener("click", closeHowto);
+$("btn-howto-splash").addEventListener("click", () => { if (!config.manual && !pilot) openHowto(false); });
+$("btn-howto-pause").addEventListener("click", () => { if (paused) openHowto(false); });
 $("btn-pause").addEventListener("click", () => { if (!config.manual && !pilot) setPaused(!paused); });
 
 function restart(): void {
@@ -355,7 +410,7 @@ function restart(): void {
 $("btn-start").addEventListener("click", () => {
   void sound.unlock();
   if (!ready || config.manual || pilot) return;
-  pending.start = true;
+  requestStart();
 });
 $("btn-restart").addEventListener("click", () => {
   void sound.unlock();
