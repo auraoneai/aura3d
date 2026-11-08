@@ -874,6 +874,12 @@ export interface RenderDevice {
   drawChecked?(command: DrawCommand): void;
   /** Optional portable-schema draw. Unsupported backends must omit this capability. */
   drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+  /**
+   * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+   * Queue order is preserved; any other device operation submits the recorded draws first.
+   */
+  beginDrawBatch?(): void;
+  endDrawBatch?(): void;
   /** Internal, forward-only point-quad submission; unsupported backends omit it. */
   drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads").NativePointQuadSubmission): void;
   /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */

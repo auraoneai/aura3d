@@ -1418,6 +1418,9 @@ export class ForwardPass extends BaseRenderPass {
         && !this.options.globalClipping && !this.options.materialClippingFor && !this.options.disableCombinedDraw
         && !resolveContactShadowMask(this.contactMaskScope) && isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
         && forwardDrawProvidersSafe(flags, true);
+      // WebGPU records this item loop into one command encoder (see RenderDevice.beginDrawBatch); WebGL2 has no window.
+      context.device.beginDrawBatch?.();
+      try {
       if (!canPlan) {
         for (let index = 0; index < ordered.length;) {
           const first = ordered[index]!;
@@ -1446,6 +1449,9 @@ export class ForwardPass extends BaseRenderPass {
       }
       // #181: issue any trailing multi-draw run deferred by `submitDraw`.
       flushMultiDrawQueue(context.device);
+      } finally {
+        context.device.endDrawBatch?.();
+      }
     } finally {
       this.clusteredLighting?.dispose();
       this.clusteredLighting = null;

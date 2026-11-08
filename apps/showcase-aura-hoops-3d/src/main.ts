@@ -1041,7 +1041,8 @@ let auraApp: ReturnType<typeof createAuraApp>;
 const labFlags = readLabFlags();
 /** A5 lab: `?ies=1` gives the sodium spots a Type-C photometric profile (EXPERIMENTAL, default OFF; scalar spots otherwise). */
 const IES_LAB = readIesLabFlag();
-const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, createWorkerRendererWorker);
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),

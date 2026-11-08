@@ -116,7 +116,8 @@ function boot(): void {
   try {
     // Lab flags: `?worker=1` carries createWorkerRendererWorker; the renderer/output fragments merge over the look's renderer and the venue output
     // preset instead of being overwritten by them, so `?backend=` / `?gamut=` reach the engine.
-    const { renderer: labRenderer, output: labOutput } = labAppOptions(lab);
+    // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+    const { renderer: labRenderer, output: labOutput } = labAppOptions(lab, { backend: "auto" });
     const lookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look) as { renderer?: object; output?: object };
     // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
     // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.

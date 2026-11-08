@@ -21,7 +21,8 @@ export interface NativeRenderer extends SlamRenderer {
 }
 
 /**
- * A3/A10 lab flags, all off by default: `?backend=auto|webgpu` (WebGL2 fallback kept) and `?gamut=p3` (falls back to sRGB).
+ * A3/A10 lab flags: `?backend=auto|webgpu|webgl2` (WebGL2 fallback kept; the game passes "auto" as its default) and `?gamut=p3`
+ * (falls back to sRGB).
  * Same mapping as apps/showcase-port-shared/lab-flags.ts, kept local so the example stays self-contained. EXPERIMENTAL.
  */
 export function labAppOptions(search: string, defaultBackend?: "auto" | "webgpu"): { appOptions?: NonNullable<SceneRendererOptions["appOptions"]> } {
@@ -44,7 +45,8 @@ export function createNativeRenderer(options: { safety?: boolean; search?: strin
     ...(options.safety !== undefined ? { safety: options.safety } : {}),
     ...(options.search !== undefined ? { search: options.search } : {}),
     ...(options.onBootProgress ? { onBootProgress: options.onBootProgress } : {}),
-    ...labAppOptions(options.search ?? (typeof window !== "undefined" ? window.location.search : ""))
+    // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+    ...labAppOptions(options.search ?? (typeof window !== "undefined" ? window.location.search : ""), "auto")
   });
   return {
     handle,

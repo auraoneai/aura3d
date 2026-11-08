@@ -79,6 +79,8 @@ export class WebGPUResourceInterop {
   private serial = 0;
   private submissionsInFlight = 0;
   private readonly deferredRetirements = new Set<object>();
+  /** Called before every submission, e.g. so an owner can first submit work it has recorded but not yet queued. */
+  beforeSubmit: (() => void) | undefined;
 
   constructor(readonly queue: WebGPUInteropQueue, readonly generation: number) {
     if (!Number.isInteger(generation) || generation < 1) throw new Error("WEBGPU_INTEROP_INVALID_GENERATION");
@@ -171,7 +173,7 @@ export class WebGPUResourceInterop {
       this.resourceSettlementObservers.set(resource, observers);
     }
     observers.add(completion);
-    this.notifySettlementObservers();
+    this.notifySettlementObservers(resource);
     return completion.promise;
   }
 
@@ -226,6 +228,7 @@ export class WebGPUResourceInterop {
   /** Submit in queue order; accesses must belong to this live generation. */
   submit(commands: readonly unknown[], accesses: readonly WebGPUResourceAccess[] = []): number {
     this.assertActive();
+    this.beforeSubmit?.();
     this.submissionsInFlight += 1;
     try {
       const resources: object[] = [];
@@ -319,7 +322,7 @@ export class WebGPUResourceInterop {
       if (!current()) return;
       fence.state = "failed";
       fence.error = error;
-      this.notifySettlementObservers();
+      this.notifySettlementObservers(resource);
     };
     const passFence = (): void => {
       if (settled) return;
@@ -337,7 +340,7 @@ export class WebGPUResourceInterop {
       if (typeof request !== "function") {
         fence.state = "unavailable";
         fence.error = new Error("WEBGPU_INTEROP_FENCE_UNAVAILABLE");
-        this.notifySettlementObservers();
+        this.notifySettlementObservers(resource);
         return;
       }
       const pending = request.call(this.queue);
@@ -346,7 +349,7 @@ export class WebGPUResourceInterop {
         if (current()) {
           fence.state = "unavailable";
           fence.error = new Error("WEBGPU_INTEROP_FENCE_UNAVAILABLE");
-          this.notifySettlementObservers();
+          this.notifySettlementObservers(resource);
         }
         return;
       }
@@ -446,32 +449,48 @@ export class WebGPUResourceInterop {
     } finally {
       record.destroying = false;
       this.destroying -= 1;
-      this.notifySettlementObservers();
+      this.notifySettlementObservers(resource);
     }
   }
 
-  private notifySettlementObservers(): void {
-    for (const [resource, observers] of this.resourceSettlementObservers) {
-      const record = this.resources.get(resource);
-      let failed = false;
-      let error: unknown;
-      if (record?.failure) {
-        failed = true;
-        error = record.failure.error;
-      } else if (!this.invalidated && (record?.fence?.state === "failed" || record?.fence?.state === "unavailable")) {
-        failed = true;
-        error = record.fence.error;
-      }
-      if (record && !failed) continue;
-      this.resourceSettlementObservers.delete(resource);
-      for (const completion of observers) {
-        if (failed) this.rejectCompletion(completion, error);
-        else {
-          completion.state = "resolved";
-          completion.resolve();
-        }
+  /**
+   * Settle observers whose state may have changed. A per-resource event (`resource` given) can only settle that
+   * resource's own observers, so it skips the scan over every other pending lease; that scan made retiring N leases
+   * cost O(N^2) when many per-draw resources were in flight.
+   */
+  private notifySettlementObservers(resource?: object): void {
+    if (resource !== undefined) {
+      const observers = this.resourceSettlementObservers.get(resource);
+      if (observers) this.settleResourceObservers(resource, observers);
+    } else {
+      for (const [pending, observers] of this.resourceSettlementObservers) this.settleResourceObservers(pending, observers);
+    }
+    this.settleGlobalObservers();
+  }
+
+  private settleResourceObservers(resource: object, observers: Set<RetirementCompletion>): void {
+    const record = this.resources.get(resource);
+    let failed = false;
+    let error: unknown;
+    if (record?.failure) {
+      failed = true;
+      error = record.failure.error;
+    } else if (!this.invalidated && (record?.fence?.state === "failed" || record?.fence?.state === "unavailable")) {
+      failed = true;
+      error = record.fence.error;
+    }
+    if (record && !failed) return;
+    this.resourceSettlementObservers.delete(resource);
+    for (const completion of observers) {
+      if (failed) this.rejectCompletion(completion, error);
+      else {
+        completion.state = "resolved";
+        completion.resolve();
       }
     }
+  }
+
+  private settleGlobalObservers(): void {
     if (!this.settlementObservers.size) return;
     const errors: unknown[] = [];
     const add = (error: unknown): void => {

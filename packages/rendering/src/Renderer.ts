@@ -57,7 +57,7 @@ import { VertexBuffer } from "./VertexBuffer";
 import { VertexFormat } from "./VertexFormat";
 import { BloomPass, FXAAPass, ToneMappingPass, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels, type BloomOptions, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthTextureBinding, type DepthOfFieldOptions, type FXAAOptions, type FilmGrainOptions, type FusedLdrPostProcessPass, type FusedLdrPostProcessScratch, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, type VolumetricLightOptions } from "./PostProcessPass";
 import { bindRendererSsrProjection, createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics, type RendererPostProcessPassName, type RendererPostProcessPassPlan, type RendererPostprocessPlanDiagnostics, type RendererPostprocessPlanOptions, type RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
-import { DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
+import { createLeanCoreShaderLibrary, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
@@ -1040,6 +1040,12 @@ export class Renderer {
   private readonly frameStatsMonitor?: FrameStatsLike;
   /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
   private probeGraph?: RenderGraph;
+  /**
+   * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+   * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+   * (and, on WebGPU, re-creating pipelines for) the same programs.
+   */
+  private probeShaderLibrary?: ShaderLibrary;
   private readonly photometricProfiles?: RendererOptions["photometricProfiles"];
   private photometricResources?: PhotometricFrameResources;
   private readonly projectedSpotImages?: RendererOptions["projectedSpotImages"];
@@ -1226,7 +1232,8 @@ export class Renderer {
       cameraViewProjectionMatrix: vp,
       ...(frameContext ? { frameContext, cameraPosition: frameCamera?.position } : {}),
       outputColorSpace: "linear",
-      qualityTier: this.liveQualityTier()?.settings
+      qualityTier: this.liveQualityTier()?.settings,
+      shaderLibrary: (this.probeShaderLibrary ??= createLeanCoreShaderLibrary())
     };
     const graph = (this.probeGraph ??= new RenderGraph());
     graph.clear();

@@ -162,6 +162,25 @@ export function writeUniformData(
   return writeShaderData(selected, data, output, byteOffset);
 }
 
+/**
+ * `writeUniformData` with the block's layout derived once: for a block written every draw (portable material uniforms),
+ * the per-call layout derivation cost more than the write. Same bytes and errors as `writeUniformData(layout, target, v)`.
+ */
+export interface UniformDataWriter {
+  readonly layout: ShaderDataLayout;
+  write(value: ShaderDataValue): Uint8Array;
+}
+
+export function createUniformDataWriter(layout: UniformBlockLayout, target: ShaderDataTarget): UniformDataWriter {
+  const logical = logicalUniformLayout(layout);
+  const selected = selectedUniformLayout(logical, target);
+  const lower = target === "wgsl-uniform" || target === "wgsl-storage";
+  return {
+    layout: selected,
+    write: (value) => writeShaderData(selected, lower ? lowerBooleanValues(logical.type, value, "$") as ShaderDataValue : value)
+  };
+}
+
 /** `layout(std140) uniform <name> { <type> <name>[n]; ... };` */
 export function emitGlslBlock(layout: UniformBlockLayout): string {
   return uniformBlockGlsl(layout.name, uniformFields(layout));

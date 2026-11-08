@@ -1211,7 +1211,7 @@
       "id": "template:custom-scene",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png: the camera is solved by camera.auto from the ship's drawn bounds (bounding box at 0.9 of the frame, centred), so the hull and sails sit at the frame centre; bands are the hull and sail texels addressed by the GLB UVs, excluding the authored #28506b water. No reference capture is stored (the region was eyeballed once on a real-GPU frame); lighting, grade and rendered appearance remain unverified.",
+      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png through the production actor/frame-input path and the frame's own view-projection; bands are the hull and sail texels addressed by the GLB UVs, excluding the authored #28506b water. No reference capture. The subject is small at the authored 13 m orbit; lighting, grade and rendered appearance remain unverified.",
       "subject": "Kenney Pirate Kit medium ship (typed, colormap-textured) on the harbour plane",
       "surface": {
         "kind": "canvas",
@@ -1250,10 +1250,10 @@
       "regions": [
         {
           "label": "subject",
-          "x": 600,
-          "y": 300,
-          "width": 200,
-          "height": 140,
+          "x": 612,
+          "y": 400,
+          "width": 66,
+          "height": 62,
           "minContrast": 8,
           "colors": [
             {
@@ -1475,7 +1475,7 @@
       "id": "template:procedural-scene",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",
-      "provenance": "Estimated from the template's camera.auto pose (the robot group framed at 0.7 of the frame, centred, fov 36) and the robot torso and glow-core primitives (steel #b9c1ce, emissive #8fefff); the region sits inside the projected torso. No reference capture is stored (eyeballed once on a real-GPU frame). Lighting, shadows, grade and rendered appearance remain unverified.",
+      "provenance": "Estimated from the template's own authored orbit camera ([3, 1.5, 4.2] looking at [0, 1, 0], fov 36) and the robot torso and glow-core primitives (steel #b9c1ce, emissive #8fefff); the region sits inside the projected torso. No reference capture. Lighting, shadows, grade and rendered appearance remain unverified.",
       "subject": "Primitive-built jointed robot torso (steel body and emissive core) under the character-showcase look",
       "surface": {
         "kind": "canvas",
@@ -2001,7 +2001,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "1f95e92f8a5f931899ff82c641b0964afda3634594e6cce096ebe9cd288963bd"
+        "sha256": "a290adff32e9408b5268057106944fd359d00aa959619e248e5e16f9d24cfc3a"
       },
       "sourceDependencies": [
         {
@@ -2087,7 +2087,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "29b532645405c31c7f790c30351b895102ced4cbd7ad750f33703423902d9868"
+        "sha256": "7da5be9e8de6ea1984afb72627f873cbdae6aff5cafb63e86d5f95e9eef1552e"
       },
       "sourceDependencies": [
         {
@@ -2231,7 +2231,7 @@
       },
       "source": {
         "path": "apps/showcase-cross-hop/src/main.ts",
-        "sha256": "6b8869999c6037229feb650733b40aab796a29ec8488d5ad47879c86ce1f449d"
+        "sha256": "7998f2827780e5788bff0f64e788a97690123cb28ea45a94157803ab4c54586f"
       },
       "sourceDependencies": [
         {
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -3947,7 +3947,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "0b8436147c04fe3a1be192ac5873fac6d5ab403528d83e044b39ccf912996cb1"
+        "sha256": "287aebb6fadee3226503e02b8be40ddadd78da49e4220e91a34fdeafad6e4f66"
       },
       "sourceDependencies": [
         {
@@ -4163,7 +4163,7 @@
         },
         {
           "path": "examples/aura-slam/main.ts",
-          "sha256": "ffd050915867c10ec83f8466835a84126538c646cdbe6c2878dd59756d1f2ccb"
+          "sha256": "0963364be281401a51ff7335285251f1227ae90248dd5d8a436f4c0a2a81e8f7"
         },
         {
           "path": "examples/aura-slam/shell/boot.ts",
@@ -4285,7 +4285,7 @@
       },
       "source": {
         "path": "apps/showcase-iron-crown/src/main.ts",
-        "sha256": "b92bbb83ab7a832f7e6a644f59ef2eef8c152db4c02dfe0a217d7e9a24eb792b"
+        "sha256": "c7dfc2713e4f646d370c40b6d0e7d8514b15d99aa1837582a2b85d23e3530204"
       },
       "sourceDependencies": [
         {
@@ -4702,7 +4702,7 @@
       },
       "source": {
         "path": "examples/heatsink-port/main.ts",
-        "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
+        "sha256": "4193edf90dfc3c08e43d72041dfbec59df9c6eb109f39b7c640376b623839e92"
       },
       "sourceDependencies": [
         {
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "4a23686798a3410cc36de4cbfa45379d544dd23ce3c729a772bae3ff03e44d9d"
+          "sha256": "30a0b4e05b398c7a39ce3261e2f0d2be3242101725c5f5d80870159ecb7d265a"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4814,11 +4814,11 @@
         },
         {
           "path": "examples/heatsink-port/main.ts",
-          "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
+          "sha256": "4193edf90dfc3c08e43d72041dfbec59df9c6eb109f39b7c640376b623839e92"
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "4a23686798a3410cc36de4cbfa45379d544dd23ce3c729a772bae3ff03e44d9d"
+          "sha256": "30a0b4e05b398c7a39ce3261e2f0d2be3242101725c5f5d80870159ecb7d265a"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -5930,7 +5930,7 @@
       },
       "source": {
         "path": "apps/showcase-roadster-hours-port/src/main.ts",
-        "sha256": "5129a42003047dea9d62ada3797302be5a5c889112f19de4795931bf19cd3501"
+        "sha256": "cee2c8db136aff41a28c05b3cca5cfa0aeb8b991384ee9e71462d365f53de9a6"
       },
       "sourceDependencies": [
         {
@@ -6291,7 +6291,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/main.ts",
-          "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
+          "sha256": "fe24635357c4c33302dd1104c4809436239c8c4c15e88db6c82085491a51a194"
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
@@ -6744,7 +6744,7 @@
       },
       "source": {
         "path": "examples/where-the-wind-wanders-port/main.ts",
-        "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
+        "sha256": "eba9173b3c5e14fbd4ac5a60f3da89731ad23d5ac0ebf3ed80d2dbe570a486f7"
       },
       "sourceDependencies": [
         {
@@ -6839,7 +6839,7 @@
       "sourceDependencies": [
         {
           "path": "examples/where-the-wind-wanders-port/main.ts",
-          "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
+          "sha256": "eba9173b3c5e14fbd4ac5a60f3da89731ad23d5ac0ebf3ed80d2dbe570a486f7"
         },
         {
           "path": "examples/where-the-wind-wanders-port/sim.ts",
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -8284,7 +8284,7 @@
       },
       "source": {
         "path": "examples/saiyan-snake-way-port/main.ts",
-        "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
+        "sha256": "fe24635357c4c33302dd1104c4809436239c8c4c15e88db6c82085491a51a194"
       },
       "sourceDependencies": [
         {
@@ -8378,7 +8378,7 @@
       },
       "source": {
         "path": "examples/aura-slam/main.ts",
-        "sha256": "ffd050915867c10ec83f8466835a84126538c646cdbe6c2878dd59756d1f2ccb"
+        "sha256": "0963364be281401a51ff7335285251f1227ae90248dd5d8a436f4c0a2a81e8f7"
       },
       "sourceDependencies": [
         {
@@ -8605,7 +8605,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-diamond-3d/src/main.ts",
-        "sha256": "1f5620cb596846f79837687d8127992711e373b22d90558aeb9222028cea614d"
+        "sha256": "042a164eb0b8d87a9f739a06e9ecfb68a6efba5d938c622815d3febcc387b9a0"
       },
       "sourceDependencies": [
         {
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "c06c560f7f847d15b3e206f9d82b3105bd2b513a33b80a2a900a6645e47db11d"
+          "sha256": "f1e5cecfbc2862dd26611f4d23dcd692ced75d39a37dde146c6124647673db90"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
@@ -8945,854 +8945,6 @@
               ],
               "minFraction": 0.25,
               "maxFraction": 0.75
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "template:starter-game",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own source: with no input the fixed-step sim keeps the archer at the origin (state x 0, z 0, idle clip) and render() poses the camera at [0, 6.5, 8.5] looking at [0, 0.8, 0], fov 46, so the 1.6 m archer (targetHeight 1.6) projects to the frame centre, about x 590-695, y 300-420 at 1280x720 (index.html #app fills the viewport; the HUD sits top-left, pointer-events none). The region (x 596-684, y 300-420) holds the archer over the #3f7a2a island grass. Colours: the GLB's colormap.png texels (terracotta tunic and skin, green hat) under the outdoor-day look (exposure -0.9 EV, contrast 1.1, saturation 1.15); the tunic band needs red >= 140 and the hat band green >= 140, which the darker grass (green <= 135) and the cyan gems outside the region do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. The idle clip pose, HDRI lighting, grade and real browser layout remain unverified.",
-      "subject": "Kenney Mini Forest archer (typed, colormap-textured) idling at the island centre under the fixed starter camera",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "source": {
-        "path": "packages/create-aura3d/templates/starter-game/src/main.ts",
-        "sha256": "f66694aaaeaf916dbf02bdd11a18e1e62de6c52c9a41e34c2068abd7ee1fbefc"
-      },
-      "sourceDependencies": [
-        {
-          "path": "packages/create-aura3d/templates/starter-game/index.html",
-          "sha256": "c2ef3a22d815f895a35a738cbbc51e2781654d759f7531bb59e7f92741162d60"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-game/src/aura-assets.ts",
-          "sha256": "d68fcce2aa95ad80d230e750b21c588cdedb9d74b847e4a5039c1772a1ef5d4a"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-game/public/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
-          "sha256": "0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-game/public/aura-assets/Textures/colormap.png",
-          "sha256": "319f1087d8ed50a8794f9a8179f64671d5595f2365fdf3e47ec2d4eb74dba20f"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 596,
-          "y": 300,
-          "width": 88,
-          "height": 120,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "archer terracotta tunic/skin texels",
-              "red": [
-                140,
-                235
-              ],
-              "green": [
-                60,
-                135
-              ],
-              "blue": [
-                40,
-                125
-              ],
-              "minFraction": 0.02,
-              "maxFraction": 0.6
-            },
-            {
-              "name": "archer green hat texels",
-              "red": [
-                70,
-                150
-              ],
-              "green": [
-                140,
-                220
-              ],
-              "blue": [
-                100,
-                185
-              ],
-              "minFraction": 0.05,
-              "maxFraction": 0.7
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "template:starter-product",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own source: model() fits the GLB to a 3.4 m longest side at [0, 0.1, 0] and camera.frame(product, { fill: 0.5, azimuth 0.75, elevation 0.32, fov 32 }) centres its bounds, so the car body covers the frame centre at every turntable angle (the product and turntable rotate at 0.35 rad/s; the car's narrowest silhouette, end-on, still spans the centre). The region (x 580-700, y 290-390) is the central body area. Colour: the GLB's yellow paint under the product-studio look with the #1d2027 backdrop, a cool #cfe0ff rim and grade (contrast 1.12, saturation 1.08); the band needs red >= 170, green >= 130 and blue <= 110, which the neutral grey turntable, floor and backdrop do not satisfy. On three frames taken 0.5 s, 6 s and 12 s after ready the band covered 35-61% of the region. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Paint reflections, HDRI lighting and real browser layout remain unverified.",
-      "subject": "Yellow sports car (showcaseCleanSportsCar GLB) on the slow turntable, framed by camera.frame at fill 0.5",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "source": {
-        "path": "packages/create-aura3d/templates/starter-product/src/main.ts",
-        "sha256": "50837ae0b124a1d4b95b6c6755f089133b05384b71d8ea8be93a2ad29664ae99"
-      },
-      "sourceDependencies": [
-        {
-          "path": "packages/create-aura3d/templates/starter-product/index.html",
-          "sha256": "1a7ba527a9445bb183cfe683528c21e303a1f1849d02d989aa73805669d6cbfc"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-product/src/aura-assets.ts",
-          "sha256": "ed26c786ca502be2be57dbca2fc68e2dbbde9bc7dc728322c7221ee2ec595ee2"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-product/public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
-          "sha256": "1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14"
-        },
-        {
-          "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 580,
-          "y": 290,
-          "width": 120,
-          "height": 100,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "yellow car paint",
-              "red": [
-                170,
-                255
-              ],
-              "green": [
-                130,
-                235
-              ],
-              "blue": [
-                0,
-                110
-              ],
-              "minFraction": 0.08,
-              "maxFraction": 0.9
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "template:starter-outdoor",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own source: camera.orbit at [12, 12, 42] looking at [0, 1.5, 0], fov 46 (no auto-rotation; orbit only moves on drag), over the procedural heightfield whose basin at [4, 6] dips below WATER_Y 0.2, so the lake plane shows in the lower centre of the frame. The region (x 560-720, y 540-640) is lake water with a strip of shore. Colours: the lake material #1b5f7a (roughness 0.18, opacity 0.88) reflecting the golden-hour sky, and the terrain's vertex colours (greens and wet sand) under the golden-hour look (sun elevation 16 deg, exposure -0.7 EV, contrast 1.15, saturation 1.2); the water band needs blue >= 70 with red <= 110, the shore band blue <= 80 with red and green 70-140. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Water reflection, shadows, haze and real browser layout remain unverified.",
-      "subject": "The valley lake (#1b5f7a glossy water) and its grassy shore under the golden-hour orbit camera",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "source": {
-        "path": "packages/create-aura3d/templates/starter-outdoor/src/main.ts",
-        "sha256": "a0320bc69e094d05f9365b19e6ba3a41de8cefc3e0a5c02ee29f26f608af2e4f"
-      },
-      "sourceDependencies": [
-        {
-          "path": "packages/create-aura3d/templates/starter-outdoor/index.html",
-          "sha256": "935b33e10597a1c4585dd92aad6648263a1fcd86ea86e22137d0c31d2d402ecb"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-outdoor/src/aura-assets.ts",
-          "sha256": "698b6fa92457b1cf1c1d161f6b1115d4da23b52cc4bb384b72d964cd033309f6"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-outdoor/public/aura-assets/kenneyMiniForestTree.0075d505.glb",
-          "sha256": "0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a"
-        },
-        {
-          "path": "packages/create-aura3d/templates/starter-outdoor/public/aura-assets/kenneyMiniForestRocksHigh.226728a0.glb",
-          "sha256": "226728a03989a1ce52ea64b55e3d9e2ff89004f7eaca9f74c2fafda7c84bbe49"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 560,
-          "y": 540,
-          "width": 160,
-          "height": 100,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "lake water #1b5f7a",
-              "red": [
-                40,
-                110
-              ],
-              "green": [
-                50,
-                120
-              ],
-              "blue": [
-                70,
-                140
-              ],
-              "minFraction": 0.1,
-              "maxFraction": 0.9
-            },
-            {
-              "name": "grass and sand shore",
-              "red": [
-                70,
-                140
-              ],
-              "green": [
-                70,
-                140
-              ],
-              "blue": [
-                10,
-                80
-              ],
-              "minFraction": 0.03,
-              "maxFraction": 0.6
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "template:starter-interior",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own source: camera.orbit at [2.9, 1.75, 3.9] looking at [-0.7, 0.9, -1.2] with fitFov(50) (50 deg at 16:9), no auto-rotation. The rug (felt #a4532c, 2.6 x 1.9 m at [-1.1, 0.005, 0]) lies under the coffee table at [-0.9, 0, -0.1] and projects across the lower centre-left of the frame. The region (x 380-580, y 480-560) is rug with the table's legs and shadow. Colour: the felt rug lit by the interior-warm look (exposure -0.8 EV, warm grade) and the floor lamp's #ffb870 point light; the band needs red 80-210 with green <= 60 and blue <= 45, which the #6b4a30 lacquer floor (green above 60), the plaster walls and the teal sofa do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Shadows, the lamp falloff and real browser layout remain unverified.",
-      "subject": "Terracotta felt rug (#a4532c) under the coffee table in the living room, from the fixed interior orbit camera",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "source": {
-        "path": "packages/create-aura3d/templates/starter-interior/src/main.ts",
-        "sha256": "4edc62189db716040686bdb9a462ba12999e352015b69d5a06c552d8666fd95c"
-      },
-      "sourceDependencies": [
-        {
-          "path": "packages/create-aura3d/templates/starter-interior/index.html",
-          "sha256": "b3d1ee2f28c744f449c5dbd9997cb7400a6013e5d88d94bde4bfe30d8b2d1206"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 380,
-          "y": 480,
-          "width": 200,
-          "height": 80,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "terracotta felt rug #a4532c",
-              "red": [
-                80,
-                210
-              ],
-              "green": [
-                10,
-                60
-              ],
-              "blue": [
-                0,
-                45
-              ],
-              "minFraction": 0.2,
-              "maxFraction": 0.95
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "template:starter-presentation",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "provenance": "Independently derived from the template's own source: templates take no route query here, so the 15 s loop runs and the catalog's polling capture (every 0.5-2 s for up to 60 s, four loops) meets the numbers beat; the region is authored for the pose at 12.5 s (the same pose the template's documented ?t=12.5 freezes), inside the numbers beat (10-15 s). Every bar's growth beat(t, 10.2 + 0.25 i, 1.1) has finished by 12.3 s and the collapse starts at 14.4 s, so all five bars stand at full height (0.9-3.1 m) at x 2.4-4.8, z 0.4; the camera is the eased midpoint of the numbers shot, lerp([3.2, 2.4, 6], [1.8, 3.4, 9.5], 0.5) = [2.5, 2.9, 7.75] looking at [2.2, 1.3, 0], fov 40 (it keeps pulling back slowly through 14.4 s, while the bars stay full height). The region (x 620-1040, y 420-560) holds the bars' lower halves over the #0d1018 stage floor. Colours: bar materials #22d3ee, #f472b6 and #fbbf24 with matching emissive at 0.35 under the night-city look (exposure -0.2 EV, bloom); each band needs its own hue (cyan: red <= 120 with green and blue >= 150; pink: red >= 170, blue >= 130; yellow: red >= 170, green >= 140, blue <= 110), none of which the dark floor satisfies. With the clock frozen by ?t= on the dev route each band held 7-15% of the region at 12.4, 13.5 and 14.3 s and 0% in the title beat (3 s). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Bloom, reflections and real browser layout remain unverified.",
-      "subject": "The five grown data bars (blue, cyan, violet, pink, yellow) in the frozen numbers beat",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "source": {
-        "path": "packages/create-aura3d/templates/starter-presentation/src/main.ts",
-        "sha256": "f7f507487b76d8be65d30a9b301d3f9c97619b5a4bc0e7699b001c351b92bd45"
-      },
-      "sourceDependencies": [
-        {
-          "path": "packages/create-aura3d/templates/starter-presentation/index.html",
-          "sha256": "24d1c659effdef9b38d4ccec3a2ede175ef378e3249204dbfcc217b862b295c1"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 620,
-          "y": 420,
-          "width": 420,
-          "height": 140,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "yellow bar #fbbf24",
-              "red": [
-                170,
-                255
-              ],
-              "green": [
-                140,
-                235
-              ],
-              "blue": [
-                0,
-                110
-              ],
-              "minFraction": 0.03,
-              "maxFraction": 0.5
-            },
-            {
-              "name": "pink bar #f472b6",
-              "red": [
-                170,
-                255
-              ],
-              "green": [
-                60,
-                170
-              ],
-              "blue": [
-                130,
-                235
-              ],
-              "minFraction": 0.03,
-              "maxFraction": 0.5
-            },
-            {
-              "name": "cyan bar #22d3ee",
-              "red": [
-                0,
-                120
-              ],
-              "green": [
-                150,
-                255
-              ],
-              "blue": [
-                150,
-                255
-              ],
-              "minFraction": 0.03,
-              "maxFraction": 0.5
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:apps/showcase-shape-shift-sprint",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "The player's red #e8453c sphere on the cream runway at the first step of a run (frozen chase pose)",
-      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_SHAPE_SHIFT__.booted (true once boot and warm-up are done) and the documented __AURA_SHAPE_SHIFT__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player starts in sphere form (look.ts shapes[0] #e8453c) on the centre lane, in the lower centre of the full-viewport canvas#app; the region (x 600-680, y 496-576) holds the sphere (about 70% of it) and the #f7ecd9 runway around it. The band needs red >= 150 with green and blue <= 115, which the cream runway, white clouds and blue sky do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Toon lighting, grade and real browser layout remain unverified.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas#app"
-      },
-      "query": "?autostart=1&manual=1",
-      "settle": {
-        "signal": "__AURA_SHAPE_SHIFT__.booted",
-        "equals": true
-      },
-      "driver": {
-        "call": "__AURA_SHAPE_SHIFT__.begin",
-        "args": []
-      },
-      "source": {
-        "path": "apps/showcase-shape-shift-sprint/src/main.ts",
-        "sha256": "e0b2f2159dc92611f7d5c7b62c26f38c22c5452541cfa284a810db0d30731e10"
-      },
-      "sourceDependencies": [
-        {
-          "path": "apps/showcase-shape-shift-sprint/index.html",
-          "sha256": "caff43ac7a89bbf4cd8e939b7d192be9b260a88adeffadaa2fb60654262f9ff0"
-        },
-        {
-          "path": "apps/showcase-shape-shift-sprint/src/world.ts",
-          "sha256": "b53c7c5986182a3cc461a976ef40fe8710629ad7e46af6d7a2d0fc5377d32025"
-        },
-        {
-          "path": "apps/showcase-shape-shift-sprint/src/look.ts",
-          "sha256": "53aa9662ae17daef574fc087b04c0867b76efc6c31f13c3fdc528c609bfcadff"
-        },
-        {
-          "path": "apps/showcase-shape-shift-sprint/src/presentation.ts",
-          "sha256": "5280cef1c5910618ed4aaba6de75ff415cb78918139d95055503ea9f110f3931"
-        },
-        {
-          "path": "apps/showcase-shape-shift-sprint/src/sim.ts",
-          "sha256": "405290cec3fe1998daa16b983e168476bf3bd8fe4bb5b2950ffb4c2feaa897fb"
-        },
-        {
-          "path": "apps/showcase-shape-shift-sprint/src/meshes.ts",
-          "sha256": "bb267734b2159cd850e220a63390461dbc77e8449d1d0922031fe63490608b75"
-        },
-        {
-          "path": "packages/engine/src/qa/hooks.ts",
-          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 600,
-          "y": 496,
-          "width": 80,
-          "height": 80,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "red #e8453c player sphere",
-              "red": [
-                150,
-                255
-              ],
-              "green": [
-                0,
-                115
-              ],
-              "blue": [
-                0,
-                115
-              ],
-              "minFraction": 0.2,
-              "maxFraction": 0.9
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:apps/showcase-number-surge",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "The player's cyan #3ef2ff number ball on the neon road at the first step of a run (frozen chase pose)",
-      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_NUMBER_SURGE__.booted (true once boot and warm-up are done) and the documented __AURA_NUMBER_SURGE__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player ball (look.ts PALETTE.ball #3ef2ff, with its #10102e count ink) sits on the centre of the #221d4e road in the lower centre of the full-viewport canvas#app; the region (x 600-680, y 515-595) is the ball (about 80% of it). The band needs green and blue >= 150 with red <= 115; the dark road, the magenta #ff4fd8 edges and the purple sky do not satisfy it (the thin #3ef2ff centre stripe only below the ball). The sunset environment preset is not shipped with the route, so the engine's procedural fallback lights it (warning only). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Bloom, grade and real browser layout remain unverified.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas#app"
-      },
-      "query": "?autostart=1&manual=1",
-      "settle": {
-        "signal": "__AURA_NUMBER_SURGE__.booted",
-        "equals": true
-      },
-      "driver": {
-        "call": "__AURA_NUMBER_SURGE__.begin",
-        "args": []
-      },
-      "source": {
-        "path": "apps/showcase-number-surge/src/main.ts",
-        "sha256": "d9b7c63c924d39985a4e2e287cddf0648eeaaa8205ce841be40758a146f6c229"
-      },
-      "sourceDependencies": [
-        {
-          "path": "apps/showcase-number-surge/index.html",
-          "sha256": "72f5620324ceff373429bde2e4957d1cfa2a875a9a31ae1b4496737703368c25"
-        },
-        {
-          "path": "apps/showcase-number-surge/src/world.ts",
-          "sha256": "3cc9fcf3cddcb3c67587f8e4a35e261870e9db179cd592700f88562883089e21"
-        },
-        {
-          "path": "apps/showcase-number-surge/src/look.ts",
-          "sha256": "647f15980b95d2e712f59462de8d3b3cc592d8dc900e59e00d34f7755adc6cf9"
-        },
-        {
-          "path": "apps/showcase-number-surge/src/presentation.ts",
-          "sha256": "08cb901ae6d4cc227dab8b55405dd8c4df8a85f0f6dd25d2e0025dc20b399116"
-        },
-        {
-          "path": "apps/showcase-number-surge/src/sim.ts",
-          "sha256": "a0ef45977f88c83277f940b1f5c2c7dbe5a57e55fc7ae69449692189d8babae0"
-        },
-        {
-          "path": "apps/showcase-number-surge/src/meshes.ts",
-          "sha256": "c59b69b5a0d86c8b26996a4f151ecf80c69eaacde5fdc7de050fa7f0af2796c0"
-        },
-        {
-          "path": "packages/engine/src/qa/hooks.ts",
-          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 600,
-          "y": 515,
-          "width": 80,
-          "height": 80,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "cyan #3ef2ff number ball",
-              "red": [
-                0,
-                115
-              ],
-              "green": [
-                150,
-                255
-              ],
-              "blue": [
-                150,
-                255
-              ],
-              "minFraction": 0.2,
-              "maxFraction": 0.93
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:apps/showcase-splat-turf",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "The player's pink #ff3d8b paint ball on the white runway at the first step of a run (frozen chase pose)",
-      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_SPLAT_TURF__.booted (true once boot and warm-up are done) and the documented __AURA_SPLAT_TURF__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player ball (look.ts ball #ff3d8b) sits on the #ffffff runway in the lower centre of the full-viewport canvas#app; the region (x 616-664, y 490-538) holds the ball (about 45%) and the white road around it. The band needs red >= 170, green <= 125 and blue 70-185, which the white road, the #3b1f47 road edge and the pink-peach sky gradient (green above 125) do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Toon lighting, grade and real browser layout remain unverified.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas#app"
-      },
-      "query": "?autostart=1&manual=1",
-      "settle": {
-        "signal": "__AURA_SPLAT_TURF__.booted",
-        "equals": true
-      },
-      "driver": {
-        "call": "__AURA_SPLAT_TURF__.begin",
-        "args": []
-      },
-      "source": {
-        "path": "apps/showcase-splat-turf/src/main.ts",
-        "sha256": "ba8bc364a3314bd4626b14139ebc95db4e7dc2295c5a466c4623ce3f12fcc6e3"
-      },
-      "sourceDependencies": [
-        {
-          "path": "apps/showcase-splat-turf/index.html",
-          "sha256": "8ca3732d2d6014a4d9748a2e36e089e707dd574b1b9840c1d5cce05170af2b70"
-        },
-        {
-          "path": "apps/showcase-splat-turf/src/world.ts",
-          "sha256": "c5d5265b33111faa98cddb1db9104559b902ab8eeca1556ef1cf6c65b23314a9"
-        },
-        {
-          "path": "apps/showcase-splat-turf/src/look.ts",
-          "sha256": "4270d8aaef6cc98c627bb05b7da286d71cff20916daf91512319d33d6d8f9aec"
-        },
-        {
-          "path": "apps/showcase-splat-turf/src/presentation.ts",
-          "sha256": "3974e1eb64b7be3f07cae3e128e74cc2d058c8524a8ebfff8d6788fe098c39e9"
-        },
-        {
-          "path": "apps/showcase-splat-turf/src/sim.ts",
-          "sha256": "ee17c0903ea103eda9a298888ee70620af182b36087fdd17c58f9d3597d772dc"
-        },
-        {
-          "path": "apps/showcase-splat-turf/src/meshes.ts",
-          "sha256": "5b08c3fdf39461705788d45396515a240535a5822048df05da4cfe585c9d65b9"
-        },
-        {
-          "path": "packages/engine/src/qa/hooks.ts",
-          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 616,
-          "y": 490,
-          "width": 48,
-          "height": 48,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "pink #ff3d8b paint ball",
-              "red": [
-                170,
-                255
-              ],
-              "green": [
-                0,
-                125
-              ],
-              "blue": [
-                70,
-                185
-              ],
-              "minFraction": 0.15,
-              "maxFraction": 0.85
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:apps/showcase-polarity-orbs",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "The player's red #ff5a4e orb on the warm #63303a deck at the first step of a run (frozen chase pose)",
-      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_POLARITY_ORBS__.booted (true once boot and warm-up are done) and the documented __AURA_POLARITY_ORBS__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player orb starts red (look.ts red #ff5a4e) on the warm deck (#63303a) in the lower centre of the full-viewport canvas#app; the region (x 620-660, y 482-522) holds the orb (about 45%) and the dark deck. Two bands: the orb needs red >= 140 with green and blue <= 115; the deck needs a dark warm red (red 40-95, green <= 60, blue <= 75). The warm sunset fog beside the road matches the orb band but not the deck band, so both must be present. The sunset environment preset is not shipped with the route, so the engine's procedural fallback lights it (warning only). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Fog, grade and real browser layout remain unverified.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas#app"
-      },
-      "query": "?autostart=1&manual=1",
-      "settle": {
-        "signal": "__AURA_POLARITY_ORBS__.booted",
-        "equals": true
-      },
-      "driver": {
-        "call": "__AURA_POLARITY_ORBS__.begin",
-        "args": []
-      },
-      "source": {
-        "path": "apps/showcase-polarity-orbs/src/main.ts",
-        "sha256": "fb06f65853382df1f57a23f1a2db1f03f032333425e24653d3126f8a0fae4499"
-      },
-      "sourceDependencies": [
-        {
-          "path": "apps/showcase-polarity-orbs/index.html",
-          "sha256": "43c5ce765354c2dcb6b447e66d055583c00fe1073748c40c9c611cd8d7b9cfec"
-        },
-        {
-          "path": "apps/showcase-polarity-orbs/src/world.ts",
-          "sha256": "59b210e905890c1390039347d05811c64e8f48400525f30120766cb485d60f04"
-        },
-        {
-          "path": "apps/showcase-polarity-orbs/src/look.ts",
-          "sha256": "d6f055b71dde96c6b90957a44e995d4168702edb9c9f8deb2baf52ef7d2cefb4"
-        },
-        {
-          "path": "apps/showcase-polarity-orbs/src/presentation.ts",
-          "sha256": "6aa7f7f7ace67c77002c7ab0e766dfc2b313276c6bf86b2d0b96dbf78b5e454c"
-        },
-        {
-          "path": "apps/showcase-polarity-orbs/src/sim.ts",
-          "sha256": "0d7c6f77c120dd10e317c1cec877284656b46601a566c830955d3c2491c40c0a"
-        },
-        {
-          "path": "apps/showcase-polarity-orbs/src/meshes.ts",
-          "sha256": "3d2beee69862204d86c4d9e9d775f708e2bd2b351adb5c1093acb8f7e0faf34c"
-        },
-        {
-          "path": "packages/engine/src/qa/hooks.ts",
-          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 620,
-          "y": 482,
-          "width": 40,
-          "height": 40,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "red #ff5a4e player orb",
-              "red": [
-                140,
-                255
-              ],
-              "green": [
-                20,
-                115
-              ],
-              "blue": [
-                20,
-                115
-              ],
-              "minFraction": 0.08,
-              "maxFraction": 0.8
-            },
-            {
-              "name": "dark warm deck #63303a",
-              "red": [
-                40,
-                95
-              ],
-              "green": [
-                5,
-                60
-              ],
-              "blue": [
-                5,
-                75
-              ],
-              "minFraction": 0.08,
-              "maxFraction": 0.85
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:apps/showcase-beat-hopper",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "The player's cyan #23e6ff hopper on the neon road at the first step of a run (frozen chase pose)",
-      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_BEAT_HOPPER__.booted (true once boot and warm-up are done) and the documented __AURA_BEAT_HOPPER__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player (look.ts player #23e6ff) stands on the centre of the #1c1240 road in the lower centre of the full-viewport canvas#app; the region (x 605-675, y 470-560) holds the hopper (about 55%) and the dark road. The band needs green and blue >= 150 with red <= 120; the road, the #ff2fb3 rails and the purple skyline do not satisfy it (the #23e6ff road line crosses only the region's bottom edge). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Bloom, grade and real browser layout remain unverified.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas#app"
-      },
-      "query": "?autostart=1&manual=1",
-      "settle": {
-        "signal": "__AURA_BEAT_HOPPER__.booted",
-        "equals": true
-      },
-      "driver": {
-        "call": "__AURA_BEAT_HOPPER__.begin",
-        "args": []
-      },
-      "source": {
-        "path": "apps/showcase-beat-hopper/src/main.ts",
-        "sha256": "796137a63f58cdf847299fa751c15ef482ab096c2680b54d44bca986e9239166"
-      },
-      "sourceDependencies": [
-        {
-          "path": "apps/showcase-beat-hopper/index.html",
-          "sha256": "5997f51fdc487d3337436d03793c46b11dde2543df7223ebf67a80b61ec9f6fa"
-        },
-        {
-          "path": "apps/showcase-beat-hopper/src/world.ts",
-          "sha256": "75ba63e322b4a33a9cea00e9975cec99046721617522b24a374175ca45cd14de"
-        },
-        {
-          "path": "apps/showcase-beat-hopper/src/look.ts",
-          "sha256": "4dd37ae6be4e4eb129ff76981e86a962c0259d19a5afb44d76c2f1b6d5eb2573"
-        },
-        {
-          "path": "apps/showcase-beat-hopper/src/presentation.ts",
-          "sha256": "46892a0e614b5a39a0427c3fc67ad6c678eaca51695b1738978ec305183a20da"
-        },
-        {
-          "path": "apps/showcase-beat-hopper/src/sim.ts",
-          "sha256": "cfad220e88f0966abaadff6ac20df27f0444439476859b9d841a522c636d0015"
-        },
-        {
-          "path": "apps/showcase-beat-hopper/src/meshes.ts",
-          "sha256": "7023c379559c53efa41813625445b6ab6b99adc0c9849975a56425e7087d33cd"
-        },
-        {
-          "path": "apps/showcase-beat-hopper/src/stage.ts",
-          "sha256": "eccfaba937564af98029ab2f4aca143410e78c84ab4f83d2277e8d0f2e226e7f"
-        },
-        {
-          "path": "packages/engine/src/qa/hooks.ts",
-          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 605,
-          "y": 470,
-          "width": 70,
-          "height": 90,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "cyan #23e6ff player",
-              "red": [
-                0,
-                120
-              ],
-              "green": [
-                150,
-                255
-              ],
-              "blue": [
-                150,
-                255
-              ],
-              "minFraction": 0.2,
-              "maxFraction": 0.85
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:examples/auto-frame-bird",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "The flapping red #e8573c bird held near the frame centre by the per-frame camera.framePose chase",
-      "provenance": "No reference capture: derived from source. The example writes no camera position: every frame camera.framePose(box, { azimuth, elevation 0.32, fill 0.45, aspect }) solves the chase pose from the bird's own body box at its current point on the 6 m loop, so the bird stays at the frame centre at fill 0.45 while it circles (the time on the loop varies with load timing; the pose does not). The region (x 570-690, y 300-390) holds the bird body, head and wings over the #6fa34a ground and the trees. Colour: body and head #e8573c, wings #f4c542/#e0842b, under environments.neutral, a hemisphere light and lights.key; the band needs red >= 130 with green 40-120 and blue <= 110, which the sky #a9d4f0, the ground and the green tree crowns do not satisfy. On five frames taken 1-8.5 s after ready (different loop angles and wing phases) the band covered 9-29% of the region. Settle waits for window.__AURA_AUTO_FRAME__.requestedFill (published after app.ready()). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Shadows, the wing pose and real browser layout remain unverified.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas#app"
-      },
-      "settle": {
-        "signal": "__AURA_AUTO_FRAME__.requestedFill",
-        "atLeast": 0.45
-      },
-      "source": {
-        "path": "examples/auto-frame-bird/main.ts",
-        "sha256": "70dd8ffd3ec2db8ef9d42597b7de50dda788a1f099ec61704c8fdb3f8d36fc20"
-      },
-      "sourceDependencies": [
-        {
-          "path": "examples/auto-frame-bird/index.html",
-          "sha256": "1999e3febc5fe3fc4f6be88edb44e5d8809ee9da924de36324e6d671edf61ac1"
-        },
-        {
-          "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 570,
-          "y": 300,
-          "width": 120,
-          "height": 90,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "red-orange bird body #e8573c",
-              "red": [
-                130,
-                255
-              ],
-              "green": [
-                40,
-                120
-              ],
-              "blue": [
-                20,
-                110
-              ],
-              "minFraction": 0.03,
-              "maxFraction": 0.8
             }
           ]
         }

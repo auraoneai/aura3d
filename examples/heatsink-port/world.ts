@@ -118,14 +118,14 @@ export function resolveLook(look: HeatsinkLookRow | string | undefined, quality:
 export interface BuildWorldOptions {
   /**
    * Draw the exhaust and spore sprites as quads with a WGSL twin instead of `gl_PointSize` points (WebGPU has no point
-   * size). Defaults to on only when a lab backend is requested (`?backend=webgpu|auto`), so the default scene is unchanged.
+   * size). On whenever the game requests WebGPU, which it does by default (`backend: "auto"`); `?backend=webgl2` keeps points.
    */
   readonly pointQuads?: boolean;
 }
 
 export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string, options: BuildWorldOptions = {}): World {
   const high = quality === "high";
-  const quads = options.pointQuads ?? resolveLabBackend(readLabFlags()) !== undefined;
+  const quads = options.pointQuads ?? resolveLabBackend(readLabFlags(), "auto") !== undefined;
   /* the sprite attributes as quad corners (four per point) or as points */
   const spriteGeometry = (n: number) => {
     const attrs = (count: number) => ({

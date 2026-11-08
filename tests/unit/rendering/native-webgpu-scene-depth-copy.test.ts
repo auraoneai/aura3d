@@ -126,7 +126,8 @@ describe("scene depth snapshot", () => {
     expect(fragment).toContain("@builtin(frag_depth)");
     const uniformForLastResolve = () => {
       const buffer = f.buffers.filter(entry => entry.descriptor.label === "prd01-scene-depth-resolve-portable-uniforms").at(-1)!;
-      const bytes = f.writes.find(entry => entry.buffer === buffer)!.bytes;
+      // Per-draw uniforms are pooled: the latest write to the buffer is the latest draw's packet.
+      const bytes = f.writes.filter(entry => entry.buffer === buffer).at(-1)!.bytes;
       return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0, true);
     };
     expect(f.device.getDepthConvention().mode).toBe("standard");
@@ -221,7 +222,7 @@ describe("scene depth snapshot", () => {
     f.device.endFrame(); f.device.dispose();
   });
 
-  it.each([1, 4])("keeps submitted %s× depth attachments and temporary uniforms alive until queue completion", async (samples) => {
+  it.each([1, 4])("keeps submitted %s× depth attachments alive until queue completion and pools the per-draw uniform", async (samples) => {
     let complete!: () => void;
     const fence = new Promise<void>(resolve => { complete = resolve; });
     const f = await fixture({ fence });
@@ -239,10 +240,13 @@ describe("scene depth snapshot", () => {
     expect(copyDepth.destroy).not.toHaveBeenCalled();
     complete();
     await Promise.resolve(); await Promise.resolve();
-    expect(uniform.destroy).toHaveBeenCalledOnce();
+    // The per-draw uniform went back to the device's pool after its submit; it is retired with the device.
+    expect(uniform.destroy).not.toHaveBeenCalled();
     expect(sourceDepth.destroy).toHaveBeenCalledOnce();
     expect(copyDepth.destroy).toHaveBeenCalledOnce();
     f.device.dispose();
+    for (let i = 0; i < 6; i += 1) await Promise.resolve();
+    expect(uniform.destroy).toHaveBeenCalledOnce();
   });
 
   it.each([1, 4])("restores the caller's target and prevents graph consumers after a failed or skipped %s× submission", async (samples) => {
