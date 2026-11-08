@@ -567,14 +567,16 @@ export async function startProductionRender(
   /*
    * WebGPU probe capture reads cube faces back asynchronously, so a synchronous
    * frame rejects it (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED) before submitting
-   * anything. When the app left `frameMode` unset, the loop then switches this
-   * mount to asynchronous frames instead of failing; an explicit "sync" keeps
-   * the error. WebGL2 reads back synchronously and never reaches this.
+   * anything. Unless the app chose `frameMode: "sync"`, the loop then switches
+   * this mount to asynchronous presentation instead of failing: with `frameMode`
+   * unset every later frame is asynchronous, and with "async" an explicit
+   * `render()` (`app.step()`) is queued as an asynchronous frame. An explicit
+   * "sync" keeps the error. WebGL2 reads back synchronously and never reaches this.
    */
   let probeAsyncFrames = false;
   const asyncFrames = (): boolean => options.frameMode === "async" || probeAsyncFrames;
   const adoptAsyncFramesForProbes = (error: unknown): boolean => {
-    if (options.frameMode !== undefined || !renderer.renderAsync || !isWebGPUProbeAsyncRequired(error)) return false;
+    if (options.frameMode === "sync" || !renderer.renderAsync || !isWebGPUProbeAsyncRequired(error)) return false;
     probeAsyncFrames = true;
     return true;
   };

@@ -212,6 +212,21 @@ describe("WebGPU probe capture picks asynchronous frames when frameMode is unset
     expect(seen).toEqual([]);
   });
 
+  it("queues an explicit step asynchronously when the app chose asynchronous frames", async () => {
+    const first = renderer();
+    const counts = counted(first);
+    first.asyncFrames.push(async () => 1);
+    const app = makeApp(first, { frameMode: "async" });
+    await app.ready();
+    expect(counts).toEqual({ sync: 0, async: 1 });
+    first.syncFrames.push(() => { throw probeAsyncRequired(); });
+    first.asyncFrames.push(async () => 2);
+    expect(() => app.step(1 / 60)).not.toThrow();
+    await ticks();
+    expect(counts).toEqual({ sync: 1, async: 2 });
+    expect(app.renderTermination!()).toBeUndefined();
+  });
+
   it("keeps the error when the app chose synchronous frames", async () => {
     const first = renderer();
     first.syncFrames.push(() => 0);
