@@ -1142,8 +1142,14 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
         wgsl: { vertex: wgslStage(depth.wgsl.vertex, "", spec.patch), fragment: wgslStage(depth.wgsl.fragment, "", spec.patch), ...(graphStorage ? { storageBindings: graphStorage.depthLayouts } : {}) }
       }
       : undefined;
+    // A hand-written WGSL twin casts through its own vertex stage plus the native depth encoding (WebGPU only: the GLSL
+    // depth program below is unchanged). Without it the WebGPU shadow pass has no program for the caster.
+    const twinDepthSources: PortableShaderSources | undefined = spec.castShadow === true && !graphDepthSources && sources.wgsl
+      ? { glsl: { vertex: glslVertex, fragment: CUSTOM_DEPTH_FRAGMENT_GLSL }, wgsl: { vertex: sources.wgsl.vertex, fragment: CUSTOM_DEPTH_FRAGMENT_WGSL } }
+      : undefined;
     this.customDepthShaderKey = spec.castShadow === true
-      ? acquireCustomDepthSource(this.shaderKey, graphDepthSources?.glsl.vertex ?? glslVertex, graphDepthSources ? this.sourcePair(graphDepthSources, this.bindingsForSources(graphDepthSources)) : undefined)
+      ? acquireCustomDepthSource(this.shaderKey, graphDepthSources?.glsl.vertex ?? glslVertex, graphDepthSources ? this.sourcePair(graphDepthSources, this.bindingsForSources(graphDepthSources)) : undefined,
+        twinDepthSources ? this.sourcePair(twinDepthSources, this.bindingsForSources(twinDepthSources)) : undefined)
       : undefined;
     const graphSkinning = graphSkinningOf(spec);
     if (graphSkinning) {
@@ -1327,6 +1333,17 @@ function releaseGlobalSource(key: string): void {
 /** Color-encoded depth is consumed when the shadow target has no sampleable depth attachment. */
 export const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(vec3(gl_FragCoord.z), 1.0);\n}\n";
 
+/**
+ * WebGPU half of `CUSTOM_DEPTH_FRAGMENT_GLSL` for `castShadow: true` materials with a WGSL twin: the same encoded colour
+ * depth the native depth programs write (the framebuffer depth `@builtin(position).z`, already 0..1 on WebGPU).
+ */
+export const CUSTOM_DEPTH_FRAGMENT_WGSL = `${WGSL_MARKER}
+@fragment
+fn fs_main(@builtin(position) a3dFragCoord: vec4f) -> @location(0) vec4f {
+  return vec4f(a3dFragCoord.z, a3dFragCoord.z, a3dFragCoord.z, 1.0);
+}
+`;
+
 /** Same marker placement as `PortableShaderMaterial` (after `#version`): the device requires the marker in both stages. */
 function withSourceMarker(source: string, marker: string): string {
   const version = source.match(/^(\s*#version[^\n]*\n)/);
@@ -1423,19 +1440,21 @@ function acquirePortableVariant(name: string, sources: PortableShaderSources, bi
  * displacement, uniforms and `instanceMatrix` work in the shadow pass, plus `CUSTOM_DEPTH_FRAGMENT_GLSL`) under
  * `<shaderKey>/depth`, ref-counted like the colour program. Returns the key `DepthPass` resolves.
  */
-function acquireCustomDepthSource(shaderKey: string, glslVertex: string, graphPair?: ShaderSourcePair): string {
+function acquireCustomDepthSource(shaderKey: string, glslVertex: string, graphPair?: ShaderSourcePair, twinPair?: ShaderSourcePair): string {
   const name = `${shaderKey}/depth`;
   const marker = `@aura3d-portable:${name}`;
+  // `twinPair` (a WGSL twin's depth program) only supplies the WebGPU stages; the GLSL stages stay as before.
+  const gpuPair = graphPair ?? twinPair;
   registerGlobalShaderSource({
     name, marker, vertex: withSourceMarker(glslVertex, marker),
     fragment: withSourceMarker(graphPair?.fragment ?? CUSTOM_DEPTH_FRAGMENT_GLSL, marker),
-    ...(graphPair?.webgpu && graphPair.portableBindings ? {
+    ...(gpuPair?.webgpu && gpuPair.portableBindings ? {
       webgpu: {
-        ...graphPair.webgpu,
-        vertex: withSourceMarker(graphPair.webgpu.vertex, marker),
-        fragment: withSourceMarker(graphPair.webgpu.fragment, marker)
+        ...gpuPair.webgpu,
+        vertex: withSourceMarker(gpuPair.webgpu.vertex, marker),
+        fragment: withSourceMarker(gpuPair.webgpu.fragment, marker)
       },
-      portableBindings: graphPair.portableBindings
+      portableBindings: gpuPair.portableBindings
     } : {})
   });
   globalSourceRefs.set(name, (globalSourceRefs.get(name) ?? 0) + 1);

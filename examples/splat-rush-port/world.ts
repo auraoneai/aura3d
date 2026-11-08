@@ -17,6 +17,10 @@ import { gateSquash, gateMatched, type Shown } from "./presentation";
 import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, PAINT_POT_PIECES, PIECES, addBackdrop, backdropPose, updateBackdrop } from "./backdrop";
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
 import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
+import {
+  CARNIVAL_CLOUD_FRAGMENT_WGSL, CARNIVAL_SEA_FRAGMENT_WGSL, CARNIVAL_SKY_FRAGMENT_WGSL, FLAT_FRAGMENT_WGSL, FLAT_TONE_FRAGMENT_WGSL, FLAT_TONE_VERTEX_WGSL, FLAT_VERTEX_WGSL,
+  GATE_SHADOW_FRAGMENT_WGSL, SHADOW_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, carnivalToonFragmentWgsl, carnivalVertexWgsl, toonFragmentWgsl, toonVertexWgsl
+} from "./shaders-wgsl";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
@@ -48,6 +52,7 @@ type CustomSpec = Parameters<typeof material.custom>[0];
 
 export const toonSpec = (base: Rgb, map?: TextureHandle, emissive: Rgb = [0, 0, 0], tone = false): CustomSpec => ({
   glsl: { vertex: tone ? TOON_TONE_VERTEX : TOON_VERTEX, fragment: toonFragment(map !== undefined, tone) },
+  wgsl: { vertex: toonVertexWgsl(tone), fragment: toonFragmentWgsl(map !== undefined, tone) },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
     emissive: { type: "color3", value: [...emissive] },
@@ -59,6 +64,7 @@ export const toonSpec = (base: Rgb, map?: TextureHandle, emissive: Rgb = [0, 0, 
 
 export const flatSpec = (base: Rgb, alpha: number, tone = false): CustomSpec => ({
   glsl: tone ? { vertex: FLAT_TONE_VERTEX, fragment: FLAT_TONE_FRAGMENT } : { vertex: FLAT_VERTEX, fragment: FLAT_FRAGMENT },
+  wgsl: tone ? { vertex: FLAT_TONE_VERTEX_WGSL, fragment: FLAT_TONE_FRAGMENT_WGSL } : { vertex: FLAT_VERTEX_WGSL, fragment: FLAT_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [...base] }, alpha: { type: "f32", value: alpha } },
   transparent: true,
   depthWrite: false,
@@ -67,13 +73,14 @@ export const flatSpec = (base: Rgb, alpha: number, tone = false): CustomSpec => 
 
 export const shadowSpec = (): CustomSpec => ({
   glsl: { vertex: SHADOW_VERTEX, fragment: SHADOW_FRAGMENT },
+  wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: SHADOW_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [0.02, 0.02, 0.05] }, alpha: { type: "f32", value: 0.3 } },
   transparent: true,
   depthWrite: false,
   side: "double"
 });
 
-export const skySpec = (): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "double", depthWrite: false });
+export const skySpec = (): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL }, side: "double", depthWrite: false });
 
 /* ---------------------------------------------------------------- GU47 carnival programs (look.ts drives every value) */
 
@@ -148,6 +155,7 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
     glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone, withMirror) },
+    wgsl: { vertex: carnivalVertexWgsl(wobble && tone ? "gate" : tone ? "tone" : "plain"), fragment: carnivalToonFragmentWgsl(map !== undefined, tone, withMirror) },
     uniforms: {
       baseColor: { type: "color3", value: [...base] },
       emissive: { type: "color3", value: [...emissive] },
@@ -178,6 +186,7 @@ export const carnivalCloudSpec = (look: SplatLook): CustomSpec => {
   const tod = timeOfDay(look, 0) as TimeOfDay;
   return {
     glsl: { vertex: CARNIVAL_TONE_VERTEX, fragment: CARNIVAL_CLOUD_FRAGMENT },
+    wgsl: { vertex: carnivalVertexWgsl("tone"), fragment: CARNIVAL_CLOUD_FRAGMENT_WGSL },
     uniforms: {
       alpha: { type: "f32", value: 1 },
       crSunDir: { type: "vec3", value: [...tod.sunDirection] },
@@ -211,6 +220,7 @@ export function carnivalSkyUniforms(look: SplatLook, tod: TimeOfDay): Uniforms {
 
 export const carnivalSkySpec = (look: SplatLook): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: CARNIVAL_SKY_FRAGMENT },
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: CARNIVAL_SKY_FRAGMENT_WGSL },
   uniforms: carnivalSkyUniforms(look, timeOfDay(look, 0) as TimeOfDay),
   side: "double",
   depthWrite: false
@@ -220,6 +230,7 @@ export const carnivalSeaSpec = (look: SplatLook): CustomSpec => {
   const tod = timeOfDay(look, 0) as TimeOfDay;
   return {
     glsl: { vertex: CARNIVAL_VERTEX, fragment: CARNIVAL_SEA_FRAGMENT },
+    wgsl: { vertex: carnivalVertexWgsl("plain"), fragment: CARNIVAL_SEA_FRAGMENT_WGSL },
     uniforms: { crSea: { type: "color3", value: [...tod.sea] }, crScroll: { type: "f32", value: 0 }, ...hazeUniforms(look, tod) },
     side: "double"
   };
@@ -768,7 +779,7 @@ export function buildWorld(options: WorldOptions): World {
   const gateShadows = look.gateShadow && look.toon
     ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
     : null;
-  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), glsl: { vertex: SHADOW_VERTEX, fragment: GATE_SHADOW_FRAGMENT }, uniforms: { baseColor: { type: "color3", value: [0.07, 0.02, 0.1] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
+  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), glsl: { vertex: SHADOW_VERTEX, fragment: GATE_SHADOW_FRAGMENT }, wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: GATE_SHADOW_FRAGMENT_WGSL }, uniforms: { baseColor: { type: "color3", value: [0.07, 0.02, 0.1] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;

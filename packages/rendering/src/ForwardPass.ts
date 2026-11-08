@@ -2836,6 +2836,12 @@ export class ForwardPass extends BaseRenderPass {
       selective?.enabled && selective.valid ? (feature) => { if (!stockSelectiveFeature(feature)) invalidateSelectiveBloomFrame(selective, "shader-feature"); } : undefined
     ) : {};
     if (selective?.enabled && selective.valid) selected[SELECTIVE_BLOOM_FEATURE] = true;
+    // WebGPU: the f_ind alpha tag needs a floating colour target (`validateGeneratedPbrTarget`). A display-space rgba8 scene
+    // target (`output.toneMapping: "none"`) refused the whole mount; such a draw keeps its untagged program instead.
+    if (device.kind === "webgpu" && selected[indirectFractionFeature.id] !== undefined) {
+      const target = device.getRenderTarget?.();
+      if (target && !target.depthOnly && target.colorTexture.format !== "rgba16f" && target.colorTexture.format !== "rgba32f") delete selected[indirectFractionFeature.id];
+    }
     if (this.options.weightedTransparency) selected[PROGRAM_TRANSPARENCY_FEATURE] = this.options.weightedTransparency.phase;
     if (this.options.nativeDepthCoverage) selected[DEPTH_COVERAGE_FEATURE] = true;
     if (photometric) selected[PHOTOMETRIC_PROFILE_FEATURE] = true;
