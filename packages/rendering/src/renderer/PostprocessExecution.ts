@@ -105,7 +105,7 @@ export function guardRendererPostprocessPlan(
   const guarded = guardPostprocessPlan(passes, {
     mode: flags?.on("A3D_QR_STRICT") ? "throw" : "drop",
     gpuFusable: Boolean(device.presentLdrPostprocess),
-    hasDepthTexture: Boolean(source.depthTexture),
+    hasDepthTexture: Boolean(source.depthTexture) || webgpuSsrReadsMultisampledDepth(device, source, passes),
     cpuDeterministic: postprocess.execution === "cpu-deterministic"
   });
   for (const name of guarded.dropped) recordPostSkipped(`POSTPROCESS_PASS_DROPPED:${name}`, postprocess.postFrameContext?.diagnosticToken);
@@ -280,6 +280,15 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
   // webgpuNativePostOptions already validated that any legacy twin is the
   // unchanged root-authored pair before this native-only filter runs.
   return nativePost?.nativeDepthOfField ? passes.filter(pass => pass.name !== "depth-of-field") : passes;
+}
+
+/**
+ * W3: a 4x WebGPU source exposes no resolved depth texture, but the native SSR trace reads its multisampled attachment.
+ * The C-27 guard then keeps the SSR pass, as long as no other depth-sampling pass (depth of field, SSAO) is planned.
+ */
+function webgpuSsrReadsMultisampledDepth(device: RenderDevice, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): boolean {
+  return device.kind === "webgpu" && (source.sampleCount ?? 1) === 4 && webgpuSsrDepthSource(source)
+    && passes.some(pass => pass.name === "ssr") && !passes.some(pass => pass.name === "depth-of-field" || pass.name === "ssao");
 }
 
 /** W3: the WebGPU SSR trace reads a single-sample depth texture or, on a 4x target, the multisampled attachment. */

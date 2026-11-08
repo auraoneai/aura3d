@@ -1,11 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
+import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
+import { resetPostprocessGuardWarnings } from "../../../packages/rendering/src/quality/PostprocessGuard";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { SSR_COMPOSITE_WGSL, SSR_TRACE_MSAA_WGSL, SSR_TRACE_UNIFORM_BYTES, SSR_TRACE_WGSL } from "../../../packages/rendering/src/post/shaders/ssr.wgsl";
 import {
   resolveWebGPUSsrOptions, validateWebGPUSsrFrame, webgpuNativeDepthPostStages, webgpuSsrTraceUniforms, type WebGPUSsrFrame
 } from "../../../packages/rendering/src/post/WebGPUScreenSpaceReflections";
-import { webgpuMultisampledDepthServesPost, withWebgpuSsrFrame } from "../../../packages/rendering/src/renderer/PostprocessExecution";
+import { guardRendererPostprocessPlan, resetPostSkipped, webgpuMultisampledDepthServesPost, withWebgpuSsrFrame } from "../../../packages/rendering/src/renderer/PostprocessExecution";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { createProductionRuntimePostprocess } from "../../../packages/engine/src/agent-api/compiler/postprocess";
 import { effects, primitives, scene } from "../../../packages/engine/src/agent-api/index";
@@ -222,5 +225,22 @@ describe("W3 native WebGPU SSR: MSAA forward targets", () => {
     expect(withWebgpuSsrFrame(webgpu, { cameraFrame: { projectionMatrix: PERSPECTIVE, projectionMatrixInverse: PERSPECTIVE, far: 100, projection: "perspective",
       depth: { clipRange: "minus-one-to-one", clearValue: 1 } } } as never, { sampleCount: 4, multisampledDepthTexture: {} } as never,
       [{ name: "ssr", options: {} }] as never)[0]!.options).toMatchObject({ webgpuFrame: { clipRange: "minus-one-to-one", clearDepth: 1 } });
+  });
+});
+
+describe("W3 review: A3D_QR_TIERS guard keeps WebGPU SSR on a 4x source", () => {
+  const flagsWith = (...names: string[]) => resolveQrFlags({ options: Object.fromEntries(names.map((name) => [name, true])) }) as never;
+  afterEach(() => { setRendererQrFlags(flagsWith()); resetPostSkipped(); resetPostprocessGuardWarnings(); vi.restoreAllMocks(); });
+  const plan = (...names: string[]) => names.map(name => ({ name, options: {} })) as never;
+
+  it("keeps ssr when the WebGPU trace can read the multisampled attachment, drops it otherwise", () => {
+    setRendererQrFlags(flagsWith("A3D_QR_TIERS"));
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const webgpu = { kind: "webgpu", presentLdrPostprocess: () => undefined } as never;
+    const msaa = { sampleCount: 4, multisampledDepthTexture: {} } as never;
+    expect(guardRendererPostprocessPlan(webgpu, {}, msaa, plan("ssr", "tone-mapping")).map(p => p.name)).toEqual(["ssr", "tone-mapping"]);
+    expect(guardRendererPostprocessPlan(webgpu, {}, msaa, plan("ssr", "ssao", "tone-mapping")).map(p => p.name)).toEqual(["tone-mapping"]);
+    const webgl2 = { kind: "webgl2", presentLdrPostprocess: () => undefined } as never;
+    expect(guardRendererPostprocessPlan(webgl2, {}, msaa, plan("ssr", "tone-mapping")).map(p => p.name)).toEqual(["tone-mapping"]);
   });
 });
