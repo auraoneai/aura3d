@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.2.0` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.2.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.2.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.2.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.2.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.2.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.2.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.2.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.2.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.2.0` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.2.0` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.2.0` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.2.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.2.0` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.2.0` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.2.0` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.2.0` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.2.0` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.2.0` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.2.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.2.0` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.2.0` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.2.0` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.2.0` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.2.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.2.0` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.2.0` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.2.0` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.2.0` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.2.0` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.2.0` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.2.0` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.2.0` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.2.0` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.2.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.2.0` | `./dist/engine/public/index.d.ts` | 11045 |
-| `@aura3d/engine/animation` | `5.2.0` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.2.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.2.0` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.2.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.2.0` | `./dist/engine/public/devtools.d.ts` | 10727 |
-| `@aura3d/engine/ecs` | `5.2.0` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.2.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.2.0` | `./dist/game/index.d.ts` | 11479 |
-| `@aura3d/engine/game/art` | `5.2.0` | `./dist/game/art/index.d.ts` | 332 |
-| `@aura3d/engine/game/capture` | `5.2.0` | `./dist/game/capture/index.d.ts` | 11008 |
-| `@aura3d/engine/game/styles.css` | `5.2.0` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.2.0` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.2.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.2.0` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.2.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.2.0` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.2.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.2.0` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.2.0` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.2.0` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.2.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.2.0` | `./dist/engine/public/renderer.d.ts` | 10986 |
-| `@aura3d/engine/scatter` | `5.2.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.2.0` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.2.0` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.2.0` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.2.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
-| `@aura3d/engine/v5` | `5.2.0` | `./dist/engine/public/v5.d.ts` | 8486 |
-| `@aura3d/engine/v5/context` | `5.2.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.2.0` | `./dist/game/v5.d.ts` | 11475 |
-| `@aura3d/engine/v5/internal` | `5.2.0` | `./dist/engine/public/v5-internal.d.ts` | 434 |
-| `@aura3d/engine/v5/math/hull` | `5.2.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.2.0` | `./dist/engine/public/worker.d.ts` | 59 |
-| `@aura3d/engine/workflows` | `5.2.0` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.2.0` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.2.0` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.2.0` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.2.0` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.2.0` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.2.0` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.2.0` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.2.0` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.2.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.2.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.2.0` | `./dist/index.d.ts` | 4284 |
-| `@aura3d/rendering/contracts` | `5.2.0` | `./dist/contracts/index.d.ts` | 222 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.2.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.2.0` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.2.0` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.2.0` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.2.0` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.2.0` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.2.0` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.2.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.2.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.2.0` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.2.0` | `./dist/contracts/index.d.ts` | 222 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.2.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.2.0` | `./dist/contracts/output.d.ts` | 8 |
-| `@aura3d/rendering/contracts/particles` | `5.2.0` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.2.0` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.2.0` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.2.0` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.2.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.2.0` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.2.0` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.2.0` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.2.0` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.2.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.2.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.2.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.2.0` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.2.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.2.0` | `./dist/lanes/index.d.ts` | 1014 |
-| `@aura3d/rendering/lighting` | `5.2.0` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.2.0` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.2.0` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.2.0` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.2.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.2.0` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.2.0` | `./dist/webgpu.d.ts` | 203 |
-| `@aura3d/rendering/world` | `5.2.0` | `./dist/world/index.d.ts` | 172 |
-| `@aura3d/scene` | `5.2.0` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.2.0` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.2.0` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.2.0` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.2.1` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.2.1` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.2.1` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.2.1` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.2.1` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.2.1` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.2.1` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.2.1` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.2.1` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.2.1` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.2.1` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.2.1` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.2.1` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.2.1` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.2.1` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.2.1` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.2.1` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.2.1` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.2.1` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.2.1` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.2.1` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.2.1` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.2.1` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.2.1` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.2.1` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.2.1` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.2.1` | `./dist/index.d.ts` | 309 |
+| `@aura3d/cli` | `5.2.1` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.2.1` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.2.1` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.2.1` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.2.1` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.2.1` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.2.1` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.2.1` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.2.1` | `./dist/engine/public/index.d.ts` | 11055 |
+| `@aura3d/engine/animation` | `5.2.1` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.2.1` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.2.1` | `./dist/audio/index.d.ts` | 309 |
+| `@aura3d/engine/controls` | `5.2.1` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.2.1` | `./dist/engine/public/devtools.d.ts` | 10737 |
+| `@aura3d/engine/ecs` | `5.2.1` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.2.1` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.2.1` | `./dist/game/index.d.ts` | 11489 |
+| `@aura3d/engine/game/art` | `5.2.1` | `./dist/game/art/index.d.ts` | 332 |
+| `@aura3d/engine/game/capture` | `5.2.1` | `./dist/game/capture/index.d.ts` | 11018 |
+| `@aura3d/engine/game/styles.css` | `5.2.1` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.2.1` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.2.1` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.2.1` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.2.1` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.2.1` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.2.1` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.2.1` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.2.1` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.2.1` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.2.1` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.2.1` | `./dist/engine/public/renderer.d.ts` | 10996 |
+| `@aura3d/engine/scatter` | `5.2.1` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.2.1` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.2.1` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.2.1` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.2.1` | `./dist/engine/public/shader-graph-runtime.d.ts` | 317 |
+| `@aura3d/engine/v5` | `5.2.1` | `./dist/engine/public/v5.d.ts` | 8496 |
+| `@aura3d/engine/v5/context` | `5.2.1` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.2.1` | `./dist/game/v5.d.ts` | 11485 |
+| `@aura3d/engine/v5/internal` | `5.2.1` | `./dist/engine/public/v5-internal.d.ts` | 434 |
+| `@aura3d/engine/v5/math/hull` | `5.2.1` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.2.1` | `./dist/engine/public/worker.d.ts` | 59 |
+| `@aura3d/engine/workflows` | `5.2.1` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.2.1` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.2.1` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.2.1` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.2.1` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.2.1` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.2.1` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.2.1` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.2.1` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.2.1` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.2.1` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.2.1` | `./dist/index.d.ts` | 4294 |
+| `@aura3d/rendering/contracts` | `5.2.1` | `./dist/contracts/index.d.ts` | 222 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.2.1` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.2.1` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.2.1` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.2.1` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.2.1` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.2.1` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.2.1` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.2.1` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.2.1` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.2.1` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.2.1` | `./dist/contracts/index.d.ts` | 222 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.2.1` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.2.1` | `./dist/contracts/output.d.ts` | 8 |
+| `@aura3d/rendering/contracts/particles` | `5.2.1` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.2.1` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.2.1` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.2.1` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.2.1` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.2.1` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.2.1` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.2.1` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.2.1` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.2.1` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.2.1` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.2.1` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.2.1` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.2.1` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.2.1` | `./dist/lanes/index.d.ts` | 1018 |
+| `@aura3d/rendering/lighting` | `5.2.1` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.2.1` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.2.1` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.2.1` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.2.1` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.2.1` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.2.1` | `./dist/webgpu.d.ts` | 203 |
+| `@aura3d/rendering/world` | `5.2.1` | `./dist/world/index.d.ts` | 172 |
+| `@aura3d/scene` | `5.2.1` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.2.1` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.2.1` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.2.1` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/addons@5.2.0#sha256=3ed46600ab824c154faa31375dd9a8bfff381f634d603ea8a77b5f16f0fcea74`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/addons@5.2.1#sha256=0d7508f9ac95a2343f4e23f3327715b97857aab75c40578873eff9d67d97cdde`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
 
 ### Export conditions
 
@@ -5386,8 +5386,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
 
 ### Export conditions
 
@@ -5433,8 +5433,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
 
 ### Export conditions
 
@@ -7207,8 +7207,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/animation@5.2.0#sha256=d1a3fb34ba7944be27444b16b7f89a014c4857d2df47508c88518fca24ca0ce6`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/animation@5.2.1#sha256=7271f56a7750d4f375243db83a528abae4a3027344e805586470d2c3eaa2c6fa`
 
 ### Export conditions
 
@@ -7247,8 +7247,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/apps@5.2.0#sha256=f94351276194c53db489f6c61a08e25e21e08ef00fbee613fc6e56924c6b2c21`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/apps@5.2.1#sha256=c88a36afa6a7d1c5b69855206b5bb8120f99ce745eaaae630246e40a3842ae4f`
 
 ### Export conditions
 
@@ -7312,8 +7312,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/asset-index@5.2.0#sha256=ba4e3eb2f7fa0edd9de3ede44069bb02197d76ba52b3109b3c3b52267021d109`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/asset-index@5.2.1#sha256=184bccd97beaf1abbc41cb10ed59cf45711deaace6a1fa9a1837500bc2d7f853`
 
 ### Export conditions
 
@@ -8050,8 +8050,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -13775,8 +13775,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -18478,8 +18478,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -19387,8 +19387,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -21822,8 +21822,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -23582,8 +23582,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -23868,8 +23868,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/assets@5.2.0#sha256=211215ec67bc6e4a1d8909a8f5d5df78236f8f9b7729b583e0a1852a3421a3d4`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/assets@5.2.1#sha256=eb3ea3983370b59ad11a1394d5de128caf4cf5b776cfdd22bed25fc9e3acc7df`
 
 ### Export conditions
 
@@ -23888,8 +23888,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/audio@5.2.0#sha256=84661d757d62a8e370133d20638bdf97ce9804345aa79f1af8ed9516458b8d69`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/audio@5.2.1#sha256=1021beb0bc72eb9d67ea56b23d0373344c70444e35b5e8047a22b05b5a820a4f`
 
 ### Export conditions
 
@@ -26514,8 +26514,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/cli@5.2.0#sha256=6d7e8fa9a69ab88e050b0abcc184100d981fc2c94f285ab4c5c1cd380c27df9a`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/cli@5.2.1#sha256=93bafe512d1ea8d8e233419b26a482c69edb05adffe5369beb2e939d9322db87`
 
 ### Export conditions
 
@@ -28685,8 +28685,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/controls@5.2.0#sha256=4f50d4da0738c016194112753c1aa7231b067fda716aa5a1eea0e8977c8a9db3`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/controls@5.2.1#sha256=5e06b57f3626fa0d26577189237021bae95a7a3bfca1b18c7ffcc85e7f6a5c5e`
 
 ### Export conditions
 
@@ -30488,8 +30488,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/core@5.2.0#sha256=392a8116130d044e79119632cefbd45b4239dfa14fa74e759197996b3391c9b3`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/core@5.2.1#sha256=80d8bcc10799cab1178c3630fea7d7755b5db5afff99ac551b54282e187e3b7e`
 
 ### Export conditions
 
@@ -31003,8 +31003,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.2.0`
-- Packed identity: `archive:create-aura3d@5.2.0#sha256=0caa1c612ea5c282d915322af2dd9db0681ef2b04fc109f7d3be98fe958e95e8`
+- Version: `5.2.1`
+- Packed identity: `archive:create-aura3d@5.2.1#sha256=6981fc02fcc7820b8a19e7fab2fbfdb18c19f9f3004870ff475d47aa311c0756`
 
 ### Export conditions
 
@@ -31773,8 +31773,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/debug@5.2.0#sha256=e0a9879b2989ad18a5a7cb656ab23c33971efcd0348966cfc632abd6d23557a9`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/debug@5.2.1#sha256=776a186ca1d4703e081dbc6bbe397203a2c008a5fc2e385ac44eef4d5c4cd679`
 
 ### Export conditions
 
@@ -33153,8 +33153,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/debug@5.2.0#sha256=e0a9879b2989ad18a5a7cb656ab23c33971efcd0348966cfc632abd6d23557a9`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/debug@5.2.1#sha256=776a186ca1d4703e081dbc6bbe397203a2c008a5fc2e385ac44eef4d5c4cd679`
 
 ### Export conditions
 
@@ -33361,8 +33361,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/ecs@5.2.0#sha256=b1ff9d7e862671a91b5c471bd5609d1ca0dab6bc7abc65c655c032bad7f3fbc1`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/ecs@5.2.1#sha256=e7b3ae7baf9e2cb04d7cd3359c019db4bdfab0d0ef7ec98fc73eb874f0b5d7eb`
 
 ### Export conditions
 
@@ -34029,8 +34029,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.2.0#sha256=14e6b021026ccb0b04e0b44b9dac8eb0247552cc26e8237df01309164b1a3d7a`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/editor-runtime@5.2.1#sha256=47eeb8f32d00cf4a55b95234f3b455959a556f145aa0601fe174f5d03f098861`
 
 ### Export conditions
 
@@ -36612,8 +36612,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -62075,7 +62075,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -63299,6 +63299,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -73228,6 +73233,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -80231,11 +80242,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -80276,7 +80295,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -80340,7 +80359,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -80577,6 +80595,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -80632,6 +80651,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -80666,6 +80686,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -80677,7 +80699,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -80855,6 +80877,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -81006,6 +81037,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -82079,8 +82116,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -83398,8 +83449,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -87158,6 +87211,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -121992,8 +122078,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -124863,8 +124949,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -130589,8 +130675,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -133214,8 +133300,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -135016,8 +135102,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -160424,7 +160510,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -161648,6 +161734,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -171577,6 +171668,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -178580,11 +178677,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -178625,7 +178730,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -178689,7 +178794,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -178926,6 +179030,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -178981,6 +179086,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -179015,6 +179121,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -179026,7 +179134,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -179204,6 +179312,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -179355,6 +179472,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -180428,8 +180551,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -181747,8 +181884,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -185507,6 +185646,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -217929,8 +218101,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -218596,8 +218768,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -221178,8 +221350,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -228092,7 +228264,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -229316,6 +229488,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -239245,6 +239422,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -246248,11 +246431,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -246293,7 +246484,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -246357,7 +246548,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -246594,6 +246784,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -246649,6 +246840,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -246683,6 +246875,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -246694,7 +246888,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -246872,6 +247066,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -247023,6 +247226,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -248096,8 +248305,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -249415,8 +249638,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -253175,6 +253400,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -308910,8 +309168,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -312072,8 +312330,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -318775,7 +319033,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -319999,6 +320257,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -329928,6 +330191,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -336931,11 +337200,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -336976,7 +337253,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -337040,7 +337317,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -337277,6 +337553,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -337332,6 +337609,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -337366,6 +337644,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -337377,7 +337657,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -337555,6 +337835,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -337706,6 +337995,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -338779,8 +339074,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -340098,8 +340407,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -343858,6 +344169,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -396443,8 +396787,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -396454,8 +396798,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -396480,8 +396824,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -397207,8 +397551,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -398448,8 +398792,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -399087,8 +399431,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -401077,8 +401421,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -401702,8 +402046,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -404374,8 +404718,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -405626,8 +405970,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -405889,8 +406233,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -406186,8 +406530,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -412266,7 +412610,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -413490,6 +413834,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -423419,6 +423768,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -430422,11 +430777,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -430467,7 +430830,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -430531,7 +430894,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -430768,6 +431130,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -430823,6 +431186,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -430857,6 +431221,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -430868,7 +431234,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -431046,6 +431412,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -431197,6 +431572,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -432270,8 +432651,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -433589,8 +433984,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -437349,6 +437746,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -491027,8 +491457,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -491160,8 +491590,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -492285,8 +492715,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -492369,8 +492799,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -493549,8 +493979,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -497790,8 +498220,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -506409,7 +506839,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -507633,6 +508063,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -517562,6 +517997,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -524565,11 +525006,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -524610,7 +525059,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -524674,7 +525123,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -524911,6 +525359,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -524966,6 +525415,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -525000,6 +525450,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -525011,7 +525463,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -525189,6 +525641,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -525340,6 +525801,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -526413,8 +526880,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -527732,8 +528213,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -531492,6 +531975,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -565715,8 +566231,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -565961,8 +566477,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -572749,7 +573265,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -573973,6 +574489,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -583902,6 +584423,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -590905,11 +591432,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -590950,7 +591485,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -591014,7 +591549,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -591251,6 +591785,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -591306,6 +591841,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -591340,6 +591876,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -591351,7 +591889,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -591529,6 +592067,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -591680,6 +592227,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -592753,8 +593306,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -594072,8 +594639,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -597832,6 +598401,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -653665,8 +654267,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -658939,8 +659541,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -659127,8 +659729,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -659627,8 +660229,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/engine@5.2.0#sha256=b196665acb08a08d8d23c7c15348dd10276847c6861d50cb74ed528c9d57ccb8`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/engine@5.2.1#sha256=de8591b60c916393a9433d309b13b138e0cc4301f893c916a457650658867086`
 
 ### Export conditions
 
@@ -660085,8 +660687,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/input@5.2.0#sha256=eb53f725f56567dd493bef784d086b0e3ac6f1b53293f01260a2a2d353517e3e`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/input@5.2.1#sha256=634a853c6177771ff09c873981a223d219c540118ec05ebd78890cf4e4435b7d`
 
 ### Export conditions
 
@@ -661327,8 +661929,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/math@5.2.0#sha256=c7089eeddf53e60caf31fdcef70e19efa4601182d8784013b37552fcab4498e1`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/math@5.2.1#sha256=b6459f3679912251ddfe272dd5bc5afd9a6b01ed6577ef5c4043aada9eb77998`
 
 ### Export conditions
 
@@ -663314,8 +663916,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/math@5.2.0#sha256=c7089eeddf53e60caf31fdcef70e19efa4601182d8784013b37552fcab4498e1`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/math@5.2.1#sha256=b6459f3679912251ddfe272dd5bc5afd9a6b01ed6577ef5c4043aada9eb77998`
 
 ### Export conditions
 
@@ -664562,8 +665164,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.2.0#sha256=495ab26e7d25b74728a2dd66c14af3f9002a2783784d4966011ffe5b59ea3de5`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/navigation-recast@5.2.1#sha256=27932e32fbddfb12b9e6d822ed8e8072d6ea4453f865950183138a28e15707d9`
 
 ### Export conditions
 
@@ -664693,8 +665295,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/physics@5.2.0#sha256=0d5d43b9004013a93ae44a6ecd17fb9baa1819ce905d502856b15422451da121`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/physics@5.2.1#sha256=a4d58a4a7362585f9404d635c6f8e265ff7318a8fefb0c2a581bbe27813ad206`
 
 ### Export conditions
 
@@ -666917,8 +667519,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.2.0#sha256=57a04f1424b72ba238223b3c92f04b06d698d4a1f025caccd2b72965cfd02afb`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/physics-rapier@5.2.1#sha256=349a7b6a4be78edd7bc7b48f057eef985855932edf14833681eb2d0e3417f1a4`
 
 ### Export conditions
 
@@ -667376,8 +667978,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/physics@5.2.0#sha256=0d5d43b9004013a93ae44a6ecd17fb9baa1819ce905d502856b15422451da121`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/physics@5.2.1#sha256=a4d58a4a7362585f9404d635c6f8e265ff7318a8fefb0c2a581bbe27813ad206`
 
 ### Export conditions
 
@@ -668629,8 +669231,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/physics@5.2.0#sha256=0d5d43b9004013a93ae44a6ecd17fb9baa1819ce905d502856b15422451da121`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/physics@5.2.1#sha256=a4d58a4a7362585f9404d635c6f8e265ff7318a8fefb0c2a581bbe27813ad206`
 
 ### Export conditions
 
@@ -668893,8 +669495,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/product-studio@5.2.0#sha256=074d0ffd8c828a5a1d58a78179e48d00646a6bab8ee9389ffb18eff00d97e650`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/product-studio@5.2.1#sha256=9e1867795070f4dc56140d91edcd5537211491bdb8a4c579c8edda213a8b05d6`
 
 ### Export conditions
 
@@ -669175,8 +669777,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/react@5.2.0#sha256=177c88961c8f4d67ac2b012b5a7b5e11b0c7c522071a1784700a0696c17aad97`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/react@5.2.1#sha256=028fd5483bae5b201d8a791b015daf6441fa1846debeb46d4c3f888cb5d6843a`
 
 ### Export conditions
 
@@ -669577,8 +670179,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -675617,7 +676219,7 @@ export interface CustomShaderFrameCache {
     inverseViewProjection(): Float32Array;
 }
 /** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
-export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">): Float32Array;
+export declare function customShaderInverseViewProjection(options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">, depth?: Pick<DepthConvention, "mode" | "clipRange">): Float32Array;
 export declare function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array;
 export declare function identityMatrix(): readonly number[];
 export declare function sortForwardRenderItems(items: readonly RenderItem[], cameraPosition: readonly [number, number, number] | undefined): readonly RenderItem[];
@@ -676841,6 +677443,11 @@ export declare const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
  * values are uniforms, not variant keys. */
 export declare const PROGRAM_CLIPPING_FEATURE = "a3d.clipping";
 export declare const PROGRAM_LOG_DEPTH_FEATURE = "a3d.logarithmicDepth";
+/**
+ * WebGL2 reversed-depth frame: the default (non-hook) fog reads its distance from standard window depth
+ * (1 - gl_FragCoord.z). Absent on standard frames, whose programs stay byte-identical.
+ */
+export declare const PROGRAM_REVERSED_FOG_DEPTH_FEATURE = "a3d.reversedFogDepth";
 export declare const PROGRAM_TRANSPARENCY_FEATURE = "a3d.transparency";
 /** Structural axes for the optional per-frame advanced diffuse sources. */
 export declare const NATIVE_PROBE_GRID_FEATURE = "a3d.nativeProbeGrid";
@@ -686770,6 +687377,12 @@ export declare const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
 export declare function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array, colors?: Float32Array): InstanceBuffer;
 /** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
 export declare function depthInstanceBufferCount(device: RenderDevice): number;
+/**
+ * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
+ * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
+ * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ */
+export declare function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean;
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export declare function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey;
 /** Reject clipping getters before a legacy or multi-target pass reads them more than once. */
@@ -693773,11 +694386,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -693818,7 +694439,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -693882,7 +694503,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -694119,6 +694739,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -694174,6 +694795,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -694208,6 +694830,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -694219,7 +694843,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -694397,6 +695021,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -694548,6 +695181,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -695621,8 +696260,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -696940,8 +697593,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -700700,6 +701355,39 @@ export declare function encodeViewDepth(distance: number, projection: ArrayLike<
 export declare function reconstructViewPosition(depth: number, ndcX: number, ndcY: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): readonly [number, number, number];
 /** Signed forward view distance; an unbounded far endpoint returns Infinity. */
 export declare function linearizeDepth(depth: number, inverseProjection: ArrayLike<number>, convention: DepthConvention, range?: DepthDistanceRange): number;
+/**
+ * `u_depthLinearize` for soft-depth consumers (fog apply, soft particles,
+ * ribbons, beams, low-res composite): [near, far, orthographic 0|1,
+ * reversed 0|1]. The shaders linearize standard window depth; reversed
+ * window depth is exactly 1 - standard window depth in both clip ranges, so
+ * a reversed frame flips the sample first. Standard frames keep w = 0, which
+ * leaves the shader arithmetic unchanged.
+ */
+export declare function sceneDepthLinearizeUniform(linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: Pick<DepthConvention, "mode">;
+}): [number, number, number, number];
+/** Depth encoding of a camera view-projection (absent: standard minus-one-to-one). */
+export interface CascadeFitterCameraDepth {
+    readonly mode: string;
+    readonly clipRange: string;
+}
+/**
+ * The depth convention a camera-like object declares for its matrices:
+ * `projectionMetadata` (scene cameras), `depthConvention` (resolved cameras)
+ * or `depth` (frame cameras and fitter cameras).
+ */
+export declare function cameraDepthOf(camera: unknown): CascadeFitterCameraDepth | undefined;
+/**
+ * Re-express a view-projection in standard depth (near -> clip z -1, far ->
+ * +1). Reversed window depth is 1 - standard window depth, so a reversed
+ * minus-one-to-one depth row is the negated standard row and a reversed
+ * zero-to-one row r satisfies standard = w - 2r. Standard and logarithmic
+ * (standard projection, fragment-encoded depth) cameras are returned as is.
+ */
+export declare function standardViewProjection(viewProjection: Float32Array | readonly number[], depth: CascadeFitterCameraDepth | undefined): Float32Array | readonly number[];
 export {};
 //# sourceMappingURL=DepthConvention.d.ts.map
 ```
@@ -701158,8 +701846,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -702747,8 +703435,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -702792,8 +703480,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -702837,8 +703525,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -702907,8 +703595,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -702960,8 +703648,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -703046,8 +703734,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -703116,8 +703804,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -703146,8 +703834,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -703290,8 +703978,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -703348,8 +704036,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -703396,8 +704084,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -704985,8 +705673,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705045,8 +705733,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705117,8 +705805,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705174,8 +705862,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705282,8 +705970,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705488,8 +706176,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705617,8 +706305,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705677,8 +706365,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705795,8 +706483,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705891,8 +706579,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -705952,8 +706640,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -706028,8 +706716,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -706066,8 +706754,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -706099,8 +706787,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -706132,8 +706820,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -706204,8 +706892,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -706245,8 +706933,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -707209,11 +707897,19 @@ export declare function createShadowSystem(device: RenderDevice, config: ShadowS
  * ortho centre snaps to the shadow-texel grid so the edge mask is stable
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
+import { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth } from "../DepthConvention.js";
+export { cameraDepthOf, standardViewProjection, type CascadeFitterCameraDepth };
 import type { RenderItem } from "../contracts/renderItem.js";
 export interface CascadeFitterCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /**
+     * Depth convention of `viewProjectionMatrix`. A reversed camera maps its
+     * near plane to clip z = +1 and its far plane to -1 (minus-one-to-one) or 0
+     * (zero-to-one); the fitter re-expresses it as the standard matrix first.
+     */
+    readonly depth?: CascadeFitterCameraDepth;
 }
 export interface DirectionalCascadeFit {
     readonly index: number;
@@ -707254,7 +707950,7 @@ type Vec3Tuple = readonly [number, number, number];
  * and eye (structural CameraLikes carry no near/far): distances from the eye
  * to the unprojected NDC centres of the near and far planes.
  */
-export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number]): {
+export declare function clipRangeFromViewProjection(viewProjection: Float32Array | readonly number[], eye: readonly [number, number, number], depth?: CascadeFitterCameraDepth): {
     near: number;
     far: number;
 } | null;
@@ -707318,7 +708014,6 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
-export {};
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
 ```
 
@@ -707555,6 +708250,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderSource } from "../contracts/renderSource.js";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem.js";
+import { type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter.js";
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export declare const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
@@ -707610,6 +708306,7 @@ interface Prd02FrameObservation {
         readonly near?: number;
         readonly far?: number;
         readonly position?: readonly [number, number, number];
+        readonly depth?: CascadeFitterCameraDepth;
     } | null;
     readonly lookupConsumer: boolean;
 }
@@ -707644,6 +708341,8 @@ export interface Prd02BridgeFrameCamera {
     readonly viewProjectionMatrix: Float32Array | readonly number[];
     readonly near?: number;
     readonly far?: number;
+    /** Depth convention of `viewProjectionMatrix` (reversed cameras; absent means standard). */
+    readonly depth?: CascadeFitterCameraDepth;
     /**
      * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
      * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
@@ -707655,7 +708354,7 @@ export interface Prd02BridgeFrameCamera {
  * Renderer VP + eye → bridge camera, recovering near/far from the matrix
  * (the cascade fitter lerps the VP's frustum corners by view distance).
  */
-export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[]): Prd02BridgeFrameCamera | undefined;
+export declare function shadowFrameCamera(viewProjection: Float32Array | readonly number[] | undefined, eye: readonly [number, number, number] | undefined, viewMatrix?: Float32Array | readonly number[], depth?: CascadeFitterCameraDepth): Prd02BridgeFrameCamera | undefined;
 /**
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
@@ -707833,6 +708532,15 @@ export declare class ContactShadowPass extends BaseRenderPass {
     private target;
     execute(context: RenderPassContext): void;
 }
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export declare function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number];
 //# sourceMappingURL=ContactShadowPass.d.ts.map
 ```
 
@@ -707984,6 +708692,12 @@ export {};
  */
 export declare const CONTACT_SHADOW_CHUNK_ID = "a3d_prd02_contact_shadow";
 export declare const CONTACT_SHADOW_CHUNK_GLSL = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, 1.0) - a3d_prd02ContactWorld(suv, 0.0));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
+/**
+ * Depth-convention-aware chunk the renderer compiles (5.2.1: decodes reversed depth via u_prd02ContactDepthMode).
+ * Internal: the published CONTACT_SHADOW_CHUNK_GLSL keeps its 5.2.0 text so the patch release changes no public declaration;
+ * that text behaves the same on standard depth (mode uniform unset = standard).
+ */
+export declare const CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE = "\nuniform highp sampler2D u_prd02ContactDepth;     // scene depth buffer ([0,1])\nuniform mat4 u_prd02ContactInvViewProj;          // clip -> world\nuniform mat4 u_prd02ContactViewProj;             // world -> clip\nuniform vec3 u_prd02ContactSun;                  // shadowed-light direction TOWARD the light, world space\nuniform vec4 u_prd02ContactParams;               // (length_m, thickness_m, steps, jitter)\nuniform vec3 u_prd02ContactNearFar;              // (near, far, orthographic 0|1); only the orthographic flag is read\nuniform vec2 u_prd02ContactDepthMode;            // (reversed 0|1, zero-to-one projection 0|1); (0, 0) is standard depth\n\nfloat a3d_prd02ContactNoise(vec2 px) {\n  return fract(52.9829189 * fract(0.06711056 * px.x + 0.00583715 * px.y));\n}\n\n// Stored depth -> clip z of the camera matrix: a zero-to-one projection stores clip z directly.\nfloat a3d_prd02ContactClipZ(float z) {\n  return u_prd02ContactDepthMode.y > 0.5 ? z : z * 2.0 - 1.0;\n}\n\n// Stored depth of the far plane (clear / sky): 1 for standard depth, 0 for reversed depth.\nfloat a3d_prd02ContactFarZ() {\n  return u_prd02ContactDepthMode.x > 0.5 ? 0.0 : 1.0;\n}\n\nvec3 a3d_prd02ContactWorld(vec2 uv, float z) {\n  vec4 w = u_prd02ContactInvViewProj * vec4(uv * 2.0 - 1.0, a3d_prd02ContactClipZ(z), 1.0);\n  return w.xyz / w.w;\n}\n\n// How far the march point sits behind the visible surface at the same screen position, in world units along the view\n// direction. Perspective: the clip-space w difference (view-space distance). Orthographic: the projection is linear, but the\n// near/far the frame camera reports are not guaranteed to be the ones the projection matrix was built with (the first GPU\n// run of an orthographic scene gave a mask of all ones for that reason), so the gap is measured in world space along the\n// view direction recovered from the inverse view-projection instead.\nfloat a3d_prd02ContactBehind(vec4 clip, vec3 p, vec3 blockerPos, vec2 suv) {\n  if (u_prd02ContactNearFar.z > 0.5) {\n    float farZ = a3d_prd02ContactFarZ();\n    vec3 viewDir = normalize(a3d_prd02ContactWorld(suv, farZ) - a3d_prd02ContactWorld(suv, 1.0 - farZ));\n    return dot(p - blockerPos, viewDir);\n  }\n  return clip.w - (u_prd02ContactViewProj * vec4(blockerPos, 1.0)).w;\n}\n\nfloat a3d_contactShadow(vec2 uv) {\n  float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  vec3 pos = a3d_prd02ContactWorld(uv, sceneZ);\n  float len = u_prd02ContactParams.x;\n  float thickness = u_prd02ContactParams.y;\n  float steps = max(u_prd02ContactParams.z, 1.0);\n  float jitter = a3d_prd02ContactNoise(gl_FragCoord.xy) * u_prd02ContactParams.w;\n  float occluded = 0.0;\n  for (int i = 1; i <= 16; i++) {\n    if (float(i) > steps) break;\n    float t = (float(i) - jitter) / steps;\n    vec3 p = pos + u_prd02ContactSun * (t * len);\n    vec4 clip = u_prd02ContactViewProj * vec4(p, 1.0);\n    if (clip.w <= 0.0) continue;\n    vec3 r = clip.xyz / clip.w;\n    vec2 suv = r.xy * 0.5 + 0.5;\n    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;\n    float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    vec3 blockerPos = a3d_prd02ContactWorld(suv, blockerZ);\n    // The ray point must sit behind the visible surface by more than the thickness parameter (self-shadow bias) and by less than\n    // twice the march length. The upper bound stops a foreground prop between the camera and the receiver from\n    // \"occluding\" every ray whose screen position lands behind it (ghost shadows), while still letting a solid\n    // caster shade rays that dive up to one march length into its volume.\n    float behind = a3d_prd02ContactBehind(clip, p, blockerPos, suv);\n    if (behind > thickness && behind < len * 2.0) occluded = max(occluded, 1.0 - t);\n  }\n  return 1.0 - occluded;\n}\n";
 //# sourceMappingURL=contact_shadow.glsl.d.ts.map
 ```
 
@@ -709207,8 +709921,22 @@ export declare function postV2ModulesReady(): Promise<void>;
 export declare function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined;
 export declare function webgpuAutoExposureRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
 export declare function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean;
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export declare function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[];
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export declare function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void;
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export declare function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): {
+    readonly code: string;
+    readonly missing: readonly string[];
+} | undefined;
 /**
  * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
  * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
@@ -710819,8 +711547,10 @@ export declare class SkyBackgroundPass {
     renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void;
     /**
      * Fullscreen draw into the current target with the given VP matrix.
-     * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
-     * depth-tests less-equal against the bound forward depth, so it fills only
+     * `depthTested` (after-opaque sky): the far-plane triangle (standard
+     * z = 0.999999; reversed depth puts it at the reversed far plane, see
+     * `skyClipZ`) depth-tests less-equal (greater-equal once the device remaps
+     * it for reversed depth) against the bound forward depth, so it fills only
      * pixels no opaque geometry covered.
      */
     drawSky(viewProjection: Float32Array, depthTested?: boolean): void;
@@ -713102,8 +713832,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -713741,8 +714471,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -717233,8 +717963,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -717966,8 +718696,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -718101,8 +718831,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -718344,8 +719074,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -718900,8 +719630,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -721590,8 +722320,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/rendering@5.2.0#sha256=2303246c9c4d90a2281863502a5d11e3c652f0705fe3ae40e415f472ecf0bde0`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/rendering@5.2.1#sha256=0a3772a5be37b96c060603901525988ca9a3b20e714a580b834adde0c3e33132`
 
 ### Export conditions
 
@@ -722689,8 +723419,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/scene@5.2.0#sha256=287e053f97fbda051a683bd45a76e9a6675b00458ab714584dd8b9f9e029d4ba`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/scene@5.2.1#sha256=035a7b6b8fdf2575de1606e5499c0ec862e57ff95c7036b423ddcdca1557a2bd`
 
 ### Export conditions
 
@@ -723815,8 +724545,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/scene@5.2.0#sha256=287e053f97fbda051a683bd45a76e9a6675b00458ab714584dd8b9f9e029d4ba`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/scene@5.2.1#sha256=035a7b6b8fdf2575de1606e5499c0ec862e57ff95c7036b423ddcdca1557a2bd`
 
 ### Export conditions
 
@@ -723900,8 +724630,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/scripting@5.2.0#sha256=4cb1eef5b2ad9dbf0f09e17433d7b6d692066bd99816ee15a08946e607b3be84`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/scripting@5.2.1#sha256=4cfed582d0e382f0ed01c0ef6a7726af405c2a0a56cd2df5aea66b0f7808bf02`
 
 ### Export conditions
 
@@ -725081,8 +725811,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.2.0`
-- Packed identity: `archive:@aura3d/workflows@5.2.0#sha256=141e826950f88c3bc1c7fc8c1576aaeba5ee40dec883be59c7814398fd23c78e`
+- Version: `5.2.1`
+- Packed identity: `archive:@aura3d/workflows@5.2.1#sha256=c354ac45c69331b554cda2da379fe83d5e0adf1638fcec1c0319733439d3085b`
 
 ### Export conditions
 
