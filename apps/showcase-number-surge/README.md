@@ -1,6 +1,6 @@
 # Number Surge
 
-A neon-arcade number runner built with Aura3D. Steer a glowing number ball down a dusk highway, pick the better arithmetic gate (+n, ×2, −n, ÷2), grow your number, and smash the boss wall every 400 m — your number must beat its HP.
+A neon-arcade number runner built with Aura3D. Steer a glowing number ball down a dusk highway, pick the better arithmetic gate (+n, ×2, −n, ÷2), grow your number, and smash the boss wall every 300 m — your number must beat its HP.
 
 ## Controls
 
@@ -11,7 +11,7 @@ A neon-arcade number runner built with Aura3D. Steer a glowing number ball down 
 ## Mechanics
 
 - Choosing the gate whose result is at least as good as the alternative builds a combo (×1–×5 multiplier); a worse pick resets it.
-- Boss wall HP grows with each wall passed; smashing pays HP × 10 × multiplier and subtracts the HP from your number. Too small without a shield ends the run.
+- Boss wall HP has a floor that doubles every wall, and is set between what the worst and the best gate picks on the approach would give you, so only good picks beat it (×2 gates are rare; idling in one lane loses within about a minute, and even perfect picks run out after a couple of minutes); smashing pays HP × 10 × multiplier and subtracts the HP from your number. Too small without a shield ends the run.
 - Results: score, distance, walls smashed, biggest smash (persisted locally).
 
 ## Development

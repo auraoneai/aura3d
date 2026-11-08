@@ -15,7 +15,7 @@ export const CONFIG = {
   MAX_SPEED: 29,
   SPEED_RAMP: 0.008,
   ROW_SPACING: 18,
-  WALL_SPACING: 400,
+  WALL_SPACING: 300,
   SPAWN_AHEAD: 140,
   RECYCLE_BEHIND: -10,
   MAX_MULT: 5,
@@ -35,6 +35,21 @@ export const CONFIG = {
   POWERUPS: 8,
   PARTICLES: 90,
   SHARDS: 40,
+  /** Gate-op draw weights (add, mul2, sub, div2): ×2 is the rare prize, so stacking it cannot run away. */
+  OP_WEIGHTS: [0.54, 0.06, 0.24, 0.16],
+  /** Wall floor: round(WALL_BASE·WALL_GROWTH^wallIndex·(1 + WALL_JITTER·rng)) — outgrows any gate luck within ~10 walls. */
+  WALL_BASE: 40,
+  WALL_GROWTH: 2.0,
+  WALL_JITTER: 0.25,
+  /**
+   * Wall strength also tracks the player: when a wall spawns, the sim walks the gate rows already
+   * on the track between the player and the wall and takes the worst-pick and best-pick results.
+   * HP = worst + t·(best − worst), with t = min(WALL_T_MAX, WALL_T0 + WALL_T_STEP·wallIndex).
+   * Below t = 1 the best picks always beat the wall; past it you also need a pickup (+25, ×2, shield).
+   */
+  WALL_T0: 0.65,
+  WALL_T_STEP: 0.05,
+  WALL_T_MAX: 0.95,
   DT: 1 / 60
 } as const;
 
@@ -167,9 +182,10 @@ export const TRACE_COLUMNS = [
 ] as const;
 
 const PHASE_INDEX: Record<Phase, number> = { splash: 0, playing: 1, bursting: 2, gameOver: 3 };
-const NON_NEGATIVE: readonly OpKind[] = ["add", "mul2"];
 const ALL_OPS: readonly OpKind[] = ["add", "mul2", "sub", "div2"];
-const POWERUP_KINDS: readonly PowerupKind[] = ["plus25", "double", "shield", "x2"];
+const OP_WEIGHT_TOTAL = CONFIG.OP_WEIGHTS.reduce((sum, w) => sum + w, 0);
+/** Draw table: a shield saves a whole run, so it is the rarest pickup (1 in 6). */
+const POWERUP_KINDS: readonly PowerupKind[] = ["plus25", "plus25", "double", "shield", "x2", "x2"];
 const POWERUP_LANES = [-1.6, 0, 1.6];
 
 export function applyOp(value: number, kind: OpKind, n: number): number {
@@ -421,7 +437,7 @@ export class NumberSurgeSim {
   private drawOp(): { kind: OpKind; n: number } {
     const tier = Math.floor(this.o.distance / CONFIG.WALL_SPACING);
     const nMax = Math.min(CONFIG.OP_N_MAX, 15 + tier * 10);
-    const kind = ALL_OPS[Math.floor(this.rng.next() * ALL_OPS.length)] ?? "add";
+    const kind = pickWeighted(this.rng.next());
     const n = kind === "add" || kind === "sub" ? CONFIG.OP_N_MIN + Math.floor(this.rng.next() * (nMax - CONFIG.OP_N_MIN + 1)) : 0;
     return { kind, n };
   }
@@ -446,7 +462,8 @@ export class NumberSurgeSim {
     let b = this.drawOp();
     // Guarantee at least one non-negative-op gate per row.
     if (isNegative(a.kind) && isNegative(b.kind)) {
-      const kind = NON_NEGATIVE[Math.floor(this.rng.next() * NON_NEGATIVE.length)] ?? "add";
+      const addShare = CONFIG.OP_WEIGHTS[0] / (CONFIG.OP_WEIGHTS[0] + CONFIG.OP_WEIGHTS[1]);
+      const kind: OpKind = this.rng.next() < addShare ? "add" : "mul2";
       const tier = Math.floor(o.distance / CONFIG.WALL_SPACING);
       const nMax = Math.min(CONFIG.OP_N_MAX, 15 + tier * 10);
       b = { kind, n: kind === "add" ? CONFIG.OP_N_MIN + Math.floor(this.rng.next() * (nMax - CONFIG.OP_N_MIN + 1)) : 0 };
@@ -485,7 +502,8 @@ export class NumberSurgeSim {
       if (slot) {
         slot.active = true;
         slot.z = this.nextWallAt - o.distance;
-        slot.hp = 40 + 30 * o.wallsPassed + Math.floor(this.rng.next() * 20);
+        const wallIndex = Math.round(this.nextWallAt / CONFIG.WALL_SPACING) - 1;
+        const floor = wallFloor(wallIndex, this.rng.next());
         // Clear gate rows and powerups on the wall approach.
         for (const row of o.rows) {
           if (row.active && Math.abs(row.z - slot.z) < CONFIG.WALL_CLEARANCE) row.active = false;
@@ -496,9 +514,33 @@ export class NumberSurgeSim {
         for (const p of o.powerups) {
           if (p.active && Math.abs(p.z - slot.z) < CONFIG.WALL_CLEARANCE) p.active = false;
         }
+        const reach = this.reachBeforeWall(slot.z);
+        slot.hp = wallHp(wallIndex, floor, reach.worst, reach.best);
       }
       this.nextWallAt += CONFIG.WALL_SPACING;
     }
+  }
+
+  /** Worst-pick and best-pick numbers over the unresolved gate rows in front of a wall at `wallZ`. */
+  private reachBeforeWall(wallZ: number): { worst: number; best: number } {
+    const o = this.o;
+    const ahead: number[] = [];
+    for (let i = 0; i < o.rows.length; i += 1) {
+      const row = o.rows[i];
+      if (row && row.active && !row.resolved && row.z > 0 && row.z < wallZ) ahead.push(i);
+    }
+    ahead.sort((a, b) => (o.rows[a]?.z ?? 0) - (o.rows[b]?.z ?? 0));
+    let worst = o.number;
+    let best = o.number;
+    for (const i of ahead) {
+      const a = o.gates[i * 2];
+      const b = o.gates[i * 2 + 1];
+      if (!a || !b || !a.active || !b.active) continue;
+      // Every op is monotone in the input, so per-row min/max gives the global worst/best path.
+      worst = Math.min(applyOp(worst, a.kind, a.n), applyOp(worst, b.kind, b.n));
+      best = Math.max(applyOp(best, a.kind, a.n), applyOp(best, b.kind, b.n));
+    }
+    return { worst, best };
   }
 
   private resolveRows(): void {
@@ -735,6 +777,37 @@ export class NumberSurgeSim {
       this.rng.count
     ]);
   }
+}
+
+function pickWeighted(r: number): OpKind {
+  let acc = 0;
+  const target = r * OP_WEIGHT_TOTAL;
+  for (let i = 0; i < ALL_OPS.length; i += 1) {
+    acc += CONFIG.OP_WEIGHTS[i] ?? 0;
+    if (target < acc) return ALL_OPS[i] ?? "add";
+  }
+  return ALL_OPS[ALL_OPS.length - 1] ?? "add";
+}
+
+/** Distance floor for wall `wallIndex` (0-based) given one rng draw in [0, 1). */
+export function wallFloor(wallIndex: number, r: number): number {
+  return Math.round(CONFIG.WALL_BASE * CONFIG.WALL_GROWTH ** wallIndex * (1 + CONFIG.WALL_JITTER * r));
+}
+
+/** Pick-sensitivity blend for wall `wallIndex`: 0 = worst picks pass, 1 = only best picks pass. */
+export function wallT(wallIndex: number): number {
+  return Math.min(CONFIG.WALL_T_MAX, CONFIG.WALL_T0 + CONFIG.WALL_T_STEP * wallIndex);
+}
+
+/**
+ * Wall HP from the distance floor and the worst/best numbers reachable before the wall.
+ * While t < 1 a best-pick path always clears it (HP ≤ best − 1); idle or careless play does not.
+ */
+export function wallHp(wallIndex: number, floor: number, worst: number, best: number): number {
+  const t = wallT(wallIndex);
+  let hp = Math.ceil(worst + t * (best - worst));
+  if (t < 1) hp = Math.min(hp, best - 1);
+  return Math.min(CONFIG.NUMBER_CAP, Math.max(1, floor, hp));
 }
 
 function isNegative(kind: OpKind): boolean {

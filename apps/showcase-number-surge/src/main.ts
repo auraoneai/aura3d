@@ -54,7 +54,6 @@ let fovPunch = 0;
 
 const chase = new ChaseCamera();
 const steady = new SteadyCamera();
-const presenter = createNumberSurgePresenter(() => sim, () => (reducedMotion ? steady.cur : chase.cur));
 
 /** Presentation-only jitter (camera shake visuals): never the gameplay RNG stream. */
 let jitterSeed = 0x9e3779b9;
@@ -94,6 +93,9 @@ sound.setMuted(store.get("splatSiblings.number-surge.mute") === "1");
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const storedMotion = config.motion || store.get("splatSiblings.number-surge.motion");
 let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" ? false : prefersReduced;
+// The presenter snapshots once at construction and reads `reducedMotion`, so it must be created after that
+// declaration (creating it earlier is a temporal-dead-zone ReferenceError at module load).
+const presenter = createNumberSurgePresenter(() => sim, () => (reducedMotion ? steady.cur : chase.cur));
 
 const hud = new NumberSurgeHud({
   hud: $("hud"),
@@ -173,7 +175,8 @@ function reactToFrame(): void {
   fx.vignette(o.mult, o.scoreX2Timer > 0, performance.now() / 1000);
   if (o.phase !== lastPhase) {
     if (o.phase === "bursting") fx.reveal(true);
-    if (o.phase === "splash" || o.phase === "playing") fx.reveal(false);
+    // The red burst disc covers the frame only while bursting; it fades on the results screen so the city shows through the translucent panel.
+    if (o.phase === "splash" || o.phase === "playing" || o.phase === "gameOver") fx.reveal(false);
     $("splash-screen").hidden = o.phase !== "splash";
     $("gameover-screen").hidden = o.phase !== "gameOver";
     if (o.phase === "gameOver") showResults();

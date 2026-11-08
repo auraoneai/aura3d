@@ -341,7 +341,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Arithmetic-gate runner through a neon dusk corridor: pick the higher-result operation gate to grow your number, build pick-quality combos, and smash boss walls every 400 metres. Procedural geometry and synth audio; see evidence/number-surge/README.md."
+    notes: "Arithmetic-gate runner through a neon dusk corridor: pick the higher-result operation gate to grow your number, build pick-quality combos, and smash boss walls every 300 metres. Procedural geometry and synth audio; see evidence/number-surge/README.md."
   },
   {
     id: "showcase-splat-turf",

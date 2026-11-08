@@ -6,7 +6,7 @@ import { defineArtDirection } from "@aura3d/engine/game/art";
 export default defineArtDirection({
   id: "number-surge",
   genre: "platformer",
-  fantasy: "Steer a glowing number ball down a neon dusk highway, pick the better arithmetic gate, and smash boss walls with a bigger number.",
+  fantasy: "Steer a glowing number ball through a synthwave number city, pick the better arithmetic gate, and smash walls with a bigger number.",
   rebuildTier: "S-presentation",
   wave: 4,
   references: [
