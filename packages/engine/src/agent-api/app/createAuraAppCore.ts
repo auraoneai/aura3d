@@ -17,6 +17,7 @@ import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { animatedPosition, animatedRotation, normalizeSceneSnapshot, scaleToVec3 } from "../sceneMath.js";
 import { configureCanvas, resolveCanvas } from "./canvas.js";
 import { resolveAppOutputColorPolicy } from "./colorManagement.js";
+import { normalizeAppToneMapping } from "./toneMappingNames.js";
 import { mountFailureConsoleMessage } from "./mountFailure.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
@@ -37,6 +38,7 @@ import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, registerManagedRootApp, reserveRootCanvas, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import type { PhysicsWorldAccess } from "../physics/PhysicsWorldAccess.js";
 import { isPhysicsBackendMissing } from "../physics/backendMissing.js";
+import { watchReadyStall } from "./readyStallWarning.js";
 import { createOnDemandPhysicsFacade, type OnDemandPhysicsFacade } from "../physics/onDemandPhysics.js";
 import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
@@ -67,6 +69,7 @@ import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { createWorkerRootApp } from "./workerRootApp.js";
 import { workerCanvasTransferAttempted } from "./workerRuntime.js";
 import { coldStartLookApplies, withColdStartLook } from "../looks/coldStartLook.js";
+import { coldStartPlainOutput, plainLookForNextScene, resolvePlainLook } from "../looks/plainLook.js";
 
 type ReadinessStage = "renderer" | "first-frame";
 type ReadyBackend = "webgl2" | "webgpu";
@@ -257,6 +260,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   options: AuraCreateAppOptions,
   admissionFailure?: RenderDeviceError
 ): AuraApp {
+  // 5.4 N7: same-meaning tone-mapping spellings ("aces-filmic", "ACESFilmicToneMapping") map to the operator; unknown names throw.
+  options = normalizeAppToneMapping(options);
   // Reject invalid presentation policy before any canvas/context acquisition.
   resolveAppOutputColorPolicy({ ...options.renderer?.output, ...options.output });
   if (options.worker !== undefined) {
@@ -294,8 +299,33 @@ export function createAuraAppWithPhysicsWorldAccess(
   // payload.extra.mountTiming (see markTiming in ./platform).
   markTiming("a3d:mount:create-app-start");
   let snapshot = normalizeSceneSnapshot(options.scene);
+  // N3: a lit scene with no authored look, output or post effect (or `looks.preset("plain")`) gets the neutral output and
+  // the no-stacked-fill rule; the output rides as this app's `options.output`, so every later read sees it. Real browsers
+  // only, like the cold-start look (unit tests and harnesses that inject a renderer keep their options untouched).
+  const plainLook = typeof (globalThis as { WebGL2RenderingContext?: unknown }).WebGL2RenderingContext === "undefined"
+    ? null
+    : resolvePlainLook(snapshot, options);
+  // The options the author passed (before the plain output rides on them); `setScene` re-decides against these.
+  const authoredOptions = options;
+  if (plainLook) {
+    snapshot = plainLook.snapshot;
+    options = { ...options, output: plainLook.output };
+  }
   // 5.1: scenes that author no look/light/environment get the hero-stage defaults; authored scenes are returned unchanged.
-  if (coldStartLookApplies(options)) snapshot = withColdStartLook(snapshot);
+  // N2 + N3: a bare scene gets the hero stage over the structured room (N2) and, when the author chose no output, the
+  // plain neutral output (N3), so bare geometry and a lit plain scene share one output path.
+  let plainBoot = plainLook !== null;
+  if (coldStartLookApplies(options)) {
+    const staged = withColdStartLook(snapshot);
+    if (staged !== snapshot && !plainLook) {
+      const coldOutput = coldStartPlainOutput(options);
+      if (coldOutput) {
+        options = { ...options, output: coldOutput };
+        plainBoot = true;
+      }
+    }
+    snapshot = staged;
+  }
   /*
    * One top-level node at a time, so the compiled scene can find the children of a mounted group or look by the group's
    * runtime id (`app.nodes.remove`). The concatenation is the same node list as flattening the whole list at once.
@@ -976,6 +1006,33 @@ export function createAuraAppWithPhysicsWorldAccess(
   const teardownFailures = new Map<WebGLRenderController, unknown>();
   const appCleanupFailures: unknown[] = [];
   let pendingAsyncSteps = 0;
+  let deferredAdvanceSeconds = 0;
+  let deferredAdvanceQueued = false;
+  let deferredAdvanceRenders = false;
+  /*
+   * A WebGPU mount that switched itself to asynchronous frames for probe capture (frameMode unset) still serves apps that
+   * drive their own fixed-step loop with advance()/step(): a call that lands while a frame is in flight runs once that
+   * frame settles (calls coalesce; a step among them presents) instead of throwing. Opted-in async mounts keep the error.
+   */
+  const deferWhileAutoAsyncFrame = (dt: number, renders: boolean): boolean => {
+    const controller = productionController;
+    if (disposed || pendingAsyncSteps > 0 || !controller?.busy?.() || !controller.autoAsyncFrames?.() || !controller.whenIdle) return false;
+    deferredAdvanceSeconds += Math.max(0, dt);
+    deferredAdvanceRenders ||= renders;
+    if (!deferredAdvanceQueued) {
+      deferredAdvanceQueued = true;
+      void controller.whenIdle().catch(() => undefined).then(() => {
+        deferredAdvanceQueued = false;
+        const seconds = deferredAdvanceSeconds, present = deferredAdvanceRenders;
+        deferredAdvanceSeconds = 0;
+        deferredAdvanceRenders = false;
+        if (disposed) return;
+        if (present) app.step(seconds);
+        else if (seconds > 0) app.advance(seconds);
+      });
+    }
+    return true;
+  };
   let canvasAdmissionDrain: Promise<void> | undefined;
   let canvasAdmissionDrainDone = false;
   const releaseCanvasIfRetired = (): void => {
@@ -2202,7 +2259,23 @@ export function createAuraAppWithPhysicsWorldAccess(
     },
     setScene(nextScene) {
       assertMutableFrame();
-      const nextSnapshot = coldStartLookApplies(options) ? withColdStartLook(normalizeSceneSnapshot(nextScene)) : normalizeSceneSnapshot(nextScene);
+      // An app that booted on the plain path re-decides per scene: a later scene that authors a look, post effect or HDRI
+      // drops the neutral output (its look's own output applies again); a plain scene keeps it. Apps that did not boot on
+      // the plain path never gain it here, so existing games that switch scenes keep their look.
+      let normalizedNext = normalizeSceneSnapshot(nextScene);
+      let nextPlainOutput = false;
+      if (plainBoot) {
+        const nextPlain = plainLookForNextScene(normalizedNext, authoredOptions);
+        normalizedNext = nextPlain.snapshot;
+        nextPlainOutput = nextPlain.output !== undefined;
+        options = nextPlain.output ? { ...authoredOptions, output: nextPlain.output } : authoredOptions;
+      }
+      const nextSnapshot = coldStartLookApplies(options) ? withColdStartLook(normalizedNext) : normalizedNext;
+      if (plainBoot && !nextPlainOutput && nextSnapshot !== normalizedNext) {
+        // A bare next scene got the hero stage: it takes the plain output too, as at boot.
+        const coldOutput = coldStartPlainOutput(authoredOptions);
+        if (coldOutput) options = { ...authoredOptions, output: coldOutput };
+      }
       assertScenePhysicsPivotSupport(nextSnapshot.nodes);
       const nextRenderSnapshot = flattenForRender(nextSnapshot, true);
       // The preview bridge is a separate world, so prepare it before changing
@@ -2313,11 +2386,17 @@ export function createAuraAppWithPhysicsWorldAccess(
         animationHandle = requestAnimationFrame(render);
       }
     },
-    async ready() {
+    ready() {
       // Resolves when the in-flight mount settles; immediate when there is none. See AuraApp.ready.
-      await productionMountSettled;
-      // On-demand physics only: also wait for a backend load in flight (its failure is reported in diagnostics).
-      if (physicsLoad) await physicsLoad.catch(() => undefined);
+      // watchReadyStall only logs an AURA_READY_STALLED hint if this stays pending with no asset activity
+      // for 15 s on a visible page (a top-level await deadlocking the bundle); it never rejects or delays the promise.
+      return watchReadyStall((async () => {
+        await productionMountSettled;
+        // On-demand physics only: also wait for a backend load in flight (its failure is reported in diagnostics).
+        if (physicsLoad) await physicsLoad.catch(() => undefined);
+      })(), {
+        subscribeActivity: (onActivity) => assetEventScope.subscribe({ onAssetProgress: onActivity, onAssetError: onActivity })
+      });
     },
     readiness(readinessOptions: AuraReadinessOptions = {}) {
       if (disposed) return Promise.resolve({ state: "disposed" } as const);
@@ -2366,6 +2445,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       return pendingWebGPURecovery !== undefined || (productionController?.deviceLost?.() ?? false);
     },
     advance(dt = 1 / 60) {
+      if (deferWhileAutoAsyncFrame(dt, false)) return;
       assertMutableFrame();
       const seconds = Math.max(0, dt);
       const revision = mountRevision;
@@ -2378,6 +2458,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       productionController?.update?.(runtimeTime * 1000);
     },
     step(dt = 1 / 60) {
+      if (deferWhileAutoAsyncFrame(dt, true)) return;
       assertMutableFrame();
       const seconds = Math.max(0, dt);
       const revision = mountRevision;
@@ -2605,6 +2686,10 @@ export function createAuraAppWithPhysicsWorldAccess(
       await productionController?.whenIdle?.();
       if (productionController && !disposed && !productionController.busy?.()) {
         productionController.render(runtimeTime * 1000);
+        // A WebGPU mount that adopted asynchronous frames for probe capture queues
+        // that render instead of drawing it here: wait for it, so the capture shows
+        // the re-rendered frame and no submission is left pending for the next step().
+        if (!disposed && productionController.busy?.()) await productionController.whenIdle?.();
       }
       return captureAuraScreenshot(canvas);
     },

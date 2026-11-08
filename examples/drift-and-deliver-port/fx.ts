@@ -11,6 +11,7 @@
  * the delivery flash at 0.3 peak.
  */
 import type { CustomSpec } from "./headlights";
+import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
 
 /** Courier teal, reserved for the car, the drop-off beacon and the minimap (WP-28 identity). */
 export const COURIER_TEAL = "#22c3c9";
@@ -267,9 +268,32 @@ void main() {
   outColor = vec4(vec3(0.03, 0.03, 0.035), (a == a) ? a : 0.0);
 }`;
 
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+export const SKID_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct SkidVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> SkidVarying {
+  var out: SkidVarying;
+  out.uv = a_uv;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)));
+  return out;
+}`);
+
+export const SKID_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let age = aura.u_skidNow - vUv.y;
+  var a = 0.55 * clamp(1.0 - age / aura.u_skidLife, 0.0, 1.0);
+  let edge = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x);
+  a = a * edge;
+  return vec4<f32>(vec3<f32>(0.03, 0.03, 0.035), a3dFinite1(a));
+}`);
+
 /** `skidNow` is written each frame with `setUniform` (no recompiles); `time` is avoided (an engine built-in). */
 export const skidSpec = (): CustomSpec => ({
   glsl: { vertex: SKID_VERTEX, fragment: SKID_FRAGMENT },
+  wgsl: { vertex: SKID_VERTEX_WGSL, fragment: SKID_FRAGMENT_WGSL },
   uniforms: { skidNow: { type: "f32", value: 0 }, skidLife: { type: "f32", value: SKID_LIFE } },
   transparent: true,
   depthWrite: false,

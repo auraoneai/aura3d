@@ -217,7 +217,7 @@ describe("native depth-of-field postprocess routing", () => {
     const withPipeline = (change: Record<string, unknown>): RendererPostProcessOptions => ({ ...f.options, pipeline: { ...f.pipeline, ...change } });
     try {
       for (const dof of [null, true, [], 1, "invalid"]) await expect(invoke(withPipeline({ dof }))).rejects.toMatchObject({ code: "WEBGPU_DOF_INVALID" });
-      for (const change of [{ ao: {} }, { ssr: {} }, { taa: {} }, { motionBlur: {} }, { antiAliasing: "taa" }, { nativeEffects: [{ kind: "unknown" }] }, { bloom: {} }]) {
+      for (const change of [{ taa: {} }, { antiAliasing: "taa" }, { nativeEffects: [{ kind: "unknown" }] }, { bloom: {} }]) {
         await expect(invoke(withPipeline(change))).rejects.toMatchObject({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" });
       }
       const badAlpha = { ...f.dofFrame, alpha: "straight" } as unknown as NativeWebGPUDofFrame;

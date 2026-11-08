@@ -18,7 +18,7 @@ import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
 import { recordPostSkipped, recordPostStage, setSelectiveBloomSkipped } from "../renderer/postSkipped";
 import { vignetteColorRgb } from "../post/vignetteColor";
 import type { PostPipelineOptions } from "../contracts/post";
-import type { AuraToneMappingOperatorLike, OutputVignetteUniforms } from "../contracts/output";
+import type { AuraToneMappingOperatorLike, OutputColorGradeUniforms, OutputVignetteUniforms } from "../contracts/output";
 import { executeOutputPassToEncodedDisplaySurface, outputPassForDevice } from "../output/OutputPass";
 import { isExplicitEncodedPostLease, issueEncodedDisplaySurface, type EncodedDisplaySurfaceLease } from "../output/EncodedDisplaySurface";
 import { TONE_MAP_OPERATOR_FUNCTIONS } from "../output/ToneMappingOperators.glsl";
@@ -3053,6 +3053,33 @@ export function createLegacyOutputPass(
 interface OutputPassRouteTone {
   readonly operator: AuraToneMappingOperatorLike;
   readonly vignette: OutputVignetteUniforms | undefined;
+  /** The legacy `color-grade` descriptor, folded into the OutputPass epilogue (Display-P3 route only). */
+  readonly colorGrade?: OutputColorGradeUniforms;
+  /** A legacy `fxaa` descriptor: the v2 LDR tail runs its fused FXAA instead (Display-P3 route only). */
+  readonly fxaa?: boolean;
+}
+
+const GRADE_RANGES: ReadonlyArray<readonly [keyof OutputColorGradeUniforms, number, number, number]> = [
+  ["contrast", 1, 0, 3], ["temperature", 0, -1, 1], ["tint", 0, -1, 1], ["saturation", 1, 0, 3], ["vibrance", 0, -1, 1], ["vignette", 0, 0, 1]
+];
+
+/**
+ * The legacy `color-grade` descriptor as OutputPass grade uniforms, or undefined when the epilogue cannot reproduce it
+ * (sharpening samples neighbours; unknown or out-of-range fields keep the fused present, which validates them).
+ */
+function outputPassColorGrade(options: Readonly<Record<string, unknown>>): OutputColorGradeUniforms | undefined {
+  const sharpening = options["sharpening"];
+  if (sharpening !== undefined && sharpening !== 0) return undefined;
+  const known = new Set<string>([...GRADE_RANGES.map(([name]) => name), "sharpening"]);
+  if (Object.keys(options).some((key) => !known.has(key) && options[key] !== undefined)) return undefined;
+  const grade: Record<string, number> = {};
+  for (const [name, fallback, min, max] of GRADE_RANGES) {
+    const raw = options[name];
+    const value = raw === undefined ? fallback : raw;
+    if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) return undefined;
+    grade[name] = value;
+  }
+  return grade as unknown as OutputColorGradeUniforms;
 }
 
 /**
@@ -3097,18 +3124,61 @@ function outputPassRouteTone(
   pipeline: PostPipelineOptions,
   source: RenderTarget,
   host: WebGL2DeviceHost,
-  requirePolicy = false
+  requirePolicy = false,
+  /**
+   * Display-P3 canvas requests only: fold a legacy `color-grade` descriptor into the OutputPass epilogue and hand an
+   * `fxaa` descriptor to the v2 tail's fused FXAA. sRGB chains never set this, so their fused present is unchanged.
+   */
+  admitDisplayPasses = false,
+  /** The v2 HDR stages produced a new depth-less target (the legacy SSR descriptor would be skipped), so S3 owns a declared SSR. */
+  hdrStagesRan = false
 ): OutputPassRouteTone | undefined {
   if (source.colorTexture.format === "rgba8" || !host.device) return undefined;
   if ((!requirePolicy && !hdrOutputPassEnabled()) || !halfFloatColorRenderable(host)) return undefined;
-  if (!passes.every((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName) || pass.name === ("bloom" as LdrPostprocessPassName))) return undefined;
+  let colorGrade: OutputColorGradeUniforms | undefined;
+  let fxaa = false;
+  for (const pass of passes) {
+    if (pass.name === ("tone-mapping" as LdrPostprocessPassName) || pass.name === ("bloom" as LdrPostprocessPassName)) continue;
+    // The v2 S3 stage owns SSR when the pipeline declares it; the legacy descriptor's native pass only ever ran on the
+    // depth-less HDR stage output and was skipped (WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:ssr), so it adds nothing here.
+    if (admitDisplayPasses && hdrStagesRan && pass.name === ("ssr" as LdrPostprocessPassName) && pipeline.ssr) continue;
+    if (admitDisplayPasses && pass.name === ("color-grade" as LdrPostprocessPassName) && !colorGrade) {
+      colorGrade = outputPassColorGrade(pass.options ?? {});
+      if (colorGrade) continue;
+    }
+    if (admitDisplayPasses && pass.name === ("fxaa" as LdrPostprocessPassName) && !fxaa
+        && (pipeline.antiAliasing === "off" || pipeline.antiAliasing === "msaa" || pipeline.antiAliasing === "fxaa" || pipeline.antiAliasing === "taa")) {
+      fxaa = true;
+      continue;
+    }
+    return undefined;
+  }
   const tonePass = passes.find((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName));
   const whitePoint = tonePass?.options?.whitePoint;
   if (whitePoint !== undefined && whitePoint !== 1) return undefined;
   const operator: AuraToneMappingOperatorLike = pipeline.toneMapping === "none" ? "linear" : pipeline.toneMapping;
   if (!TONE_MAP_OPERATOR_FUNCTIONS[operator]) return undefined;
   const vignette = linearVignetteOption({ vignette: pipeline.vignette });
-  return { operator, vignette: vignette ? { intensity: vignette.intensity, smoothness: vignette.smoothness, roundness: vignette.roundness, color: vignette.color as [number, number, number] } : undefined };
+  return {
+    operator,
+    vignette: vignette ? { intensity: vignette.intensity, smoothness: vignette.smoothness, roundness: vignette.roundness, color: vignette.color as [number, number, number] } : undefined,
+    ...(colorGrade ? { colorGrade } : {}),
+    ...(fxaa ? { fxaa: true } : {})
+  };
+}
+
+/** Diagnostic detail for a Display-P3 request that has no OutputPass route (appended to the fallback reason). */
+function outputPassRouteBlocker(passes: readonly LdrPostprocessPassDescriptor[], pipeline: PostPipelineOptions, source: RenderTarget, host: WebGL2DeviceHost): string {
+  if (source.colorTexture.format === "rgba8") return "ldr-scene-target";
+  if (!halfFloatColorRenderable(host)) return "no-half-float-target";
+  const operator = pipeline.toneMapping === "none" ? "linear" : pipeline.toneMapping;
+  if (!TONE_MAP_OPERATOR_FUNCTIONS[operator]) return `tone-operator:${String(operator)}`;
+  const tonePass = passes.find((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName));
+  const whitePoint = tonePass?.options?.whitePoint;
+  if (whitePoint !== undefined && whitePoint !== 1) return "white-point";
+  const blocked = passes.filter((pass) => pass.name !== ("tone-mapping" as LdrPostprocessPassName) && pass.name !== ("bloom" as LdrPostprocessPassName))
+    .map((pass) => pass.name === ("color-grade" as LdrPostprocessPassName) ? "color-grade(sharpening or invalid option)" : pass.name);
+  return blocked.length ? `passes:${blocked.join(",")}` : "unknown";
 }
 
 /**
@@ -3241,16 +3311,6 @@ export function executePostGraphWebGL2(
   const vignetteInOut = linearVignetteEnabled() && Boolean(pipeline.vignette)
     && (request.passes.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName)) || pipeline.toneMapping === "none");
   let tailPipeline: PostPipelineOptions = vignetteInOut ? { ...pipeline, vignette: undefined } : pipeline;
-  const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId));
-  ldrTailLease = needsTail && v2
-    ? acquireV2TargetForPresent(host, v2, { width: source.width, height: source.height, format: "rgba8" })
-    : undefined;
-  ldrTailTarget = ldrTailLease?.target;
-  // With a real S12 the fused OUT must not emit the legacy dither — the
-  // finalize pass owns the single triangular dither for the frame.
-  const pipelineForOut = needsTail && pipeline.dither !== false
-    ? { ...pipeline, dither: false as const }
-    : pipeline;
   // §6.9/T0-17 (FLAG-ON-4): on the v2 chain the HDR stages own their
   // effects — S2 GTAO (ssao), S6 (depth-of-field), S7 (motion-blur),
   // S5 (taa). The legacy twin must not double-run, and its native depth
@@ -3266,9 +3326,24 @@ export function executePostGraphWebGL2(
   // The single tone map and sRGB encode run in the OutputPass whenever the remaining
   // descriptors are only bloom and tone mapping (every effect before them composes in
   // linear HDR); chains with legacy display-space kernels (ssr, outline, grade, fxaa
-  // descriptors) or a non-default white point keep the fused present.
+  // descriptors) or a non-default white point keep the fused present. A Display-P3
+  // canvas request additionally admits a legacy colour grade (folded into the OutputPass
+  // epilogue) and FXAA (run by the v2 tail); sRGB output never takes that route.
   const requiresOutputPolicy = pipeline.outputColorSpace === "display-p3" || (pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque");
-  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host, requiresOutputPolicy) : undefined;
+  const admitDisplayPasses = pipeline.outputColorSpace === "display-p3" && !request.outputTarget;
+  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host, requiresOutputPolicy, admitDisplayPasses,
+    workSource !== source && !(workSource as WebGL2RenderTarget).depthTextureHandle) : undefined;
+  if (outputPassTone?.fxaa) tailPipeline = { ...tailPipeline, antiAliasing: "fxaa" };
+  const needsTail = Boolean(v2 && (outputPassTone?.fxaa || v2.v2NeedsLdrTail(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId)));
+  ldrTailLease = needsTail && v2
+    ? acquireV2TargetForPresent(host, v2, { width: source.width, height: source.height, format: "rgba8" })
+    : undefined;
+  ldrTailTarget = ldrTailLease?.target;
+  // With a real S12 the fused OUT must not emit the legacy dither — the
+  // finalize pass owns the single triangular dither for the frame.
+  const pipelineForOut = needsTail && pipeline.dither !== false
+    ? { ...pipeline, dither: false as const }
+    : pipeline;
   const p3TailFallback = Boolean(ldrTailTarget && !request.outputTarget && pipeline.outputColorSpace === "display-p3");
   const requiresAlphaPolicy = pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque";
   if (requiresOutputPolicy && !outputPassTone && (!p3TailFallback || requiresAlphaPolicy)) {
@@ -3278,7 +3353,7 @@ export function executePostGraphWebGL2(
     if (requiresAlphaPolicy || request.outputTarget) {
       throw new RenderDeviceError("The active post chain cannot apply the requested output color or alpha policy", "POSTPROCESS_OUTPUT_POLICY_UNAVAILABLE");
     }
-    if (!p3TailFallback) tailOutputScope = host.device.beginSrgbOutputFallbackScope("Display-P3 is unavailable for this post chain");
+    if (!p3TailFallback) tailOutputScope = host.device.beginSrgbOutputFallbackScope(`Display-P3 is unavailable for this post chain: ${outputPassRouteBlocker(v2Passes, pipeline, source, host)}`);
   }
   // A P3 tail requires the explicit, frame-owned surface capability and a
   // snapshotted sequence whose stages preserve the encoded display gamut.
@@ -3286,7 +3361,7 @@ export function executePostGraphWebGL2(
   const p3TailPlan = p3TailFallback && outputPassTone && v2 && ldrTailLease
     && isExplicitEncodedPostLease(ldrTailLease, host.device)
     && typeof v2.prepareP3DisplayTail === "function" && typeof v2.acquireV2TargetLease === "function"
-    ? v2.prepareP3DisplayTail(pipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId)
+    ? v2.prepareP3DisplayTail(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId)
     : undefined;
   let tailCanvasColorSpace: "srgb" | "display-p3" | undefined;
   if (ldrTailTarget && !request.outputTarget) {
@@ -3298,7 +3373,10 @@ export function executePostGraphWebGL2(
     if (p3TailFallback) {
       tailOutputScope = p3TailPlan && verifiedCanvasAlpha
         ? host.device.beginP3DisplayOutputScope()
-        : host.device.beginSrgbOutputFallbackScope("Display-P3 is unavailable for the encoded postprocess tail");
+        : host.device.beginSrgbOutputFallbackScope(`Display-P3 is unavailable for the encoded postprocess tail: ${
+          !outputPassTone ? outputPassRouteBlocker(v2Passes, pipeline, source, host)
+            : !verifiedCanvasAlpha ? "canvas-alpha-unverified"
+            : (typeof v2?.p3DisplayTailBlocker === "function" ? v2.p3DisplayTailBlocker(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId) : undefined) ?? "display-surface-unavailable"}`);
     }
     const result = tailOutputScope?.negotiation ?? host.device.negotiateOutputColorSpace(pipeline.outputColorSpace ?? "srgb");
     if (result.active !== "srgb" && result.active !== "display-p3") {
@@ -3348,7 +3426,8 @@ export function executePostGraphWebGL2(
         // Display effects consume straight alpha; associate only at S12.
         alphaMode: ldrTailTarget && pipeline.alphaMode === "premultiplied" ? "straight" : pipeline.alphaMode,
         inputAlphaMode,
-        ...(vignetteInOut && outputPassTone.vignette ? { vignette: outputPassTone.vignette } : {})
+        ...(vignetteInOut && outputPassTone.vignette ? { vignette: outputPassTone.vignette } : {}),
+        ...(outputPassTone.colorGrade ? { colorGrade: outputPassTone.colorGrade } : {})
       } as const;
       const outputPass = outputPassForDevice(host.device);
       if (encodedSurface && ldrTailTarget) {

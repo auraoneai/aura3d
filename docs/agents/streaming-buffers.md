@@ -14,11 +14,12 @@ const stage = scene({ background: "#05070b" })
   .add(points.stream({ capacity: 250_000, colors: "u8x4n", size: 1.5, sizeAttenuation: false, runtime: { id: "lidar" } }));
 
 const app = createAuraApp("#app", { scene: stage });
-await app.ready();
-const lidar = pointStreamOf(app.nodes.require("lidar"));   // typed handle, no optional chaining
-
-// Per sensor frame (positions: Float32Array xyz, colors: Uint8Array rgba, 4 bytes per point):
-lidar.write(positions, { colors });          // replace the cloud; draw count = positions.length / 3
+// Never `await app.ready()` at module top level: a production build deadlocks on it and the page stays black.
+void app.ready().then(() => {
+  const lidar = pointStreamOf(app.nodes.require("lidar"));   // typed handle, no optional chaining
+  // Per sensor frame (positions: Float32Array xyz, colors: Uint8Array rgba, 4 bytes per point):
+  lidar.write(positions, { colors });          // replace the cloud; draw count = positions.length / 3
+});
 ```
 
 The node serialises as `{ capacity, colors, runtimeId }`: no payload. `runtime: { id }` is required (the id is the handle key).

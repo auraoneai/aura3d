@@ -48,6 +48,7 @@ async function main(): Promise<void> {
   }
   const mode = q.get("mode");
   const app = createAuraApp(canvas, {
+    plainLook: false, // keep the pre-N3 default output this lab was measured on
     scene: s, autoStart: false, resize: false, pixelRatio: 1,
     renderer: { quality: "high", ...(mode ? { shaderFailures: mode as "skip" | "magenta" | "throw" } : {}) }
   } as never);

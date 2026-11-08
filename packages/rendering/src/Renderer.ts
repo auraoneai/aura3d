@@ -21,7 +21,7 @@ import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shader
 import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, resolvePostprocessTargetFormat, webgpuLinearHdrWithoutTone, nativeDofConflicts, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDepthPassesCover, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
@@ -57,7 +57,7 @@ import { VertexBuffer } from "./VertexBuffer";
 import { VertexFormat } from "./VertexFormat";
 import { BloomPass, FXAAPass, ToneMappingPass, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels, type BloomOptions, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthTextureBinding, type DepthOfFieldOptions, type FXAAOptions, type FilmGrainOptions, type FusedLdrPostProcessPass, type FusedLdrPostProcessScratch, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, type VolumetricLightOptions } from "./PostProcessPass";
 import { bindRendererSsrProjection, createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics, type RendererPostProcessPassName, type RendererPostProcessPassPlan, type RendererPostprocessPlanDiagnostics, type RendererPostprocessPlanOptions, type RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
-import { DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
+import { createLeanCoreShaderLibrary, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
@@ -75,6 +75,7 @@ import { UnlitMaterial } from "./UnlitMaterial";
 import { renderStateHasExtendedCommandFields } from "./Material";
 import { linearizeWebGPUDepthSample, type WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import { nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions } from "./post/WebGPUDepthOfField";
+import { webgpuNativeDepthPostStages } from "./post/WebGPUScreenSpaceReflections";
 import type { DofOptions } from "./post/PostGraph";
 import type { PostPipelineOptions } from "./contracts/post";
 import { materialLobes } from "./contracts/materialLobes";
@@ -86,13 +87,13 @@ import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD01_FORWARD_TARGET, PRD03_EXPOSURE, beginRendererQrFlagBinding, rendererQrFlags, setRendererQrFlags, withRendererQrFlags, withRendererQrFrameBegin, withRendererQrProofAccess,
   installRendererPostOwner, removeRendererPostOwner, withRendererPostAccess } from "./renderer/FrameGraph";
-import { clearTaaHistoryWrites, consumePostV2Presented, consumeTaaHistoryWritten, setSelectiveBloomSkipped } from "./renderer/postSkipped";
+import { clearTaaHistoryWrites, consumePostV2Presented, consumeTaaHistoryWritten, recordPostSkipped, setSelectiveBloomSkipped } from "./renderer/postSkipped";
 import { createSelectiveBloomTarget, selectiveBloomDecline, selectiveBloomRequested, selectiveContributorContract, setSelectiveSignalDrawBuffer, transferUnmergedBloomWeights, type SelectiveBloomTarget } from "./renderer/SelectiveBloom";
 import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, generatedSkinningForGeometry, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
@@ -774,6 +775,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
     readonly cameraCut?: boolean;
     /** Device-issued, frame-local depth and coverage proof for native WebGPU DoF. */
     readonly nativeDepthOfFieldFrame?: NativeWebGPUDofFrame;
+    /** Internal: the native DoF route the renderer chose for this frame when it is not the strict proof route. */
+    readonly nativeDepthOfFieldRoute?: "scene" | "skipped";
     readonly sceneDepth: {
       readonly texture: Texture | null;
       readonly available: boolean;
@@ -934,6 +937,8 @@ export class Renderer {
    * paid a full target build-and-teardown every frame.
    */
   private forwardColorTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
+  /** Single-sample HDR/depth/coverage source a 4x native depth-of-field producer resolves into. */
+  private nativeDofResolveTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
   private selectiveBloomTarget: (SelectiveBloomTarget & { readonly key: string }) | null = null;
   private readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
   private width: number;
@@ -1035,6 +1040,12 @@ export class Renderer {
   private readonly frameStatsMonitor?: FrameStatsLike;
   /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
   private probeGraph?: RenderGraph;
+  /**
+   * The lean core library every probe-face ForwardPass would otherwise create for itself. ForwardPass only reads it, and
+   * the device shader cache is keyed by library, so one shared instance stops every face of every capture recompiling
+   * (and, on WebGPU, re-creating pipelines for) the same programs.
+   */
+  private probeShaderLibrary?: ShaderLibrary;
   private readonly photometricProfiles?: RendererOptions["photometricProfiles"];
   private photometricResources?: PhotometricFrameResources;
   private readonly projectedSpotImages?: RendererOptions["projectedSpotImages"];
@@ -1221,7 +1232,8 @@ export class Renderer {
       cameraViewProjectionMatrix: vp,
       ...(frameContext ? { frameContext, cameraPosition: frameCamera?.position } : {}),
       outputColorSpace: "linear",
-      qualityTier: this.liveQualityTier()?.settings
+      qualityTier: this.liveQualityTier()?.settings,
+      shaderLibrary: (this.probeShaderLibrary ??= createLeanCoreShaderLibrary())
     };
     const graph = (this.probeGraph ??= new RenderGraph());
     graph.clear();
@@ -2184,16 +2196,42 @@ export class Renderer {
     return preferredFrameDepthStorage(this.device) === "float" ? { depthPrecision: "float" } : {};
   }
 
+  /**
+   * The native DoF route of the current frame. `undefined` with no v2 DoF or on the strict (coverage-proof) route;
+   * "scene" when the frame draws content the strict route cannot prove (lit or custom materials, an environment
+   * background, fog, frame contributors, reversed depth): the device then linearizes the frame's own depth like the
+   * WebGL2 v2 S1 stage; "skipped" when the post bag combines DoF with a stage it cannot run yet (only reachable once
+   * the canvas holds a WebGPU context, e.g. DoF enabled at runtime): the frame renders without DoF and records why.
+   */
+  private nativeDofRoute: "scene" | "skipped" | undefined;
+
   private planNativeDepthOfField(postprocess: RendererPostProcessOptions | undefined,
     camera: { readonly projectionMetadata?: FrameProjectionMetadata } | undefined,
     forward: { readonly projection?: Mat4; readonly consistent: boolean },
     options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown;
-      readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean }): ReturnType<typeof nativeDofProjection> | undefined {
+      readonly explicitTarget: RenderTarget | undefined; readonly deferred: boolean;
+      /** Clipping or splats this frame: the strict route refuses them later, so they take the scene route (transmission is lit, already off it). */
+      readonly strictSceneExtras?: () => boolean },
+    items?: readonly RenderItem[]): ReturnType<typeof nativeDofProjection> | undefined {
+    this.nativeDofRoute = undefined;
     if (!nativeWebGPUDofRequested(this.device, postprocess)) return undefined;
     const device = this.device;
     const pipeline = postprocess!.pipeline as PostPipelineOptions;
+    const conflicts = nativeDofConflicts(postprocess!, pipeline, this.viewScopeId);
+    if (conflicts.length && device.presentLdrPostprocess && postprocess!.execution !== "cpu-deterministic" && !this.renderingViews) {
+      recordPostSkipped(`WEBGPU_DOF_SKIPPED:${conflicts.join(",")}`, postprocess!.postFrameContext?.diagnosticToken);
+      this.nativeDofRoute = "skipped";
+      return undefined;
+    }
     validateNativeDofRoute(postprocess!, pipeline, this.viewScopeId);
     const flags = rendererQrFlags(device);
+    // The general scene route needs only the native post chain and a full single view.
+    if (device.canPresentNativeDepthOfField?.() === true && device.presentLdrPostprocess && postprocess!.execution !== "cpu-deterministic"
+      && !this.renderingViews && !this.pendingViewState && this.rasterViewportIsFull() && !options.explicitTarget && !options.deferred
+      && !this.nativeDofStrictFrame(pipeline, flags, options, camera, forward, items)) {
+      this.nativeDofRoute = "scene";
+      return undefined;
+    }
     if (device.canPresentNativeDepthOfField?.() !== true || !device.beginNativeDepthOfFieldFrame || !device.sealNativeDepthOfFieldFrame
       || !device.cancelNativeDepthOfFieldFrame || !device.validateNativeDepthOfFieldFrame || !device.clearRenderTarget
       || !device.presentLdrPostprocess || !device.getRenderTarget || postprocess!.execution === "cpu-deterministic"
@@ -2209,13 +2247,50 @@ export class Renderer {
     return plan;
   }
 
+  /** True when the strict coverage-proof route can serve this frame (then `planNativeDepthOfField` takes it). */
+  private nativeDofStrictFrame(pipeline: PostPipelineOptions, flags: QrFlags,
+    options: { readonly environmentBackground: unknown; readonly environmentFog: unknown; readonly advanced: unknown; readonly strictSceneExtras?: () => boolean },
+    camera: { readonly projectionMetadata?: FrameProjectionMetadata } | undefined,
+    forward: { readonly projection?: Mat4; readonly consistent: boolean }, items: readonly RenderItem[] | undefined): boolean {
+    const device = this.device;
+    if (!device.beginNativeDepthOfFieldFrame || !device.sealNativeDepthOfFieldFrame || !device.cancelNativeDepthOfFieldFrame
+      || !device.validateNativeDepthOfFieldFrame || !device.clearRenderTarget || !device.getRenderTarget
+      || pipeline.backgroundPassthrough || potentiallyActiveFrameContributors(flags).length > 0
+      || !isTrustedQrFlags(flags) || !qrCoreGeneratorOn(flags) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
+      || options.environmentBackground || options.environmentFog || options.advanced
+      || this.clearColor[3] !== 1 || this.clearColor.slice(0, 3).some(value => !Number.isFinite(value) || value < 0 || value > 1)
+      || options.strictSceneExtras?.() === true) return false;
+    try {
+      const plan = nativeDofProjection(camera, forward);
+      validateWebGPUDepthOfFieldOptions(pipeline.dof as Partial<DofOptions>, plan.maxGeometryDepthMeters, plan.skyDepthMeters);
+      if (items) assertNativeDofItems(items, flags);
+    } catch { return false; }
+    return true;
+  }
+
+  /** The single-sample frame source for a forward target: itself, or the cached resolve target of a 4x producer. */
+  private nativeDofSourceFor(forward: RenderTarget): RenderTarget {
+    if ((forward.sampleCount ?? 1) === 1) return forward;
+    const format = forward.colorTexture.format as Extract<TextureFormat, "rgba16f">;
+    const depthPrecision = this.frameDepthPrecision();
+    const key = `${this.width}x${this.height}:${format}:${depthPrecision.depthPrecision ?? "fixed"}`;
+    const cached = this.nativeDofResolveTarget;
+    if (cached && cached.key === key && !cached.target.disposed) return cached.target;
+    cached?.target.dispose();
+    const target = this.device.createRenderTarget({ width: this.width, height: this.height, label: "renderer-native-dof-resolve",
+      format, depth: "texture", sampleCount: 1, ...depthPrecision, colorAttachments: [{ format }, { format: "rgba8" as const }] });
+    this.nativeDofResolveTarget = { target, key };
+    return target;
+  }
+
   private beginNativeDofFrame(plan: ReturnType<typeof nativeDofProjection>, source: RenderTarget, items: readonly RenderItem[],
-    projection: Mat4 | undefined, viewProjection: Mat4 | undefined): { readonly frame: NativeWebGPUDofFrame; readonly assertCurrent: () => void } {
+    projection: Mat4 | undefined, viewProjection: Mat4 | undefined, multisample?: RenderTarget): { readonly frame: NativeWebGPUDofFrame; readonly assertCurrent: () => void } {
     const flags = rendererQrFlags(this.device);
     assertNativeDofItems(items, flags);
     if (!projection || !viewProjection || !source.depthTexture || !source.colorTextures || source.colorTextures.length !== 2
       || source.colorTextures[0] !== source.colorTexture || source.colorTextures[1]?.format !== "rgba8"
-      || source.colorTextures[1].disposed || source.depthTexture.disposed || source.sampleCount !== 1) {
+      || source.colorTextures[1].disposed || source.depthTexture.disposed || source.sampleCount !== 1
+      || (multisample && (multisample.sampleCount !== 4 || multisample.colorTextures?.length !== 2 || multisample.colorTextures[1]?.format !== "rgba8"))) {
       throw new RenderDeviceError("Native depth of field requires a live single-sample HDR/depth/coverage target", "NATIVE_DOF_TARGET_UNSUPPORTED");
     }
     const snapshotProjection = Array.from(projection), snapshotViewProjection = Array.from(viewProjection);
@@ -2227,10 +2302,12 @@ export class Renderer {
     const generation = this.device.generation;
     const clear = Array.from(this.clearColor);
     const frame = this.device.beginNativeDepthOfFieldFrame!({ source, coverage: { target: source, colorAttachment: 1, encoding: "depth-coverage-red8" },
-      ...plan, alpha: "opaque", depthModel: "single-surface", scopeId, viewId, frameId });
+      ...plan, alpha: "opaque", depthModel: "single-surface", scopeId, viewId, frameId, ...(multisample ? { multisample } : {}) });
+    // The device moves a 4x producer frame to `source` when sealing it; frame.isCurrent() checks the exact phase.
+    const active = (): boolean => { const bound = this.device.getRenderTarget?.(); return bound === source || (multisample !== undefined && bound === multisample); };
     const assertCurrent = (): void => {
       if (this.disposed || this.device.disposed || this.device.generation !== generation || this.activeViewId !== viewId
-        || this.authoredFrameId !== frameId || this.device.getRenderTarget?.() !== source || !frame.isCurrent()
+        || this.authoredFrameId !== frameId || !active() || !frame.isCurrent()
         || this.clearColor.some((value, i) => value !== clear[i])
         || projection.some((value, i) => value !== snapshotProjection[i]) || viewProjection.some((value, i) => value !== snapshotViewProjection[i])
         || items.length !== participants.length || participants.some((snapshot, i) => items[i] !== snapshot.item
@@ -2646,11 +2723,13 @@ export class Renderer {
     catch (error) { this.nativeDrawingLossCleanupFailures.push(error); }
     release(() => this.shadowDepthTarget?.dispose());
     release(() => this.forwardColorTarget?.target.dispose());
+    release(() => this.nativeDofResolveTarget?.target.dispose());
     release(() => this.selectiveBloomTarget?.dispose());
     release(() => this.hdrSceneTarget?.target.dispose());
     release(() => this.sceneDepthCopyTarget?.dispose());
     this.shadowDepthTarget = null;
     this.forwardColorTarget = null;
+    this.nativeDofResolveTarget = null;
     this.selectiveBloomTarget = null;
     this.hdrSceneTarget = null;
     this.sceneDepthCopyTarget = null;
@@ -3699,7 +3778,8 @@ export class Renderer {
       deferredInFrame = false;
     }
     const nativeDofPlan = this.planNativeDepthOfField(routePost, resolvedCamera, forwardCamera,
-      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame });
+      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame,
+        strictSceneExtras: () => clippingFrame.mayClip || collectGaussianSplatDraws(source).length > 0 }, items);
     if (nativeDofPlan) assertNativeDofItems(items, rendererQrFlags(this.device));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
@@ -3789,7 +3869,7 @@ export class Renderer {
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     let directCaptureTarget: RenderTarget | undefined;
     if (postprocess) {
-      const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
+      const format = resolvePostprocessTargetFormat(this.device, postprocess);
       postprocessTargetFormat = format;
       if ((format === "rgba16f" || format === "rgba32f") && !this.device.info.capabilities?.includes("hdr-render-targets")) {
         throw new RenderDeviceError("Renderer HDR postprocess requires an HDR-capable backend", "HDR_POSTPROCESS_UNSUPPORTED", {
@@ -3797,7 +3877,7 @@ export class Renderer {
           format
         });
       }
-      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && !webgpuAutoExposureRequested(this.device, postprocess)) {
+      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess) && !webgpuLinearHdrWithoutTone(this.device, postprocess)) {
         throw new RenderDeviceError("Renderer HDR postprocess requires tone mapping before presentation or LDR postprocess passes", "HDR_POSTPROCESS_TONEMAPPING_REQUIRED", {
           backend: this.device.kind,
           format
@@ -3808,9 +3888,14 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId);
+      // WebGPU serves god rays, motion blur and legacy volumetric light from the forward target's own depth
+      // attachment (WebGPUDepthEffects), so those frames request no public sampleable depth texture.
+      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId)
+        && !(this.device.kind === "webgpu" && !nativeDofPlan && webgpuNativeDepthPassesCover(postprocess, this.viewScopeId));
       const requiresDepthTexture = requiresPostDepthTexture || (scalarVolumes.length > 0 && scalarVolumeToneMap);
-      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")) {
+      // W3: an explicit 4x WebGPU frame whose only depth reader is SSR reads the multisampled attachment, no capability needed.
+      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")
+        && !webgpuMultisampledDepthServesPost(this.device, postprocess, postprocess.sampleCount ?? 0, this.viewScopeId)) {
         throw new RenderDeviceError("Depth-aware renderer postprocess requires a backend with sampleable depth texture render targets.", "DEPTH_POSTPROCESS_UNSUPPORTED", {
           backend: this.device.kind
         });
@@ -3822,10 +3907,14 @@ export class Renderer {
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
-      if (nativeDofPlan && (sampleCount !== 1 || (format !== "rgba16f" && format !== "rgba32f"))) {
+      // 4x is admitted as an rgba16f producer that the device resolves into a
+      // single-sample source when the frame is sealed (nativeDofSourceFor).
+      if (nativeDofPlan && ((sampleCount !== 1 && !(sampleCount === 4 && format === "rgba16f")) || (format !== "rgba16f" && format !== "rgba32f"))) {
         throw new RenderDeviceError("Native depth of field requires single-sample HDR color and depth", "NATIVE_DOF_TARGET_UNSUPPORTED");
       }
-      let forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      // W3: a WebGPU 4x target whose only depth reader is SSR keeps MSAA and a plain depth attachment (the trace reads it).
+      const forwardDepthTexture = requiresDepthTexture && !(nativeDofPlan && sampleCount > 1) && ((scalarVolumes.length > 0 && scalarVolumeToneMap) || !webgpuMultisampledDepthServesPost(this.device, postprocess, sampleCount, this.viewScopeId));
+      let forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan));
       // Native depth of field (5.0) owns colour attachment 1 for coverage, so
       // the 4.7.x selective signal (also attachment 1) declines on those frames.
       if (selectiveRequested && !selectiveEarlyReason && nativeDofPlan) selectiveEarlyReason = "native-depth-of-field";
@@ -3969,7 +4058,7 @@ export class Renderer {
       const contactReads = shadowWrites.includes("prd02.contactShadowMask") ? ["prd02.contactShadowMask"] : [];
       // C-02/T0-06 sync-path warm, keyed on the shadow map this frame actually draws with (warming before it existed compiled no-shadow
       // variants nothing draws: 2 dead programs on a one-material scene, 4 with a skinned model).
-      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, false, prd07WarmupContext, nativeWebGPUDofRequested(this.device, postprocess));
+      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, false, prd07WarmupContext, Boolean(nativeDofPlan));
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
@@ -4003,7 +4092,8 @@ export class Renderer {
         }
         const target = ownedTargets[0];
         if (!target) throw new RenderDeviceError("Native depth of field is missing its forward target", "NATIVE_DOF_TARGET_UNSUPPORTED");
-        const lease = this.beginNativeDofFrame(nativeDofPlan, target, items, forwardCamera.projection, cameraViewProjection);
+        const dofSource = this.nativeDofSourceFor(target);
+        const lease = this.beginNativeDofFrame(nativeDofPlan, dofSource, items, forwardCamera.projection, cameraViewProjection, dofSource !== target ? target : undefined);
         nativeDofFrame = lease.frame;
         assertNativeDofCurrent = lease.assertCurrent;
       }
@@ -4305,6 +4395,8 @@ export class Renderer {
         if (!this.device.validateNativeDepthOfFieldFrame!(nativeDofFrame, nativeDofFrame.source)) {
           throw new RenderDeviceError("Native depth-of-field coverage proof is unavailable", "NATIVE_DOF_FRAME_STALE");
         }
+        // A 4x producer was resolved into the frame source; post reads that slot.
+        if (ownedTargets[0] !== nativeDofFrame.source) ownedTargets[0] = nativeDofFrame.source;
       }
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
@@ -4322,6 +4414,7 @@ export class Renderer {
             diagnosticToken,
             cameraCut: this.activeCameraCut || temporalAutoReset,
             ...(nativeDofFrame ? { nativeDepthOfFieldFrame: nativeDofFrame } : {}),
+            ...(!nativeDofFrame && this.nativeDofRoute ? { nativeDepthOfFieldRoute: this.nativeDofRoute } : {}),
             sceneDepth: {
               texture: ownedTargets[0]?.depthTexture ?? null,
               available: (ownedTargets[0]?.depthTexture ?? null) !== null,
@@ -4616,7 +4709,8 @@ export class Renderer {
       deferredInFrame = false;
     }
     const nativeDofPlan = this.planNativeDepthOfField(routePost, resolvedCamera, forwardCamera,
-      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame });
+      { environmentBackground, environmentFog, advanced: prepareAdvanced, explicitTarget: explicitRenderTarget, deferred: deferredInFrame,
+        strictSceneExtras: () => clippingFrame.mayClip || collectGaussianSplatDraws(source).length > 0 }, items);
     if (nativeDofPlan) assertNativeDofItems(items, rendererQrFlags(this.device));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
@@ -4642,7 +4736,7 @@ export class Renderer {
     const inspectionTiming = this.activeFrameTrace && this.inspectionTimingByTrace.get(this.activeFrameTrace);
     if (inspectionTiming) bindFrameInspectionView(cleanupFrameContext.blackboard, this.inspectionTiming, inspectionTiming, this.activeTemporalReportId);
     await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection,
-      shadowOptions, clippingWasPrewarmed, prd07WarmupContext, nativeWebGPUDofRequested(this.device, routePost));
+      shadowOptions, clippingWasPrewarmed, prd07WarmupContext, Boolean(nativeDofPlan));
     if (prd07View) assertPrd07RendererOperation(prd07View.operation);
     this.assertAuthoredFrameCurrent();
     if (this.disposed || this.device.disposed) {
@@ -4707,7 +4801,7 @@ export class Renderer {
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     let directCaptureTarget: RenderTarget | undefined;
     if (postprocess) {
-      const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
+      const format = resolvePostprocessTargetFormat(this.device, postprocess);
       postprocessTargetFormat = format;
       if ((format === "rgba16f" || format === "rgba32f") && !this.device.info.capabilities?.includes("hdr-render-targets")) {
         throw new RenderDeviceError("Renderer HDR postprocess requires an HDR-capable backend", "HDR_POSTPROCESS_UNSUPPORTED", {
@@ -4715,7 +4809,7 @@ export class Renderer {
           format
         });
       }
-      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && !webgpuAutoExposureRequested(this.device, postprocess)) {
+      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess) && !webgpuLinearHdrWithoutTone(this.device, postprocess)) {
         throw new RenderDeviceError("Renderer HDR postprocess requires tone mapping before presentation or LDR postprocess passes", "HDR_POSTPROCESS_TONEMAPPING_REQUIRED", {
           backend: this.device.kind,
           format
@@ -4726,9 +4820,14 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId);
+      // WebGPU serves god rays, motion blur and legacy volumetric light from the forward target's own depth
+      // attachment (WebGPUDepthEffects), so those frames request no public sampleable depth texture.
+      const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId)
+        && !(this.device.kind === "webgpu" && !nativeDofPlan && webgpuNativeDepthPassesCover(postprocess, this.viewScopeId));
       const requiresDepthTexture = requiresPostDepthTexture || (scalarVolumes.length > 0 && scalarVolumeToneMap);
-      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")) {
+      // W3: an explicit 4x WebGPU frame whose only depth reader is SSR reads the multisampled attachment, no capability needed.
+      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")
+        && !webgpuMultisampledDepthServesPost(this.device, postprocess, postprocess.sampleCount ?? 0, this.viewScopeId)) {
         throw new RenderDeviceError("Depth-aware renderer postprocess requires a backend with sampleable depth texture render targets.", "DEPTH_POSTPROCESS_UNSUPPORTED", {
           backend: this.device.kind
         });
@@ -4740,10 +4839,14 @@ export class Renderer {
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
-      if (nativeDofPlan && (sampleCount !== 1 || (format !== "rgba16f" && format !== "rgba32f"))) {
+      // 4x is admitted as an rgba16f producer that the device resolves into a
+      // single-sample source when the frame is sealed (nativeDofSourceFor).
+      if (nativeDofPlan && ((sampleCount !== 1 && !(sampleCount === 4 && format === "rgba16f")) || (format !== "rgba16f" && format !== "rgba32f"))) {
         throw new RenderDeviceError("Native depth of field requires single-sample HDR color and depth", "NATIVE_DOF_TARGET_UNSUPPORTED");
       }
-      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      // W3: a WebGPU 4x target whose only depth reader is SSR keeps MSAA and a plain depth attachment (the trace reads it).
+      const forwardDepthTexture = requiresDepthTexture && !(nativeDofPlan && sampleCount > 1) && ((scalarVolumes.length > 0 && scalarVolumeToneMap) || !webgpuMultisampledDepthServesPost(this.device, postprocess, sampleCount, this.viewScopeId));
+      const forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan));
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
       frameHooks.setForwardTarget(forwardTarget);
@@ -4861,7 +4964,7 @@ export class Renderer {
         // A collect contributor introduced clipping after async warmup. Start
         // the matching programs now; a pending draw retries when readiness
         // invalidates the owning static frame.
-        this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, true, prd07WarmupContext, nativeWebGPUDofRequested(this.device, postprocess));
+        this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, true, prd07WarmupContext, Boolean(nativeDofPlan));
       }
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
@@ -4896,7 +4999,8 @@ export class Renderer {
         }
         const target = ownedTargets[0];
         if (!target) throw new RenderDeviceError("Native depth of field is missing its forward target", "NATIVE_DOF_TARGET_UNSUPPORTED");
-        const lease = this.beginNativeDofFrame(nativeDofPlan, target, items, forwardCamera.projection, cameraViewProjection);
+        const dofSource = this.nativeDofSourceFor(target);
+        const lease = this.beginNativeDofFrame(nativeDofPlan, dofSource, items, forwardCamera.projection, cameraViewProjection, dofSource !== target ? target : undefined);
         nativeDofFrame = lease.frame;
         assertNativeDofCurrent = lease.assertCurrent;
       }
@@ -5179,6 +5283,8 @@ export class Renderer {
         if (!this.device.validateNativeDepthOfFieldFrame!(nativeDofFrame, nativeDofFrame.source)) {
           throw new RenderDeviceError("Native depth-of-field coverage proof is unavailable", "NATIVE_DOF_FRAME_STALE");
         }
+        // A 4x producer was resolved into the frame source; post reads that slot.
+        if (ownedTargets[0] !== nativeDofFrame.source) ownedTargets[0] = nativeDofFrame.source;
       }
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
@@ -5196,6 +5302,7 @@ export class Renderer {
             diagnosticToken,
             cameraCut: this.activeCameraCut || temporalAutoReset,
             ...(nativeDofFrame ? { nativeDepthOfFieldFrame: nativeDofFrame } : {}),
+            ...(!nativeDofFrame && this.nativeDofRoute ? { nativeDepthOfFieldRoute: this.nativeDofRoute } : {}),
             sceneDepth: {
               texture: ownedTargets[0]?.depthTexture ?? null,
               available: (ownedTargets[0]?.depthTexture ?? null) !== null,
@@ -5382,6 +5489,8 @@ export class Renderer {
       if (nativePrimitive) selectedFeatures["a3d.nativePrimitive"] = nativePrimitive;
       let record = featuresForGeometry({ ...mf, features: selectedFeatures }, has);
       if (record.lighting === "lit" && physicalVertexColorsForGeometry(item.geometry, this.device)) record = { ...record, vertexColors: true };
+      // Same bone-texture skinning record ForwardPass draws; a geometry the draw rejects is not warmed.
+      try { record = generatedSkinningForGeometry(record, item.geometry, m.name); } catch { continue; }
       const geometryMask = ["a_uv", "a_uv1", "a_color", "a_joints", "a_weights", "a_joints1", "a_weights1"].map((n) => (has(n) ? 1 : 0)).join("");
       const variants = prewarmClipping || itemMayClip(item)
         ? [record, { ...record, features: { ...record.features, "a3d.clipping": true } }]
@@ -5727,6 +5836,8 @@ export class Renderer {
     this.shadowDepthTarget = null;
     release(() => this.forwardColorTarget?.target.dispose());
     this.forwardColorTarget = null;
+    release(() => this.nativeDofResolveTarget?.target.dispose());
+    this.nativeDofResolveTarget = null;
     release(() => this.selectiveBloomTarget?.dispose());
     this.selectiveBloomTarget = null;
     release(() => this.hdrSceneTarget?.target.dispose());
@@ -5772,7 +5883,7 @@ export class Renderer {
 
   /** True for renderer-lifetime targets that must survive end-of-frame disposal. */
   private isReusedTarget(target: RenderTarget): boolean {
-    return target === this.forwardColorTarget?.target || target === this.selectiveBloomTarget?.target || target === this.shadowDepthTarget || target === this.hdrSceneTarget?.target || target === this.sceneDepthCopyTarget || [...this.viewTargets.values()].includes(target);
+    return target === this.forwardColorTarget?.target || target === this.nativeDofResolveTarget?.target || target === this.selectiveBloomTarget?.target || target === this.shadowDepthTarget || target === this.hdrSceneTarget?.target || target === this.sceneDepthCopyTarget || [...this.viewTargets.values()].includes(target);
   }
 
   /**
@@ -5854,6 +5965,9 @@ export class Renderer {
   }
   /** Allocates the shared forward-color target once per distinct configuration. */
   private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number, nativeDepthCoverage = false): RenderTarget {
+    // WebGPU cannot resolve depth into a public sampleable texture. Its 4x depth attachment stays
+    // bindable, and the native depth readers (ambient occlusion) load it as a multisampled texture.
+    if (requiresDepthTexture && sampleCount > 1 && this.device.kind === "webgpu") requiresDepthTexture = false;
     const depthPrecision = this.frameDepthPrecision();
     const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}:${nativeDepthCoverage ? "coverage" : "color"}:${depthPrecision.depthPrecision ?? "fixed"}`;
     const cached = this.forwardColorTarget;
@@ -7677,3 +7791,5 @@ function deviceDrawCalls(device: RenderDevice): number {
  * this symbol before any WebGPU context is taken on the canvas.
  */
 Object.defineProperty(Renderer, Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1"), { value: webgpuNativeDofGap, configurable: true });
+// W3: post stages the native WebGPU chain runs over sampleable depth, for the engine pre-mount backend check.
+Object.defineProperty(Renderer, Symbol.for("@aura3d/rendering/webgpu-native-depth-stages/v1"), { value: () => webgpuNativeDepthPostStages(), configurable: true });

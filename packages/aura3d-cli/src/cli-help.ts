@@ -85,6 +85,14 @@ Commands:
       Static check of the build output against aura.assets.json (hashed assets, unreferenced files, licence gates with --release).
   aura3d check-deploy --dist dist --browser [--route /path ...] [--browser-timeout ms] [--browser-settle ms]
       Also loads each route (default /) from a local static server in headless Chromium and fails on HTTP errors, failed requests, uncaught errors and console errors. Needs Playwright in your project (npm i -D playwright, npx playwright install chromium).
+  aura3d info [--json] [--members] [--name <export>[.<member>]]
+      Installed Aura3D versions and the @aura3d/engine API surface read from the installed types; --name lists members, option keys and close names.
+  aura3d examples <query> [--limit N] [--json] [--no-source] | --list | --id <id> [--write src/main.ts] [--force]
+      Offline search over the shipped recipes and create-aura3d templates; prints the best match's source.
+  aura3d validate [file.ts ... | projectDir] [--json] [--no-types] [--strict]
+      Static checks: colour strings, unknown options/members/exports, invented asset paths and keys, framing, lighting, reflective materials.
+  aura3d render [projectDir] [--out shot.png] [--json] [--no-build] [--url http://127.0.0.1:5173/] [--route /path] [--dist dist] [--width N] [--height N]
+      Build, serve and screenshot in local headless Chrome; diagnostics JSON with errors, codes, luma, saturation and subject fill.
   aura3d init --agent all [--skills core|all|none] [--template <create-aura3d template>]
       Writes agent instruction files, Aura3D agent skills (per client skills dir), and llms.txt; never overwrites user-edited files.`;
 }

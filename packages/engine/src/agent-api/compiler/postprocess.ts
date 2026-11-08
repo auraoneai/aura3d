@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraEffectNode, AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
 import type { AuraAntiAliasMode } from "../../contracts/post.js";
 import { colorToRgba } from "../colorUtils.js";
@@ -439,17 +439,48 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
 }
 
 /**
- * True when the post bag this scene would submit needs a sampleable depth texture that the WebGPU device does not
- * advertise. Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy
- * passes, and on the v2 chain the ao / god-rays / motion-blur / ssr / taa stages. Depth of field is exempt because the
- * WebGPU device runs it natively.
+ * True when the post bag this scene would submit needs a depth-reading stage the WebGPU device has no native pass for.
+ * Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy passes,
+ * and on the v2 chain the ssr / taa stages. Exempt because the WebGPU device runs them natively: depth of field,
+ * ambient occlusion (the legacy ssao pass and the v2 ao stage) on its sampleable depth, and god rays, motion blur and
+ * legacy volumetric light, which read the forward target's own depth attachment (`webgpuNativeDepthPassesCover` in the
+ * renderer). A caller-supplied volumetric-light depth array needs no depth texture either: that frame keeps the
+ * per-pass CPU kernel, which consumes the array.
  */
-function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
-  if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
-      (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth)) return true;
-  if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
-  const bag = post.pipeline as { ao?: unknown; godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
-  return [bag.ao, bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
+function postLacksWebgpuDepth(post: RendererPostProcessOptions, nativeDepthStages: readonly string[] = []): boolean {
+  return webgpuDepthStagesMissing(post, nativeDepthStages).length > 0;
+}
+
+/** The depth-reading stages behind `postLacksWebgpuDepth`, named for the fallback report. */
+function webgpuDepthStagesMissing(post: RendererPostProcessOptions, nativeDepthStages: readonly string[] = []): string[] {
+  // Stages the renderer package reports as native on WebGPU over scene depth (W3: "ssr" with sampleable depth on any
+  // frame, "ssr:msaa" on an explicit 4x frame whose only depth reader is SSR).
+  const ssrMsaa = post.sampleCount === 4 && nativeDepthStages.includes("ssr:msaa");
+  const native = (stage: string): boolean => nativeDepthStages.includes(stage) || (stage === "ssr" && ssrMsaa);
+  const missing: string[] = [];
+  if (volumetricLightLacksWebgpuDepth(post)) missing.push("volumetric-light");
+  if (post.contactShadow && !post.contactShadow.depth) missing.push("contact-shadow");
+  if (post.ssr && !post.ssr.depth && !native("ssr")) missing.push("legacy-ssr");
+  const v2Bag = post.v2 === true && post.pipeline !== null && typeof post.pipeline === "object";
+  // The native legacy ssao pass reads single-sample depth only; on a 4x forward target only the v2 GTAO stage
+  // (which loads the multisampled attachment) replaces it, so a legacy-only ssao on msaa still needs WebGL2.
+  if (post.ssao && !post.ssao.depth && (post.sampleCount ?? 1) > 1 && !(v2Bag && (post.pipeline as { ao?: unknown }).ao)) missing.push("legacy-ssao-msaa");
+  if (!v2Bag) return missing;
+  const bag = post.pipeline as { ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
+  if (bag.ssr && !native("ssr")) missing.push("ssr");
+  if (bag.taa || bag.antiAliasing === "taa") missing.push("taa");
+  return missing;
+}
+
+/**
+ * Legacy volumetric light without a caller depth array runs on the WebGPU native chain only when the frame stays on the
+ * fused device route. A cpu-deterministic frame, or a companion pass outside that route (chromatic aberration, film
+ * grain, contact shadow, SSAO, SSR), sends it to the CPU kernel, which needs the sampleable depth texture. Conservative
+ * superset of the renderer's `webgpuNativeDepthPassesCover`, so the pre-check never passes a frame the renderer rejects.
+ */
+function volumetricLightLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
+  if (!post.volumetricLight || post.volumetricLight.depth) return false;
+  return post.execution === "cpu-deterministic" || Boolean(post.chromaticAberration || post.filmGrain || post.contactShadow || post.ssao || post.ssr);
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };
@@ -462,12 +493,18 @@ type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[
 function webgpuPostGapForPostprocess(
   snapshot: AuraSceneSnapshot,
   canvas: HTMLCanvasElement | OffscreenCanvas,
-  dofGap?: (post: RendererPostProcessOptions) => WebgpuPostGap | undefined
+  dofGap?: (post: RendererPostProcessOptions) => WebgpuPostGap | undefined,
+  nativeDepthStages?: readonly string[]
 ): WebgpuPostGap | undefined {
   let post: RendererPostProcessOptions;
   try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return undefined; }
-  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
-  try { return dofGap?.(post); } catch { return undefined; }
+  // "depth-textures" stays first for existing readers; the stage names say which pass lacks a WebGPU twin.
+  if (postLacksWebgpuDepth(post, nativeDepthStages)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", ...webgpuDepthStagesMissing(post, nativeDepthStages)] };
+  let gap: WebgpuPostGap | undefined;
+  try { gap = dofGap?.(post); } catch { return undefined; }
+  // Scene content is no gap: frames the coverage-proof DoF route cannot draw (lit or custom materials, environment
+  // backgrounds, fog, particles) take the renderer's general scene DoF route over the frame's own depth.
+  return gap;
 }
 
 Object.defineProperty(createProductionRuntimePostprocess, Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1"), {

@@ -48,9 +48,11 @@ async function mount(id: NativeCapabilityScenarioId) {
   return app;
 }
 
-export const app = await mount("typed-model");
+// Never `await` this at module top level: a default `vite build` deadlocks on it (black page).
+const mounted = mount("typed-model");
+mounted.catch((error: unknown) => console.error(error));
 export function disposeCapabilityExample() {
-  app.dispose();
+  void mounted.then((app) => app.dispose(), () => undefined);
 }
 ```
 
@@ -162,7 +164,9 @@ async function mountLitScene() {
   }
 }
 
-export const running = await mountLitScene();
+// Not `await` at module top level: a default `vite build` deadlocks on it (black page).
+export const running = mountLitScene();
+running.catch((error: unknown) => console.error(error));
 ```
 
 Edits to an attached grid or volume invalidate a running, unpaused app. With

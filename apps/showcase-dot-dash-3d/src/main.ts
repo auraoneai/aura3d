@@ -8,11 +8,12 @@ import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
 import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
-import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
 
@@ -43,15 +44,12 @@ const inputOptions = {
   bufferMs: 140
 } as const;
 
-// Lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu and ?gamut=p3 reach the engine. ?worker= and
-// ?depth= are not wired for this game. Without a flag both fragments are empty and the options are unchanged.
-const { renderer: labRenderer, output: labOutput } = labAppOptions(readLabFlags());
-
 const g = createGame({
-  ...(labRenderer ? { renderer: labRenderer } : {}),
-  ...(labOutput ? { output: labOutput } : {}),
   id: "dot-dash-3d",
   target: "#app",
+  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=. WebGPU is the default (backend "auto", WebGL2 fallback kept;
+  // real-GPU check 2026-11-08: same frame, >= 0.9x the WebGL2 frame rate); `?backend=webgl2` forces WebGL2.
+  ...(() => { const { output, renderer } = labAppOptions(readLabFlags(), { backend: "auto" }); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}) }; })(),
   diagnostics: { overlay: false, performancePanel: false },
   scene: buildScene,
   input: inputOptions,
@@ -89,6 +87,8 @@ const g = createGame({
     ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
   },
   qualityRebuild: { flags: ["game", "materials"] },
+  // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
+  ...(({ worker }) => (worker ? { worker } : {}))(labAppOptions(readLabFlags(), createWorkerRendererWorker)),
   evidence: {
     schema: 1,
     sections: {

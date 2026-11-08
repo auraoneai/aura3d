@@ -48,6 +48,7 @@ import { snapshotOf } from "../contracts/structuralMemo";
 import { PHYSICAL_GEOMETRY_TANGENT_FEATURE, PHYSICAL_LOBE_MAP_BITS } from "./MaterialFeatures";
 import { materialLobes } from "../contracts/materialLobes";
 import { COMMON_CHUNK_GLSL } from "./chunks/common.glsl";
+import { isStockPrd10WindDeform } from "../world/vegetation/shaders/wind.js";
 import { BRDF_CHUNK_GLSL } from "./chunks/brdf.glsl";
 import { NORMAL_CHUNK_GLSL } from "./chunks/normal.glsl";
 import { INSTANCING_VERTEX_PARS_GLSL, INSTANCING_VERTEX_PARS_EIGHT_INFLUENCES_GLSL, INSTANCING_VERTEX_BODY_GLSL } from "./chunks/instancing.glsl";
@@ -93,6 +94,8 @@ import { isStockPrd07BloomChunk } from "../atmosphere/fogChunks";
 import { isStockPrd07BloomFeature } from "../atmosphere/Prd07ShaderFeatures";
 import { isStockCameraFadeBloomChunk, isStockCameraFadeBloomFeature } from "../shaders/camera-fade.glsl";
 import { isStockPrd04Lobe } from "../materials/lobes";
+import { isStockPrd04ShaderFeature } from "../materials/features";
+import { isStockInstanceColorTargetFeature } from "../shaders/chunks/instance_color_target.glsl";
 import { A3D_PRD04_EMISSIVE_STRENGTH } from "../shaders/physical/emissive_strength.glsl";
 import { A3D_PRD04_EMISSIVE_STRENGTH_CALL } from "../shaders/physical/lobe_calls.glsl";
 import { stockChunkVerifier, stockFeatureVerifier } from "./FeatureSelect";
@@ -1616,10 +1619,12 @@ function generateProgramInternal(features: ProgramFeatures, options: GeneratePro
     activeExtensions: lobes.active,
     defines: { ...defines },
     lighting: { compilerLightingConjunction: e3Conjunction, iblReplacesIndirect: prd02IblReplacesIndirect },
-    // Native WGSL replaces the wetness GLSL chunk with its own template, so it
-    // admits that contributor only when this is the unchanged built-in object.
+    // Native WGSL replaces the wetness, fog and rim GLSL chunks with its own templates, so it
+    // admits those contributors only when they are the unchanged built-in objects.
     verifiedFeatures: contributions
-      .filter(({ feature }) => feature.id === "prd07.wetness" && isStockPrd07BloomFeature(feature))
+      .filter(({ feature }) => ((feature.id === "prd07.wetness" || feature.id === "prd07.fog") && isStockPrd07BloomFeature(feature))
+        || isStockPrd10WindDeform(feature) || (feature.id === "prd04.rim" && isStockPrd04ShaderFeature(feature))
+        || isStockInstanceColorTargetFeature(feature))
       .map(({ feature }) => feature.id)
   };
   // Native templates also depend on resolved flags/providers, not just the

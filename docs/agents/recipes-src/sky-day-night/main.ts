@@ -48,4 +48,4 @@ app.onFrame((frame) => {
   app.nodes.require("moon").setPosition(...lightAt(-s.elevationDeg, s.azimuthDeg + 180));
   if (fixedHour === null) app.atmosphere?.setSky({ sun: { ...s, intensity: 1 } });
 });
-await app.ready();
+void app.ready();

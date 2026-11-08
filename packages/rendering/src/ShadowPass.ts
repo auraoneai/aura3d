@@ -284,7 +284,9 @@ export class ShadowPass {
             width: this.shadowMap.size,
             height: this.shadowMap.size,
             label: `${this.shadowMap.texture.label}-depth-color`,
-            format: "rgba8",
+            // WebGPU encodes light depth in this colour attachment (`.r`): rgba8 quantises it to 1/255, which shows as
+            // regularly spaced acne bands on sunlit slopes. Half float keeps ~11 bits; WebGL samples its depth texture.
+            format: context.device.kind === "webgpu" ? "rgba16f" : "rgba8",
             depth: depthTextures ? "texture" : true
           }
     );

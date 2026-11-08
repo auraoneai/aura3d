@@ -35,4 +35,4 @@ const app = createAuraApp("#app", {
     .add(geometry.custom(spring, { name: "spring", material: mat("#c9ced6", 0.95, 0.25) }))
     .camera(camera.perspective({ position: [0.6, 3.4, 11], target: [0.4, 1.7, 0], fov: 40 }))
 });
-await app.ready();
+void app.ready();

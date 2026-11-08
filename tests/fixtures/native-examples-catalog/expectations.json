@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "a74a1803a5ef357ec78b80d45329fbf2b999b0d34fc059f81453ed3be3b3cf5a" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "92d19e8d42fcb0830fe2c677b5fb71d476fe587eeb4206e88f5b47d258584cdc" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -184,7 +184,7 @@
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
         { "path": "packages/create-aura3d/templates/arena-shooter/index.html", "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930" },
-        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06" }
+        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939" }
       ],
       "regions": [
         {
@@ -321,7 +321,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -842,7 +842,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -904,7 +904,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1030,11 +1030,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "713c0c316e8e8a6a26be0a23acb8f49e514cf5145ad5b7d09ca3495b78211308"
+          "sha256": "edb8228bba39abe0b83b87cc0678ca4446881e20305621a6038196fb01ce6e57"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "94fdc7ab11c1e7d4bbc1e95562efadebb63c18c28546c604202d4e1631c90b90"
+          "sha256": "4a5430ef926f1e304ff75b0276a32954b5608b83de2625f564312885dcefeb89"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1074,15 +1074,15 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "919fa735f1901b3c3fff00f495c807422f26b63ff724ba80e5f5cd59ebf9ffad"
+          "sha256": "58ac7314eab11f0e5f893cbdae9b5155fcbe548b18c1cfd3c0c4ec1ff9a7e2ce"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "8d7ee1fd6095768dcc7ecfd7fa4e4b8b57b2391c8f29b4d59f405d165a352ccc"
+          "sha256": "9ec0d2a0cc09b7f9892dc478232adcd0d493d364c5075e130c5e83bb96861d26"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
-          "sha256": "2e93d2f71742eb19596146cd22789fdc3dfa6295a335e31fefcd15fc1a4d97bd"
+          "sha256": "fa05aaaef4def28b03e63b89318b9b15530545b5afd9384c3596ab33d3e1cc82"
         },
         {
           "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
@@ -1102,7 +1102,7 @@
         },
         {
           "path": "packages/game/src/createGameCore.ts",
-          "sha256": "304828cf5a28c2a433aba808ed76e4e25f8d57622ff6b0f1f2f29bf631799a58"
+          "sha256": "5e85dec2a44037a642382077d653c4d26cccec3240bdb67767cd9a2ab8048b6a"
         },
         {
           "path": "packages/game/src/touch/TouchControls.ts",
@@ -1171,7 +1171,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1219,7 +1219,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/custom-scene/src/main.ts",
-        "sha256": "9af5bcb023e075913a2d6febae8bb1f84b26fb513e80593ce775e82432571d3e"
+        "sha256": "262a57a757a6cc269112f20f6424079a2eed14550167514ae011b022b75bd695"
       },
       "sourceDependencies": [
         {
@@ -1240,7 +1240,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1309,7 +1309,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1378,7 +1378,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1447,7 +1447,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -1483,7 +1483,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/procedural-scene/src/main.ts",
-        "sha256": "0d11664f1c670658c85bc46cecc1ecca85f39d051100a10e1970470c282465b9"
+        "sha256": "a4be5b7d4658234a0696c03633f12e8d3563f152050f379e00cb549cf085d85b"
       },
       "sourceDependencies": [
         {
@@ -1496,7 +1496,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1562,7 +1562,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1838,7 +1838,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1935,7 +1935,7 @@
       },
       "source": {
         "path": "apps/postprocessing-custom/src/main.ts",
-        "sha256": "edd0629e2f9bfb27a03134bcf4eabbd7daf8d703fbd157134927d3e0769957d9"
+        "sha256": "f95198337c20b7e25e0bd1246425db2921668d056d063b72049e75dd15f38dfb"
       },
       "sourceDependencies": [
         {
@@ -2001,7 +2001,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "531ef7934c0d85c24b83e6b1fb54a60dab489a361650da006498a56dbad7f271"
+        "sha256": "a290adff32e9408b5268057106944fd359d00aa959619e248e5e16f9d24cfc3a"
       },
       "sourceDependencies": [
         {
@@ -2087,7 +2087,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "4721677ad5d02552448df65cad7df9b09a40e7c0d9c575c6461c1e5ecba02670"
+        "sha256": "7da5be9e8de6ea1984afb72627f873cbdae6aff5cafb63e86d5f95e9eef1552e"
       },
       "sourceDependencies": [
         {
@@ -2231,12 +2231,12 @@
       },
       "source": {
         "path": "apps/showcase-cross-hop/src/main.ts",
-        "sha256": "a540343e9842894884a09688d4426d7507eb0ec38fd8c912926f0de325f3f90e"
+        "sha256": "7998f2827780e5788bff0f64e788a97690123cb28ea45a94157803ab4c54586f"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-cross-hop/src/game/core.ts",
-          "sha256": "2a804c71de18846ab980111275ac6efcb0162608e87b506885267dc4437e7a70"
+          "sha256": "45855e59dcc4b986f0e716545c9a5987aa2c8615e1010110eecdf4775e4690a0"
         },
         {
           "path": "apps/showcase-cross-hop/src/game/world.ts",
@@ -2403,7 +2403,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "8ffb15b4bbac4ca17b8a8bd5abff31a957d80ac46c8bf0df54ddb0c5b7450f1d"
+        "sha256": "52157a10aa2bc06fc3c90d9cfdfad12927eb2743a96f6b497d06ea5fd2386e69"
       },
       "sourceDependencies": [
         {
@@ -2518,7 +2518,7 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "27559fdfb861e15ca67c40bfb3ccd576f243baa0e9181d98ff9578ec9d4adb27"
+        "sha256": "c351dbdb7c0e1e6358156609f6c726a81043d855dbe8a5c2915cb9c40c6ff2b0"
       },
       "sourceDependencies": [
         {
@@ -2699,7 +2699,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -2786,7 +2786,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -2923,7 +2923,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "919fa735f1901b3c3fff00f495c807422f26b63ff724ba80e5f5cd59ebf9ffad"
+          "sha256": "58ac7314eab11f0e5f893cbdae9b5155fcbe548b18c1cfd3c0c4ec1ff9a7e2ce"
         }
       ],
       "regions": [
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -3026,7 +3026,7 @@
       "provenance": "Independently derived: primitives.plane is the horizontal X/Z unit quad (compiler/geometry.ts createPlaneGeometry) scaled to 2.4x2.4 by primitiveSize; the authored camera [0, 0.3, 3.1] -> [0, 0, 0], fov 38, sees it at a grazing angle. Projected through the 960x540 #stage canvas at the default 8 px body margin (index.html has no CSS), the plane is a trapezoid spanning page y 257-325; the region is the projection of the interior world rectangle x in [-1.9, -0.4], z in [-0.6, 0.8] (page x 87-404 at y 266, x -155-353 at y 304), clipped inside. Colors are the authored checker texels (235,120,40) and (40,200,235) in sRGB, material color #ffffff, under the authored directional (2.4) and ambient (0.6) lights. No reference capture. Lighting, texture filtering at the grazing angle and rendered appearance remain unverified.",
       "source": {
         "path": "examples/parity-texture-lab/main.ts",
-        "sha256": "bbe952ce934118adbbab66473b88ad1361a5fb11180fa9c85e62926fc5f37931"
+        "sha256": "467c6994088f73bbd002d7e46f678e81cf29a06b1f865247571cabc33abdd759"
       },
       "sourceDependencies": [
         {
@@ -3043,7 +3043,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -3176,7 +3176,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3238,7 +3238,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3304,7 +3304,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3349,7 +3349,7 @@
       },
       "source": {
         "path": "examples/shader-failure-lab/main.ts",
-        "sha256": "5d1ec793449b33cb65053753c15fc42d629299fc6f3b461e6b64a97e22663ba7"
+        "sha256": "7bcc28ac81a9fb3d5533170f52cc8a2a8592349d6dbc38d382b684501a355482"
       },
       "sourceDependencies": [
         {
@@ -3366,7 +3366,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3432,7 +3432,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3502,7 +3502,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/RootGeometry.ts",
@@ -3576,7 +3576,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3638,7 +3638,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
@@ -3720,7 +3720,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3798,7 +3798,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -3848,7 +3848,7 @@
       },
       "source": {
         "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "d65d72432b927c2e94417d6debaee3bdb01c0e40395d15c86492f8b0fd1479f9"
+        "sha256": "d1c3ada9d79f51a5c51926ad8d327687c2a63bcc8ede15519b858fae7e959908"
       },
       "sourceDependencies": [
         {
@@ -3947,7 +3947,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "ebfd9ab22075e838237a7b69b635545cfef807de3fb10a57926b7895dfce45f0"
+        "sha256": "287aebb6fadee3226503e02b8be40ddadd78da49e4220e91a34fdeafad6e4f66"
       },
       "sourceDependencies": [
         {
@@ -4051,7 +4051,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-links-3d/src/main.ts",
-        "sha256": "4ac98f0cccad046b7667e4e1d24a523fea459eea0016598b0e912830b34d429d"
+        "sha256": "7890ef2a9c9684688677b9a5b61947384b4af03b3914316f68ffba77ec8ed3d9"
       },
       "sourceDependencies": [
         {
@@ -4163,7 +4163,7 @@
         },
         {
           "path": "examples/aura-slam/main.ts",
-          "sha256": "48b267f27c2615ebb9923d05ec4279f2378e69336ca8eeda1ab50a4ab389d3b0"
+          "sha256": "0963364be281401a51ff7335285251f1227ae90248dd5d8a436f4c0a2a81e8f7"
         },
         {
           "path": "examples/aura-slam/shell/boot.ts",
@@ -4285,7 +4285,7 @@
       },
       "source": {
         "path": "apps/showcase-iron-crown/src/main.ts",
-        "sha256": "b92bbb83ab7a832f7e6a644f59ef2eef8c152db4c02dfe0a217d7e9a24eb792b"
+        "sha256": "c7dfc2713e4f646d370c40b6d0e7d8514b15d99aa1837582a2b85d23e3530204"
       },
       "sourceDependencies": [
         {
@@ -4330,7 +4330,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/canvas.ts",
-          "sha256": "db3029ef4ce93c343aba14e92a2b29169bcc9bfc264fc3befb6837e027035891"
+          "sha256": "db3b8a1380299f33cd1b72a3ee2cf3b076363e416b2eb56da496e290d4f89301"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4384,7 +4384,7 @@
       },
       "source": {
         "path": "apps/showcase-roadster-rush/src/main.ts",
-        "sha256": "bef48af1f1804afbd9c887ad29d405111054fbc64152a27a54dd0072b7d708b1"
+        "sha256": "d772732960d16d0ba09ed15d43a551a20cbf64327f0afa31bfccd1581a3df032"
       },
       "sourceDependencies": [
         {
@@ -4471,7 +4471,7 @@
       },
       "source": {
         "path": "apps/showcase-teleoperator/src/main.ts",
-        "sha256": "cae5cbad09cf34399f7bfaf7fed611927aba6bea2de623787cb7fff7fcf16d56"
+        "sha256": "13382b65e24c506232f46a782751890904c7cbcf7b82713ce04725d565fb7f07"
       },
       "sourceDependencies": [
         {
@@ -4640,7 +4640,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/camera.ts",
@@ -4702,7 +4702,7 @@
       },
       "source": {
         "path": "examples/heatsink-port/main.ts",
-        "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
+        "sha256": "4193edf90dfc3c08e43d72041dfbec59df9c6eb109f39b7c640376b623839e92"
       },
       "sourceDependencies": [
         {
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "490ef9e32940198d937c53270835cb277c3b40e45029c2a1d98ddf5e5cbe4aa7"
+          "sha256": "30a0b4e05b398c7a39ce3261e2f0d2be3242101725c5f5d80870159ecb7d265a"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4814,11 +4814,11 @@
         },
         {
           "path": "examples/heatsink-port/main.ts",
-          "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
+          "sha256": "4193edf90dfc3c08e43d72041dfbec59df9c6eb109f39b7c640376b623839e92"
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "490ef9e32940198d937c53270835cb277c3b40e45029c2a1d98ddf5e5cbe4aa7"
+          "sha256": "30a0b4e05b398c7a39ce3261e2f0d2be3242101725c5f5d80870159ecb7d265a"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -5109,7 +5109,7 @@
       },
       "source": {
         "path": "examples/last-train-port/main.ts",
-        "sha256": "53a923fac6d3c4a22c6291caeba239ab05ae6fecdae95b9d47c945f46a8afbea"
+        "sha256": "6e2f5e49ce7741fee686c489fbd90e46e2494d0699f6828f431bb7953b01c4fa"
       },
       "sourceDependencies": [
         {
@@ -5118,7 +5118,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "a52810e7b3b0b554bbf5c28e1373ed6ceaa1f2e9c6042c1f0ba4e40ef5b133b7"
+          "sha256": "b01c47d7cd8b014d8a03c530994f80afb4faf4af645b44ba3e6ecded2e361680"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5218,11 +5218,11 @@
         },
         {
           "path": "examples/last-train-port/main.ts",
-          "sha256": "53a923fac6d3c4a22c6291caeba239ab05ae6fecdae95b9d47c945f46a8afbea"
+          "sha256": "6e2f5e49ce7741fee686c489fbd90e46e2494d0699f6828f431bb7953b01c4fa"
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "a52810e7b3b0b554bbf5c28e1373ed6ceaa1f2e9c6042c1f0ba4e40ef5b133b7"
+          "sha256": "b01c47d7cd8b014d8a03c530994f80afb4faf4af645b44ba3e6ecded2e361680"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5313,7 +5313,7 @@
       },
       "source": {
         "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-        "sha256": "54633c9bc3100336b07c2adbd7849553f6d2aa971c1fc3df12965bfb97847677"
+        "sha256": "8ad4f2ba4f693852184f272fd19d1e6fdb925990bd66f005ef3913fc41f94ac1"
       },
       "sourceDependencies": [
         {
@@ -5322,7 +5322,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "3a47a77f69a5a94e76fb9b768d3c3de65e0b3c7f033028f9a9f63018e6896827"
+          "sha256": "57299c6ce48617aa1a49fb1c3f265925d48586723df4723a13973f323586dc69"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -5439,11 +5439,11 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-          "sha256": "54633c9bc3100336b07c2adbd7849553f6d2aa971c1fc3df12965bfb97847677"
+          "sha256": "8ad4f2ba4f693852184f272fd19d1e6fdb925990bd66f005ef3913fc41f94ac1"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "3a47a77f69a5a94e76fb9b768d3c3de65e0b3c7f033028f9a9f63018e6896827"
+          "sha256": "57299c6ce48617aa1a49fb1c3f265925d48586723df4723a13973f323586dc69"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -5930,7 +5930,7 @@
       },
       "source": {
         "path": "apps/showcase-roadster-hours-port/src/main.ts",
-        "sha256": "5129a42003047dea9d62ada3797302be5a5c889112f19de4795931bf19cd3501"
+        "sha256": "cee2c8db136aff41a28c05b3cca5cfa0aeb8b991384ee9e71462d365f53de9a6"
       },
       "sourceDependencies": [
         {
@@ -6075,7 +6075,7 @@
       "sourceDependencies": [
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "c49644c92aeea75e7cac3e9fbe34f7ca397b4308d2dcb55e2beb85b0ae5fddf6"
+          "sha256": "e1134b70e9dee2982013fafe605aa282b04cc61da2d74b1378c5a8d9cc0e34b5"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6182,7 +6182,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "c49644c92aeea75e7cac3e9fbe34f7ca397b4308d2dcb55e2beb85b0ae5fddf6"
+          "sha256": "e1134b70e9dee2982013fafe605aa282b04cc61da2d74b1378c5a8d9cc0e34b5"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6291,7 +6291,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/main.ts",
-          "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
+          "sha256": "fe24635357c4c33302dd1104c4809436239c8c4c15e88db6c82085491a51a194"
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
@@ -6385,7 +6385,7 @@
       },
       "source": {
         "path": "examples/splat-rush-port/main.ts",
-        "sha256": "b413d7c6b7ea41cf8ce76a02a5ff9326ce4d7f481ab5fa49ab932cfc3e1b2c23"
+        "sha256": "774ac5a3602f3adb722e5821a4be7ecc797c08a1bbf693b4b39e6e3adf194a01"
       },
       "sourceDependencies": [
         {
@@ -6394,7 +6394,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "ee3d74bde898eef9bd4d4147679b016c89e8c61e83559444ebdbd4f2461d64ef"
+          "sha256": "e92054c8c4762dc6fa7ac82388444ae4870004aab01ebf2da2a6c6e443d5f8d5"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -6481,7 +6481,7 @@
       "sourceDependencies": [
         {
           "path": "examples/splat-rush-port/main.ts",
-          "sha256": "b413d7c6b7ea41cf8ce76a02a5ff9326ce4d7f481ab5fa49ab932cfc3e1b2c23"
+          "sha256": "774ac5a3602f3adb722e5821a4be7ecc797c08a1bbf693b4b39e6e3adf194a01"
         },
         {
           "path": "examples/splat-rush-port/sim.ts",
@@ -6489,7 +6489,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "ee3d74bde898eef9bd4d4147679b016c89e8c61e83559444ebdbd4f2461d64ef"
+          "sha256": "e92054c8c4762dc6fa7ac82388444ae4870004aab01ebf2da2a6c6e443d5f8d5"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -6567,12 +6567,12 @@
       },
       "source": {
         "path": "examples/strange-orbit-port/main.ts",
-        "sha256": "d55741b0bb1d19d9e59e0cbf3ec66a374e8a67b004fa6edd4140bcb6e8d8ab43"
+        "sha256": "2fb1d89aa0a0c7ef0c1ba8e175be6b638c45b8e483f7cb047c334a359d455a55"
       },
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "feee171efce914176e73cbe63c02933d2e4a70a6a95c764c7243170502c9965a"
+          "sha256": "0affcd5fb9c3f39a4b19001a5e3321117f39a5214a1414f2cd8581ce67796023"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6659,11 +6659,11 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/main.ts",
-          "sha256": "d55741b0bb1d19d9e59e0cbf3ec66a374e8a67b004fa6edd4140bcb6e8d8ab43"
+          "sha256": "2fb1d89aa0a0c7ef0c1ba8e175be6b638c45b8e483f7cb047c334a359d455a55"
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "feee171efce914176e73cbe63c02933d2e4a70a6a95c764c7243170502c9965a"
+          "sha256": "0affcd5fb9c3f39a4b19001a5e3321117f39a5214a1414f2cd8581ce67796023"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6744,7 +6744,7 @@
       },
       "source": {
         "path": "examples/where-the-wind-wanders-port/main.ts",
-        "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
+        "sha256": "eba9173b3c5e14fbd4ac5a60f3da89731ad23d5ac0ebf3ed80d2dbe570a486f7"
       },
       "sourceDependencies": [
         {
@@ -6753,7 +6753,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "48900797b007f4fd09fede8e1e2a86d13db7cd796004e1c58085801e2bc18d70"
+          "sha256": "60de94eef9d635ce3f5aa0db90a9f9fd905634a0f1f93960b9a3a9890fa71943"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
@@ -6839,7 +6839,7 @@
       "sourceDependencies": [
         {
           "path": "examples/where-the-wind-wanders-port/main.ts",
-          "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
+          "sha256": "eba9173b3c5e14fbd4ac5a60f3da89731ad23d5ac0ebf3ed80d2dbe570a486f7"
         },
         {
           "path": "examples/where-the-wind-wanders-port/sim.ts",
@@ -6847,7 +6847,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "48900797b007f4fd09fede8e1e2a86d13db7cd796004e1c58085801e2bc18d70"
+          "sha256": "60de94eef9d635ce3f5aa0db90a9f9fd905634a0f1f93960b9a3a9890fa71943"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
@@ -7270,7 +7270,7 @@
       },
       "source": {
         "path": "examples/parity-runtime-lab/main.ts",
-        "sha256": "21c27c73dcb418d5aa4a8cc7c6dd2547e1a1eaccb477296d59a7f3579fca0512"
+        "sha256": "cbe4f116446b5137f2050680c26e5a658c903b356dc8a586e2b5be938a53cbb8"
       },
       "sourceDependencies": [
         {
@@ -7283,7 +7283,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -7351,7 +7351,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "976510a84d2745b04517ddd7cb78d25e0d6862073d6451262ff31dbc5bca923f"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -8055,7 +8055,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/customMaterial.ts",
-          "sha256": "27c7b230c4e9aeb90e575ac9170750c43a7e67ec9e4a78f013e17c4d8fd2f98d"
+          "sha256": "773b2b56ec6ab5fb1d12bc603560605aa87c02107369b6eddbb164f481e5c2a3"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
@@ -8228,7 +8228,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "43d5054eed9c5f2286a3bcd34c45cadd84518b29bba4abbb78e25e8e0a873e06"
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
         }
       ],
       "regions": [
@@ -8284,7 +8284,7 @@
       },
       "source": {
         "path": "examples/saiyan-snake-way-port/main.ts",
-        "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
+        "sha256": "fe24635357c4c33302dd1104c4809436239c8c4c15e88db6c82085491a51a194"
       },
       "sourceDependencies": [
         {
@@ -8378,7 +8378,7 @@
       },
       "source": {
         "path": "examples/aura-slam/main.ts",
-        "sha256": "48b267f27c2615ebb9923d05ec4279f2378e69336ca8eeda1ab50a4ab389d3b0"
+        "sha256": "0963364be281401a51ff7335285251f1227ae90248dd5d8a436f4c0a2a81e8f7"
       },
       "sourceDependencies": [
         {
@@ -8506,7 +8506,7 @@
       },
       "source": {
         "path": "apps/showcase-heatsink/src/main.ts",
-        "sha256": "070bbd8d438484469ce867a36a1e36fc2508bf2b49ad5d7be0b9fcfe347c5bde"
+        "sha256": "b091e92ba4a24aab8ba0c111a2f8e48eabe73d0e57bcc9cf0f7ee9165fa7d457"
       },
       "sourceDependencies": [
         {
@@ -8535,7 +8535,7 @@
         },
         {
           "path": "apps/showcase-heatsink/src/shaders.ts",
-          "sha256": "f0649f55e9a701d6b4c4b8b9d8490a17b78edd81c3cf3ac209f4c2357d63f8be"
+          "sha256": "3b30d1ecea533be336bea7de8d7c270307353b0d35a416f349676ed750b68bba"
         },
         {
           "path": "apps/showcase-heatsink/src/look.ts",
@@ -8605,7 +8605,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-diamond-3d/src/main.ts",
-        "sha256": "3e6676a05df89f57e54833bc9ffc20515d3628f0e5730bb20303b0612bfc625f"
+        "sha256": "042a164eb0b8d87a9f739a06e9ecfb68a6efba5d938c622815d3febcc387b9a0"
       },
       "sourceDependencies": [
         {
@@ -8885,7 +8885,7 @@
         },
         {
           "path": "packages/rendering/src/ShaderLibraryCore.ts",
-          "sha256": "1c0d57018ee856f729fd61cab20698a327c69ddf5cbb86ec2d97e5fe8cda0b96"
+          "sha256": "8a09531817692cce24e19da849e167eec0127809de9d7a7856204c3b5b519fa6"
         },
         {
           "path": "packages/rendering/src/ShaderChunks.ts",
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "4e382709833f60ead4d04790b78f4cc4619054a72ce22b15c9a9af9b9a55e712"
+          "sha256": "f1e5cecfbc2862dd26611f4d23dcd692ced75d39a37dde146c6124647673db90"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
@@ -8945,6 +8945,854 @@
               ],
               "minFraction": 0.25,
               "maxFraction": 0.75
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:starter-game",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own source: with no input the fixed-step sim keeps the archer at the origin (state x 0, z 0, idle clip) and render() poses the camera at [0, 6.5, 8.5] looking at [0, 0.8, 0], fov 46, so the 1.6 m archer (targetHeight 1.6) projects to the frame centre, about x 590-695, y 300-420 at 1280x720 (index.html #app fills the viewport; the HUD sits top-left, pointer-events none). The region (x 596-684, y 300-420) holds the archer over the #3f7a2a island grass. Colours: the GLB's colormap.png texels (terracotta tunic and skin, green hat) under the outdoor-day look (exposure -0.9 EV, contrast 1.1, saturation 1.15); the tunic band needs red >= 140 and the hat band green >= 140, which the darker grass (green <= 135) and the cyan gems outside the region do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. The idle clip pose, HDRI lighting, grade and real browser layout remain unverified.",
+      "subject": "Kenney Mini Forest archer (typed, colormap-textured) idling at the island centre under the fixed starter camera",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/starter-game/src/main.ts",
+        "sha256": "f66694aaaeaf916dbf02bdd11a18e1e62de6c52c9a41e34c2068abd7ee1fbefc"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/starter-game/index.html",
+          "sha256": "c2ef3a22d815f895a35a738cbbc51e2781654d759f7531bb59e7f92741162d60"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-game/src/aura-assets.ts",
+          "sha256": "d68fcce2aa95ad80d230e750b21c588cdedb9d74b847e4a5039c1772a1ef5d4a"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-game/public/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
+          "sha256": "0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-game/public/aura-assets/Textures/colormap.png",
+          "sha256": "319f1087d8ed50a8794f9a8179f64671d5595f2365fdf3e47ec2d4eb74dba20f"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 596,
+          "y": 300,
+          "width": 88,
+          "height": 120,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "archer terracotta tunic/skin texels",
+              "red": [
+                140,
+                235
+              ],
+              "green": [
+                60,
+                135
+              ],
+              "blue": [
+                40,
+                125
+              ],
+              "minFraction": 0.02,
+              "maxFraction": 0.6
+            },
+            {
+              "name": "archer green hat texels",
+              "red": [
+                70,
+                150
+              ],
+              "green": [
+                140,
+                220
+              ],
+              "blue": [
+                100,
+                185
+              ],
+              "minFraction": 0.05,
+              "maxFraction": 0.7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:starter-product",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own source: model() fits the GLB to a 3.4 m longest side at [0, 0.1, 0] and camera.frame(product, { fill: 0.5, azimuth 0.75, elevation 0.32, fov 32 }) centres its bounds, so the car body covers the frame centre at every turntable angle (the product and turntable rotate at 0.35 rad/s; the car's narrowest silhouette, end-on, still spans the centre). The region (x 580-700, y 290-390) is the central body area. Colour: the GLB's yellow paint under the product-studio look with the #1d2027 backdrop, a cool #cfe0ff rim and grade (contrast 1.12, saturation 1.08); the band needs red >= 170, green >= 130 and blue <= 110, which the neutral grey turntable, floor and backdrop do not satisfy. On three frames taken 0.5 s, 6 s and 12 s after ready the band covered 35-61% of the region. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Paint reflections, HDRI lighting and real browser layout remain unverified.",
+      "subject": "Yellow sports car (showcaseCleanSportsCar GLB) on the slow turntable, framed by camera.frame at fill 0.5",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/starter-product/src/main.ts",
+        "sha256": "50837ae0b124a1d4b95b6c6755f089133b05384b71d8ea8be93a2ad29664ae99"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/starter-product/index.html",
+          "sha256": "1a7ba527a9445bb183cfe683528c21e303a1f1849d02d989aa73805669d6cbfc"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-product/src/aura-assets.ts",
+          "sha256": "ed26c786ca502be2be57dbca2fc68e2dbbde9bc7dc728322c7221ee2ec595ee2"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-product/public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+          "sha256": "1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 580,
+          "y": 290,
+          "width": 120,
+          "height": 100,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "yellow car paint",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                130,
+                235
+              ],
+              "blue": [
+                0,
+                110
+              ],
+              "minFraction": 0.08,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:starter-outdoor",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own source: camera.orbit at [12, 12, 42] looking at [0, 1.5, 0], fov 46 (no auto-rotation; orbit only moves on drag), over the procedural heightfield whose basin at [4, 6] dips below WATER_Y 0.2, so the lake plane shows in the lower centre of the frame. The region (x 560-720, y 540-640) is lake water with a strip of shore. Colours: the lake material #1b5f7a (roughness 0.18, opacity 0.88) reflecting the golden-hour sky, and the terrain's vertex colours (greens and wet sand) under the golden-hour look (sun elevation 16 deg, exposure -0.7 EV, contrast 1.15, saturation 1.2); the water band needs blue >= 70 with red <= 110, the shore band blue <= 80 with red and green 70-140. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Water reflection, shadows, haze and real browser layout remain unverified.",
+      "subject": "The valley lake (#1b5f7a glossy water) and its grassy shore under the golden-hour orbit camera",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/starter-outdoor/src/main.ts",
+        "sha256": "a0320bc69e094d05f9365b19e6ba3a41de8cefc3e0a5c02ee29f26f608af2e4f"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/starter-outdoor/index.html",
+          "sha256": "935b33e10597a1c4585dd92aad6648263a1fcd86ea86e22137d0c31d2d402ecb"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-outdoor/src/aura-assets.ts",
+          "sha256": "698b6fa92457b1cf1c1d161f6b1115d4da23b52cc4bb384b72d964cd033309f6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-outdoor/public/aura-assets/kenneyMiniForestTree.0075d505.glb",
+          "sha256": "0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a"
+        },
+        {
+          "path": "packages/create-aura3d/templates/starter-outdoor/public/aura-assets/kenneyMiniForestRocksHigh.226728a0.glb",
+          "sha256": "226728a03989a1ce52ea64b55e3d9e2ff89004f7eaca9f74c2fafda7c84bbe49"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 560,
+          "y": 540,
+          "width": 160,
+          "height": 100,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "lake water #1b5f7a",
+              "red": [
+                40,
+                110
+              ],
+              "green": [
+                50,
+                120
+              ],
+              "blue": [
+                70,
+                140
+              ],
+              "minFraction": 0.1,
+              "maxFraction": 0.9
+            },
+            {
+              "name": "grass and sand shore",
+              "red": [
+                70,
+                140
+              ],
+              "green": [
+                70,
+                140
+              ],
+              "blue": [
+                10,
+                80
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:starter-interior",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own source: camera.orbit at [2.9, 1.75, 3.9] looking at [-0.7, 0.9, -1.2] with fitFov(50) (50 deg at 16:9), no auto-rotation. The rug (felt #a4532c, 2.6 x 1.9 m at [-1.1, 0.005, 0]) lies under the coffee table at [-0.9, 0, -0.1] and projects across the lower centre-left of the frame. The region (x 380-580, y 480-560) is rug with the table's legs and shadow. Colour: the felt rug lit by the interior-warm look (exposure -0.8 EV, warm grade) and the floor lamp's #ffb870 point light; the band needs red 80-210 with green <= 60 and blue <= 45, which the #6b4a30 lacquer floor (green above 60), the plaster walls and the teal sofa do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Shadows, the lamp falloff and real browser layout remain unverified.",
+      "subject": "Terracotta felt rug (#a4532c) under the coffee table in the living room, from the fixed interior orbit camera",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/starter-interior/src/main.ts",
+        "sha256": "4edc62189db716040686bdb9a462ba12999e352015b69d5a06c552d8666fd95c"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/starter-interior/index.html",
+          "sha256": "b3d1ee2f28c744f449c5dbd9997cb7400a6013e5d88d94bde4bfe30d8b2d1206"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 380,
+          "y": 480,
+          "width": 200,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "terracotta felt rug #a4532c",
+              "red": [
+                80,
+                210
+              ],
+              "green": [
+                10,
+                60
+              ],
+              "blue": [
+                0,
+                45
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:starter-presentation",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own source: templates take no route query here, so the 15 s loop runs and the catalog's polling capture (every 0.5-2 s for up to 60 s, four loops) meets the numbers beat; the region is authored for the pose at 12.5 s (the same pose the template's documented ?t=12.5 freezes), inside the numbers beat (10-15 s). Every bar's growth beat(t, 10.2 + 0.25 i, 1.1) has finished by 12.3 s and the collapse starts at 14.4 s, so all five bars stand at full height (0.9-3.1 m) at x 2.4-4.8, z 0.4; the camera is the eased midpoint of the numbers shot, lerp([3.2, 2.4, 6], [1.8, 3.4, 9.5], 0.5) = [2.5, 2.9, 7.75] looking at [2.2, 1.3, 0], fov 40 (it keeps pulling back slowly through 14.4 s, while the bars stay full height). The region (x 620-1040, y 420-560) holds the bars' lower halves over the #0d1018 stage floor. Colours: bar materials #22d3ee, #f472b6 and #fbbf24 with matching emissive at 0.35 under the night-city look (exposure -0.2 EV, bloom); each band needs its own hue (cyan: red <= 120 with green and blue >= 150; pink: red >= 170, blue >= 130; yellow: red >= 170, green >= 140, blue <= 110), none of which the dark floor satisfies. With the clock frozen by ?t= on the dev route each band held 7-15% of the region at 12.4, 13.5 and 14.3 s and 0% in the title beat (3 s). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Bloom, reflections and real browser layout remain unverified.",
+      "subject": "The five grown data bars (blue, cyan, violet, pink, yellow) in the frozen numbers beat",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/starter-presentation/src/main.ts",
+        "sha256": "f7f507487b76d8be65d30a9b301d3f9c97619b5a4bc0e7699b001c351b92bd45"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/starter-presentation/index.html",
+          "sha256": "24d1c659effdef9b38d4ccec3a2ede175ef378e3249204dbfcc217b862b295c1"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 620,
+          "y": 420,
+          "width": 420,
+          "height": 140,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "yellow bar #fbbf24",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                140,
+                235
+              ],
+              "blue": [
+                0,
+                110
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.5
+            },
+            {
+              "name": "pink bar #f472b6",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                60,
+                170
+              ],
+              "blue": [
+                130,
+                235
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.5
+            },
+            {
+              "name": "cyan bar #22d3ee",
+              "red": [
+                0,
+                120
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                150,
+                255
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-shape-shift-sprint",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "The player's red #e8453c sphere on the cream runway at the first step of a run (frozen chase pose)",
+      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_SHAPE_SHIFT__.booted (true once boot and warm-up are done) and the documented __AURA_SHAPE_SHIFT__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player starts in sphere form (look.ts shapes[0] #e8453c) on the centre lane, in the lower centre of the full-viewport canvas#app; the region (x 600-680, y 496-576) holds the sphere (about 70% of it) and the #f7ecd9 runway around it. The band needs red >= 150 with green and blue <= 115, which the cream runway, white clouds and blue sky do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Toon lighting, grade and real browser layout remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas#app"
+      },
+      "query": "?autostart=1&manual=1",
+      "settle": {
+        "signal": "__AURA_SHAPE_SHIFT__.booted",
+        "equals": true
+      },
+      "driver": {
+        "call": "__AURA_SHAPE_SHIFT__.begin",
+        "args": []
+      },
+      "source": {
+        "path": "apps/showcase-shape-shift-sprint/src/main.ts",
+        "sha256": "e0b2f2159dc92611f7d5c7b62c26f38c22c5452541cfa284a810db0d30731e10"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-shape-shift-sprint/index.html",
+          "sha256": "caff43ac7a89bbf4cd8e939b7d192be9b260a88adeffadaa2fb60654262f9ff0"
+        },
+        {
+          "path": "apps/showcase-shape-shift-sprint/src/world.ts",
+          "sha256": "4cfbd8b1f838ac3278769bdab64a4fa6af262cde480ba65b36db08e769ef402d"
+        },
+        {
+          "path": "apps/showcase-shape-shift-sprint/src/look.ts",
+          "sha256": "53aa9662ae17daef574fc087b04c0867b76efc6c31f13c3fdc528c609bfcadff"
+        },
+        {
+          "path": "apps/showcase-shape-shift-sprint/src/presentation.ts",
+          "sha256": "5280cef1c5910618ed4aaba6de75ff415cb78918139d95055503ea9f110f3931"
+        },
+        {
+          "path": "apps/showcase-shape-shift-sprint/src/sim.ts",
+          "sha256": "405290cec3fe1998daa16b983e168476bf3bd8fe4bb5b2950ffb4c2feaa897fb"
+        },
+        {
+          "path": "apps/showcase-shape-shift-sprint/src/meshes.ts",
+          "sha256": "bb267734b2159cd850e220a63390461dbc77e8449d1d0922031fe63490608b75"
+        },
+        {
+          "path": "packages/engine/src/qa/hooks.ts",
+          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 600,
+          "y": 496,
+          "width": 80,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "red #e8453c player sphere",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                0,
+                115
+              ],
+              "blue": [
+                0,
+                115
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-number-surge",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "The player's cyan #3ef2ff number ball on the neon road at the first step of a run (frozen chase pose)",
+      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_NUMBER_SURGE__.booted (true once boot and warm-up are done) and the documented __AURA_NUMBER_SURGE__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player ball (look.ts PALETTE.ball #3ef2ff, with its #10102e count ink) sits on the centre of the #221d4e road in the lower centre of the full-viewport canvas#app; the region (x 600-680, y 515-595) is the ball (about 80% of it). The band needs green and blue >= 150 with red <= 115; the dark road, the magenta #ff4fd8 edges and the purple sky do not satisfy it (the thin #3ef2ff centre stripe only below the ball). The sunset environment preset is not shipped with the route, so the engine's procedural fallback lights it (warning only). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Bloom, grade and real browser layout remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas#app"
+      },
+      "query": "?autostart=1&manual=1",
+      "settle": {
+        "signal": "__AURA_NUMBER_SURGE__.booted",
+        "equals": true
+      },
+      "driver": {
+        "call": "__AURA_NUMBER_SURGE__.begin",
+        "args": []
+      },
+      "source": {
+        "path": "apps/showcase-number-surge/src/main.ts",
+        "sha256": "d9b7c63c924d39985a4e2e287cddf0648eeaaa8205ce841be40758a146f6c229"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-number-surge/index.html",
+          "sha256": "72f5620324ceff373429bde2e4957d1cfa2a875a9a31ae1b4496737703368c25"
+        },
+        {
+          "path": "apps/showcase-number-surge/src/world.ts",
+          "sha256": "78a3e398dd1edec7897ad5281c784dda168a1a43e748f216053b3c71131a36b6"
+        },
+        {
+          "path": "apps/showcase-number-surge/src/look.ts",
+          "sha256": "647f15980b95d2e712f59462de8d3b3cc592d8dc900e59e00d34f7755adc6cf9"
+        },
+        {
+          "path": "apps/showcase-number-surge/src/presentation.ts",
+          "sha256": "08cb901ae6d4cc227dab8b55405dd8c4df8a85f0f6dd25d2e0025dc20b399116"
+        },
+        {
+          "path": "apps/showcase-number-surge/src/sim.ts",
+          "sha256": "a0ef45977f88c83277f940b1f5c2c7dbe5a57e55fc7ae69449692189d8babae0"
+        },
+        {
+          "path": "apps/showcase-number-surge/src/meshes.ts",
+          "sha256": "c59b69b5a0d86c8b26996a4f151ecf80c69eaacde5fdc7de050fa7f0af2796c0"
+        },
+        {
+          "path": "packages/engine/src/qa/hooks.ts",
+          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 600,
+          "y": 515,
+          "width": 80,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "cyan #3ef2ff number ball",
+              "red": [
+                0,
+                115
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                150,
+                255
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.93
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-splat-turf",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "The player's pink #ff3d8b paint ball on the white runway at the first step of a run (frozen chase pose)",
+      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_SPLAT_TURF__.booted (true once boot and warm-up are done) and the documented __AURA_SPLAT_TURF__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player ball (look.ts ball #ff3d8b) sits on the #ffffff runway in the lower centre of the full-viewport canvas#app; the region (x 616-664, y 490-538) holds the ball (about 45%) and the white road around it. The band needs red >= 170, green <= 125 and blue 70-185, which the white road, the #3b1f47 road edge and the pink-peach sky gradient (green above 125) do not satisfy. The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Toon lighting, grade and real browser layout remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas#app"
+      },
+      "query": "?autostart=1&manual=1",
+      "settle": {
+        "signal": "__AURA_SPLAT_TURF__.booted",
+        "equals": true
+      },
+      "driver": {
+        "call": "__AURA_SPLAT_TURF__.begin",
+        "args": []
+      },
+      "source": {
+        "path": "apps/showcase-splat-turf/src/main.ts",
+        "sha256": "ea044496b78b61fb1c261bfffade589267256f52faeac51f13808915f6e9fbc6"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-splat-turf/index.html",
+          "sha256": "8ca3732d2d6014a4d9748a2e36e089e707dd574b1b9840c1d5cce05170af2b70"
+        },
+        {
+          "path": "apps/showcase-splat-turf/src/world.ts",
+          "sha256": "c5d5265b33111faa98cddb1db9104559b902ab8eeca1556ef1cf6c65b23314a9"
+        },
+        {
+          "path": "apps/showcase-splat-turf/src/look.ts",
+          "sha256": "4270d8aaef6cc98c627bb05b7da286d71cff20916daf91512319d33d6d8f9aec"
+        },
+        {
+          "path": "apps/showcase-splat-turf/src/presentation.ts",
+          "sha256": "3974e1eb64b7be3f07cae3e128e74cc2d058c8524a8ebfff8d6788fe098c39e9"
+        },
+        {
+          "path": "apps/showcase-splat-turf/src/sim.ts",
+          "sha256": "ee17c0903ea103eda9a298888ee70620af182b36087fdd17c58f9d3597d772dc"
+        },
+        {
+          "path": "apps/showcase-splat-turf/src/meshes.ts",
+          "sha256": "5b08c3fdf39461705788d45396515a240535a5822048df05da4cfe585c9d65b9"
+        },
+        {
+          "path": "packages/engine/src/qa/hooks.ts",
+          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 616,
+          "y": 490,
+          "width": 48,
+          "height": 48,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "pink #ff3d8b paint ball",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                0,
+                125
+              ],
+              "blue": [
+                70,
+                185
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.85
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-polarity-orbs",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "The player's red #ff5a4e orb on the warm #63303a deck at the first step of a run (frozen chase pose)",
+      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_POLARITY_ORBS__.booted (true once boot and warm-up are done) and the documented __AURA_POLARITY_ORBS__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player orb starts red (look.ts red #ff5a4e) on the warm deck (#63303a) in the lower centre of the full-viewport canvas#app; the region (x 620-660, y 482-522) holds the orb (about 45%) and the dark deck. Two bands: the orb needs red >= 140 with green and blue <= 115; the deck needs a dark warm red (red 40-95, green <= 60, blue <= 75). The warm sunset fog beside the road matches the orb band but not the deck band, so both must be present. The sunset environment preset is not shipped with the route, so the engine's procedural fallback lights it (warning only). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Fog, grade and real browser layout remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas#app"
+      },
+      "query": "?autostart=1&manual=1",
+      "settle": {
+        "signal": "__AURA_POLARITY_ORBS__.booted",
+        "equals": true
+      },
+      "driver": {
+        "call": "__AURA_POLARITY_ORBS__.begin",
+        "args": []
+      },
+      "source": {
+        "path": "apps/showcase-polarity-orbs/src/main.ts",
+        "sha256": "fb06f65853382df1f57a23f1a2db1f03f032333425e24653d3126f8a0fae4499"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-polarity-orbs/index.html",
+          "sha256": "43c5ce765354c2dcb6b447e66d055583c00fe1073748c40c9c611cd8d7b9cfec"
+        },
+        {
+          "path": "apps/showcase-polarity-orbs/src/world.ts",
+          "sha256": "59b210e905890c1390039347d05811c64e8f48400525f30120766cb485d60f04"
+        },
+        {
+          "path": "apps/showcase-polarity-orbs/src/look.ts",
+          "sha256": "d6f055b71dde96c6b90957a44e995d4168702edb9c9f8deb2baf52ef7d2cefb4"
+        },
+        {
+          "path": "apps/showcase-polarity-orbs/src/presentation.ts",
+          "sha256": "6aa7f7f7ace67c77002c7ab0e766dfc2b313276c6bf86b2d0b96dbf78b5e454c"
+        },
+        {
+          "path": "apps/showcase-polarity-orbs/src/sim.ts",
+          "sha256": "0d7c6f77c120dd10e317c1cec877284656b46601a566c830955d3c2491c40c0a"
+        },
+        {
+          "path": "apps/showcase-polarity-orbs/src/meshes.ts",
+          "sha256": "3d2beee69862204d86c4d9e9d775f708e2bd2b351adb5c1093acb8f7e0faf34c"
+        },
+        {
+          "path": "packages/engine/src/qa/hooks.ts",
+          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 620,
+          "y": 482,
+          "width": 40,
+          "height": 40,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "red #ff5a4e player orb",
+              "red": [
+                140,
+                255
+              ],
+              "green": [
+                20,
+                115
+              ],
+              "blue": [
+                20,
+                115
+              ],
+              "minFraction": 0.08,
+              "maxFraction": 0.8
+            },
+            {
+              "name": "dark warm deck #63303a",
+              "red": [
+                40,
+                95
+              ],
+              "green": [
+                5,
+                60
+              ],
+              "blue": [
+                5,
+                75
+              ],
+              "minFraction": 0.08,
+              "maxFraction": 0.85
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-beat-hopper",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "The player's cyan #23e6ff hopper on the neon road at the first step of a run (frozen chase pose)",
+      "provenance": "No reference capture: derived from source. Route start: the route's documented ?autostart=1&manual=1 (src/main.ts header): manual=1 stops the fixed-step loop advancing the sim (QA stepping only), autostart runs the idle warm-up steps on boot; settle waits for __AURA_BEAT_HOPPER__.booted (true once boot and warm-up are done) and the documented __AURA_BEAT_HOPPER__.begin hook starts the run exactly like a tap (one sim step, render, HUD update), so the chase camera holds the first-play pose. The player (look.ts player #23e6ff) stands on the centre of the #1c1240 road in the lower centre of the full-viewport canvas#app; the region (x 605-675, y 470-560) holds the hopper (about 55%) and the dark road. The band needs green and blue >= 150 with red <= 120; the road, the #ff2fb3 rails and the purple skyline do not satisfy it (the #23e6ff road line crosses only the region's bottom edge). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Bloom, grade and real browser layout remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas#app"
+      },
+      "query": "?autostart=1&manual=1",
+      "settle": {
+        "signal": "__AURA_BEAT_HOPPER__.booted",
+        "equals": true
+      },
+      "driver": {
+        "call": "__AURA_BEAT_HOPPER__.begin",
+        "args": []
+      },
+      "source": {
+        "path": "apps/showcase-beat-hopper/src/main.ts",
+        "sha256": "796137a63f58cdf847299fa751c15ef482ab096c2680b54d44bca986e9239166"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-beat-hopper/index.html",
+          "sha256": "5997f51fdc487d3337436d03793c46b11dde2543df7223ebf67a80b61ec9f6fa"
+        },
+        {
+          "path": "apps/showcase-beat-hopper/src/world.ts",
+          "sha256": "75ba63e322b4a33a9cea00e9975cec99046721617522b24a374175ca45cd14de"
+        },
+        {
+          "path": "apps/showcase-beat-hopper/src/look.ts",
+          "sha256": "4dd37ae6be4e4eb129ff76981e86a962c0259d19a5afb44d76c2f1b6d5eb2573"
+        },
+        {
+          "path": "apps/showcase-beat-hopper/src/presentation.ts",
+          "sha256": "46892a0e614b5a39a0427c3fc67ad6c678eaca51695b1738978ec305183a20da"
+        },
+        {
+          "path": "apps/showcase-beat-hopper/src/sim.ts",
+          "sha256": "cfad220e88f0966abaadff6ac20df27f0444439476859b9d841a522c636d0015"
+        },
+        {
+          "path": "apps/showcase-beat-hopper/src/meshes.ts",
+          "sha256": "7023c379559c53efa41813625445b6ab6b99adc0c9849975a56425e7087d33cd"
+        },
+        {
+          "path": "apps/showcase-beat-hopper/src/stage.ts",
+          "sha256": "eccfaba937564af98029ab2f4aca143410e78c84ab4f83d2277e8d0f2e226e7f"
+        },
+        {
+          "path": "packages/engine/src/qa/hooks.ts",
+          "sha256": "a0ac8c6a3d04832fe37dc279d18000dd2e17e1db836c9b806320c4d81fccfb54"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 605,
+          "y": 470,
+          "width": 70,
+          "height": 90,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "cyan #23e6ff player",
+              "red": [
+                0,
+                120
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                150,
+                255
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.85
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/auto-frame-bird",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "The flapping red #e8573c bird held near the frame centre by the per-frame camera.framePose chase",
+      "provenance": "No reference capture: derived from source. The example writes no camera position: every frame camera.framePose(box, { azimuth, elevation 0.32, fill 0.45, aspect }) solves the chase pose from the bird's own body box at its current point on the 6 m loop, so the bird stays at the frame centre at fill 0.45 while it circles (the time on the loop varies with load timing; the pose does not). The region (x 570-690, y 300-390) holds the bird body, head and wings over the #6fa34a ground and the trees. Colour: body and head #e8573c, wings #f4c542/#e0842b, under environments.neutral, a hemisphere light and lights.key; the band needs red >= 130 with green 40-120 and blue <= 110, which the sky #a9d4f0, the ground and the green tree crowns do not satisfy. On five frames taken 1-8.5 s after ready (different loop angles and wing phases) the band covered 9-29% of the region. Settle waits for window.__AURA_AUTO_FRAME__.requestedFill (published after app.ready()). The region was located on one headless-Chrome (ANGLE/Metal) frame of the dev route at 1280x720; no reference capture is stored and no pixels were blessed. Shadows, the wing pose and real browser layout remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas#app"
+      },
+      "settle": {
+        "signal": "__AURA_AUTO_FRAME__.requestedFill",
+        "atLeast": 0.45
+      },
+      "source": {
+        "path": "examples/auto-frame-bird/main.ts",
+        "sha256": "70dd8ffd3ec2db8ef9d42597b7de50dda788a1f099ec61704c8fdb3f8d36fc20"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/auto-frame-bird/index.html",
+          "sha256": "1999e3febc5fe3fc4f6be88edb44e5d8809ee9da924de36324e6d671edf61ac1"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 570,
+          "y": 300,
+          "width": 120,
+          "height": 90,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "red-orange bird body #e8573c",
+              "red": [
+                130,
+                255
+              ],
+              "green": [
+                40,
+                120
+              ],
+              "blue": [
+                20,
+                110
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.8
             }
           ]
         }

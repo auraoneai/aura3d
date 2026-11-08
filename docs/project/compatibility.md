@@ -1,8 +1,8 @@
 # Compatibility Matrix
 
-Version: 5.2.1; matrix revision: `native-browser-support/1`.
+Version: 5.3.0; matrix revision: `native-browser-support/1`.
 
-Current release: Aura3D 5.2.1, the major release carrying the
+Current release: Aura3D 5.3.0, the major release carrying the
 native-capability work ([4.x to 5.0 migration guide](../migration/4-to-5.md)).
 
 The versioned cells and evidence requirements are defined in

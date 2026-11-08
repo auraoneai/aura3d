@@ -1,0 +1,50 @@
+{
+ "slug": "bird",
+ "extra": {
+  "fill": 0.44999999999999996,
+  "requestedFill": 0.45,
+  "camera": {
+   "position": [
+    -13.838343642643396,
+    5.897580767173029,
+    -2.6805410307918427
+   ],
+   "target": [
+    -5.347645148809356,
+    3.083524919023125,
+    -2.8102534640613412
+   ],
+   "up": [
+    0,
+    1,
+    0
+   ],
+   "roll": 0,
+   "fov": 40,
+   "near": 0.08107501182479247,
+   "far": 128.38484242640206
+  }
+ },
+ "url": "http://127.0.0.1:10631/auto-frame-bird/",
+ "history_length": 2,
+ "nav_types": [
+  "navigate"
+ ],
+ "mount_failed": false,
+ "safety_black_frame": false,
+ "failed_to_start_visible": false,
+ "canvases": 1,
+ "ready": "true",
+ "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+ "frame_navigated": 1,
+ "reload_suspected": false,
+ "codes": [],
+ "non404_errors": [],
+ "events": [
+  {
+   "kind": "log",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (File not found) http://127.0.0.1:10631/favicon.ico"
+  }
+ ]
+}

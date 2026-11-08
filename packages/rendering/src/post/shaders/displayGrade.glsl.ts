@@ -23,13 +23,37 @@
  */
 export const DISPLAY_LUT_FETCH_GLSL = /* glsl */ `uniform int u_lutLattice;
 uniform float u_lutBypass;
-vec3 a3dDisplayLut(vec3 disp) {
+// 1 when the source holds encoded Display-P3 values: a user .cube is authored on sRGB-encoded display values, so the
+// fetch runs on the sRGB re-encoding of the colour (out-of-sRGB colours clip to the LUT domain) and re-encodes to P3.
+// 0 (the default; an unset uniform) leaves the sRGB path untouched.
+uniform int u_lutP3;
+vec3 a3dLutDecode(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }
+vec3 a3dLutEncode(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c)); }
+vec3 a3dLutP3ToSrgb(vec3 p3) {
+  vec3 l = a3dLutDecode(clamp(p3, 0.0, 1.0));
+  return a3dLutEncode(clamp(vec3(
+    dot(vec3(1.2249401762805596, -0.2249401762805601, 0.0), l),
+    dot(vec3(-0.0420569547096882, 1.042056954709688, 0.0), l),
+    dot(vec3(-0.0196375545903344, -0.0786360455506318, 1.0982736001409663), l)), 0.0, 1.0));
+}
+vec3 a3dLutSrgbToP3(vec3 srgb) {
+  vec3 l = a3dLutDecode(clamp(srgb, 0.0, 1.0));
+  return a3dLutEncode(clamp(vec3(
+    dot(vec3(0.8224619687143624, 0.17753803128563794, 0.0), l),
+    dot(vec3(0.03319419885096169, 0.9668058011490385, 0.0), l),
+    dot(vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166), l)), 0.0, 1.0));
+}
+vec3 a3dDisplayLutSrgb(vec3 disp) {
   vec3 lutCoord = clamp(disp, 0.0, 1.0);
   if (u_lutLattice != 0) {
     vec3 lutSize = vec3(textureSize(u_lut3d, 0));
     lutCoord = lutCoord * ((lutSize - 1.0) / lutSize) + 0.5 / lutSize;
   }
   return mix(texture(u_lut3d, lutCoord).rgb, disp, u_lutBypass);
+}
+vec3 a3dDisplayLut(vec3 disp) {
+  if (u_lutP3 != 0) return a3dLutSrgbToP3(a3dDisplayLutSrgb(a3dLutP3ToSrgb(disp)));
+  return a3dDisplayLutSrgb(disp);
 }
 `;
 

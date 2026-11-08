@@ -1,6 +1,17 @@
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot } from "../nodes/types.js";
 import type { OffscreenCanvasSize } from "./canvas.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
+import type { AuraWorkerNodePatchOp } from "./workerPatch.js";
+
+export type { AuraWorkerNodePatchOp } from "./workerPatch.js";
+
+/** Renderer-side quality-rebuild flags and animation mixer mirrored from the host app options. */
+export interface AuraWorkerRenderFlags {
+  readonly qualityRebuild?: import("../../contracts/flags.js").QrFlagInput;
+  readonly animationMixer?: "pose" | "legacy";
+  /** The page URL whose `?a3d-qr=` flags apply after the option flags (absent when the app opted out). */
+  readonly url?: string;
+}
 
 /** A pointer snapshot in content-box CSS pixels, for untransformed or positively axis-scaled canvases. */
 export interface AuraWorkerPointer {
@@ -145,9 +156,11 @@ export function createWorkerPointerEventBuffer(): {
 }
 
 export type AuraWorkerRequest =
-  | { readonly type: "init"; readonly id: number; readonly canvas: OffscreenCanvas; readonly scene: AuraSceneSnapshot; readonly renderer?: AuraCreateAppRendererOptions; readonly assets?: AuraAssetsOption; readonly size: OffscreenCanvasSize; readonly autoStart: boolean; readonly syncLocalScenes?: boolean }
+  | { readonly type: "init"; readonly id: number; readonly canvas: OffscreenCanvas; readonly scene: AuraSceneSnapshot; readonly renderer?: AuraCreateAppRendererOptions; readonly assets?: AuraAssetsOption; readonly size: OffscreenCanvasSize; readonly autoStart: boolean; readonly syncLocalScenes?: boolean; readonly flags?: AuraWorkerRenderFlags }
   | { readonly type: "scene"; readonly id: number; readonly scene: AuraSceneSnapshot }
   | { readonly type: "input"; readonly id: number; readonly input: AuraWorkerInput }
+  /** K1: batched node transform, visibility, material, animation-param and camera changes, applied before the next frame. */
+  | { readonly type: "patch"; readonly id: number; readonly ops: readonly AuraWorkerNodePatchOp[] }
   | { readonly type: "resize"; readonly id: number; readonly size: OffscreenCanvasSize }
   | { readonly type: "frame"; readonly id: number; readonly deltaSeconds: number; readonly time?: number }
   | { readonly type: "visibility"; readonly id: number; readonly visible: boolean }

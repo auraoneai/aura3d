@@ -77,4 +77,4 @@ app.onFrame((frame) => {
 const positions = (): Record<string, readonly number[]> =>
   Object.fromEntries(["ball", "crate-0-0", "crate-4-2"].map((name) => [name, app.physics.bodies.require(name).position().map((value) => Math.round(value * 1e4) / 1e4)]));
 (window as unknown as { __PHYSICS_RECIPE__: unknown }).__PHYSICS_RECIPE__ = { stats, positions, diagnostics: () => app.diagnostics().errors };
-await app.ready();
+void app.ready();

@@ -34,6 +34,9 @@ export const FOG_VALID_OPTIONS: readonly string[] = [
   "backgroundDistance", "transitionSeconds", "legacyOpacityCap", "intensity"
 ];
 
+/** Methods whose promise waits for the renderer mount (app.ready/readyStrict/readiness/precompile, game.ready); LINT_TOP_LEVEL_AWAIT_READY. */
+const TOP_LEVEL_MOUNT_WAITS: ReadonlySet<string> = new Set(["ready", "readyStrict", "readiness", "precompile"]);
+
 /** `instances.model` options the runtime accepts and does not apply (UNAPPLIED_INSTANCED_MODEL_OPTIONS in nodes/instances.ts; emitted as OPTION_IGNORED). */
 export const INSTANCES_MODEL_UNAPPLIED_OPTIONS: readonly string[] = ["lod", "maxInstancesPerDraw", "static", "chunkSize", "shadowLod", "impostor"];
 
@@ -428,13 +431,87 @@ function lintScene(files: readonly ParsedFile[], calls: readonly CallSite[]): Li
   }
 
   // --- module-level `await app.ready()` -----------------------------------------------------------------------------
+  // A default `vite build` puts the engine modules the app imports into the entry chunk, and every lazily loaded engine
+  // chunk (renderer, environment, decoders) imports that entry chunk back. An entry module suspended on a top-level await
+  // of anything that waits for the mount never finishes evaluating, so the lazy chunks never evaluate and the mount never
+  // settles: a black page with no console output. `vite dev` serves separate modules and hides it. Flags any module-level
+  // await whose operand (outside nested functions) calls ready()/readyStrict()/readiness()/precompile() or warmPrograms().
+  const waitsOnMount = (expr: ts.Node): string | undefined => {
+    let hit: string | undefined;
+    const scan = (node: ts.Node): void => {
+      if (hit || ts.isFunctionLike(node)) return;
+      if (ts.isCallExpression(node)) {
+        const name = ts.isPropertyAccessExpression(node.expression) ? node.expression.name.text : ts.isIdentifier(node.expression) ? node.expression.text : "";
+        if (ts.isPropertyAccessExpression(node.expression) && TOP_LEVEL_MOUNT_WAITS.has(name)) hit = `${name}()`;
+        else if (name === "warmPrograms") hit = "warmPrograms()";
+      }
+      ts.forEachChild(node, scan);
+    };
+    scan(expr);
+    return hit;
+  };
+  // Any other engine promise (loadGltfScene, createProductViewer, Renderer.create, a local mount() that awaits ready) can
+  // need the same lazy chunks, so a module-level await on it is LINT_TOP_LEVEL_AWAIT_ENGINE (a warning: some engine
+  // promises resolve without lazy code). Engine calls are calls whose root identifier is imported from `@aura3d/...`, or a
+  // call to a same-file function whose body (outside nested functions) waits on the mount or makes such a call.
+  const rootIdentifier = (expr: ts.Expression): string | undefined => {
+    let e = unwrap(expr);
+    while (ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e) || ts.isCallExpression(e)) e = unwrap(e.expression);
+    return ts.isIdentifier(e) ? e.text : undefined;
+  };
+  const engineBindings = (file: ParsedFile): Set<string> => {
+    const names = new Set<string>();
+    for (const stmt of file.sf.statements) {
+      if (!ts.isImportDeclaration(stmt) || !ts.isStringLiteral(stmt.moduleSpecifier) || !stmt.moduleSpecifier.text.startsWith("@aura3d/")) continue;
+      const clause = stmt.importClause;
+      if (!clause || clause.isTypeOnly) continue;
+      if (clause.name) names.add(clause.name.text);
+      const bindings = clause.namedBindings;
+      if (bindings && ts.isNamespaceImport(bindings)) names.add(bindings.name.text);
+      else if (bindings) for (const el of bindings.elements) if (!el.isTypeOnly) names.add(el.name.text);
+    }
+    return names;
+  };
+  const callsEngine = (file: ParsedFile, expr: ts.Node, engine: ReadonlySet<string>): string | undefined => {
+    let hit: string | undefined;
+    const scan = (node: ts.Node): void => {
+      if (hit || ts.isFunctionLike(node)) return;
+      if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+        const root = rootIdentifier(node.expression);
+        if (root && engine.has(root)) hit = `${node.expression.getText(file.sf).replace(/\s+/g, "")}()`;
+      }
+      ts.forEachChild(node, scan);
+    };
+    scan(expr);
+    return hit;
+  };
   for (const file of files) {
+    const engine = engineBindings(file);
+    // Same-file functions that wait on the mount or call the engine, to a fixpoint (mount() -> boot() -> app.ready()).
+    const localFns = new Map<string, ts.Node>();
+    for (const stmt of file.sf.statements) {
+      if (ts.isFunctionDeclaration(stmt) && stmt.name && stmt.body) localFns.set(stmt.name.text, stmt.body);
+      if (ts.isVariableStatement(stmt)) for (const d of stmt.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.initializer && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer))) localFns.set(d.name.text, d.initializer.body);
+      }
+    }
+    const waiting = new Set<string>(engine);
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const [name, body] of localFns) {
+        if (waiting.has(name)) continue;
+        if (waitsOnMount(body) || callsEngine(file, body, waiting)) { waiting.add(name); changed = true; }
+      }
+    }
     const visit = (node: ts.Node, inFunction: boolean): void => {
       const fn = ts.isFunctionLike(node);
       if (!inFunction && ts.isAwaitExpression(node)) {
-        const target = unwrap(node.expression);
-        if (ts.isCallExpression(target) && ts.isPropertyAccessExpression(target.expression) && target.expression.name.text === "ready") {
-          out.push(finding(file, node, "LINT_TOP_LEVEL_AWAIT_READY", "Module-level await on app.ready() can deadlock a single-entry Vite bundle. Wrap the app in an async function."));
+        const call = waitsOnMount(node.expression);
+        if (call) {
+          out.push(finding(file, node, "LINT_TOP_LEVEL_AWAIT_READY", `Module-level await on ${call} deadlocks a production build: the engine's lazy chunks import this entry chunk back, so the module never finishes evaluating and the page stays black (vite dev hides it). Use \`void app.ready().then(() => { ... })\` or await inside \`async function main() { ... } void main();\`.`));
+        } else {
+          const engineCall = callsEngine(file, node.expression, waiting);
+          if (engineCall) out.push(finding(file, node, "LINT_TOP_LEVEL_AWAIT_ENGINE", `Module-level await on ${engineCall}: if that promise needs a lazily loaded engine chunk, a production build deadlocks (the chunk imports this entry chunk back, which is still evaluating) and the page stays black. Move the code into \`async function main() { ... } void main();\`.`));
         }
       }
       ts.forEachChild(node, (child) => visit(child, inFunction || fn));

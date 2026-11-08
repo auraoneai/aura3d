@@ -13,7 +13,7 @@ import { VFX_SPRITE_LAYOUT, isVfxBuiltinSprite } from "./FlipbookAtlas";
 import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
 import type { AuraTransformSpec } from "../../agent-api/nodes/types.js";
 import { assertWeatherTransformFields } from "./WeatherTransform.js";
-import { parseAuraColor } from "../../agent-api/color.js";
+import { parseAuraColor, withColorUse } from "../../agent-api/color.js";
 import { PARTICLE_DEFAULT_ALPHA_OVER_LIFE, PARTICLE_DEFAULT_SIZE_OVER_LIFE, isAuthoredCurve } from "../../agent-api/nodes/particleDefaults.js";
 
 export interface EffectNodeLike extends AuraTransformSpec {
@@ -242,9 +242,13 @@ function shapeExtents(size: AuraVec3 | number | undefined, kind: string): AuraVe
   return [fallback, fallback, fallback];
 }
 
-/** `#rgb` / `#rrggbb` to linear RGB; null for anything else (named colours are not resolved here). */
+/** Ramp stop to linear RGB: a linear triple, `#rgb` / `#rrggbb`, or any other CSS colour (invalid throws COLOR_INVALID). */
 function rampColor(value: unknown): AuraVec3 | null {
   if (Array.isArray(value) && value.length >= 3 && value.every((v) => typeof v === "number")) return [value[0], value[1], value[2]];
+  if (typeof value === "string" && !/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)) {
+    const [r, g, b] = withColorUse("effects.particles({ lifetimeColorRamp })", () => parseAuraColor(value));
+    return [r, g, b];
+  }
   if (typeof value !== "string" || !value.startsWith("#")) return null;
   const hex = value.length === 4 ? `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}` : value;
   if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return null;

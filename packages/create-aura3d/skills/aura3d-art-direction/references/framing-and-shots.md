@@ -13,6 +13,12 @@ shot still reads as a bad scene.
 | character | 60–70 full body / 40 head | `follow` side-on or `orbit` | gait, rim, contact shadow |
 | night scene | 20–35 | `follow` street level | sign glow, wet reflections, pools |
 
+Hit the percentage with `camera.auto({ subject: "<name>", fill: 0.6 })` (fill is
+the larger of the subject's height and width share of the frame; ground and
+walls stay in shot without setting the size), not by moving a hand-placed
+camera. A moving subject: `app.camera?.setPose(camera.framePose(box, { azimuth,
+fill, aspect }))` every frame (`examples/auto-frame-bird`).
+
 ## Composition rules that change the read
 
 - Place the subject on a third line, not dead center, except for product

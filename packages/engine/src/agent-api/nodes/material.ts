@@ -28,10 +28,16 @@ import { assertAuraColorOption } from "../color.js";
  * `spec.color`, which the legacy tint bridge treated as authored intent even when it was a stock
  * preset colour.
  */
+const MATERIAL_COLOR_KEYS = ["color", "emissive", "sheenColor", "specularColor", "attenuationColor"] as const;
+
 export const AURA_PRESET_DEFAULTS: unique symbol = Symbol.for("aura3d.presetDefaults");
 
 /** Merge `defaults` with `options` and mark which resulting fields the user did not supply. */
 export function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec {
+  // Every material preset validates its authored colours at the API entry (any CSS form; invalid throws COLOR_INVALID).
+  for (const key of MATERIAL_COLOR_KEYS) {
+    assertAuraColorOption((options as Record<string, unknown>)[key], `material preset ({ ${key} })`);
+  }
   const defaultedKeys = new Set<string>();
   for (const key of Object.keys(defaults)) {
     // An own `undefined` option still wins the spread below (legacy merge shape), so the key's value
@@ -721,6 +727,11 @@ export const material = lazyNamespace(() => ({
       metalness: options.metalness ?? options.metallic ?? 0
     }, options)), guessNotes);
   },
+  /**
+   * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+   * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+   */
+  standard: (options: AuraMaterialSpec = {}): AuraMaterialSpec => material.pbr(options),
   /**
    * Film thickness endpoints are in nanometres. Explicit minimum/maximum
    * override the corresponding legacy range entries; omitted endpoints use

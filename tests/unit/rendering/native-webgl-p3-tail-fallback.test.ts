@@ -179,7 +179,7 @@ describe("WebGL display-tail output fallback", () => {
     } finally { f.device.dispose(); }
   });
 
-  it("retains an sRGB fused post chain when a requested P3 tail cannot use OutputPass", () => {
+  it("retains an sRGB fused post chain when a requested P3 tail cannot use OutputPass (sharpened grade)", () => {
     const f = fixture();
     try {
       f.device.beginFrame(8, 8);
@@ -187,7 +187,7 @@ describe("WebGL display-tail output fallback", () => {
         executePostGraphWebGL2(f.host, f.source, {
           v2: postV2,
           pipeline: f.pipeline({ outputColorSpace: "display-p3", nativeEffects: [{ kind: "pixelation", size: 2 }] }),
-          passes: [{ name: "tone-mapping", options: {} }, { name: "color-grade", options: {} }],
+          passes: [{ name: "tone-mapping", options: {} }, { name: "color-grade", options: { sharpening: 0.5 } }],
           frameContext: f.frame(1)
         });
       } finally { f.device.endFrame(); }
@@ -198,7 +198,7 @@ describe("WebGL display-tail output fallback", () => {
     } finally { f.device.dispose(); }
   });
 
-  it("falls back to sRGB instead of throwing when a P3 chain without a tail has no OutputPass route", () => {
+  it("falls back to sRGB instead of throwing when a P3 chain without a tail has no OutputPass route (sharpened grade)", () => {
     const f = fixture();
     try {
       f.device.beginFrame(8, 8);
@@ -206,11 +206,11 @@ describe("WebGL display-tail output fallback", () => {
         executePostGraphWebGL2(f.host, f.source, {
           v2: postV2,
           pipeline: f.pipeline({ outputColorSpace: "display-p3" }),
-          passes: [{ name: "tone-mapping", options: {} }, { name: "color-grade", options: {} }],
+          passes: [{ name: "tone-mapping", options: {} }, { name: "color-grade", options: { sharpening: 0.5 } }],
           frameContext: f.frame(1)
         });
       } finally { f.device.endFrame(); }
-      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: "Display-P3 is unavailable for this post chain" });
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: "Display-P3 is unavailable for this post chain: passes:color-grade(sharpening or invalid option)" });
       expect(f.state.colorSpace).toBe("srgb");
       expect(f.state.draws.filter(draw => draw.framebuffer === null).length).toBeGreaterThan(0);
       // The scope was released: a later frame may renegotiate P3.
@@ -220,11 +220,13 @@ describe("WebGL display-tail output fallback", () => {
 
   it.each(["fused", "unfused"] as const)("rejects direct canvas mutation before the %s final draw", mode => {
     const f = fixture();
+    // The fused FXAA + grain tail is an admitted P3 tail; the dot-screen tail keeps the sRGB fallback.
+    const active = mode === "fused" ? "display-p3" : "srgb";
     const hooks: typeof postV2 = {
       ...postV2,
-      runV2LdrTail(host, source, pipeline, outputTarget, frameContext) {
-        (f.gl as WebGL2RenderingContext & { drawingBufferColorSpace: string }).drawingBufferColorSpace = "display-p3";
-        return postV2.runV2LdrTail(host, source, pipeline, outputTarget, frameContext);
+      runV2LdrTail(...args) {
+        (f.gl as WebGL2RenderingContext & { drawingBufferColorSpace: string }).drawingBufferColorSpace = active === "srgb" ? "display-p3" : "srgb";
+        return postV2.runV2LdrTail(...args);
       }
     };
     try {
@@ -233,8 +235,8 @@ describe("WebGL display-tail output fallback", () => {
         : { outputColorSpace: "display-p3", nativeEffects: [{ kind: "dot-screen", size: 4, angle: 0, strength: 0.5 }] };
       expect(() => f.run(options, 1, hooks)).toThrow(/color space changed/i);
       expect(f.state.draws.filter(draw => draw.framebuffer === null)).toHaveLength(0);
-      expect(f.state.colorSpace).toBe("srgb");
-      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb" });
+      expect(f.state.colorSpace).toBe(active);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active });
     } finally { f.device.dispose(); }
   });
 

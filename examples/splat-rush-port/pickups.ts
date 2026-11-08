@@ -8,6 +8,7 @@ import { cylinderMesh } from "./meshes";
 import { MODELS } from "./models";
 import type { Powerup } from "./sim";
 import { FLAT_FRAGMENT, FLAT_VERTEX } from "./shaders";
+import { FLAT_FRAGMENT_WGSL, FLAT_VERTEX_WGSL } from "./shaders-wgsl";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 type Scene = ReturnType<typeof scene>;
@@ -41,6 +42,7 @@ export function addPickups(builder: Scene): void {
         name: haloId(type, k),
         material: material.custom({
           glsl: { vertex: FLAT_VERTEX, fragment: FLAT_FRAGMENT },
+          wgsl: { vertex: FLAT_VERTEX_WGSL, fragment: FLAT_FRAGMENT_WGSL },
           uniforms: { baseColor: { type: "color3", value: linear(HALO_HEX[type]) }, alpha: { type: "f32", value: 0.5 } },
           transparent: true,
           depthWrite: false,

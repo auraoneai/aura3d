@@ -11,6 +11,7 @@ import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { RIBBON_VERTEX_FORMAT } from "./RibbonPass";
 import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import { BEAM_SHADER_MARKER, beamFragmentSource, beamProgramKey, beamVertexSource } from "./shaders/beam.glsl";
+import { beamPortableBindings, beamWgsl } from "./shaders/beam.wgsl";
 import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 export type AuraVec3 = readonly [number, number, number];
@@ -283,7 +284,9 @@ export class BeamPass {
         label: key,
         vertex: beamVertexSource(),
         fragment: beamFragmentSource(defines),
-        marker: BEAM_SHADER_MARKER
+        marker: BEAM_SHADER_MARKER,
+        // WebGPU twin; WebGL2 keeps compiling only the GLSL pair.
+        ...(this.device.kind === "webgpu" ? { webgpu: beamWgsl(defines), portableBindings: beamPortableBindings(defines) } : {})
       });
       this.programs.set(key, shader);
     }

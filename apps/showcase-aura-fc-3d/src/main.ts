@@ -39,6 +39,7 @@ import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
 import type { UserInputFrame, PlayerState, SimEvent, VenueId } from "./game/types";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -97,7 +98,7 @@ function boot(): void {
   };
 
   // 5.0.2 W-8: EXPERIMENTAL lab flags (?backend=auto|webgpu, ?gamut=p3), all off by default; WebGL2 fallback is kept.
-  // `?worker=1` and `?depth=` are parsed but not wired here (no worker entry, camera is built in scene.ts).
+  // `?worker=1` renders in a worker (main-thread fallback kept); `?depth=` is parsed but not wired (camera is built in scene.ts).
   const lab = readLabFlags();
   // 5.0.2 A1: shared loading/readiness tracker (no visible UI; the existing HUD banner stays the loading message).
   // 5.0.3 A1: a visible staged progress bar under the "Loading 3D Stadium & Athletes" banner (app created 0.2, mount
@@ -113,10 +114,10 @@ function boot(): void {
   const loading = createLoadingProgress({ element: loadingBar, onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
   let app: ReturnType<typeof createAuraApp>;
   try {
-    // Lab flags: only the renderer/output fragments are used (no worker entry here, so `?worker=1` is ignored rather
-    // than handed to createAuraApp without a createWorker). They merge over the look's renderer and the venue output
+    // Lab flags: `?worker=1` carries createWorkerRendererWorker; the renderer/output fragments merge over the look's renderer and the venue output
     // preset instead of being overwritten by them, so `?backend=` / `?gamut=` reach the engine.
-    const { renderer: labRenderer, output: labOutput } = labAppOptions(lab);
+    // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+    const { renderer: labRenderer, output: labOutput } = labAppOptions(lab, { backend: "auto" });
     const lookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look) as { renderer?: object; output?: object };
     // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
     // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
@@ -124,6 +125,7 @@ function boot(): void {
     const presetOutput = bootOriginal || bootParams.get("outputPreset") === "off" ? undefined : { preset: VENUE_LOOKS[bootVenue].post };
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
+      ...(lab.worker ? { worker: labAppOptions(lab, createWorkerRendererWorker).worker } : {}),
       ...lookOptions,
       ...(labRenderer ? { renderer: { ...lookOptions.renderer, ...labRenderer } } : {}),
       ...(presetOutput || labOutput ? { output: { ...lookOptions.output, ...presetOutput, ...labOutput } } : {}),

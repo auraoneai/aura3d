@@ -126,14 +126,16 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
 }
 
 /**
- * Games run a synchronous main-thread loop. A `worker` option is accepted only as an explicit main-thread request
- * (`fallback: "main-thread"`), which lets the shared lab-flag fragment be spread into any game; it is never forwarded.
+ * Games keep their loop on the main thread. A `worker` with `createWorker` renders the game in that worker (K2: frame
+ * callbacks run on the main thread and node changes reach the worker once per frame). `fallback: "main-thread"` alone
+ * (the shared lab-flag fragment) is accepted and runs on the main thread. Returns the option to forward, if any.
  */
-export function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): void {
-  if (worker === undefined) return;
-  if (worker.fallback === "main-thread") return;
+export function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): NonNullable<CreateGameOptions<string, string>["worker"]> | undefined {
+  if (worker === undefined) return undefined;
+  if (typeof worker?.createWorker === "function") return worker;
+  if (worker.fallback === "main-thread") return undefined;
   const error = new Error(
-    'createGame does not support worker rendering because its game loop requires synchronous onFrame callbacks. Pass worker: { fallback: "main-thread" } to accept the request on the main thread, or use createAuraApp with worker.'
+    'createGame worker rendering needs worker.createWorker (a dedicated render worker). Pass worker: { fallback: "main-thread" } to run the game on the main thread.'
   ) as Error & { code: string };
   error.name = "AuraWorkerError";
   error.code = "worker-unsupported";
@@ -224,9 +226,10 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
     worker,
     ...appOptions
   } = options;
-  assertGameWorkerRequest(worker);
+  const renderWorker = assertGameWorkerRequest(worker);
   const runtime = createGameAppForEntry(options.target, {
     ...appOptions,
+    ...(renderWorker ? { worker: { createWorker: renderWorker.createWorker!, ...(renderWorker.fallback ? { fallback: renderWorker.fallback } : {}), ...(renderWorker.disposeTimeoutMs !== undefined ? { disposeTimeoutMs: renderWorker.disposeTimeoutMs } : {}) } } : {}),
     diagnostics: {
       overlay: false,
       performancePanel: false,

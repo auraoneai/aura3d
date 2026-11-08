@@ -6,6 +6,7 @@
  * ball-number decal repainted only when the value changes.
  */
 import { camera, effects, environments, geometry, lights, material, scene, texture, type AuraApp } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, Slots, mergeMeshes, scrollFrameZ, flatSpec, shadowSpec, skySpec, gradientSkyFragment, toonSpec,
   hexToLinear, type CustomSpec, type MeshData, type Rgb
@@ -15,6 +16,7 @@ import { DIMS, ballMesh, ballLabelMesh, gateFrameMesh, gatePanelMesh, groundQuad
 import { LINEAR, LOOK, PALETTE, SKY_STOPS } from "./look";
 import type { Shown } from "./presentation";
 import { addScenery, deckSpec, edgeGlowSpec, sceneryProgramSpecs, stripSpec, synthSkySpec } from "./scenery";
+import { LABEL_FRAGMENT_WGSL, UV_VERTEX_WGSL } from "./scenery-wgsl";
 
 type Scene = ReturnType<typeof scene>;
 type TextureHandle = ReturnType<typeof texture.canvas>;
@@ -46,6 +48,7 @@ void main() {
 
 export const labelSpec = (map: TextureHandle): CustomSpec => ({
   glsl: { vertex: LABEL_VERTEX, fragment: LABEL_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: LABEL_FRAGMENT_WGSL },
   uniforms: {
     map: { type: "texture2d", value: map },
     baseColor: { type: "color3", value: [1, 1, 1] },
@@ -178,7 +181,7 @@ export function buildWorld(options: WorldOptions): World {
   const look = options.look ?? LOOK;
   const builder: Scene = scene()
     .background(look.background)
-    .camera(camera.perspective({ position: [0, LOOK.camera.height, LOOK.camera.back], target: [0, 1, LOOK.camera.lookAheadZ], fov: LOOK.camera.fovDeg, near: 0.1, far: 320 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, LOOK.camera.height, LOOK.camera.back], target: [0, 1, LOOK.camera.lookAheadZ], fov: LOOK.camera.fovDeg, near: 0.1, far: 320 }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));

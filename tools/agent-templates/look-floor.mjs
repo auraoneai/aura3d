@@ -54,7 +54,12 @@ export const TEMPLATE_LOOK_FLOOR = Object.freeze({
   "procedural-scene": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "character-viewer": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "asset-inspector": Object.freeze({ look: "product-studio", anchor: "preset" }),
-  "custom-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" })
+  "custom-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" }),
+  "starter-product": Object.freeze({ look: "product-studio", anchor: "preset" }),
+  "starter-outdoor": Object.freeze({ look: "golden-hour", anchor: "preset" }),
+  "starter-interior": Object.freeze({ look: "interior-warm", anchor: "preset" }),
+  "starter-game": Object.freeze({ look: "outdoor-day", anchor: "preset" }),
+  "starter-presentation": Object.freeze({ look: "night-city", anchor: "preset" })
 });
 
 function readIfExists(file) {

@@ -70,6 +70,7 @@ import {
 import type { BlendMode } from "@aura3d/rendering/contracts";
 import { shaderGraphGlslFieldNames } from "@aura3d/rendering/shader-graph";
 import { AuraRuntimeError } from "./errors.js";
+import { parseAuraColorSrgb } from "../color.js";
 import { assertCustomAttributeName } from "../RootGeometry.js";
 import { auraTextureRefBackingStatus, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraAssetRef, AuraCustomMaterialSpec, AuraCustomUniformType, AuraTextureRef, AuraUniformValue } from "../nodes/types.js";
@@ -316,8 +317,9 @@ const numericArray = (value: unknown): readonly number[] | null => {
 
 const parseColor3 = (value: string): readonly number[] | null => {
   const hex = value.trim().replace(/^#/, "");
-  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return null;
-  return [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) return [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  // Any other CSS colour form (`#rgb`, rgb(), hsl(), names); sRGB channels like the hex path.
+  try { return parseAuraColorSrgb(value).slice(0, 3); } catch { return null; }
 };
 
 const padMat3 = (values: readonly number[]): readonly number[] => {
@@ -368,7 +370,7 @@ export function normalizeCustomUniformValue(type: AuraCustomUniformType, value: 
   }
   if (type === "color3" && typeof value === "string") {
     const color = parseColor3(value);
-    if (!color) invalidSpec("material.custom", `uniform "${name}" (color3) expects a #rrggbb string`);
+    if (!color) invalidSpec("material.custom", `uniform "${name}" (color3) expects a CSS colour string; COLOR_INVALID: ${JSON.stringify(value).slice(0, 64)}`);
     return [...color!];
   }
   const scalars = numericArray(value);
@@ -572,16 +574,19 @@ function instanceInputLines(userSource: string): string[] {
   if (!wantMatrix && !wantColor) return [];
   const lines = [
     "uniform float u_a3dInstancing;",
-    "in vec4 a_instanceMatrix0;",
-    "in vec4 a_instanceMatrix1;",
-    "in vec4 a_instanceMatrix2;",
-    "in vec4 a_instanceMatrix3;"
+    // A3/W6: the built-in programs' instance locations (8-11, colour 12). Implicit locations were assigned in declaration
+    // order (2.. after position/normal), which on WebGPU collides with the geometry's fixed stream locations (uv is 2), so
+    // a WGSL twin could not take the per-instance matrix. WebGL2 binds by name either way: same program, same pixels.
+    "layout(location = 8) in vec4 a_instanceMatrix0;",
+    "layout(location = 9) in vec4 a_instanceMatrix1;",
+    "layout(location = 10) in vec4 a_instanceMatrix2;",
+    "layout(location = 11) in vec4 a_instanceMatrix3;"
   ];
   if (wantMatrix) {
     lines.push("#define instanceMatrix (u_a3dInstancing > 0.5 ? mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3) : mat4(1.0))");
   }
   if (wantColor) {
-    lines.push("uniform float u_a3dInstanceColors;", "in vec4 a_instanceColor;");
+    lines.push("uniform float u_a3dInstanceColors;", "layout(location = 12) in vec4 a_instanceColor;");
     lines.push("#define instanceColor (u_a3dInstancing > 0.5 && u_a3dInstanceColors > 0.5 ? a_instanceColor : vec4(1.0))");
   }
   return lines;
@@ -1139,8 +1144,14 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
         wgsl: { vertex: wgslStage(depth.wgsl.vertex, "", spec.patch), fragment: wgslStage(depth.wgsl.fragment, "", spec.patch), ...(graphStorage ? { storageBindings: graphStorage.depthLayouts } : {}) }
       }
       : undefined;
+    // A hand-written WGSL twin casts through its own vertex stage plus the native depth encoding (WebGPU only: the GLSL
+    // depth program below is unchanged). Without it the WebGPU shadow pass has no program for the caster.
+    const twinDepthSources: PortableShaderSources | undefined = spec.castShadow === true && !graphDepthSources && sources.wgsl
+      ? { glsl: { vertex: glslVertex, fragment: CUSTOM_DEPTH_FRAGMENT_GLSL }, wgsl: { vertex: sources.wgsl.vertex, fragment: CUSTOM_DEPTH_FRAGMENT_WGSL } }
+      : undefined;
     this.customDepthShaderKey = spec.castShadow === true
-      ? acquireCustomDepthSource(this.shaderKey, graphDepthSources?.glsl.vertex ?? glslVertex, graphDepthSources ? this.sourcePair(graphDepthSources, this.bindingsForSources(graphDepthSources)) : undefined)
+      ? acquireCustomDepthSource(this.shaderKey, graphDepthSources?.glsl.vertex ?? glslVertex, graphDepthSources ? this.sourcePair(graphDepthSources, this.bindingsForSources(graphDepthSources)) : undefined,
+        twinDepthSources ? this.sourcePair(twinDepthSources, this.bindingsForSources(twinDepthSources)) : undefined)
       : undefined;
     const graphSkinning = graphSkinningOf(spec);
     if (graphSkinning) {
@@ -1324,6 +1335,17 @@ function releaseGlobalSource(key: string): void {
 /** Color-encoded depth is consumed when the shadow target has no sampleable depth attachment. */
 export const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(vec3(gl_FragCoord.z), 1.0);\n}\n";
 
+/**
+ * WebGPU half of `CUSTOM_DEPTH_FRAGMENT_GLSL` for `castShadow: true` materials with a WGSL twin: the same encoded colour
+ * depth the native depth programs write (the framebuffer depth `@builtin(position).z`, already 0..1 on WebGPU).
+ */
+export const CUSTOM_DEPTH_FRAGMENT_WGSL = `${WGSL_MARKER}
+@fragment
+fn fs_main(@builtin(position) a3dFragCoord: vec4f) -> @location(0) vec4f {
+  return vec4f(a3dFragCoord.z, a3dFragCoord.z, a3dFragCoord.z, 1.0);
+}
+`;
+
 /** Same marker placement as `PortableShaderMaterial` (after `#version`): the device requires the marker in both stages. */
 function withSourceMarker(source: string, marker: string): string {
   const version = source.match(/^(\s*#version[^\n]*\n)/);
@@ -1420,19 +1442,21 @@ function acquirePortableVariant(name: string, sources: PortableShaderSources, bi
  * displacement, uniforms and `instanceMatrix` work in the shadow pass, plus `CUSTOM_DEPTH_FRAGMENT_GLSL`) under
  * `<shaderKey>/depth`, ref-counted like the colour program. Returns the key `DepthPass` resolves.
  */
-function acquireCustomDepthSource(shaderKey: string, glslVertex: string, graphPair?: ShaderSourcePair): string {
+function acquireCustomDepthSource(shaderKey: string, glslVertex: string, graphPair?: ShaderSourcePair, twinPair?: ShaderSourcePair): string {
   const name = `${shaderKey}/depth`;
   const marker = `@aura3d-portable:${name}`;
+  // `twinPair` (a WGSL twin's depth program) only supplies the WebGPU stages; the GLSL stages stay as before.
+  const gpuPair = graphPair ?? twinPair;
   registerGlobalShaderSource({
     name, marker, vertex: withSourceMarker(glslVertex, marker),
     fragment: withSourceMarker(graphPair?.fragment ?? CUSTOM_DEPTH_FRAGMENT_GLSL, marker),
-    ...(graphPair?.webgpu && graphPair.portableBindings ? {
+    ...(gpuPair?.webgpu && gpuPair.portableBindings ? {
       webgpu: {
-        ...graphPair.webgpu,
-        vertex: withSourceMarker(graphPair.webgpu.vertex, marker),
-        fragment: withSourceMarker(graphPair.webgpu.fragment, marker)
+        ...gpuPair.webgpu,
+        vertex: withSourceMarker(gpuPair.webgpu.vertex, marker),
+        fragment: withSourceMarker(gpuPair.webgpu.fragment, marker)
       },
-      portableBindings: graphPair.portableBindings
+      portableBindings: gpuPair.portableBindings
     } : {})
   });
   globalSourceRefs.set(name, (globalSourceRefs.get(name) ?? 0) + 1);

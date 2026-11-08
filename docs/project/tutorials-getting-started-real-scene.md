@@ -21,18 +21,22 @@ http://127.0.0.1:5181/apps/advanced-examples-gallery/#product-configurator
 import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
 import { A3DRenderer } from "@aura3d/engine/renderer";
 
-const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
-const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");
-const scene = await createRenderableScene(asset, {
-  camera: "auto-frame",
-  lighting: "studio-product",
-  shadows: true,
-  postprocess: "product-default"
-});
+// Await inside a function, never at module top level: a default `vite build` deadlocks on a top-level await of engine work.
+async function main(canvas: HTMLCanvasElement): Promise<void> {
+  const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
+  const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");
+  const scene = await createRenderableScene(asset, {
+    camera: "auto-frame",
+    lighting: "studio-product",
+    shadows: true,
+    postprocess: "product-default"
+  });
 
-renderer.render(scene.source);
-scene.dispose();
-renderer.dispose();
+  renderer.render(scene.source);
+  scene.dispose();
+  renderer.dispose();
+}
+void main(document.querySelector("canvas")!);
 ```
 
 For a procedural renderer smoke path, create `Geometry.uvSphere`, shade it with `PBRMaterial`, render with `Renderer.create({ backend: "webgl2" })`, and inspect `diagnostics.drawCalls`. This does not require reading test files.

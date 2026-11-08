@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diffPackedSurfaces, neutralizeCopyIdentity } from "../../../tools/public-surface-diff/index.js";
+import { declarationTextsEqualIgnoringComments, diffPackedSurfaces, neutralizeCopyIdentity } from "../../../tools/public-surface-diff/index.js";
 import { classifyReleaseChange } from "../../../tools/public-surface-diff/patch-compatibility.js";
 import type { PackedPackage } from "../../../tools/public-surface-diff/prepare-baseline.js";
 
@@ -171,6 +171,68 @@ export declare function createApp(options?: CreateOptions): void;
       const change = diff(NESTED_BEFORE, after, "1.1.0", "minor").changes.find((entry) => entry.name === "CreateOptions");
       expect(change?.classification.breaking).toBe(true);
     }
+  }, 60000);
+
+  // 5.3.0: a generic options interface whose only change is a member's doc comment (CreateGameOptions.worker). The
+  // private-member class keeps the checker from relating the two comparison copies, so the closure attribution decides.
+  const DOC_BEFORE = `
+export declare class Renderer { private readonly id; }
+export interface GameOptions<TCue extends string> {
+    readonly id: string;
+    readonly renderer?: Renderer;
+    /** Games always render on the main thread. */
+    readonly worker?: { readonly fallback: "main-thread" };
+    readonly cue?: TCue;
+}
+export declare function createGame<TCue extends string>(options: GameOptions<TCue>): void;
+`;
+  it("accepts a declaration whose closure only changed in comments", () => {
+    const after = DOC_BEFORE.replace("/** Games always render on the main thread. */", "/**\n     * With createWorker the game renders in a worker.\n     */");
+    const report = diff(DOC_BEFORE, after, "1.1.0", "minor");
+    expect(report.diagnostics).toEqual([]);
+    expect(report.changes.filter((change) => change.classification.breaking)).toEqual([]);
+  }, 60000);
+
+  it("still fails a comment change that travels with a narrowing, or a new required member", () => {
+    const narrowed = DOC_BEFORE.replace("/** Games always render on the main thread. */", "/** Narrowed. */").replace("readonly id: string;", "readonly id: \"fixed\";");
+    const required = DOC_BEFORE.replace("readonly cue?: TCue;", "readonly cue?: TCue;\n    /** New. */\n    setColor(color: string): void;");
+    for (const after of [narrowed, required]) {
+      const change = diff(DOC_BEFORE, after, "1.1.0", "minor").changes.find((entry) => entry.name === "createGame");
+      expect(change?.classification.breaking).toBe(true);
+    }
+  }, 60000);
+
+  it("compares declaration texts without comments but with every token, literal contents included", () => {
+    expect(declarationTextsEqualIgnoringComments(["interface A { /** a */ b?: string; }"], ["interface A {\n  /** other\n   * text */\n  b?: string;\n}"])).toBe(true);
+    // Collapsed onto one line, a line comment would hide the tokens after it: fail closed.
+    expect(declarationTextsEqualIgnoringComments(["interface A { // a b: string; }"], ["interface A { // a b: number; }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A { b: `${string}//x` }"], ["interface A { b: `${string}//y` }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(['X = "/* a */"'], ['X = "/* b */"'])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A { b?: string }"], ["interface A { b: string }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A {}"], ["interface A {}", "interface A {}"])).toBe(false);
+  });
+
+  it("fails closed on texts that only reprint equal through parser error recovery", () => {
+    // An unterminated block comment swallows the members after it; a stray token is dropped by recovery.
+    expect(declarationTextsEqualIgnoringComments(["interface A { a: string; }"], ["interface A { a: string; /* }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A { a: string; b: number; }"], ["interface A { a: string; /* b: number; }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["declare const x: { a: string }"], ["declare const x: { a: string } }"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["interface A { a: string }"], ["interface A { a: string } @@@"])).toBe(false);
+    // A variable's closure text is its bare declarator: compared inside a `declare const`, every type token counts.
+    expect(declarationTextsEqualIgnoringComments(["make: <T>(options: Options<T>) => Game<T>"], ["make: /** doc */ <T>(options: Options<T>) => Game<T>"])).toBe(true);
+    expect(declarationTextsEqualIgnoringComments(["make: <T>(options: Options<T>) => Game<T>"], ["make: /** doc */ <T>(options: Options<T>) => Game<string>"])).toBe(false);
+    expect(declarationTextsEqualIgnoringComments(["make: (options?: Options) => void"], ["make: /** doc */ (options: Options) => void"])).toBe(false);
+  });
+
+  it("still fails a comment-only closure change next to a member removed from a nested type", () => {
+    const removed = DOC_BEFORE.replace("/** Games always render on the main thread. */", "/** Changed. */").replace("readonly worker?: { readonly fallback: \"main-thread\" };", "readonly worker?: {};");
+    const change = diff(DOC_BEFORE, removed, "1.1.0", "minor").changes.find((entry) => entry.name === "createGame");
+    expect(change?.classification.breaking).toBe(true);
+    // A comment edit on a non-generic exported variable whose function type narrowed its parameter.
+    const VAR_BEFORE = `export interface Options { readonly id?: string }\n/** Make. */\nexport declare const make: (options?: Options) => void;\n`;
+    const narrowedVar = VAR_BEFORE.replace("/** Make. */", "/** Make it. */").replace("(options?: Options)", "(options: Options)");
+    const varChange = diff(VAR_BEFORE, narrowedVar, "1.1.0", "minor").changes.find((entry) => entry.name === "make");
+    expect(varChange?.classification.breaking).toBe(true);
   }, 60000);
 
   it("fails removals in a minor", () => {

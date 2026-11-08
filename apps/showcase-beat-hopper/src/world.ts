@@ -9,6 +9,7 @@
  * consume gameplay RNG draws. The whole world pulses on the sim beat; PERFECT judgements fire expanding timing rings.
  */
 import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, flatSpec, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
@@ -148,7 +149,7 @@ function headphonesMesh(): MeshData {
 export function buildWorld(options: WorldOptions): World {
   const builder: Scene = scene()
     .background(LOOK.background)
-    .camera(camera.perspective({ position: [0, 4.6, 8.5], target: [0, 1, -10], fov: 55, near: 0.1, far: CAMERA_FAR }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 4.6, 8.5], target: [0, 1, -10], fov: 55, near: 0.1, far: CAMERA_FAR }));
 
   /* Night key + neutral IBL: the toon programs carry their own light ramp, but the scene keeps one shadowed key and
    * an environment so the art-direction audit (C-35) sees a legitimate rig. */

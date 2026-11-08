@@ -6,6 +6,8 @@ import { NATIVE_POINT_WGSL } from "./NativePointShader";
 import { ALPHA_TO_COVERAGE_FEATURE, GENERATED_ALPHA_TO_COVERAGE_WGSL, generatedAlphaToCoverage } from "./GeneratedAlphaToCoverage";
 import { deriveShaderDataLayout, writeShaderData, type ShaderDataType } from "./ShaderDataLayout";
 import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "./ProjectionClip";
+import { PRD07_FOG_WGSL_FIELDS, packPrd07FogWgslFields, prd07FogWgsl } from "../atmosphere/shaders/fog.wgsl";
+import { validatePrd07FogMetadata } from "./GeneratedPbrProgram";
 
 export interface GeneratedUnlitTextureResource {
   readonly uniform: "u_baseColorMap" | "u_emissiveMap" | "u_pointMap";
@@ -29,6 +31,8 @@ export interface GeneratedUnlitProgram {
   readonly primitive: "triangles" | "lines" | "points";
   readonly rasterTopology: "triangles" | "lines";
   readonly point: { readonly attenuated: boolean; readonly mapped: boolean; readonly round: boolean } | null;
+  /** `prd15.paritySprite`: camera-facing billboard rebuilt in view space (three's SpriteMaterial). */
+  readonly sprite: boolean;
   readonly clipping: boolean;
   /** This program emits location 1; the device must validate paired depth writes. */
   readonly writesDepthCoverage: boolean;
@@ -39,6 +43,8 @@ export interface GeneratedUnlitProgram {
   /** MASK coverage is written to output alpha for pipeline alpha-to-coverage instead of a hard discard. */
   readonly alphaToCoverage: boolean;
   readonly fog: "none" | "linear" | "exp2" | "height";
+  /** Native PRD-07 forward fog (`prd07.fog`), replacing the default fog body. */
+  readonly prd07Fog: boolean;
   readonly requiresFloatColorAttachment: boolean;
 }
 
@@ -54,7 +60,13 @@ const fields: readonly { readonly name: string; readonly type: ShaderDataType; r
   { name: "packedLoopColor", type: vec4, wgsl: "vec4f" },
   // Logarithmic frames: u_a3dLogDepthView and (near, far) from u_a3dLogDepthRange.
   { name: "logDepthView", type: mat4, wgsl: "mat4x4f" },
-  { name: "logDepthRange", type: vec4, wgsl: "vec4f" }
+  { name: "logDepthRange", type: vec4, wgsl: "vec4f" },
+  // prd15.paritySprite: (u_spriteRotation, u_spriteCenter.xy, u_spriteSizeAttenuation).
+  { name: "sprite", type: vec4, wgsl: "vec4f" },
+  // PRD-07 forward fog (`prd07.fog`), packed from the u_fog* uniforms of the GLSL chunk.
+  ...PRD07_FOG_WGSL_FIELDS.map(({ name, length }) => length
+    ? { name, type: { kind: "array", element: vec4, length } as ShaderDataType, wgsl: `array<vec4f, ${length}>` }
+    : { name, type: vec4, wgsl: "vec4f" })
 ];
 
 export const GENERATED_UNLIT_MATERIAL_LAYOUT = deriveShaderDataLayout({ kind: "struct", fields: fields.map(({ name, type }) => ({ name, type })) }, "wgsl-uniform");
@@ -107,6 +119,24 @@ const OUTPUT = `fn generatedUnlitEncodeOutput(linear: vec3f) -> vec3f {
   return select(display * 12.92, 1.055 * pow(display, vec3f(1.0 / 2.4)) - vec3f(0.055), display >= vec3f(0.0031308));
 }`;
 
+/**
+ * three's SpriteMaterial vertex program, as the GLSL `prd15.paritySprite` chunk: the quad's raw xy is offset by the
+ * anchor, scaled by the model's x/y axis lengths, rotated in the screen plane and added to the view-space centre.
+ * sizeAttenuation off scales by -viewZ under perspective so the sprite keeps a constant screen fraction.
+ * `world` is the sprite centre (fog and the world varying read it, as on WebGL2).
+ */
+function SPRITE_VERTEX(instanced: boolean): string {
+  return `let spriteCenterWorld = material.model * ${instanced ? "mat4x4f(instance0, instance1, instance2, instance3) * " : ""}vec4f(0.0, 0.0, 0.0, 1.0);
+  var spriteView = frame.view * vec4f(spriteCenterWorld.xyz, 1.0);
+  var spriteScale = vec2f(length(material.model[0].xyz), length(material.model[1].xyz));
+  if (material.sprite.w < 0.5 && frame.projection[2][3] < -0.5) { spriteScale = spriteScale * -spriteView.z; }
+  let spriteAligned = (position.xy - (material.sprite.yz - vec2f(0.5))) * spriteScale;
+  let spriteCos = cos(material.sprite.x); let spriteSin = sin(material.sprite.x);
+  spriteView = vec4f(spriteView.xy + vec2f(spriteCos * spriteAligned.x - spriteSin * spriteAligned.y, spriteSin * spriteAligned.x + spriteCos * spriteAligned.y), spriteView.zw);
+  let world = vec4f(spriteCenterWorld.xyz, 1.0);
+  let clip = frame.projection * spriteView;`;
+}
+
 function unsupported(field: string, detail: string): never {
   throw new RenderDeviceError(`Generated WebGPU unlit does not support ${detail}`, "WGSL_PROGRAM_MISSING", { field });
 }
@@ -133,7 +163,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   for (const [name, map] of Object.entries(f.maps)) {
     if (map && (name !== "baseColor" && name !== "emissive" || (map.uvSet !== 0 && map.uvSet !== 1))) unsupported(`maps.${name}`, `map ${name}`);
   }
-  const allowedFeatures = new Set(["a3d.nativePrimitive", "a3d.clipping", "a3d.output.srgb", "a3d.packedLoopColor", "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])]);
+  const allowedFeatures = new Set(["a3d.nativePrimitive", "a3d.clipping", "a3d.output.srgb", "a3d.packedLoopColor", "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, "prd07.fog", ...(isPoint ? ["prd15.parityPoints"] : primitive === "triangles" ? ["prd15.paritySprite"] : [])]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !allowedFeatures.has(name)) unsupported(`features.${name}`, `feature ${name}`);
     if ((name === "a3d.clipping" || name === "a3d.output.srgb" || name === "a3d.packedLoopColor" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name}`);
@@ -141,7 +171,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   const logDepth = f.features[PROGRAM_LOG_DEPTH_FEATURE] === true;
   const active = new Map<string, string | number | boolean>();
   for (const feature of descriptor.activeFeatures) {
-    if (active.has(feature.id) || !["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "a3d.packedLoopColor", ALPHA_TO_COVERAGE_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])].includes(feature.id)
+    if (active.has(feature.id) || !["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "a3d.packedLoopColor", ALPHA_TO_COVERAGE_FEATURE, "prd07.fog", ...(isPoint ? ["prd15.parityPoints"] : primitive === "triangles" ? ["prd15.paritySprite"] : [])].includes(feature.id)
       || f.features[feature.id] !== feature.value) unsupported("activeFeatures", `contributor ${feature.id}`);
     active.set(feature.id, feature.value);
   }
@@ -161,9 +191,17 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   const point = isPoint ? { attenuated: (pointBits & 1) !== 0, mapped: (pointBits & 2) !== 0, round: (pointBits & 4) !== 0 } : null;
   if ((ibl && active.get("prd02.ibl") !== true) || (fraction && active.get("prd03.indirectFraction") !== "indirectFraction")
     || descriptor.lighting.iblReplacesIndirect !== (descriptor.lighting.compilerLightingConjunction && ibl)) unsupported("lighting", "inconsistent contributor metadata");
+  const prd07Fog = validatePrd07FogMetadata(descriptor, active, unsupported);
   const clipping = f.features["a3d.clipping"] === true;
+  const sprite = active.has("prd15.paritySprite");
+  if ((sprite && active.get("prd15.paritySprite") !== true) || (!sprite && f.features["prd15.paritySprite"] !== undefined && f.features["prd15.paritySprite"] !== false)) {
+    unsupported("features.prd15.paritySprite", "inconsistent prd15.paritySprite metadata");
+  }
+  // WebGL2 rebuilds clipped sprite positions with CPU inverses (u_a3dSpriteViewToWorld); the native path has no twin.
+  if (sprite && clipping) unsupported("features.prd15.paritySprite", "clipped billboard sprites");
   const outputSrgb = f.features["a3d.output.srgb"] === true;
-  const alphaToCoverage = generatedAlphaToCoverage(active, f, isPoint || writesDepthCoverage || (fraction && f.alphaMode !== "blend"), unsupported);
+  // As on WebGL2, alpha-to-coverage draws keep coverage alpha and skip the indirect-fraction tag.
+  const alphaToCoverage = generatedAlphaToCoverage(active, f, isPoint || writesDepthCoverage, unsupported);
   const baseMap = f.maps.baseColor, emissiveMap = f.maps.emissive;
   const uv0 = baseMap?.uvSet === 0 || emissiveMap?.uvSet === 0;
   const uv1 = baseMap?.uvSet === 1 || emissiveMap?.uvSet === 1;
@@ -178,10 +216,11 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
     ALPHA_MASK: f.alphaMode === "mask", ALPHA_BLEND: f.alphaMode === "blend", DOUBLE_SIDED: f.doubleSided,
     FLAT_SHADING: f.flatShading, DIFFUSE_BURLEY: f.diffuseModel === "burley", SPECULAR_AA: f.specularAntialiasing,
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height",
+    A3D_FOG: prd07Fog !== undefined, A3D_FOG_FROXEL_TIER: prd07Fog === "volumetric",
     A3D_PRD02_IBL: ibl, A3D_INDIRECT_FRACTION: fraction, A3D_PACKED_LOOP_COLOR: packedLoopColor,
     ENVMAP_TYPE_EQUIRECT: f.environment === "equirect", ENVMAP_TYPE_CUBE_UV: f.environment === "pmrem-cube",
     A3D_ENV_SAMPLE: f.environment !== "none", LIGHTS_CLUSTERED: f.lights.clustered, LIGHT_HEMISPHERE: f.lights.hemisphere,
-    SHADOW_CONTACT: f.shadows.contact, A3D_PARITY_POINTS: pointBits !== 0,
+    SHADOW_CONTACT: f.shadows.contact, A3D_PARITY_POINTS: pointBits !== 0, A3D_PARITY_SPRITE: sprite,
     A3D_PARITY_POINT_ATTENUATION: Boolean(point?.attenuated), A3D_PARITY_POINT_MAP: Boolean(point?.mapped), A3D_PARITY_POINT_ROUND: Boolean(point?.round)
   };
   for (const [name, present] of Object.entries(expected)) {
@@ -192,7 +231,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   }
   const allowedDefines = new Set([...Object.keys(expected), "A3D_NUM_DIRECT_LIGHTS", "NUM_DIR_LIGHTS", "NUM_POINT_LIGHTS", "NUM_SPOT_LIGHTS", "NUM_RECT_LIGHTS", "NUM_SHADOW_CASCADES", "NUM_LOCAL_SHADOWS", "SHADOW_PCF_TAPS", "A3D_SHADOW_FILTER"]);
   for (const name of Object.keys(descriptor.defines)) if (!allowedDefines.has(name)) unsupported(`defines.${name}`, `define ${name}`);
-  const tagged = fraction && f.alphaMode !== "blend";
+  const tagged = fraction && f.alphaMode !== "blend" && !alphaToCoverage;
   if (tagged && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on direct output");
 
   const resources: GeneratedUnlitTextureResource[] = [];
@@ -208,8 +247,8 @@ struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
 @vertex fn vs_main(${vertexInput}) -> VertexOutput {
   var output: VertexOutput;
   let local = material.geometry * vec4f(position, 1.0);
-  let world = material.model * ${f.instancing ? "mat4x4f(instance0, instance1, instance2, instance3) * " : ""}local;
-  let clip = frame.viewProjection * world;
+  ${sprite ? SPRITE_VERTEX(Boolean(f.instancing)) : `let world = material.model * ${f.instancing ? "mat4x4f(instance0, instance1, instance2, instance3) * " : ""}local;
+  let clip = frame.viewProjection * world;`}
   ${point ? `var expanded = A3dPointExpansion(vec4f(2.0, 2.0, 2.0, 1.0), 1.0);
   if (a3dPointCanExpand(clip, ${point.attenuated}) && a3dPointCenterInSceneClip(clip)) {
     let pixels = a3dPointPixelSize(material.pointRaster.x, frame.resolutionFarTime.y, clip.w, ${point.attenuated});
@@ -225,7 +264,7 @@ struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
 }`;
   const textureDecls = resources.map(resource => `@group(0) @binding(${resource.samplerBinding}) var ${resource.uniform}Sampler: sampler;\n@group(0) @binding(${resource.textureBinding}) var ${resource.uniform}Texture: texture_2d<f32>;`).join("\n");
   const uv = (set: 0 | 1): string => set === 0 ? "input.uv" : "input.uv1";
-  const fragment = `${MATERIAL}\n${FRAME}\n${textureDecls}\n${point ? NATIVE_POINT_WGSL : ""}\n${clipping ? CLIPPING : ""}\n${logDepth ? LOG_DEPTH : ""}\n${baseMap || emissiveMap ? MAP_UV : ""}\n${outputSrgb ? OUTPUT : ""}
+  const fragment = `${MATERIAL}\n${FRAME}\n${textureDecls}\n${point ? NATIVE_POINT_WGSL : ""}\n${clipping ? CLIPPING : ""}\n${logDepth ? LOG_DEPTH : ""}\n${baseMap || emissiveMap ? MAP_UV : ""}\n${outputSrgb ? OUTPUT : ""}\n${prd07Fog ? prd07FogWgsl() : ""}
 struct FragmentInput { @builtin(position) position: vec4f, ${varyings} };
 ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) color: vec4f, @location(1) depthCoverage: vec4f, };" : ""}
 ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location(0) color: vec4f, @builtin(frag_depth) depth: f32, };" : ""}
@@ -235,8 +274,9 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   ${point ? "if (input.pointInvalid > 0.0) { discard; }" : ""}
   ${point?.round ? "if (!a3dPointInRoundFootprint(input.pointCoord)) { discard; }" : ""}
   ${alphaToCoverage ? GENERATED_ALPHA_TO_COVERAGE_WGSL("base.a", "material.alphaControls.x") : f.alphaMode === "mask" ? "if (base.a < material.alphaControls.x) { discard; }" : ""}
-  let ${f.fog === "none" ? "color" : "unfogged"} = max(base.rgb + material.emissive.rgb * material.emissive.a${emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
-  ${f.fog !== "none" ? `let fogDepth = input.position.z / input.position.w;
+  let ${f.fog === "none" && !prd07Fog ? "color" : "unfogged"} = max(base.rgb + material.emissive.rgb * material.emissive.a${emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
+  ${prd07Fog ? "let color = a3dPrd07ApplyFog(unfogged, input.world);" : ""}
+  ${f.fog !== "none" && !prd07Fog ? `let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w;
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let density = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.world.y, 0.0) * material.fogParams.w)" : ""}; let distance = density * fogDepth; let fogAmount = clamp(1.0 - exp(-distance * distance), 0.0, 1.0);`}
   let color = mix(unfogged, material.fogColor.rgb, fogAmount);` : ""}
   ${clipping ? "if (!generatedUnlitClipRetains(input.world, input.local)) { discard; }" : ""}
@@ -251,8 +291,8 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     frameBinding: { group: 1, binding: 0, minimumByteLength: 304 }, resources,
     requiredVertexLocations: [0, ...(uv0 ? [2] : []), ...(point ? [3] : []), ...(f.vertexColors ? [4] : []), ...(uv1 ? [7] : [])],
     requiredInstanceLocations: f.instancing ? [8, 9, 10, 11, ...(f.instancing.color ? [12] : [])] : [],
-    primitive, rasterTopology: isPoint ? "triangles" : primitive, point, clipping, packedLoopColor, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage,
-    fog: f.fog as GeneratedUnlitProgram["fog"], requiresFloatColorAttachment: tagged });
+    primitive, rasterTopology: isPoint ? "triangles" : primitive, point, sprite, clipping, packedLoopColor, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage,
+    fog: f.fog as GeneratedUnlitProgram["fog"], prd07Fog: prd07Fog !== undefined, requiresFloatColorAttachment: tagged });
 }
 
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
@@ -290,6 +330,9 @@ export function packGeneratedUnlitMaterialUniforms(uniforms: ReadonlyMap<string,
     clipControl: [scalar("u_a3dClipGroupCount"), 0, 0, 0],
     packedLoopColor: memberColor,
     logDepthView: numbers(uniforms, "u_a3dLogDepthView", 16, IDENTITY),
-    logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0]
+    logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0],
+    sprite: [scalar("u_spriteRotation"), ...numbers(uniforms, "u_spriteCenter", 2, [0.5, 0.5]), scalar("u_spriteSizeAttenuation", 1)],
+    // Only a program that selected the stock prd07.fog feature receives u_fogMode (its bindUniforms always writes it).
+    ...packPrd07FogWgslFields(uniforms, (name, length, fallback) => uniforms.has("u_fogMode") ? numbers(uniforms, name, length, fallback) : [...fallback])
   });
 }

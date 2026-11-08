@@ -577,9 +577,10 @@ describe("WebGPU Display-P3 final output", () => {
   });
 
   it.each([
-    { stage: "webgpu-bloom-bright-pass", source: "renderer-forward-color", earlier: [] },
-    { stage: "webgpu-bloom-mip0-h-pass", source: "a3d-webgpu-bloom-bright", earlier: ["webgpu-bloom-bright-pass"] },
-    { stage: "webgpu-bloom-composite-pass", source: "a3d-webgpu-bloom-mip0", earlier: ["webgpu-bloom-bright-pass", "webgpu-bloom-mip0-v-pass"] }
+    // A v2 frame's bloom runs the WebGL2 v2 pyramid stages (prefilter, downsample/blur mips, level-0 sum, composite).
+    { stage: "webgpu-bloom-v2-prefilter-pass", source: "renderer-forward-color", earlier: [] },
+    { stage: "webgpu-bloom-v2-down0-pass", source: "a3d-webgpu-bloom-v2-extract", earlier: ["webgpu-bloom-v2-prefilter-pass"] },
+    { stage: "webgpu-bloom-v2-composite-pass", source: "a3d-webgpu-bloom-v2-sum", earlier: ["webgpu-bloom-v2-prefilter-pass", "webgpu-bloom-v2-accumulate-pass"] }
   ])("does not submit a P3 bloom stage when its $source input is disposed during encoding", async ({ stage, source, earlier }) => {
     const f = await fixture(), r = rendererFixture(f);
     const targets: RenderTarget[] = [];

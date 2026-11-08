@@ -455,10 +455,12 @@ export function explicitEnvironmentResolution(
   ambient: AuraEnvironmentSourceResolution["ambient"]
 ): AuraEnvironmentSourceResolution | undefined {
   const intensity = nonNegativeFinite(node.intensity);
-  const diffuseIntensity = nonNegativeFinite(node.diffuseIntensity ?? intensity);
+  // N3 plain look (looks/plainLook.ts): a neutral room next to authored hemisphere/ambient lights yields its diffuse fill.
+  const diffuseYield = (node as { readonly plainDiffuseYield?: unknown }).plainDiffuseYield === true;
+  const diffuseIntensity = diffuseYield ? 0 : nonNegativeFinite(node.diffuseIntensity ?? intensity);
   const specularIntensity = nonNegativeFinite(node.specularIntensity ?? intensity);
   const rotation = node.rotation ?? 0;
-  const base = { kind: "explicit" as const, intensity, diffuseIntensity, specularIntensity, rotation, ambient };
+  const base = { kind: "explicit" as const, intensity, diffuseIntensity, specularIntensity, rotation, ambient, ...(diffuseYield ? { diffuseYield: true } : {}) };
   switch (node.environment) {
     case "none":
       // Explicit zero-IBL opt-out: the neutral probe is still bound so the
@@ -750,14 +752,14 @@ export function scaleEnvironmentLighting(lighting: EnvironmentLightingOptions, s
  */
 export function prd02ProbeBindIntensities(
   knobLighting: EnvironmentLightingOptions | false | undefined,
-  resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">,
+  resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">,
   conjunction: boolean
 ): { readonly diffuseIntensity: number; readonly specularIntensity: number } {
   if (conjunction && knobLighting) {
     if (resolution.kind === "explicit") {
       const knob = knobLighting.environmentMapIntensity ?? knobLighting.intensity;
       if (Number.isFinite(knob) && knob >= 0) {
-        return { diffuseIntensity: knob, specularIntensity: knob };
+        return { diffuseIntensity: resolution.diffuseYield === true ? 0 : knob, specularIntensity: knob };
       }
     }
     if (
@@ -786,7 +788,7 @@ import { decodeProductionEnvironmentImage, productionEnvironmentRequest } from "
 import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";
 import { readLightingKillSwitches } from "./lights.js";
 import { markTiming } from "../platform.js";
-import { proceduralEnvironmentEquirect, reportLookHdriMissing, type ProceduralEnvironmentKind } from "./environmentFallback.js";
+import { proceduralEnvironmentEquirect, reportEnvironmentPresetMissing, reportLookHdriMissing, usesStructuredRoomFallback, type ProceduralEnvironmentKind } from "./environmentFallback.js";
 
 export interface Prd02EnvironmentBindOptions {
   readonly device: RenderDevice;
@@ -874,7 +876,33 @@ export function bindPrd02EnvironmentProbe(
   const request = resolution.probe;
   // GU47 E-B: the outcome per device + request lets a `setEnvironment` crossfade wait for its probe.
   const outcomeKey = typeof request === "object" && request !== null && "hdri" in request ? request.hdri : JSON.stringify(request);
-  const upgrade = (acquired: Promise<EnvironmentProbe>, hdriUrl?: string): Promise<EnvironmentProbe> => {
+  // N2: the structured studio room generated in code (the embedded `softbox` probe; no fetch) replaces a missing
+  // studio-family environment, so glass and metal keep something to reflect. A failure here falls back to the bands.
+  const bindFallbackProbe = (fallback: ProceduralEnvironmentKind, reason: string): void => {
+    const bands = (): void => {
+      const equirect = proceduralEnvironmentEquirect(fallback);
+      void cache.acquire({ url: `procedural-fallback:${fallback}`, tier }, async () => {
+        const texture = new Texture({ width: equirect.width, height: equirect.height, format: "rgba32f", data: equirect.data, label: "env-fallback" });
+        try {
+          const probe = resolveFactory().fromEquirect(texture, { faceSize: hdriProbeFaceSize(equirect.width, tier) });
+          if (probe.background !== texture) texture.dispose();
+          return probe;
+        } catch (fallbackError) {
+          texture.dispose();
+          throw fallbackError;
+        }
+      }, options.signal).then(
+        (probe) => { if (options.signal?.aborted) return; options.onUpgrade?.(probe); },
+        () => warnEnvironmentUpgradeFailureOnce(reason)
+      );
+    };
+    if (!usesStructuredRoomFallback(fallback)) return bands();
+    void cache.acquire({ preset: "softbox", tier }, undefined, options.signal).then(
+      (probe) => { if (options.signal?.aborted) return; options.onUpgrade?.(probe); },
+      () => { if (!options.signal?.aborted) bands(); }
+    );
+  };
+  const upgrade = (acquired: Promise<EnvironmentProbe>, hdriUrl?: string, presetName?: string): Promise<EnvironmentProbe> => {
     markTiming("a3d:env:upgrade:start");
     const pending = acquired.then((probe) => {
       markTiming("a3d:env:upgrade:ready");
@@ -887,25 +915,16 @@ export function bindPrd02EnvironmentProbe(
       const retryable = isEnvironmentProbePendingError(error);
       if (!retryable) recordEnvironmentProbeOutcome(options.device, outcomeKey, "failed");
       const reason = error instanceof Error ? error.message : String(error);
-      if (hdriUrl !== undefined && !retryable && !(typeof error === "object" && error !== null && environmentRequestPolicyErrors.has(error))) {
-        // LOOK_HDRI_MISSING: degrade to a procedural probe at matched exposure, log one console.error, surface it in diagnostics.
-        const { message, fallback } = reportLookHdriMissing(hdriUrl, reason);
+      const policyError = typeof error === "object" && error !== null && environmentRequestPolicyErrors.has(error);
+      if (hdriUrl !== undefined && !retryable && !policyError) {
+        // LOOK_HDRI_MISSING: degrade to the structured room (studio family) or a procedural probe at matched exposure,
+        // log one console.error, surface it in diagnostics.
+        const { message, fallback } = reportLookHdriMissing(hdriUrl, reason, { room: true });
         options.onHdriMissing?.({ url: hdriUrl, message, fallback });
-        const equirect = proceduralEnvironmentEquirect(fallback);
-        void cache.acquire({ url: `procedural-fallback:${fallback}`, tier }, async () => {
-          const texture = new Texture({ width: equirect.width, height: equirect.height, format: "rgba32f", data: equirect.data, label: "env-fallback" });
-          try {
-            const probe = resolveFactory().fromEquirect(texture, { faceSize: hdriProbeFaceSize(equirect.width, tier) });
-            if (probe.background !== texture) texture.dispose();
-            return probe;
-          } catch (fallbackError) {
-            texture.dispose();
-            throw fallbackError;
-          }
-        }, options.signal).then(
-          (probe) => { if (options.signal?.aborted) return; options.onUpgrade?.(probe); },
-          () => warnEnvironmentUpgradeFailureOnce(reason)
-        );
+        bindFallbackProbe(fallback, reason);
+      } else if (presetName !== undefined && !retryable && !policyError) {
+        // ENV_PRESET_MISSING: a baked /aura-environments preset that did not load degrades the same way (one console.warn).
+        bindFallbackProbe(reportEnvironmentPresetMissing(presetName, reason).fallback, reason);
       } else {
         warnEnvironmentUpgradeFailureOnce(reason);
       }
@@ -1016,13 +1035,22 @@ export function bindPrd02EnvironmentProbe(
     return { probe: floor, pending: upgrade(acquire(), typeof source === "string" ? source : source.url), resolution, pmremMode };
   }
   if (typeof request === "object" && "preset" in request) {
+    // The embedded presets (neutral, softbox) never fetch; any other preset degrades when its files are missing.
+    const fallbackPreset = request.preset === "neutral" || request.preset === "softbox" ? undefined : request.preset;
     if (request.preset === "neutral" || !options.request) {
-      return { probe: floor, pending: upgrade(cache.acquire({ preset: request.preset, tier }, undefined, options.signal)), resolution, pmremMode };
+      return { probe: floor, pending: upgrade(cache.acquire({ preset: request.preset, tier }, undefined, options.signal), undefined, fallbackPreset), resolution, pmremMode };
     }
     const acquire = async (): Promise<EnvironmentProbe> => {
       const manifestUrl = `/aura-environments/${request.preset}.manifest.json`;
       const policy = mergeAssetRequestOptions({}, options.request);
-      const identity = await requestIdentityDetails(policy, manifestUrl);
+      let identity: Awaited<ReturnType<typeof requestIdentityDetails>>;
+      try {
+        identity = await requestIdentityDetails(policy, manifestUrl);
+      } catch (error) {
+        // Policy rejected before any fetch: a caller error, not a missing preset, so no fallback probe.
+        if (typeof error === "object" && error !== null) environmentRequestPolicyErrors.add(error);
+        throw error;
+      }
       if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
       const context = new LoadContext({ ...policy, baseUrl: "/aura-environments/", documentUrl: manifestUrl });
       const loader = defaultProbeLoader(resolveFactory, {
@@ -1034,7 +1062,7 @@ export function bindPrd02EnvironmentProbe(
       });
       return cache.acquire({ preset: request.preset, tier, identity }, loader, options.signal);
     };
-    return { probe: floor, pending: upgrade(acquire()), resolution, pmremMode };
+    return { probe: floor, pending: upgrade(acquire(), undefined, fallbackPreset), resolution, pmremMode };
   }
   // spaceBake and any future request kinds: neutral floor, no upgrade.
   return { probe: floor, pending: null, resolution, pmremMode };

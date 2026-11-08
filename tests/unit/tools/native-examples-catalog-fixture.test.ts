@@ -1458,12 +1458,24 @@ describe("source-backed native example catalog fixture", () => {
       "documented-example:examples/product-configurator": [[190,  45,  35]],
       "documented-example:examples/character-animation-viewer": [[200,  140,  55]],
       "documented-example:examples/saiyan-snake-way-port": [[150,  40,  50]],
-      "documented-example:examples/aura-slam": [[43,  103,  142],  [240,  238,  228]]
+      "documented-example:examples/aura-slam": [[43,  103,  142],  [240,  238,  228]],
+      // 5.3 starter templates, the five new showcase games and the N4 auto-frame example.
+      "template:starter-game": [[190, 100, 80], [110, 180, 140]],
+      "template:starter-product": [[225, 195, 60]],
+      "template:starter-outdoor": [[75, 85, 105], [110, 110, 50]],
+      "template:starter-interior": [[140, 40, 20]],
+      "template:starter-presentation": [[230, 190, 40], [230, 110, 180], [40, 210, 230]],
+      "documented-example:apps/showcase-shape-shift-sprint": [[225, 60, 55]],
+      "documented-example:apps/showcase-number-surge": [[50, 235, 250]],
+      "documented-example:apps/showcase-splat-turf": [[245, 60, 135]],
+      "documented-example:apps/showcase-polarity-orbs": [[230, 80, 70], [80, 40, 45]],
+      "documented-example:apps/showcase-beat-hopper": [[30, 225, 250]],
+      "documented-example:examples/auto-frame-bird": [[220, 85, 60]]
     };
     // Patch width per band where the default half-region patch falls outside a
     // case's authored fraction bounds, and a warm wrong color for cyan/teal subjects.
     const sampleScale: Record<string, number> = { "template:racing-starter": 0.4, "documented-example:apps/showcase-slingshot-siege": 0.62, "documented-example:examples/custom-attributes-lab": 0.6, "documented-example:examples/custom-material-lab": 0.6, "documented-example:examples/tsl-lab": 0.61 , "documented-example:apps/showcase-top-tennis": 0.9, "documented-example:examples/animation-state-machine": 0.8, "documented-example:examples/parity-runtime-lab": 0.8, "documented-example:examples/custom-draw-probe": 0.8, "documented-example:examples/post-order-lab": 0.7, "documented-example:examples/custom-shader-webgpu-lab": 0.7, "documented-example:examples/character-animation-viewer": 0.7, "documented-example:examples/aura-slam": 0.9};
-    const warmWrong = new Set(["documented-example:examples/context-recovery-lab", "documented-example:examples/rendering-large-scene", "documented-example:apps/showcase-dot-dash-3d", "documented-example:apps/showcase-bunker-zero", "documented-example:apps/showcase-top-tennis", "documented-example:examples/kid-goku-beyond-the-clouds-port", "documented-example:apps/showcase-cloud-runner-port", "documented-example:examples/parity-runtime-lab", "documented-example:examples/external-interior-scene", "documented-example:examples/external-material-studio", "documented-example:examples/aura-slam"]);
+    const warmWrong = new Set(["documented-example:examples/context-recovery-lab", "documented-example:examples/rendering-large-scene", "documented-example:apps/showcase-dot-dash-3d", "documented-example:apps/showcase-bunker-zero", "documented-example:apps/showcase-top-tennis", "documented-example:examples/kid-goku-beyond-the-clouds-port", "documented-example:apps/showcase-cloud-runner-port", "documented-example:examples/parity-runtime-lab", "documented-example:examples/external-interior-scene", "documented-example:examples/external-material-studio", "documented-example:examples/aura-slam", "documented-example:apps/showcase-number-surge", "documented-example:apps/showcase-beat-hopper"]);
     const data = fixture();
     expect(new Set(data.cases.map(({ id }) => id))).toEqual(new Set(Object.keys(samples)));
     for (const entry of data.cases) {

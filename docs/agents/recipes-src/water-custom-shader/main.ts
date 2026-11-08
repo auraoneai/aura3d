@@ -63,4 +63,4 @@ const app = createAuraApp("#app", {
 });
 const start = performance.now();
 app.onFrame(() => app.nodes.require("water").setUniform?.("waveClock", (performance.now() - start) / 1000));
-await app.ready();
+void app.ready();

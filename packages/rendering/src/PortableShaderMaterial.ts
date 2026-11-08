@@ -39,6 +39,9 @@ const FRAME_BINDINGS: readonly PortableShaderBinding[] = [
   { name: "u_geometryMatrix", kind: "mat4", required: false },
   { name: "u_viewMatrix", kind: "mat4", required: false },
   { name: "u_a3dSunDirection", kind: "vec3", required: false },
+  // `a3d_scene` sun radiance: bound by the forward pass when the GLSL twin declares it; WGSL twins read `aura.u_a3dSun*`.
+  { name: "u_a3dSunColor", kind: "vec3", required: false },
+  { name: "u_a3dSunIntensity", kind: "float", required: false },
   { name: "u_projectionMatrix", kind: "mat4", required: false },
   { name: "u_cameraPosition", kind: "vec3", required: false },
   { name: "u_time", kind: "float", required: false },
@@ -115,6 +118,9 @@ const FRAME_BINDINGS: readonly PortableShaderBinding[] = [
   { name: "u_a3dEnvShEnabled", kind: "float", required: false },
   { name: "u_a3dHemiSky", kind: "vec3", required: false },
   { name: "u_a3dHemiGround", kind: "vec3", required: false },
+  // `a3d_scene` fog (exp2 density): bound by the forward pass when the GLSL twin declares it; WGSL twins read `aura.u_a3dFog*`.
+  { name: "u_a3dFogColor", kind: "vec3", required: false },
+  { name: "u_a3dFogDensity", kind: "float", required: false },
   { name: "u_a3dEnvSky", kind: "vec3", required: false },
   { name: "u_a3dEnvHorizon", kind: "vec3", required: false },
   { name: "u_a3dEnvGround", kind: "vec3", required: false },

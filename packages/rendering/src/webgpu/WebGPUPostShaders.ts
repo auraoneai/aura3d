@@ -348,3 +348,180 @@ fn fs_fxaa(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
 }
 `;
 }
+
+/**
+ * The v2 (`postprocess.v2`) bloom request as the WebGL2 v2 chain reads it
+ * (`normalizeNativeBloomOptions` with the `v2` stamp, webgl2/LegacyPost.ts):
+ * an HDR excess prefilter over `threshold` with an absolute soft knee
+ * (`threshold × knee`, capped at 0.5; else the authored `softKnee`), the
+ * cinematic 5-mip pyramid when `quality` is unauthored, `spread`-weighted
+ * mips and a composite of `scene + bloom × intensity` with no hidden gain.
+ */
+export interface WebGPUBloomV2Request {
+  readonly threshold: number;
+  readonly intensity: number;
+  readonly softKnee: number;
+  readonly quality: WebGPUBloomQuality;
+  /** Single-scale (performance) blur radius in pixels, as WebGL2 derives it from `scatter` / `radius`. */
+  readonly radius: number;
+  readonly spread: number;
+}
+
+function bloomV2Number(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) throw new RangeError(`WebGPU bloom ${key} must be a finite number.`);
+  return value;
+}
+
+/** True when a bloom pass carries the v2 stamp (`RendererPostprocessPlan` adds it on `postprocess.v2` frames). */
+export function isWebGPUBloomV2(options: unknown): boolean {
+  return Boolean(options) && typeof options === "object" && (options as { readonly v2?: unknown }).v2 === true;
+}
+
+export function normalizeWebGPUBloomV2Options(options: Readonly<Record<string, unknown>>): WebGPUBloomV2Request {
+  const threshold = bloomV2Number(options, "threshold", 0.75);
+  const intensity = bloomV2Number(options, "intensity", 0.35);
+  const knee = bloomV2Number(options, "knee", NaN);
+  const scatter = bloomV2Number(options, "scatter", NaN);
+  const radius = Number.isFinite(scatter) ? Math.round(scatter) : bloomV2Number(options, "radius", 1);
+  if (threshold < 0 || threshold > 64) throw new RangeError("WebGPU bloom threshold must be finite and in [0, 64].");
+  if (intensity < 0) throw new RangeError("WebGPU bloom intensity must be finite and non-negative.");
+  if (!Number.isInteger(radius) || radius < 0 || radius > 16) throw new RangeError("WebGPU bloom radius must be an integer in [0, 16].");
+  if (Number.isFinite(knee) && (knee < 0 || knee > 1)) throw new RangeError("WebGPU bloom knee must be finite and in [0, 1].");
+  const softKnee = Number.isFinite(knee) ? Math.min(0.5, threshold * knee) : bloomV2Number(options, "softKnee", 0);
+  const quality = options.quality === undefined ? "cinematic" : options.quality;
+  if (quality !== "performance" && quality !== "balanced" && quality !== "cinematic") {
+    throw new RangeError(`Unknown WebGPU bloom quality "${String(quality)}" (expected performance|balanced|cinematic).`);
+  }
+  const spread = bloomV2Number(options, "spread", 0.7);
+  if (!(spread >= 0) || spread > 1) throw new RangeError("WebGPU bloom spread must be finite and in [0, 1].");
+  return { threshold, intensity, softKnee, quality, radius, spread };
+}
+
+/** v2 excess prefilter (BLOOM_BRIGHT_EXTRACT_GLSL, `u_hdr = 1`, `u_excess = 1`). Uniforms: threshold, softKnee. */
+export const WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT = `@group(0) @binding(0) var<uniform> params: vec4<f32>;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_source: texture_2d<f32>;
+@fragment
+fn fs_bloom_prefilter(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let size = vec2<f32>(textureDimensions(u_source));
+  let source = textureSampleLevel(u_source, u_sampler, position.xy / size, 0.0);
+  let luma = dot(source.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
+  let knee = max(params.y, 0.0);
+  var soft = clamp(luma - params.x + knee, 0.0, 2.0 * knee);
+  soft = soft * soft / (4.0 * knee + 1e-5);
+  let excessWeight = max(soft, luma - params.x) / max(luma, 1e-5);
+  return vec4<f32>(source.rgb * excessWeight, source.a);
+}
+`;
+
+/** Four-tap box downsample (webgl2-bloom-downsample). Uniforms: source texel size (xy). */
+export const WEBGPU_BLOOM_V2_DOWNSAMPLE_FRAGMENT = `@group(0) @binding(0) var<uniform> params: vec4<f32>;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_source: texture_2d<f32>;
+fn a3dFinite(c: vec4<f32>) -> vec4<f32> {
+  let bad = (c != c) | (abs(c) > vec4<f32>(3.0e38));
+  return select(c, vec4<f32>(0.0), any(bad));
+}
+@fragment
+fn fs_bloom_downsample(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let uv = position.xy / params.zw;
+  let e = params.xy * 0.5;
+  let sum = a3dFinite(textureSampleLevel(u_source, u_sampler, uv - e, 0.0)) + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + vec2<f32>(e.x, -e.y), 0.0))
+    + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + vec2<f32>(-e.x, e.y), 0.0)) + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + e, 0.0));
+  return sum * 0.25;
+}
+`;
+
+/**
+ * Separable Gaussian with an integer radius (webgl2-bloom-blur): sigma = max(r / 3, 0.5), edge-clamped taps,
+ * normalised weights. Uniforms: direction (xy), radius (z). Taps sample texel centres, so the linear sampler
+ * returns the texel exactly, as the WebGL2 texelFetch does.
+ */
+export const WEBGPU_BLOOM_V2_BLUR_FRAGMENT = `@group(0) @binding(0) var<uniform> params: vec4<f32>;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_source: texture_2d<f32>;
+@fragment
+fn fs_bloom_blur(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let size = vec2<f32>(textureDimensions(u_source));
+  let pixel = floor(position.xy);
+  let radius = i32(params.z + 0.5);
+  let sigma = max(params.z / 3.0, 0.5);
+  let coefficient = 0.39894 / sigma;
+  var sum = textureSampleLevel(u_source, u_sampler, (pixel + 0.5) / size, 0.0) * coefficient;
+  var weightSum = coefficient;
+  for (var offset = 1; offset <= 24; offset = offset + 1) {
+    if (offset > radius) { break; }
+    let distance = f32(offset);
+    let weight = coefficient * exp(-0.5 * distance * distance / (sigma * sigma));
+    let delta = params.xy * distance;
+    let a = clamp(pixel + delta, vec2<f32>(0.0), size - 1.0);
+    let b = clamp(pixel - delta, vec2<f32>(0.0), size - 1.0);
+    sum = sum + (textureSampleLevel(u_source, u_sampler, (a + 0.5) / size, 0.0) + textureSampleLevel(u_source, u_sampler, (b + 0.5) / size, 0.0)) * weight;
+    weightSum = weightSum + 2.0 * weight;
+  }
+  return sum / max(weightSum, 0.000001);
+}
+`;
+
+/**
+ * Weighted mip sum at level-0 size (webgl2-bloom-accumulate, smallest to largest, each mip bilinearly sampled at
+ * the level-0 pixel centre). Uniforms: weights 0-3 (vec4) and weight 4 (x of the second vec4); unused mips bind
+ * mip 0 with weight 0.
+ */
+export const WEBGPU_BLOOM_V2_ACCUMULATE_FRAGMENT = `struct BloomAccumulate { w: vec4<f32>, w4: vec4<f32> };
+@group(0) @binding(0) var<uniform> params: BloomAccumulate;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_mip0: texture_2d<f32>;
+@group(0) @binding(3) var u_mip1: texture_2d<f32>;
+@group(0) @binding(4) var u_mip2: texture_2d<f32>;
+@group(0) @binding(5) var u_mip3: texture_2d<f32>;
+@group(0) @binding(6) var u_mip4: texture_2d<f32>;
+@fragment
+fn fs_bloom_accumulate(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let uv = position.xy / vec2<f32>(textureDimensions(u_mip0));
+  var bloom = textureSampleLevel(u_mip4, u_sampler, uv, 0.0).rgb * params.w4.x;
+  bloom = bloom + textureSampleLevel(u_mip3, u_sampler, uv, 0.0).rgb * params.w.w;
+  bloom = bloom + textureSampleLevel(u_mip2, u_sampler, uv, 0.0).rgb * params.w.z;
+  bloom = bloom + textureSampleLevel(u_mip1, u_sampler, uv, 0.0).rgb * params.w.y;
+  bloom = bloom + textureSampleLevel(u_mip0, u_sampler, uv, 0.0).rgb * params.w.x;
+  return vec4<f32>(bloom, 0.0);
+}
+`;
+
+/** HDR composite `scene + bloom × intensity` (webgl2-bloom-composite, `u_hdr = 1`); the bloom is upsampled bilinearly. */
+export const WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT = `@group(0) @binding(0) var<uniform> params: vec4<f32>;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_scene: texture_2d<f32>;
+@group(0) @binding(3) var u_bloom: texture_2d<f32>;
+@fragment
+fn fs_bloom_composite(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let uv = position.xy / vec2<f32>(textureDimensions(u_scene));
+  let scene = textureSampleLevel(u_scene, u_sampler, uv, 0.0);
+  let bloom = textureSampleLevel(u_bloom, u_sampler, uv, 0.0).rgb;
+  return vec4<f32>(scene.rgb + bloom * params.x, scene.a);
+}
+`;
+
+/**
+ * The v2 S10 linear grade (`HDR_GRADE_GLSL`, post/shaders/hdrGrade.glsl.ts) without the S8 multiply: white balance,
+ * ASC-CDL lift/gamma/gain, then the shadows/midtones/highlights weights over log2 luma. Uniforms: seven vec4 rows
+ * (whiteBalance, lift, gamma, gain, shadows, midtones, highlights; w unused).
+ */
+export const WEBGPU_HDR_GRADE_FRAGMENT = `struct HdrGrade { whiteBalance: vec4<f32>, lift: vec4<f32>, gamma: vec4<f32>, gain: vec4<f32>,
+  shadows: vec4<f32>, midtones: vec4<f32>, highlights: vec4<f32> };
+@group(0) @binding(0) var<uniform> grade: HdrGrade;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_hdr: texture_2d<f32>;
+@fragment
+fn fs_hdr_grade(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let src = textureSampleLevel(u_hdr, u_sampler, position.xy / vec2<f32>(textureDimensions(u_hdr)), 0.0);
+  var c = src.rgb * grade.whiteBalance.rgb;
+  let safeGamma = max(grade.gamma.rgb, vec3<f32>(1e-3));
+  c = pow(max(c * grade.gain.rgb + grade.lift.rgb, vec3<f32>(0.0)), vec3<f32>(1.0) / safeGamma);
+  let s = clamp(log2(max(dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)), 1e-6) / 0.18) / 8.0 + 0.5, 0.0, 1.0);
+  c = c * (grade.shadows.rgb * (1.0 - s) * (1.0 - s) + grade.midtones.rgb * 2.0 * s * (1.0 - s) + grade.highlights.rgb * s * s);
+  return vec4<f32>(c, src.a);
+}
+`;

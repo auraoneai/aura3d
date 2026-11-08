@@ -108,6 +108,7 @@ import {
   type PowerupKind,
   type VehicleType
 } from "./render/pools";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 let beaconFrames = 0;
@@ -742,7 +743,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .model(meshyVehicles.enabled ? (meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>).skycar! : assets.roadsterRushSkyCar, { name: "sky-cars-far", role: "setDressing", scaleMode: "fit", targetMaxDimension: 4.3, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars-far"))),
     instances
-      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: material.custom(plumeSpec(APEX_PLUMES.sky, REDUCED_MOTION)), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: material.custom(plumeSpec(APEX_PLUMES.sky, REDUCED_MOTION, true)), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
     instances
       .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
@@ -804,10 +805,13 @@ function paintBootProgress(fraction: number): void {
   if (pct) pct.textContent = `${Math.round(fraction * 100)}%`;
 }
 
-/** The `output` fragment of the lab flags (`?gamut=p3`), or nothing. */
-function labOutputOnly(): { output?: { outputColorSpace: "display-p3" } } {
-  const { output } = labAppOptions(readLabFlags());
-  return output ? { output } : {};
+/**
+ * The lab fragments this game takes: `?backend=` (renderer backend + allowFallback, merged into the game's renderer options)
+ * and `?gamut=p3` (output), and `?worker=1` (worker rendering; the game loop stays on the main thread, fallback kept).
+ */
+function labRendererAndOutput(): Pick<ReturnType<typeof labAppOptions>, "renderer" | "output"> & { worker?: { fallback: "main-thread"; createWorker: () => Worker } } {
+  const { renderer, output, worker } = labAppOptions(readLabFlags(), createWorkerRendererWorker);
+  return { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}), ...(worker ? { worker } : {}) };
 }
 
 async function bootRoadsterRushAura3D(): Promise<void> {
@@ -821,13 +825,17 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   loading.set(0.08);
   const builtScene = buildRoadsterRushScene();
   loading.set(0.2);
+  const lab = labRendererAndOutput();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
     // "auto": the tier follows the device once the quality lane is on; with it off the mount resolves to "high", as before.
-    renderer: { quality: "auto" },
-    // A10 (EXPERIMENTAL, lab only): `?gamut=p3`. Only the output fragment is taken: this game's custom sky/ground/tower GLSL has
-    // no WGSL twin, so `?backend=` is deliberately not forwarded (A3 stays blocked).
-    ...labOutputOnly(),
+    // A3 (lab only): `?backend=webgpu|auto` is forwarded now that every custom shader carries a WGSL twin (W6); absent,
+    // the renderer options are exactly `{ quality: "auto" }` (WebGL2 default).
+    renderer: { quality: "auto", ...lab.renderer },
+    // A10 (EXPERIMENTAL, lab only): `?gamut=p3`.
+    ...(lab.output ? { output: lab.output } : {}),
+    // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
+    ...(lab.worker ? { worker: lab.worker } : {}),
     qualityRebuild: { flags: ["game"] }
   });
 

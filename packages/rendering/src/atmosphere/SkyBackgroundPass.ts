@@ -13,11 +13,8 @@ import { invertMat4 } from "@aura3d/scene";
 import { standardViewProjection } from "../DepthConvention";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
 import { SKY_SHADER_MARKER, skyClipZ, skyClipZLiteral, skyFragmentSource, skyVertexSource } from "./sky.glsl";
-import {
-  GRADIENT_SKY_FOG_PORTABLE_BINDINGS,
-  GRADIENT_SKY_PORTABLE_BINDINGS,
-  gradientSkyWgsl
-} from "./sky.wgsl";
+import { gradientSkyPortableBindings, gradientSkyWgsl } from "./sky.wgsl";
+import { fullSkyPortableBindings, fullSkyWgsl } from "./skyFull.wgsl";
 import type { PackedFogUniforms } from "./HeightFog";
 import { A3D_MAX_FOG_VOLUMES } from "./FogVolumes";
 import { starVisibilityAtSunElevation } from "./StarField";
@@ -118,7 +115,7 @@ export class SkyBackgroundPass {
     const fog = this.fog;
     const defines = skyProgramDefines(frame, { fog: fog !== null });
     this.assertNativeSky(frame, fog);
-    const program = this.program(defines, skyClipZ(this.device.getDepthConvention?.()));
+    const program = this.program(frame, defines, skyClipZ(this.device.getDepthConvention?.()));
     const geometry = this.fullscreen ?? (this.fullscreen = fullscreenTriangle());
     const invVp = invert(viewProjection);
     const uniforms = skyUniforms(frame, invVp, this.time);
@@ -150,14 +147,19 @@ export class SkyBackgroundPass {
     });
   }
 
-  private program(defines: ReturnType<typeof skyProgramDefines>, clipZ: number): RenderShaderProgram {
+  private program(frame: SkyFrame, defines: ReturnType<typeof skyProgramDefines>, clipZ: number): RenderShaderProgram {
     if (this.programGeneration !== this.device.generation) {
       this.disposePrograms();
       this.programGeneration = this.device.generation;
     }
     const clipZLiteral = skyClipZLiteral(clipZ);
+    // WebGPU: a gradient without bands, stars or moon keeps its dedicated
+    // program (clouds included); every other admitted variant (Preetham,
+    // colour, bands, stars, moon) uses the full WGSL twin of the GLSL sky.
+    const full = this.device.kind === "webgpu" && !isNativeGradient(frame, defines);
     // Standard keeps the historical program key; other far planes get their own program.
-    const key = clipZLiteral === "0.999999" ? skyProgramKey(defines) : `${skyProgramKey(defines)}|z=${clipZLiteral}`;
+    const base = clipZLiteral === "0.999999" ? skyProgramKey(defines) : `${skyProgramKey(defines)}|z=${clipZLiteral}`;
+    const key = full ? `${base}|wgsl-full` : base;
     let p = this.programs.get(key);
     if (p?.disposed) {
       this.programs.delete(key);
@@ -169,9 +171,12 @@ export class SkyBackgroundPass {
         vertex: skyVertexSource(clipZ),
         fragment: skyFragmentSource(defines),
         marker: SKY_SHADER_MARKER,
-        ...(this.device.kind === "webgpu" ? {
-          webgpu: gradientSkyWgsl(defines.fog, clipZLiteral),
-          portableBindings: defines.fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS
+        ...(full ? {
+          webgpu: fullSkyWgsl(defines, clipZLiteral),
+          portableBindings: fullSkyPortableBindings(defines.fog)
+        } : this.device.kind === "webgpu" ? {
+          webgpu: gradientSkyWgsl(defines.fog, clipZLiteral, defines.clouds),
+          portableBindings: gradientSkyPortableBindings(defines.fog, defines.clouds)
         } : {})
       });
       this.programs.set(key, p);
@@ -208,15 +213,20 @@ export class SkyBackgroundPass {
   }
 }
 
-/** Only enabled effects matter; zero-density stars and zero-coverage clouds
- * are the same plain variant as an omitted effect in the existing GLSL. */
+/** The dedicated native gradient program covers a gradient (clouds included) without bands, stars or moon. */
+function isNativeGradient(frame: SkyFrame, defines: ReturnType<typeof skyProgramDefines>): boolean {
+  return defines.model === "GRADIENT" && (frame.gradient?.bands.length ?? 0) === 0 && !defines.stars && !defines.moon;
+}
+
+/**
+ * Native WebGPU sky: Preetham, gradient (bands included) and colour models,
+ * each with stars, clouds and moon, and admitted background fog. HDRI and
+ * cubemap backgrounds belong to the environment pass, not this program.
+ */
 function assertNativeGradientSky(frame: SkyFrame, defines: ReturnType<typeof skyProgramDefines>, fog: SkyFogState | null): void {
   const unsupported: string[] = [];
-  if (frame.model !== "gradient" || !frame.gradient) unsupported.push(`model:${frame.model}`);
-  if ((frame.gradient?.bands.length ?? 0) > 0) unsupported.push("bands");
-  if (defines.stars) unsupported.push("stars");
-  if (defines.clouds) unsupported.push("clouds");
-  if (defines.moon) unsupported.push("moon");
+  const model = frame.model;
+  if (!(model === "preetham" && frame.preetham) && !(model === "gradient" && frame.gradient) && model !== "color") unsupported.push(`model:${model}`);
   if (defines.fog) unsupported.push(...unsupportedNativeFog(fog));
   if (unsupported.length) {
     throw new RenderDeviceError(

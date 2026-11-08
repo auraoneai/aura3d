@@ -1,0 +1,135 @@
+{
+  "args": {
+    "arm": "all",
+    "task": "105,107",
+    "runs": 1,
+    "seed": 20261108,
+    "concurrency": 4,
+    "model": "claude-sonnet-5.5",
+    "condition": "base",
+    "stub": true,
+    "estimate": false,
+    "batch": "c1-dryrun",
+    "only": [
+      "c1-dryrun-t107-aura-r1",
+      "c1-dryrun-t107-three-r1",
+      "c1-dryrun-t107-bridge-r1",
+      "c1-dryrun-t105-three-r1"
+    ],
+    "maxTurns": 40,
+    "followUpTurns": 15
+  },
+  "plan": [
+    {
+      "task": 107,
+      "arm": "bridge",
+      "idx": 1,
+      "order": 2,
+      "runId": "c1-dryrun-t107-bridge-r1",
+      "seed": 20261108002
+    },
+    {
+      "task": 107,
+      "arm": "aura",
+      "idx": 1,
+      "order": 3,
+      "runId": "c1-dryrun-t107-aura-r1",
+      "seed": 20261108003
+    },
+    {
+      "task": 107,
+      "arm": "three",
+      "idx": 1,
+      "order": 4,
+      "runId": "c1-dryrun-t107-three-r1",
+      "seed": 20261108004
+    },
+    {
+      "task": 105,
+      "arm": "three",
+      "idx": 1,
+      "order": 5,
+      "runId": "c1-dryrun-t105-three-r1",
+      "seed": 20261108005
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/c1-bench-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.2.0",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/c1-bench-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "bridge": {
+      "baseDir": "/tmp/c1-bench-base/bridge",
+      "patch": "already",
+      "versions": {
+        "engine": "5.2.0",
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": 105,
+      "slug": "garden",
+      "category": "interactive",
+      "source": "origin/bench/505-interactive:tools/agent-eval/tasks/10-interactive-garden.md",
+      "bench505": {
+        "medianTurns": {
+          "aura": 25,
+          "auraSheet": 15,
+          "three": 4
+        }
+      },
+      "causes": [
+        "A look/lighting",
+        "C shadows"
+      ],
+      "probe": "garden",
+      "followUp": {
+        "text": "Add an 'Undo' DOM button next to 'Clear' that removes the most recently planted plant (repeated clicks keep removing the newest remaining plant). The 'Plants: N' overlay and window.__TASK_STATE__ must update.",
+        "probe": "garden-followup"
+      }
+    },
+    {
+      "id": 107,
+      "slug": "lighthouse",
+      "category": "models",
+      "source": "origin/bench/505-models:tools/agent-eval/tasks/10-models-1-lighthouse.md",
+      "bench505": {
+        "medianTurns": {
+          "aura": 26,
+          "auraSheet": 10,
+          "three": 5
+        }
+      },
+      "causes": [
+        "H missing helper (beam)",
+        "A look",
+        "procedural asset (bridge candidate)"
+      ],
+      "probe": "lighthouse",
+      "followUp": {
+        "text": "Make the lantern lamp blink: on for 1 second, off for 1 second, repeating (the lamp is visibly dark when off). Add lampOn: boolean to window.__TASK_STATE__ and keep it current every frame.",
+        "probe": "lighthouse-followup"
+      }
+    }
+  ]
+}

@@ -24,8 +24,8 @@ lists the look and light values it used and has a retained real-GPU frame.
 
 1. `scene().add(looks.preset("<id from the recipe row>"))` first, then typed assets, then gameplay/props.
 2. `createAuraApp(el, { scene, ...looks.appOptions("<id>") })`.
-3. Camera from the recipe row (rig + fov + subject frame %). The camera state is applied to the camera, not to evidence objects.
-4. Ground contact: full-strength key shadow (`shadow: true`) plus a contact detail at the subject's feet.
+3. Camera from the recipe row (rig + fov + subject frame %). For a still subject hit the frame % with `.camera(camera.auto({ subject: "<name>", fill: 0.6 }))`, never a hand-placed camera; gameplay uses the genre rig. The camera state is applied to the camera, not to evidence objects.
+4. Ground contact: full-strength key shadow (the look's key, or `lights.key({ target })` when lighting by hand) on a ground plane, plus a contact detail at the subject's feet.
 5. HUD lives in DOM/CSS, never in the 3D scene. No debug overlay in shipped frames.
 
 ## The 15 looks

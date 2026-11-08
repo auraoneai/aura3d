@@ -54,6 +54,7 @@ import { isPrd04ReplaySafeFeature, isStockPrd04ShaderFeature } from "./materials
 import { isReplaySafePrd04Lobe, isStockPrd04Lobe } from "./materials/lobes";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
+import { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel } from "./program/directMultiscatter";
 import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame } from "./renderer/qrSubFlags";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
 import { PRD02_IBL_FEATURE, type EnvironmentProbe } from "./contracts/environment";
@@ -1417,6 +1418,9 @@ export class ForwardPass extends BaseRenderPass {
         && !this.options.globalClipping && !this.options.materialClippingFor && !this.options.disableCombinedDraw
         && !resolveContactShadowMask(this.contactMaskScope) && isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
         && forwardDrawProvidersSafe(flags, true);
+      // WebGPU records this item loop into one command encoder (see RenderDevice.beginDrawBatch); WebGL2 has no window.
+      context.device.beginDrawBatch?.();
+      try {
       if (!canPlan) {
         for (let index = 0; index < ordered.length;) {
           const first = ordered[index]!;
@@ -1445,6 +1449,9 @@ export class ForwardPass extends BaseRenderPass {
       }
       // #181: issue any trailing multi-draw run deferred by `submitDraw`.
       flushMultiDrawQueue(context.device);
+      } finally {
+        context.device.endDrawBatch?.();
+      }
     } finally {
       this.clusteredLighting?.dispose();
       this.clusteredLighting = null;
@@ -1722,11 +1729,16 @@ export class ForwardPass extends BaseRenderPass {
     const baseMaterial = getBaseMaterial(material);
     const previewClipRange = baseMaterial instanceof DepthPreviewMaterial
       ? validateDepthPreviewDraw(item, baseMaterial, this.options, device) : undefined;
-    const nativePoint = device.kind === "webgpu" && item.geometry.topology === "points";
-    if (nativePoint) {
-      if (!isNativePointQuadDevice(device) || !qrCoreGeneratorOn(rendererQrFlags(device))
-        || Object.getPrototypeOf(baseMaterial) !== UnlitMaterial.prototype
-        || (material instanceof MaterialInstance && Object.getPrototypeOf(material) !== MaterialInstance.prototype)) {
+    // A portable/custom point material whose WGSL vertex stage declares `@aura3d-point-list` draws as a plain WebGPU
+    // point list (one pixel per point: WebGPU has no point size) through the ordinary draw path, like any custom draw.
+    const nativePoint = device.kind === "webgpu" && item.geometry.topology === "points" && !declaresWebgpuPointList(baseMaterial);
+    // A custom (non built-in unlit) point material has no point-quad program. Its shader is still resolved first so a
+    // custom shader without WGSL takes the ordinary skip path (CUSTOM_SHADER_WGSL_MISSING, every other draw continues)
+    // instead of failing the mount; a resolvable one is rejected below, before anything is submitted.
+    const customNativePoint = nativePoint && (Object.getPrototypeOf(baseMaterial) !== UnlitMaterial.prototype
+      || (material instanceof MaterialInstance && Object.getPrototypeOf(material) !== MaterialInstance.prototype));
+    if (nativePoint && !customNativePoint) {
+      if (!isNativePointQuadDevice(device) || !qrCoreGeneratorOn(rendererQrFlags(device))) {
         throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: baseMaterial.name });
       }
       if (item.skinning || item.morphTargets || item.morphWeights || item.geometry.morphTargets?.length
@@ -1735,8 +1747,10 @@ export class ForwardPass extends BaseRenderPass {
         throw new RenderDeviceError("WebGPU point quads do not support deformation or instancing", "WEBGPU_POINT_SOURCE_UNSUPPORTED", { label: item.label });
       }
     }
-    if (device.kind === "webgpu" && (baseMaterial instanceof UnlitMaterial || baseMaterial instanceof InstancedUnlitMaterial)
-      && material.getParameter("u_spriteMode") === 1) {
+    const nativeSprite = device.kind === "webgpu" && (baseMaterial instanceof UnlitMaterial || baseMaterial instanceof InstancedUnlitMaterial)
+      && material.getParameter("u_spriteMode") === 1;
+    // Native billboards exist only as the generated unlit program's prd15.paritySprite variant (selected under A3D_PARITY_LINES).
+    if (nativeSprite && (!qrCoreGeneratorOn(rendererQrFlags(device)) || !rendererQrFlags(device).on("A3D_PARITY_LINES"))) {
       throw new RenderDeviceError("Native WebGPU billboard sprites require a dedicated shader", "NATIVE_UNLIT_SPRITE_UNSUPPORTED", { material: baseMaterial.name });
     }
     const clipping = resolveForwardClipping(item, this.options, device);
@@ -1865,7 +1879,13 @@ export class ForwardPass extends BaseRenderPass {
     }
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
+    if (customNativePoint) {
+      throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: baseMaterial.name });
+    }
     let generated = this.lastProgramFeatures !== undefined;
+    if (nativeSprite && (!generated || this.lastProgramFeatures?.features["prd15.paritySprite"] !== true)) {
+      throw new RenderDeviceError("Native WebGPU billboard sprites require a dedicated shader", "NATIVE_UNLIT_SPRITE_UNSUPPORTED", { material: baseMaterial.name });
+    }
     if (selective?.enabled && (!generated || this.lastProgramFeatures?.features[SELECTIVE_BLOOM_FEATURE] !== true)) {
       invalidateSelectiveBloomFrame(selective, generated ? "signal-program-unprepared" : "legacy-program");
     }
@@ -2008,6 +2028,9 @@ export class ForwardPass extends BaseRenderPass {
     const taggedProbes = prd02ItemProbeBindings(item);
     const environmentItem = taggedProbes ? globalEnvironmentItem(item, taggedProbes) : item;
     applyEnvironmentLightingUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, { conjunction: e3Conjunction, generated });
+    if (shader.reflection.uniforms.has(DIRECT_MULTISCATTER_UNIFORM)) {
+      uniforms.set(DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel(device) === "kulla-conty" ? 1 : 0);
+    }
     if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, drawFlags);
     if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, prd02Ibl);
     if (localProbes) {
@@ -2517,7 +2540,12 @@ export class ForwardPass extends BaseRenderPass {
     const bound = slot.buffer.bind();
     const extra = createExtraInstanceAttributeBindings(device, item, count, false);
     // GU47 E-D: `instanceColorTarget: "emissive"` — the colours feed the emissive term only (prd04.instanceColorTarget).
-    const colorAttribute = materialInstanceColorTarget(item.material) === "emissive" ? A3D_INSTANCE_EMISSIVE_ATTRIBUTE : "a_instanceColor";
+    // The generated WebGPU program reads the "emissive" colours at the instance colour location (GeneratedPbrProgram).
+    const colorAttribute = materialInstanceColorTarget(item.material) === "emissive" && device.kind !== "webgpu" ? A3D_INSTANCE_EMISSIVE_ATTRIBUTE : "a_instanceColor";
+    // WebGL2 binds instance streams by name, so a program that never reads the colours (a `material.custom` twin with
+    // only the matrix inputs, e.g. Cross Hop's sun-shade decal) silently skips them. WebGPU validates every stream against
+    // the shader's inputs, so the unread colour stream is left out there instead of failing the mount.
+    const bindColors = bound.colorBuffer !== undefined && (device.kind !== "webgpu" || shader.reflection.attributes.has(colorAttribute));
     return {
       count,
       attributes: [
@@ -2529,7 +2557,7 @@ export class ForwardPass extends BaseRenderPass {
           stride: 64,
           divisor: 1
         })),
-        ...(bound.colorBuffer ? [{
+        ...(bindColors && bound.colorBuffer ? [{
           buffer: bound.colorBuffer,
           shaderName: colorAttribute,
           components: 4 as const,
@@ -2823,6 +2851,12 @@ export class ForwardPass extends BaseRenderPass {
       selective?.enabled && selective.valid ? (feature) => { if (!stockSelectiveFeature(feature)) invalidateSelectiveBloomFrame(selective, "shader-feature"); } : undefined
     ) : {};
     if (selective?.enabled && selective.valid) selected[SELECTIVE_BLOOM_FEATURE] = true;
+    // WebGPU: the f_ind alpha tag needs a floating colour target (`validateGeneratedPbrTarget`). A display-space rgba8 scene
+    // target (`output.toneMapping: "none"`) refused the whole mount; such a draw keeps its untagged program instead.
+    if (device.kind === "webgpu" && selected[indirectFractionFeature.id] !== undefined) {
+      const target = device.getRenderTarget?.();
+      if (target && !target.depthOnly && target.colorTexture.format !== "rgba16f" && target.colorTexture.format !== "rgba32f") delete selected[indirectFractionFeature.id];
+    }
     if (this.options.weightedTransparency) selected[PROGRAM_TRANSPARENCY_FEATURE] = this.options.weightedTransparency.phase;
     if (this.options.nativeDepthCoverage) selected[DEPTH_COVERAGE_FEATURE] = true;
     if (photometric) selected[PHOTOMETRIC_PROFILE_FEATURE] = true;
@@ -2875,21 +2909,7 @@ export class ForwardPass extends BaseRenderPass {
         throw new RenderDeviceError("Diffuse transmission requires its selected texture coordinate attributes", "DIFFUSE_TRANSMISSION_UV_UNAVAILABLE", { material: material.name });
       }
     }
-    const deform = record.features["prd06.deform"];
-    const skin = typeof deform === "string" ? /(?:^|\|)skin([48])(?:\||$)/.exec(deform) : null;
-    if (item && skin) {
-      const influences = Number(skin[1]) as 4 | 8;
-      const attributes = item.geometry.vertexBuffer.format.attributes;
-      const kind = (semantic: "joints" | "joints1"): "float" | "uint" | "sint" => {
-        const attribute = attributes.find((candidate) => candidate.semantic === semantic);
-        return !attribute?.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint";
-      };
-      if (attributes.some((attribute) => (attribute.semantic === "weights" || (influences === 8 && attribute.semantic === "weights1")) && attribute.integer)) {
-        throw new RenderDeviceError("Generated skinning weights require float or normalized inputs", "GENERATED_SKINNING_WEIGHT_INPUT_UNSUPPORTED", { material: material.name });
-      }
-      record = { ...record, skinning: { influences, palette: "texture" }, features: { ...record.features,
-        "prd06.joint0Type": kind("joints"), ...(influences === 8 ? { "prd06.joint1Type": kind("joints1") } : {}) } };
-    }
+    if (item) record = generatedSkinningForGeometry(record, item.geometry, material.name);
     if (item && record.features["prd04.geometryTangent"] === true) {
       const tangent = item.geometry.vertexBuffer.format.attributes.find((attribute) => attribute.semantic === "tangent" || attribute.shaderName === "a_tangent");
       if (!tangent || tangent.components !== 4 || tangent.shaderLocation !== 3 || tangent.integer
@@ -3700,6 +3720,27 @@ export function nativeUnlitPrimitiveForGeometry(
 }
 
 /** Physical color selection is geometry-specific even when a material is shared. */
+/**
+ * A selected `prd06.deform` skin segment draws from the bone texture with the geometry's joint input types. ForwardPass
+ * applies this to every generated draw record; the renderer warmup applies it too so warmed keys match draw keys.
+ */
+export function generatedSkinningForGeometry<T extends Pick<ProgramFeatures, "features" | "skinning">>(record: T, geometry: Geometry, materialName: string): T {
+  const deform = record.features["prd06.deform"];
+  const skin = typeof deform === "string" ? /(?:^|\|)skin([48])(?:\||$)/.exec(deform) : null;
+  if (!skin) return record;
+  const influences = Number(skin[1]) as 4 | 8;
+  const attributes = geometry.vertexBuffer.format.attributes;
+  const kind = (semantic: "joints" | "joints1"): "float" | "uint" | "sint" => {
+    const attribute = attributes.find((candidate) => candidate.semantic === semantic);
+    return !attribute?.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint";
+  };
+  if (attributes.some((attribute) => (attribute.semantic === "weights" || (influences === 8 && attribute.semantic === "weights1")) && attribute.integer)) {
+    throw new RenderDeviceError("Generated skinning weights require float or normalized inputs", "GENERATED_SKINNING_WEIGHT_INPUT_UNSUPPORTED", { material: materialName });
+  }
+  return { ...record, skinning: { influences, palette: "texture" }, features: { ...record.features,
+    "prd06.joint0Type": kind("joints"), ...(influences === 8 ? { "prd06.joint1Type": kind("joints1") } : {}) } };
+}
+
 export function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean {
   const color = geometry.vertexBuffer.format.attributes.find((attribute) => attribute.semantic === "color" || attribute.shaderName === "a_color");
   if (!color) return false;
@@ -5574,3 +5615,8 @@ function mat4FromArrayLike(values: ArrayLike<number>, offset: number): Mat4 {
 Object.defineProperty(ForwardPass, Symbol.for("@aura3d/rendering:forwardContactGuards"), {
   value: { providersSafe: forwardContactProvidersSafe, frameUnsafeReason: forwardContactFrameUnsafeReason }
 });
+
+/** `@aura3d-point-list` in a portable material's WGSL vertex stage: the author accepts one-pixel WebGPU points. */
+function declaresWebgpuPointList(material: Material): boolean {
+  return material instanceof PortableShaderMaterial && /@aura3d-point-list\b/.test(material.sources.wgsl?.vertex ?? "");
+}

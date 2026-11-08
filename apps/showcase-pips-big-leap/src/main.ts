@@ -37,6 +37,7 @@ import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress.js";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags.js";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
 
@@ -155,15 +156,12 @@ declare global {
   }
 }
 
-// Lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu and ?gamut=p3 reach the engine. ?worker= and
-// ?depth= are not wired for this game. Without a flag both fragments are empty and the options are unchanged.
-const { renderer: labRenderer, output: labOutput } = labAppOptions(readLabFlags());
-
 const pipsGame = createGame({
-  ...(labRenderer ? { renderer: labRenderer } : {}),
-  ...(labOutput ? { output: labOutput } : {}),
   id: "showcase-pips-big-leap",
   target: "#app",
+  // Lab flags ?gamut=p3 (Display-P3 canvas), ?backend=auto|webgpu (WebGL2 fallback kept) and ?worker=1 (worker rendering,
+  // main-thread fallback kept); defaults unchanged.
+  ...(() => { const { output, renderer, worker } = labAppOptions(readLabFlags(), createWorkerRendererWorker); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}), ...(worker ? { worker } : {}) }; })(),
   autoStart: true,
   input: {
     actions: {

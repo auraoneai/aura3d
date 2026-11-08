@@ -112,6 +112,7 @@ async function routeCycles(): Promise<void> {
   for (let cycle = 0; cycle < CYCLES; cycle += 1) {
     const albedo = texture.data({ width: 16, height: 16, data: checker(16), colorSpace: "srgb" });
     const app = createAuraApp(host, {
+      plainLook: false, // keep the pre-N3 default output this lab was measured on
       pixelRatio: 1,
       resize: false,
       scene: scene()

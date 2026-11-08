@@ -56,6 +56,8 @@ if (!asset) {
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  // Tuned on the pre-N3 default output (ACES fit); keep it rather than the plain look path.
+  plainLook: false,
   pixelRatio: Math.min(1.35, window.devicePixelRatio || 1),
   scene: scene()
     .background("#070909")

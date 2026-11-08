@@ -468,13 +468,20 @@ describe("native backend negotiation", () => {
     expect(materialWrite.slice(36, 40)).toEqual([expect.closeTo(0.4), expect.closeTo(0.3), expect.closeTo(0.2), 2]);
     expect(materialWrite.slice(40, 46)).toEqual([expect.closeTo(0.1), expect.closeTo(0.2), expect.closeTo(0.3), 3, expect.closeTo(0.6), expect.closeTo(0.45)]);
     const submissions = native.queue.submit.mock.calls.length;
+    // The same resources reuse the cached bind group; a new sampler forces a fresh group, whose creation fails.
+    const groupsBefore = groups.length;
+    device.draw(draw);
+    expect(groups).toHaveLength(groupsBefore);
+    const resampled = new Map(uniforms);
+    resampled.set("u_baseColorMap", new TextureBinding({ name: "u_baseColorMap", texture, sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest" }) }));
     failBindGroup = true;
-    expect(() => device.draw(draw)).toThrow("bind failed");
-    expect(native.queue.submit).toHaveBeenCalledTimes(submissions);
-    const failedBuffer = buffers.filter((buffer) => buffer.label === "draw-generated-material").at(-1)!;
-    expect(failedBuffer.destroy).not.toHaveBeenCalled();
+    expect(() => device.draw({ ...draw, uniforms: resampled })).toThrow("bind failed");
+    expect(native.queue.submit).toHaveBeenCalledTimes(submissions + 1);
+    const materialBuffers = buffers.filter((buffer) => buffer.label === "draw-generated-material");
+    // One pooled material buffer serves every draw; the failed draw hands it back instead of destroying it.
+    expect(materialBuffers).toHaveLength(1);
     releaseFence(); await fence; await Promise.resolve();
-    expect(failedBuffer.destroy).toHaveBeenCalledTimes(1);
+    expect(materialBuffers[0]!.destroy).not.toHaveBeenCalled();
     failBindGroup = false;
     frame.dispose();
     expect(() => device.draw(draw)).toThrow(/disposed/);

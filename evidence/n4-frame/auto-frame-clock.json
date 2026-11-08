@@ -1,0 +1,36 @@
+{
+ "slug": "clock",
+ "extra": {
+  "fill": 0.8000000000000003,
+  "requestedFill": 0.8
+ },
+ "url": "http://127.0.0.1:10631/auto-frame-clock/",
+ "history_length": 2,
+ "nav_types": [
+  "navigate"
+ ],
+ "mount_failed": false,
+ "safety_black_frame": false,
+ "failed_to_start_visible": false,
+ "canvases": 1,
+ "ready": "true",
+ "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+ "frame_navigated": 1,
+ "reload_suspected": false,
+ "codes": [
+  "DEPTH_ALPHA_HASH_DEGRADED"
+ ],
+ "non404_errors": [],
+ "events": [
+  {
+   "kind": "console",
+   "level": "warning",
+   "text": "DEPTH_ALPHA_HASH_DEGRADED: \"primitive-6:trunk window:trunk window\" is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster."
+  },
+  {
+   "kind": "log",
+   "level": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (File not found) http://127.0.0.1:10631/favicon.ico"
+  }
+ ]
+}

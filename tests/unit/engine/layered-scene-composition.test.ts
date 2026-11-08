@@ -444,7 +444,7 @@ describe("blendSkyBandColor makes the gradient reusable, not per-route hex mixin
 
   it("rejects a malformed colour instead of silently producing NaN channels", () => {
     // A silently-wrong colour would ship as a visual defect nothing gates.
-    expect(() => blendSkyBandColor("not-a-colour", "#000", 0.5)).toThrow(/hex colour/);
+    expect(() => blendSkyBandColor("not-a-colour", "#000", 0.5)).toThrow(/COLOR_INVALID/);
   });
 });
 

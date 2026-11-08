@@ -5,7 +5,9 @@
 import type { material } from "@aura3d/engine";
 import { LOOKS, type HeatsinkLookRow } from "./art/look";
 import { VESPER } from "./map";
+import { POINT_QUAD_SHADERS } from "./point-quads";
 import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, BEACON_FRAGMENT, BEACON_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX, WAKE_FRAGMENT, WAKE_VERTEX } from "./shaders";
+import { BEACON_FRAGMENT_WGSL, BEACON_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, ROAD_FRAGMENT_WGSL, ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL, STREAK_FRAGMENT_WGSL, TERRAIN_FRAGMENT_WGSL, UV_VERTEX_WGSL, VEIL_FRAGMENT_WGSL, VEIL_VERTEX_WGSL, WAKE_FRAGMENT_WGSL, WAKE_VERTEX_WGSL } from "./shaders-wgsl";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -53,6 +55,7 @@ export const lightUniforms = (fog: Rgb = shading.fog.color): NonNullable<CustomS
 export const roadSpec = (): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
+  wgsl: { vertex: ROAD_VERTEX_WGSL, fragment: ROAD_FRAGMENT_WGSL },
   uniforms: {
     ...lightUniforms(),
     roadAlbedo: { type: "f32", value: shading.lit.roadAlbedo },
@@ -77,6 +80,7 @@ export interface SolidExtra {
 export const solidSpec = (base: Rgb, glowColor: Rgb = [0, 0, 0], glowAmount = 0, extra: SolidExtra = {}): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
+  wgsl: { vertex: SOLID_VERTEX_WGSL, fragment: SOLID_FRAGMENT_WGSL },
   uniforms: {
     ...lightUniforms(),
     baseColor: { type: "color3", value: [...base] },
@@ -92,6 +96,7 @@ export const solidSpec = (base: Rgb, glowColor: Rgb = [0, 0, 0], glowAmount = 0,
 
 export const veilSpec = (color: Rgb, mode: "gate" | "pad"): CustomSpec => ({
   glsl: { vertex: VEIL_VERTEX, fragment: VEIL_FRAGMENT },
+  wgsl: { vertex: VEIL_VERTEX_WGSL, fragment: VEIL_FRAGMENT_WGSL },
   uniforms: {
     veilColor: { type: "color3", value: [...color] },
     veilPulse: { type: "f32", value: 0 },
@@ -106,6 +111,7 @@ export const veilSpec = (color: Rgb, mode: "gate" | "pad"): CustomSpec => ({
 const sky = L.sky as unknown as { zenith: Rgb; mid: Rgb; horizon: Rgb; glow: Rgb; moon: { dir: Rgb }; alien: { planet: { dir: Rgb } } };
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
   uniforms: {
     ...lightUniforms(),
     zenith: { type: "color3", value: [...sky.zenith] },
@@ -128,6 +134,7 @@ export const skySpec = (): CustomSpec => ({
 export const terrainSpec = (snowLine: number, tint: Rgb = [1, 1, 1]): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: TERRAIN_FRAGMENT },
+  wgsl: { vertex: SOLID_VERTEX_WGSL, fragment: TERRAIN_FRAGMENT_WGSL },
   uniforms: {
     ...lightUniforms(),
     snowLine: { type: "f32", value: snowLine },
@@ -139,6 +146,7 @@ export const terrainSpec = (snowLine: number, tint: Rgb = [1, 1, 1]): CustomSpec
 /** Additive camera-facing speed streaks (a dynamic quad strip rebuilt every frame). */
 export const streakSpec = (): CustomSpec => ({
   glsl: { vertex: STREAK_VERTEX, fragment: STREAK_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: STREAK_FRAGMENT_WGSL },
   uniforms: {
     streakColor: { type: "color3", value: [1, 0.82, 0.55] },
     streakAlpha: { type: "f32", value: 0.5 }
@@ -149,16 +157,23 @@ export const streakSpec = (): CustomSpec => ({
   side: "double"
 });
 
-export const pointsSpec = (): CustomSpec => ({
-  glsl: { vertex: POINTS_VERTEX, fragment: POINTS_FRAGMENT },
-  transparent: true,
-  depthWrite: false,
-  blending: "additive"
-});
+/**
+ * Additive exhaust / spore sprites. `quads` (a requested WebGPU backend) draws them as screen-aligned quads with a WGSL
+ * twin (point-quads.ts); the default is the WebGL2 `gl_PointSize` program, unchanged.
+ */
+export const pointsSpec = (quads = false): CustomSpec => quads
+  ? { glsl: { ...POINT_QUAD_SHADERS.glsl }, wgsl: { ...POINT_QUAD_SHADERS.wgsl }, transparent: true, depthWrite: false, blending: "additive", side: "double" }
+  : {
+    glsl: { vertex: POINTS_VERTEX, fragment: POINTS_FRAGMENT },
+    transparent: true,
+    depthWrite: false,
+    blending: "additive"
+  };
 
 /** the drone's contact shadow: an alpha-blended dark blob drawn over the road (HP-08) */
 export const blobSpec = (): CustomSpec => ({
   glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: BLOB_FRAGMENT_WGSL },
   uniforms: { blobAlpha: { type: "f32", value: 0.5 }, blobCore: { type: "f32", value: shading.shade.blobCore } },
   transparent: true,
   depthWrite: false,
@@ -169,6 +184,7 @@ export const blobSpec = (): CustomSpec => ({
 /** GU47 IC-18: the ion wake ribbon (additive, no depth write) */
 export const wakeSpec = (): CustomSpec => ({
   glsl: { vertex: WAKE_VERTEX, fragment: WAKE_FRAGMENT },
+  wgsl: { vertex: WAKE_VERTEX_WGSL, fragment: WAKE_FRAGMENT_WGSL },
   uniforms: { wakeGain: { type: "f32", value: 1.8 } },
   transparent: true,
   depthWrite: false,
@@ -179,6 +195,7 @@ export const wakeSpec = (): CustomSpec => ({
 /** GU47 IC-24 lane beacons (HDR glow above the bloom threshold) */
 export const beaconSpec = (): CustomSpec => ({
   glsl: { vertex: BEACON_VERTEX, fragment: BEACON_FRAGMENT },
+  wgsl: { vertex: BEACON_VERTEX_WGSL, fragment: BEACON_FRAGMENT_WGSL },
   uniforms: { ...lightUniforms(), beaconGlow: { type: "f32", value: 1.8 } },
   side: "double"
 });
@@ -195,6 +212,7 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "terrain", spec: terrainSpec(80, [1, 1, 1]) },
   { name: "streak", spec: streakSpec() },
   { name: "points", spec: pointsSpec() },
+  { name: "points-quads", spec: pointsSpec(true) },
   { name: "blob", spec: blobSpec() },
   { name: "wake", spec: wakeSpec() },
   ...withShading(LOOKS.twilight, () => [{ name: "beacon-twilight", spec: beaconSpec() }])

@@ -714,9 +714,45 @@ export function attributedWidening(checker: ts.TypeChecker, before: ClosureDecla
     if (!next) return false;
     if (old.texts.join("\0") === next.texts.join("\0")) continue;
     changed += 1;
+    if (declarationTextsEqualIgnoringComments(old.texts, next.texts)) continue;
     if (!declarationSelfWidens(checker, old.symbol, next.symbol)) return false;
   }
   return changed > 0;
+}
+const commentFreePrinter = ts.createPrinter({ removeComments: true });
+/**
+ * Whether two declaration text lists differ only in block comments (the JSDoc on
+ * a declaration's members). The texts are parsed and reprinted without comments,
+ * so comment edits vanish while every token, including string and template
+ * literal contents, still has to match. Such a change cannot affect any consumer,
+ * and is common on generic declarations that `declarationSelfWidens` otherwise
+ * fails closed on. Closure texts are whitespace-collapsed onto one line, where a
+ * `//` comment would swallow the tokens after it, so any text the scanner sees a
+ * line comment in fails closed.
+ */
+export function declarationTextsEqualIgnoringComments(before: readonly string[], after: readonly string[]): boolean {
+  if (before.length !== after.length) return false;
+  const hasLineComment = (text: string) => {
+    const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, ts.LanguageVariant.Standard, text);
+    for (let token = scanner.scan(); token !== ts.SyntaxKind.EndOfFileToken; token = scanner.scan()) if (token === ts.SyntaxKind.SingleLineCommentTrivia) return true;
+    return false;
+  };
+  // A text that does not parse cleanly fails closed: error recovery (an unterminated comment, a stray token) can drop
+  // tokens from the reprint, so two different texts could otherwise print the same. A variable's closure text is
+  // its declarator alone (`name: Type`), which only parses inside a `declare const`.
+  const reprint = (text: string): string | undefined => {
+    const file = ts.createSourceFile("declaration.d.ts", text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+    const parseDiagnostics = (file as ts.SourceFile & { readonly parseDiagnostics?: readonly ts.Diagnostic[] }).parseDiagnostics;
+    if (!parseDiagnostics || parseDiagnostics.length > 0) return undefined;
+    return commentFreePrinter.printFile(file);
+  };
+  const strip = (text: string): string | undefined => reprint(text) ?? reprint(`declare const ${text};`);
+  return before.every((text, index) => {
+    const next = after[index]!;
+    if (hasLineComment(text) || hasLineComment(next)) return false;
+    const oldText = strip(text), newText = strip(next);
+    return oldText !== undefined && oldText === newText;
+  });
 }
 /** A retarget is conservatively treated as a break: matching declarations do
  * not establish the actual exports of the newly targeted runtime file. */

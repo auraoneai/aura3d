@@ -1,0 +1,86 @@
+{
+ "run": "integration exp/53f-candidate (HEAD after merging N1-N7, B1, C1), 2026-11-08; headless Chrome ANGLE Metal (Apple M4 Max), 960x540, prefers-reduced-motion, 11 s after navigation (census.mjs); local = marketing/dist of this branch served with _redirects",
+ "games": "pips (showcase-pips-big-leap), diamond (showcase-aura-diamond-3d), teleoperator, bunker (showcase-bunker-zero), links (showcase-aura-links-3d), hoops (showcase-aura-hoops-3d); all six author output toneMapping with canonical names ('aces' / 'agx' / 'none'), so N7's normalizeAppToneMapping returns the same options object",
+ "localVsLive": {
+  "showcase-pips-big-leap": {
+   "meanAbsDiff": 1.41,
+   "fracPixelsOver24": 0.0176,
+   "lumaLocal": 101.3,
+   "lumaLive": 101.3
+  },
+  "showcase-aura-diamond-3d": {
+   "meanAbsDiff": 6.0,
+   "fracPixelsOver24": 0.0725,
+   "lumaLocal": 82.6,
+   "lumaLive": 82.1
+  },
+  "showcase-teleoperator": {
+   "meanAbsDiff": 9.03,
+   "fracPixelsOver24": 0.1068,
+   "lumaLocal": 47.9,
+   "lumaLive": 47.1
+  },
+  "showcase-bunker-zero": {
+   "meanAbsDiff": 8.38,
+   "fracPixelsOver24": 0.0897,
+   "lumaLocal": 16.0,
+   "lumaLive": 24.5
+  },
+  "showcase-aura-links-3d": {
+   "meanAbsDiff": 0.34,
+   "fracPixelsOver24": 0.0,
+   "lumaLocal": 81.6,
+   "lumaLive": 81.6
+  },
+  "showcase-aura-hoops-3d": {
+   "meanAbsDiff": 17.39,
+   "fracPixelsOver24": 0.2071,
+   "lumaLocal": 68.1,
+   "lumaLive": 68.8
+  }
+ },
+ "localVsPreLaneBase(exp/53d-integration dfab52000 build)": {
+  "showcase-pips-big-leap": {
+   "meanAbsDiff": 0.83,
+   "fracPixelsOver24": 0.0049,
+   "lumaLocal": 101.3,
+   "lumaLive": 101.3
+  },
+  "showcase-aura-diamond-3d": {
+   "meanAbsDiff": 1.54,
+   "fracPixelsOver24": 0.0,
+   "lumaLocal": 82.6,
+   "lumaLive": 82.6
+  },
+  "showcase-teleoperator": {
+   "meanAbsDiff": 6.16,
+   "fracPixelsOver24": 0.0625,
+   "lumaLocal": 47.9,
+   "lumaLive": 48.0
+  },
+  "showcase-bunker-zero": {
+   "meanAbsDiff": 8.18,
+   "fracPixelsOver24": 0.0764,
+   "lumaLocal": 16.0,
+   "lumaLive": 24.3
+  },
+  "showcase-aura-links-3d": {
+   "meanAbsDiff": 0.34,
+   "fracPixelsOver24": 0.0,
+   "lumaLocal": 81.6,
+   "lumaLive": 81.6
+  },
+  "showcase-aura-hoops-3d": {
+   "meanAbsDiff": 17.23,
+   "fracPixelsOver24": 0.2054,
+   "lumaLocal": 68.1,
+   "lumaLive": 69.0
+  }
+ },
+ "notes": [
+  "pips and links: static title frames, identical within noise (0.34-1.41 mean abs diff).",
+  "diamond, teleoperator, hoops: the differences are gameplay timing (pitch count/ball text, moving traffic, players and clock); colours, framing and look match (see the sheet).",
+  "bunker: the title backdrop luma varied with machine load on this branch (16.0 and 16.8 in the first two runs, 24.5, 23.5, 23.5 in three later runs; the pre-lane base 23.5 x3, live 24.5 and 23.9). The in-game frame after DEPLOY differs from live by a wall texture that the pre-lane base build shows too (local-vs-base 2.47, local-vs-live 4.22, base-vs-live 4.20), so it predates the 5.4 lanes and is not an N7 change.",
+  "Conclusion: no change from N7's tone-mapping name handling in these six games."
+ ]
+}

@@ -6,6 +6,7 @@
  * presentation-only and draws from its own RNG stream, never the gameplay stream).
  */
 import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, Slots, GameRng, scrollFrameZ, flatSpec, shadowSpec, hexToLinear,
   type CustomSpec, type MeshData, type Rgb
@@ -33,6 +34,29 @@ const PLAYER_BASE_Y = [0.55, 0.48, 0.55] as const;
 export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "clouds", "wall-contact"] as const;
 export const PLAYER_IDS = ["player-0", "player-1", "player-2"] as const;
 
+
+/** One confetti-trail chip (presentation only). */
+export interface TrailChip { life: number; x: number; y: number; z: number; vx: number; vy: number; vz: number; spin: number; color: number }
+
+/**
+ * Advance a live trail chip by `dt`; returns false once its life has run out. A chip whose life reaches exactly 0
+ * (or below) must not be drawn: its scale would be 0 (or negative), and `Batch.place` divides normals by the scale,
+ * so a zero scale writes NaN normals and the next `flush` throws `attribute "normal" update must contain finite values`.
+ */
+export function advanceTrailChip(chip: TrailChip, dt: number): boolean {
+  chip.life -= dt;
+  if (!(chip.life > 0)) return false;
+  chip.x += chip.vx * dt;
+  chip.y += chip.vy * dt;
+  chip.z += chip.vz * dt;
+  chip.vy -= 7 * dt;
+  return true;
+}
+
+/** Draw scale of a live trail chip: shrinks over its last 0.3 s, never below a small positive floor. */
+export function trailChipScale(life: number): number {
+  return Math.max(1e-3, 0.12 * Math.min(1, life / 0.3));
+}
 
 export type PostMode = "lite" | "full" | "bloom" | "off";
 
@@ -85,7 +109,7 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
 export function buildWorld(options: WorldOptions): World {
   const builder = scene()
     .background(LOOK.skyStops[LOOK.skyStops.length - 1].hex)
-    .camera(camera.perspective({ position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 600 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 600 }));
 
   // Blended overlays (contact strips, the ball's ground shadow, the shield bubble, the wildcard ring) never cast:
   // a blended caster has no alpha-hashed depth path, so it would draw into the sun shadow map as an opaque block
@@ -190,7 +214,7 @@ export function buildWorld(options: WorldOptions): World {
 
       // Presentation-only confetti trail: its own counted stream, never the gameplay RNG.
       const trailRng = new GameRng(0x511a7);
-      const trail = Array.from({ length: TRAIL_MAX }, () => ({ life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, spin: 0, color: 0 }));
+      const trail: TrailChip[] = Array.from({ length: TRAIL_MAX }, () => ({ life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, spin: 0, color: 0 }));
       let trailAcc = 0;
       let trailCursor = 0;
 
@@ -350,14 +374,9 @@ export function buildWorld(options: WorldOptions): World {
         }
         trail.forEach((chip, j) => {
           const i = POOL.particles + j;
-          if (chip.life > 0 && dt > 0) {
-            chip.life -= dt;
-            chip.x += chip.vx * dt;
-            chip.y += chip.vy * dt;
-            chip.z += chip.vz * dt;
-            chip.vy -= 7 * dt;
+          if (chip.life > 0 && dt > 0 && advanceTrailChip(chip, dt)) {
             const color = LOOK.shapes[chip.color] as string;
-            writeParticle(i, chip.x, Math.max(0.05, chip.y), chip.z, chip.spin + elapsed * 4, 0.12 * Math.min(1, chip.life / 0.3), color, SHAPE_LINEAR[chip.color] as Rgb);
+            writeParticle(i, chip.x, Math.max(0.05, chip.y), chip.z, chip.spin + elapsed * 4, trailChipScale(chip.life), color, SHAPE_LINEAR[chip.color] as Rgb);
           } else if (particleShown[i]) {
             particles.collapse(i);
             particleShown[i] = false;

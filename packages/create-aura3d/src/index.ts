@@ -26,7 +26,12 @@ export const CREATE_AURA3D_TEMPLATES = [
   "postprocess-scene",
   "custom-scene",
   "large-scene",
-  "procedural-scene"
+  "procedural-scene",
+  "starter-product",
+  "starter-outdoor",
+  "starter-interior",
+  "starter-game",
+  "starter-presentation"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 
@@ -166,7 +171,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   const dependencies = { ...(packageJson.dependencies ?? {}) };
   const auraDependencies = Object.keys(dependencies).filter((name) => name.startsWith("@aura3d/"));
   if (auraDependencies.length === 0) {
-    dependencies["@aura3d/engine"] = options.packageVersion ?? "5.2.1";
+    dependencies["@aura3d/engine"] = options.packageVersion ?? "5.3.0";
   } else if (options.packageVersion) {
     for (const dependency of auraDependencies) dependencies[dependency] = options.packageVersion;
   }

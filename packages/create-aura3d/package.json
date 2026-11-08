@@ -1,6 +1,6 @@
 {
   "name": "create-aura3d",
-  "version": "5.2.1",
+  "version": "5.3.0",
   "type": "module",
   "bin": {
     "create-aura3d": "dist/cli.js"
@@ -33,6 +33,11 @@
     "templates/custom-scene",
     "templates/large-scene",
     "templates/procedural-scene",
+    "templates/starter-product",
+    "templates/starter-outdoor",
+    "templates/starter-interior",
+    "templates/starter-game",
+    "templates/starter-presentation",
     "!templates/**/node_modules/**",
     "!templates/**/node_modules.publish-aside/**",
     "!templates/**/dist/**",
@@ -77,7 +82,8 @@
     "!templates/postprocess-scene/public/aura-assets/showcaseMiko.fcdc2b75.glb",
     "!templates/premium-product-viewer/public/aura-assets/khronosToyCar.01a60862.glb",
     "!templates/racing-starter/public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
-    "!templates/racing-starter/public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb"
+    "!templates/racing-starter/public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb",
+    "!templates/starter-product/public/aura-assets/showcaseCleanSportsCar.1c69283f.glb"
   ],
   "publishConfig": {
     "access": "public"

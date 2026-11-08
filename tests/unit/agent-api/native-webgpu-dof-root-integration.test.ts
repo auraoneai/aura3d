@@ -158,31 +158,25 @@ describe("root-authored depth of field on native WebGPU", () => {
     expect(legacyOnly.depthOfField).toEqual({ focusDepth: 0.02, focusRange: 0.125, maxRadius: 6 });
   });
 
-  it("rejects independent or subsequently changed DoF stages", () => {
+  it("drops the legacy DoF twin however it was supplied or changed (the v2 lens owns S6, as on WebGL2 v2)", () => {
     const authored = authoredOptions();
     const pipeline = authored.pipeline as PostPipelineOptions;
     const legacy = authored.depthOfField as Exclude<RendererPostProcessOptions["depthOfField"], false | undefined>;
     const dof = pipeline.dof as Record<string, unknown>;
-    const reject = (post: RendererPostProcessOptions, candidate: PostPipelineOptions) =>
-      expect(() => validateNativeDofRoute(post, candidate, {})).toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
-    reject({ ...authored, depthOfField: { ...legacy } }, pipeline);
-    reject(authored, { ...pipeline, dof: { ...dof } });
-    (legacy as { maxRadius: number }).maxRadius = 7;
-    reject(authored, pipeline);
-    (legacy as { maxRadius: number }).maxRadius = 6;
-    dof.focusDistance = 4;
-    reject(authored, pipeline);
-    dof.focusDistance = 3;
-    Object.defineProperty(legacy, "additionalStage", { value: true, configurable: true });
-    reject(authored, pipeline);
-    delete (legacy as unknown as Record<string, unknown>).additionalStage;
-    expect(() => validateNativeDofRoute(authored, pipeline, {})).not.toThrow();
+    const accept = (post: RendererPostProcessOptions, candidate: PostPipelineOptions) =>
+      expect(() => validateNativeDofRoute(post, candidate, {})).not.toThrow();
+    accept({ ...authored, depthOfField: { ...legacy } }, pipeline);
+    accept(authored, { ...pipeline, dof: { ...dof } });
+    accept({ ...authored, depthOfField: { focusDepth: 0.5, focusRange: 0.2, maxRadius: 9 } }, pipeline);
   });
 
-  it("still rejects separate post effects and multiple authored DoF nodes", () => {
+  it("still rejects temporal and other unsupported post stages; admits AO, SSR, a LUT and multiple authored DoF nodes", () => {
     const authored = authoredOptions();
     const pipeline = authored.pipeline as PostPipelineOptions;
-    for (const stage of [{ ao: {} }, { ssr: {} }, { taa: {} }, { motionBlur: {} }, { godRays: {} }, { vignette: {} },
+    for (const stage of [{ ao: {} }, { ssr: {} }, { lut: {} }]) {
+      expect(() => validateNativeDofRoute(authored, { ...pipeline, ...stage } as PostPipelineOptions, {})).not.toThrow();
+    }
+    for (const stage of [{ taa: {} },
       { antiAliasing: "smaa" }, { nativeEffects: [{ kind: "pixelation", size: 2 }] }, { customPasses: [{}] }]) {
       expect(() => validateNativeDofRoute(authored, { ...pipeline, ...stage } as PostPipelineOptions, {}))
         .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
@@ -192,12 +186,11 @@ describe("root-authored depth of field on native WebGPU", () => {
     const volumePipeline = volume.pipeline as PostPipelineOptions;
     expect(volumePipeline.godRays).toBeTruthy();
     expect(volume.volumetricLight).toBeUndefined();
-    expect(() => validateNativeDofRoute(volume, volumePipeline, {}))
-      .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
+    // W4: god rays run as a native WebGPU depth stage after DoF, so the pair combines.
+    expect(() => validateNativeDofRoute(volume, volumePipeline, {})).not.toThrow();
     const duplicates = createProductionRuntimePostprocess(scene().add(effects.depthOfField({ focusDistance: 3 }))
       .add(effects.depthOfField({ focusDistance: 9 })).add(effects.antiAlias({ mode: "off" })).toJSON());
-    expect(() => validateNativeDofRoute(duplicates, duplicates.pipeline as PostPipelineOptions, {}))
-      .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
+    expect(() => validateNativeDofRoute(duplicates, duplicates.pipeline as PostPipelineOptions, {})).not.toThrow();
   });
 
   it.each([false, true])("still rejects an unsupported multi-view frame before native submission (async=%s)", async asynchronous => {

@@ -16,6 +16,7 @@ import { createDayNightSky, type DayNightSkyOptions } from "@aura3d/rendering";
 import type { AuraSkyCloudsOptions, AuraSkyNode, AuraSkySpec, AuraSkyStarsOptions, AuraSkySunSpec } from "../../contracts/atmosphere";
 import { lights } from "./lights.js";
 import { material } from "./material.js";
+import { auraColorToHex } from "../color.js";
 
 /**
  * GU47 (WP-7 / E-B): typed `stars` / `clouds` on `sky.preetham` /
@@ -72,16 +73,46 @@ function skyNode(name: string, spec: AuraSkySpec, options: AuraSkyNodeOptions): 
   return new AuraNodeBuilder(node as unknown as AuraSceneNode);
 }
 
+/**
+ * The sky evaluators read six-digit hex only, so every authored sky colour (any CSS form) is normalised to
+ * `#rrggbb` here; `#rrggbb` strings and arrays pass through untouched (existing skies are byte-identical) and an
+ * invalid value throws COLOR_INVALID naming the option instead of drawing a white or fallback sky.
+ */
+function skyColors<T extends Record<string, unknown>>(spec: T, where: string): T {
+  const out: Record<string, unknown> = { ...spec };
+  const fix = (holder: Record<string, unknown>, key: string, label: string): void => {
+    if (holder[key] !== undefined) holder[key] = auraColorToHex(holder[key], `${where}({ ${label} })`);
+  };
+  for (const key of ["zenith", "horizon", "ground", "groundColor"]) fix(out, key, key);
+  for (const key of ["sun", "clouds", "moon"]) {
+    const nested = out[key];
+    if (nested && typeof nested === "object" && !Array.isArray(nested) && (nested as Record<string, unknown>).color !== undefined) {
+      const copy = { ...(nested as Record<string, unknown>) };
+      fix(copy, "color", `${key}.color`);
+      out[key] = copy;
+    }
+  }
+  if (Array.isArray(out.bands)) {
+    out.bands = (out.bands as unknown[]).map((band, index) => {
+      if (!band || typeof band !== "object") return band;
+      const copy = { ...(band as Record<string, unknown>) };
+      fix(copy, "color", `bands[${index}].color`);
+      return copy;
+    });
+  }
+  return out as T;
+}
+
 function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode> {
   const { name, captureEnvironment, affectsFog, ...spec } = options;
-  return skyNode(name ?? "sky", { ...spec, model: "preetham" }, { captureEnvironment, affectsFog });
+  return skyNode(name ?? "sky", { ...skyColors(spec, "sky.preetham"), model: "preetham" }, { captureEnvironment, affectsFog });
 }
 
 function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode> {
   const { name, captureEnvironment, affectsFog, ...spec } = options;
   // `clouds` on the gradient model is carried through to `skyFrame`, which
   // reads `clouds` for every model.
-  return skyNode(name ?? "sky", { ...spec, model: "gradient" } as AuraSkySpec, { captureEnvironment, affectsFog });
+  return skyNode(name ?? "sky", { ...skyColors(spec, "sky.gradient"), model: "gradient" } as AuraSkySpec, { captureEnvironment, affectsFog });
 }
 
 function skyHdri(

@@ -82,6 +82,7 @@ import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
 import { createTailTrails, TAIL_TRAIL_ID } from "./tailTrails";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
 
@@ -225,14 +226,15 @@ async function bootGridDispatch(): Promise<void> {
   bootProgress(22);
   // 5.0.2: `qualityRebuild.flags` accepts the record form (QrFlagInput), so the old `as unknown as readonly string[]` cast is gone.
   // Lab flags (default OFF, EXPERIMENTAL, decision D1): `?backend=auto|webgpu` and `?gamut=p3` only; the game keeps its own
-  // renderer quality tier and merges the requested backend into it. `?worker` and `?depth` are not wired (not stable for this game).
+  // renderer quality tier and merges the requested backend into it. `?worker=1` renders in a worker (main-thread fallback kept); `?depth` is not wired (not stable for this game).
   const lab = readLabFlags();
-  const labOpts = labAppOptions(lab);
+  const labOpts = labAppOptions(lab, createWorkerRendererWorker);
   const auraApp = createAuraApp(canvas, {
     scene: buildGridDispatchScene(weather, { motionOk: motionOk() }),
     renderer: { ...GRID_DISPATCH_RENDERER, ...(labOpts.renderer ?? {}) },
     qualityRebuild: { flags: GRID_DISPATCH_FLAGS },
-    ...(labOpts.output ? { output: labOpts.output } : {})
+    ...(labOpts.output ? { output: labOpts.output } : {}),
+    ...(labOpts.worker ? { worker: labOpts.worker } : {})
   });
   bootProgress(38);
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });

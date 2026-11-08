@@ -107,6 +107,31 @@ describe("02-T1946 depth-only shadow targets", () => {
     });
   });
 
+  // WebGPU receivers read light depth from the colour attachment's `.r`; rgba8 quantised it to 1/255 (acne bands on
+  // sunlit slopes, Saltwind's Redline cliff), so WebGPU encodes it in half float. WebGL descriptors stay as above.
+  it("WebGPU shadow targets encode depth in rgba16f, not rgba8", () => {
+    // The mock has no checked depth submission, so read the target descriptors directly (they are the subject).
+    const shadowSystem = recordingDevice();
+    Object.defineProperty(shadowSystem.device, "kind", { value: "webgpu", configurable: true });
+    const system = new Prd02ShadowSystem(shadowSystem.device, CONFIG);
+    const descriptor = (system as unknown as { depthTargetDescriptor(size: number, label: string): RenderTargetDescriptor }).depthTargetDescriptor(512, "prd02-cascade-0");
+    expect(descriptor).toEqual({ width: 512, height: 512, label: "prd02-cascade-0", format: "rgba16f", depth: true });
+    system.dispose();
+
+    setRendererQrFlags(BASE);
+    const forward = recordingDevice();
+    Object.defineProperty(forward.device, "kind", { value: "webgpu", configurable: true });
+    const light = new DirectionalLight("sun");
+    light.castsShadow = true;
+    const pass = new ShadowPass({
+      light, casters: [CASTER], shadowMap: new ShadowMap({ size: 256, label: "wgpu-shadow" }),
+      viewProjectionMatrix: identityMat4(), shaderLibrary: createLeanCoreShaderLibrary()
+    });
+    (pass as unknown as { ensureRenderTarget(context: { device: MockRenderDevice }): unknown }).ensureRenderTarget({ device: forward.device });
+    expect(forward.descriptors[0]).toEqual({ width: 256, height: 256, label: "wgpu-shadow-depth-color", format: "rgba16f", depth: "texture" });
+    pass.dispose();
+  });
+
   it("ShadowPass flag-on descriptor is depth-only", () => {
     setRendererQrFlags(FLAGS_ON);
     expect(runShadowPass()).toEqual({ width: 256, height: 256, label: "t1946-shadow-depth", depthOnly: true });

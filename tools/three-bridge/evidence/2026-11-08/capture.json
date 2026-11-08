@@ -1,0 +1,71 @@
+[
+ {
+  "recipe": "tree-grove",
+  "side": "three",
+  "url": "http://127.0.0.1:10671/three.html?recipe=tree-grove",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+ },
+ {
+  "recipe": "tree-grove",
+  "side": "aura",
+  "url": "http://127.0.0.1:10671/aura.html?recipe=tree-grove",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+ },
+ {
+  "recipe": "city-block",
+  "side": "three",
+  "url": "http://127.0.0.1:10671/three.html?recipe=city-block",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+ },
+ {
+  "recipe": "city-block",
+  "side": "aura",
+  "url": "http://127.0.0.1:10671/aura.html?recipe=city-block",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+ },
+ {
+  "recipe": "stylized-car",
+  "side": "three",
+  "url": "http://127.0.0.1:10671/three.html?recipe=stylized-car",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+ },
+ {
+  "recipe": "stylized-car",
+  "side": "aura",
+  "url": "http://127.0.0.1:10671/aura.html?recipe=stylized-car",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:10671/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+ }
+]

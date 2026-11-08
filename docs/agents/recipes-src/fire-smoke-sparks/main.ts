@@ -31,4 +31,4 @@ const app = createAuraApp("#app", {
     }))
     .camera(camera.perspective({ position: [3.6, 1.9, 4.6], target: [0, 1.1, 0], fov: 44, near: 0.1, far: 80 }))
 });
-await app.ready();
+void app.ready();

@@ -1,0 +1,193 @@
+{
+ "schema": "aura3d.agent-eval.c1-tasks/1",
+ "frozenAt": "2026-11-08",
+ "note": "Chosen before any C1 result exists (see c1/README.md, 'Task choice'). Task text is copied verbatim from the benchmark-505 lane branches; ids 101-108 avoid the clashing per-lane numbering. Do not edit after the first paid run.",
+ "runsPerArm": 3,
+ "arms": [
+  "aura",
+  "three",
+  "bridge"
+ ],
+ "mainTurnCap": 40,
+ "followUpTurnCap": 15,
+ "tasks": [
+  {
+   "id": 101,
+   "slug": "spider",
+   "category": "animation",
+   "source": "origin/bench/505-animation:tools/agent-eval/tasks/10-walking-spider.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 13,
+     "auraSheet": 5,
+     "three": 5
+    }
+   },
+   "causes": [
+    "A look/lighting",
+    "E framing",
+    "C shadows"
+   ],
+   "probe": "spider",
+   "followUp": {
+    "text": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
+    "probe": "spider-followup"
+   }
+  },
+  {
+   "id": 102,
+   "slug": "portal",
+   "category": "effects",
+   "source": "origin/bench/505-effects:tools/agent-eval/tasks/11-effects-portal.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 25,
+     "auraSheet": 11,
+     "three": 5
+    }
+   },
+   "causes": [
+    "control: Aura3D competitive on effects-2 in benchmark 505"
+   ],
+   "probe": "portal",
+   "followUp": {
+    "text": "Add a DOM button labelled 'Close portal' outside the canvas. Clicking it closes the portal: the energy disc and all particles disappear, window.__TASK_STATE__.portalActive becomes false, particleCount becomes 0 and the label changes to 'Open portal'. Clicking it again reopens the portal.",
+    "probe": "portal-followup"
+   }
+  },
+  {
+   "id": 103,
+   "slug": "canyon",
+   "category": "environments",
+   "source": "origin/bench/505-environments:tools/agent-eval/tasks/10-desert-canyon.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 25,
+     "auraSheet": 23,
+     "three": 8
+    }
+   },
+   "causes": [
+    "H missing helper (strata)",
+    "B material defaults",
+    "D fog"
+   ],
+   "probe": "canyon",
+   "followUp": {
+    "text": "Add a DOM button labelled 'Pause flythrough' outside the canvas that stops the camera where it is (the scene keeps rendering) and, clicked again (label 'Resume flythrough'), continues the flythrough. Expose window.__TASK_STATE__ = { flying: boolean, cameraX: number, cameraY: number, cameraZ: number } with the current camera position, updated every frame.",
+    "probe": "canyon-followup"
+   }
+  },
+  {
+   "id": 104,
+   "slug": "stacker",
+   "category": "games",
+   "source": "origin/bench/505-games:tools/agent-eval/tasks/12-games-2.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 19,
+     "auraSheet": 11,
+     "three": 4
+    }
+   },
+   "causes": [
+    "J silent colour fallback (hsl)",
+    "A look"
+   ],
+   "probe": "stacker",
+   "followUp": {
+    "text": "Add pause: pressing P pauses the game (the slab stops moving and Space or clicks do not drop it) and pressing P again resumes. Show 'Paused' in the HUD while paused and add paused: boolean to window.__TASK_STATE__.",
+    "probe": "stacker-followup"
+   }
+  },
+  {
+   "id": 105,
+   "slug": "garden",
+   "category": "interactive",
+   "source": "origin/bench/505-interactive:tools/agent-eval/tasks/10-interactive-garden.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 25,
+     "auraSheet": 15,
+     "three": 4
+    }
+   },
+   "causes": [
+    "A look/lighting",
+    "C shadows"
+   ],
+   "probe": "garden",
+   "followUp": {
+    "text": "Add an 'Undo' DOM button next to 'Clear' that removes the most recently planted plant (repeated clicks keep removing the newest remaining plant). The 'Plants: N' overlay and window.__TASK_STATE__ must update.",
+    "probe": "garden-followup"
+   }
+  },
+  {
+   "id": 106,
+   "slug": "materials",
+   "category": "materials",
+   "source": "origin/bench/505-materials:tools/agent-eval/tasks/10-materials-1.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 20,
+     "auraSheet": 16,
+     "three": 6
+    }
+   },
+   "causes": [
+    "B glass/metal against uniform environment",
+    "A look"
+   ],
+   "probe": "materials",
+   "followUp": {
+    "text": "Keys 1, 2 and 3 select the glass, metal and fabric sphere; the selected sphere slowly spins about its vertical axis and the others stay still. Add selected: 'glass' | 'metal' | 'fabric' | null (null before any key) to window.__TASK_STATE__.",
+    "probe": "materials-followup"
+   }
+  },
+  {
+   "id": 107,
+   "slug": "lighthouse",
+   "category": "models",
+   "source": "origin/bench/505-models:tools/agent-eval/tasks/10-models-1-lighthouse.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 26,
+     "auraSheet": 10,
+     "three": 5
+    }
+   },
+   "causes": [
+    "H missing helper (beam)",
+    "A look",
+    "procedural asset (bridge candidate)"
+   ],
+   "probe": "lighthouse",
+   "followUp": {
+    "text": "Make the lantern lamp blink: on for 1 second, off for 1 second, repeating (the lamp is visibly dark when off). Add lampOn: boolean to window.__TASK_STATE__ and keep it current every frame.",
+    "probe": "lighthouse-followup"
+   }
+  },
+  {
+   "id": 108,
+   "slug": "plinko",
+   "category": "physics",
+   "source": "origin/bench/505-physics:tools/agent-eval/tasks/12-physics-plinko.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 17,
+     "auraSheet": 8,
+     "three": 4
+    }
+   },
+   "causes": [
+    "control: Aura3D won 2 of 3 judged pairs in both arms in benchmark 505",
+    "K physics peer (runtime)"
+   ],
+   "probe": "plinko",
+   "followUp": {
+    "text": "Add a 'Drop 1 Ball' DOM button that drops one more ball from the top centre using the next ball index in the same offset formula. It lands in the bins and is counted in bins, spawned and total like the others.",
+    "probe": "plinko-followup"
+   }
+  }
+ ]
+}

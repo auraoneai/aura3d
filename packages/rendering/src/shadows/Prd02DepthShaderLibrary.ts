@@ -30,6 +30,7 @@ import type { ShaderLibrary } from "../ShaderLibraryCore";
 import { RenderDeviceError, type PortableShaderBinding, type RenderDevice, type RenderShaderProgram } from "../RenderDevice";
 import { shadowCasterVariantId } from "../contracts/shadows";
 import { DENSE_DEPTH_INSTANCE_MIN, denseDepthDrawsEnabled, shadowFitLegacy } from "./shadowLegacy";
+import { isStockPrd10WindDeform, prd10WindOffsetWgsl } from "../world/vegetation/shaders/wind.js";
 
 export const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
@@ -716,7 +717,9 @@ export function prd02DepthWgsl(
   // The generic C-18 GLSL hook can contain arbitrary declarations and code.
   // Until its owner supplies a native hook, reject instead of dropping it.
   const deform = selectedDeformFeatures(key, depthFeatures).filter((feature) => depthDeformIncompatibility(feature) === null);
-  if (deform.length) {
+  // The stock prd10.wind deform has a native twin (nativeDepthWindDeform); any other C-18 hook is rejected, not dropped.
+  const wind = deform.length === 1 && isStockPrd10WindDeform(deform[0]!);
+  if (deform.length && !wind) {
     throw new RenderDeviceError("Native depth shader cannot lower the selected vertex deformation", "WGSL_DEPTH_DEFORM_UNSUPPORTED", { features: deform.map((feature) => feature.id) });
   }
   const clipping = key.features["a3d.clipping"] === true;
@@ -751,6 +754,7 @@ export function prd02DepthWgsl(
     );
     else bindings.push({ name: "u_jointMatrices", kind: "mat4", arrayLength: MAX_UNIFORM_SKINNING_JOINTS });
   }
+  if (wind) bindings.push(...NATIVE_DEPTH_WIND_BINDINGS);
   if (alpha) {
     bindings.push({ name: "u_baseColor", kind: "vec4" }, { name: "u_alphaCutoff", kind: "float" });
     if (alphaOptions.member) bindings.push({ name: "u_a3dPackedLoopColor", kind: "vec4" });
@@ -790,6 +794,7 @@ struct DepthOutput {
   ${alphaOptions.vertex ? "@location(4) color: vec4<f32>," : ""}
 };
 ${skinDeclarations}
+${wind ? NATIVE_DEPTH_WIND_WGSL : ""}
 @vertex fn vs_main(
   @location(0) position: vec3<f32>${alphaOptions.map !== undefined ? `, @location(${alphaOptions.map === 1 ? 7 : 2}) uv: vec2<f32>` : ""}${alphaOptions.vertex ? ", @location(4) color: vec4<f32>" : ""}${key.skinning ? `, @location(5) joints: vec4<${jointInputWgslType(primaryJointInput)}>, @location(6) weights: vec4<f32>` : ""}${key.skinning === 8 ? `, @location(8) joints1: vec4<${jointInputWgslType(secondaryJointInput)}>, @location(9) weights1: vec4<f32>` : ""}${key.instanced ? ", @builtin(instance_index) instanceIndex: u32" : ""}${attrInstancing ? `, @location(${instanceLocation}) instance0: vec4<f32>, @location(${instanceLocation + 1}) instance1: vec4<f32>, @location(${instanceLocation + 2}) instance2: vec4<f32>, @location(${instanceLocation + 3}) instance3: vec4<f32>` : ""}
 ) -> DepthOutput {
@@ -799,6 +804,7 @@ ${skinDeclarations}
   var skin = a3dSkin4(${unsignedJointIndices("joints", primaryJointInput)}, weights);
   ${key.skinning === 8 ? `weightSum += dot(weights1, vec4<f32>(1.0));\n  skin += a3dSkin4(${unsignedJointIndices("joints1", secondaryJointInput)}, weights1);` : ""}
   if (weightSum > 0.0001) { local = skin * local; }` : ""}
+  ${wind ? "local = vec4<f32>(local.xyz + a3dDepthWindOffset(local.xyz, max(aura.u_windAssetHeight, 0.01)), local.w);" : ""}
   let geometryLocal = aura.u_geometryMatrix * vec4<f32>(local.xyz, 1.0);
   var placed = geometryLocal;
   ${key.instanced ? `let safeIndex = min(instanceIndex, u32(max(aura.u_instanceCount - 1.0, 0.0)));
@@ -857,6 +863,23 @@ ${logarithmic ? "struct FragmentOutput { @location(0) color: vec4<f32>, @builtin
 }`;
   return { webgpu: { vertex, fragment }, portableBindings: bindings };
 }
+
+const NATIVE_DEPTH_WIND_BINDINGS: readonly PortableShaderBinding[] = [
+  { name: "u_windDirStrength", kind: "vec4" },
+  { name: "u_windGust", kind: "vec4" },
+  { name: "u_windAssetHeight", kind: "float" },
+  { name: "u_windNoise", kind: "texture2d" }
+];
+
+/**
+ * WGSL twin of `a3dDeform` from `a3d_prd10_wind_deform` as the WebGL2 depth body compiles it: the depth defines never
+ * set USE_INSTANCING or VERTEX_COLORS, so the instance origin is zero and the weights are the trunk-bend default
+ * (1, 1, 0.5, 1).
+ */
+const NATIVE_DEPTH_WIND_WGSL = `${prd10WindOffsetWgsl("a3dWindOffsetNative", "aura.u_windDirStrength", "aura.u_windGust", "u_windNoiseTexture", "u_windNoiseSampler")}
+fn a3dDepthWindOffset(localPos: vec3<f32>, assetHeight: f32) -> vec3<f32> {
+  return a3dWindOffsetNative(localPos, vec3<f32>(0.0), vec4<f32>(1.0, 1.0, 0.5, 1.0), assetHeight);
+}`;
 
 // ---------------------------------------------------------------------------
 // Program cache + precompile (C-28)

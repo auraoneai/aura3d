@@ -11,7 +11,7 @@ import {
 } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { labAppOptions, parseLabFlags } from "../../showcase-port-shared/lab-flags";
+import { labAppOptions, parseLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets";
 import {
@@ -165,7 +165,8 @@ const lowTier = params.get("tier") === "low";
 // 5.x lab flags (all off by default): ?backend=auto|webgpu, ?gamut=p3 (shared parser) and ?ies=1 (A5 photometric ring spots).
 // ?worker=1 is ignored: a game app needs synchronous onFrame callbacks, so the engine refuses worker rendering for createGame.
 const labFlags = parseLabFlags(params);
-const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags);
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags, { backend: "auto" });
 const iesLab = params.get("ies") === "1";
 // A1: the real fraction of arena assets loaded, from the engine's asset events (the shell bar used to jump 0 to 1).
 let assetLoadProgress: ((loaded: number, total: number) => void) | undefined;
@@ -2141,7 +2142,7 @@ void app.ready().then(async () => {
   await fightingGame.ready();
   loadingProgress.done("Ready");
   // A2: publish backend selection + readiness on the QA hook (diagnostic only).
-  const backendHook: Record<string, unknown> = { loadEvents, lab: { backend: labFlags.backend ?? null, gamut: labFlags.gamut ?? null, ies: iesLab, ignored: labFlags.ignored } };
+  const backendHook: Record<string, unknown> = { loadEvents, lab: { backend: resolveLabBackend(labFlags, "auto") ?? null, gamut: labFlags.gamut ?? null, ies: iesLab, ignored: labFlags.ignored } };
   (window as unknown as { __IRON_CROWN_BACKEND__?: unknown }).__IRON_CROWN_BACKEND__ = backendHook;
   void publishBackendReport(app, backendHook);
   bindAnimations();

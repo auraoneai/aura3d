@@ -522,7 +522,22 @@ describe("generated native PBR program contract", () => {
     const view = new DataView(packed.buffer, packed.byteOffset, packed.byteLength);
     expect([0, 1, 2].map(index => view.getFloat32(GENERATED_PBR_MATERIAL_OFFSETS.transmission! + index * 4, true))).toEqual([0.75, 8, 4]);
     const missingCapture = { ...source, activeFeatures: source.activeFeatures.filter(item => item.id !== "prd04.transmissionTarget") };
-    expect(() => createGeneratedPbrProgram(missingCapture)).toThrow(/captured target/);
+    expect(() => createGeneratedPbrProgram(missingCapture)).toThrow(/A3D_TRANSMISSION/);
+    expect(() => createGeneratedPbrProgram(generateProgramImpl(normalizeProgramFeatures({ ...features, extensions: [] }), { flags }).descriptor!)).toThrow(/without a transmission lobe/);
+    // A lobe without a scoped capture: WebGL2 skips the refraction (A3D_TRANSMISSION is undefined) and so does WGSL.
+    const degradedFeatures = normalizeProgramFeatures({ ...features, features: {}, extensions: [
+      { lobe: "transmission", bits: { map: true }, maps: ["transmission"], mapUvSets: { transmission: 1 } },
+      { lobe: "volume", bits: { thicknessMap: true }, maps: ["volumeThickness"], mapUvSets: { volumeThickness: 0 } },
+      { lobe: "dispersion", bits: {}, maps: [] }
+    ] });
+    const degradedGenerated = generateProgramImpl(degradedFeatures, { flags });
+    expect(degradedGenerated.descriptor!.defines.A3D_TRANSMISSION).toBeUndefined();
+    const degraded = createGeneratedPbrProgram(degradedGenerated.descriptor!);
+    expect([degraded.transmission, degraded.transmissionDegraded, degraded.transmissionMap, degraded.materialVolume, degraded.thicknessMap, degraded.dispersion])
+      .toEqual([false, true, false, false, false, false]);
+    expect(degraded.resources.some(resource => ["a3d_prd04_transmissionSampler", "u_transmissionTexture", "u_volumeThicknessTexture"].includes(resource.uniform))).toBe(false);
+    expect(degraded.fragment).not.toContain("transmittedScene");
+    expect(program.transmissionDegraded).toBe(false);
     const mappedFeatures = normalizeProgramFeatures({ ...features, extensions: [
       { lobe: "transmission", bits: { map: true }, maps: ["transmission"], mapUvSets: { transmission: 1 } },
       { lobe: "volume", bits: { thicknessMap: true }, maps: ["volumeThickness"], mapUvSets: { volumeThickness: 0 } },
@@ -615,7 +630,7 @@ describe("generated native PBR program contract", () => {
     }));
     const linear = make("linear");
     expect(linear.fog).toBe("linear");
-    expect(linear.fragment).toContain("let fogDepth = input.position.z / input.position.w");
+    expect(linear.fragment).toContain("let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w");
     expect(linear.fragment).toContain("(fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001)");
     expect(linear.fragment.indexOf("let color = mix(unfoggedColor, material.fogColor.rgb, fogAmount)"))
       .toBeLessThan(linear.fragment.indexOf("generatedEncodeOutput(color)"));
@@ -739,6 +754,13 @@ describe("generated native PBR program contract", () => {
       extensions: [{ lobe: "emissive-strength", maps: ["emissive"], mapUvSets: { emissive: 1 }, bits: { map: true } }] }));
     expect(emissive.requiredVertexLocations).toEqual([0, 1, 7]);
     expect(emissive.fragment).toContain("material.emissive.rgb * material.emissive.a * emissiveSample");
+    // A UV-less geometry drops the emissive map (featuresForGeometry) but leaves the lobe's map bit set; GLSL draws
+    // unmapped emission, and so does WGSL instead of failing the mount (Top Tennis).
+    const dropped = createGeneratedPbrProgram(descriptor({ environment: "none", features: {}, maps: {},
+      extensions: [{ lobe: "emissive-strength", maps: [], bits: { map: true } }] }));
+    expect(dropped.fragment).not.toContain("emissiveSample");
+    expect(() => createGeneratedPbrProgram(descriptor({ environment: "none", features: {}, maps: {},
+      extensions: [{ lobe: "emissive-strength", maps: ["emissive"], bits: { map: true } }] }))).toThrow(/emissive-strength map metadata/);
   });
 
   it("uses independent UV sets, transforms and channels for specular and sheen maps", () => {
@@ -1576,8 +1598,9 @@ describe("generated PBR irradiance-volume WebGPU bindings", () => {
       queue: {
         submit(commands: readonly unknown[]) { submissions.push(...commands); },
         onSubmittedWorkDone: () => fence,
-        writeBuffer(buffer: { descriptor: { label?: string } }, _offset: number, data: ArrayBufferView) {
-          writes.set(buffer.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
+        writeBuffer(buffer: { label?: string; descriptor: { label?: string } }, _offset: number, data: ArrayBufferView) {
+          // Pooled per-draw uniforms carry the current draw's label on the buffer itself.
+          writes.set(buffer.label ?? buffer.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
         },
         writeTexture(destination: { texture: { descriptor: { label?: string } } }, data: ArrayBufferView) {
           textureWrites.set(destination.texture.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
@@ -1709,6 +1732,18 @@ describe("generated PBR irradiance-volume WebGPU bindings", () => {
     } finally {
       target.dispose(); geometry.dispose(); material.dispose(); factor.dispose(); color.dispose(); device.dispose();
     }
+  });
+
+  it("leaves IOR and specular at the GL default 0 for materials that bind none of them, like the WebGL2 program (FC 3D stands, Iron Crown crowd)", () => {
+    const read = (uniforms: Map<string, UniformValue>): number[] => {
+      const bytes = packGeneratedPbrMaterialUniforms(uniforms);
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      return [8, 12].map((offset) => view.getFloat32(GENERATED_PBR_MATERIAL_OFFSETS.surface! + offset, true))
+        .concat([0, 4, 8].map((offset) => view.getFloat32(GENERATED_PBR_MATERIAL_OFFSETS.specular! + offset, true)));
+    };
+    expect(read(new Map<string, UniformValue>([["u_roughness", 0.9]]))).toEqual([0, 0, 0, 0, 0]);
+    expect(read(new Map<string, UniformValue>([["u_ior", 1.5]]))).toEqual([1.5, 1, 1, 1, 1]);
+    expect(read(new Map<string, UniformValue>([["u_specularFactor", 0.5]]))).toEqual([1.5, 0.5, 1, 1, 1]);
   });
 });
 

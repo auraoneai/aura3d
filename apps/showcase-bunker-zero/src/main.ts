@@ -44,6 +44,7 @@ import {
 import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
 import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
 
@@ -846,8 +847,9 @@ type CueId = keyof typeof CUES;
 // ---------------------------------------------------------------------------
 // The game reads its own key table (flow.ts DEFAULT_BINDINGS, remappable in the Player Studio); the engine input only gets
 // the pointer.
-/** 5.0 lab flags (?backend= / ?gamut=): all off by default, EXPERIMENTAL, WebGL2 fallback kept. ?worker= and ?depth= are not wired here. */
-const labOptions = labAppOptions(readLabFlags());
+/** 5.0 lab flags (?backend= / ?gamut=): all off by default, EXPERIMENTAL, WebGL2 fallback kept. ?worker=1 renders in a worker (main-thread fallback kept); ?depth= is not wired here. */
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const labOptions = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
 const mg = createGame({
   id: "showcase-bunker-zero",
   target: "#app",
@@ -866,6 +868,7 @@ const mg = createGame({
   // BZ-08: ACES through the output, never a look preset (lane 521 exposure: art/look.ts BZ_OUTPUT_EXPOSURE).
   output: { toneMapping: "aces", exposure: BZ_OUTPUT_EXPOSURE, ...labOptions.output },
   ...(labOptions.renderer ? { renderer: labOptions.renderer } : {}),
+  ...(labOptions.worker ? { worker: labOptions.worker } : {}),
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
 });
 const app = mg.app;

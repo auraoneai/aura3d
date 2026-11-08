@@ -25,4 +25,4 @@ app.onFrame((frame) => {
   angle += frame.dt * 0.5;
   app.nodes.require("product").setRotation(0, angle, 0); // slow turntable
 });
-await app.ready();
+void app.ready();

@@ -20,7 +20,7 @@ import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
 import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import "./enamel.css";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
@@ -305,11 +305,27 @@ function startPlay(goal?: number): void {
 /** `live` draws the tram between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
 /** True from a render until the end of the current task: `pixels()` right after `frame()` (one evaluate) need not render again. */
 let freshFrame = false;
+/**
+ * A lab backend (`?backend=webgpu|auto`) renders with async frames: on WebGPU the station reflection probes cannot capture
+ * on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED). While one is in flight the next render is skipped (the scene
+ * may not be mutated under a pending submission). Absent the flag every render is the synchronous `app.step(0)` as before.
+ */
+const LAB_ASYNC_FRAMES = resolveLabBackend(readLabFlags()) !== undefined;
+let asyncFrame: Promise<void> | null = null;
+/** A failed async frame (e.g. a mount failure) is reported once, not on every later frame; frames keep being attempted. */
+let asyncFrameErrorReported = false;
+const reportAsyncFrameError = (error: unknown): void => {
+  if (asyncFrameErrorReported) return;
+  asyncFrameErrorReported = true;
+  reportError(error);
+};
 function render(live = false): void {
   if (!app || !runtime) return;
+  if (asyncFrame) return;
   if (!freshFrame) { freshFrame = true; queueMicrotask(() => { freshFrame = false; }); }
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode, reducedMotion: reducedMotion() });
-  app.step(0);
+  if (LAB_ASYNC_FRAMES) asyncFrame = app.stepAsync(0).catch(reportAsyncFrameError).finally(() => { asyncFrame = null; });
+  else app.step(0);
 }
 
 /** `speed=N` runs N sim steps per fixed step. The sim steps only in play and never in manual mode; frames always render. */
@@ -530,6 +546,10 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
+    // A WebGPU backend (?backend=webgpu, or auto resolving to WebGPU) cannot capture the station reflection probe on a
+    // synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so the flag also asks for async frames.
+    // Absent the flag: unchanged.
+    ...(lab.renderer ? { frameMode: "async" as const } : {}),
     quality: "auto",
     // GU47 LT-07: the band look renders with dither (per-band exposure is on the grade node). Phase 2: tone mapping is none on
     // both paths: agx rendered band A at mean luma 31 against 105 with none and 86 for the 4.6.2 frame (software WebGL2,

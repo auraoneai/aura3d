@@ -130,77 +130,59 @@ describe("createAuraApp worker integration", () => {
     ["4.x", "main-thread", createGameApp],
     ["v5", "error", createV5GameApp],
     ["v5", "main-thread", createV5GameApp]
-  ] as const)("rejects %s createGameApp worker mode with %s fallback before acquiring anything", async (_entry, fallback, createGame) => {
+  ] as const)("renders a %s createGameApp in the worker (fallback %s) with its loop on the main thread", async (_entry, fallback, createGame) => {
     const f = fixture();
-    const before = new Set(auraAppRegistry.all());
-    let failure: unknown;
+    const game = createGame(f.canvas as unknown as HTMLCanvasElement, {
+      scene: makeScene("game-worker"), autoStart: false,
+      worker: { createWorker: f.createWorker, fallback }
+    } as unknown as AuraCreateGameAppOptions);
     try {
-      createGame(f.canvas as unknown as HTMLCanvasElement, {
-        scene: makeScene("game-worker"), autoStart: false,
-        worker: { createWorker: f.createWorker, fallback }
-      } as unknown as AuraCreateGameAppOptions);
-    } catch (error) {
-      failure = error;
+      expect(game.app.execution?.active).toBe("worker");
+      expect(f.createWorker).toHaveBeenCalledTimes(1);
+      await game.app.readyStrict();
+      const frames: number[] = [];
+      game.onFrame((frame) => { frames.push(frame.dt); });
+      game.step(0.25);
+      // The game loop splits the step into fixed substeps, as on the main thread.
+      expect(frames.length).toBeGreaterThan(0);
+      await flush();
+      expect(f.host.sent.map((message) => message.type)).toContain("frame");
+      expect(game.evidence.kind).toBe("aura-game-app-runtime-evidence");
+    } finally {
+      game.dispose();
+      await game.app.disposeAsync();
+      await f.stop();
     }
-    const leaked = auraAppRegistry.all().filter((app) => !before.has(app));
-    const observed = {
-      factoryCalls: f.createWorker.mock.calls.length,
-      transfers: f.canvas.transfer.mock.calls.length,
-      registeredApps: leaked.length,
-      canvasListeners: f.canvas.count()
-    };
-    await Promise.all(leaked.map((app) => app.disposeAsync()));
-    await f.stop();
-    expect(observed).toEqual({ factoryCalls: 0, transfers: 0, registeredApps: 0, canvasListeners: 0 });
-    expect(failure).toMatchObject({
-      name: "AuraWorkerError",
-      code: "worker-unsupported",
-      message: expect.stringMatching(/createGameApp.*worker.*(createAuraApp|main.thread)/i)
-    });
   });
 
-  it("rejects a worker option revealed by an accessor when copying game options", async () => {
+  it("forwards the worker option snapshot that was validated last when copying game options", async () => {
     const f = fixture();
-    const before = new Set(auraAppRegistry.all());
     let reads = 0;
-    let failure: unknown;
-    try {
-      createGameApp(f.canvas as unknown as HTMLCanvasElement, {
-        scene: makeScene("changing-worker"), autoStart: false,
-        get worker() {
-          reads += 1;
-          return reads === 1 ? undefined : { createWorker: f.createWorker };
-        }
-      } as unknown as AuraCreateGameAppOptions);
-    } catch (error) {
-      failure = error;
-    }
-    const leaked = auraAppRegistry.all().filter((app) => !before.has(app));
-    const observed = {
-      factoryCalls: f.createWorker.mock.calls.length,
-      transfers: f.canvas.transfer.mock.calls.length,
-      registeredApps: leaked.length
-    };
-    await Promise.all(leaked.map((app) => app.disposeAsync()));
+    const game = createGameApp(f.canvas as unknown as HTMLCanvasElement, {
+      scene: makeScene("changing-worker"), autoStart: false,
+      get worker() {
+        reads += 1;
+        return reads === 1 ? undefined : { createWorker: f.createWorker };
+      }
+    } as unknown as AuraCreateGameAppOptions);
+    expect(game.app.execution?.active).toBe("worker");
+    game.dispose();
+    await game.app.disposeAsync();
     await f.stop();
-    expect(observed).toEqual({ factoryCalls: 0, transfers: 0, registeredApps: 0 });
-    expect(failure).toMatchObject({ name: "AuraWorkerError", code: "worker-unsupported" });
   });
 
-  it("rejects game worker mode before evaluating unrelated option getters", () => {
+  it("rejects a game worker request without createWorker before evaluating unrelated option getters", () => {
     const canvas = new Canvas();
-    const createWorker = vi.fn();
     let workerReads = 0;
     const options = {
       get worker() {
         workerReads += 1;
-        return { createWorker };
+        return { fallback: "error" };
       },
       get scene(): never { throw new Error("scene should not be inspected"); }
     } as unknown as AuraCreateGameAppOptions;
     expect(() => createGameApp(canvas as unknown as HTMLCanvasElement, options)).toThrow(/createGameApp.*worker/i);
     expect(workerReads).toBe(1);
-    expect(createWorker).not.toHaveBeenCalled();
     expect(canvas.transfer).not.toHaveBeenCalled();
     expect(canvas.count()).toBe(0);
   });
@@ -289,9 +271,9 @@ describe("createAuraApp worker integration", () => {
     await expect(first).resolves.toEqual({ state: "ready", stage: "first-frame", backend: "webgl2" });
     expect(app.runtime).toMatchObject({ paused: true, frame: 1, time: 0.25 });
     expect(f.render).toHaveBeenCalledOnce();
-    expect(() => app.step()).toThrow(/stepAsync/);
     expect(() => app.screenshot()).toThrow(/screenshotAsync/);
-    expect(() => app.onFrame(() => {})).toThrow(/worker/i);
+    // K2: frame callbacks run on the host; they no longer throw.
+    expect(typeof app.onFrame(() => {})).toBe("function");
     await expect(app.screenshotAsync!()).resolves.toMatchObject({ dataUrl: "data:image/png;base64,iVBORw==", width: 8, height: 4 });
     expect(app.runtime.frame).toBe(1);
     await app.disposeAsync();
@@ -319,10 +301,10 @@ describe("createAuraApp worker integration", () => {
     const first = app.readiness({ stage: "first-frame" });
     let settled = false;
     void first.then(() => { settled = true; });
-    const scheduled = callbacks.entries().next().value as [number, (time: number) => void];
-    expect(scheduled).toBeDefined();
-    callbacks.delete(scheduled[0]);
-    scheduled[1](100);
+    // The worker frame and, when an extension armed host frame callbacks, the host loop share this rAF stub.
+    const scheduled = [...callbacks.entries()];
+    expect(scheduled.length).toBeGreaterThan(0);
+    for (const [id, callback] of scheduled) { callbacks.delete(id); callback(100); }
     await flush();
     expect(renderAsync).toHaveBeenCalledOnce();
     expect(settled).toBe(false);

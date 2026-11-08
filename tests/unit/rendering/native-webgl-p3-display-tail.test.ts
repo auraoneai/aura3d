@@ -171,11 +171,12 @@ function fixture(alphaMode: AlphaMode = "opaque", acceptsP3 = true, leaseBacking
     antiAliasing: "off", depthRange: { near: 0.1, far: 10, projection: "perspective" },
     exposure: 1, toneMapping: "linear", dither: false, ...options
   });
-  const run = (options: Partial<PostPipelineOptions>, frameId: number, hooks: typeof postV2 = postV2, outputTarget?: RenderTarget): void => {
+  const run = (options: Partial<PostPipelineOptions>, frameId: number, hooks: typeof postV2 = postV2, outputTarget?: RenderTarget,
+    extraPasses: readonly { name: "color-grade" | "fxaa" | "ssr"; options: Record<string, unknown> }[] = []): void => {
     device.beginFrame(8, 8);
     try {
       executePostGraphWebGL2(host, source, { v2: hooks, pipeline: pipeline(options),
-        passes: [{ name: "tone-mapping", options: { operator: "linear", exposure: 1 } }],
+        passes: [{ name: "tone-mapping", options: { operator: "linear", exposure: 1 } }, ...extraPasses],
         frameContext: frame(frameId), ...(outputTarget ? { outputTarget } : {}) });
     } finally { device.endFrame(); }
   };
@@ -420,10 +421,7 @@ describe("WebGL P3 encoded display tails", () => {
   const custom: PostPassDescriptor = { id: "test.display", owner: "prd03", flag: "A3D_QR_POST", insertAt: "after-tonemap", space: "display",
     inputs: ["color"], fragment: { glsl: "void main() {}" }, gpuOnly: true };
   it.each([
-    ["FXAA", { antiAliasing: "fxaa" as const }],
-    ["LUT", { lut: { source: "fixture.cube", status: "pending" } }],
     ["custom display pass", { customPasses: [custom] }],
-    ["film grain", { filmGrain: { intensity: 0.1 } }],
     ["upscale", { renderScale: 0.75 }]
   ] as const)("keeps unsupported %s combinations on an honestly reported sRGB fallback", (_name, options) => {
     const f = fixture();
@@ -673,5 +671,114 @@ describe("internal encoded output write ownership", () => {
       expect(() => assertEncodedDisplaySurfaceWritten(surface, f.device, lease.target)).toThrow(/surface|written|unreadable/i);
       lease.release();
     } finally { vi.restoreAllMocks(); scope.release(); pass.dispose(); pool.dispose(); previous.dispose(); f.device.endFrame(); f.device.dispose(); }
+  });
+});
+
+describe("WebGL P3 route admits the legacy colour grade, FXAA and display tail stages", () => {
+  const grade = { name: "color-grade" as const, options: { contrast: 1.1, saturation: 1.2, temperature: 0.1, vignette: 0.2 } };
+  const fxaa = { name: "fxaa" as const, options: {} };
+
+  it("folds the colour grade into the P3 OutputPass and runs film grain and the display vignette on the encoded P3 tail", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3", filmGrain: { intensity: 0.1, size: 1.5 }, vignette: { intensity: 0.3 } }, 1, postV2, undefined, [grade]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "display-p3" });
+      const output = outputDraw(f.state.draws), final = finalDraw(f.state.draws);
+      expect(output?.source).toContain("#define OUTPUT_DISPLAY_P3");
+      expect(output?.source).toContain("#define OUTPUT_COLOR_GRADE");
+      expect(f.state.draws.some(draw => draw.source.includes("u_vignetteIntensity") && draw.framebuffer !== null && draw.bindings.get(0) === output?.attachment)).toBe(true);
+      expect(final?.colorSpace).toBe("display-p3");
+      expect(final?.uniforms.get("u_grainIntensity")).toBeCloseTo(0.1);
+      expect(final?.source).toContain("filmGrain(");
+    } finally { f.device.dispose(); }
+  });
+
+  it("maps a legacy fxaa descriptor to the tail's fused FXAA on the P3 canvas", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3" }, 1, postV2, undefined, [grade, fxaa]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "display-p3" });
+      const output = outputDraw(f.state.draws), final = finalDraw(f.state.draws);
+      expect(output?.source).toContain("#define OUTPUT_COLOR_GRADE");
+      expect(final?.source).toContain("ApplyFXAA");
+      expect(final?.bindings.get(0)).toBe(output?.attachment);
+      expect(final?.colorSpace).toBe("display-p3");
+    } finally { f.device.dispose(); }
+  });
+
+  it("admits SMAA on the encoded P3 tail", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3", antiAliasing: "smaa" }, 1, postV2, undefined, [grade]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "display-p3" });
+      expect(finalDraw(f.state.draws)?.colorSpace).toBe("display-p3");
+    } finally { f.device.dispose(); }
+  });
+
+  it("draws a no-tail graded P3 chain straight to the canvas through the OutputPass", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3" }, 1, postV2, undefined, [grade]);
+      const final = finalDraw(f.state.draws);
+      expect(final?.source).toContain("#define OUTPUT_COLOR_GRADE");
+      expect(final?.source).toContain("#define OUTPUT_DISPLAY_P3");
+      expect(final?.colorSpace).toBe("display-p3");
+    } finally { f.device.dispose(); }
+  });
+
+  it("admits a user LUT on the P3 tail (fetched on the sRGB re-encoding)", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3", lut: { source: "fixture.cube", status: "pending" } }, 1, postV2, undefined, [grade]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "display-p3" });
+      expect(finalDraw(f.state.draws)?.colorSpace).toBe("display-p3");
+    } finally { f.device.dispose(); }
+  });
+
+  it("keeps the grade but falls back to an sRGB OutputPass for a P3 chain with an upscale, naming the blocker", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3", renderScale: 0.75, filmGrain: { intensity: 0.1 } }, 1, postV2, undefined, [grade]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: expect.stringMatching(/tail: render-scale$/) });
+      const output = outputDraw(f.state.draws);
+      expect(output?.source).toContain("#define OUTPUT_COLOR_GRADE");
+      expect(output?.source).not.toContain("#define OUTPUT_DISPLAY_P3");
+      expect(finalDraw(f.state.draws)?.colorSpace).toBe("srgb");
+    } finally { f.device.dispose(); }
+  });
+
+  it.each([
+    ["sRGB grade", {}, [grade]],
+    ["sRGB grade + FXAA + grain", { filmGrain: { intensity: 0.1 } }, [grade, fxaa]]
+  ] as const)("leaves the %s chain on the fused present (no OutputPass, no folded grade)", (_name, options, passes) => {
+    const f = fixture();
+    try {
+      f.run(options, 1, postV2, undefined, passes);
+      expect(f.state.draws.some(draw => draw.source.includes("// a3d.output"))).toBe(false);
+      expect(f.state.draws.some(draw => draw.source.includes("OUTPUT_COLOR_GRADE"))).toBe(false);
+      expect(f.state.draws.some(draw => draw.source.includes("#define LDR_GRADE 1"))).toBe(true);
+      expect(finalDraw(f.state.draws)?.colorSpace).toBe("srgb");
+    } finally { f.device.dispose(); }
+  });
+
+  it("does not admit a legacy ssr descriptor when no depth-less HDR stage output owns SSR", () => {
+    const f = fixture();
+    try {
+      // The legacy fused present keeps the descriptor (and its native depth read) instead of the P3 OutputPass silently dropping it.
+      expect(() => f.run({ outputColorSpace: "display-p3", ssr: { intensity: 0.5 } as PostPipelineOptions["ssr"] }, 1, postV2, undefined,
+        [{ name: "ssr", options: {} }])).toThrow(/sampleable depth texture/);
+      expect(f.state.draws.some(draw => draw.source.includes("#define OUTPUT_DISPLAY_P3"))).toBe(false);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: expect.stringMatching(/passes:ssr$/) });
+    } finally { f.device.dispose(); }
+  });
+
+  it("keeps a sharpened grade on the sRGB fused fallback", () => {
+    const f = fixture();
+    try {
+      f.run({ outputColorSpace: "display-p3", filmGrain: { intensity: 0.1 } }, 1, postV2, undefined,
+        [{ name: "color-grade", options: { sharpening: 0.4 } }]);
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb" });
+      expect(f.state.draws.some(draw => draw.source.includes("#define LDR_SHARPEN 1"))).toBe(true);
+    } finally { f.device.dispose(); }
   });
 });

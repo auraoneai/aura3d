@@ -14,6 +14,7 @@ import type { EnvironmentProbe } from "../../../../packages/rendering/src/contra
 import { bindPrd02EnvironmentProbe } from "../../../../packages/engine/src/agent-api/compiler/environment";
 import {
   lookHdriMissingMessage,
+  presetFallbackKind,
   proceduralEnvironmentEquirect,
   proceduralEnvironmentKind,
   reportLookHdriMissing
@@ -96,6 +97,65 @@ describe("LOOK_HDRI_MISSING procedural fallback", () => {
     expect(missing[0]).toContain("LOOK_HDRI_MISSING");
     expect(error).toHaveBeenCalledTimes(1);
   }, 30_000);
+});
+
+describe("N2: missing studio environments degrade to the structured room generated in code", () => {
+  const notFound = () => vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 404, statusText: "Not Found", arrayBuffer: async () => new ArrayBuffer(0) })));
+  const waitFor = async (list: unknown[]) => { for (let i = 0; i < 200 && list.length === 0; i += 1) await new Promise((resolve) => setTimeout(resolve, 10)); };
+  const bind = (probe: unknown, upgraded: EnvironmentProbe[], missing: string[] = []) => bindPrd02EnvironmentProbe(
+    { kind: "explicit", probe, intensity: 1, diffuseIntensity: 1, specularIntensity: 1, rotation: 0, background: false as const, ambient: null } as never,
+    { device: new MockRenderDevice(), tier: "low", flags: resolveQrFlags({}), onUpgrade: (p) => upgraded.push(p), onHdriMissing: (info) => missing.push(info.message) }
+  );
+
+  it("a studio-family look HDRI that 404s binds the embedded room probe, not the latitude bands", async () => {
+    notFound();
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const upgraded: EnvironmentProbe[] = [];
+    const missing: string[] = [];
+    const binding = bind({ hdri: "/hdri/studio_small_08_n2_missing_1k.hdr" }, upgraded, missing);
+    expect(binding.probe.source).toBe("neutral");
+    await expect(binding.pending!).rejects.toBeDefined();
+    await waitFor(upgraded);
+    expect(upgraded).toHaveLength(1);
+    expect(upgraded[0]!.source).toBe("preset");
+    expect(upgraded[0]!.specularCube.label).toBe("env-preset-softbox");
+    expect(missing[0]).toContain("structured studio room");
+    expect(error).toHaveBeenCalledTimes(1);
+  }, 30_000);
+
+  it("a baked preset that 404s binds the room and warns ENV_PRESET_MISSING once (no neutral-floor warning)", async () => {
+    notFound();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const upgraded: EnvironmentProbe[] = [];
+    const binding = bind({ preset: "studio" }, upgraded);
+    await expect(binding.pending!).rejects.toBeDefined();
+    await waitFor(upgraded);
+    expect(upgraded[0]!.specularCube.label).toBe("env-preset-softbox");
+    const lines = warn.mock.calls.map((call) => String(call[0]));
+    expect(lines.filter((line) => line.includes("ENV_PRESET_MISSING") && line.includes("\"studio\""))).toHaveLength(1);
+    expect(lines.some((line) => line.includes("neutral floor"))).toBe(false);
+  }, 30_000);
+
+  it("an outdoor preset that 404s keeps the matched sky bands", async () => {
+    notFound();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const upgraded: EnvironmentProbe[] = [];
+    const binding = bind({ preset: "outdoor" }, upgraded);
+    await expect(binding.pending!).rejects.toBeDefined();
+    await waitFor(upgraded);
+    expect(upgraded[0]!.source).toBe("hdri");
+  }, 30_000);
+
+  it("names the replacement in the message and maps preset families", () => {
+    expect(lookHdriMissingMessage("/hdri/studio.hdr", "x", "studio", { room: true })).toContain("structured studio room generated in code");
+    expect(lookHdriMissingMessage("/hdri/studio.hdr", "x", "studio")).toContain("procedural studio probe");
+    expect(presetFallbackKind("studio")).toBe("studio");
+    expect(presetFallbackKind("indoor")).toBe("studio");
+    expect(presetFallbackKind("outdoor")).toBe("sky");
+    expect(presetFallbackKind("sunset")).toBe("warm-sky");
+    expect(presetFallbackKind("night")).toBe("night");
+  });
 });
 
 describe("scaffold-time HDRI check", () => {

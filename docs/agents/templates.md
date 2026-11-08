@@ -1,6 +1,18 @@
 # Template selection
 
-`npx create-aura3d@latest <dir> --template <name>` scaffolds one of 21 templates (list is `CREATE_AURA3D_TEMPLATES` in `packages/create-aura3d/src/index.ts`). Pick by what you are building, then follow the matching skill. Start from a template, then `sceneKits.*`, then `prefabs.*`; use `primitives.*` last, for set dressing only.
+`npx create-aura3d@latest <dir> --template <name>` scaffolds one of 26 templates (list is `CREATE_AURA3D_TEMPLATES` in `packages/create-aura3d/src/index.ts`). Pick by what you are building, then follow the matching skill. Start from a template, then `sceneKits.*`, then `prefabs.*`; use `primitives.*` last, for set dressing only.
+
+## Starter scenes (start here)
+
+Five small, GPU-verified scenes that build with Vite, pass `check-deploy` and show the default shape (look preset, subject, camera, per-frame update). Copy one and change the subject.
+
+| Template | What it shows |
+| --- | --- |
+| `starter-product` | Product viewer: typed GLB on a turntable, dark `product-studio` stage, `camera.frame` fit for any window shape. |
+| `starter-outdoor` | Outdoor scene: heightfield valley with a lake, instanced typed trees and rocks, `golden-hour` look. |
+| `starter-interior` | Interior scene: furnished room in named surface materials, a lamp with a real shadowing point light, `interior-warm` look. |
+| `starter-game` | Small game: collect-the-gems island with a rigged player, fixed-step input, DOM HUD, follow camera, restart. |
+| `starter-presentation` | Animated presentation: 15 s three-beat keynote (centred `text3D` title, chrome product, growing bars), eased camera shots. |
 
 ## Scenes and viewers
 

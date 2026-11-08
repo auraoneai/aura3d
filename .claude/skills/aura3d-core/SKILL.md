@@ -23,8 +23,9 @@ without a look ships flat shading, void background and floating props.
 
 1. Run `npx @aura3d/cli@latest --help` (or `pnpm exec aura3d --help` inside the
    monorepo) and use only the commands and flags it prints.
-2. Check the installed engine version in `package.json`. Do not name an export
-   you have not seen in the installed package's type declarations.
+2. Run `aura3d info` for the installed versions and the engine's namespaces and
+   members; `aura3d info --name material.pbr` prints one builder's option keys.
+   Do not name an export `aura3d info` does not list.
 3. Read `src/aura-assets.ts` and `aura.assets.json` before writing scene code.
    Asset keys come from that generated file, never from memory.
 4. Decide the mode. Benchmark mode means `npm install && npm run build`, then
@@ -34,7 +35,10 @@ without a look ships flat shading, void background and floating props.
 
 1. Pick the starting point in this order: a template (`npx create-aura3d@latest
    <dir> --template <name>`), then `sceneKits.*`, then `prefabs.*`, and use
-   `primitives.*` last, for set dressing only.
+   `primitives.*` last, for set dressing only. `aura3d examples "<task>"` finds
+   the closest recipe or template offline and prints its source. After each
+   edit run `aura3d validate` (colours, unknown options, framing, lighting),
+   then `aura3d render` and open the screenshot it saves.
 2. Add the look first — it supplies the sky/environment light, the key shadow,
    fog, background and the post grade as one unit:
 
@@ -76,8 +80,9 @@ without a look ships flat shading, void background and floating props.
    by capture, claim nothing unproven): shader graphs through `material.node`,
    `renderOrder` on nodes, post effects through `effects.*` including
    `effects.shaderPass`, depth and normal inputs for post, motion vectors.
-7. For interactive and game routes, gate Frame 1 on `await app.ready()` before
-   fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
+7. For interactive and game routes, gate Frame 1 on `app.ready().then(...)`
+   (never a module top-level `await app.ready()`: a production build deadlocks
+   on it and the page stays black) before fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
    mounted; default `autopilot` to `false` (manual control on Frame 1) unless
    `?autoplay=1` / `?demo=1` is in the URL or the user clicks the HUD `Auto`
    button (with `button.blur()` for clean framing), keep canonical `sha256-...`
@@ -137,3 +142,4 @@ spec lives in `aura3d-art-direction`.
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
 - [Claims and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md)
 - [Agent quickstart](https://aura3d.auraone.ai/docs/agent-quickstart.html)
+- [Agent tools: info, examples, validate, render](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-tools.md)

@@ -28,6 +28,7 @@ import { setAdvancedLightingInvalidator } from "./advancedLightingState.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import { isPrd07DeviceLeaseBusy } from "@aura3d/rendering";
 import { RenderDeviceError } from "@aura3d/rendering";
+import { isPlainDefaultOutput } from "../looks/plainLook.js";
 
 function frameSetupCleanupFailure(error: unknown, failures: readonly unknown[]): RenderDeviceError {
   const failure = new RenderDeviceError(
@@ -126,9 +127,12 @@ export async function startProductionRender(
     { strict: options.strict, onDegradation: options.onDegradation },
     {
       preserveDrawingBuffer: wantsPreservedDrawingBuffer(options),
-      ...(options.output !== undefined || options.renderer?.output !== undefined
-        ? { output: { ...options.renderer?.output, ...options.output } }
-        : {})
+      // N3: the plain output object travels as-is, so the renderer can tell it from an authored output.
+      ...(isPlainDefaultOutput(options.output) && options.renderer?.output === undefined
+        ? { output: options.output }
+        : options.output !== undefined || options.renderer?.output !== undefined
+          ? { output: { ...options.renderer?.output, ...options.output } }
+          : {})
     },
     {
       runtimeOwner,
@@ -564,11 +568,39 @@ export async function startProductionRender(
     frameTail = submitted.catch(() => undefined);
     return submitted;
   };
+  /*
+   * WebGPU probe capture reads cube faces back asynchronously, so a synchronous
+   * frame rejects it (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED) before submitting
+   * anything. Unless the app chose `frameMode: "sync"`, the loop then switches
+   * this mount to asynchronous presentation instead of failing: with `frameMode`
+   * unset every later frame is asynchronous, and with "async" an explicit
+   * `render()` (`app.step()`) is queued as an asynchronous frame. An explicit
+   * "sync" keeps the error. WebGL2 reads back synchronously and never reaches this.
+   */
+  let probeAsyncFrames = false;
+  const asyncFrames = (): boolean => options.frameMode === "async" || probeAsyncFrames;
+  const adoptAsyncFramesForProbes = (error: unknown): boolean => {
+    if (options.frameMode === "sync" || !renderer.renderAsync || !isWebGPUProbeAsyncRequired(error)) return false;
+    probeAsyncFrames = true;
+    return true;
+  };
+  /** Present the frame whose synchronous attempt was rejected, without running the simulation callback again. */
+  const presentRejectedFrameAsync = (clock: () => number): Promise<void> => submitAsync(clock).then(() => {
+    if (canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
+      animationHandle = requestAnimationFrame(scheduleFrame);
+    }
+  });
+  const reportAsyncFrameFailure = (error: unknown): void => {
+    if (!disposed) {
+      reportFrameFailure(error);
+      if (!disposed) { recordFrameError(diagnosticsState, error); overlay?.update(); }
+    }
+  };
   const scheduleFrame = (time: number): void => {
     animationHandle = 0;
     if (disposed || pageHidden || isPaused()) return;
     if (pendingFrames > 0) return;
-    if (options.frameMode === "async") {
+    if (asyncFrames()) {
       frameInvalidated = false;
       void submitAsync(() => time, true).then(() => {
         if (canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
@@ -589,6 +621,8 @@ export async function startProductionRender(
             // automatic frame and retry instead of terminating this app.
             frameInvalidated = true;
             if (canSchedule() && !animationHandle) animationHandle = requestAnimationFrame(scheduleFrame);
+          } else if (adoptAsyncFramesForProbes(error)) {
+            void presentRejectedFrameAsync(() => time).catch(reportAsyncFrameFailure);
           } else {
             reportFrameFailure(error);
             if (!disposed) { recordFrameError(diagnosticsState, error); overlay?.update(); }
@@ -616,9 +650,24 @@ export async function startProductionRender(
        * different clock — a visible jump. Same defect the canvas2d path had; fixed identically so
        * the two render paths cannot disagree about what `step` does.
        */
+      if (probeAsyncFrames) {
+        if (disposed) throw new Error("Aura3D renderer is disposed.");
+        // Probe-capturing WebGPU mounts present asynchronously: queue this explicit
+        // frame, or coalesce it into the frame already in flight. app.step() and
+        // app.screenshot() never get here with a frame pending (assertMutableFrame /
+        // busy() guard them); direct controller renders (XR renderFrame) can.
+        if (pendingFrames > 0) { frameInvalidated = true; return; }
+        void submitAsync(() => time).catch(reportAsyncFrameFailure);
+        return;
+      }
       if (pendingFrames > 0) throw new Error("Aura3D async frame is pending; await it before synchronous rendering.");
       const previousLastTime = lastTime;
       try { renderFrame(time, undefined, true); } catch (error) {
+        if (adoptAsyncFramesForProbes(error)) {
+          lastTime = previousLastTime;
+          void submitAsync(() => time).catch(reportAsyncFrameFailure);
+          return;
+        }
         if (!isPrd07DeviceLeaseBusy(error)) reportFrameFailure(error);
         throw error;
       }
@@ -643,6 +692,7 @@ export async function startProductionRender(
       throw error;
     }),
     busy: () => pendingFrames > 0,
+    autoAsyncFrames: () => probeAsyncFrames,
     whenIdle: async () => {
       // Snapshot the requested attempt before awaiting a frame or another
       // cleanup. A later retry must not erase this waiter's original failure.
@@ -774,10 +824,15 @@ export async function startProductionRender(
     } else {
       try { renderFrame(); }
       catch (error) {
-        if (!isPrd07DeviceLeaseBusy(error) || !renderer.renderAsync) throw error;
-        // The synchronous first attempt already ran the simulation callback.
-        // Await a queued presentation without advancing it a second time.
-        await submitAsync(() => performanceNow());
+        if (adoptAsyncFramesForProbes(error)) {
+          // Same as the lease-busy retry below: the simulation callback already ran.
+          await presentRejectedFrameAsync(() => performanceNow());
+        } else {
+          if (!isPrd07DeviceLeaseBusy(error) || !renderer.renderAsync) throw error;
+          // The synchronous first attempt already ran the simulation callback.
+          // Await a queued presentation without advancing it a second time.
+          await submitAsync(() => performanceNow());
+        }
       }
     }
   } catch (error) {
@@ -885,4 +940,13 @@ export function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
     if (node.kind !== "effect") return false;
     return node.effect === "particles" || node.effect === "rain";
   });
+}
+
+/** True when `error` (or a cause / aggregated error) is the WebGPU probe capture's async-readback requirement. */
+function isWebGPUProbeAsyncRequired(error: unknown, depth = 0): boolean {
+  if (depth > 4 || error === null || typeof error !== "object") return false;
+  const message = (error as { readonly message?: unknown }).message;
+  if (typeof message === "string" && message.startsWith("WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED")) return true;
+  if (error instanceof AggregateError && error.errors.some((inner) => isWebGPUProbeAsyncRequired(inner, depth + 1))) return true;
+  return isWebGPUProbeAsyncRequired((error as { readonly cause?: unknown }).cause, depth + 1);
 }

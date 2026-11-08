@@ -1,4 +1,5 @@
 import { AuraRuntimeError } from "../../contracts/runtimeError.js";
+import { parseAuraColorSrgb } from "../color.js";
 import type { AuraCustomPostPass, AuraPostPassOrder } from "../../contracts/post.js";
 import { postEffectBuilders } from "./effects.post.js";
 
@@ -159,11 +160,16 @@ function srgbToLinear(channel: number): number {
   return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }
 
-/** Parses `inkColor` ("#rgb" or "#rrggbb") to 0..1 channels; `linear` converts from sRGB for pre-tonemap slots. */
+/** Parses `inkColor` (any CSS colour) to 0..1 channels; `linear` converts from sRGB for pre-tonemap slots. */
 export function toonInkColor(inkColor: string, linear = false): [number, number, number] {
   const match = typeof inkColor === "string" ? /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(inkColor.trim()) : null;
   if (!match) {
-    throw new AuraRuntimeError("invalid-material-spec", `effects.toon inkColor must be "#rgb" or "#rrggbb", got ${String(inkColor)}`);
+    let srgb: readonly number[];
+    try { srgb = parseAuraColorSrgb(inkColor); } catch {
+      throw new AuraRuntimeError("invalid-material-spec", `effects.toon inkColor COLOR_INVALID: expected a CSS colour (#rgb, #rrggbb, rgb(), hsl(), a name), got ${String(inkColor)}`);
+    }
+    const out = linear ? srgb.slice(0, 3).map(srgbToLinear) : srgb.slice(0, 3);
+    return [out[0]!, out[1]!, out[2]!];
   }
   const hex = match[1]!.length === 3 ? match[1]!.split("").map((digit) => digit + digit).join("") : match[1]!;
   const rgb = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255);

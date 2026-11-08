@@ -188,6 +188,8 @@ struct IndependentDofParams {
   maxBlurPx: f32,
   skyDepthMeters: f32,
   padding: f32,
+  // GU47 EC-8 tilt-shift band: x centre (0 top, 1 bottom), y width, z angle (rad), w 1 = band mode (CoC from position).
+  tiltShift: vec4<f32>,
 }
 
 @group(0) @binding(0) var<uniform> dof: IndependentDofParams;
@@ -213,6 +215,25 @@ fn independentSignedCoc(depth: f32) -> f32 {
   return numerator / depth;
 }
 
+// The WebGL2 S6 band: sharp within bandWidth/2 of the centre, ramping to maxBlurPx; far-field (positive) on both
+// sides, so the sky blurs like everything else.
+fn independentTiltShiftCoc(p: vec2<i32>, size: vec2<i32>) -> f32 {
+  let uv = (vec2<f32>(p) + 1.0) / vec2<f32>(size);
+  let aspect = f32(size.x) / f32(max(size.y, 1));
+  // WebGPU fragment y runs top-down, so uv.y is already the GLSL (1 - uv.y) distance from the top edge.
+  let q = vec2<f32>((uv.x - 0.5) * aspect, uv.y - 0.5);
+  let t = dot(q, vec2<f32>(-sin(dof.tiltShift.z), cos(dof.tiltShift.z))) + 0.5;
+  let halfBand = 0.5 * clamp(dof.tiltShift.y, 0.0, 1.0);
+  let ramp = max(0.05, 0.5 - halfBand);
+  return clamp((abs(t - dof.tiltShift.x) - halfBand) / ramp, 0.0, 1.0) * min(dof.maxBlurPx, 64.0);
+}
+
+fn independentPixelCoc(p: vec2<i32>, size: vec2<i32>) -> f32 {
+  // WebGL2 evaluates the band at the 2x2 block origin.
+  if (dof.tiltShift.w > 0.5) { return independentTiltShiftCoc((p / 2) * 2, size); }
+  return independentSignedCoc(textureLoad(sourceDepth, p, 0).r);
+}
+
 struct IndependentDofPrefilter {
   rgba: vec4<f32>,
   coc: f32,
@@ -234,7 +255,7 @@ fn independentPrefilter(position: vec4<f32>) -> IndependentDofPrefilter {
         count = count + 1.0;
         rgba = independentStableMix(rgba, sourcePixel, 1.0 / count);
         if (sourcePixel.a > 0.0) {
-          let coc = independentSignedCoc(textureLoad(sourceDepth, p, 0).r);
+          let coc = independentPixelCoc(p, size);
           nearCoc = min(nearCoc, coc);
           farCoc = farCoc + max(coc, 0.0) * sourcePixel.a;
           farWeight = farWeight + sourcePixel.a;

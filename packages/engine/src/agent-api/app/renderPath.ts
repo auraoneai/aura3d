@@ -4,6 +4,7 @@ import { directPathItemBlockers, isQualityMode, qrCoreOutputOn, resolveBloomFusi
 import type { AuraBloomFusion, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraCreateAppOptions, AuraModelNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
+import { isPlainDefaultOutput } from "../looks/plainLook.js";
 import { ignoreInvalidUrlValue, parseBloomFusionOption, type UrlOptionPolicy } from "./rendererOptions.js";
 
 /** What `app.diagnostics().renderPath` reports. */
@@ -161,7 +162,8 @@ const DIRECT_SAFE_NODE_KINDS: ReadonlySet<string> = new Set(["model", "primitive
 /** Reasons this scene needs the HDR target. Conservative: anything not known to render identically on the direct path is listed. */
 export function renderPathBlockers(snapshot: AuraSceneSnapshot, options: AuraCreateAppOptions): string[] {
   const blockers: string[] = [];
-  if (options.output !== undefined || options.renderer?.output !== undefined) blockers.push("output options (tone mapping, exposure, dithering) are authored");
+  if (isPlainDefaultOutput(options.output) && options.renderer?.output === undefined) blockers.push("plain look: neutral tone mapping (no look or output authored)");
+  else if (options.output !== undefined || options.renderer?.output !== undefined) blockers.push("output options (tone mapping, exposure, dithering) are authored");
   if (options.renderer?.backend !== undefined && options.renderer.backend !== "webgl2") blockers.push(`backend ${String(options.renderer.backend)}`);
   if (typeof location !== "undefined" && /[?&](aura3d-tonemap|tm|aura3d-exp|exp)=/.test(location.search)) blockers.push("URL tone-mapping or exposure override");
   if (snapshot.backgroundToneMapped === false) blockers.push("background opts out of tone mapping");

@@ -5,9 +5,10 @@ import { reflectShaderSources, type ShaderReflection } from "./ShaderReflection"
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 import type { NativePostEffect } from "./post/NativeEffectShaders";
 import type { GeneratedProgramDescriptor } from "./contracts/program";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages";
 import type { VelocityCoverage } from "./forward/Velocity";
 import { hasAttachmentRenderOverrides, validateRenderCommandState } from "./contracts/blend";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout";
@@ -292,6 +293,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
   readonly source: RenderTarget;
+  /**
+   * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+   * `source` (resolved color, any-sample coverage, nearest covered depth).
+   */
+  readonly multisample?: RenderTarget;
   readonly coverage: WebGPULinearDepthCoverage;
   readonly projection: WebGPULinearDepthProjection;
   readonly maxGeometryDepthMeters: number;
@@ -314,10 +320,45 @@ export interface NativeWebGPUDofRequest {
   readonly frame: NativeWebGPUDofFrame;
 }
 
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+  readonly options: Partial<DofOptions>;
+  readonly camera: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+  readonly maxGeometryDepthMeters: number;
+  readonly skyDepthMeters: number;
+}
+
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
   readonly depthSubmitted: boolean;
   readonly effectSubmitted: boolean;
+}
+
+/**
+ * Ambient occlusion request for a native post chain: the authored GTAO fields
+ * and the frame camera that linearizes the source's own depth attachment.
+ */
+export interface NativeAmbientOcclusionRequest {
+  readonly options: {
+    readonly radius?: number;
+    readonly intensity?: number;
+    readonly falloff?: number;
+    readonly directions?: number;
+    readonly steps?: number;
+    readonly multiBounce?: boolean;
+    readonly fallbackStrength?: number;
+  };
+  readonly camera: {
+    readonly projectionMatrix: ArrayLike<number>;
+    readonly projectionMatrixInverse?: ArrayLike<number>;
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+  };
 }
 
 export interface LdrPostprocessPresentationOptions {
@@ -328,6 +369,28 @@ export interface LdrPostprocessPresentationOptions {
   readonly autoExposure?: Partial<AutoExposureOptionsV2>;
   /** Native HDR DoF before exposure, bloom and output conversion. */
   readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+  /**
+   * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+   * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+   */
+  readonly nativeLut?: { readonly source: string; readonly cube?: string; readonly data?: LutTexture3D; readonly intensity?: number };
+  /**
+   * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+   * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+   * tone mapping, as the WebGL2 v2 chain applies it.
+   */
+  readonly nativeHdrGrade?: {
+    readonly whiteBalance: readonly [number, number, number]; readonly lift: readonly [number, number, number];
+    readonly gamma: readonly [number, number, number]; readonly gain: readonly [number, number, number];
+    readonly shadows: readonly [number, number, number]; readonly midtones: readonly [number, number, number];
+    readonly highlights: readonly [number, number, number];
+  };
+  /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+  readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
+  /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
+  readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+  /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+  readonly nativeDofDisplay?: NativeDofDisplayStages;
   /** Ordered native display effects; texture inputs remain borrowed. */
   readonly nativeEffects?: readonly NativePostEffect[];
   /** Stable scope/view identity for temporal effects and explicit camera cuts. */
@@ -348,6 +411,13 @@ export interface LdrPostprocessPresentationOptions {
    * ranges fall back to the engine perspective defaults (0.1/1000).
    */
   readonly depthRange?: { readonly near: number; readonly far: number };
+  /**
+   * WebGPU only: native S4 god rays on the HDR source, read from the source's
+   * own depth attachment (`webgpu/WebGPUDepthEffects.ts`). Runs before bloom.
+   */
+  readonly nativeGodRays?: import("./webgpu/WebGPUDepthEffects").WebGPUGodRaysRequest;
+  /** WebGPU only: native S7 camera motion blur on the HDR source, after god rays and before bloom. */
+  readonly nativeMotionBlur?: import("./webgpu/WebGPUDepthEffects").WebGPUMotionBlurRequest;
 }
 
 export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
@@ -804,6 +874,12 @@ export interface RenderDevice {
   drawChecked?(command: DrawCommand): void;
   /** Optional portable-schema draw. Unsupported backends must omit this capability. */
   drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+  /**
+   * Optional draw batching window (WebGPU): draws issued until `endDrawBatch()` may be recorded and submitted together.
+   * Queue order is preserved; any other device operation submits the recorded draws first.
+   */
+  beginDrawBatch?(): void;
+  endDrawBatch?(): void;
   /** Internal, forward-only point-quad submission; unsupported backends omit it. */
   drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads").NativePointQuadSubmission): void;
   /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */

@@ -345,7 +345,9 @@ async function boot(): Promise<void> {
   startButton?.setAttribute("aria-busy", "true");
   loading.set(0.1);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look });
-  const lab = labAppOptions(readLabFlags());
+  // WebGPU by default (backend "auto", WebGL2 fallback kept): real-GPU check 2026-11-08 rendered the same frame and kept
+  // >= 0.9x the WebGL2 frame rate. `?backend=webgl2` forces WebGL2.
+  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
   app = createAuraApp(canvas, {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */

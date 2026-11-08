@@ -1,5 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
+import { webgpuCustomShaderGap } from "./webgpuCustomShaderGap.js";
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraMaterialSpec, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
 import { configureBloomFusionDevice, decodedModelDirectPathBlockers, isDirectRenderPath, isFusedBloomPasses, recordDecodedDirectPathBlockers, type BloomFusionDevice } from "../app/renderPath.js";
@@ -64,7 +65,8 @@ import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import type { ProjectedSpotResource as RendererProjectedSpotResource } from "@aura3d/rendering";
 import { disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
-import { rendererQrFlags, setRendererQrFlags } from "@aura3d/rendering";
+import { rendererQrFlags, setDirectMultiscatterModel, setRendererQrFlags } from "@aura3d/rendering";
+import { isPlainDefaultOutput } from "../looks/plainLook.js";
 import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginPrd07RendererOperation, bindPrd07RendererAuthority,
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
   type Prd07RendererOperation } from "@aura3d/rendering";
@@ -223,9 +225,11 @@ function liveClippingGroups(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRunt
 
 type WebgpuGap = { readonly code: string; readonly missing: readonly string[] };
 const webgpuPostGap = (createProductionRuntimePostprocess as unknown as Record<symbol, ((snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas,
-  dofGap?: (post: unknown) => WebgpuGap | undefined) => WebgpuGap | undefined) | undefined>)[Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")];
+  dofGap?: (post: unknown) => WebgpuGap | undefined, nativeDepthStages?: readonly string[]) => WebgpuGap | undefined) | undefined>)[Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")];
 const webgpuDofGap = (Renderer as unknown as Record<symbol, ((post: unknown) => WebgpuGap | undefined) | undefined>)[
   Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1")];
+const webgpuNativeDepthStages = (Renderer as unknown as Record<symbol, (() => readonly string[]) | undefined>)[
+  Symbol.for("@aura3d/rendering/webgpu-native-depth-stages/v1")];
 
 /** One console line per app when a requested WebGPU backend runs on WebGL2 instead. */
 function warnBackendFallback(requested: string, code: string, missing: readonly string[]): void {
@@ -646,7 +650,12 @@ export async function createProductionRuntimeSceneRenderer(
   // Checked on the final post bag before any WebGPU context exists: WebGPU never advertises sampleable depth textures
   // (the legacy depth-aware passes need them; Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame), and its
   // native depth of field cannot yet combine with most other stages (WEBGPU_DOF_COMBINATION_UNSUPPORTED at mount).
-  () => isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap));
+  // A `material.custom` with GLSL but no WGSL twin has no WebGPU program (its draws would be skipped), so it also falls back.
+  () => (isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap, webgpuNativeDepthStages?.())) ?? webgpuCustomShaderGap(snapshot));
+  // N3 plain look path (no authored look or output): direct specular's multiple-scattering lobe takes the Kulla-Conty
+  // colour, so rough dielectrics under a lone directional light are not lifted toward white. Every other app keeps the
+  // single-mean-Fresnel lobe it always had.
+  setDirectMultiscatterModel(productionRenderer.device, isPlainDefaultOutput(requestedOutput) ? "kulla-conty" : "single-fresnel");
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
@@ -1088,6 +1097,7 @@ export async function createProductionRuntimeSceneRenderer(
       get projectedSpotImageAdmissionEnabled() { return projectedSpotImageAdmissionEnabled; },
       ...(projectedSpotMaxDimension === undefined ? {} : { projectedSpotMaxDimension }),
       onProjectedSpotResourceReady: notifyCommittedResource,
+      onEnvironmentProbeReady: notifyCommittedResource,
       canvas,
       environmentLighting: (liveSnapshot) => {
         // LIGHT-07: the knob was computed from the mount snapshot. When runtime adds or removes change the

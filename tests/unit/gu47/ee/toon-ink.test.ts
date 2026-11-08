@@ -158,7 +158,7 @@ describe("GU47 E-E toon: validation and ink colour", () => {
     expect(() => effects.toon({ inkSource: "normal" as never })).toThrow(/inkSource/);
     expect(() => effects.toon({ fadeDistance: 0 })).toThrow(/fadeDistance/);
     expect(() => effects.toon({ fadeDistance: Number.NaN })).toThrow(/fadeDistance/);
-    expect(() => effects.toon({ inkColor: "plum" })).toThrow(/inkColor/);
+    expect(() => effects.toon({ inkColor: "not-a-colour" })).toThrow(/inkColor/);
   });
 
   it("inkColor is display sRGB after tonemap and linearised on earlier slots; it wins over ink", () => {

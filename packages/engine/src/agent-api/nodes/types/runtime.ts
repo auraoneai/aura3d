@@ -181,6 +181,22 @@ export interface AuraRuntimeNodeHandle {
   setText(text: string): this;
   setMaterial(material: AuraMaterialSpec): this;
   /**
+   * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+   * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+   * RangeError naming the call to use (handle.materials, setUniform).
+   *
+   * `setColor`, `setIntensity`, `setOpacity` and `setEmissive` are optional in the type (added in 5.3.0, a minor release:
+   * existing implementations of this interface stay valid). Every handle the engine returns has them, so call them as
+   * `handle.setColor?.(c)` (or `handle.setColor!(c)`).
+   */
+  setColor?(color: AuraColor): this;
+  /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+  setIntensity?(intensity: number): this;
+  /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+  setOpacity?(opacity: number): this;
+  /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+  setEmissive?(color: AuraColor, intensity?: number): this;
+  /**
    * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
    * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
    * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
@@ -400,6 +416,13 @@ export interface AuraApp {
   offFrame(callback: AuraFrameCallback): void;
   input(options: GameInputOptions): ReturnType<typeof createGameInput>;
   workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+  /**
+   * Worker apps (K3): nearest node under a point in canvas CSS pixels, answered on the main thread from the host
+   * scene mirror (bounds by default, `mode: "mesh"` for exact primitive triangles). Undefined on main-thread apps.
+   */
+  pick?(x: number, y: number, options?: import("../../app/workerNodes.js").AuraWorkerPickOptions): import("../../SceneQueries.js").SceneQueryHit | undefined;
+  /** Worker apps: the picking view-projection (standard depth) for the current camera and canvas aspect. */
+  viewProjection?(): Float32Array;
   recoverWorker?(): Promise<void>;
   pause(): void;
   resume(): void;
@@ -613,6 +636,13 @@ export interface AuraCreateAppOptions {
   readonly qualityRebuild?: { readonly flags?: import("../../../contracts/flags").QrFlagInput; readonly allowUrlFlags?: boolean };
   readonly lighting?: import("../../../contracts/lighting").AuraLightingOptions;
   readonly output?: import("../../../contracts/output").AuraOutputOptions;
+  /**
+   * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+   * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+   * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+   * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+   */
+  readonly plainLook?: boolean;
   readonly assets?: import("../../../contracts/assets").AuraAssetsOption;
   /** Optional per-app native model adapters. Install only the formats this app uses. */
   readonly formatRegistry?: import("@aura3d/assets").FormatRegistry;
@@ -676,7 +706,12 @@ export interface AuraPrecompileResult {
 }
 
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
-  readonly worker?: never;
+  /**
+   * K2: render the game in a worker while its loop, input and frame callbacks stay on the main thread. Node changes
+   * made through `app.nodes` reach the worker once per frame. Scene physics, DOM labels and the diagnostics overlay
+   * still need the main-thread renderer (use `fallback: "main-thread"`).
+   */
+  readonly worker?: AuraCreateAppOptions["worker"];
   readonly loop?: GameAppRuntimeOptions["loop"];
   readonly input?: GameAppRuntimeOptions["input"];
   readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -731,6 +766,8 @@ export interface WebGLRenderController {
   renderAsync?(time: () => number): Promise<void>;
   busy?(): boolean;
   whenIdle?(): Promise<void>;
+  /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+  autoAsyncFrames?(): boolean;
   /** Coalesce a single frame for an externally invalidated static scene. */
   invalidate?(): void;
   resetTemporalHistory?(reason: string): void;

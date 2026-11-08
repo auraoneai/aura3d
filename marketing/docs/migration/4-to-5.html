@@ -80,7 +80,7 @@
           <span>npm</span>
         </a>
       </div>
-      <span class="nav-version">v5.2.1</span>
+      <span class="nav-version">v5.3.0</span>
       <a class="btn btn-ghost" href="/">Docs</a>
       <a class="btn btn-primary" href="/docs/agent-quickstart.html">Get&nbsp;started</a>
     </div>
@@ -187,11 +187,14 @@
 <p>These need no code change for most apps, but they change what an existing call does.</p>
 <h3 id="51-readiness-typed-success-failure-and-cancellation">5.1 Readiness: typed success, failure and cancellation</h3>
 <p><code>app.ready()</code> keeps its 4.x contract. It settles when the mount settles, and in non-strict mode it resolves even if the mount failed. Two calls are new:</p>
-<pre class="code doc-code" data-lang="ts"><code>const outcome = await app.readiness({ stage: &quot;first-frame&quot;, signal });
-// { state: &quot;ready&quot;, stage, backend } | { state: &quot;failed&quot;, code, message }
-// | { state: &quot;cancelled&quot; | &quot;disposed&quot; } | { state: &quot;superseded&quot; }
+<pre class="code doc-code" data-lang="ts"><code>// Inside a function: a module top-level await on any of these deadlocks a production build (black page).
+async function boot(signal: AbortSignal) {
+  const outcome = await app.readiness({ stage: &quot;first-frame&quot;, signal });
+  // { state: &quot;ready&quot;, stage, backend } | { state: &quot;failed&quot;, code, message }
+  // | { state: &quot;cancelled&quot; | &quot;disposed&quot; } | { state: &quot;superseded&quot; }
 
-await app.readyStrict(); // rejects on failure (AuraReadinessError), cancellation (AbortError), disposal or supersession</code></pre>
+  await app.readyStrict(); // rejects on failure (AuraReadinessError), cancellation (AbortError), disposal or supersession
+}</code></pre>
 <p>Each non-ready outcome has one cause, and the app's own mount state never changes because a waiter stopped waiting:</p>
 <div class="doc-table-wrap"><table>
 <thead><tr><th>Outcome</th><th>Cause</th><th><code>readyStrict()</code> rejects with</th></tr></thead>
@@ -373,7 +376,7 @@ await awaitTypedGLBActorDisposals(); // ownerless actors</code></pre>
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Aura3D, @aura3d/engine v5.2.1, MIT (declared in package.json)</span>
+      <span>© 2026 Aura3D, @aura3d/engine v5.3.0, MIT (declared in package.json)</span>
       <span>Prompt-to-3D workflows, typed assets, editable TypeScript</span>
     </div>
   </div>

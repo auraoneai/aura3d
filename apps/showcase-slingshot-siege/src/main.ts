@@ -41,6 +41,7 @@ import {
 } from "./game/presentation";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 sanitizeRenderParams();
 installBlackFrameGuard();
@@ -84,7 +85,7 @@ const ORIGINAL_LOOK = useOriginalLook(chapter.id, params.get("look"));
 /** GU47 phase 3: block pieces are rounded solid blocks (the sim's exact box) on look rows with `solidBlocks`. */
 const SOLID_BLOCKS = !ORIGINAL_LOOK && chapterLook(chapter.id).solidBlocks;
 /** W-8 lab flags (?backend=, ?gamut=): EXPERIMENTAL, default OFF; with no flag the fragment is empty. */
-const LAB = labAppOptions(readLabFlags());
+const LAB = labAppOptions(readLabFlags(), createWorkerRendererWorker);
 /** A1: shared readiness tracker; publishes the fraction on `body[data-aura3d-loading]` (no visible UI). */
 const loadingVeil = document.getElementById("loading-veil");
 const loading = createLoadingProgress({
@@ -98,6 +99,7 @@ const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
   ...(LAB.output ? { output: LAB.output } : {}),
+  ...(LAB.worker ? { worker: LAB.worker } : {}),
   qualityRebuild: { flags: ["game"] },
   input: {
     actions: {

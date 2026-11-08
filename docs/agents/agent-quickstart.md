@@ -11,7 +11,7 @@ Read first: [`threejs-to-aura3d.md`](threejs-to-aura3d.md) (if you would write X
 ## 1. Scaffold and run
 
 ```bash
-npx create-aura3d@latest my-scene --template product-viewer   # 21 templates: docs/agents/templates.md
+npx create-aura3d@latest my-scene --template product-viewer   # 26 templates: docs/agents/templates.md
 cd my-scene && npm install
 npm run dev        # vite dev server
 npm run build      # typecheck + vite build
@@ -58,7 +58,8 @@ const app = createAuraApp("#app", {
     .add(interactions.orbit({ target: "robot" })),
   ...looks.appOptions("product-studio")
 });
-await app.ready(); // the WebGL mount (and GLB load) has settled; shader programs may still be compiling (games: await warmPrograms(app))
+void app.ready().then(() => { /* the WebGL mount (and GLB load) has settled; shader programs may still be compiling (games: call warmPrograms(app) here) */ });
+// Never `await app.ready()` at module top level: a production build deadlocks (lazy engine chunks import the entry back) and the page stays black.
 ```
 
 Use `targetHeight` for upright humanoids, `targetMaxDimension` for vehicles and wide props.

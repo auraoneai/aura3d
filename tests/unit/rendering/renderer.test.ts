@@ -54,6 +54,10 @@ import {
  * does via `@aura3d/engine/rendering/webgpu`.
  */
 import { WebGPUDevice } from "../../../packages/rendering/src/webgpu";
+import { normalizeNativeBloomOptions } from "../../../packages/rendering/src/webgl2/LegacyPost";
+import { normalizeWebGPUBloomV2Options } from "../../../packages/rendering/src/webgpu/WebGPUPostShaders";
+import { resolveHdrGradeUniforms } from "../../../packages/rendering/src/post/shaders/hdrGrade.glsl";
+import { registerPostPass, type PostPassDescriptor } from "../../../packages/rendering/src/contracts/post";
 import {
   bloomPixels,
   colorGradePixels,
@@ -176,6 +180,103 @@ describe("Renderer", () => {
     expect(native.device.renderPasses.filter(pass => pass.pipeline === "webgpu-bloom-composite-pipeline")).toHaveLength(4);
     expect(native.device.textureCopies).toHaveLength(0);
     renderer.dispose();
+  });
+
+  // A v2 bloom pass carries the WebGL2 v2 option names (intensity, knee, spread); read as J2 options it ran at the
+  // default strength 0.6 and knee width, which made WebGPU game frames brighter than WebGL2.
+  it("runs a v2-stamped bloom pass through the WebGL2 v2 pyramid (excess prefilter, five mips, intensity composite)", async () => {
+    const native = createNativeFakeWebGPU();
+    const renderer = await Renderer.create({ backend: "webgpu", webgpu: native.gpu, canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement, width: 64, height: 32 });
+    renderer.render({ renderItems: [], postprocess: {
+      v2: true, pipeline: { toneMapping: "aces", exposure: 1, depthRange: { near: 0.1, far: 100, projection: "perspective" } },
+      targetFormat: "rgba16f", // The v2 bag names (knee ratio, spread) are outside the legacy BloomOptions type; the v2 stamp admits them.
+      bloom: { threshold: 0.9, intensity: 0.42, knee: 0.5, spread: 0.7 } as unknown as { threshold: number; intensity: number },
+      toneMapping: { operator: "aces", exposure: 1, outputColorSpace: "srgb" }
+    } });
+    const stages = native.device.renderPasses.map(pass => pass.pipeline ?? "");
+    const prefilter = stages.indexOf("webgpu-bloom-v2-prefilter-pipeline");
+    const composite = stages.indexOf("webgpu-bloom-v2-composite-pipeline");
+    expect(prefilter).toBeGreaterThanOrEqual(0);
+    expect(stages.filter(stage => /^webgpu-bloom-v2-down\d-pipeline$/.test(stage))).toHaveLength(5);
+    expect(stages.filter(stage => /^webgpu-bloom-v2-mip\d-[hv]-pipeline$/.test(stage))).toHaveLength(10);
+    expect(stages.indexOf("webgpu-bloom-v2-accumulate-pipeline")).toBeGreaterThan(prefilter);
+    expect(composite).toBeGreaterThan(stages.indexOf("webgpu-bloom-v2-accumulate-pipeline"));
+    expect(stages.indexOf("webgpu-tone-pipeline")).toBeGreaterThan(composite);
+    expect(stages).not.toContain("webgpu-bloom-bright-pipeline");
+    // Prefilter uniforms: threshold and the absolute soft knee threshold × knee; composite: the authored intensity.
+    expect(native.device.uniformWrites.some(write => Math.abs(write[0]! - 0.9) < 1e-6 && Math.abs(write[1]! - 0.45) < 1e-6)).toBe(true);
+    expect(native.device.uniformWrites.some(write => Math.abs(write[0]! - 0.42) < 1e-6 && write[1] === 0 && write[2] === 0 && write[3] === 0)).toBe(true);
+    renderer.dispose();
+  });
+
+  // WebGL2 applies pipeline.grade (temperature/tint, lift/gamma/gain, tonal ranges) as the v2 S10 linear grade; the
+  // WebGPU chain dropped it, so graded games rendered cooler / flatter than the default backend.
+  it("applies the v2 S10 linear grade on the WebGPU chain before bloom and tone mapping", async () => {
+    const native = createNativeFakeWebGPU();
+    const renderer = await Renderer.create({ backend: "webgpu", webgpu: native.gpu, canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement, width: 16, height: 8 });
+    const grade = { temperature: 0.12, tint: 0.02, gain: { r: 1.1, g: 1, b: 0.9 } };
+    renderer.render({ renderItems: [], postprocess: {
+      v2: true, pipeline: { toneMapping: "aces", exposure: 1, grade, depthRange: { near: 0.1, far: 100, projection: "perspective" } },
+      targetFormat: "rgba16f", bloom: { threshold: 0.9, intensity: 0.42 },
+      toneMapping: { operator: "aces", exposure: 1, outputColorSpace: "srgb" }
+    } });
+    const stages = native.device.renderPasses.map(pass => pass.pipeline ?? "");
+    const gradeIndex = stages.indexOf("webgpu-hdr-grade-pipeline");
+    expect(gradeIndex).toBeGreaterThanOrEqual(0);
+    expect(gradeIndex).toBeLessThan(stages.indexOf("webgpu-bloom-v2-prefilter-pipeline"));
+    expect(gradeIndex).toBeLessThan(stages.indexOf("webgpu-tone-pipeline"));
+    const expected = resolveHdrGradeUniforms(grade)!;
+    const rows = [expected.whiteBalance, expected.lift, expected.gamma, expected.gain, expected.shadows, expected.midtones, expected.highlights];
+    const write = native.device.uniformWrites.find(values => values.length === 28);
+    expect(write).toBeDefined();
+    rows.forEach((row, index) => row.forEach((value, channel) => expect(write![index * 4 + channel]).toBeCloseTo(value, 5)));
+    renderer.dispose();
+
+    // An identity grade draws nothing.
+    const plain = createNativeFakeWebGPU();
+    const identity = await Renderer.create({ backend: "webgpu", webgpu: plain.gpu, canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement, width: 16, height: 8 });
+    identity.render({ renderItems: [], postprocess: {
+      v2: true, pipeline: { toneMapping: "aces", exposure: 1, grade: { temperature: 0, tint: 0 }, depthRange: { near: 0.1, far: 100, projection: "perspective" } },
+      targetFormat: "rgba16f", toneMapping: { operator: "aces", exposure: 1, outputColorSpace: "srgb" }
+    } });
+    expect(plain.device.renderPasses.map(pass => pass.pipeline)).not.toContain("webgpu-hdr-grade-pipeline");
+    identity.dispose();
+  });
+
+  // v2 graph order is S8 -> S10 grade -> before-tonemap customs. Without bloom the before-tonemap slot collapses onto
+  // the exposure position, where the grade must still precede the custom pass (as WebGL2 v2 runs it).
+  it("runs the v2 S10 grade before a before-tonemap custom pass that shares its chain slot", async () => {
+    const release = registerPostPass({
+      id: "test.renderer.grade-order", owner: "prd03", flag: "A3D_QR_POST", space: "linear-hdr", insertAt: "before-tonemap", inputs: ["color"],
+      fragment: { glsl: "void main(){}", wgsl: "/* @aura3d-bindings */\n@fragment fn fs_custom(@builtin(position) p: vec4<f32>) -> @location(0) vec4<f32> { return vec4<f32>(1.0); }" },
+      gpuOnly: true
+    } as PostPassDescriptor);
+    try {
+      const native = createNativeFakeWebGPU();
+      const renderer = await Renderer.create({ backend: "webgpu", webgpu: native.gpu, canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement, width: 16, height: 8 });
+      renderer.render({ renderItems: [], postprocess: {
+        v2: true, pipeline: { toneMapping: "aces", exposure: 1, grade: { temperature: 0.12 }, depthRange: { near: 0.1, far: 100, projection: "perspective" } },
+        targetFormat: "rgba16f", toneMapping: { operator: "aces", exposure: 1, outputColorSpace: "srgb" }
+      } });
+      const stages = native.device.renderPasses.map(pass => pass.pipeline ?? "");
+      const gradeIndex = stages.indexOf("webgpu-hdr-grade-pipeline");
+      const customIndex = stages.findIndex(stage => stage.startsWith("webgpu-custom:test.renderer.grade-order"));
+      expect(gradeIndex).toBeGreaterThanOrEqual(0);
+      expect(customIndex).toBeGreaterThan(gradeIndex);
+      expect(stages.indexOf("webgpu-tone-pipeline")).toBeGreaterThan(customIndex);
+      renderer.dispose();
+    } finally {
+      release();
+    }
+  });
+
+  it("normalizes v2 bloom options exactly as the WebGL2 v2 chain does", () => {
+    for (const options of [{}, { threshold: 1.1, intensity: 0.42, knee: 0.5, scatter: 0.7 }, { threshold: 2, knee: 0.4, quality: "balanced", spread: 0.2 },
+      { threshold: 0.8, softKnee: 0.1, quality: "performance", radius: 3 }] as const) {
+      const webgl2 = normalizeNativeBloomOptions({ ...options, v2: true });
+      const webgpu = normalizeWebGPUBloomV2Options(options);
+      expect(webgpu).toEqual({ threshold: webgl2.threshold, intensity: webgl2.intensity, softKnee: webgl2.softKnee, quality: webgl2.quality, radius: webgl2.radius, spread: webgl2.spread });
+    }
   });
 
   it("runs renderer-owned WebGPU postprocess asynchronously through native fullscreen passes without CPU readback", async () => {

@@ -68,7 +68,8 @@ const app = createAuraApp("#app", {
     .addMany(tiles)
     .add(robot)
     .add(interactions.orbit({ target: "floor" }))
-    .camera(camera.orbit({ position: [3, 1.5, 4.2], target: [0, 1.0, 0], fov: 36 })),
+    // No hand-placed camera: camera.auto frames the robot from its drawn bounds (the floor and tiles stay in shot without setting the size).
+    .camera(camera.auto({ subject: "robot", fill: 0.7, fov: 36 })),
   ...looks.appOptions(LOOK_ID)
 });
 

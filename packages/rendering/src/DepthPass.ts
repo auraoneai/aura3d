@@ -218,17 +218,27 @@ function warnDepthDegradedOnce(code: string, label: string | undefined, detail: 
   console.warn(`${code}: "${label ?? "unlabelled item"}" ${detail}`);
 }
 /**
- * WebGPU has no scene-raster point quad depth program yet. Outside strict mode a point caster (or a caster whose
- * selected shadow proxy is points) is left out of WebGPU depth and shadow passes with one warning, instead of failing
- * every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED (the visible points still draw). Strict keeps the error.
+ * Point casters draw in WebGPU depth and shadow passes as point-list primitives through the ordinary depth program,
+ * matching WebGL2: the depth programs never write gl_PointSize, so a GL point caster rasterizes one-pixel points, which
+ * is exactly what a WebGPU point list does. Only a clipped point caster (WebGL2 rebuilds it through the specialized
+ * clipped-point path, which has no WebGPU twin) is still left out, with one warning outside strict mode instead of
+ * failing every frame with WEBGPU_POINT_DEPTH_UNSUPPORTED. Strict keeps the error.
  */
 export function skipWebGPUPointDepthCaster(source: RenderItem, device: RenderDevice): boolean {
   if (device.kind !== "webgpu" || isEnginePackedBatchItem(source) || rendererQrFlags(device).on("A3D_QR_STRICT")) return false;
-  const pointProxy = source.shadowGeometry?.topology === "points"
-    && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry;
-  if (source.geometry.topology !== "points" && !pointProxy) return false;
-  warnDepthDegradedOnce("WEBGPU_POINT_DEPTH_SKIPPED", source.label, "is a point caster; WebGPU has no point depth program yet, so it is left out of depth and shadow passes.");
+  if (!webgpuPointDepthCaster(source)) return false;
+  const base = source.material instanceof MaterialInstance ? source.material.baseMaterial : source.material;
+  const clipped = source.globalClipping != null || source.materialClipping != null
+    || (base as (typeof base & { readonly clipping?: unknown }) | undefined)?.clipping != null;
+  if (!clipped) return false;
+  warnDepthDegradedOnce("WEBGPU_POINT_DEPTH_SKIPPED", source.label, "is a clipped point caster; WebGPU has no clipped point depth program yet, so it is left out of depth and shadow passes.");
   return true;
+}
+
+/** The caster itself is points, or its selected shadow proxy is. */
+function webgpuPointDepthCaster(source: RenderItem): boolean {
+  return source.geometry.topology === "points" || (source.shadowGeometry?.topology === "points"
+    && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry);
 }
 function warnAlphaHashDegradedOnce(label: string | undefined): void {
   warnDepthDegradedOnce("DEPTH_ALPHA_HASH_DEGRADED", label, "is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.");
@@ -478,8 +488,9 @@ export function assertDepthClippingSupported(source: RenderItem, clip: ClippingB
   const selectedPointProxy = source.shadowGeometry?.topology === "points" && (device.kind === "webgpu" || clip.groups.length > 0)
     && selectDepthCasterGeometry(source, customDepthShaderKeyOf(source.material)).geometry === source.shadowGeometry;
   const pointGeometry = source.geometry.topology === "points" || selectedPointProxy;
-  if (device.kind === "webgpu" && pointGeometry) {
-    throw new RenderDeviceError("WebGPU point depth requires a scene-raster point quad program and retained geometry lease", "WEBGPU_POINT_DEPTH_UNSUPPORTED", { label: source.label });
+  // Unclipped point casters draw as one-pixel point lists (see skipWebGPUPointDepthCaster); clipped ones have no twin.
+  if (device.kind === "webgpu" && pointGeometry && clip.groups.length > 0) {
+    throw new RenderDeviceError("WebGPU clipped point depth requires a scene-raster point quad program and retained geometry lease", "WEBGPU_POINT_DEPTH_UNSUPPORTED", { label: source.label });
   }
   if (clip.groups.length === 0) return;
   const base = source.material instanceof MaterialInstance ? source.material.baseMaterial : source.material;
@@ -625,7 +636,12 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
   const attributes = [...base.requiredAttributes];
   const graphPristine = base instanceof PortableShaderMaterial ? base.graphSourcesPristine : undefined;
   const graphRequiresWebGPU = base instanceof PortableShaderMaterial ? base.graphRequiresWebGPU : undefined;
-  const params = [...recursiveMaterialParameters(material)].map(([name, value]) => ({
+  // The renderer's shared parameter snapshot keeps its identity until a parameter changes (Material.setParameterValue is
+  // the only writer and keeps the snapshot only for an identical value), so an unchanged identity proves unchanged values
+  // without rebuilding and comparing a cloned parameter map on every check. Texture bindings are borrowed, so their
+  // texture revision and transform are still compared on every check.
+  const snapshot = material.parameterSnapshot();
+  const params = [...snapshot].map(([name, value]) => ({
     name,
     value,
     textureRevision: isTextureBinding(value) ? value.texture?.revision : undefined,
@@ -634,6 +650,7 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
     textureScale: isTextureBinding(value) ? [...value.scale] : undefined,
     textureRotation: isTextureBinding(value) ? value.rotation : undefined
   }));
+  const textureParams = params.filter((entry) => isTextureBinding(entry.value));
   const storage = base instanceof PortableShaderMaterial && graphRequiresWebGPU
     ? base.graphStorageBindings("depth").map((binding) => ({ ...binding })) : undefined;
   return () => {
@@ -642,9 +659,10 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
         || base.renderState.blend !== blend || base.renderState.blendMode !== blendMode || base.renderState.alphaToCoverage !== alphaToCoverage
         || base.requiredAttributes.length !== attributes.length || attributes.some((name, index) => base.requiredAttributes[index] !== name)
         || (base instanceof PortableShaderMaterial && (base.graphSourcesPristine !== graphPristine || base.graphRequiresWebGPU !== graphRequiresWebGPU))) return false;
-      const current = recursiveMaterialParameters(material);
+      const current = material.parameterSnapshot();
+      const unchanged = current === snapshot;
       if (current.size !== params.length) return false;
-      for (const entry of params) {
+      for (const entry of unchanged ? textureParams : params) {
         const value = current.get(entry.name);
         if (isTextureBinding(entry.value)) {
           if (value !== entry.value || entry.value.texture?.disposed || entry.value.texture?.revision !== entry.textureRevision || entry.value.texture?.disposed !== entry.textureDisposed
@@ -896,7 +914,13 @@ export class DepthPass extends BaseRenderPass {
   }
 
   private drawEntries(device: RenderDevice, entries: readonly PreparedDepthEntry[]): void {
-    for (const entry of entries) this.drawCaster(device, entry.drawSource, entry.clip);
+    // WebGPU records the caster loop into one command encoder (RenderDevice.beginDrawBatch); WebGL2 has no window.
+    device.beginDrawBatch?.();
+    try {
+      for (const entry of entries) this.drawCaster(device, entry.drawSource, entry.clip);
+    } finally {
+      device.endDrawBatch?.();
+    }
   }
 
   private assertBatchClippingCallback(casters: readonly RenderItem[], callback: unknown): void {

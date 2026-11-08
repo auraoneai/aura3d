@@ -76,6 +76,7 @@ import "../../showcase-port-shared/quickbar.css";
 import "../../showcase-port-shared/diag";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { readIesLabFlag, sodiumFloodProfile } from "./photometric";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
@@ -1036,17 +1037,19 @@ let venue: VenueSpec = VENUES.rucker;
 let auraApp: ReturnType<typeof createAuraApp>;
 
 // 5.0 lab flags (A3): `?backend=auto|webgpu` and `?gamut=p3` are EXPERIMENTAL, default OFF, WebGL2 fallback kept.
-// `?worker=` / `?depth=` are not wired for this game (no worker entry; the camera node is built per court).
+// `?worker=1` renders in a worker (K1-K4 lab; main-thread fallback kept). `?depth=` is not wired (the camera node is built per court).
 const labFlags = readLabFlags();
 /** A5 lab: `?ies=1` gives the sodium spots a Type-C photometric profile (EXPERIMENTAL, default OFF; scalar spots otherwise). */
 const IES_LAB = readIesLabFlag();
-const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags);
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...looks.appOptions(venue.look),
     ...(labRenderer || IES_LAB ? { renderer: { ...(looks.appOptions(venue.look) as { renderer?: object }).renderer, ...(labRenderer ?? {}), ...(IES_LAB ? { photometricProfiles: true } : {}) } } : {}),
     ...(labOutput ? { output: labOutput } : {}),
+    ...(labWorker ? { worker: labWorker } : {}),
     qualityRebuild: { flags: ["game"] },
     diagnostics: false
   } as any);

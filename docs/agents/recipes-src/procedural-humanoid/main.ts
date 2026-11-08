@@ -74,4 +74,4 @@ app.onFrame((frame) => {
   app.nodes.require("l-elbow").setRotation(-0.25 - 0.05 * breathe, 0, 0);
   app.nodes.require("r-elbow").setRotation(-0.25 - 0.05 * breathe, 0, 0);
 });
-await app.ready();
+void app.ready();

@@ -146,6 +146,21 @@ export interface OffscreenCanvasSize {
 export const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export const MAX_WORKER_CANVAS_PIXELS = 33_554_432;
 
+/**
+ * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
+ * canvas (fill the parent on axes the page does not size, display block).
+ * The backing store belongs to the worker and is never written here. Without
+ * them an engine-created canvas stayed at the 300x150 default (Glint Courier
+ * ?worker=1).
+ */
+export function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void {
+  const own = probeCssSizedAxes(canvas);
+  canvasOwnSizedAxes.set(canvas, own);
+  if (!own.width) canvas.style.width ||= "100%";
+  if (!own.height) canvas.style.height ||= "100%";
+  canvas.style.display ||= "block";
+}
+
 /** Validate CSS size and DPR before allocating or transferring the canvas. */
 export function workerCanvasBackingSize(size: OffscreenCanvasSize): { readonly width: number; readonly height: number } {
   if (!Number.isFinite(size.width) || size.width <= 0 || !Number.isFinite(size.height) || size.height <= 0 || !Number.isFinite(size.pixelRatio) || size.pixelRatio <= 0) {

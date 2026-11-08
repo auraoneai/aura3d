@@ -11,12 +11,13 @@ Defaults the types do not carry (read from `agent-api/nodes/lights.ts`):
 | `lights.ambient` | intensity 0.28, color #ffffff |
 | `lights.hemisphere` | skyColor #bcd7ff, intensity 1, position [0, 1, 0] |
 | `lights.directional` | position [3, 4, 3], intensity 1.5, color #ffffff |
+| `lights.key` | target [0, 0, 0], position target + [3, 5, 3.5], intensity 3, shadow { bias: 0.002 } |
 | `lights.point` | position [2, 2.5, 1.5], intensity 8, color #ffffff |
 | `lights.spot` | position [0, 4, 0], angle pi/6, penumbra 0.4, distance 12, intensity 30 |
 
 ## `createAuraApp`
 
-Mounts the scene, owns renderer, resize, loop and disposal. `await app.ready()` before the first frame is judged.
+Mounts the scene, owns renderer, resize, loop and disposal. Wait on `app.ready()` (`.then(...)`, or `await` inside a function: a module top-level await deadlocks a production build) before the first frame is judged.
 
 ```ts
 const app = createAuraApp("#app", { scene: scene({ background: "#101418" }) });
@@ -60,7 +61,7 @@ const stage = scene({ background: "#101418" }).add(primitives.box({ name: "crate
 
 ## `camera`
 
-`camera.frame(subject | subjects | bounds, { fill, angle, azimuth, elevation, padding, fov, aspect })` returns an orbit camera spec placed so the subject fills `fill` (default 0.6) of the limiting frame axis; `camera.frameScene(scene)` frames a whole scene (ground planes ignored); `camera.framePose(...)` returns the pose for `app.camera.setPose` on resize; `camera.worldBounds(subject)` returns the `{ min, max }` box it frames. Solved for `aspect` (default 16/9).
+`scene().camera(camera.auto({ fill, subject, angle }))` frames whatever the scene holds when it mounts (ground planes and ground/floor/wall-named nodes left out; `subject: "name"` frames one named node or group) with no hand-placed camera; a scene that sets no camera is framed the same way. `camera.frame(subject | subjects | bounds, { fill, angle, azimuth, elevation, padding, fov, aspect })` returns an orbit camera spec placed so the subject fills `fill` (default 0.6) of the limiting frame axis; `camera.frameScene(scene)` frames a whole scene (ground planes ignored); `camera.framePose(...)` returns the pose for `app.camera.setPose` on resize; `camera.worldBounds(subject)` returns the `{ min, max }` box it frames. Solved for `aspect` (default 16/9).
 
 ```ts
 void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 });
@@ -72,6 +73,7 @@ void camera.frame(primitives.box({ name: "subject" }), { fill: 0.6 });
 | `camera.orbit(options?: Omit<AuraCameraSpec, "mode">)` | `AuraCameraSpec` | same as `camera.perspective` |
 | `camera.frame(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | options: fill?: number \| undefined; angle?: AuraFrameAngle \| undefined; azimuth?: number \| undefined; elevation?: number \| undefined; padding?: number \| undefined; fov?: number \| undefined; aspect?: number \| undefined; minDistance?: number \| undefined; exclude?: ((node: AuraSceneNode) =>… |
 | `camera.frameScene(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraCameraSpec` | same as `camera.frame` |
+| `camera.auto(options?: AuraCameraAutoOptions)` | `AuraCameraSpec` | options: subject?: string \| readonly string[…; autoRotate?: number \| undefined; fill?: number \| undefined; angle?: AuraFrameAngle \| undefined; azimuth?: number \| undefined; elevation?: number \| undefined; padding?: number \| undefined; fov?: number \| undefined; aspect?: number \| undefined; minDistance?: number \| undefined; exclude?: ((node: AuraSceneNode) =>… |
 | `camera.worldBounds(subject: AuraFrameSubject \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFrameBounds` | same as `camera.frame` |
 | `camera.framePose(subject: AuraFrameSubject \| AuraFrameBounds \| readonly AuraFrameSubject[], options?: AuraCameraFrameOptions)` | `AuraFramePose` | same as `camera.frame` |
 | `camera.frameAsset(asset: AuraAssetRef<"model">, options?: AuraCameraFrameAssetOptions)` | `AuraCameraSpec` | asset: type: "model"; format: string; formatMetadata?: FormatMetadata \| undefined; url: string; hash?: string \| undefined; sha256?: string \| undefined; integrity?: AssetIntegrity \| undefined; request?: AssetRequestOptions \| und…; bounds?: AuraVec3 \| undefined; sizeBytes?: number \| undefined; optional?: boolean \| undefined; metadata?: AuraAssetMetadata \| undef…; variants?: AuraAssetVariants \| undef…; requiredDecoders?: readonly AuraAssetRequire…; lods?: readonly AuraAssetLodLeve…; colliderUrl?: string \| undefined; budget?… |
@@ -90,7 +92,7 @@ void looks.preset("product-studio");
 | `looks.heroStage(options?: AuraHeroStageOptions)` | `AuraNodeBuilder<AuraGroupNode>` | options: environment?: "none" \| "studio" \| "neut…; environmentIntensity?: number \| undefined; background?: string \| undefined; floor?: false \| { readonly color?…; target?: AuraVec3 \| undefined; radius?: number \| undefined; intensity?: number \| undefined; keyColor?: string \| undefined; fillColor?: string \| undefined; rimColor?: string \| undefined; shadow?: boolean \| undefined; name?: string \| undefined |
 | `looks.fogForExtent(options: AuraFogForExtentOptions)` | `AuraNodeBuilder<AuraEffectNode>` | options: extent: number; color?: string \| undefined; haze?: number \| undefined; mode?: "exp" \| "exp2" \| undefined; name?: string \| undefined |
 | `looks.fogDensityForExtent(extent: number, haze?: number, mode?: "exp" \| "exp2")` | `number` |  |
-| `looks.preset(id: AuraLookId, overrides: AuraLookOverrides \| undefined)` (+1 overloads) | `AuraNodeBuilder<AuraGroupNode>` | overrides: sun?: { readonly azimuthDeg?: n…; exposureEv?: number \| undefined; fogDensityScale?: number \| undefined; accent?: string \| undefined; background?: string \| undefined; hdri?: AuraAssetRef<"texture"> \|…; environmentIntensity?: number \| undefined; environmentRotationDeg?: number \| undefined; key?: { readonly color?: AuraCo…; rim?: false \| { readonly color?…; fog?: { readonly color?: AuraCo…; grade?: { readonly contrast?: num…; post?: AuraPostPresetId \| { read… |
+| `looks.preset(id: AuraLookId \| "plain", overrides: AuraLookOverrides \| undefined)` (+1 overloads) | `AuraNodeBuilder<AuraGroupNode>` | overrides: sun?: { readonly azimuthDeg?: n…; exposureEv?: number \| undefined; fogDensityScale?: number \| undefined; accent?: string \| undefined; background?: string \| undefined; hdri?: AuraAssetRef<"texture"> \|…; environmentIntensity?: number \| undefined; environmentRotationDeg?: number \| undefined; key?: { readonly color?: AuraCo…; rim?: false \| { readonly color?…; fog?: { readonly color?: AuraCo…; grade?: { readonly contrast?: num…; post?: AuraPostPresetId \| { read… |
 | `looks.nodes(id: AuraLookId, overrides: AuraLookOverrides \| undefined)` | `readonly AuraNodeBuilder<AuraSceneNode>[]` | same as `looks.preset` |
 | `looks.appOptions(id: AuraLookId, options: AuraLookBuildOptions \| undefined)` | `Pick<AuraCreateAppOptions, "pixelRatio" \| "renderer">` | options: expansion?: "auto" \| "v0" \| "v1" \| un…; flags?: QrFlags \| undefined |
 | `looks.list()` | `readonly AuraLookId[]` |  |
@@ -119,6 +121,7 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 | `material.shadow(options?: AuraShadowMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \| undefined; opacity?: number \| undefined; side?: "front" \| "back" \| "doubl…; light?: "directional" \| "point" \|… |
 | `material.node(options: TslMaterialNodeOptions \| ShaderGraphMaterialOptions)` | `AuraMaterialSpec` |  |
 | `material.pbr(rawOptions?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
+| `material.standard(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.physical(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.emissive(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.metal(rawOptions?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
@@ -160,7 +163,7 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 
 ## `lights`
 
-Intensities are not three.js-calibrated; judge a capture.
+`lights.key({ target })` is the default key: a directional light that casts a clean shadow (depth bias 0.002) from a three-quarter angle above `target`; add a ground plane to receive it. Intensities are not three.js-calibrated; judge a capture.
 
 ```ts
 void lights.directional({ position: [4, 6, 3], target: [0, 0, 0], intensity: 3, shadow: true });
@@ -173,6 +176,7 @@ void lights.directional({ position: [4, 6, 3], target: [0, 0, 0], intensity: 3, 
 | `lights.hemisphere(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \| undefined; skyColor?: string \| undefined; groundColor?: string \| undefined; intensity?: number \| undefined; position?: AuraVec3 \| undefined; color?: string \| undefined |
 | `lights.lightProbe(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \| undefined; sh?: readonly number[] \| undef…; skyColor?: string \| undefined; groundColor?: string \| undefined; intensity?: number \| undefined; position?: AuraVec3 \| undefined |
 | `lights.directional(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \| undefined; position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; intensity?: number \| undefined; color?: string \| undefined; shadow?: boolean \| AuraDirectional…; castShadow?: boolean \| undefined |
+| `lights.key(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \| undefined; position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; intensity?: number \| undefined; color?: string \| undefined; shadow?: boolean \| AuraDirectional… |
 | `lights.point(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \| undefined; position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; intensity?: number \| undefined; power?: number \| undefined; distance?: number \| undefined; decay?: number \| undefined; color?: string \| undefined; shadow?: boolean \| AuraLocalShadow…; castShadow?: boolean \| undefined; photometricProfile?: AuraPhotometricProfile \| … |
 | `lights.spot(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: name?: string \| undefined; position?: AuraVec3 \| undefined; target?: AuraVec3 \| undefined; angle?: number \| undefined; penumbra?: number \| undefined; distance?: number \| undefined; decay?: number \| undefined; intensity?: number \| undefined; power?: number \| undefined; color?: string \| undefined; shadow?: boolean \| AuraLocalShadow…; castShadow?: boolean \| undefined; photometricProfile?: AuraPhotometricProfile \| …; projectedImage?: AuraProjectedLightImage \|… |
 | `lights.studio(options?: {…})` | `AuraNodeBuilder<AuraLightNode>` | options: intensity?: number \| undefined |

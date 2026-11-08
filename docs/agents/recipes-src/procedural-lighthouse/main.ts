@@ -131,4 +131,4 @@ const app = createAuraApp("#app", {
     .add(effects.bloom({ intensity: 0.7, threshold: 0.75, radius: 0.5 }))
     .camera(camera.perspective({ position: [-24, 8.5, 26], target: [0, topY * 0.5 + 0.5, 0], fov: 42, near: 0.5, far: 600 }))
 });
-await app.ready();
+void app.ready();

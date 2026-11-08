@@ -396,7 +396,8 @@ export class Prd02ShadowSystem {
     // WebGPU graph receivers sample encoded depth through texture_2d<f32>.
     // The GPU depth attachment is still used for raster depth testing, but is
     // not bound as a float texture or an unsupported comparison sampler.
-    if (this.device.kind === "webgpu") return { width: size, height: size, label, format: "rgba8", depth: true };
+    // Half float, not rgba8: the encoded depth in `.r` would otherwise be quantised to 1/255 (acne bands).
+    if (this.device.kind === "webgpu") return { width: size, height: size, label, format: "rgba16f", depth: true };
     return this.device.info.capabilities?.includes("depth-textures")
       ? { width: size, height: size, label, depthOnly: true }
       : { width: size, height: size, label, format: "rgba8", depth: "texture" };

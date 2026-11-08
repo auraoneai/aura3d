@@ -373,6 +373,35 @@ void main() {
   outColor = vec4(vTone, a);
 }`;
 
+/**
+ * A3/W6: the glow / puff sprites as screen-aligned quads, drawn only on a requested WebGPU backend (`?backend=webgpu|auto`;
+ * WebGPU has no `gl_PointSize`). Each point's four corners share its position; the quad spans the point sprite's pixel size
+ * and `vCorner` carries `gl_PointCoord * 2 - 1` (y down), so the fragments below evaluate GLOW_FRAGMENT / PUFF_FRAGMENT on
+ * the same coordinates. This GLSL half draws the quads if the request falls back to WebGL2; the default points program
+ * above is unchanged.
+ */
+export const SPRITE_QUAD_VERTEX = /* glsl */ `
+attribute vec3 tone;
+attribute float aSize;
+attribute float aAlpha;
+out vec3 vTone;
+out float vAlpha;
+out vec2 vCorner;
+void main() {
+  vTone = tone;
+  vAlpha = aAlpha;
+  vec2 quad = uv * 2.0 - 1.0;
+  vCorner = vec2(quad.x, -quad.y);
+  vec4 mv = viewMatrix * modelMatrix * vec4(position, 1.0);
+  float size = min(pointCap, aSize * pixelRatio * pointScale / max(1.0, -mv.z));
+  vec4 clip = projectionMatrix * mv;
+  clip.xy += quad * size / max(u_resolution, vec2(1.0)) * clip.w;
+  gl_Position = clip;
+}`;
+
+export const GLOW_QUAD_FRAGMENT = GLOW_FRAGMENT.replace("vec2 c = gl_PointCoord * 2.0 - 1.0;", "vec2 c = vCorner;").replace("in float vAlpha;", "in float vAlpha;\nin vec2 vCorner;");
+export const PUFF_QUAD_FRAGMENT = PUFF_FRAGMENT.replace("vec2 c = gl_PointCoord * 2.0 - 1.0;", "vec2 c = vCorner;").replace("in float vAlpha;", "in float vAlpha;\nin vec2 vCorner;");
+
 /** Painterly lit scenery: vertex tone x optional tiled map, half-Lambert sun, hemisphere fill, rim and aerial fog. */
 export const SCENERY_VERTEX = /* glsl */ `
 attribute vec3 tone;

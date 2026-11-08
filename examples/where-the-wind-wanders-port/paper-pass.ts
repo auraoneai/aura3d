@@ -27,6 +27,35 @@ void main() {
   outColor = vec4(c.rgb * k, c.a);
 }`;
 
+/**
+ * A3/W6: the same pass as a native WebGPU fullscreen stage (`?backend=webgpu`; WebGL2 keeps drawing `PAPER_GLSL`). The custom-pass
+ * bind convention: binding 0 is a `vec4` array (`values[0]` = texel size and time, then one `vec4` per declared uniform in
+ * registration order: `u_paper` in `values[1].x`, `u_paperScale` in `values[2].xy`), binding 1 the linear sampler, binding 2
+ * `u_color`. WebGPU's uv runs top-down, which only mirrors the screen-anchored paper grain vertically.
+ */
+export const PAPER_WGSL = /* wgsl */ `struct PaperUniforms { values: array<vec4<f32>, 3> };
+@group(0) @binding(0) var<uniform> paper: PaperUniforms;
+@group(0) @binding(1) var paperSampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+fn paperHash(p: vec2<f32>) -> f32 { return fract(sin(dot(p, vec2<f32>(127.1, 311.7))) * 43758.5453); }
+fn paperNoise(p: vec2<f32>) -> f32 {
+  let i = floor(p);
+  var f = fract(p);
+  f = f * f * (vec2<f32>(3.0) - 2.0 * f);
+  return mix(mix(paperHash(i), paperHash(i + vec2<f32>(1.0, 0.0)), f.x), mix(paperHash(i + vec2<f32>(0.0, 1.0)), paperHash(i + vec2<f32>(1.0, 1.0)), f.x), f.y);
+}
+@fragment fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let c = textureSample(u_color, paperSampler, uv);
+  let strength = paper.values[1].x;
+  let p = uv * paper.values[2].xy;
+  let fibre = paperNoise(vec2<f32>(p.x * 0.35 + p.y * 0.08, p.y * 2.6)) - 0.5;
+  let grain = paperNoise(p * 1.7) * 0.6 + paperNoise(p * 4.3) * 0.4 - 0.5;
+  let l = dot(c.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
+  let mid = smoothstep(0.04, 0.3, l) * (1.0 - smoothstep(0.75, 0.98, l));
+  let k = 1.0 + strength * mid * (fibre * 0.9 + grain * 1.3);
+  return vec4<f32>(c.rgb * k, c.a);
+}`;
+
 /** Name of the registered pass: `app.post.setPassUniform` addresses it by this. */
 export const PAPER_PASS_NAME = "wind-gouache-paper";
 
@@ -49,6 +78,7 @@ export function paperPass(width: number, height: number, strength: number = PAPE
     order: "after-tonemap",
     inputs: PAPER_INPUTS,
     glsl: PAPER_GLSL,
+    wgsl: PAPER_WGSL,
     uniforms: { u_paper: strength, u_paperScale: paperScale(width, height) }
   });
 }

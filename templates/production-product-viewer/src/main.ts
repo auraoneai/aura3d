@@ -6,60 +6,67 @@ if (!(canvas instanceof HTMLCanvasElement) || !(metrics instanceof HTMLElement))
   throw new Error("A3D Product Viewer requires canvas#viewport and #metrics.");
 }
 
-const asset = await loadGltfScene({
-  url: "/fixtures/asset-corpus/damaged-helmet.glb",
-  assetId: "damaged-helmet",
-  assetName: "Damaged Helmet",
-  viewport: { width: canvas.width, height: canvas.height }
-});
-const environment = await loadHdrEnvironment({
-  url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
-  id: "studio-small-08",
-  label: "Studio Small 08",
-  intensity: 1.2,
-  toneMapping: { operator: "filmic", exposure: 1.08, whitePoint: 11.2 }
-});
-const viewer = await createProductViewer({
-  canvas,
-  asset,
-  environment,
-  backend: "webgl2",
-  width: canvas.width,
-  height: canvas.height,
-  camera: { preset: "product-hero", orbit: true },
-  lighting: { ibl: true, shadows: true },
-  postprocess: { toneMapping: "filmic", bloom: true, fxaa: true }
-});
+// Never await engine work at the top level of the entry module: a default `vite build` puts the engine modules this file
+// imports into the entry chunk, the lazily loaded renderer chunks import that chunk back, and an entry suspended on a
+// top-level await never finishes evaluating, so the page stays black. Await inside main() instead.
+async function main(canvas: HTMLCanvasElement, metrics: HTMLElement): Promise<void> {
+  const asset = await loadGltfScene({
+    url: "/fixtures/asset-corpus/damaged-helmet.glb",
+    assetId: "damaged-helmet",
+    assetName: "Damaged Helmet",
+    viewport: { width: canvas.width, height: canvas.height }
+  });
+  const environment = await loadHdrEnvironment({
+    url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+    id: "studio-small-08",
+    label: "Studio Small 08",
+    intensity: 1.2,
+    toneMapping: { operator: "filmic", exposure: 1.08, whitePoint: 11.2 }
+  });
+  const viewer = await createProductViewer({
+    canvas,
+    asset,
+    environment,
+    backend: "webgl2",
+    width: canvas.width,
+    height: canvas.height,
+    camera: { preset: "product-hero", orbit: true },
+    lighting: { ibl: true, shadows: true },
+    postprocess: { toneMapping: "filmic", bloom: true, fxaa: true }
+  });
 
-function render(label = "ready"): void {
-  const result = viewer.render();
-  const diagnostics = viewer.diagnostics();
-  metrics.innerHTML = `
-    <span>${label}</span>
-    <span>${result.proof.diagnostics.drawCalls} draw calls</span>
-    <span>${asset.metadata.materialCount} materials</span>
-    <span>${asset.metadata.textureCount} textures</span>
-    <span>${diagnostics.settings.exposure.toFixed(2)} exposure</span>
-    <span>${diagnostics.settings.iblIntensity.toFixed(2)} IBL</span>
-  `;
+  function render(label = "ready"): void {
+    const result = viewer.render();
+    const diagnostics = viewer.diagnostics();
+    metrics.innerHTML = `
+      <span>${label}</span>
+      <span>${result.proof.diagnostics.drawCalls} draw calls</span>
+      <span>${asset.metadata.materialCount} materials</span>
+      <span>${asset.metadata.textureCount} textures</span>
+      <span>${diagnostics.settings.exposure.toFixed(2)} exposure</span>
+      <span>${diagnostics.settings.iblIntensity.toFixed(2)} IBL</span>
+    `;
+  }
+
+  document.getElementById("exposure")?.addEventListener("input", (event) => {
+    viewer.setSettings({ exposure: Number((event.target as HTMLInputElement).value) });
+    render("exposure changed");
+  });
+  document.getElementById("ibl")?.addEventListener("input", (event) => {
+    viewer.setSettings({ iblIntensity: Number((event.target as HTMLInputElement).value) });
+    render("IBL changed");
+  });
+  document.getElementById("orbit")?.addEventListener("click", () => {
+    viewer.controls.rotate(0.2, 0);
+    render("orbit");
+  });
+  document.getElementById("capture")?.addEventListener("click", () => {
+    window.__a3dProductViewerCapture = viewer.captureScreenshot();
+    render("captured");
+  });
+
+  render();
 }
-
-document.getElementById("exposure")?.addEventListener("input", (event) => {
-  viewer.setSettings({ exposure: Number((event.target as HTMLInputElement).value) });
-  render("exposure changed");
-});
-document.getElementById("ibl")?.addEventListener("input", (event) => {
-  viewer.setSettings({ iblIntensity: Number((event.target as HTMLInputElement).value) });
-  render("IBL changed");
-});
-document.getElementById("orbit")?.addEventListener("click", () => {
-  viewer.controls.rotate(0.2, 0);
-  render("orbit");
-});
-document.getElementById("capture")?.addEventListener("click", () => {
-  window.__a3dProductViewerCapture = viewer.captureScreenshot();
-  render("captured");
-});
 
 declare global {
   interface Window {
@@ -67,4 +74,4 @@ declare global {
   }
 }
 
-render();
+void main(canvas, metrics);

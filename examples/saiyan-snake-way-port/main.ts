@@ -478,7 +478,8 @@ async function boot(): Promise<void> {
   const runner = await loading.track(loadRunner(canvas, look.mode), 3);
   const world = buildWorld({ canvas, runner, look });
   /* lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 only; worker and depth are not wired (depth: contact shadows require standard depth) */
-  const lab = labAppOptions(readLabFlags());
+  // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

@@ -1,3 +1,5 @@
+import { parseAuraColorSrgb, withColorUse } from "./color.js";
+
 /**
  * Reusable depth-layered environment composition.
  *
@@ -649,7 +651,9 @@ function parseHexColor(value: string): readonly [number, number, number] {
   const hex = value.trim().replace(/^#/, "");
   const expanded = hex.length === 3 ? hex.split("").map((char) => char + char).join("") : hex;
   if (!/^[0-9a-fA-F]{6}$/.test(expanded)) {
-    throw new Error(`blendSkyBandColor requires a 3- or 6-digit hex colour, received "${value}".`);
+    // Any other CSS colour form; an invalid value throws COLOR_INVALID naming the value.
+    const [r, g, b] = withColorUse("blendSkyBandColor", () => parseAuraColorSrgb(value));
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   }
   return [
     Number.parseInt(expanded.slice(0, 2), 16),

@@ -8,6 +8,9 @@ import {
   AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, ISLAND_INSTANCED_FRAGMENT, ISLAND_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
+import {
+  AURA_FRAGMENT_WGSL, AURA_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, BLOB_VERTEX_WGSL, FLAG_INSTANCED_FRAGMENT_WGSL, FLAG_INSTANCED_VERTEX_WGSL, FLAT_FRAGMENT_WGSL, FLAT_VERTEX_WGSL, GLOW_FRAGMENT_WGSL, GLOW_INSTANCED_FRAGMENT_WGSL, GLOW_INSTANCED_VERTEX_WGSL, GLOW_VERTEX_WGSL, ISLAND_INSTANCED_FRAGMENT_WGSL, ISLAND_INSTANCED_VERTEX_WGSL, ROAD_FRAGMENT_WGSL, ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL
+} from "./shaders-wgsl";
 
 /**
  * GU47 SSR-01: colour-script uniforms shared by the road and sky. The defaults are the pre-GU47 constants with
@@ -50,6 +53,7 @@ export const PALETTE = {
 export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, extra: { transparent?: boolean; depthWrite?: boolean } = {}): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
+  wgsl: { vertex: SOLID_VERTEX_WGSL, fragment: SOLID_FRAGMENT_WGSL },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
     glowColor: { type: "color3", value: [...glow] },
@@ -61,6 +65,7 @@ export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, extr
 
 export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
+  wgsl: { vertex: GLOW_VERTEX_WGSL, fragment: GLOW_FRAGMENT_WGSL },
   uniforms: { glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] }, glowAlpha: { type: "f32", value: alpha }, glowHollow: { type: "f32", value: hollow } },
   side: "double",
   transparent: true,
@@ -71,6 +76,7 @@ export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSp
 /** GU47 SSR-18: `glowSpec` for an instanced node; `tint` 1 reads the shell colour from the instance colour; `hdr` scales the core (SSR-09). */
 export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, tint = 0, hdr = 2.2): CustomSpec => ({
   glsl: { vertex: GLOW_INSTANCED_VERTEX, fragment: GLOW_INSTANCED_FRAGMENT },
+  wgsl: { vertex: GLOW_INSTANCED_VERTEX_WGSL, fragment: GLOW_INSTANCED_FRAGMENT_WGSL },
   uniforms: {
     glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] }, glowAlpha: { type: "f32", value: alpha },
     glowHollow: { type: "f32", value: hollow }, glowTint: { type: "f32", value: tint }, glowHdr: { type: "f32", value: hdr }
@@ -84,6 +90,7 @@ export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, 
 /** GU47 SSR-11: instanced spire islands for the mid / far parallax bands (instance colour .r = extra fog). */
 export const islandInstancedSpec = (): CustomSpec => ({
   glsl: { vertex: ISLAND_INSTANCED_VERTEX, fragment: ISLAND_INSTANCED_FRAGMENT },
+  wgsl: { vertex: ISLAND_INSTANCED_VERTEX_WGSL, fragment: ISLAND_INSTANCED_FRAGMENT_WGSL },
   uniforms: {
     islandLit: { type: "color3", value: [...hexLinear(0xc89a8a)] },
     islandDark: { type: "color3", value: [...hexLinear(0x2a1c3a)] },
@@ -96,6 +103,7 @@ export const islandInstancedSpec = (): CustomSpec => ({
 /** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
 export const flagInstancedSpec = (): CustomSpec => ({
   glsl: { vertex: FLAG_INSTANCED_VERTEX, fragment: FLAG_INSTANCED_FRAGMENT },
+  wgsl: { vertex: FLAG_INSTANCED_VERTEX_WGSL, fragment: FLAG_INSTANCED_FRAGMENT_WGSL },
   uniforms: {
     flagTime: { type: "f32", value: 0 },
     flagSunDir: { type: "vec3", value: [...ORIGINAL_SUN_DIR] },
@@ -108,6 +116,7 @@ export const flagInstancedSpec = (): CustomSpec => ({
 export const roadSpec = (): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
+  wgsl: { vertex: ROAD_VERTEX_WGSL, fragment: ROAD_FRAGMENT_WGSL },
   uniforms: {
     roadTop: { type: "color3", value: [...hexLinear(PALETTE.roadTop)] },
     roadDark: { type: "color3", value: [...hexLinear(PALETTE.roadDark)] },
@@ -141,6 +150,7 @@ export const roadSpec = (): CustomSpec => ({
 
 export const flatSpec = (color: Rgb, alpha: number): CustomSpec => ({
   glsl: { vertex: FLAT_VERTEX, fragment: FLAT_FRAGMENT },
+  wgsl: { vertex: FLAT_VERTEX_WGSL, fragment: FLAT_FRAGMENT_WGSL },
   uniforms: { flatColor: { type: "color3", value: [...color] }, flatAlpha: { type: "f32", value: alpha } },
   side: "double",
   transparent: true,
@@ -150,6 +160,7 @@ export const flatSpec = (color: Rgb, alpha: number): CustomSpec => ({
 
 export const blobSpec = (radius: number, alpha: number): CustomSpec => ({
   glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
+  wgsl: { vertex: BLOB_VERTEX_WGSL, fragment: BLOB_FRAGMENT_WGSL },
   uniforms: {
     blobRadius: { type: "f32", value: radius }, blobAlpha: { type: "f32", value: alpha },
     /** GU47 phase 3: cast-shadow length (0 = the pre-GU47 round blob), ground direction away from the sun, and shade. */
@@ -162,6 +173,7 @@ export const blobSpec = (radius: number, alpha: number): CustomSpec => ({
 
 export const auraSpec = (hot: Rgb, mid: Rgb, edge: Rgb, solid: number): CustomSpec => ({
   glsl: { vertex: AURA_VERTEX, fragment: AURA_FRAGMENT },
+  wgsl: { vertex: AURA_VERTEX_WGSL, fragment: AURA_FRAGMENT_WGSL },
   uniforms: {
     auraTime: { type: "f32", value: 0 },
     auraIntensity: { type: "f32", value: 0 },
@@ -179,6 +191,7 @@ export const auraSpec = (hot: Rgb, mid: Rgb, edge: Rgb, solid: number): CustomSp
 
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
   uniforms: {
     skyHi: { type: "color3", value: [...hexLinear(PALETTE.skyHigh)] },
     skyMid: { type: "color3", value: [...hexLinear(PALETTE.skyMid)] },

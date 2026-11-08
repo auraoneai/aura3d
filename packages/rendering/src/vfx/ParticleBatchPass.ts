@@ -6,6 +6,7 @@ import type { RenderBuffer, RenderDevice, RenderShaderProgram } from "../RenderD
 import type { FrameContributorContext, TransparentQueueItem } from "../contracts/frameGraph";
 import type { ParticleBatchDescriptor, ParticleBatchHandle } from "../contracts/particles";
 import { TextureBinding } from "../TextureBinding";
+import { glslOnlyVfxProgram } from "./webgpuGlslOnly";
 import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { ParticleInstanceRing, createParticleQuad, particleInstanceAttributes } from "./ParticleInstanceLayout";
 import { consumeBlendFallbackReport, resolveVfxBlend } from "./BlendFallback";
@@ -19,6 +20,7 @@ import {
   particleVertexSource,
   type ParticleProgramDefines
 } from "./shaders/particle.glsl";
+import { particlePortableBindings, particleWgsl } from "./shaders/particle.wgsl";
 import { sceneDepthLinearizeUniform } from "../DepthConvention";
 
 const MAX_PARTICLE_PROGRAMS = 12;
@@ -245,7 +247,14 @@ export class ParticleBatchPass {
       fogAnalytic: false,
       straightAlpha: batch.desc.atlasStraightAlpha === true
     };
-    const shader = this.program(defines);
+    // WebGPU uses the WGSL twin (shaders/particle.wgsl.ts); a device that still reports WGSL_PROGRAM_MISSING skips with one warning.
+    if (this.wgslUnavailable) return;
+    const shader = glslOnlyVfxProgram(this.device, "VFX_PARTICLES_WGSL_MISSING", "particle batches", () => this.program(defines));
+    if (!shader) {
+      this.wgslUnavailable = true;
+      this.note("VFX_PARTICLES_WGSL_MISSING", null, "particle batches have no WGSL program; they are skipped on WebGPU");
+      return;
+    }
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_view", camera?.viewMatrix ?? IDENTITY],
       ["u_viewProjection", camera?.viewProjectionMatrix ?? IDENTITY],
@@ -283,6 +292,9 @@ export class ParticleBatchPass {
     this.frameDiagnostics.instancesDrawn += batch.liveCount;
   }
 
+  /** Set once a WebGPU device has rejected the GLSL-only particle program (see drawBatch). */
+  private wgslUnavailable = false;
+
   private program(defines: ParticleProgramDefines): RenderShaderProgram {
     const key = particleProgramKey(defines);
     let shader = this.programs.get(key);
@@ -295,7 +307,8 @@ export class ParticleBatchPass {
         label: key,
         vertex: particleVertexSource(defines),
         fragment: particleFragmentSource(defines),
-        marker: PARTICLE_SHADER_MARKER
+        marker: PARTICLE_SHADER_MARKER,
+        ...(this.device.kind === "webgpu" ? { webgpu: particleWgsl(defines), portableBindings: particlePortableBindings(defines) } : {})
       });
       this.programs.set(key, shader);
     }

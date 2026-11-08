@@ -16,14 +16,15 @@ import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION, type StationProbe } from "./lights";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
-import { cloudSpec, pointsSpec, rainGraphSpec, rainSpec, skySpec } from "./materials";
+import { cloudSpec, pointQuadSpec, pointsSpec, rainGraphSpec, rainSpec, skySpec } from "./materials";
 import { portableCloudMaterial } from "./portable";
 import { readPortableFlag } from "../shared/portable-flag";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
-import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
+import { quadGeometryInput, quadUpdater } from "./point-quads";
 
 type Scene = ReturnType<typeof scene>;
 
@@ -291,6 +292,14 @@ const FORCE_RAIN = FX.has("forcerain");
 /** GU47 LT-01: `?band=A..E` pins a band; `?look=original` keeps today's day / night look. */
 export const PINNED_BAND = parseBand(QUERY.get("band"));
 export const LOOK = parseLook(QUERY.get("look"));
+/**
+ * Weather and mote sprites: `gl_PointSize` points by default; with a lab backend requested (`?backend=webgpu|auto`) the
+ * same sprites as screen-aligned quads (point-quads.ts), since WebGPU has no point size. The default scene is unchanged.
+ */
+const SPRITE_QUADS = resolveLabBackend(readLabFlags()) !== undefined;
+const spriteGeometry = (input: Parameters<typeof geometry.dynamic>[0] & { positions: Float32Array; attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> }) =>
+  SPRITE_QUADS ? geometry.dynamic(quadGeometryInput(input.positions, input.attributes)) : geometry.dynamic(input);
+const spriteMaterial = (tint: readonly [number, number, number]) => material.custom(SPRITE_QUADS ? pointQuadSpec(tint) : pointsSpec(tint));
 /**
  * GU47 phase 4 (4.7.2): the band look uses the engine's 4.3.0 sun-shadow fit (`__A3D_SHADOW_FIT__ = "current"`). The default
  * 4.2.0 fit widens every cascade to the bounds of every caster, and this route's merged facades, roofs, rails, sleepers and
@@ -660,28 +669,28 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   if (row) b.add(primitives.capsule({ name: "sky-lanterns", size: [0.9, 1.2, 0.9], instances: [{ position: [0, -400, 0], scale: 0.001 }], material: material.emissive({ color: "#ffb35c", emissive: "#ffc77a", emissiveIntensity: row.lanternGlow }), castShadow: false }).runtime({ id: "sky-lanterns" }));
 
   /* ---- weather points (rain / snow around the camera) and ambient motes ---- */
-  b.add(geometry.custom(geometry.dynamic({
+  b.add(geometry.custom(spriteGeometry({
     positions: f32(new Array(WEATHER_COUNT * 3).fill(0)),
     topology: "points",
     attributes: {
       size: { itemSize: 1, data: f32(new Array(WEATHER_COUNT).fill(3)) },
       fade: { itemSize: 1, data: f32(new Array(WEATHER_COUNT).fill(0)) }
     }
-  }), { name: "weather", material: material.custom(pointsSpec([0.8, 0.88, 1])) }).runtime({ id: "weather" }));
+  }), { name: "weather", material: spriteMaterial([0.8, 0.88, 1]) }).runtime({ id: "weather" }));
   b.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(RAIN_COUNT * 12).fill(0)),
     indices: Uint32Array.from(Array.from({ length: RAIN_COUNT }, (_, i) => [i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3]).flat()),
     // Portable path: `fade` rides in uv0.x (graph builtins have no author attributes); GLSL path keeps the `fade` attribute.
     ...(RAIN_PORTABLE ? { uvs: f32(new Array(RAIN_COUNT * 8).fill(0)) } : { attributes: { fade: { itemSize: 1, data: f32(new Array(RAIN_COUNT * 4).fill(0)) } } })
   }), { name: "rain", material: RAIN_PORTABLE ? rainGraphSpec([0.75, 0.85, 1]) : material.custom(rainSpec([0.75, 0.85, 1])) }).runtime({ id: "rain" }));
-  b.add(geometry.custom(geometry.dynamic({
+  b.add(geometry.custom(spriteGeometry({
     positions: f32(new Array(MOTE_COUNT * 3).fill(0)),
     topology: "points",
     attributes: {
       size: { itemSize: 1, data: f32(new Array(MOTE_COUNT).fill(3)) },
       fade: { itemSize: 1, data: f32(new Array(MOTE_COUNT).fill(0)) }
     }
-  }), { name: "motes", material: material.custom(pointsSpec([1, 0.93, 0.7])) }).runtime({ id: "motes" }));
+  }), { name: "motes", material: spriteMaterial([1, 0.93, 0.7]) }).runtime({ id: "motes" }));
 
   return b;
 }
@@ -730,7 +739,9 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const moteSeeds = Array.from({ length: MOTE_COUNT }, () => [rand(), rand(), rand(), rand()] as const);
   const wpos = new Float32Array(WEATHER_COUNT * 3), wfade = new Float32Array(WEATHER_COUNT), wsize = new Float32Array(WEATHER_COUNT);
   const mpos = new Float32Array(MOTE_COUNT * 3), mfade = new Float32Array(MOTE_COUNT), msize = new Float32Array(MOTE_COUNT);
-  const sky = node("sky"), clouds = node("cloud-sea"), weather = node("weather"), motes = node("motes"), rain = node("rain");
+  /** With sprite quads, the point arrays written below land on the four corners of each quad. */
+  const spriteHandle = (h: Handle) => SPRITE_QUADS ? quadUpdater(h, { position: 3, size: 1, fade: 1 }) : h;
+  const sky = node("sky"), clouds = node("cloud-sea"), weather = spriteHandle(node("weather")), motes = spriteHandle(node("motes")), rain = node("rain");
   const rpos = new Float32Array(RAIN_COUNT * 12), rfade = new Float32Array(RAIN_COUNT * 4), ruv = new Float32Array(RAIN_COUNT * 8);
   let shownNight = startNight ? 1 : 0;
   let nightLevel = startNight ? 1 : 0;

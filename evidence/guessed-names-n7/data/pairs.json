@@ -1,0 +1,2587 @@
+{
+ "sources": 769,
+ "pairs": [
+  {
+   "k": "createAuraApp#1.scene",
+   "occ": 469,
+   "runs": 456
+  },
+  {
+   "k": "material.pbr#0.color",
+   "occ": 1401,
+   "runs": 383
+  },
+  {
+   "k": "material.pbr#0.roughness",
+   "occ": 1365,
+   "runs": 382
+  },
+  {
+   "k": "scene#0.background",
+   "occ": 384,
+   "runs": 374
+  },
+  {
+   "k": "lights.directional#0.position",
+   "occ": 605,
+   "runs": 359
+  },
+  {
+   "k": "lights.directional#0.target",
+   "occ": 605,
+   "runs": 359
+  },
+  {
+   "k": "lights.directional#0.intensity",
+   "occ": 605,
+   "runs": 359
+  },
+  {
+   "k": "camera.perspective#0.position",
+   "occ": 319,
+   "runs": 313
+  },
+  {
+   "k": "camera.perspective#0.target",
+   "occ": 319,
+   "runs": 313
+  },
+  {
+   "k": "camera.perspective#0.fov",
+   "occ": 318,
+   "runs": 313
+  },
+  {
+   "k": "lights.directional#0.shadow",
+   "occ": 304,
+   "runs": 302
+  },
+  {
+   "k": "lights.directional#0.name",
+   "occ": 495,
+   "runs": 260
+  },
+  {
+   "k": "lights.hemisphere#0.intensity",
+   "occ": 249,
+   "runs": 248
+  },
+  {
+   "k": "lights.hemisphere#0.skyColor",
+   "occ": 248,
+   "runs": 247
+  },
+  {
+   "k": "lights.hemisphere#0.groundColor",
+   "occ": 248,
+   "runs": 247
+  },
+  {
+   "k": "primitives.plane#0.name",
+   "occ": 250,
+   "runs": 231
+  },
+  {
+   "k": "primitives.plane#0.material",
+   "occ": 250,
+   "runs": 231
+  },
+  {
+   "k": "lights.directional#0.color",
+   "occ": 420,
+   "runs": 223
+  },
+  {
+   "k": "primitives.sphere#0.name",
+   "occ": 576,
+   "runs": 206
+  },
+  {
+   "k": "material.pbr#0.metallic",
+   "occ": 426,
+   "runs": 203
+  },
+  {
+   "k": "primitives.sphere#0.material",
+   "occ": 572,
+   "runs": 202
+  },
+  {
+   "k": "primitives.plane#0.size",
+   "occ": 220,
+   "runs": 201
+  },
+  {
+   "k": "primitives.sphere#0.size",
+   "occ": 564,
+   "runs": 194
+  },
+  {
+   "k": "camera.perspective#0.near",
+   "occ": 185,
+   "runs": 181
+  },
+  {
+   "k": "camera.perspective#0.far",
+   "occ": 185,
+   "runs": 181
+  },
+  {
+   "k": "primitives.box#0.name",
+   "occ": 829,
+   "runs": 175
+  },
+  {
+   "k": "environments.neutral#0.intensity",
+   "occ": 177,
+   "runs": 174
+  },
+  {
+   "k": "primitives.box#0.material",
+   "occ": 831,
+   "runs": 174
+  },
+  {
+   "k": "environments.neutral#0.background",
+   "occ": 171,
+   "runs": 168
+  },
+  {
+   "k": "geometry.custom#1.name",
+   "occ": 311,
+   "runs": 163
+  },
+  {
+   "k": "geometry.custom#1.material",
+   "occ": 311,
+   "runs": 163
+  },
+  {
+   "k": "geometry.define#0.positions",
+   "occ": 244,
+   "runs": 157
+  },
+  {
+   "k": "geometry.define#0.indices",
+   "occ": 244,
+   "runs": 157
+  },
+  {
+   "k": "geometry.define#0.normals",
+   "occ": 241,
+   "runs": 154
+  },
+  {
+   "k": "geometry.define#0.bounds",
+   "occ": 238,
+   "runs": 154
+  },
+  {
+   "k": "primitives.box#0.size",
+   "occ": 796,
+   "runs": 152
+  },
+  {
+   "k": "geometry.custom#1.castShadow",
+   "occ": 218,
+   "runs": 148
+  },
+  {
+   "k": "instances.cylinder#0.name",
+   "occ": 172,
+   "runs": 145
+  },
+  {
+   "k": "instances.cylinder#0.material",
+   "occ": 172,
+   "runs": 145
+  },
+  {
+   "k": "instances.cylinder#0.transforms",
+   "occ": 171,
+   "runs": 145
+  },
+  {
+   "k": "material.custom#0.glsl",
+   "occ": 226,
+   "runs": 145
+  },
+  {
+   "k": "instances.cylinder#0.params",
+   "occ": 167,
+   "runs": 140
+  },
+  {
+   "k": "material.custom#0.uniforms",
+   "occ": 158,
+   "runs": 134
+  },
+  {
+   "k": "primitives.cylinder#0.name",
+   "occ": 278,
+   "runs": 131
+  },
+  {
+   "k": "primitives.cylinder#0.material",
+   "occ": 278,
+   "runs": 131
+  },
+  {
+   "k": "primitives.cylinder#0.size",
+   "occ": 272,
+   "runs": 125
+  },
+  {
+   "k": "instances.sphere#0.name",
+   "occ": 207,
+   "runs": 124
+  },
+  {
+   "k": "instances.sphere#0.transforms",
+   "occ": 204,
+   "runs": 124
+  },
+  {
+   "k": "instances.sphere#0.material",
+   "occ": 207,
+   "runs": 124
+  },
+  {
+   "k": "effects.fog#0.color",
+   "occ": 124,
+   "runs": 121
+  },
+  {
+   "k": "effects.fog#0.density",
+   "occ": 124,
+   "runs": 121
+  },
+  {
+   "k": "camera.orbit#0.target",
+   "occ": 116,
+   "runs": 113
+  },
+  {
+   "k": "camera.orbit#0.fov",
+   "occ": 116,
+   "runs": 113
+  },
+  {
+   "k": "instances.cone#0.name",
+   "occ": 154,
+   "runs": 112
+  },
+  {
+   "k": "instances.cone#0.material",
+   "occ": 154,
+   "runs": 112
+  },
+  {
+   "k": "instances.cone#0.transforms",
+   "occ": 154,
+   "runs": 112
+  },
+  {
+   "k": "instances.cone#0.params",
+   "occ": 153,
+   "runs": 111
+  },
+  {
+   "k": "material.emissive#0.color",
+   "occ": 240,
+   "runs": 111
+  },
+  {
+   "k": "material.emissive#0.emissive",
+   "occ": 240,
+   "runs": 111
+  },
+  {
+   "k": "material.emissive#0.emissiveIntensity",
+   "occ": 240,
+   "runs": 111
+  },
+  {
+   "k": "camera.orbit#0.position",
+   "occ": 110,
+   "runs": 110
+  },
+  {
+   "k": "instances.sphere#0.colors",
+   "occ": 132,
+   "runs": 100
+  },
+  {
+   "k": "group#2.position",
+   "occ": 336,
+   "runs": 94
+  },
+  {
+   "k": "instances.cone#0.colors",
+   "occ": 111,
+   "runs": 92
+  },
+  {
+   "k": "camera.orbit#0.near",
+   "occ": 87,
+   "runs": 87
+  },
+  {
+   "k": "camera.orbit#0.far",
+   "occ": 87,
+   "runs": 87
+  },
+  {
+   "k": "createAuraApp#1.resize",
+   "occ": 85,
+   "runs": 82
+  },
+  {
+   "k": "primitives.sphere#0.castShadow",
+   "occ": 163,
+   "runs": 81
+  },
+  {
+   "k": "material.custom#0.side",
+   "occ": 125,
+   "runs": 76
+  },
+  {
+   "k": "primitives.plane#0.castShadow",
+   "occ": 78,
+   "runs": 70
+  },
+  {
+   "k": "effects.bloom#0.intensity",
+   "occ": 69,
+   "runs": 69
+  },
+  {
+   "k": "effects.bloom#0.threshold",
+   "occ": 69,
+   "runs": 69
+  },
+  {
+   "k": "effects.bloom#0.radius",
+   "occ": 69,
+   "runs": 69
+  },
+  {
+   "k": "geometry.define#0.colors",
+   "occ": 73,
+   "runs": 69
+  },
+  {
+   "k": "camera.orbit#0.autoRotate",
+   "occ": 67,
+   "runs": 67
+  },
+  {
+   "k": "material.custom#0.depthWrite",
+   "occ": 77,
+   "runs": 63
+  },
+  {
+   "k": "createAuraApp#1.pixelRatio",
+   "occ": 64,
+   "runs": 61
+  },
+  {
+   "k": "handle.setPose#0.position",
+   "occ": 58,
+   "runs": 58
+  },
+  {
+   "k": "handle.setPose#0.target",
+   "occ": 58,
+   "runs": 58
+  },
+  {
+   "k": "primitives.plane#0.receiveShadow",
+   "occ": 62,
+   "runs": 57
+  },
+  {
+   "k": "material.custom#0.fog",
+   "occ": 100,
+   "runs": 56
+  },
+  {
+   "k": "lights.hemisphere#0.name",
+   "occ": 55,
+   "runs": 55
+  },
+  {
+   "k": "primitives.capsule#0.name",
+   "occ": 63,
+   "runs": 54
+  },
+  {
+   "k": "primitives.capsule#0.size",
+   "occ": 63,
+   "runs": 54
+  },
+  {
+   "k": "primitives.capsule#0.material",
+   "occ": 63,
+   "runs": 54
+  },
+  {
+   "k": "primitives.box#0.castShadow",
+   "occ": 128,
+   "runs": 53
+  },
+  {
+   "k": "sky.preetham#0.sun",
+   "occ": 49,
+   "runs": 49
+  },
+  {
+   "k": "geometry.custom#1.receiveShadow",
+   "occ": 60,
+   "runs": 45
+  },
+  {
+   "k": "interactions.orbit#0.target",
+   "occ": 44,
+   "runs": 44
+  },
+  {
+   "k": "createAuraApp#1.output",
+   "occ": 42,
+   "runs": 42
+  },
+  {
+   "k": "instances.box#0.name",
+   "occ": 125,
+   "runs": 42
+  },
+  {
+   "k": "instances.box#0.transforms",
+   "occ": 125,
+   "runs": 42
+  },
+  {
+   "k": "instances.box#0.material",
+   "occ": 125,
+   "runs": 42
+  },
+  {
+   "k": "instances.cylinder#0.colors",
+   "occ": 51,
+   "runs": 41
+  },
+  {
+   "k": "sky.gradient#0.zenith",
+   "occ": 41,
+   "runs": 39
+  },
+  {
+   "k": "sky.gradient#0.horizon",
+   "occ": 41,
+   "runs": 39
+  },
+  {
+   "k": "primitives.cylinder#0.castShadow",
+   "occ": 75,
+   "runs": 37
+  },
+  {
+   "k": "lights.point#0.position",
+   "occ": 68,
+   "runs": 36
+  },
+  {
+   "k": "lights.point#0.intensity",
+   "occ": 68,
+   "runs": 36
+  },
+  {
+   "k": "lights.point#0.color",
+   "occ": 67,
+   "runs": 35
+  },
+  {
+   "k": "instances.sphere#0.castShadow",
+   "occ": 72,
+   "runs": 35
+  },
+  {
+   "k": "sky.preetham#0.stars",
+   "occ": 35,
+   "runs": 35
+  },
+  {
+   "k": "lights.ambient#0.intensity",
+   "occ": 37,
+   "runs": 34
+  },
+  {
+   "k": "lights.point#0.name",
+   "occ": 66,
+   "runs": 33
+  },
+  {
+   "k": "primitives.sphere#0.receiveShadow",
+   "occ": 63,
+   "runs": 33
+  },
+  {
+   "k": "lights.point#0.distance",
+   "occ": 59,
+   "runs": 30
+  },
+  {
+   "k": "instances.box#0.colors",
+   "occ": 54,
+   "runs": 30
+  },
+  {
+   "k": "handle.setLight#0.intensity",
+   "occ": 56,
+   "runs": 30
+  },
+  {
+   "k": "instances.sphere#0.params",
+   "occ": 50,
+   "runs": 29
+  },
+  {
+   "k": "material.pbr#0.metalness",
+   "occ": 31,
+   "runs": 28
+  },
+  {
+   "k": "material.custom#0.transparent",
+   "occ": 37,
+   "runs": 26
+  },
+  {
+   "k": "handle.setLight#0.color",
+   "occ": 37,
+   "runs": 25
+  },
+  {
+   "k": "effects.fog#0.mode",
+   "occ": 25,
+   "runs": 25
+  },
+  {
+   "k": "lights.point#0.decay",
+   "occ": 48,
+   "runs": 24
+  },
+  {
+   "k": "material.emissive#0.roughness",
+   "occ": 43,
+   "runs": 24
+  },
+  {
+   "k": "primitives.sphere#0.position",
+   "occ": 35,
+   "runs": 24
+  },
+  {
+   "k": "interactions.orbit#0.autoRotate",
+   "occ": 23,
+   "runs": 23
+  },
+  {
+   "k": "material.pbr#0.opacity",
+   "occ": 26,
+   "runs": 22
+  },
+  {
+   "k": "instances.cylinder#0.castShadow",
+   "occ": 26,
+   "runs": 22
+  },
+  {
+   "k": "primitives.box#0.position",
+   "occ": 95,
+   "runs": 22
+  },
+  {
+   "k": "material.pbr#0.envMapIntensity",
+   "occ": 31,
+   "runs": 22
+  },
+  {
+   "k": "primitives.cone#0.name",
+   "occ": 58,
+   "runs": 20
+  },
+  {
+   "k": "primitives.cone#0.size",
+   "occ": 58,
+   "runs": 20
+  },
+  {
+   "k": "primitives.cone#0.material",
+   "occ": 58,
+   "runs": 20
+  },
+  {
+   "k": "sky.gradient#0.ground",
+   "occ": 20,
+   "runs": 20
+  },
+  {
+   "k": "handle.setPose#1.cut",
+   "occ": 18,
+   "runs": 18
+  },
+  {
+   "k": "lights.point#0.shadow",
+   "occ": 38,
+   "runs": 18
+  },
+  {
+   "k": "primitives.plane#0.position",
+   "occ": 18,
+   "runs": 18
+  },
+  {
+   "k": "model#1.name",
+   "occ": 18,
+   "runs": 18
+  },
+  {
+   "k": "model#1.castShadow",
+   "occ": 18,
+   "runs": 18
+  },
+  {
+   "k": "model#1.receiveShadow",
+   "occ": 18,
+   "runs": 18
+  },
+  {
+   "k": "material.custom#0.blending",
+   "occ": 21,
+   "runs": 17
+  },
+  {
+   "k": "material.custom#0.castShadow",
+   "occ": 25,
+   "runs": 17
+  },
+  {
+   "k": "geometry.define#0.uvs",
+   "occ": 18,
+   "runs": 16
+  },
+  {
+   "k": "sky.gradient#0.exponent",
+   "occ": 16,
+   "runs": 16
+  },
+  {
+   "k": "primitives.cylinder#0.position",
+   "occ": 37,
+   "runs": 16
+  },
+  {
+   "k": "handle.setFog#0.color",
+   "occ": 16,
+   "runs": 16
+  },
+  {
+   "k": "environments.studio#0.intensity",
+   "occ": 19,
+   "runs": 16
+  },
+  {
+   "k": "instances.cone#0.castShadow",
+   "occ": 16,
+   "runs": 15
+  },
+  {
+   "k": "sky.gradient#0.horizonGlow",
+   "occ": 15,
+   "runs": 15
+  },
+  {
+   "k": "instances.box#0.castShadow",
+   "occ": 33,
+   "runs": 15
+  },
+  {
+   "k": "instances.sphere#0.receiveShadow",
+   "occ": 25,
+   "runs": 15
+  },
+  {
+   "k": "model#1.targetHeight",
+   "occ": 15,
+   "runs": 15
+  },
+  {
+   "k": "primitives.cylinder#0.params",
+   "occ": 49,
+   "runs": 14
+  },
+  {
+   "k": "group#2.rotation",
+   "occ": 29,
+   "runs": 13
+  },
+  {
+   "k": "material.pbr#0.emissive",
+   "occ": 28,
+   "runs": 13
+  },
+  {
+   "k": "material.pbr#0.emissiveIntensity",
+   "occ": 28,
+   "runs": 13
+  },
+  {
+   "k": "environments.studio#0.background",
+   "occ": 13,
+   "runs": 13
+  },
+  {
+   "k": "interactions.orbit#0.position",
+   "occ": 13,
+   "runs": 13
+  },
+  {
+   "k": "primitives.box#0.receiveShadow",
+   "occ": 26,
+   "runs": 12
+  },
+  {
+   "k": "instances.cylinder#0.receiveShadow",
+   "occ": 12,
+   "runs": 12
+  },
+  {
+   "k": "handle.setFog#0.density",
+   "occ": 12,
+   "runs": 12
+  },
+  {
+   "k": "createAuraApp#1.autoStart",
+   "occ": 12,
+   "runs": 12
+  },
+  {
+   "k": "game.runtimeNode#1.tags",
+   "occ": 24,
+   "runs": 12
+  },
+  {
+   "k": "sky.gradient#0.sun",
+   "occ": 11,
+   "runs": 11
+  },
+  {
+   "k": "material.physical#0.color",
+   "occ": 36,
+   "runs": 11
+  },
+  {
+   "k": "material.physical#0.metallic",
+   "occ": 33,
+   "runs": 11
+  },
+  {
+   "k": "material.physical#0.roughness",
+   "occ": 35,
+   "runs": 11
+  },
+  {
+   "k": "material.custom#0.receiveShadow",
+   "occ": 18,
+   "runs": 10
+  },
+  {
+   "k": "handle.setPose#0.fov",
+   "occ": 10,
+   "runs": 10
+  },
+  {
+   "k": "material.physical#0.clearcoat",
+   "occ": 23,
+   "runs": 10
+  },
+  {
+   "k": "material.physical#0.clearcoatRoughness",
+   "occ": 23,
+   "runs": 10
+  },
+  {
+   "k": "primitives.cylinder#0.rotation",
+   "occ": 11,
+   "runs": 10
+  },
+  {
+   "k": "instances.cone#0.receiveShadow",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "primitives.cylinder#0.receiveShadow",
+   "occ": 15,
+   "runs": 9
+  },
+  {
+   "k": "sky.gradient#0.bands",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "instances.polyhedron#0.name",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "instances.polyhedron#0.transforms",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "instances.polyhedron#0.colors",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "instances.polyhedron#0.material",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "instances.polyhedron#0.params",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "effects.contactShadows#0.intensity",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "model#1.position",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "createAuraApp#1.animation",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "handle.play#1.loop",
+   "occ": 15,
+   "runs": 9
+  },
+  {
+   "k": "handle.play#1.crossFade",
+   "occ": 12,
+   "runs": 9
+  },
+  {
+   "k": "effects.vignette#0.intensity",
+   "occ": 8,
+   "runs": 8
+  },
+  {
+   "k": "material.brushedMetal#0.color",
+   "occ": 8,
+   "runs": 8
+  },
+  {
+   "k": "material.brushedMetal#0.metallic",
+   "occ": 8,
+   "runs": 8
+  },
+  {
+   "k": "material.brushedMetal#0.roughness",
+   "occ": 8,
+   "runs": 8
+  },
+  {
+   "k": "material.brushedMetal#0.anisotropy",
+   "occ": 8,
+   "runs": 8
+  },
+  {
+   "k": "material.emissive#0.opacity",
+   "occ": 10,
+   "runs": 7
+  },
+  {
+   "k": "primitives.sphere#0.params",
+   "occ": 31,
+   "runs": 7
+  },
+  {
+   "k": "scene#0.camera",
+   "occ": 7,
+   "runs": 7
+  },
+  {
+   "k": "material.fabric#0.color",
+   "occ": 7,
+   "runs": 7
+  },
+  {
+   "k": "material.fabric#0.sheen",
+   "occ": 7,
+   "runs": 7
+  },
+  {
+   "k": "material.fabric#0.sheenColor",
+   "occ": 7,
+   "runs": 7
+  },
+  {
+   "k": "material.fabric#0.sheenRoughness",
+   "occ": 7,
+   "runs": 7
+  },
+  {
+   "k": "effects.contactShadows#0.length",
+   "occ": 7,
+   "runs": 7
+  },
+  {
+   "k": "primitives.capsule#0.castShadow",
+   "occ": 10,
+   "runs": 6
+  },
+  {
+   "k": "camera.follow#0.targetNode",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.follow#0.offset",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.follow#0.fov",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "material.fabric#0.roughness",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "material.fabric#0.metallic",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "material.fabric#0.envMapIntensity",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "material.fabric#0.normal",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "material.proceduralTexture#1.scale",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "material.physical#0.opacity",
+   "occ": 8,
+   "runs": 6
+  },
+  {
+   "k": "lights.ambient#0.name",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.orbit#0.distance",
+   "occ": 9,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.target",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.distance",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.yaw",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.pitch",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.pitchLimits",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.fov",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "camera.rigs.orbit#0.halflife",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "model#1.scaleMode",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "instances.polyhedron#0.castShadow",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "effects.fog#0.intensity",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "effects.fog#0.name",
+   "occ": 9,
+   "runs": 6
+  },
+  {
+   "k": "primitives.cone#0.castShadow",
+   "occ": 21,
+   "runs": 5
+  },
+  {
+   "k": "camera.follow#0.offsetMode",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "camera.follow#0.near",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "camera.follow#0.far",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "sky.gradient#0.name",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "handle.setPose#0.roll",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "group#2.scale",
+   "occ": 11,
+   "runs": 5
+  },
+  {
+   "k": "material.clearGlass#0.color",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "material.clearGlass#0.opacity",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "material.clearGlass#0.thickness",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "material.clearGlass#0.ior",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "material.brushedMetal#0.envMapIntensity",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "material.proceduralTexture#1.strength",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "material.proceduralTexture#1.contrast",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.name",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.position",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.target",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.angle",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.penumbra",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.distance",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.intensity",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.color",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "lights.spot#0.shadow",
+   "occ": 5,
+   "runs": 5
+  },
+  {
+   "k": "primitives.cone#0.params",
+   "occ": 13,
+   "runs": 4
+  },
+  {
+   "k": "primitives.sphere#0.frustumCulled",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "handle.setPose#0.near",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "handle.setPose#0.far",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "instances.cylinder#0.frustumCulled",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "lights.ambient#0.color",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.name",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.position",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.target",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.intensity",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.width",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.height",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "lights.softbox#0.color",
+   "occ": 9,
+   "runs": 4
+  },
+  {
+   "k": "material.clearGlass#0.transmission",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.clearGlass#0.roughness",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.clearGlass#0.attenuationColor",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.clearGlass#0.attenuationDistance",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.clearGlass#0.envMapIntensity",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.physical#0.envMapIntensity",
+   "occ": 11,
+   "runs": 4
+  },
+  {
+   "k": "lights.spot#0.decay",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.physical#0.transmission",
+   "occ": 7,
+   "runs": 4
+  },
+  {
+   "k": "material.physical#0.anisotropy",
+   "occ": 6,
+   "runs": 4
+  },
+  {
+   "k": "material.physical#0.ior",
+   "occ": 7,
+   "runs": 4
+  },
+  {
+   "k": "material.physical#0.thickness",
+   "occ": 7,
+   "runs": 4
+  },
+  {
+   "k": "environments.metalStudio#0.intensity",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "environments.metalStudio#0.background",
+   "occ": 4,
+   "runs": 4
+  },
+  {
+   "k": "material.pbr#0.transparent",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "instances.box#0.receiveShadow",
+   "occ": 11,
+   "runs": 3
+  },
+  {
+   "k": "primitives.torus#0.name",
+   "occ": 5,
+   "runs": 3
+  },
+  {
+   "k": "primitives.torus#0.size",
+   "occ": 5,
+   "runs": 3
+  },
+  {
+   "k": "primitives.torus#0.material",
+   "occ": 5,
+   "runs": 3
+  },
+  {
+   "k": "effects.vignette#0.smoothness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "effects.vignette#0.roundness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "sky.gradient#0.stars",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "material.pbr#0.doubleSided",
+   "occ": 5,
+   "runs": 3
+  },
+  {
+   "k": "primitives.cone#0.position",
+   "occ": 7,
+   "runs": 3
+  },
+  {
+   "k": "material.brushedMetal#0.metalness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "material.fabric#0.metalness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.name",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.position",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.target",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.intensity",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.width",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.height",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "lights.rect#0.color",
+   "occ": 13,
+   "runs": 3
+  },
+  {
+   "k": "material.carPaint#0.color",
+   "occ": 4,
+   "runs": 3
+  },
+  {
+   "k": "environments.capture#0.name",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "environments.capture#0.position",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "environments.capture#0.resolution",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "environments.capture#0.update",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "environments.capture#0.intensity",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "environments.capture#0.background",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "createAuraApp#1.qualityRebuild",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "handle.play#1.transition",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "material.emissive#0.metalness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "primitives.sphere#0.scale",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "geometry.custom#1.frustumCulled",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "instances.cone#0.frustumCulled",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "instances.polyhedron#0.frustumCulled",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "instances.polyhedron#0.receiveShadow",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "effects.fog#0.heightFalloff",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "model#1.role",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "material.standard#0.color",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "material.standard#0.roughness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "material.standard#0.metalness",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "looks.preset#1.fogDensityScale",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "looks.preset#1.exposureEv",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "sky.preetham#0.captureEnvironment",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "primitives.cone#0.receiveShadow",
+   "occ": 7,
+   "runs": 2
+  },
+  {
+   "k": "handle.setPose#0.up",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "camera.follow#0.smoothing",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "sky.gradient#0.captureEnvironment",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "effects.colorGrade#0.contrast",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "effects.colorGrade#0.saturation",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "instances.sphere#0.size",
+   "occ": 4,
+   "runs": 2
+  },
+  {
+   "k": "primitives.torus#0.castShadow",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "effects.vignette#0.name",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.name",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.position",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.shape",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.shapeSize",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.rate",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.maxParticles",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.lifetime",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.speed",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.size",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.gravity",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.drag",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.blend",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.seed",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "effects.particles#0.color",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "sky.gradient#0.affectsFog",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "looks.preset#1.sun",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "looks.preset#1.key",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "instances.box#0.frustumCulled",
+   "occ": 4,
+   "runs": 2
+  },
+  {
+   "k": "material.clearGlass#0.specularIntensity",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.brushedMetal#0.anisotropyRotation",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.fabric#0.normalScale",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.physical#0.name",
+   "occ": 4,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.name",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.metallic",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.roughness",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.clearcoat",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.clearcoatRoughness",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.envMapIntensity",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.normal",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.carPaint#0.normalScale",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.chrome#0.name",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "material.pbr#0.name",
+   "occ": 6,
+   "runs": 2
+  },
+  {
+   "k": "material.pbr#0.clearcoat",
+   "occ": 4,
+   "runs": 2
+  },
+  {
+   "k": "material.pbr#0.clearcoatRoughness",
+   "occ": 4,
+   "runs": 2
+  },
+  {
+   "k": "material.glass#0.color",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.glass#0.roughness",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.glass#0.metallic",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.glass#0.ior",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.glass#0.thickness",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "primitives.box#0.rotation",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.pbr#0.texture",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "environments.neutral#0.diffuseIntensity",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "environments.neutral#0.specularIntensity",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.physical#0.sheen",
+   "occ": 4,
+   "runs": 2
+  },
+  {
+   "k": "environments.capture#0.include",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "material.physical#0.transparent",
+   "occ": 3,
+   "runs": 2
+  },
+  {
+   "k": "primitives.capsule#0.receiveShadow",
+   "occ": 2,
+   "runs": 2
+  },
+  {
+   "k": "camera.follow#0.target",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "geometry.define#0.attributes",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.custom#0.depthTest",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "primitives.torus#0.params",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "instances.box#0.instanceColorTarget",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.sphere#0.instanceColorTarget",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "sky.gradient#0.intensity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.roundedBox#0.name",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.roundedBox#0.transforms",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.roundedBox#0.colors",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.roundedBox#0.material",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.fog#0.affectsBackground",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.particles#0.sizeOverLife",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.particles#0.alphaOverLife",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.pbr#0.alphaMode",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "material.pbr#0.unlit",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "material.pbr#0.fog",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "instances.custom#1.name",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "instances.custom#1.transforms",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "instances.custom#1.colors",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.custom#1.material",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "instances.custom#1.castShadow",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "primitives.plane#0.rotation",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "geometry.custom#1.position",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "looks.preset#1.background",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "looks.preset#1.fog",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "looks.preset#1.grade",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.particles#0.sprite",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "effects.particles#0.intensity",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "effects.particles#0.noise",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "camera.follow#0.targetOffset",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "primitives.cone#0.rotation",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "primitives.sphere#0.rotation",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "primitives.sphere#0.renderOrder",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "handle.use#0.id",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "handle.use#0.continuous",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "handle.use#0.update",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "handle.setTransform#0.position",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "handle.setTransform#0.scale",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "game.hurdles.push#0.d",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "game.hurdles.push#0.h",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "game.hurdles.push#0.slot",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.id",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.x",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.y",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.z",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.vx",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.vy",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.vz",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.life",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "particles.push#0.max",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "instances.sphere#0.frustumCulled",
+   "occ": 4,
+   "runs": 1
+  },
+  {
+   "k": "material.solarSun#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarSun#0.coreColor",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarSun#0.rimColor",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarSun#0.emissiveIntensity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarCorona#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarCorona#0.coreColor",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarCorona#0.rimColor",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarCorona#0.opacity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.solarCorona#0.falloff",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.cylinder#0.instances",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.cylinder#0.instanceColors",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "instances.sphere#0.instances",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "instances.sphere#0.instanceColors",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "geometry.define#0.topology",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearGlass#0.clearcoat",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearGlass#0.clearcoatRoughness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.fabric#0.texture",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.fabric#0.rim",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.contactShadows#0.thickness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.contactShadows#0.steps",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.physical#0.normal",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.physical#0.normalScale",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "geometry.computeBounds#0.positions",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "material.glass#0.envMapIntensity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.brushedMetal#0.normal",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.brushedMetal#0.normalScale",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.proceduralTextures.brushedMetal#0.scale",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.proceduralTextures.brushedMetal#0.strength",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.proceduralTextures.brushedMetal#0.direction",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.proceduralTextures.fabric#0.scale",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.proceduralTextures.fabric#0.strength",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearcoat#0.name",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearcoat#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearcoat#0.roughness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearcoat#0.clearcoat",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearcoat#0.clearcoatRoughness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.clearcoat#0.envMapIntensity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.rubber#0.name",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.rubber#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.rubber#0.roughness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "primitives.capsule#0.position",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "primitives.capsule#0.rotation",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "material.reflectiveFloor#0.name",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.reflectiveFloor#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.reflectiveFloor#0.opacity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.reflectiveFloor#0.roughness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.emissive#0.name",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "material.pbr#0.texTransforms",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "environments.neutral#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.physical#0.texture",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "primitives.lathe#0.name",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "primitives.lathe#0.material",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "primitives.lathe#0.params",
+   "occ": 3,
+   "runs": 1
+  },
+  {
+   "k": "primitives.tube#0.name",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "primitives.tube#0.material",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "primitives.tube#0.params",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "effects.ambientOcclusion#0.name",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.ambientOcclusion#0.intensity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "effects.ambientOcclusion#0.radius",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.physical#0.zzz",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.glass#0.opacity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.glass#0.transmission",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.fabric#0.proceduralTexture",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.physical#0.anisotropyRotation",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.metal#0.color",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "material.metal#0.roughness",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "createAuraApp#1.physics",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "physics.worldAsync#0.gravity",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "physics.worldAsync#0.fixedDelta",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "physics.worldAsync#0.enableSleeping",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "physics.worldAsync#0.seed",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.type",
+   "occ": 6,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.position",
+   "occ": 6,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.shape",
+   "occ": 6,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.material",
+   "occ": 4,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.rotation",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.mass",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.linearDamping",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "world.createBody#0.angularDamping",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "text3D#1.name",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "text3D#1.size",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "text3D#1.depth",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "text3D#1.material",
+   "occ": 1,
+   "runs": 1
+  }
+ ],
+ "members": [
+  {
+   "k": "app.ready",
+   "occ": 486,
+   "runs": 440
+  },
+  {
+   "k": "app.nodes",
+   "occ": 1015,
+   "runs": 364
+  },
+  {
+   "k": "app.onFrame",
+   "occ": 386,
+   "runs": 363
+  },
+  {
+   "k": "app.nodes.require",
+   "occ": 982,
+   "runs": 338
+  },
+  {
+   "k": "app.camera",
+   "occ": 82,
+   "runs": 79
+  },
+  {
+   "k": "app.camera.setPose",
+   "occ": 57,
+   "runs": 57
+  },
+  {
+   "k": "app.atmosphere",
+   "occ": 67,
+   "runs": 54
+  },
+  {
+   "k": "app.atmosphere.setSky",
+   "occ": 51,
+   "runs": 51
+  },
+  {
+   "k": "app.atmosphere.setFog",
+   "occ": 16,
+   "runs": 16
+  },
+  {
+   "k": "app.nodes.get",
+   "occ": 16,
+   "runs": 16
+  },
+  {
+   "k": "app.diagnostics",
+   "occ": 12,
+   "runs": 12
+  },
+  {
+   "k": "app.camera.use",
+   "occ": 9,
+   "runs": 9
+  },
+  {
+   "k": "app.step",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "app.scene.camera",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "app.scene",
+   "occ": 6,
+   "runs": 6
+  },
+  {
+   "k": "app.runtime.frame",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "app.runtime",
+   "occ": 3,
+   "runs": 3
+  },
+  {
+   "k": "app.nodes.has",
+   "occ": 1,
+   "runs": 1
+  },
+  {
+   "k": "app.physics.bodies",
+   "occ": 4,
+   "runs": 1
+  },
+  {
+   "k": "app.physics",
+   "occ": 6,
+   "runs": 1
+  },
+  {
+   "k": "app.setScene",
+   "occ": 2,
+   "runs": 1
+  },
+  {
+   "k": "app.physics.step",
+   "occ": 2,
+   "runs": 1
+  }
+ ]
+}

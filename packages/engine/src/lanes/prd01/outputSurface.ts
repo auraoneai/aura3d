@@ -22,6 +22,7 @@ import { PRD01_OUTPUT_STATE, type Prd01OutputState } from "./diagnostics";
 import { appCanvasOf } from "../../agent-api/app/screenshot.js";
 import { resolveAppOutputColorPolicy } from "../../agent-api/app/colorManagement.js";
 import { updateAuthoredPostOutput } from "../../agent-api/postBridge.js";
+import { normalizeOutputToneMapping } from "../../agent-api/app/toneMappingNames.js";
 
 /**
  * C-05 URL reader (Phase 5, §14): games opt in to the tonemap A/B with
@@ -223,7 +224,7 @@ export function createPrd01OutputSurface(
       // Renderer forwarding already treats undefined as omitted. Do the same
       // for policy state and the post bridge, rather than dropping a warranty
       // from one route while retaining it in another.
-      const patch = { ...output };
+      const patch = { ...normalizeOutputToneMapping(output, "app.output.setOutput") };
       if (patch.outputColorSpace === undefined) delete patch.outputColorSpace;
       if (patch.alphaMode === undefined) delete patch.alphaMode;
       if (patch.inputAlphaMode === undefined) delete patch.inputAlphaMode;
