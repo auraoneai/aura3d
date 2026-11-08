@@ -98,7 +98,12 @@ export const EXTRA_VARIANT_PARAMS: Readonly<Record<string, readonly string[]>> =
   "heatsink-port": ["look"], // G19 (`?at=` districts wait for a param in the game)
   "ninja-runner-port": ["look", "lanterns", "cones"], // G20 NR-03, NR-16
   "roadster-hours-port": ["look"], // G22 RH47-01
-  "silt-and-signal-port": ["look"] // G24 (inked look is the default)
+  "silt-and-signal-port": ["look"], // G24 (inked look is the default)
+  "shape-shift-sprint": ["seed"],
+  "number-surge": ["seed"],
+  "splat-turf": ["seed"],
+  "polarity-orbs": ["seed"],
+  "beat-hopper": ["seed"]
 };
 
 /** Aura Slam venues besides the boot venue `hard` (the `top-tennis--default` target). */
@@ -221,7 +226,12 @@ const GU47_DRAFTS: readonly Draft[] = [
   t("ninja-runner-port", "gate-cones-off", "/apps/showcase-ninja-runner-port/?at=2500&cones=0"),
   ...SALTWIND_LEVELS.map((id, i) => ({ ...t("roadster-hours-port", `${id}-original`, `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1&look=original`, saltwindReady), crops: SALTWIND_CROPS })),
   t("where-the-wind-wanders-port", "bell", "/apps/showcase-where-the-wind-wanders-port/?found=bell"),
-  ...SILT_CHAPTERS.map((c) => t("silt-and-signal-port", `ch${c}-original`, `/apps/showcase-silt-and-signal-port/?chapter=${c}&start=1&look=original`))
+  ...SILT_CHAPTERS.map((c) => t("silt-and-signal-port", `ch${c}-original`, `/apps/showcase-silt-and-signal-port/?chapter=${c}&start=1&look=original`)),
+  t("shape-shift-sprint", "default", "/apps/showcase-shape-shift-sprint/?seed=42&autostart=1&autopilot=1"),
+  t("number-surge", "default", "/apps/showcase-number-surge/?seed=42&autostart=1&autopilot=1"),
+  t("splat-turf", "default", "/apps/showcase-splat-turf/?seed=42&autostart=1&autopilot=1"),
+  t("polarity-orbs", "default", "/apps/showcase-polarity-orbs/?seed=42&autostart=1&autopilot=1"),
+  t("beat-hopper", "default", "/apps/showcase-beat-hopper/?seed=42&autostart=1&autopilot=1")
 ];
 
 /** First run group of the GU47 rows: the pre-GU47 targets keep `@g1`..`@g8` exactly as on 4.6.0. */

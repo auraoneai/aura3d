@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Splat Turf — paint the road | Aura3D</title>
+  <meta name="description" content="A finite 1200 m paint-the-road arcade runner. Drag to steer, paint the road, dodge solvent strips and eraser bots, and watch your tank." />
+  <style>
+    @font-face {
+      font-family: "GT Walsheim";
+      src: url("./aura-assets/GT-Walsheim-Bold.woff2") format("woff2");
+      font-weight: 700;
+      font-display: swap;
+    }
+    :root {
+      --ink: #3b1f47;
+      --paper: #fff8f2;
+      --accent: #ff3d8b;
+      --accent-2: #14c9c9;
+      --gold: #ffb400;
+      --tank: #ff3d8b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--paper); }
+    body { font-family: "GT Walsheim", sans-serif; font-weight: 700; color: var(--ink); }
+    #app { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    #hud {
+      position: fixed; inset: 0; pointer-events: none;
+      padding: calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+      display: none;
+    }
+    #hud.on { display: block; }
+    .hud-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    #score { font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 2px 0 var(--paper); }
+    #best-line { font-size: 13px; opacity: 0.85; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    #coverage-line { font-size: 15px; margin-top: 4px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 0 var(--paper); }
+    #combo-tube { width: 120px; height: 12px; border: 2px solid var(--ink); border-radius: 8px; background: var(--paper); overflow: hidden; margin-top: 6px; }
+    #combo-fill { height: 100%; width: 0%; background: var(--gold); transition: width 120ms linear; }
+    #mult { font-size: 15px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+    #tank-wrap { width: 140px; text-align: right; }
+    #tank-label { font-size: 13px; }
+    #tank-bar { width: 100%; height: 14px; border: 2px solid var(--ink); border-radius: 8px; background: var(--paper); overflow: hidden; margin-top: 3px; }
+    #tank-fill { height: 100%; width: 100%; background: var(--tank); transition: width 120ms linear; }
+    #tank-bar.low #tank-fill { background: #d92626; }
+    #popups {
+      position: fixed; left: 50%; top: 26%; transform: translateX(-50%);
+      display: flex; flex-direction: column-reverse; align-items: center; gap: 2px;
+      pointer-events: none; z-index: 5;
+    }
+    .popup { font-size: 22px; text-shadow: 0 2px 0 var(--paper); animation: pop-fade 1.1s ease-out forwards; white-space: nowrap; }
+    .popup.big { font-size: 30px; }
+    @keyframes pop-fade { 0% { opacity: 0; transform: translateY(8px) scale(0.8); } 15% { opacity: 1; transform: translateY(0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px); } }
+    .overlay {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(59, 31, 71, 0.88); z-index: 10;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .overlay.on { display: flex; }
+    .card { text-align: center; color: var(--paper); max-width: 420px; width: calc(100% - 40px); }
+    .card h1 { font-size: 44px; letter-spacing: 1px; color: var(--gold); }
+    .card h2 { font-size: 30px; color: var(--gold); }
+    .card p { margin-top: 12px; font-size: 16px; line-height: 1.45; }
+    .card .stat { font-size: 18px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+    .card .big-stat { font-size: 52px; margin-top: 10px; font-variant-numeric: tabular-nums; color: var(--paper); }
+    .card .grade { font-size: 64px; color: var(--accent-2); }
+    .btn {
+      pointer-events: auto; cursor: pointer; margin-top: 20px; border: 0; border-radius: 14px;
+      background: var(--gold); color: var(--ink); font-family: inherit; font-weight: 700;
+      font-size: 22px; padding: 14px 36px; box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+    }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    #load-bar { width: 220px; height: 10px; border: 2px solid var(--paper); border-radius: 6px; margin: 14px auto 0; overflow: hidden; }
+    #load-fill { height: 100%; width: 0%; background: var(--accent-2); transition: width 150ms linear; }
+    .toggles { margin-top: 16px; display: flex; gap: 14px; justify-content: center; }
+    .toggle { pointer-events: auto; cursor: pointer; background: transparent; border: 2px solid var(--paper); color: var(--paper); border-radius: 10px; font-family: inherit; font-weight: 700; font-size: 13px; padding: 6px 12px; }
+    .toggle[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
+    .hint { font-size: 13px; opacity: 0.8; margin-top: 14px; }
+    #corner {
+      position: fixed; top: calc(10px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right));
+      display: flex; gap: 8px; z-index: 8;
+    }
+    .corner-btn {
+      pointer-events: auto; cursor: pointer; width: 40px; height: 40px; border-radius: 12px;
+      border: 2px solid var(--ink); background: var(--paper); color: var(--ink);
+      font-family: inherit; font-weight: 700; font-size: 16px;
+    }
+    #render-error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: var(--paper); z-index: 20; }
+    #render-error.on { display: flex; }
+    #render-error .card { color: var(--ink); }
+    @media (prefers-reduced-motion: reduce) {
+      .popup { animation-duration: 0.4s; }
+      #combo-fill, #tank-fill, #load-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="app" aria-label="Splat Turf game canvas"></canvas>
+
+  <div id="hud" aria-hidden="true">
+    <div class="hud-row">
+      <div>
+        <div id="score">0</div>
+        <div id="best-line">BEST 0</div>
+        <div id="coverage-line">COVERAGE 0%</div>
+        <div id="combo-tube"><div id="combo-fill"></div></div>
+        <div id="mult">x1</div>
+      </div>
+      <div id="tank-wrap">
+        <div id="tank-label">TANK</div>
+        <div id="tank-bar"><div id="tank-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="popups"></div>
+
+  <div id="corner" class="no-steer">
+    <button id="btn-mute" class="corner-btn" aria-label="Toggle sound" aria-pressed="false">&#9835;</button>
+    <button id="btn-pause" class="corner-btn" aria-label="Pause game">II</button>
+  </div>
+
+  <div id="splash-screen" class="overlay on no-steer">
+    <div class="card">
+      <h1>SPLAT TURF</h1>
+      <p>Drag to steer. Paint the road. Avoid solvent and erasers &mdash; watch your tank!</p>
+      <p class="stat" id="splash-best">BEST COVERAGE 0%</p>
+      <button id="btn-start" class="btn" aria-busy="true" disabled>LOADING&hellip;</button>
+      <div id="load-bar" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="load-fill"></div></div>
+      <div class="toggles">
+        <button id="btn-motion" class="toggle" aria-pressed="false">REDUCED MOTION</button>
+      </div>
+      <p class="hint">Drag or &larr; &rarr; / A D to steer &middot; P or Esc to pause</p>
+    </div>
+  </div>
+
+  <div id="gameover-screen" class="overlay no-steer">
+    <div class="card">
+      <h2 id="result-title">OUT OF PAINT!</h2>
+      <div class="big-stat" id="result-score">0</div>
+      <div class="grade" id="result-grade">C</div>
+      <p class="stat" id="result-coverage">COVERAGE 0%</p>
+      <p class="stat" id="result-best">BEST COVERAGE 0%</p>
+      <p class="stat" id="result-cans">CANS GRABBED 0</p>
+      <button id="btn-restart" class="btn">PLAY AGAIN</button>
+      <p class="hint">Space or Enter to restart</p>
+    </div>
+  </div>
+
+  <div id="pause-screen" class="overlay no-steer">
+    <div class="card">
+      <h2>PAUSED</h2>
+      <button id="btn-resume" class="btn">RESUME</button>
+      <p class="hint">P or Esc to resume</p>
+    </div>
+  </div>
+
+  <div id="render-error">
+    <div class="card">
+      <h2>RENDER ERROR</h2>
+      <p id="render-error-msg">This game needs WebGL2. Please try a recent Chrome, Edge, Firefox, or Safari.</p>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

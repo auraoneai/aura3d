@@ -1,0 +1,117 @@
+import { describe, expect, it } from "vitest";
+import {
+  BAR_SIZE, BLOCK_SIZE, GAP_SIZE, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
+  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, playerMesh, ringMesh, sphereMesh, translateMesh
+} from "../../../apps/showcase-beat-hopper/src/meshes";
+
+const extent = (m: { positions: number[] }, axis: 0 | 1 | 2): [number, number] => {
+  let min = Infinity, max = -Infinity;
+  for (let i = axis; i < m.positions.length; i += 3) {
+    min = Math.min(min, m.positions[i]!);
+    max = Math.max(max, m.positions[i]!);
+  }
+  return [min, max];
+};
+
+describe("beat-hopper mesh dimensions and vertex counts", () => {
+  it("box: 24 verts / 36 indices, exact half-extents", () => {
+    const m = boxMesh(ROAD_WIDTH, 0.3, SEGMENT_LENGTH);
+    expect(m.positions.length / 3).toBe(24);
+    expect(m.indices.length).toBe(36);
+    expect(extent(m, 0)).toEqual([-ROAD_WIDTH / 2, ROAD_WIDTH / 2]);
+    expect(extent(m, 1)).toEqual([-0.15, 0.15]);
+    expect(extent(m, 2)).toEqual([-SEGMENT_LENGTH / 2, SEGMENT_LENGTH / 2]);
+  });
+
+  it("sphere: (w+1)(h+1) verts at the exact radius", () => {
+    const m = sphereMesh(0.5, 8, 6);
+    expect(m.positions.length / 3).toBe(63);
+    for (let i = 0; i < m.positions.length; i += 3) {
+      expect(Math.hypot(m.positions[i]!, m.positions[i + 1]!, m.positions[i + 2]!)).toBeCloseTo(0.5, 9);
+    }
+  });
+
+  it("capsule: 2*(caps+1)*(radial+1) verts and total height length + 2*radius", () => {
+    const m = capsuleMesh(PLAYER_RADIUS, PLAYER_LENGTH, 16, 6);
+    expect(m.positions.length / 3).toBe(2 * 7 * 17);
+    const [minY, maxY] = extent(m, 1);
+    expect(minY).toBeCloseTo(-(PLAYER_LENGTH / 2 + PLAYER_RADIUS), 9);
+    expect(maxY).toBeCloseTo(PLAYER_LENGTH / 2 + PLAYER_RADIUS, 9);
+  });
+
+  it("ring: 2*(segments+1) verts / segments*6 indices on y=0 with +Y normals", () => {
+    const m = ringMesh(0.8, 1.0, 32);
+    expect(m.positions.length / 3).toBe(66);
+    expect(m.indices.length).toBe(192);
+    expect(extent(m, 1)).toEqual([0, 0]);
+    const [minX, maxX] = extent(m, 0);
+    expect(minX).toBeCloseTo(-1.0, 9);
+    expect(maxX).toBeCloseTo(1.0, 9);
+    for (let i = 1; i < m.normals.length; i += 3) expect(m.normals[i]).toBe(1);
+  });
+
+  it("translateMesh offsets all vertices without mutating the source mesh", () => {
+    const base = boxMesh(1, 1, 1);
+    const shifted = translateMesh(base, 2, 3, -4);
+    expect(extent(base, 0)).toEqual([-0.5, 0.5]);
+    expect(extent(shifted, 0)).toEqual([1.5, 2.5]);
+    expect(extent(shifted, 1)).toEqual([2.5, 3.5]);
+    expect(extent(shifted, 2)).toEqual([-4.5, -3.5]);
+  });
+
+  it("player hopper capsule: 238 verts, base at y=0, top at 2*r + length", () => {
+    const m = playerMesh();
+    expect(m.positions.length / 3).toBe(238);
+    const [minY, maxY] = extent(m, 1);
+    expect(minY).toBeCloseTo(0, 9);
+    expect(maxY).toBeCloseTo(2 * PLAYER_RADIUS + PLAYER_LENGTH, 9);
+    const [minX, maxX] = extent(m, 0);
+    expect(minX).toBeCloseTo(-PLAYER_RADIUS, 9);
+    expect(maxX).toBeCloseTo(PLAYER_RADIUS, 9);
+  });
+
+  it("block obstacle: 24 verts / 36 indices, sits on y=0 with BLOCK_SIZE extents", () => {
+    const m = blockMesh();
+    expect(m.positions.length / 3).toBe(24);
+    expect(m.indices.length).toBe(36);
+    const [minX, maxX] = extent(m, 0);
+    const [minY, maxY] = extent(m, 1);
+    const [minZ, maxZ] = extent(m, 2);
+    expect(minX).toBeCloseTo(-BLOCK_SIZE.w / 2, 9);
+    expect(maxX).toBeCloseTo(BLOCK_SIZE.w / 2, 9);
+    expect(minY).toBeCloseTo(0, 9);
+    expect(maxY).toBeCloseTo(BLOCK_SIZE.h, 9);
+    expect(minZ).toBeCloseTo(-BLOCK_SIZE.d / 2, 9);
+    expect(maxZ).toBeCloseTo(BLOCK_SIZE.d / 2, 9);
+  });
+
+  it("bar obstacle: crossbar + two posts = 72 verts / 108 indices, grounded posts and overhead bar", () => {
+    const m = barMesh();
+    expect(m.positions.length / 3).toBe(72);
+    expect(m.indices.length).toBe(108);
+    const [minX, maxX] = extent(m, 0);
+    const [minY, maxY] = extent(m, 1);
+    const [minZ, maxZ] = extent(m, 2);
+    expect(minX).toBeCloseTo(-BAR_SIZE.w / 2, 9);
+    expect(maxX).toBeCloseTo(BAR_SIZE.w / 2, 9);
+    expect(minY).toBeCloseTo(0, 9);
+    expect(maxY).toBeCloseTo(BAR_SIZE.y + BAR_SIZE.h / 2, 9);
+    expect(minZ).toBeCloseTo(-BAR_SIZE.d / 2, 9);
+    expect(maxZ).toBeCloseTo(BAR_SIZE.d / 2, 9);
+  });
+
+  it("gap trench patch: 24 verts / 36 indices spanning ROAD_WIDTH", () => {
+    const m = gapMesh();
+    expect(m.positions.length / 3).toBe(24);
+    expect(m.indices.length).toBe(36);
+    const [minX, maxX] = extent(m, 0);
+    const [minY, maxY] = extent(m, 1);
+    const [minZ, maxZ] = extent(m, 2);
+    expect(minX).toBeCloseTo(-GAP_SIZE.w / 2, 9);
+    expect(maxX).toBeCloseTo(GAP_SIZE.w / 2, 9);
+    expect(minY).toBeCloseTo(0.01, 9);
+    expect(maxY).toBeCloseTo(GAP_SIZE.h + 0.01, 9);
+    expect(minZ).toBeCloseTo(-GAP_SIZE.d / 2, 9);
+    expect(maxZ).toBeCloseTo(GAP_SIZE.d / 2, 9);
+  });
+});

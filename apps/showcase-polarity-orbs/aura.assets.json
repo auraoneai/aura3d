@@ -1,0 +1,20 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "gtWalsheimBold",
+      "type": "font",
+      "format": "woff2",
+      "source": "public/aura-assets/GT-Walsheim-Bold.woff2",
+      "outputPath": "public/aura-assets/GT-Walsheim-Bold.woff2",
+      "url": "/aura-assets/GT-Walsheim-Bold.woff2",
+      "hash": "sha256-d5ab0311ce5ef91c83710164c5674dda2796ebb703a7a6441f0d77c9b2779a1e",
+      "sizeBytes": 41492,
+      "license": "AuraOne licensed font library",
+      "provenance": "public/aura-assets/PROVENANCE.md"
+    }
+  ]
+}

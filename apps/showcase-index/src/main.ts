@@ -320,6 +320,61 @@ const apps = [
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
     notes: "Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Chapter-one run only: no creatures, boulders, finale or audio; procedural art."
+  },
+  {
+    id: "showcase-shape-shift-sprint",
+    route: "/apps/showcase-shape-shift-sprint/",
+    routeHealth: "/apps/showcase-shape-shift-sprint/route-health.json",
+    classification: "prototype",
+    publicShowcase: true,
+    primaryAssetStatus: "primitive-only",
+    primitiveStatus: "primary-subject-proxy",
+    claimStatus: "bounded",
+    notes: "Shape-gate runner on a candy-primary track: steer into the wall hole matching your sphere, cube or cone form, grab morph and wildcard tokens, and chain perfect passes. Procedural geometry and synth audio; see evidence/shape-shift-sprint/README.md."
+  },
+  {
+    id: "showcase-number-surge",
+    route: "/apps/showcase-number-surge/",
+    routeHealth: "/apps/showcase-number-surge/route-health.json",
+    classification: "prototype",
+    publicShowcase: true,
+    primaryAssetStatus: "primitive-only",
+    primitiveStatus: "primary-subject-proxy",
+    claimStatus: "bounded",
+    notes: "Arithmetic-gate runner through a neon dusk corridor: pick the higher-result operation gate to grow your number, build pick-quality combos, and smash boss walls every 400 metres. Procedural geometry and synth audio; see evidence/number-surge/README.md."
+  },
+  {
+    id: "showcase-splat-turf",
+    route: "/apps/showcase-splat-turf/",
+    routeHealth: "/apps/showcase-splat-turf/route-health.json",
+    classification: "prototype",
+    publicShowcase: true,
+    primaryAssetStatus: "primitive-only",
+    primitiveStatus: "primary-subject-proxy",
+    claimStatus: "bounded",
+    notes: "Paint-coverage runner over a 1,200-metre course: coat six road lanes, collect paint cans to refill your tank, dodge solvent strips and eraser bots, and earn an S-to-C coverage grade. Procedural geometry and synth audio; see evidence/splat-turf/README.md."
+  },
+  {
+    id: "showcase-polarity-orbs",
+    route: "/apps/showcase-polarity-orbs/",
+    routeHealth: "/apps/showcase-polarity-orbs/route-health.json",
+    classification: "prototype",
+    publicShowcase: true,
+    primaryAssetStatus: "primitive-only",
+    primitiveStatus: "primary-subject-proxy",
+    claimStatus: "bounded",
+    notes: "Dual-polarity runner: drag to steer and tap to flip between red and blue polarity, collect matching orbs, trigger magnet and rainbow power-ups, and dodge opposite charges. Procedural geometry and synth audio; see evidence/polarity-orbs/README.md."
+  },
+  {
+    id: "showcase-beat-hopper",
+    route: "/apps/showcase-beat-hopper/",
+    routeHealth: "/apps/showcase-beat-hopper/route-health.json",
+    classification: "prototype",
+    publicShowcase: true,
+    primaryAssetStatus: "primitive-only",
+    primitiveStatus: "primary-subject-proxy",
+    claimStatus: "bounded",
+    notes: "Rhythm-timed obstacle runner on a 132 BPM beat grid: tap to hop over blocks and gaps or hold to duck under bars inside PERFECT and GOOD timing windows. Procedural geometry and sim-driven synth sequencer; see evidence/beat-hopper/README.md."
   }
 ] as const;
 

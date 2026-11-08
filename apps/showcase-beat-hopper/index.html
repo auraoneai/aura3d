@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Beat Hopper — Aura3D</title>
+  <meta name="description" content="Tap to hop. Hold to duck. Ride the beat — PERFECT timing builds combos! A one-button rhythm platformer built with Aura3D." />
+  <style>
+    @font-face {
+      font-family: "GT Walsheim";
+      src: url("./aura-assets/GT-Walsheim-Bold.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    :root {
+      --ink: #f4f0ff;
+      --ink-dim: #cfc6ee;
+      --paper: #14082e;
+      --panel: #1e0f42;
+      --accent: #ff2fb3;
+      --accent-2: #23e6ff;
+      --gold: #ffd166;
+      --danger: #ff4d6d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: var(--paper); }
+    body {
+      font-family: "GT Walsheim", sans-serif;
+      font-weight: 700;
+      color: var(--ink);
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+    #app { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    .overlay {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px; text-align: center;
+      padding: calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right))
+               calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+      z-index: 20;
+    }
+    .hidden { display: none !important; }
+    #splash-screen { background: rgba(20, 8, 46, 0.92); }
+    #gameover-screen { background: rgba(255, 47, 179, 0.94); color: #14082e; }
+    #pause-screen { background: rgba(20, 8, 46, 0.85); }
+    h1 { font-size: clamp(34px, 7vw, 64px); letter-spacing: 0.02em; color: var(--accent-2); text-shadow: 0 0 24px rgba(35, 230, 255, 0.55); }
+    #gameover-screen h1 { color: #14082e; text-shadow: none; }
+    .instructions { max-width: 420px; font-size: clamp(15px, 2.6vw, 19px); color: var(--ink); line-height: 1.45; }
+    .hint { font-size: 13px; color: var(--ink-dim); }
+    #splash-best { font-size: 16px; color: var(--gold); }
+    button {
+      font-family: inherit; font-weight: 700; font-size: 20px; letter-spacing: 0.04em;
+      border: none; border-radius: 999px; padding: 14px 42px; cursor: pointer;
+      background: var(--accent); color: #14082e;
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+    }
+    button:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35); }
+    button[aria-busy="true"] { opacity: 0.6; cursor: progress; }
+    #btn-restart { background: var(--gold); color: #14082e; }
+    #load-bar {
+      width: min(300px, 70vw); height: 10px; border-radius: 999px;
+      background: rgba(244, 240, 255, 0.18); overflow: hidden;
+    }
+    #load-fill { height: 100%; width: 0%; border-radius: 999px; background: var(--accent-2); transition: width 120ms linear; }
+    .toggles { display: flex; gap: 18px; font-size: 14px; color: var(--ink); }
+    .toggles label { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+    .toggles input { width: 18px; height: 18px; accent-color: var(--accent-2); cursor: pointer; }
+    #hud {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10; pointer-events: none;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: calc(12px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left));
+    }
+    #hud-left { display: flex; flex-direction: column; gap: 5px; }
+    #hud-score { font-size: clamp(26px, 5vw, 40px); font-variant-numeric: tabular-nums; color: var(--ink); text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    #hud-best { font-size: 13px; color: var(--ink); text-shadow: 0 2px 6px rgba(0,0,0,0.7); font-variant-numeric: tabular-nums; }
+    #combo-wrap { display: flex; align-items: center; gap: 8px; }
+    #combo-tube { width: 110px; height: 9px; border-radius: 999px; background: rgba(20, 8, 46, 0.75); overflow: hidden; }
+    #combo-fill { height: 100%; width: 0%; background: var(--gold); border-radius: 999px; }
+    #combo-label { font-size: 13px; color: var(--ink); text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
+    #hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    #hud-lives { display: flex; gap: 6px; }
+    .life-pip { width: 14px; height: 14px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px rgba(255, 77, 109, 0.8); }
+    .life-pip.lost { background: rgba(244, 240, 255, 0.22); box-shadow: none; }
+    #beat-dot {
+      width: 18px; height: 18px; border-radius: 50%; background: var(--accent-2);
+      box-shadow: 0 0 12px rgba(35, 230, 255, 0.9); transform: scale(1);
+    }
+    #corner-buttons {
+      position: fixed; z-index: 15;
+      bottom: calc(14px + env(safe-area-inset-bottom)); right: calc(14px + env(safe-area-inset-right));
+      display: flex; gap: 10px;
+    }
+    #corner-buttons button {
+      font-size: 15px; padding: 9px 16px; background: var(--panel); color: var(--ink);
+      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+    }
+    #popups {
+      position: fixed; top: 24%; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      z-index: 12; pointer-events: none;
+    }
+    .popup {
+      font-size: 22px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+      animation: popup-rise 1.1s ease-out forwards;
+    }
+    @keyframes popup-rise {
+      0% { opacity: 0; transform: translateY(10px) scale(0.8); }
+      15% { opacity: 1; transform: translateY(0) scale(1.05); }
+      70% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-34px) scale(1); }
+    }
+    #result-score { font-size: clamp(44px, 9vw, 76px); font-variant-numeric: tabular-nums; }
+    #result-best { font-size: 16px; }
+    #result-stats { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 15px; }
+    #result-stats div { display: flex; flex-direction: column; gap: 2px; }
+    #result-stats span { font-size: 24px; font-variant-numeric: tabular-nums; }
+    #render-error {
+      background: var(--panel); border-radius: 16px; padding: 22px 26px; max-width: 440px;
+      color: var(--ink); font-size: 15px; line-height: 1.5;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .popup { animation-duration: 0.01s; animation-fill-mode: none; opacity: 1; }
+      #load-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="app" aria-label="Beat Hopper game canvas"></canvas>
+
+  <div id="hud" class="hidden no-steer" aria-hidden="true">
+    <div id="hud-left">
+      <div id="hud-score">0</div>
+      <div id="hud-best">BEST 0</div>
+      <div id="combo-wrap">
+        <div id="combo-tube"><div id="combo-fill"></div></div>
+        <div id="combo-label">x1</div>
+      </div>
+    </div>
+    <div id="hud-right">
+      <div id="hud-lives">
+        <div class="life-pip"></div><div class="life-pip"></div><div class="life-pip"></div>
+      </div>
+      <div id="beat-dot"></div>
+    </div>
+  </div>
+
+  <div id="popups" aria-hidden="true"></div>
+
+  <div id="corner-buttons" class="no-steer">
+    <button id="btn-mute" type="button" aria-label="Toggle sound">SOUND ON</button>
+    <button id="btn-pause" type="button" aria-label="Pause game">PAUSE</button>
+  </div>
+
+  <div id="splash-screen" class="overlay no-steer">
+    <h1>BEAT HOPPER</h1>
+    <p class="instructions">Tap to hop. Hold to duck. Ride the beat — PERFECT timing builds combos!</p>
+    <p id="splash-best">BEST 0</p>
+    <button id="btn-start" type="button" aria-busy="true">PLAY NOW</button>
+    <div id="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="load-fill"></div>
+    </div>
+    <div class="toggles">
+      <label><input id="toggle-motion" type="checkbox" /> Reduced motion</label>
+      <label><input id="toggle-sound" type="checkbox" checked /> Sound</label>
+    </div>
+    <p class="hint">Space / tap = hop &nbsp;·&nbsp; hold Down/S = duck &nbsp;·&nbsp; P = pause</p>
+    <div id="render-error" class="hidden" role="alert"></div>
+  </div>
+
+  <div id="gameover-screen" class="overlay no-steer hidden">
+    <h1>SET COMPLETE</h1>
+    <div id="result-score">0</div>
+    <div id="result-best">BEST 0</div>
+    <div id="result-stats">
+      <div><span id="result-perfect">0</span>PERFECT</div>
+      <div><span id="result-good">0</span>GOOD</div>
+      <div><span id="result-miss">0</span>MISS</div>
+      <div><span id="result-combo">0</span>MAX COMBO</div>
+    </div>
+    <button id="btn-restart" type="button">PLAY AGAIN</button>
+    <p class="hint" style="color:#14082e">Space or Enter to replay</p>
+  </div>
+
+  <div id="pause-screen" class="overlay no-steer hidden">
+    <h1>PAUSED</h1>
+    <button id="btn-resume" type="button">RESUME</button>
+    <p class="hint">P or Esc to resume</p>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
