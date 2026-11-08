@@ -125,9 +125,10 @@ async function boot(): Promise<void> {
     // Lab flag ?backend= (default OFF): replaces the renderer block, keeping the same auto tier.
     ...(labOptions.renderer ? { renderer: { quality: { tier: "auto" as const }, ...labOptions.renderer } } : {}),
     ...(labOptions.output ? { output: labOptions.output } : {}),
-    // A requested WebGPU backend cannot capture the pit-lane reflection probe on a synchronous frame
-    // (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so the flag also asks for async frames. Absent the flag: unchanged.
-    ...(lab.backend === "webgpu" ? { frameMode: "async" as const } : {}),
+    // A WebGPU backend (?backend=webgpu, or ?backend=auto when it resolves to WebGPU) cannot capture the pit-lane reflection
+    // probe on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so either flag also asks for async
+    // frames. Absent the flag: unchanged.
+    ...(lab.backend ? { frameMode: "async" as const } : {}),
     qualityRebuild: { flags: ["game"] },
     ...(labClustered ? { lighting: { clustered: { enabled: true, fallback: "forward" as const } } } : {}),
     // A2: the engine diagnostics overlay only with ?diag=1 (off by default, nothing drawn otherwise).
