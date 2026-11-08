@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TextureHandle, texture } from "../../../packages/engine/src/agent-api/nodes/texture.js";
-import { createWorkerRenderer, installWorkerRenderer } from "../../../packages/engine/src/agent-api/app/workerRuntime.js";
+import { createWorkerRenderer, installWorkerRenderer, readWorkerImageTexturePixels } from "../../../packages/engine/src/agent-api/app/workerRuntime.js";
 import { createWorkerNodeMirror } from "../../../packages/engine/src/agent-api/app/workerNodes.js";
 import type { AuraWorkerEndpoint, AuraWorkerHostEndpoint, AuraWorkerRequest, AuraWorkerResponse } from "../../../packages/engine/src/agent-api/app/workerProtocol.js";
 import type { AuraSceneSnapshot, WebGLSceneRenderer } from "../../../packages/engine/src/agent-api/nodes/types.js";
@@ -114,6 +114,17 @@ describe("live canvas textures across the worker boundary", () => {
     }
     expect(captured.texture.disposed).toBe(true);
     handle.dispose();
+  });
+
+  it("reads an <img> source at its intrinsic size even when CSS lays it out at another size", () => {
+    vi.stubGlobal("OffscreenCanvas", FakeCanvas);
+    const pixels = new Uint8ClampedArray([9, 8, 7, 255, 6, 5, 4, 255]);
+    // An attached <img> reports its layout box as width/height; uploads use naturalWidth/naturalHeight.
+    const img = { naturalWidth: 2, naturalHeight: 1, width: 40, height: 20, pixels };
+    const read = readWorkerImageTexturePixels({ source: img, width: 2, height: 1 } as unknown as Parameters<typeof readWorkerImageTexturePixels>[0]);
+    expect(read && [...read]).toEqual([...pixels]);
+    // A source whose intrinsic size no longer matches the texture is still refused.
+    expect(readWorkerImageTexturePixels({ source: { ...img, naturalWidth: 3 }, width: 2, height: 1 } as unknown as Parameters<typeof readWorkerImageTexturePixels>[0])).toBeUndefined();
   });
 
   it("keeps rejecting live video sources", () => {

@@ -146,7 +146,6 @@ export interface OffscreenCanvasSize {
 export const MAX_WORKER_CANVAS_DIMENSION = 16384;
 export const MAX_WORKER_CANVAS_PIXELS = 33_554_432;
 
-/** Validate CSS size and DPR before allocating or transferring the canvas. */
 /**
  * Worker apps: the CSS sizing defaults `configureCanvas` gives a main-thread
  * canvas (fill the parent on axes the page does not size, display block).
@@ -162,6 +161,7 @@ export function applyWorkerCanvasCssDefaults(canvas: HTMLCanvasElement): void {
   canvas.style.display ||= "block";
 }
 
+/** Validate CSS size and DPR before allocating or transferring the canvas. */
 export function workerCanvasBackingSize(size: OffscreenCanvasSize): { readonly width: number; readonly height: number } {
   if (!Number.isFinite(size.width) || size.width <= 0 || !Number.isFinite(size.height) || size.height <= 0 || !Number.isFinite(size.pixelRatio) || size.pixelRatio <= 0) {
     throw new RangeError("OffscreenCanvas resize requires positive finite width, height and pixelRatio.");

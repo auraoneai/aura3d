@@ -1228,9 +1228,12 @@ let readbackCanvas: { canvas: OffscreenCanvas | HTMLCanvasElement; context: Offs
  * differently from its texture, or no 2D canvas in this realm).
  */
 export function readWorkerImageTexturePixels(texture: Texture): Uint8ClampedArray | undefined {
-  const source = texture.source as unknown as CanvasImageSource & { width?: number; height?: number };
+  const source = texture.source as unknown as CanvasImageSource & { width?: number; height?: number; naturalWidth?: number; naturalHeight?: number; displayWidth?: number; displayHeight?: number };
   const { width, height } = texture;
-  if ((typeof source.width === "number" && source.width !== width) || (typeof source.height === "number" && source.height !== height)) return undefined;
+  // Intrinsic size, in the order the uploaders read it (an <img> laid out by CSS reports its layout box as width/height).
+  const sourceWidth = source.naturalWidth ?? source.displayWidth ?? source.width;
+  const sourceHeight = source.naturalHeight ?? source.displayHeight ?? source.height;
+  if ((typeof sourceWidth === "number" && sourceWidth !== width) || (typeof sourceHeight === "number" && sourceHeight !== height)) return undefined;
   try {
     if (!readbackCanvas) {
       const canvas = typeof OffscreenCanvas === "function" ? new OffscreenCanvas(width, height)
@@ -1617,7 +1620,7 @@ function createWorkerCanvasTexture(snapshot: WorkerTextureSnapshot): TextureHand
 export function findWorkerCanvasTexture(handles: Iterable<TextureHandle>, hostId: string): WorkerCanvasTexture | undefined {
   for (const handle of handles) {
     const entry = workerCanvasTextures.get(handle);
-    if (entry?.hostId === hostId) return entry;
+    if (entry?.hostId === hostId && !handle.texture.disposed) return entry;
   }
   return undefined;
 }
