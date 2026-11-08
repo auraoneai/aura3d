@@ -6,6 +6,8 @@ import { QUALITY_TIERS } from "../../../packages/rendering/src/contracts/quality
 import type { FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph";
 import type { ParticleBatchDescriptor } from "../../../packages/rendering/src/contracts/particles";
 import { Texture } from "../../../packages/rendering/src/Texture";
+import { RibbonBatch } from "../../../packages/rendering/src/vfx/RibbonBatch";
+import { RibbonPass } from "../../../packages/rendering/src/vfx/RibbonPass";
 
 type Module = { readonly label: string; readonly code: string };
 type PipelineDescriptor = {
@@ -158,5 +160,38 @@ describe("native WebGPU particle batches", () => {
       unpremultiplyOutput: false, proceduralSoftDot: true, fogAnalytic: false });
     expect(dot.fragment).not.toContain("textureSample");
     expect(dot.fragment).toContain("return vec4<f32>(rgb, 0.0);");
+  });
+
+  it("draws ribbon trails with the WGSL twin instead of skipping them", async () => {
+    const f = await nativeFixture();
+    const target = f.device.createRenderTarget({ width: 8, height: 8, format: "rgba16f", depth: true });
+    const pass = new RibbonPass(f.device);
+    const batch = new RibbonBatch();
+    try {
+      const trail = batch.upsertTrail({ id: "ball", minVertexDistance: 0 } as never);
+      for (let i = 0; i < 6; i++) trail.push([i * 0.2, 0, -3], i / 60);
+      const ctx = {
+        device: f.device, width: 8, height: 8,
+        camera: { viewMatrix: IDENTITY, viewProjectionMatrix: IDENTITY, near: 0.1, position: [0, 0, 0] },
+        sceneDepth: { texture: null, available: false, linearize: { near: 0.1, far: 100, orthographic: false } },
+        blackboard: new Map(), tier: QUALITY_TIERS.high
+      } as never as FrameContributorContext;
+      const items = pass.transparentItems(batch, ctx);
+      expect(items.length).toBeGreaterThan(0);
+      f.device.beginFrame(8, 8);
+      f.device.setRenderTarget(target);
+      for (const item of items) item.draw(ctx);
+      f.device.endFrame();
+      const draws = f.submissions.filter(record => record.vertices !== undefined);
+      expect(draws).toHaveLength(items.length);
+      const vertex = draws[0]!.pipeline!.descriptor.vertex;
+      expect(vertex.module.code).toContain("@location(4) color: vec4<f32>");
+      expect(vertex.buffers).toEqual([expect.objectContaining({ arrayStride: 48, attributes: expect.arrayContaining([
+        { shaderLocation: 0, offset: 0, format: "float32x3" }, { shaderLocation: 4, offset: 32, format: "float32x4" }
+      ]) })]);
+    } finally {
+      pass.dispose();
+      f.device.dispose();
+    }
   });
 });
