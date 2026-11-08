@@ -12,7 +12,7 @@ import { RenderDeviceError, type RenderBuffer, type RenderDevice, type RenderTar
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
 import { Sampler } from "../Sampler";
-import { CONTACT_SHADOW_CHUNK_GLSL } from "../shaders/chunks/contact_shadow.glsl";
+import { CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE as CONTACT_SHADOW_CHUNK_GLSL } from "../shaders/chunks/contact_shadow.glsl";
 import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import type { RenderItem } from "../ForwardPass";
 import { DepthPass, type DepthPassOptions } from "../DepthPass";
@@ -84,8 +84,14 @@ precision highp float;
 in vec2 v_uv;
 layout(location = 0) out vec4 o_vis;
 ${CONTACT_SHADOW_CHUNK_GLSL
-  .replace("float sceneZ = texture(u_prd02ContactDepth, uv).r;", "float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  if (sceneZ >= 0.999999) return 1.0;")
-  .replace("float blockerZ = texture(u_prd02ContactDepth, suv).r;", "float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    if (blockerZ >= 0.999999) continue;")}
+  .replace("float sceneZ = texture(u_prd02ContactDepth, uv).r;", "float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  if (a3d_prd02ContactIsSky(sceneZ)) return 1.0;")
+  .replace("float blockerZ = texture(u_prd02ContactDepth, suv).r;", "float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    if (a3d_prd02ContactIsSky(blockerZ)) continue;")
+  .replace("float a3d_contactShadow(vec2 uv) {", `// Cleared (sky) depth: the far plane is 1 under standard depth and 0 under reversed depth.
+bool a3d_prd02ContactIsSky(float z) {
+  return u_prd02ContactDepthMode.x > 0.5 ? z <= 0.000001 : z >= 0.999999;
+}
+
+float a3d_contactShadow(vec2 uv) {`)}
 void main() { o_vis = vec4(a3d_contactShadow(v_uv)); }
 `;
 
@@ -112,21 +118,34 @@ fn contactDepth(uv: vec2<f32>) -> f32 {
   let pixel = vec2<i32>(clamp(uv * size, vec2<f32>(0.0), size - vec2<f32>(1.0)));
   return textureLoad(u_prd02ContactDepthTexture, pixel, 0);
 }
+fn contactClipZ(z: f32) -> f32 {
+  if (aura.u_prd02ContactDepthMode.y > 0.5) { return z; }
+  return z * 2.0 - 1.0;
+}
+fn contactFarZ() -> f32 {
+  if (aura.u_prd02ContactDepthMode.x > 0.5) { return 0.0; }
+  return 1.0;
+}
+fn contactIsSky(z: f32) -> bool {
+  if (aura.u_prd02ContactDepthMode.x > 0.5) { return z <= 0.000001; }
+  return z >= 0.999999;
+}
 fn contactWorld(uv: vec2<f32>, z: f32) -> vec3<f32> {
-  let clip = vec4<f32>(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, z * 2.0 - 1.0, 1.0);
+  let clip = vec4<f32>(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, contactClipZ(z), 1.0);
   let world = aura.u_prd02ContactInvViewProj * clip;
   return world.xyz / world.w;
 }
 fn contactBehind(clip: vec4<f32>, p: vec3<f32>, blocker: vec3<f32>, uv: vec2<f32>) -> f32 {
   if (aura.u_prd02ContactNearFar.z > 0.5) {
-    let viewDirection = normalize(contactWorld(uv, 1.0) - contactWorld(uv, 0.0));
+    let farZ = contactFarZ();
+    let viewDirection = normalize(contactWorld(uv, farZ) - contactWorld(uv, 1.0 - farZ));
     return dot(p - blocker, viewDirection);
   }
   return clip.w - (aura.u_prd02ContactViewProj * vec4<f32>(blocker, 1.0)).w;
 }
 @fragment fn fs_main(@location(0) uv: vec2<f32>, @builtin(position) pixel: vec4<f32>) -> @location(0) vec4<f32> {
   let sceneZ = contactDepth(uv);
-  if (sceneZ >= 0.999999) { return vec4<f32>(1.0); }
+  if (contactIsSky(sceneZ)) { return vec4<f32>(1.0); }
   let pos = contactWorld(uv, sceneZ);
   let rayLength = aura.u_prd02ContactParams.x;
   let thickness = aura.u_prd02ContactParams.y;
@@ -143,7 +162,7 @@ fn contactBehind(clip: vec4<f32>, p: vec3<f32>, blocker: vec3<f32>, uv: vec2<f32
     let sampleUv = vec2<f32>(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5);
     if (any(sampleUv < vec2<f32>(0.0)) || any(sampleUv > vec2<f32>(1.0))) { continue; }
     let blockerZ = contactDepth(sampleUv);
-    if (blockerZ >= 0.999999) { continue; }
+    if (contactIsSky(blockerZ)) { continue; }
     let blocker = contactWorld(sampleUv, blockerZ);
     let behind = contactBehind(clip, p, blocker, sampleUv);
     if (behind > thickness && behind < rayLength * 2.0) { occluded = max(occluded, 1.0 - t); }
@@ -163,6 +182,7 @@ export const CONTACT_MASK_SHADER_SOURCES: ShaderSources = {
     { name: "u_prd02ContactSun", kind: "vec3" },
     { name: "u_prd02ContactParams", kind: "vec4" },
     { name: "u_prd02ContactNearFar", kind: "vec3" },
+    { name: "u_prd02ContactDepthMode", kind: "vec2" },
     { name: "u_prd02ContactDepth", kind: "depth2d", required: true }
   ]
 };
@@ -329,9 +349,12 @@ export class ContactShadowPass extends BaseRenderPass {
     if (!device.getRenderTarget) throw new RenderDeviceError("Contact shadows require target state restoration", "CONTACT_SHADOW_STATE_UNAVAILABLE");
     if (device.kind === "webgpu" && !device.drawChecked) throw new RenderDeviceError("WebGPU contact shadows require checked draw submission", "CONTACT_SHADOW_SUBMISSION_UNAVAILABLE");
     if (![context.width, context.height].every((value) => Number.isSafeInteger(value) && value > 0)) throw new RenderDeviceError("Contact shadow dimensions must be positive integers", "CONTACT_SHADOW_SIZE_INVALID");
-    for (const convention of [this.input.camera.depth, this.input.sceneDepth?.available ? this.input.sceneDepth.linearize.depth : undefined]) {
-      if (convention && (convention.mode !== "standard" || convention.clipRange !== "minus-one-to-one")) {
-        throw new RenderDeviceError("Contact shadows require standard depth and a minus-one-to-one camera projection", "CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED");
+    const depthMode = contactShadowDepthMode(this.input.camera.depth);
+    const sceneDepthConvention = this.input.sceneDepth?.available ? this.input.sceneDepth.linearize.depth : undefined;
+    if (sceneDepthConvention) {
+      const sceneMode = contactShadowDepthMode(sceneDepthConvention);
+      if (sceneMode[0] !== depthMode[0] || sceneMode[1] !== depthMode[1]) {
+        throw new RenderDeviceError("Contact shadow scene depth and camera use different depth conventions", "CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED");
       }
     }
     const o = this.input.options ?? {};
@@ -394,6 +417,7 @@ export class ContactShadowPass extends BaseRenderPass {
           ["u_prd02ContactSun", sun],
           ["u_prd02ContactParams", [o.length ?? 0.25, o.thickness ?? 0.05, steps, 0.9]],
           ["u_prd02ContactNearFar", [this.input.camera.near, this.input.camera.far, this.input.camera.orthographic ? 1 : 0]],
+          ["u_prd02ContactDepthMode", depthMode],
         ])
       };
       if (device.kind === "webgpu") device.drawChecked!(command);
@@ -408,6 +432,25 @@ export class ContactShadowPass extends BaseRenderPass {
       device.setRenderTarget(prevTarget);
     }
   }
+}
+
+/**
+ * Shader depth mode for the mask: [reversed 0|1, zero-to-one projection 0|1].
+ * Standard and reversed depth (in either projection clip range) are supported;
+ * the camera matrix the mask unprojects with is the one the depth was
+ * rasterized with, so only the stored-depth decoding and the cleared (far)
+ * value change. Logarithmic depth is not a projective encoding and is refused.
+ * @internal
+ */
+export function contactShadowDepthMode(convention: Pick<DepthConvention, "mode" | "clipRange"> | undefined): [number, number] {
+  if (!convention) return [0, 0];
+  if (convention.mode === "logarithmic" || (convention.mode !== "standard" && convention.mode !== "reversed")) {
+    throw new RenderDeviceError("Contact shadows require standard or reversed depth", "CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED");
+  }
+  if (convention.clipRange !== "minus-one-to-one" && convention.clipRange !== "zero-to-one") {
+    throw new RenderDeviceError("Contact shadows require a known depth clip range", "CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED");
+  }
+  return [convention.mode === "reversed" ? 1 : 0, convention.clipRange === "zero-to-one" ? 1 : 0];
 }
 
 function cameraViewProjection(camera: ContactShadowPassInput["camera"]): Mat4 {

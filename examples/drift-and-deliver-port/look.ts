@@ -26,6 +26,7 @@ import { paintRoadMarkings } from "./roadPaint";
 import { paintFacade, paintLaneMarkings, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
 import type { Solid } from "./sim";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 type TextureHandle = ReturnType<typeof texture.canvas>;
 type Matrix = number[];
@@ -348,7 +349,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
 
   const b = scene()
     .background({ texture: asRef(tex.sky) })
-    .camera(camera.perspective({ position: [opts.start.x, 4.3, opts.start.z - 10.6], target: [opts.start.x, 1.25, opts.start.z + 5], fov: 56, near: 0.4, far: 2400 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [opts.start.x, 4.3, opts.start.z - 10.6], target: [opts.start.x, 1.25, opts.start.z + 5], fov: 56, near: 0.4, far: 2400 }));
 
   // ---- light rig, atmosphere and post ----
   if (frame && row) {

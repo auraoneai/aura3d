@@ -223,6 +223,30 @@ function isRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nativ
     && unchangedDofFields(legacy, link.legacyFields, 1) && unchangedDofFields(nativeDof, link.nativeFields, 0));
 }
 
+/**
+ * The post stages that native WebGPU depth of field cannot yet combine with,
+ * as bounded identifiers (empty when the combination is supported).
+ */
+export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[] {
+  const conflicts: string[] = [];
+  const add = (condition: unknown, name: string): void => { if (condition) conflicts.push(name); };
+  add(pipeline.ao, "ao"); add(pipeline.ssr, "ssr"); add(pipeline.godRays, "god-rays"); add(pipeline.taa, "taa"); add(pipeline.motionBlur, "motion-blur");
+  add(pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa", `anti-aliasing-${String(pipeline.antiAliasing)}`);
+  add(pipeline.antiAliasing === "fxaa" && !postprocess.fxaa, "fxaa");
+  add(pipeline.nativeEffects?.length, "native-effects");
+  add(pipeline.customPasses?.length, "custom-passes");
+  add(registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false), "registered-passes");
+  add(postprocess.depthOfField && !isRootDofTwin(postprocess.depthOfField, pipeline.dof), "legacy-depth-of-field");
+  add(postprocess.volumetricLight, "volumetric-light"); add(postprocess.motionBlur, "legacy-motion-blur");
+  add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao, "ssao"); add(postprocess.ssr, "legacy-ssr");
+  add(postprocess.taa, "legacy-taa"); add(postprocess.outline, "outline");
+  add(postprocess.chromaticAberration || pipeline.chromaticAberration, "chromatic-aberration");
+  add(postprocess.filmGrain || pipeline.filmGrain, "film-grain");
+  add(pipeline.lut, "lut"); add(pipeline.vignette, "vignette");
+  add(pipeline.bloom && !postprocess.bloom, "bloom"); add(pipeline.grade && !postprocess.colorGrade, "grade");
+  return conflicts;
+}
+
 /** Reject combinations whose color/depth provenance or graph order is not yet implemented. */
 export function validateNativeDofRoute(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): void {
   const options = pipeline.dof;
@@ -230,18 +254,25 @@ export function validateNativeDofRoute(postprocess: RendererPostProcessOptions, 
     || ![Object.prototype, null].includes(Object.getPrototypeOf(options))) {
     throw new RenderDeviceError("Depth of field requires an options object", "WEBGPU_DOF_INVALID");
   }
-  if ([pipeline.ao, pipeline.ssr, pipeline.godRays, pipeline.taa, pipeline.motionBlur].some(Boolean)
-    || (pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa")
-    || (pipeline.antiAliasing === "fxaa" && !postprocess.fxaa)
-    || pipeline.nativeEffects?.length || pipeline.customPasses?.length
-    || registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false)
-    || (postprocess.depthOfField && !isRootDofTwin(postprocess.depthOfField, options))
-    || [postprocess.volumetricLight, postprocess.motionBlur, postprocess.contactShadow,
-      postprocess.ssao, postprocess.ssr, postprocess.taa, postprocess.outline, postprocess.chromaticAberration, postprocess.filmGrain].some(Boolean)
-    || pipeline.lut || pipeline.vignette || pipeline.filmGrain || pipeline.chromaticAberration
-    || (pipeline.bloom && !postprocess.bloom) || (pipeline.grade && !postprocess.colorGrade)) {
+  if (nativeDofConflicts(postprocess, pipeline, scopeId).length) {
     throw new RenderDeviceError("Native depth of field cannot yet combine with the requested post stages", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
   }
+}
+
+/**
+ * Pre-mount check (no device yet): the gap a v2 post bag has on WebGPU's native
+ * depth-of-field route, so a caller can choose WebGL2 before a WebGPU context
+ * is taken on the canvas. Mirrors `validateNativeDofRoute`.
+ */
+export function webgpuNativeDofGap(postprocess: RendererPostProcessOptions | undefined): { readonly code: string; readonly missing: readonly string[] } | undefined {
+  if (!postprocess?.v2 || !postprocess.pipeline || typeof postprocess.pipeline !== "object") return undefined;
+  const pipeline = postprocess.pipeline as PostPipelineOptions;
+  if (pipeline.dof === undefined || (pipeline.dof as unknown) === false) return undefined;
+  const options = pipeline.dof as unknown;
+  if (options === null || typeof options !== "object" || Array.isArray(options)
+    || ![Object.prototype, null].includes(Object.getPrototypeOf(options))) return { code: "WEBGPU_DOF_INVALID", missing: ["depth-of-field-options"] };
+  const conflicts = nativeDofConflicts(postprocess, pipeline, postprocess.postFrameContext?.scopeId);
+  return conflicts.length ? { code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: conflicts } : undefined;
 }
 
 function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nativePost: WebgpuNativePostOptions | undefined): readonly RendererPostProcessPassPlan[] {

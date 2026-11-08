@@ -62,6 +62,7 @@ import type {
   CheckpointSpec, DecorSpec, HazardBox, HazardSpec, PickupSpec,
   PlatformKind, PlatSpec, SolidBox, SpringSpec, WaterSpec, WorldId, WorldSpec
 } from "./types.js";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type SceneNodeArg = Parameters<SceneBuilder["add"]>[0];
@@ -931,20 +932,21 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   }
 
   builder.camera(
-    camera.perspective(
-      diorama
+    camera.perspective({
+      ...labCameraOptions(readLabFlags(), "reversed"),
+      ...(diorama
         ? {
             // PBL-C2 miniature framing (lens 1.7 m above Pip's feet, fov 46).
-            position: [spec.spawn[0], spec.spawn[1] + MINIATURE_LIFT, spec.spawn[2] + 4.5],
-            target: [spec.spawn[0], spec.spawn[1] + 0.55, spec.spawn[2] - 3.2],
+            position: [spec.spawn[0], spec.spawn[1] + MINIATURE_LIFT, spec.spawn[2] + 4.5] as [number, number, number],
+            target: [spec.spawn[0], spec.spawn[1] + 0.55, spec.spawn[2] - 3.2] as [number, number, number],
             fov: 46
           }
         : {
-            position: [spec.spawn[0], spec.spawn[1] + 1.95, spec.spawn[2] + 4.2],
-            target: [spec.spawn[0], spec.spawn[1] + 0.95, spec.spawn[2] - 2.4],
+            position: [spec.spawn[0], spec.spawn[1] + 1.95, spec.spawn[2] + 4.2] as [number, number, number],
+            target: [spec.spawn[0], spec.spawn[1] + 0.95, spec.spawn[2] - 2.4] as [number, number, number],
             fov: 52
-          }
-    )
+          })
+    })
   );
 
   return {

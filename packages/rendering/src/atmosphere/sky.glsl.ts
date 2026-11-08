@@ -11,13 +11,31 @@ export const SKY_SHADER_MARKER = "aura3d.prd07.sky";
 /** Where skyFragmentSource splices the §8.4 fog chunk (inside `#if SKY_FOG`). */
 const SKY_FOG_CHUNK_SLOT = "// @a3d-prd07-sky-fog-chunk";
 
-const VERT = `
+/** Clip z of the standard-depth far-plane sky triangle. */
+export const SKY_STANDARD_CLIP_Z = 0.999999;
+
+/**
+ * Clip z that puts the sky triangle at the far plane of a depth convention:
+ * standard 0.999999; reversed zero-to-one 1e-6 (far stores 0); reversed
+ * minus-one-to-one -0.999999 (window depth (z + 1) / 2 is near 0).
+ */
+export function skyClipZ(convention: { readonly mode: string; readonly clipRange: string } | undefined): number {
+  if (convention?.mode !== "reversed") return SKY_STANDARD_CLIP_Z;
+  return convention.clipRange === "zero-to-one" ? 1e-6 : -SKY_STANDARD_CLIP_Z;
+}
+
+/** Shader literal for a sky clip z (exactly "0.999999" for standard depth). */
+export function skyClipZLiteral(clipZ: number): string {
+  return clipZ.toFixed(6);
+}
+
+const vert = (clipZ: number): string => `
 // ${SKY_SHADER_MARKER} vertex
 in vec2 a_pos;
 out vec2 v_clip;
 void main() {
   v_clip = a_pos;
-  gl_Position = vec4(a_pos, 0.999999, 1.0); // at far plane
+  gl_Position = vec4(a_pos, ${skyClipZLiteral(clipZ)}, 1.0); // at far plane
 }
 `;
 
@@ -239,8 +257,8 @@ function defines(d: SkyProgramDefines): string {
   );
 }
 
-export function skyVertexSource(): string {
-  return `#version 300 es\n${VERT}`;
+export function skyVertexSource(clipZ: number = SKY_STANDARD_CLIP_Z): string {
+  return `#version 300 es\n${vert(clipZ)}`;
 }
 
 export function skyFragmentSource(d: SkyProgramDefines): string {
@@ -252,7 +270,7 @@ export function skyFragmentSource(d: SkyProgramDefines): string {
 }
 
 export const SKY_CHUNKS: readonly ShaderChunk[] = [
-  { name: "a3d_prd07_sky_vertex", owner: "prd07", stage: "vertex", glsl: VERT },
+  { name: "a3d_prd07_sky_vertex", owner: "prd07", stage: "vertex", glsl: vert(SKY_STANDARD_CLIP_Z) },
   { name: "a3d_prd07_sky_fragment", owner: "prd07", stage: "fragment", glsl: FRAG }
 ];
 

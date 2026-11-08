@@ -15,6 +15,7 @@ import type { Game } from "./game";
 import { appendGroundShadows, BOULDER_SHADOW, TREE_SHADOW } from "./groundShadows";
 import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
@@ -214,7 +215,7 @@ const HUT_HEIGHT = 5.4;
 const HUT_SINK = 0.15;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
-  const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
+  const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
   addLookNodes(b, ACTIVE_LOOK);
   let triangles = 0, chunks = 0, drawNodes = 0;
   const cullables: Cullable[] = [];

@@ -32,7 +32,7 @@ export const GRADIENT_SKY_FOG_PORTABLE_BINDINGS: readonly PortableShaderBinding[
   { name: "u_fogBackgroundDistance", kind: "float" }
 ];
 
-const SKY_VERTEX = /* wgsl */ `
+const skyVertex = (clipZ: string): string => /* wgsl */ `
 // aura3d.prd07.sky vertex
 /* @aura3d-bindings */
 struct SkyVertex {
@@ -41,7 +41,7 @@ struct SkyVertex {
 };
 @vertex fn vs_main(@location(0) position: vec2<f32>) -> SkyVertex {
   var out: SkyVertex;
-  out.position = vec4<f32>(position, 0.999999, 1.0);
+  out.position = vec4<f32>(position, ${clipZ}, 1.0);
   out.clip = position;
   return out;
 }`;
@@ -200,6 +200,8 @@ ${fog ? SKY_FOG : ""}
 }`;
 }
 
+const SKY_VERTEX = skyVertex("0.999999");
+
 export const GRADIENT_SKY_WGSL: NativeShaderStages = {
   vertex: SKY_VERTEX,
   fragment: gradientFragment(false)
@@ -209,3 +211,12 @@ export const GRADIENT_SKY_FOG_WGSL: NativeShaderStages = {
   vertex: SKY_VERTEX,
   fragment: gradientFragment(true)
 };
+
+/**
+ * Native gradient sky stages whose far-plane triangle sits at `clipZLiteral`
+ * (see `skyClipZ`); the standard literal returns the shared constants.
+ */
+export function gradientSkyWgsl(fog: boolean, clipZLiteral: string): NativeShaderStages {
+  if (clipZLiteral === "0.999999") return fog ? GRADIENT_SKY_FOG_WGSL : GRADIENT_SKY_WGSL;
+  return { vertex: skyVertex(clipZLiteral), fragment: gradientFragment(fog) };
+}

@@ -444,9 +444,7 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
  * passes, and on the v2 chain the ao / god-rays / motion-blur / ssr / taa stages. Depth of field is exempt because the
  * WebGPU device runs it natively.
  */
-function webgpuLacksDepthForPostprocess(snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
-  let post: RendererPostProcessOptions;
-  try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return false; }
+function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
   if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
       (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth)) return true;
   if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
@@ -454,10 +452,24 @@ function webgpuLacksDepthForPostprocess(snapshot: AuraSceneSnapshot, canvas: HTM
   return [bag.ao, bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
 }
 
+type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };
+
 /**
- * Registered hook (not an export, so the emitted declarations stay identical to the previous patch release): the
- * renderer reads the WebGPU depth-gap check through a registered symbol on `createProductionRuntimePostprocess`.
+ * Every gap the scene's final post bag (authored look, output context, tier AA) has on WebGPU, from the same compile the
+ * frame path submits: the sampleable-depth gap above, then the caller-supplied native depth-of-field combination check
+ * (owned by the renderer package). Checked before a WebGPU context is taken, so the app can still choose WebGL2.
  */
-Object.defineProperty(createProductionRuntimePostprocess, Symbol.for("@aura3d/root-postprocess/webgpu-depth-gap/v1"), {
-  value: webgpuLacksDepthForPostprocess, configurable: true
+function webgpuPostGapForPostprocess(
+  snapshot: AuraSceneSnapshot,
+  canvas: HTMLCanvasElement | OffscreenCanvas,
+  dofGap?: (post: RendererPostProcessOptions) => WebgpuPostGap | undefined
+): WebgpuPostGap | undefined {
+  let post: RendererPostProcessOptions;
+  try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return undefined; }
+  if (postLacksWebgpuDepth(post)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] };
+  try { return dofGap?.(post); } catch { return undefined; }
+}
+
+Object.defineProperty(createProductionRuntimePostprocess, Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1"), {
+  value: webgpuPostGapForPostprocess, configurable: true
 });

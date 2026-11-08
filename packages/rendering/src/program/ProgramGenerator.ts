@@ -61,7 +61,7 @@ import { INDIRECT_DEFAULT_CHUNK_GLSL } from "./chunks/indirect_default.glsl";
 import { FOG_DEFAULT_CHUNK_GLSL } from "./chunks/fog_default.glsl";
 import { DEPTH_CHUNK_GLSL, DISTANCE_CHUNK_PARS_GLSL } from "./chunks/depth.glsl";
 import { ACES_FILMIC_GLSL } from "../output/ToneMappingOperators.glsl";
-import { normalizeProgramFeatures, totalLightCount, MAP_DEFINES, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_CLIPPING_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, NATIVE_LIGHTMAP_UV_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE, depthCoverageUnsupportedReason, type ProgramGraphFeatures } from "./ProgramFeatures";
+import { normalizeProgramFeatures, totalLightCount, MAP_DEFINES, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_CLIPPING_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, PROGRAM_REVERSED_FOG_DEPTH_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, NATIVE_LIGHTMAP_UV_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE, depthCoverageUnsupportedReason, type ProgramGraphFeatures } from "./ProgramFeatures";
 import type { ShaderGraphBuiltin, ShaderGraphValueType } from "./ShaderGraphCompiler";
 import { programKey } from "./ProgramKey";
 import { PRD02_IBL_FEATURE } from "../contracts/environment";
@@ -1182,7 +1182,10 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     body.push("  vec3 a3dColor = a3dBaseColor.rgb + a3dEmissive;");
   }
   if (!weighted) body.push("  a3dColor = max(a3dColor, vec3(0.0));");
-  body.push("  float a3dDepth = gl_FragCoord.z / gl_FragCoord.w;");
+  // Reversed depth stores 1 - standard window depth; the fog distance keeps the standard reading.
+  body.push(f.features[PROGRAM_REVERSED_FOG_DEPTH_FEATURE] === true
+    ? "  float a3dDepth = (1.0 - gl_FragCoord.z) / gl_FragCoord.w;"
+    : "  float a3dDepth = gl_FragCoord.z / gl_FragCoord.w;");
   if (fogHooks.length > 0) {
     body.push(...fogHooks.map((s) => indent(s)));
   } else if (f.fog !== "none") {

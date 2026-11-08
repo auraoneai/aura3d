@@ -198,6 +198,26 @@ describe("WebGL display-tail output fallback", () => {
     } finally { f.device.dispose(); }
   });
 
+  it("falls back to sRGB instead of throwing when a P3 chain without a tail has no OutputPass route", () => {
+    const f = fixture();
+    try {
+      f.device.beginFrame(8, 8);
+      try {
+        executePostGraphWebGL2(f.host, f.source, {
+          v2: postV2,
+          pipeline: f.pipeline({ outputColorSpace: "display-p3" }),
+          passes: [{ name: "tone-mapping", options: {} }, { name: "color-grade", options: {} }],
+          frameContext: f.frame(1)
+        });
+      } finally { f.device.endFrame(); }
+      expect(f.device.getOutputColorSpaceNegotiation()).toMatchObject({ requested: "display-p3", active: "srgb", fallbackReason: "Display-P3 is unavailable for this post chain" });
+      expect(f.state.colorSpace).toBe("srgb");
+      expect(f.state.draws.filter(draw => draw.framebuffer === null).length).toBeGreaterThan(0);
+      // The scope was released: a later frame may renegotiate P3.
+      expect(f.device.negotiateOutputColorSpace("display-p3").active).toBe("display-p3");
+    } finally { f.device.dispose(); }
+  });
+
   it.each(["fused", "unfused"] as const)("rejects direct canvas mutation before the %s final draw", mode => {
     const f = fixture();
     const hooks: typeof postV2 = {

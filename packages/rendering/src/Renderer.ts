@@ -21,15 +21,16 @@ import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shader
 import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
 import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
 import { shadowFrameCamera, type Prd02BridgeFrameCamera } from "./shadows/Prd02ShadowBridge";
+import { cameraDepthOf, standardViewProjection } from "./shadows/DirectionalCascadeFitter";
 import { type RenderSource } from "./contracts/renderSource";
 import { createClippingBinding, validateClippingGroup, type ClippingGroupInput, type ClippingScope } from "./ClippingPlanes";
-import { assertDepthClippingSupported } from "./DepthPass";
+import { assertDepthClippingSupported, skipWebGPUPointDepthCaster } from "./DepthPass";
 import { beginPackedLoopFrame, createEngineBatchInstanceItem, createEnginePackedBatchItem, expandLogicalBatchItems, hasCombinedDrawIntent, isEngineBatchInstanceItem, isEnginePackedBatchItem, packedLoopMemberFor, transferBatchMembers, transferPackedLoopMember, type PackedLoopFrame } from "./batching/BatchMembers";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, PerspectiveCamera, PointLight, Scene, SpotLight, TransformNode, identityMat4, invertMat4, multiplyMat4, orthographicMat4, perspectiveMat4, transformPoint, toMathMat4, type Mat4, type Vec3, type SceneNode } from "@aura3d/scene";
 import { Frustum, type Ray } from "@aura3d/math";
@@ -2977,7 +2978,7 @@ export class Renderer {
     const clear = this.directLinearClearValid ? this.outputClearColor ?? this.clearColor : this.clearColor;
     const opaque = new ForwardPass({ ...shared, outputColorSpace: "linear", inputColorResource: undefined });
     const sky = background ? new EnvironmentBackgroundPass({ ...background, outputColorSpace: "linear",
-      inverseViewProjectionMatrix: background.inverseViewProjectionMatrix ?? invertMat4(toMat4(viewProjection ?? identityMat4(), "viewProjection")), shaderLibrary: this.shaderLibrary }) : undefined;
+      inverseViewProjectionMatrix: background.inverseViewProjectionMatrix ?? invertMat4(toMat4(standardViewProjection(viewProjection ?? identityMat4(), this.device.getDepthConvention?.()), "viewProjection")), shaderLibrary: this.shaderLibrary }) : undefined;
     return { name: "prd04.direct-linear-opaque", reads, writes: ["prd04.direct-linear-opaque"], execute: context => {
       if (!this.directTransmissionReplaySafe(shared.items, rendererQrFlags(this.device))) {
         throw new RenderDeviceError("Direct transmission replay state changed before the prepass", "TRANSMISSION_REPLAY_UNSUPPORTED");
@@ -3932,7 +3933,7 @@ export class Renderer {
       items = items.map(clippingFrame.snapshot);
       const shadowCasterItems = unsnapshottedShadowCasters.map(clippingFrame.snapshot);
       if (!explicitShadowMap && shadowOptions && shadowOptions.enabled !== false) {
-        for (const caster of shadowCasterItems) clippingFrame.assertShadow(caster);
+        for (const caster of shadowCasterItems) if (!skipWebGPUPointDepthCaster(caster, this.device)) clippingFrame.assertShadow(caster);
       }
       const preflightSplats = (clippingFrame.hasActiveGlobal() || nativeDofPlan) ? collectGaussianSplatDraws(source) : undefined;
       if (preflightSplats?.length) throw new RenderDeviceError("Gaussian splats do not yet support scene clipping", "GAUSSIAN_SPLAT_CLIPPING_UNSUPPORTED");
@@ -3949,7 +3950,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -3961,7 +3962,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         });
       const shadowWrites = frameHooks.addPasses(this.graph, "shadows", items);
@@ -4032,7 +4033,8 @@ export class Renderer {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
           outputColorSpace: postprocess || qrOutput ? "linear" : environmentBackground.outputColorSpace,
-          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(cameraViewProjection ?? identityMat4()),
+          // The background shader unprojects standard NDC z (-1 near, +1 far); a reversed camera is re-expressed first.
+          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(toMat4(standardViewProjection(cameraViewProjection ?? identityMat4(), cameraDepthOf(resolvedCamera)), "viewProjection")),
           shaderLibrary: this.shaderLibrary
         }));
         frameHooks.addPasses(this.graph, "background", items);
@@ -4821,7 +4823,7 @@ export class Renderer {
       items = items.map(clippingFrame.snapshot);
       const shadowCasterItems = unsnapshottedShadowCasters.map(clippingFrame.snapshot);
       if (!explicitShadowMap && shadowOptions && shadowOptions.enabled !== false) {
-        for (const caster of shadowCasterItems) clippingFrame.assertShadow(caster);
+        for (const caster of shadowCasterItems) if (!skipWebGPUPointDepthCaster(caster, this.device)) clippingFrame.assertShadow(caster);
       }
       const preflightSplats = (clippingFrame.hasActiveGlobal() || nativeDofPlan) ? collectGaussianSplatDraws(source) : undefined;
       if (preflightSplats?.length) throw new RenderDeviceError("Gaussian splats do not yet support scene clipping", "GAUSSIAN_SPLAT_CLIPPING_UNSUPPORTED");
@@ -4838,7 +4840,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -4850,7 +4852,7 @@ export class Renderer {
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
           cameraPosition,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, forwardCamera.view, cameraDepthOf(resolvedCamera)),
           receivers: items
         });
       const shadowWrites = frameHooks.addPasses(this.graph, "shadows", items);
@@ -4909,7 +4911,8 @@ export class Renderer {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
           outputColorSpace: postprocess || qrOutput ? "linear" : environmentBackground.outputColorSpace,
-          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(cameraViewProjection ?? identityMat4()),
+          // The background shader unprojects standard NDC z (-1 near, +1 far); a reversed camera is re-expressed first.
+          inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(toMat4(standardViewProjection(cameraViewProjection ?? identityMat4(), cameraDepthOf(resolvedCamera)), "viewProjection")),
           shaderLibrary: this.shaderLibrary
         }));
         frameHooks.addPasses(this.graph, "background", items);
@@ -7667,3 +7670,10 @@ function deviceDrawCalls(device: RenderDevice): number {
   const counted = device as RenderDevice & { readonly drawCallCount?: () => number };
   return typeof counted.drawCallCount === "function" ? counted.drawCallCount() : device.getDiagnostics().drawCalls;
 }
+
+/**
+ * Registered hook (not an export, so the emitted declarations are unchanged): the
+ * engine's backend selection reads the WebGPU native depth-of-field gap through
+ * this symbol before any WebGPU context is taken on the canvas.
+ */
+Object.defineProperty(Renderer, Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1"), { value: webgpuNativeDofGap, configurable: true });

@@ -21,6 +21,7 @@ import { NO_MOTION, bodyMotion, followDrive } from "./gait-motion";
 import { STRIDE_SPEED, footstepCell } from "./locomotion";
 import { KITE_FLIGHT, KITE_HEIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
 import { SEA_LEVEL, STREAM_POINTS, blobOcclusion, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 type Scene = ReturnType<typeof scene>;
@@ -359,7 +360,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const sc = buildScenery(4242, { bell: set.bell, cottage: set.cottage, trees: set.trees, stones: set.stones, shrubs: set.shrubs });
   const builder: Scene = scene()
     .background("#b8d0bd")
-    .camera(camera.perspective({ position: [START.x + CAMERA_OFFSET.x, 6.7, 21], target: [START.x, 2.2, 0.5], fov: 43, near: 0.15, far: 900 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [START.x + CAMERA_OFFSET.x, 6.7, 21], target: [START.x, 2.2, 0.5], fov: 43, near: 0.15, far: 900 }));
 
   /* ---- GU47 WW47-L2/L3/L4/L5: one engine sun matching the daylight key, a matching sky fill and an IBL for the GLBs ---- */
   if (!original) {

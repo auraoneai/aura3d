@@ -26,6 +26,7 @@ import { ENVIRONMENT_GAIN, EVENING_FILL, KEY_GAIN, EVENING_SURFACES, LANTERN_GLO
 import { lanternPoolSize, lightRig, shadowTuneFromSearch } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
 import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
@@ -311,7 +312,7 @@ export function buildWorld(options: WorldOptions): World {
   const flameMap = texture.canvas({ canvas: (() => { const c = document.createElement("canvas"); c.width = c.height = 128; drawFlame(c.getContext("2d")!); return c; })(), colorSpace: "srgb" });
   const builder: Scene = scene()
     .background("#8fb7c9")
-    .camera(camera.perspective({ position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
     .background(evening ? village.sky.horizon : "#8fb7c9");
   // GU47 NR-01/NR-02: the evening rig (real HDRI, one shadowed key, pooled lantern points); `?look=original` keeps
   // the pre-GU47 rig (see lighting.ts). The sky dome and the glow effects opt out of casting.

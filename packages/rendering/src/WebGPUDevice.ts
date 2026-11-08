@@ -10880,8 +10880,12 @@ function portableUniformValue(binding: PortableShaderBinding, value: RecursiveUn
     throw new RenderDeviceError("Portable numeric uniform must be a scalar or numeric array", "WEBGPU_PORTABLE_UNIFORM_VALUE_INVALID", { binding: binding.name });
   }
   const expected = count * (binding.arrayLength ?? 1);
+  // Array bindings follow the GL upload rule: a prefix of whole elements is
+  // valid (e.g. 40 instance matrices into a 64-entry mat4 array) and the
+  // remaining elements are zero-filled below.
+  const partialArray = binding.arrayLength !== undefined && components.length <= expected && components.length % count === 0;
   if (components.some((component) => typeof component !== "number" && typeof component !== "boolean")
-    || components.length > expected || (components.length !== expected && binding.required !== false)) {
+    || components.length > expected || (components.length !== expected && binding.required !== false && !partialArray)) {
     throw new RenderDeviceError("Portable numeric uniform has the wrong number or kind of components", "WEBGPU_PORTABLE_UNIFORM_VALUE_INVALID", { binding: binding.name, expected, actual: components.length });
   }
   if (components.length < expected) components = [...components, ...Array(expected - components.length).fill(0)];

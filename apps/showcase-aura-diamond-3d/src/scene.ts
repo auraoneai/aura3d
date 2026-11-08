@@ -31,6 +31,7 @@ import {
   type ParkSpec
 } from "./rules";
 import { BATTER_YAW } from "./batter-pose";
+import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 /* ================================================================== *
  *  Field geometry (metres, compact-but-proportional diamond)          *
@@ -990,7 +991,7 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
     sc.add(effects.rain({ intensity: plan.weather.intensity, density: plan.weather.density, color: plan.weather.color, speed: 0.8, particleCount: particles, splashes: true, mist: false }));
   }
   return sc
-    .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park, ctx))
     .addMany(buildStandsNodes(park, ctx))
     .addMany(buildParkExtras(park, ctx))

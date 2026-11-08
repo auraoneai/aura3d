@@ -8,7 +8,7 @@
  * JSON evidence on window.__gameEvidence.
  */
 import "../../showcase-port-shared/quickbar.css";
-import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import {
   camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material, model,
@@ -694,7 +694,7 @@ function buildScene() {
     .add(effects.screenSpaceReflections({ intensity: BZ_SSR.intensity, maxDistance: BZ_SSR.maxDistance, roughness: BZ_SSR.roughness, thickness: BZ_SSR.thickness }))
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
-    .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: BZ_FOV }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: BZ_FOV }));
 }
 
 /**

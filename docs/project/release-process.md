@@ -1,8 +1,8 @@
 # Release Process
 
-Version: 5.2.0
+Version: 5.2.1
 
-Current release: Aura3D 5.2.0.
+Current release: Aura3D 5.2.1.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
