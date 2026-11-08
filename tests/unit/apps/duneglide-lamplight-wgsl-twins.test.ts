@@ -19,5 +19,6 @@ describe("Duneglide (silt-and-signal-port) sky and Lamplight Line (last-train-po
   it("keeps the GLSL stages the WebGL2 backend draws byte for byte", () => checkGlslUnchanged(specs));
   it("the weather / mote points twin opts in to one-pixel WebGPU points", () => {
     expect(lamplightPrograms().find(({ name }) => name === "snow")!.spec.wgsl?.vertex).toMatch(/@aura3d-point-list\b/);
+    expect(lamplightPrograms().find(({ name }) => name === "snow-quads")!.spec.wgsl?.vertex).not.toMatch(/@aura3d-point-list\b/);
   });
 });

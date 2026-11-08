@@ -5,6 +5,7 @@ import { CLOUD_FRAGMENT, CLOUD_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, RAIN_FRAG
 import {
   CLOUD_FRAGMENT_WGSL, CLOUD_VERTEX_WGSL, POINTS_FRAGMENT_WGSL, POINTS_VERTEX_WGSL, RAIN_FRAGMENT_WGSL, RAIN_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL
 } from "./shaders-wgsl";
+import { POINT_QUAD_SHADERS } from "./point-quads";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 
@@ -32,6 +33,15 @@ export const pointsSpec = (tint: readonly [number, number, number]): CustomSpec 
   depthWrite: false
 });
 
+/** The sprite quads a requested lab backend draws instead of the weather / mote points (point-quads.ts; WebGPU has no point size). */
+export const pointQuadSpec = (tint: readonly [number, number, number]): CustomSpec => ({
+  glsl: POINT_QUAD_SHADERS.glsl,
+  wgsl: POINT_QUAD_SHADERS.wgsl,
+  uniforms: { weatherTint: { type: "color3", value: [...tint] } },
+  transparent: true,
+  depthWrite: false
+});
+
 export const rainSpec = (tint: readonly [number, number, number]): CustomSpec => ({
   glsl: { vertex: RAIN_VERTEX, fragment: RAIN_FRAGMENT },
   wgsl: { vertex: RAIN_VERTEX_WGSL, fragment: RAIN_FRAGMENT_WGSL },
@@ -45,6 +55,7 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "sky", spec: skySpec() },
   { name: "clouds", spec: cloudSpec() },
   { name: "snow", spec: pointsSpec([0.7, 0.8, 1]) },
+  { name: "snow-quads", spec: pointQuadSpec([0.7, 0.8, 1]) },
   { name: "rain-streaks", spec: rainSpec([0.75, 0.85, 1]) }
 ];
 

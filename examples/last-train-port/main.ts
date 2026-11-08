@@ -530,6 +530,10 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
+    // A WebGPU backend (?backend=webgpu, or auto resolving to WebGPU) cannot capture the station reflection probe on a
+    // synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so the flag also asks for async frames.
+    // Absent the flag: unchanged.
+    ...(lab.renderer ? { frameMode: "async" as const } : {}),
     quality: "auto",
     // GU47 LT-07: the band look renders with dither (per-band exposure is on the grade node). Phase 2: tone mapping is none on
     // both paths: agx rendered band A at mean luma 31 against 105 with none and 86 for the 4.6.2 frame (software WebGL2,

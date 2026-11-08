@@ -5,12 +5,10 @@
  * point size (a point list rasterises one pixel), so when a lab backend is requested the port draws each point as a
  * screen-aligned quad of `size` pixels instead: four corners sharing the point's position, `uv` as the corner, and the same
  * round falloff the point sprite evaluates from `gl_PointCoord` (`d = dot(c, c)`, discard past 1, `smoothstep(1, 0, d)`).
- * The GLSL half draws the same quads if the request falls back to WebGL2. The corner/array helpers are Ion Circuit's.
+ * The GLSL half draws the same quads if the request falls back to WebGL2. The corner/array helpers are in ../shared/sprite-quads.ts.
  */
 import { WGSL_CLIP, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
-import { expandToCorners, pointQuadArrays, quadUpdater } from "../heatsink-port/point-quads";
-
-export { quadUpdater };
+export { quadGeometryInput, quadUpdater } from "../shared/sprite-quads";
 
 const QUAD_VERTEX = /* glsl */ `
 attribute float size;
@@ -71,17 +69,3 @@ export const POINT_QUAD_SHADERS = {
   glsl: { vertex: QUAD_VERTEX, fragment: QUAD_FRAGMENT },
   wgsl: { vertex: QUAD_VERTEX_WGSL, fragment: QUAD_FRAGMENT_WGSL }
 } as const;
-
-type Attr = { itemSize: 1 | 2 | 3 | 4; data: Float32Array };
-
-/** `geometry.dynamic` arrays for `positions` drawn as quads: corner positions and uvs, two triangles each, attributes per corner. */
-export function quadGeometryInput(positions: Float32Array, attributes: Readonly<Record<string, Attr>>): {
-  positions: Float32Array; uvs: Float32Array; indices: Uint32Array; attributes: Record<string, Attr>;
-} {
-  const n = Math.floor(positions.length / 3);
-  const q = pointQuadArrays(n);
-  expandToCorners(positions, 3, q.positions);
-  const corners: Record<string, Attr> = {};
-  for (const [name, a] of Object.entries(attributes)) corners[name] = { itemSize: a.itemSize, data: expandToCorners(a.data, a.itemSize, new Float32Array(a.data.length * 4)) };
-  return { positions: q.positions, uvs: q.uvs, indices: q.indices, attributes: corners };
-}
