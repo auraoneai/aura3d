@@ -254,4 +254,38 @@ describe("WebGPU probe capture picks asynchronous frames when frameMode is unset
     await ticks();
     expect(counts).toEqual({ sync: 1, async: 3 });
   });
+  it("defers an app-driven advance()/step() that lands while an automatic asynchronous frame is in flight (Dot Dash 3D)", async () => {
+    const first = renderer();
+    first.syncFrames.push(() => { throw probeAsyncRequired(); });
+    let release: (() => void) | undefined;
+    first.asyncFrames.push(() => new Promise<number>((resolve) => { release = () => resolve(3); }));
+    const app = makeApp(first);
+    const ready = app.ready();
+    await ticks();
+    const ticksSeen: number[] = [];
+    app.onFrame((frame) => { ticksSeen.push((frame as unknown as { dt: number }).dt); });
+    expect(release).toBeDefined();
+    expect(() => app.advance(0.25)).not.toThrow();
+    expect(() => app.step(0.25)).not.toThrow();
+    expect(ticksSeen).toEqual([]);
+    first.asyncFrames.push(async () => 4);
+    release!();
+    await ticks();
+    // The two calls coalesce into one step once the frame settled; the step presents asynchronously.
+    expect(ticksSeen).toEqual([0.5]);
+    await ready;
+  });
+
+  it("keeps the pending-frame error for advance() when the app chose asynchronous frames", async () => {
+    const first = renderer();
+    let release: (() => void) | undefined;
+    first.asyncFrames.push(() => new Promise<number>((resolve) => { release = () => resolve(1); }));
+    const app = makeApp(first, { frameMode: "async" });
+    void app.ready();
+    await ticks();
+    expect(release).toBeDefined();
+    expect(() => app.advance(0.1)).toThrow(/frame submission is pending/);
+    release!();
+    await ticks();
+  });
 });

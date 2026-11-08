@@ -743,6 +743,8 @@ export interface WebGLRenderController {
   renderAsync?(time: () => number): Promise<void>;
   busy?(): boolean;
   whenIdle?(): Promise<void>;
+  /** True when a WebGPU mount with `frameMode` unset switched to asynchronous frames for probe capture. */
+  autoAsyncFrames?(): boolean;
   /** Coalesce a single frame for an externally invalidated static scene. */
   invalidate?(): void;
   resetTemporalHistory?(reason: string): void;

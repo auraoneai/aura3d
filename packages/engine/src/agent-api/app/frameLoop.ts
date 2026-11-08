@@ -688,6 +688,7 @@ export async function startProductionRender(
       throw error;
     }),
     busy: () => pendingFrames > 0,
+    autoAsyncFrames: () => probeAsyncFrames,
     whenIdle: async () => {
       // Snapshot the requested attempt before awaiting a frame or another
       // cleanup. A later retry must not erase this waiter's original failure.

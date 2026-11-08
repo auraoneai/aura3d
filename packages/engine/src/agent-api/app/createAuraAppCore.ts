@@ -976,6 +976,33 @@ export function createAuraAppWithPhysicsWorldAccess(
   const teardownFailures = new Map<WebGLRenderController, unknown>();
   const appCleanupFailures: unknown[] = [];
   let pendingAsyncSteps = 0;
+  let deferredAdvanceSeconds = 0;
+  let deferredAdvanceQueued = false;
+  let deferredAdvanceRenders = false;
+  /*
+   * A WebGPU mount that switched itself to asynchronous frames for probe capture (frameMode unset) still serves apps that
+   * drive their own fixed-step loop with advance()/step(): a call that lands while a frame is in flight runs once that
+   * frame settles (calls coalesce; a step among them presents) instead of throwing. Opted-in async mounts keep the error.
+   */
+  const deferWhileAutoAsyncFrame = (dt: number, renders: boolean): boolean => {
+    const controller = productionController;
+    if (disposed || pendingAsyncSteps > 0 || !controller?.busy?.() || !controller.autoAsyncFrames?.() || !controller.whenIdle) return false;
+    deferredAdvanceSeconds += Math.max(0, dt);
+    deferredAdvanceRenders ||= renders;
+    if (!deferredAdvanceQueued) {
+      deferredAdvanceQueued = true;
+      void controller.whenIdle().catch(() => undefined).then(() => {
+        deferredAdvanceQueued = false;
+        const seconds = deferredAdvanceSeconds, present = deferredAdvanceRenders;
+        deferredAdvanceSeconds = 0;
+        deferredAdvanceRenders = false;
+        if (disposed) return;
+        if (present) app.step(seconds);
+        else if (seconds > 0) app.advance(seconds);
+      });
+    }
+    return true;
+  };
   let canvasAdmissionDrain: Promise<void> | undefined;
   let canvasAdmissionDrainDone = false;
   const releaseCanvasIfRetired = (): void => {
@@ -2366,6 +2393,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       return pendingWebGPURecovery !== undefined || (productionController?.deviceLost?.() ?? false);
     },
     advance(dt = 1 / 60) {
+      if (deferWhileAutoAsyncFrame(dt, false)) return;
       assertMutableFrame();
       const seconds = Math.max(0, dt);
       const revision = mountRevision;
@@ -2378,6 +2406,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       productionController?.update?.(runtimeTime * 1000);
     },
     step(dt = 1 / 60) {
+      if (deferWhileAutoAsyncFrame(dt, true)) return;
       assertMutableFrame();
       const seconds = Math.max(0, dt);
       const revision = mountRevision;
