@@ -714,9 +714,34 @@ export function attributedWidening(checker: ts.TypeChecker, before: ClosureDecla
     if (!next) return false;
     if (old.texts.join("\0") === next.texts.join("\0")) continue;
     changed += 1;
+    if (declarationTextsEqualIgnoringComments(old.texts, next.texts)) continue;
     if (!declarationSelfWidens(checker, old.symbol, next.symbol)) return false;
   }
   return changed > 0;
+}
+const commentFreePrinter = ts.createPrinter({ removeComments: true });
+/**
+ * Whether two declaration text lists differ only in block comments (the JSDoc on
+ * a declaration's members). The texts are parsed and reprinted without comments,
+ * so comment edits vanish while every token, including string and template
+ * literal contents, still has to match. Such a change cannot affect any consumer,
+ * and is common on generic declarations that `declarationSelfWidens` otherwise
+ * fails closed on. Closure texts are whitespace-collapsed onto one line, where a
+ * `//` comment would swallow the tokens after it, so any text the scanner sees a
+ * line comment in fails closed.
+ */
+export function declarationTextsEqualIgnoringComments(before: readonly string[], after: readonly string[]): boolean {
+  if (before.length !== after.length) return false;
+  const hasLineComment = (text: string) => {
+    const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, ts.LanguageVariant.Standard, text);
+    for (let token = scanner.scan(); token !== ts.SyntaxKind.EndOfFileToken; token = scanner.scan()) if (token === ts.SyntaxKind.SingleLineCommentTrivia) return true;
+    return false;
+  };
+  const strip = (text: string) => commentFreePrinter.printFile(ts.createSourceFile("declaration.d.ts", text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS));
+  return before.every((text, index) => {
+    const next = after[index]!;
+    return !hasLineComment(text) && !hasLineComment(next) && strip(text) === strip(next);
+  });
 }
 /** A retarget is conservatively treated as a break: matching declarations do
  * not establish the actual exports of the newly targeted runtime file. */
