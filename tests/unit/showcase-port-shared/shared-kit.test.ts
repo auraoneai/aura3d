@@ -25,9 +25,16 @@ describe("lab flags (W-8)", () => {
   });
 
   it("ignores and reports unknown values; webgl2 and worker=0 are not flags", () => {
-    const flags = parseLabFlags("backend=webgl2&worker=0&depth=standard&gamut=rec2020");
+    const flags = parseLabFlags("backend=webgl2&worker=0&depth=near&gamut=rec2020");
     expect(flags.any).toBe(false);
     expect(flags.ignored).toEqual(["backend", "depth", "gamut", "worker"]);
+  });
+
+  it("applies a game's default depth mode unless ?depth= overrides it; standard opts out", () => {
+    expect(labCameraOptions(parseLabFlags(""), "reversed")).toEqual({ depth: { mode: "reversed", allowFallback: true } });
+    expect(labCameraOptions(parseLabFlags("?depth=standard"), "reversed")).toEqual({});
+    expect(labCameraOptions(parseLabFlags("?depth=logarithmic"), "reversed")).toEqual({ depth: { mode: "logarithmic", allowFallback: true } });
+    expect(labCameraOptions(parseLabFlags(""))).toEqual({});
   });
 });
 

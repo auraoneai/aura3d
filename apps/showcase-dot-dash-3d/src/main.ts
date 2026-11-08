@@ -9,6 +9,7 @@ import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -42,7 +43,13 @@ const inputOptions = {
   bufferMs: 140
 } as const;
 
+// Lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu and ?gamut=p3 reach the engine. ?worker= and
+// ?depth= are not wired for this game. Without a flag both fragments are empty and the options are unchanged.
+const { renderer: labRenderer, output: labOutput } = labAppOptions(readLabFlags());
+
 const g = createGame({
+  ...(labRenderer ? { renderer: labRenderer } : {}),
+  ...(labOutput ? { output: labOutput } : {}),
   id: "dot-dash-3d",
   target: "#app",
   diagnostics: { overlay: false, performancePanel: false },

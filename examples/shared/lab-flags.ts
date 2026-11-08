@@ -6,7 +6,7 @@
  *
  *   ?backend=auto | webgpu        renderer.backend      (WebGL2 is the default; invalid values are ignored)
  *   ?worker=1                     worker-owned rendering (main-thread fallback kept)
- *   ?depth=reversed | logarithmic camera.depth.mode
+ *   ?depth=reversed | logarithmic | standard   camera.depth.mode (standard opts out of a game default)
  *   ?gamut=p3                     output.outputColorSpace = "display-p3"
  *
  * `labAppOptions` returns fragments for the `createAuraApp` options (`renderer`, `output`, and the `worker.fallback` half:
@@ -16,11 +16,13 @@
 
 export type LabBackend = "auto" | "webgpu";
 export type LabDepthMode = "reversed" | "logarithmic";
+/** `standard` is the explicit opt-out for games that default to a non-standard depth mode. */
+export type LabDepthRequest = LabDepthMode | "standard";
 
 export interface LabFlags {
   readonly backend?: LabBackend;
   readonly worker: boolean;
-  readonly depth?: LabDepthMode;
+  readonly depth?: LabDepthRequest;
   readonly gamut?: "p3";
   /** Query keys that were present with a value the parser does not accept. */
   readonly ignored: readonly string[];
@@ -59,7 +61,7 @@ export function parseLabFlags(search: string | URLSearchParams | undefined): Lab
     return undefined;
   };
   const backend = pick("backend", ["auto", "webgpu"] as const);
-  const depth = pick("depth", ["reversed", "logarithmic"] as const);
+  const depth = pick("depth", ["reversed", "logarithmic", "standard"] as const);
   const gamut = pick("gamut", ["p3"] as const);
   const workerRaw = read("worker");
   const worker = workerRaw === "1";
@@ -86,7 +88,12 @@ export function labAppOptions(flags: LabFlags, createWorker?: () => Worker): Lab
   };
 }
 
-/** Fragment for `camera({ ... })`: `depth.mode` with the standard-depth fallback allowed. `{}` when `?depth=` is absent. */
-export function labCameraOptions(flags: LabFlags): { readonly depth?: { readonly mode: LabDepthMode; readonly allowFallback: true } } {
-  return flags.depth ? { depth: { mode: flags.depth, allowFallback: true as const } } : {};
+/**
+ * Fragment for `camera({ ... })`: `depth.mode` with the standard-depth fallback allowed. `defaultMode` is the game's
+ * verified default (owner decision 2026-11-07: experimental features that pass a real-GPU check are on by default);
+ * `?depth=standard` opts out, `?depth=reversed|logarithmic` overrides. `{}` when the result is standard depth.
+ */
+export function labCameraOptions(flags: LabFlags, defaultMode?: LabDepthMode): { readonly depth?: { readonly mode: LabDepthMode; readonly allowFallback: true } } {
+  const mode = flags.depth ?? defaultMode;
+  return mode && mode !== "standard" ? { depth: { mode, allowFallback: true as const } } : {};
 }
