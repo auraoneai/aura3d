@@ -251,7 +251,13 @@ describe("generated forward clipping", () => {
       device.beginFrame(4, 4);
       expect(() => new ForwardPass({ items: [{ geometry, material: instance }] }).execute({ device, width: 4, height: 4 }))
         .toThrow(/Native WebGPU billboard sprites require a dedicated shader/);
-      expect(device.sources).toHaveLength(0);
+      // Under A3D_PARITY_LINES the generated unlit program is resolved first (7b47e4d87: the prd15.paritySprite variant is
+      // the native billboard), then rejected because an instance-only u_spriteMode override does not select that variant.
+      // Without the flag nothing is compiled. Either way nothing is drawn.
+      if (parity) {
+        expect(device.sources.length).toBeLessThanOrEqual(1);
+        for (const source of device.sources) expect(source.generatedProgram?.features.features["prd15.paritySprite"]).not.toBe(true);
+      } else expect(device.sources).toHaveLength(0);
       expect(device.drawCommands).toHaveLength(0);
     } finally { geometry.dispose(); material.dispose(); device.dispose(); }
   });
