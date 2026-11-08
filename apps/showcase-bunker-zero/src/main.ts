@@ -30,7 +30,7 @@ import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_OUTPUT_EXPOSURE, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
+  BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_OUTPUT_EXPOSURE, BZ_PALETTE, BZ_POST, BZ_STENCIL_COLOR, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture, compensatedBase } from "./art/textures";
@@ -336,7 +336,7 @@ function buildScene() {
     if (stencil) {
       nodes.push(text3D(stencil.text, {
         name: `f${slot} floor stencil`, size: 0.42, depth: 0.01, letterSpacing: 0.06, backend: "sdf", castShadow: false,
-        material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.82, metalness: 0 })
+        material: material.pbr({ color: BZ_STENCIL_COLOR, roughness: 0.82, metalness: 0 })
       }).position(stencil.position[0], stencil.position[1], stencil.position[2])
         .rotate(stencil.rotation[0], stencil.rotation[1], stencil.rotation[2])
         .runtime(staticNode(slot, "stencil")) as unknown as AuraNodeBuilder<AuraSceneNode>);

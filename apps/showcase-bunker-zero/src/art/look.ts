@@ -61,6 +61,13 @@ export const BZ_POST = {
  */
 export const BZ_OUTPUT_EXPOSURE = 1.7;
 
+/**
+ * Lane 521: the floor-name stencil paint ("B-1 STONE GATEHOUSE"). 4.7.18's SDF text ignored material.color and drew every
+ * label white (emissive 0.92); 5.x honours the colour, so the hazard-yellow stencil sat at the floor's own luma and
+ * vanished. White reproduces the shipped 4.7.18 stencil.
+ */
+export const BZ_STENCIL_COLOR = "#ffffff";
+
 /** GU47 phase 3: the first-person field of view (was 72; the rubric found the enemies too small in frame). Render only. */
 export const BZ_FOV = 66;
 
