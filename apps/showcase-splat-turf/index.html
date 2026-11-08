@@ -90,6 +90,51 @@
       border: 2px solid var(--ink); background: var(--paper); color: var(--ink);
       font-family: inherit; font-weight: 700; font-size: 16px;
     }
+    /* How to play: a wider plum card with a scrolling body and a pinned action row (fits 1280x720 and 390x844). */
+    #howto-screen { z-index: 12; background: rgba(40, 14, 52, 0.55); }
+    #howto-screen .card.howto {
+      max-width: 680px; width: calc(100% - 24px); max-height: calc(100% - 24px); max-height: calc(100dvh - 24px);
+      display: flex; flex-direction: column; padding: 18px 0 0; text-align: left; background: rgba(59, 31, 71, 0.95);
+    }
+    .howto h2 { text-align: center; padding: 0 18px; font-size: 28px; }
+    .howto-goal { text-align: center; padding: 0 18px; margin-top: 6px !important; font-size: 15px !important; }
+    .howto-body { overflow-y: auto; padding: 4px 18px 10px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .howto h3 { font-size: 13px; letter-spacing: 1.5px; color: var(--accent-2); margin: 14px 0 6px; text-transform: uppercase; }
+    .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .howto-col { background: rgba(255, 248, 242, 0.08); border-radius: 12px; padding: 8px 10px; }
+    .howto-col h4 { font-size: 12px; letter-spacing: 1px; color: var(--gold); margin-bottom: 4px; }
+    .howto ul { list-style: none; }
+    .howto li { font-size: 14px; line-height: 1.35; margin-top: 5px; }
+    .howto kbd {
+      display: inline-block; min-width: 22px; padding: 1px 5px; margin-right: 2px; border-radius: 6px; text-align: center;
+      background: var(--paper); color: var(--ink); font-family: inherit; font-weight: 700; font-size: 12px; line-height: 18px;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+    }
+    .howto-things li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; margin-top: 7px; }
+    .sw { width: 26px; height: 20px; border-radius: 5px; margin-top: 1px; border: 2px solid rgba(255, 248, 242, 0.7); }
+    .sw.ball { border-radius: 50%; width: 20px; margin-left: 3px; background: #ff3d8b; }
+    .sw.trail { background: linear-gradient(90deg, #ff3d8b 0 17%, #ffb400 17% 33%, #14c9c9 33% 50%, #7a4fd0 50% 67%, #5fd400 67% 83%, #ff6a00 83%); }
+    .sw.can { width: 16px; height: 22px; margin-left: 5px; border-radius: 4px 4px 3px 3px; background: #ffb400; box-shadow: inset 0 3px 0 rgba(59, 31, 71, 0.35); }
+    .sw.solvent { height: 10px; margin-top: 6px; background: #14c9c9; opacity: 0.9; }
+    .sw.eraser { background: #8a8a99; border-radius: 8px 8px 3px 3px; }
+    .sw.finish { background: repeating-linear-gradient(90deg, #ffb400 0 5px, #3b1f47 5px 10px); }
+    .sw.tank { background: linear-gradient(90deg, #ff3d8b 0 60%, #fff8f2 60%); }
+    .howto-things b, .howto li b { color: var(--gold); }
+    .howto-foot {
+      display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;
+      padding: 10px 18px calc(14px + env(safe-area-inset-bottom)); border-top: 2px solid rgba(255, 248, 242, 0.14);
+    }
+    .howto-foot .btn { margin-top: 0; font-size: 20px; padding: 12px 30px; min-height: 48px; }
+    .howto-foot .hint { margin-top: 0; }
+    .btn-howto { margin-top: 12px; }
+    .btn:focus-visible, .toggle:focus-visible, .corner-btn:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 3px; }
+    @media (max-width: 560px) {
+      .howto h2 { font-size: 24px; }
+      .howto-cols { gap: 6px; }
+      .howto-col { padding: 7px 7px; }
+      .howto li { font-size: 13px; }
+      .howto kbd { min-width: 20px; padding: 0 4px; font-size: 11px; }
+    }
     #render-error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: var(--paper); z-index: 20; }
     #render-error.on { display: flex; }
     #render-error .card { color: var(--ink); background: none; border: 0; box-shadow: none; }
@@ -133,6 +178,7 @@
       <button id="btn-start" class="btn" aria-busy="true" disabled>LOADING&hellip;</button>
       <div id="load-bar" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="load-fill"></div></div>
       <div class="toggles">
+        <button id="btn-howto" class="toggle" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
         <button id="btn-motion" class="toggle" aria-pressed="false">REDUCED MOTION</button>
       </div>
       <p class="hint">Drag or &larr; &rarr; / A D to steer &middot; P or Esc to pause</p>
@@ -156,7 +202,64 @@
     <div class="card">
       <h2>PAUSED</h2>
       <button id="btn-resume" class="btn">RESUME</button>
+      <div class="toggles">
+        <button id="btn-howto-pause" class="toggle" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
+      </div>
       <p class="hint">P or Esc to resume</p>
+    </div>
+  </div>
+
+  <div id="howto-screen" class="overlay no-steer" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal" aria-hidden="true">
+    <div class="card howto">
+      <h2 id="howto-title">HOW TO PLAY</h2>
+      <p class="howto-goal" id="howto-goal">Roll your paint ball down the 1,200&nbsp;m road and paint as much of it as you can before your tank runs dry.</p>
+      <div class="howto-body" tabindex="0" aria-label="How to play details">
+        <h3>Controls</h3>
+        <div class="howto-cols">
+          <div class="howto-col">
+            <h4>KEYBOARD</h4>
+            <ul>
+              <li><kbd>&larr;</kbd><kbd>&rarr;</kbd> or <kbd>A</kbd><kbd>D</kbd> steer</li>
+              <li><kbd>Space</kbd><kbd>Enter</kbd> start / play again</li>
+              <li><kbd>P</kbd><kbd>Esc</kbd> pause / resume</li>
+              <li><kbd>M</kbd> sound on / off</li>
+            </ul>
+          </div>
+          <div class="howto-col">
+            <h4>TOUCH &amp; MOUSE</h4>
+            <ul>
+              <li><b>Drag</b> left / right anywhere to steer (about 50&nbsp;px per lane)</li>
+              <li>Tap <b>PLAY NOW</b> / <b>PLAY AGAIN</b></li>
+              <li><kbd>II</kbd> top-right pauses</li>
+              <li><kbd>&#9835;</kbd> top-right mutes</li>
+            </ul>
+          </div>
+        </div>
+        <h3>On the road</h3>
+        <ul class="howto-things">
+          <li><span class="sw ball" aria-hidden="true"></span><span><b>Your ball</b> paints the lane it rolls over (6 lanes). The trail colour changes every 25&nbsp;m.</span></li>
+          <li><span class="sw can" aria-hidden="true"></span><span><b>Paint can</b> &mdash; roll over it in its lane for <b>+35 paint</b> in your tank.</span></li>
+          <li><span class="sw solvent" aria-hidden="true"></span><span><b>Solvent strip</b> (one lane, 10&nbsp;m) &mdash; <b>&minus;20 paint</b>, washes that strip clean, nothing paints while you are on it, and your combo resets.</span></li>
+          <li><span class="sw eraser" aria-hidden="true"></span><span><b>Eraser bot</b> slides side to side &mdash; a bump costs <b>&minus;15 paint</b>, wipes the last 15&nbsp;m of road and resets your combo.</span></li>
+          <li><span class="sw finish" aria-hidden="true"></span><span><b>Finish gate</b> at 1,200&nbsp;m &mdash; reach it to complete the run.</span></li>
+        </ul>
+        <h3>Scoring</h3>
+        <ul>
+          <li>Every metre you paint scores <b>5 &times; your multiplier</b>.</li>
+          <li>The road comes in 25&nbsp;m stretches. Paint <b>80%</b> of one for a <b>STRETCH!</b>: combo +1 and the road speeds up a little. Miss and the combo drops to x1.</li>
+          <li>Every 2 stretches in a row adds <b>+1 to the multiplier</b>, up to <b>x5</b> (the gold tube fills towards the next one).</li>
+          <li>Every 750 points earns a <b>+100</b> bonus.</li>
+        </ul>
+        <h3>Tank &amp; the end of a run</h3>
+        <ul class="howto-things">
+          <li><span class="sw tank" aria-hidden="true"></span><span>One tank, no lives. It starts full and drains slowly as you roll; the bar turns red below 25%.</span></li>
+          <li><span class="sw trail" aria-hidden="true"></span><span>Empty tank = <b>OUT OF PAINT</b>, run over. Reach the finish = <b>RUN COMPLETE</b>. Your grade is your coverage (the share of road you rolled over that stays painted): <b>S</b> 85%+, <b>A</b> 70%+, <b>B</b> 50%+, else <b>C</b>.</span></li>
+        </ul>
+      </div>
+      <div class="howto-foot">
+        <button id="btn-howto-ok" class="btn">GOT IT &mdash; PLAY</button>
+        <p class="hint">Enter, Space or Esc to close</p>
+      </div>
     </div>
   </div>
 

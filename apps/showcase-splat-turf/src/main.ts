@@ -18,6 +18,7 @@ import { HudWriter, coveragePercent } from "./hud";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { createTurfSound, diffSounds, type FrameState } from "./audio";
 import { TurfAutopilot } from "./autopilot";
+import { HOWTO_SEEN_KEY, createHowto } from "./howto";
 
 const config = readQaParams({
   seed: { type: "number", default: 20261121 },
@@ -177,7 +178,7 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused,
+  isActive: () => ready && !paused && !howto.open,
   step() {
     if (keyDir !== 0 && sim.o.phase === "playing") {
       if (!keyDragging) { pending.down = true; keyDragging = true; }
@@ -267,7 +268,7 @@ let lastX = 0;
 let dragging = false;
 addEventListener("pointerdown", (e) => {
   void sound.unlock();
-  if (config.manual || pilot) return;
+  if (config.manual || pilot || howto.open) return;
   const target = e.target as HTMLElement | null;
   if (target?.closest?.(".no-steer")) return;
   if ((sim.o.phase === "gameOver" || sim.o.phase === "finished") && target?.id !== "btn-restart") return;
@@ -356,10 +357,34 @@ function restart(): void {
   $("hud").classList.add("on");
 }
 
+/* ------------------------------------------------------------------ how to play */
+
+/** Play from the splash: the first time ever, show How to play first (the sim waits until it closes). */
+function requestStart(): void {
+  if (!ready || howto.open) return;
+  if (store.get(HOWTO_SEEN_KEY) !== "1") { howto.show("first", $("btn-start")); return; }
+  pending.start = true;
+}
+
+const howto = createHowto({
+  root: $("howto-screen"),
+  confirm: $<HTMLButtonElement>("btn-howto-ok"),
+  onClose(context, confirmed) {
+    store.set(HOWTO_SEEN_KEY, "1");
+    loop.resetAccumulator();
+    if (context === "first" && confirmed && sim.o.phase === "splash") {
+      (document.activeElement as HTMLElement | null)?.blur?.();
+      pending.start = true;
+    }
+  }
+});
+$("btn-howto").addEventListener("click", () => howto.show("splash", $("btn-howto")));
+$("btn-howto-pause").addEventListener("click", () => { if (paused) howto.show("pause", $("btn-howto-pause")); });
+
 $("btn-start").addEventListener("click", () => {
   void sound.unlock();
   if (config.manual || pilot || !ready) return;
-  pending.start = true;
+  requestStart();
 });
 $("btn-restart").addEventListener("click", () => {
   void sound.unlock();
@@ -373,13 +398,22 @@ const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1
 const held = new Set<string>();
 addEventListener("keydown", (e) => {
   void sound.unlock();
+  if (howto.open) {
+    // The dialog owns the keyboard: Enter/Space confirm, Esc closes, Tab stays inside, nothing reaches the game.
+    if (howto.trapTab(e)) return;
+    if (e.code === "Escape" || e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
+      e.preventDefault();
+      if (!e.repeat) howto.close(e.code !== "Escape");
+    }
+    return;
+  }
   if (config.manual || pilot || e.repeat) return;
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
   if (paused) return;
   if (e.code === "Space" || e.code === "Enter") {
     e.preventDefault();
-    if (sim.o.phase === "splash" && ready) pending.start = true;
+    if (sim.o.phase === "splash" && ready) requestStart();
     else if (sim.o.phase === "gameOver" || sim.o.phase === "finished") restart();
     return;
   }
