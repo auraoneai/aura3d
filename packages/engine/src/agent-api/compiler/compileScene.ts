@@ -103,6 +103,12 @@ export interface MountSceneCompileContext extends SceneCompileContext {
   readonly projectedSpotMaxDimension?: number;
   /** Schedule a frame after a dynamically added image becomes ready. */
   readonly onProjectedSpotResourceReady?: () => void;
+  /**
+   * Schedule a frame after an asynchronously acquired environment probe (preset, HDRI, or the structured room that
+   * replaces a missing one) is bound. A static scene draws on demand, so without this the upgrade waited for the next
+   * unrelated redraw and the floor probe stayed on screen.
+   */
+  readonly onEnvironmentProbeReady?: () => void;
   /** The registry the mount was created with (t=0 source build only). */
   readonly runtimeNodes?: AuraRuntimeNodeRegistry;
   /** Per-mount actor ownership and transport policy for initial and dynamically added models. */
@@ -2049,6 +2055,7 @@ function updateCompiledSceneReal(
               }
               if (impl.environmentProbe) impl.environmentCache.release(impl.environmentProbe);
               impl.environmentProbe = probe;
+              try { ctx.onEnvironmentProbeReady?.(); } catch { /* a scheduling hook cannot undo the bound probe */ }
             },
             // Probe still pending: keep the floor and bind again next update.
             onUpgradeFailed: (_error, retryable) => {
