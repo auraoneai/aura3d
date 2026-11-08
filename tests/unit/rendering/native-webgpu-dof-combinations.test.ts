@@ -181,11 +181,49 @@ describe("native WebGPU depth of field with registered post passes", () => {
     } finally { f.close(); }
   });
 
-  it("still rejects a pass anchored before depth of field", async () => {
+  it("runs a pass anchored before depth of field ahead of it, once", async () => {
     release = registerPostPass(pass("after-depth") as never);
     const f = await fixture();
     try {
-      expect(() => f.renderer.render(f.source, f.camera)).toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
+      f.renderer.render(f.source, f.camera);
+      const names = drawn(f.passes);
+      expect(names.filter(name => name === "fs_test")).toHaveLength(1);
+      expect(names.indexOf("fs_test")).toBeLessThan(names.indexOf("fs_linear_depth"));
+      expect(names.indexOf("fs_dof_composite")).toBeLessThan(names.indexOf("fs_tone"));
+    } finally { f.close(); }
+  });
+
+  it("skips a pre-DoF pass whose enabled gate is off this frame (an underwater-only pass above water)", async () => {
+    release = registerPostPass({ ...pass("after-depth"), enabled: () => false } as never);
+    const f = await fixture();
+    try {
+      const diagnostics = f.renderer.render(f.source, f.camera);
+      expect(diagnostics.nativeDepthOfField).toMatchObject({ effect: "submitted" });
+      expect(drawn(f.passes)).not.toContain("fs_test");
+    } finally { f.close(); }
+  });
+});
+
+describe("native WebGPU depth of field after S2 AO, S3 SSR and S4 god rays (WebGL2 v2 order)", () => {
+  const ao = { radius: 0.5, intensity: 0.8, falloff: 1, directions: 4, steps: 4, multiBounce: true, fallbackStrength: 0.1 };
+  const godRays = { samples: 16, decay: 0.94, weight: 0.7, color: [1, 0.9, 0.8], intensity: 0.4, lightDirection: [0, 0.3, -1] };
+
+  it.each([1, 4] as const)("runs AO, SSR, god rays, then DoF on their output, with the legacy twins dropped (samples=%s)", async sampleCount => {
+    const f = await fixture({ ao, ssr: { intensity: 0.5 }, godRays, lut: { status: "pending", source: "x.cube" }, ...(sampleCount === 4 ? msaa : {}) },
+      { sampleCount, ssao: { radius: 3, intensity: 0.4, bias: 0.025 }, ssr: { intensity: 0.5 }, depthOfField: { focusDepth: 0.2, focusRange: 0.1, maxRadius: 4 } });
+    try {
+      const diagnostics = f.renderer.render(f.source, f.camera);
+      expect(diagnostics.nativeDepthOfField).toMatchObject({ depthPreparation: "submitted", effect: "submitted" });
+      const names = drawn(f.passes);
+      const order = ["fs_ao_apply", "fs_ssr_composite", "fs_godrays_composite", "fs_linear_depth", "fs_dof_composite", "fs_tone"].map(name => names.indexOf(name));
+      expect(order.every(index => index >= 0)).toBe(true);
+      expect([...order].sort((a, b) => a - b)).toEqual(order);
+      expect(names).not.toContain("fs_ssao");
+      // The DoF color input is the god-ray composite, not the raw forward source.
+      const composite = f.passes.filter(item => item.draws > 0).find(item => entry(item) === "fs_godrays_composite")!;
+      const prefilter = f.passes.filter(item => item.draws > 0).find(item => entry(item) === "fs_dof_prefilter")!;
+      expect(prefilter).toBeDefined();
+      expect(composite.descriptor.colorAttachments![0]!.view).toBeDefined();
     } finally { f.close(); }
   });
 });
@@ -199,9 +237,11 @@ describe("pre-mount WebGPU gap for the W2 combinations", () => {
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, vignette: { intensity: 0.3 }, filmGrain: { intensity: 0.1 }, chromaticAberration: { intensity: 0.002 } } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1], targets: ["ball"] } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1] } })).toMatchObject({ missing: ["outline"] });
-    // Motion blur and god rays combine since W4 (native depth stages after DoF); ao still does not.
-    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, lut: {} } })).toMatchObject({
-      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["ao", "anti-aliasing-smaa", "lut"] });
+    // AO, SSR, god rays, motion blur, a LUT, registered passes and the legacy twins combine; SMAA, TAA and legacy-only ssao do not.
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, ssr: {}, lut: {} } })).toMatchObject({
+      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["anti-aliasing-smaa"] });
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, ao: {}, ssr: {}, lut: {} }, ssao: {}, ssr: {}, depthOfField: { focusDepth: 0.1 } })).toBeUndefined();
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof, taa: {} }, ssao: {} })).toMatchObject({ missing: ["taa", "ssao"] });
   });
 
   it("reports display stages on Display-P3 output, which the device refuses", () => {

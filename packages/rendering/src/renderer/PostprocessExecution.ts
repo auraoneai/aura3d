@@ -19,7 +19,7 @@ import { webgl2DeviceHost } from "../webgl2/Counters";
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
-import { nativeDofCustomAnchorPrecedesDof, nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayStages";
+import { nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayStages";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { markPostV2Presented, recordPostSkipped, recordPostStage } from "./postSkipped";
 import { postDiagnostics, type PostDiagnosticToken } from "./PostDiagnosticsScope";
@@ -201,52 +201,29 @@ export function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: R
 
 type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
 
-// A strict-v2 root compile also retains a legacy DoF for WebGL fallback. Its
-// focus controls are different from the native lens controls, so equality of
-// the numbers cannot identify a duplicate. Accept only the unchanged pair
-// linked by that compile; all independently supplied combinations still fail.
-const ROOT_DOF_TWIN = Symbol.for("@aura3d/root-postprocess/dof-twin/v1");
-
-function unchangedDofFields(value: unknown, fields: unknown, extraKeys: number): boolean {
-  if (!value || typeof value !== "object" || Array.isArray(value) || !Array.isArray(fields)
-    || ![Object.prototype, null].includes(Object.getPrototypeOf(value))
-    || Reflect.ownKeys(value).length !== fields.length + extraKeys) return false;
-  return fields.every(entry => {
-    if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== "string") return false;
-    const descriptor = Object.getOwnPropertyDescriptor(value, entry[0]);
-    return descriptor?.enumerable === true && "value" in descriptor && Object.is(descriptor.value, entry[1]);
-  });
-}
-
-function isRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nativeDof: unknown): boolean {
-  if (!legacy || typeof legacy !== "object") return false;
-  const descriptor = Object.getOwnPropertyDescriptor(legacy, ROOT_DOF_TWIN);
-  const link = descriptor && "value" in descriptor ? descriptor.value as {
-    legacy?: unknown; nativeDof?: unknown; legacyFields?: unknown; nativeFields?: unknown;
-  } | undefined : undefined;
-  return Boolean(link && link.legacy === legacy && link.nativeDof === nativeDof
-    && unchangedDofFields(legacy, link.legacyFields, 1) && unchangedDofFields(nativeDof, link.nativeFields, 0));
-}
-
 /**
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[] {
+export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[] {
   const conflicts: string[] = [];
   const add = (condition: unknown, name: string): void => { if (condition) conflicts.push(name); };
-  // God rays and motion blur run as native WebGPU depth stages after native DoF (WebGPUDepthEffects), so they combine.
-  add(pipeline.ao, "ao"); add(pipeline.ssr, "ssr"); add(pipeline.taa, "taa");
+  // The native chain runs in the WebGL2 v2 order around DoF: after-depth customs, S2 AO, S3 SSR, S4 god rays,
+  // before/after-taa customs, S6 DoF, S7 motion blur (WebGPUDevice.presentLdrPostprocess), so those combine.
+  add(pipeline.taa, "taa");
   // MSAA: the 4x producer is resolved into the single-sample DoF source when the frame is sealed.
   add(pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa" && pipeline.antiAliasing !== "msaa",
     `anti-aliasing-${String(pipeline.antiAliasing)}`);
   add(pipeline.antiAliasing === "fxaa" && !postprocess.fxaa, "fxaa");
   add(pipeline.nativeEffects?.length, "native-effects");
   add(pipeline.customPasses?.length, "custom-passes");
-  add(registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false && nativeDofCustomAnchorPrecedesDof(pass.insertAt)), "registered-passes");
-  add(postprocess.depthOfField && !isRootDofTwin(postprocess.depthOfField, pipeline.dof), "legacy-depth-of-field");
+  // Registered passes anchored before DoF (after-depth, before/after-taa) run before it, like the v2 graph; their
+  // `enabled` gate is evaluated per frame by the device, so a pass that is off this frame changes nothing.
+  // The legacy depth-of-field twin is dropped on this route (the v2 lens owns S6, as on WebGL2 v2).
   add(postprocess.volumetricLight, "volumetric-light");
-  add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao, "ssao"); add(postprocess.ssr, "legacy-ssr");
+  // A legacy ssao twin is dropped when native GTAO owns S2; a legacy-only ssao has no slot before DoF.
+  // The legacy ssr pass is the device's native S3 stage (it reads the single-sample DoF source depth).
+  add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao && !pipeline.ao, "ssao");
   // A targeted outline draws after the whole chain (executeOutlineTargets),
   // outside the depth-of-field route; only the full-frame chain pass conflicts.
   add(postprocess.taa, "legacy-taa"); add(postprocess.outline && outlineTargetsOf(postprocess.outline) === null, "outline");
@@ -254,7 +231,7 @@ export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipe
   // display stages (webgpu/NativeDofDisplayStages.ts); legacy twins do not.
   add(postprocess.chromaticAberration, "chromatic-aberration");
   add(postprocess.filmGrain, "film-grain");
-  add(pipeline.lut, "lut");
+  // pipeline.lut: the WebGPU chain has no LUT stage on any route; native DoF does not change that.
   // The device refuses the display stages on Display-P3 output; report it before mount.
   add((pipeline as { outputColorSpace?: unknown }).outputColorSpace === "display-p3" && nativeDofDisplayStagesFor(pipeline), "display-p3-display-stages");
   add(pipeline.bloom && !postprocess.bloom, "bloom"); add(pipeline.grade && !postprocess.colorGrade, "grade");

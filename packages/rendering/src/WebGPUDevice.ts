@@ -199,6 +199,25 @@ function snapshotNativeDofDisplay(stages: NativeDofDisplayStages): NativeDofDisp
     ...(stages.finalize ? { finalize: Object.freeze({ ...stages.finalize }) } : {})
   });
 }
+/**
+ * Remove the custom passes anchored before native depth of field from the chain slots and return them by anchor,
+ * each list keeping the slot order (ascending `order`, then registration).
+ */
+function takeNativeDofPrecedingCustoms(customAt: Map<number, PostPassDescriptor[]>): {
+  readonly afterDepth: PostPassDescriptor[]; readonly beforeTaa: PostPassDescriptor[]; readonly afterTaa: PostPassDescriptor[];
+} {
+  const taken: PostPassDescriptor[] = [];
+  for (const [position, list] of customAt) {
+    const kept = list.filter(pass => !nativeDofCustomAnchorPrecedesDof(pass.insertAt));
+    taken.push(...list.filter(pass => nativeDofCustomAnchorPrecedesDof(pass.insertAt)));
+    if (kept.length) customAt.set(position, kept); else customAt.delete(position);
+  }
+  const order = (pass: PostPassDescriptor): number => typeof pass.order === "number" && Number.isFinite(pass.order) ? pass.order : Number.MAX_SAFE_INTEGER;
+  const sorted = taken.sort((a, b) => order(a) - order(b));
+  return { afterDepth: sorted.filter(pass => pass.insertAt === "after-depth"),
+    beforeTaa: sorted.filter(pass => pass.insertAt === "before-taa"), afterTaa: sorted.filter(pass => pass.insertAt === "after-taa") };
+}
+
 /** One fragment for the 4x DoF producer resolve (see resolveNativeDofMultisampleProducer). */
 function nativeDofMultisampleResolveWgsl(reversed: boolean, clearDepth: number): string {
   return `
@@ -5650,13 +5669,15 @@ export class WebGPUDevice implements RenderDevice {
     if (target.colorTexture.format === "rgba32f" && !this.device.features?.has("float32-filterable")) {
       throw new RenderDeviceError("Native depth-of-field presentation requires filterable rgba32f", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
-    if (options.nativeEffects?.length || options.passes.some(pass => pass.name === "taa") ||
-        registeredPostPasses().some(pass => pass.postScopeMatches?.(context.scopeId) !== false && nativeDofCustomAnchorPrecedesDof(pass.insertAt))) {
-      throw new RenderDeviceError("Native depth of field cannot combine with temporal or custom passes", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+    // Registered passes anchored before S6 run ahead of depth of field (takeNativeDofPrecedingCustoms).
+    if (options.nativeEffects?.length || options.passes.some(pass => pass.name === "taa")) {
+      throw new RenderDeviceError("Native depth of field cannot combine with temporal passes or native effects", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
     }
     if (options.autoExposure !== undefined) normalizeWebGPUAutoExposure(options.autoExposure);
     let previousStage = -1;
     for (const pass of options.passes) {
+      // SSR runs as the S3 stage before depth of field; a legacy ssao (no native S2 this frame) reads the frame depth in place.
+      if (pass.name === "ssr" || pass.name === "ssao") continue;
       const stage = pass.name === "bloom" ? 0 : pass.name === "tone-mapping" ? 1 : pass.name === "color-grade" ? 2 : pass.name === "fxaa" ? 3 : -1;
       if (stage < previousStage || stage < 0) throw new RenderDeviceError("Native depth-of-field post stages are unsupported or out of order", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
       previousStage = stage;
@@ -5992,6 +6013,9 @@ export class WebGPUDevice implements RenderDevice {
      * silently, never as a GLSL fallback.
      */
     const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId);
+    // Native depth of field: passes anchored before S6 (after-depth, before-taa, after-taa) leave the chain slots and
+    // run around the HDR depth stages in the v2 graph order instead (see the try block below).
+    const preDofCustoms = options.nativeDepthOfField ? takeNativeDofPrecedingCustoms(customAt) : undefined;
     const dofDisplay = options.nativeDepthOfField ? options.nativeDofDisplay : undefined;
     if (dofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
     const dofFrameIndex = Number.isSafeInteger(options.postFrameContext?.frameId) ? options.postFrameContext!.frameId : 0;
@@ -6038,19 +6062,9 @@ export class WebGPUDevice implements RenderDevice {
       } else runCustoms(customs);
     };
     try {
-      // v2 S2: ambient occlusion composes in linear HDR, before SSR (S3), TAA, bloom and tone.
-      // Native depth of field refuses ao (nativeDofConflicts), so the two never share a frame.
-      if (options.nativeAmbientOcclusion) {
-        track(this.executeWebGPUAmbientOcclusion(current, source, options.nativeAmbientOcclusion, options.postFrameContext?.frameId ?? 0, diagnosticToken));
-      }
-      // W3: SSR composites onto the scene-linear source before bloom and tone
-      // mapping (the v2 S3 position), reading the source's depth attachment.
-      const ssrPass = options.passes.find(pass => pass.name === "ssr");
-      if (ssrPass) {
-        if (options.nativeDepthOfField) throw new RenderDeviceError("Native depth of field cannot combine with SSR", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
-        track(this.executeWebGPUSsr(current, ssrPass.options, source));
-        if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
-      }
+      // Consume the sealed native DoF frame before any pre-DoF stage submits (a sealed proof is valid only until the
+      // next submission); `assertDofCurrent` then guards the source through the whole chain.
+      let dofProof: NativeDofFrameProof | undefined;
       if (options.nativeDepthOfField) {
         const frame = options.nativeDepthOfField.frame;
         const proof = this.#nativeDofProofs.get(frame);
@@ -6069,6 +6083,32 @@ export class WebGPUDevice implements RenderDevice {
           this.assertNativeDofTarget(proof.target);
         };
         assertDofCurrent = assertCurrent;
+        dofProof = proof;
+      }
+      if (preDofCustoms) runCustoms(preDofCustoms.afterDepth);
+      // v2 S2: ambient occlusion composes in linear HDR, before SSR (S3), TAA, depth of field, bloom and tone.
+      if (options.nativeAmbientOcclusion) {
+        track(this.executeWebGPUAmbientOcclusion(current, source, options.nativeAmbientOcclusion, options.postFrameContext?.frameId ?? 0, diagnosticToken));
+      }
+      // W3: SSR composites onto the scene-linear source before bloom and tone
+      // mapping (the v2 S3 position), reading the source's depth attachment.
+      const ssrPass = options.passes.find(pass => pass.name === "ssr");
+      if (ssrPass) {
+        track(this.executeWebGPUSsr(current, ssrPass.options, source));
+        if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
+      }
+      const depthStagesP3 = Boolean((options.nativeGodRays || options.nativeMotionBlur) && displayP3);
+      if (depthStagesP3) recordPostSkipped("WEBGPU_DEPTH_STAGES_P3_UNSUPPORTED", diagnosticToken);
+      // v2 S4: god rays precede TAA and depth of field.
+      if (options.nativeGodRays && !depthStagesP3) {
+        track(this.executeWebGPUGodRays(current, source, options.nativeGodRays));
+        recordPostStage(`S4:god-rays-${options.nativeGodRays.samples}`, diagnosticToken);
+      }
+      if (preDofCustoms) { runCustoms(preDofCustoms.beforeTaa); runCustoms(preDofCustoms.afterTaa); }
+      if (options.nativeDepthOfField && dofProof && assertDofCurrent) {
+        const frame = options.nativeDepthOfField.frame;
+        const proof = dofProof, assertCurrent = assertDofCurrent;
+        assertCurrent();
         const generation = () => this.generation, isLost = () => this.disposed || this.contextLost;
         linearDriver = new WebGPULinearDepth({ createTarget: descriptor => this.createRenderTarget(descriptor),
           assertTargetOwned: target => { this.assertNativeDofTarget(target); },
@@ -6080,7 +6120,8 @@ export class WebGPUDevice implements RenderDevice {
         if (diagnosticToken) recordPostStage("S1:depth-prep", diagnosticToken);
         dofDriver = new WebGPUDepthOfField({ createTarget: descriptor => this.createRenderTarget(descriptor),
           draw: pass => this.executeNativeDofPass(pass, assertCurrent), deviceGeneration: generation, isDeviceLost: isLost });
-        dofResult = dofDriver.execute({ color: source, alpha: frame.alpha, depthModel: frame.depthModel,
+        // The color is the HDR chain so far (S2 AO, S3 SSR, S4 god rays, pre-DoF customs); depth stays the frame's.
+        dofResult = dofDriver.execute({ color: current, alpha: frame.alpha, depthModel: frame.depthModel,
           linearDepth: linearResult.target, depthEncoding: "linear-view-metres", maxGeometryDepthMeters: frame.maxGeometryDepthMeters,
           skyDepthMeters: frame.skyDepthMeters, options: options.nativeDepthOfField.options });
         assertCurrent();
@@ -6089,19 +6130,10 @@ export class WebGPUDevice implements RenderDevice {
         current = dofResult.target;
         linearResult.release(); linearResult = undefined;
       }
-      // Native depth stages (S4 god rays, S7 motion blur) on the HDR source, before bloom: the WebGL2 v2 order.
-      if (options.nativeGodRays || options.nativeMotionBlur) {
-        if (displayP3) recordPostSkipped("WEBGPU_DEPTH_STAGES_P3_UNSUPPORTED", diagnosticToken);
-        else {
-          if (options.nativeGodRays) {
-            track(this.executeWebGPUGodRays(current, source, options.nativeGodRays));
-            recordPostStage(`S4:god-rays-${options.nativeGodRays.samples}`, diagnosticToken);
-          }
-          if (options.nativeMotionBlur) {
-            track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
-            recordPostStage(`S7:motion-blur-${options.nativeMotionBlur.samples}x${options.nativeMotionBlur.tileSize}`, diagnosticToken);
-          }
-        }
+      // v2 S7: motion blur follows depth of field, on HDR before bloom.
+      if (options.nativeMotionBlur && !depthStagesP3) {
+        track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
+        recordPostStage(`S7:motion-blur-${options.nativeMotionBlur.samples}x${options.nativeMotionBlur.tileSize}`, diagnosticToken);
       }
       // The native DoF chain's chromatic aberration follows S7 (HDR, before bloom).
       if (dofDisplay?.chromaticAberration) {
