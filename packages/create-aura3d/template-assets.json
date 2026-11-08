@@ -160,6 +160,13 @@
         "bytes": 1641744,
         "sha256": "5cbb912e511e5e82363c347210096d59dd3007db12c363fd0c9f07919f5ebbd0"
       }
+    ],
+    "starter-product": [
+      {
+        "path": "public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+        "bytes": 357064,
+        "sha256": "1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14"
+      }
     ]
   }
 }
