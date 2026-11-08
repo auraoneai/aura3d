@@ -375,7 +375,9 @@ function restart(): void {
   rig.reset(sim);
   hud.resetCache();
   prevFrame = null;
-  lastPhase = "playing";
+  // Leave lastPhase at "gameOver" so updateHud sees the phase change: it clears the burst reveal and
+  // returns the music to "play" (setting it to "playing" here left the reveal over the scene after restart).
+  fx?.clearReveal();
   $("splash-screen").classList.remove("visible");
   $("gameover-screen").classList.remove("visible");
   $("hud").classList.add("visible");
@@ -513,7 +515,7 @@ const qa = installQaHooks("polarity-orbs", {
     steps = 0;
     nextPopupSeq = 0;
     prevFrame = null;
-    lastPhase = "splash";
+    fx?.clearReveal();
     pilot = config.autopilot ? new Autopilot() : null;
     render();
     updateHud();
