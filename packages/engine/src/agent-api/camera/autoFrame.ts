@@ -85,13 +85,16 @@ export function resolveAutoFrameSpec(
   const aspect = options.aspect ?? viewportAspect() ?? 16 / 9;
   const { subject: _subject, autoRotate: _autoRotate, exclude: _exclude, ...poseOptions } = options;
   const pose = frameCameraPose(bounds, { ...poseOptions, aspect });
+  // Keep the default far plane (100) an authored camera gets, so a look's sky and fog read the same as with a
+  // hand-placed camera; grow it only when the framed subject itself would be clipped.
+  const diagonal = Math.hypot(bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], bounds.max[2] - bounds.min[2]);
   return build({
     target: pose.target,
     position: pose.position,
     distance: pose.distance,
     fov: pose.fov,
     near: pose.near,
-    far: pose.far,
+    far: Math.max(100, (pose.distance + diagonal) * 2),
     ...(options.autoRotate !== undefined ? { autoRotate: options.autoRotate } : {})
   });
 }

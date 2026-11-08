@@ -96,3 +96,11 @@ describe("lights.key (N4 key light casts shadows by default)", () => {
     expect(lights.key({ shadow: { mapSize: 4096 } }).toJSON().shadow).toEqual({ mapSize: 4096 });
   });
 });
+
+describe("camera.auto clipping", () => {
+  test("keeps the default far plane for a small subject and grows it only for a large one", () => {
+    expect(scene().add(subject()).camera(camera.auto({ aspect: 16 / 9 })).toJSON().camera.far).toBe(100);
+    const big = scene().add(primitives.box({ name: "mesa", size: [120, 40, 120] })).camera(camera.auto({ aspect: 16 / 9 })).toJSON().camera;
+    expect(big.far!).toBeGreaterThan(big.distance! + 120);
+  });
+});
