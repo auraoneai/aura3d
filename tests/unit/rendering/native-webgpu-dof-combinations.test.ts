@@ -143,6 +143,48 @@ describe("native WebGPU depth of field display stages", () => {
     } finally { f.close(); }
   });
 
+  it("runs the same display stages on the native chain without depth of field (WebGL2 v2 draws them either way)", async () => {
+    const f = await fixture({ dof: undefined, ...stages }, { colorGrade: { contrast: 1.1, saturation: 1 } });
+    try {
+      f.renderer.render({ source: f.source, camera: f.camera, frameId: 7 });
+      const names = drawn(f.passes);
+      expect(names).not.toContain("fs_dof_composite");
+      const ca = names.indexOf("fs_dof_ca"), grade = names.indexOf("fs_grade"), vignette = names.indexOf("fs_dof_vignette"), finalize = names.indexOf("fs_dof_finalize");
+      expect(ca).toBeGreaterThanOrEqual(0);
+      expect(grade).toBeGreaterThan(ca);
+      expect(vignette).toBeGreaterThan(grade);
+      expect(finalize).toBeGreaterThan(vignette);
+      expect(names[finalize + 1]).toBe("fs_copy");
+      expect(Array.from(f.writes.get("webgpu-dof-vignette-uniforms")!).map(v => Math.round(v * 1000) / 1000))
+        .toEqual([0.3, 0.6, 1, 0, 0.2, 0.1, 0, 0, 8, 8, 0, 0]);
+    } finally { f.close(); }
+  });
+
+  it("runs the display stages on a multisampled source without depth of field (a 4x source used to throw NATIVE_POST_UNSUPPORTED; CA reads its resolve view)", async () => {
+    const f = await fixture({ dof: undefined, ...msaa, ...stages }, { sampleCount: 4 });
+    try {
+      f.renderer.render({ source: f.source, camera: f.camera, frameId: 5 });
+      const names = drawn(f.passes);
+      expect(names).not.toContain("fs_dof_composite");
+      const ca = names.indexOf("fs_dof_ca"), vignette = names.indexOf("fs_dof_vignette"), finalize = names.indexOf("fs_dof_finalize");
+      expect(ca).toBeGreaterThanOrEqual(0);
+      expect(vignette).toBeGreaterThan(ca);
+      expect(finalize).toBeGreaterThan(vignette);
+      expect(names[finalize + 1]).toBe("fs_copy");
+    } finally { f.close(); }
+  });
+
+  it("tone-maps ACES with the WebGL2 output curve (1/0.6 scale, Hill RRT+ODT fit), not the Narkowicz fit", async () => {
+    const f = await fixture({ ...msaa, ...stages }, { sampleCount: 4 });
+    try {
+      f.renderer.render({ source: f.source, camera: f.camera, frameId: 3 });
+      const tone = f.modules.find(module => module.includes("fs_tone"))!;
+      expect(tone).toContain("let v = color / 0.6;");
+      expect(tone).toContain("vec3<f32>(0.238081)");
+      expect(tone).not.toContain("2.51 * c");
+    } finally { f.close(); }
+  });
+
   it("adds no display stage when none is authored", async () => {
     const f = await fixture();
     try {

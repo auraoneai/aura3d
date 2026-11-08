@@ -468,7 +468,11 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
     }
     nativeDepthOfField = { options: depthOfField as NonNullable<LdrPostprocessPresentationOptions["nativeDepthOfField"]>["options"], frame: dofFrame };
   }
-  const nativeDofDisplay = nativeDepthOfField || nativeSceneDepthOfField ? nativeDofDisplayStagesFor(pipeline) : undefined;
+  // The v2 bag's chromatic aberration, vignette and grain run as native display stages on every native chain (the WebGL2
+  // v2 graph draws them with or without depth of field). Without depth of field a Display-P3 chain keeps omitting them
+  // (the device admits them only on sRGB output there; with depth of field the route rejects P3 before mount).
+  const nativeDofDisplay = nativeDepthOfField || nativeSceneDepthOfField || (pipeline as { outputColorSpace?: unknown } | undefined)?.outputColorSpace !== "display-p3"
+    ? nativeDofDisplayStagesFor(pipeline) : undefined;
   const validView = typeof context?.viewId === "string" || (typeof context?.viewId === "number" && Number.isFinite(context.viewId));
   const frame = context?.scopeId && typeof context.scopeId === "object" && validView && Number.isSafeInteger(context.frameId) && context.frameId! >= 0
     ? { scopeId: context.scopeId, viewId: context.viewId, frameId: context.frameId!, cameraCut: context.cameraCut,
@@ -479,7 +483,7 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
   if (autoExposure !== undefined && !Number.isFinite(frame?.timeSeconds)) throw new RenderDeviceError("WebGPU auto exposure requires a finite frame time", "WEBGPU_AUTO_EXPOSURE_TIME_REQUIRED");
   const nativeAmbientOcclusion = webgpuNativeAmbientOcclusion(device, postprocess, pipeline);
   const nativeLut = webgpuNativeLut(pipeline, context?.diagnosticToken);
-  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion && !nativeLut) return undefined;
+  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion && !nativeLut && !nativeDofDisplay) return undefined;
   return { ...(effects?.length ? { nativeEffects: effects } : {}), ...(frame ? { postFrameContext: frame as NonNullable<WebgpuNativePostOptions["postFrameContext"]> } : {}),
     ...(autoExposure !== undefined ? { autoExposure: autoExposure as NonNullable<WebgpuNativePostOptions["autoExposure"]> } : {}),
     ...(nativeDepthOfField ? { nativeDepthOfField } : {}), ...(nativeSceneDepthOfField ? { nativeSceneDepthOfField } : {}),
