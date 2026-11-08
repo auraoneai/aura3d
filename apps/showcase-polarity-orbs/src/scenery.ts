@@ -11,6 +11,10 @@
 import { geometry } from "@aura3d/engine";
 import { hexToLinear, type CustomSpec, type Rgb } from "../../../examples/shared/runner-kit/index";
 import { LOOK } from "./look";
+import {
+  CLOUD_FRAGMENT_WGSL, DECK_FRAGMENT_WGSL, DECK_VERTEX_WGSL, GLOW_FRAGMENT_WGSL, GLOW_VERTEX_WGSL, SCENERY_FRAGMENT_WGSL, SCENERY_VERTEX_WGSL,
+  SKY_FRAGMENT_WGSL, WORLD_VERTEX_WGSL
+} from "./scenery-wgsl";
 
 /* ------------------------------------------------------------------ GLSL */
 
@@ -298,6 +302,7 @@ void main() {
 
 export const deckSpec = (): CustomSpec => ({
   glsl: { vertex: DECK_VERTEX, fragment: DECK_FRAGMENT },
+  wgsl: { vertex: DECK_VERTEX_WGSL, fragment: DECK_FRAGMENT_WGSL },
   uniforms: { uMix: { type: "f32", value: 0 }, uFogDensity: { type: "f32", value: 1 / 300 }, uFogEnd: { type: "f32", value: 380 } },
   side: "double"
 });
@@ -306,6 +311,7 @@ const SKY_UNIFORMS = { uMix: { type: "f32" as const, value: 0 } };
 
 export const sceneSkySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+  wgsl: { vertex: WORLD_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
   uniforms: { ...SKY_UNIFORMS, uDrift: { type: "f32", value: 0 } },
   side: "double"
 });
@@ -318,12 +324,14 @@ const wrapUniforms = (tile: number) => ({
 
 export const sceneryLitSpec = (fogDensity: number, fogEnd: number, tile = 440): CustomSpec => ({
   glsl: { vertex: SCENERY_VERTEX, fragment: SCENERY_FRAGMENT },
+  wgsl: { vertex: SCENERY_VERTEX_WGSL, fragment: SCENERY_FRAGMENT_WGSL },
   uniforms: { ...SKY_UNIFORMS, ...wrapUniforms(tile), uFogDensity: { type: "f32", value: fogDensity }, uFogEnd: { type: "f32", value: fogEnd } },
   side: "double"
 });
 
 export const sceneryGlowSpec = (tile = 240): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
+  wgsl: { vertex: GLOW_VERTEX_WGSL, fragment: GLOW_FRAGMENT_WGSL },
   uniforms: { uGlow: { type: "f32", value: 1 }, ...wrapUniforms(tile) },
   transparent: true,
   depthWrite: false,
@@ -333,6 +341,7 @@ export const sceneryGlowSpec = (tile = 240): CustomSpec => ({
 
 export const cloudSeaSpec = (): CustomSpec => ({
   glsl: { vertex: CLOUD_VERTEX, fragment: CLOUD_FRAGMENT },
+  wgsl: { vertex: WORLD_VERTEX_WGSL, fragment: CLOUD_FRAGMENT_WGSL },
   uniforms: { ...SKY_UNIFORMS, uScroll: { type: "f32", value: 0 }, uDrift: { type: "f32", value: 0 } },
   side: "double"
 });

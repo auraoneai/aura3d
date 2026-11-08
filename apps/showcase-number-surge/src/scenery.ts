@@ -12,6 +12,11 @@
 import { geometry, material, scene, type AuraApp } from "@aura3d/engine";
 import { Batch, hexToLinear, mergeMeshes, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
 import { boxMesh } from "./meshes";
+import {
+  DECK_FRAGMENT_WGSL, EDGE_GLOW_FRAGMENT_WGSL, EDGE_GLOW_VERTEX_WGSL, GLYPH_FRAGMENT_WGSL, GRID_FRAGMENT_WGSL, HALO_FRAGMENT_WGSL, MOTE_FRAGMENT_WGSL,
+  MOTE_VERTEX_WGSL, MOUNTAIN_FRAGMENT_WGSL, ROCK_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, STRIP_FRAGMENT_WGSL, TOWER_FRAGMENT_WGSL, UV_VERTEX_WGSL,
+  WORLD_VERTEX_WGSL, litVertexWgsl
+} from "./scenery-wgsl";
 
 type Scene = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -133,7 +138,7 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-export const synthSkySpec = (): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "double", depthWrite: false });
+export const synthSkySpec = (): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, wgsl: { vertex: WORLD_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL }, side: "double", depthWrite: false });
 
 /* ------------------------------------------------------------ grid floor */
 
@@ -163,6 +168,7 @@ void main() {
 
 const gridSpec = (): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(false), fragment: GRID_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(false), fragment: GRID_FRAGMENT_WGSL },
   uniforms: {
     nsBase: { type: "color3", value: [...L(SCENERY.gridBase)] },
     nsLine: { type: "color3", value: [...L(SCENERY.grid)].map((c) => c * 1.5) },
@@ -194,6 +200,7 @@ void main() {
 
 const mountainSpec = (base: string, density: number): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(false), fragment: MOUNTAIN_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(false), fragment: MOUNTAIN_FRAGMENT_WGSL },
   uniforms: {
     nsBase: { type: "color3", value: [...L(base)] },
     nsRidge: { type: "color3", value: [...L(SCENERY.ridge)] },
@@ -266,6 +273,7 @@ void main() {
 
 const towerSpec = (windows: number, corners: number, base: string): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(true), fragment: TOWER_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(true), fragment: TOWER_FRAGMENT_WGSL },
   uniforms: {
     nsBase: { type: "color3", value: [...L(base)] },
     nsWindows: { type: "f32", value: windows },
@@ -302,6 +310,7 @@ void main() {
 
 export const deckSpec = (base: Rgb, line: Rgb): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(false), fragment: DECK_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(false), fragment: DECK_FRAGMENT_WGSL },
   uniforms: { nsBase: { type: "color3", value: [...base] }, nsLine: { type: "color3", value: [...line] }, ...fogUniforms(0.006) },
   side: "double"
 });
@@ -325,6 +334,7 @@ void main() {
 /** Glowing neon strip (road edges, dashes): emissive above 1 so bloom picks it up, fading into the horizon haze. */
 export const stripSpec = (base: Rgb, glow: number, alpha: number): CustomSpec => ({
   glsl: { vertex: STRIP_VERTEX, fragment: STRIP_FRAGMENT },
+  wgsl: { vertex: WORLD_VERTEX_WGSL, fragment: STRIP_FRAGMENT_WGSL },
   uniforms: {
     baseColor: { type: "color3", value: base.map((c) => c * glow) },
     alpha: { type: "f32", value: alpha },
@@ -367,6 +377,7 @@ void main() {
 
 const rockSpec = (glow: Rgb, r = 2.5): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(false), fragment: ROCK_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(false), fragment: ROCK_FRAGMENT_WGSL },
   uniforms: {
     nsRock: { type: "color3", value: [...L(SCENERY.rock)] },
     nsTop: { type: "color3", value: [...L(SCENERY.rockTop)] },
@@ -396,6 +407,7 @@ void main() {
 
 const glyphSpec = (color: Rgb, phase: number): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(false), fragment: GLYPH_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(false), fragment: GLYPH_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [...color] }, nsPhase: { type: "f32", value: phase }, ...fogUniforms(0.0065) },
   side: "double"
 });
@@ -412,6 +424,7 @@ void main() {
 /** Soft painted glow (glyph halos, neon edge glow): a radial or across-strip falloff over the quad's uv. */
 export const haloSpec = (color: Rgb, alpha: number): CustomSpec => ({
   glsl: { vertex: "out vec2 vUv;\nvoid main() { vUv = uv; gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }", fragment: HALO_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: HALO_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [...color] }, alpha: { type: "f32", value: alpha } },
   transparent: true,
   depthWrite: false,
@@ -433,9 +446,17 @@ export const edgeGlowSpec = (color: Rgb, alpha: number): CustomSpec => ({
     vertex: "out vec2 vUv;\nout vec3 vWorld;\nvoid main() { vUv = uv; vWorld = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }",
     fragment: EDGE_GLOW_FRAGMENT
   },
+  wgsl: { vertex: EDGE_GLOW_VERTEX_WGSL, fragment: EDGE_GLOW_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [...color] }, alpha: { type: "f32", value: alpha } },
   transparent: true,
   depthWrite: false,
+  side: "double"
+});
+
+/** Data motes: unlit per-vertex tone. */
+const moteSpec = (): CustomSpec => ({
+  glsl: { vertex: "in vec3 tone;\nout vec3 vTone;\nvoid main() { vTone = tone; gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }", fragment: "in vec3 vTone;\nout vec4 outColor;\nvoid main() { outColor = vec4(vTone, 1.0); }" },
+  wgsl: { vertex: MOTE_VERTEX_WGSL, fragment: MOTE_FRAGMENT_WGSL },
   side: "double"
 });
 
@@ -648,7 +669,8 @@ export const sceneryProgramSpecs = (): readonly { readonly name: string; readonl
   { name: "rock", spec: rockSpec([0.2, 0.9, 1]) },
   { name: "glyph", spec: glyphSpec([1, 1, 1], 0) },
   { name: "halo", spec: haloSpec([1, 1, 1], 0.5) },
-  { name: "edge-glow", spec: edgeGlowSpec([1, 0.1, 0.7], 0.5) }
+  { name: "edge-glow", spec: edgeGlowSpec([1, 0.1, 0.7], 0.5) },
+  { name: "motes", spec: moteSpec() }
 ];
 
 export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: string) => NodeHandle): SceneryRuntime } {
@@ -681,10 +703,7 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
   const motes = new Batch(boxMesh(0.14, 0.14, 0.14), MOTE_COUNT, [1, 1, 1]);
   builder.add(geometry.custom(motes.geometry(), {
     name: "motes",
-    material: material.custom({
-      glsl: { vertex: "in vec3 tone;\nout vec3 vTone;\nvoid main() { vTone = tone; gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }", fragment: "in vec3 vTone;\nout vec4 outColor;\nvoid main() { outColor = vec4(vTone, 1.0); }" },
-      side: "double"
-    })
+    material: material.custom(moteSpec())
   }).runtime({ id: "motes" }));
 
   for (const isle of ISLES) {

@@ -10,6 +10,9 @@
 import { geometry, material } from "@aura3d/engine";
 import { hexToLinear, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
 import { boxMesh, coneMesh, groundQuad, mergeMeshes, sphereMesh, ROAD_DIMS } from "./meshes";
+import {
+  CONTACT_FRAGMENT_WGSL, CONTACT_VERTEX_WGSL, DRIFT_VERTEX_WGSL, RING_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, toyFragmentWgsl, toyVertexWgsl
+} from "./scenery-wgsl";
 
 /* ------------------------------------------------------------------ palette */
 
@@ -116,6 +119,7 @@ export function toyToonSpec(base: Rgb, options: ToyToonOptions = {}): CustomSpec
   const tone = options.tone ?? false;
   return {
     glsl: { vertex: VERTEX(tone), fragment: FRAGMENT(tone, options.stripes !== undefined) },
+    wgsl: { vertex: toyVertexWgsl(tone), fragment: toyFragmentWgsl(tone, options.stripes !== undefined) },
     uniforms: {
       baseColor: { type: "color3", value: [...base] },
       emissive: { type: "color3", value: [...(options.emissive ?? [0, 0, 0])] },
@@ -193,6 +197,7 @@ void main() {
 export function toySkySpec(): CustomSpec {
   return {
     glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+    wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
     uniforms: {
       fogColor: { type: "color3", value: [...L(SCENERY.fog)] },
       fogLow: { type: "color3", value: [...L(SCENERY.fogLow)] }
@@ -233,6 +238,7 @@ void main() {
 export function ringSpec(base: Rgb, alpha: number): CustomSpec {
   return {
     glsl: { vertex: CONTACT_VERTEX, fragment: RING_FRAGMENT },
+    wgsl: { vertex: CONTACT_VERTEX_WGSL, fragment: RING_FRAGMENT_WGSL },
     uniforms: { baseColor: { type: "color3", value: [...base] }, alpha: { type: "f32", value: alpha } },
     transparent: true,
     depthWrite: false,
@@ -243,6 +249,7 @@ export function ringSpec(base: Rgb, alpha: number): CustomSpec {
 export function contactSpec(alpha = 0.32): CustomSpec {
   return {
     glsl: { vertex: CONTACT_VERTEX, fragment: CONTACT_FRAGMENT },
+    wgsl: { vertex: CONTACT_VERTEX_WGSL, fragment: CONTACT_FRAGMENT_WGSL },
     uniforms: { baseColor: { type: "color3", value: [0.09, 0.06, 0.16] }, alpha: { type: "f32", value: alpha } },
     transparent: true,
     depthWrite: false,
@@ -624,7 +631,7 @@ void main() {
 
 export function driftSpec(rim: number): CustomSpec {
   const base = toyToonSpec([1, 1, 1], { tone: true, rim });
-  return { ...base, glsl: { vertex: DRIFT_VERTEX, fragment: base.glsl!.fragment } } as CustomSpec;
+  return { ...base, glsl: { vertex: DRIFT_VERTEX, fragment: base.glsl!.fragment }, wgsl: { vertex: DRIFT_VERTEX_WGSL, fragment: base.wgsl!.fragment } } as CustomSpec;
 }
 
 /** One parallax layer's pieces merged into a single static mesh with the drift attributes. */

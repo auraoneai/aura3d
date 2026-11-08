@@ -9,6 +9,10 @@
  */
 import type { CustomSpec } from "../../../examples/shared/runner-kit/index";
 import type { Rgb } from "../../../examples/shared/runner-kit/index";
+import {
+  FLOOR_FRAGMENT_WGSL, GLOW_FRAGMENT_WGSL, GLOW_VERTEX_WGSL, HERO_FRAGMENT_WGSL, LIT_FRAGMENT_WGSL, LIT_VERTEX_WGSL, RIDGE_FRAGMENT_WGSL,
+  SKY_FRAGMENT_WGSL, TONELESS_LIT_VERTEX_WGSL, WORLD_VERTEX_WGSL
+} from "./stage-shaders-wgsl";
 
 /** Shared haze: exponential-ish by distance, colour slides from the horizon glow to a dim violet looking up. */
 const HAZE = /* glsl */ `
@@ -315,6 +319,7 @@ const hazeUniforms = (h: Haze) => ({ uFogColor: color3(h.color), uFogDensity: f3
 
 export const stageSkySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+  wgsl: { vertex: WORLD_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
   uniforms: { uClock: f32(0), uPulse: f32(0), uSunDir: color3(SUN_DIR) },
   side: "double",
   depthWrite: false,
@@ -342,6 +347,7 @@ const TONELESS_LIT_VERTEX = LIT_VERTEX.replace("in vec3 tone;", "").replace("vTo
 
 export const stageLitSpec = (o: LitOptions): CustomSpec => ({
   glsl: { vertex: o.toneless ? TONELESS_LIT_VERTEX : LIT_VERTEX, fragment: LIT_FRAGMENT },
+  wgsl: { vertex: o.toneless ? TONELESS_LIT_VERTEX_WGSL : LIT_VERTEX_WGSL, fragment: LIT_FRAGMENT_WGSL },
   uniforms: {
     baseColor: color3(o.base),
     emissive: color3(o.emissive ?? [0, 0, 0]),
@@ -367,6 +373,7 @@ export const stageLitSpec = (o: LitOptions): CustomSpec => ({
 
 export const floorSpec = (haze: Haze): CustomSpec => ({
   glsl: { vertex: FLOOR_VERTEX, fragment: FLOOR_FRAGMENT },
+  wgsl: { vertex: WORLD_VERTEX_WGSL, fragment: FLOOR_FRAGMENT_WGSL },
   uniforms: { uScroll: f32(0), uPulse: f32(0), ...hazeUniforms(haze) },
   side: "double",
   castShadow: false
@@ -374,6 +381,7 @@ export const floorSpec = (haze: Haze): CustomSpec => ({
 
 export const ridgeSpec = (haze: Haze): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX, fragment: RIDGE_FRAGMENT },
+  wgsl: { vertex: LIT_VERTEX_WGSL, fragment: RIDGE_FRAGMENT_WGSL },
   uniforms: { ...hazeUniforms(haze), uScrollZ: f32(0) },
   side: "double",
   castShadow: false
@@ -381,6 +389,7 @@ export const ridgeSpec = (haze: Haze): CustomSpec => ({
 
 export const glowSpec = (o: { readonly beam: boolean; readonly wobble: number; readonly gain: Rgb }): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
+  wgsl: { vertex: GLOW_VERTEX_WGSL, fragment: GLOW_FRAGMENT_WGSL },
   uniforms: { baseColor: color3(o.gain), uBeam: f32(o.beam ? 1 : 0), uWobble: f32(o.wobble), uClock: f32(0), uPulse: f32(0), uScrollZ: f32(0) },
   blending: "additive",
   transparent: true,
@@ -391,6 +400,7 @@ export const glowSpec = (o: { readonly beam: boolean; readonly wobble: number; r
 
 export const heroSpec = (base: Rgb): CustomSpec => ({
   glsl: { vertex: TONELESS_LIT_VERTEX, fragment: HERO_FRAGMENT },
+  wgsl: { vertex: TONELESS_LIT_VERTEX_WGSL, fragment: HERO_FRAGMENT_WGSL },
   uniforms: { baseColor: color3(base), emissive: color3([0, 0, 0]), alpha: f32(1), uScrollZ: f32(0) },
   side: "double"
 });

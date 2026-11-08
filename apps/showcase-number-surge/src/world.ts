@@ -16,6 +16,7 @@ import { DIMS, ballMesh, ballLabelMesh, gateFrameMesh, gatePanelMesh, groundQuad
 import { LINEAR, LOOK, PALETTE, SKY_STOPS } from "./look";
 import type { Shown } from "./presentation";
 import { addScenery, deckSpec, edgeGlowSpec, sceneryProgramSpecs, stripSpec, synthSkySpec } from "./scenery";
+import { LABEL_FRAGMENT_WGSL, UV_VERTEX_WGSL } from "./scenery-wgsl";
 
 type Scene = ReturnType<typeof scene>;
 type TextureHandle = ReturnType<typeof texture.canvas>;
@@ -47,6 +48,7 @@ void main() {
 
 export const labelSpec = (map: TextureHandle): CustomSpec => ({
   glsl: { vertex: LABEL_VERTEX, fragment: LABEL_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: LABEL_FRAGMENT_WGSL },
   uniforms: {
     map: { type: "texture2d", value: map },
     baseColor: { type: "color3", value: [1, 1, 1] },

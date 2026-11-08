@@ -8,7 +8,7 @@ Decision D1 (superseded by the owner decision of 2026-11-07): an EXPERIMENTAL 5.
 
 ## Lab flags (W-8)
 
-Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`, `resolveLabBackend`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) in Ion Circuit, the other showcase games that pass it and the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`); and the WebGPU backend in Chroma Roll, Dot Dash 3D, Cumulus Dash, Cross Hop, Aura Hoops 3D, Aura FC 3D, Iron Crown, Ion Circuit, Aura Diamond 3D, Saltwind Highway, Top Tennis, Bunker Zero, Serpentine Sky Run and The Bellkeeper's Walk (`labAppOptions(flags, { backend: "auto" })`, opt out with `?backend=webgl2`). Unknown values are ignored and listed in `flags.ignored`.
+Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`, `resolveLabBackend`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) in Ion Circuit, the other showcase games that pass it and the five new games (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper); the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`); and the WebGPU backend in Chroma Roll, Dot Dash 3D, Cumulus Dash, Cross Hop, Aura Hoops 3D, Aura FC 3D, Iron Crown, Ion Circuit, Aura Diamond 3D, Saltwind Highway, Top Tennis, Bunker Zero, Serpentine Sky Run, The Bellkeeper's Walk and Splat Turf (`labAppOptions(flags, { backend: "auto" })`, opt out with `?backend=webgl2`). Unknown values are ignored and listed in `flags.ignored`.
 
 | Query | Effect | Option fragment it produces | Label |
 |---|---|---|---|
@@ -64,9 +64,18 @@ The earlier ratios (0.28x to 0.88x in all but three games) were mostly WebGPU de
 | Pip's Big Leap | 13.4 | 10.1 | 0.42 | 0.76 | WebGL2 |
 | Lamplight Line (30 s settle) | 5.3 | 4.1 | 0.28 | 0.75 (0.75, 0.89; one run still in its start stall) | WebGL2 |
 | Shadowstep Gauntlet | 74.0 | 56.7 | 0.72 | 0.75 | WebGL2 |
-| Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper | | | n/a | n/a | WebGL2: `?backend=webgpu` falls back cleanly (`CUSTOM_SHADER_WGSL_MISSING`, about 30 runner-kit / scenery GLSL materials per game have no WGSL twin) |
 
 Independent review re-measure (same tools, fresh build of the lane head, 1-minute load 1.7 to 5.4, 3 paired runs, 5 for the borderline games; WebGPU/WebGL2 median): Aura FC 3D 1.09, Aura Hoops 3D 1.06, Cross Hop 1.06, Ion Circuit 0.98, Iron Crown 0.97, Saltwind Highway 0.94, Aura Diamond 3D 0.94, Bunker Zero 0.93, The Bellkeeper's Walk 0.92, Serpentine Sky Run 0.92 (n=5), Top Tennis 0.91; below the rule: Slingshot Siege 0.89 (0.90, 0.91, 0.89, 0.88, 0.89), Duneglide 0.89 (0.88, 0.89, 0.92, 0.89, 0.93), Gridlock Courier 0.89 (n=5), Roadster Rush 0.85, Craterline GP 0.77. Slingshot Siege and Duneglide therefore stay on WebGL2. WebGL2 frames of the lane head match the base build within the run-to-run noise of each scene (static scenes: Ion Circuit 0.59 vs 0.59 noise, Serpentine Sky Run 0.09 vs 0.09, Bunker Zero 0.02 vs 0.02; animated scenes differ only by animation phase), and every switched game's default page reports the WebGPU backend with 0 errors.
+
+Five new games (WGSL twins for their runner-kit and scenery materials, separate in-play sweep before the draw-overhead work):
+
+| Game | WebGL2 fps (median) | WebGPU fps (median) | WebGPU/WebGL2 | Default |
+|---|---|---|---|---|
+| Splat Turf | 10.7 | 10.2 | 0.97 median, geomean 0.98 (n=16, in play, never capped) | WebGPU (auto) |
+| Beat Hopper | 59.9 | 56.6 | 0.92 median, geomean 0.91 (n=16), but 0.88 median on the 8 pairs where WebGL2 was below the 60 fps cap (capped pairs overstate the ratio) | WebGL2 |
+| Shape Shift Sprint 0.86 (n=12), Polarity Orbs 0.86 (n=10), Number Surge 0.71 (n=6) (medians) | 57.6 / 58.6 / 60.1 | 44.1 / 50.2 / 41.5 | < 0.9 | WebGL2 |
+
+The five new games render the same frame on both backends with their WGSL twins (title-frame mean abs diff 0.2-0.9/255, under 1% of pixels > 16) and idle on the title screen, so they were timed in play (`?autostart=1&autopilot=1&dpr=1&seed=1`, `app.diagnostics().fps`). WebGL2 often sits at the 60 fps vsync cap there, so a WebGPU/WebGL2 ratio against a capped run is an upper bound; Beat Hopper was first turned on at 0.94 (n=5, four of five pairs capped), then reverted by the independent review: across 16 pairs its median is 0.92, but that leans on pairs where WebGL2 sat at the 60 fps cap; its 8 uncapped pairs give 0.88, below the rule. Splat Turf never reaches the cap (5 to 10 fps on both).
 
 The ratio depends on machine load: with little contention the high-frame-rate games (Craterline GP, Shadowstep Gauntlet, Roadster Rush) show WebGPU's remaining fixed per-draw cost, while an earlier sweep under heavy load had Craterline GP at 1.51x. Lamplight Line and Dot Dash 3D re-capture their `update: "once"` reflection probes on every frame (six faces plus a CPU prefilter) on both backends; on WebGPU each face is an asynchronous readback, and Lamplight Line's first WebGPU frames can still stall while Metal compiles its pipelines.
 
