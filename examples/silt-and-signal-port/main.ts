@@ -21,7 +21,7 @@ import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
 import { FINISH_ORBIT, RAIL_SECONDS, finishOrbitPose, railPose } from "./camera";
 import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
@@ -590,7 +590,7 @@ async function boot(): Promise<void> {
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
   // W-8 lab flags (?backend=auto|webgpu, ?gamut=p3): EXPERIMENTAL, default off; with no flag both fragments are empty
-  const lab = labAppOptions(readLabFlags());
+  const lab = labAppOptions(readLabFlags(), { createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
@@ -598,6 +598,7 @@ async function boot(): Promise<void> {
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     // DG-P2: ACES with the chapter's exposure in the inked look; the original renders with no tone mapping at 0.65
     output: { ...(inked ? { toneMapping: "aces" as const, exposure: config.exposure ?? look.grade.exposure, dither: true } : { toneMapping: "none" as const, exposure: config.exposure ?? 0.65, dither: false }), ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await app.ready();

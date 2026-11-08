@@ -12,6 +12,7 @@ import {
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, parseLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets";
 import {
@@ -163,10 +164,10 @@ const contactShadowsOn = params.get("iccontact") !== "0";
 /** PRD §6.4: `?tier=low` halves weather and VFX particles (the engine tier drops local shadows, AO, DOF and grain). */
 const lowTier = params.get("tier") === "low";
 // 5.x lab flags (all off by default): ?backend=auto|webgpu, ?gamut=p3 (shared parser) and ?ies=1 (A5 photometric ring spots).
-// ?worker=1 is ignored: a game app needs synchronous onFrame callbacks, so the engine refuses worker rendering for createGame.
+// ?worker=1 renders in a worker (createGame K2: the loop, input, HUD and audio stay on the main thread); main-thread fallback kept.
 const labFlags = parseLabFlags(params);
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
-const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags, { backend: "auto" });
+const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 const iesLab = params.get("ies") === "1";
 // A1: the real fraction of arena assets loaded, from the engine's asset events (the shell bar used to jump 0 to 1).
 let assetLoadProgress: ((loaded: number, total: number) => void) | undefined;
@@ -302,6 +303,7 @@ const fightingGame = createGame({
   // A5 lab: IES profiles need the opt-in renderer flag; scalar spots remain the fallback.
   ...(labRenderer || iesLab ? { renderer: { ...(labRenderer ?? {}), ...(iesLab ? { photometricProfiles: true } : {}) } } : {}),
   ...(labOutput ? { output: labOutput } : {}),
+  ...(labWorker ? { worker: labWorker } : {}),
   input: inputOptions,
   loop: { fixedDt: 1 / 60 },
   scene: () => buildArena(initialConfig),

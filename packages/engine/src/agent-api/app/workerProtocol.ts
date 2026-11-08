@@ -2,6 +2,7 @@ import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot } fro
 import type { OffscreenCanvasSize } from "./canvas.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import type { AuraWorkerNodePatchOp } from "./workerPatch.js";
+import type { AuraAssetProgressEvent } from "../nodes/types/runtime.js";
 
 export type { AuraWorkerNodePatchOp } from "./workerPatch.js";
 
@@ -156,7 +157,7 @@ export function createWorkerPointerEventBuffer(): {
 }
 
 export type AuraWorkerRequest =
-  | { readonly type: "init"; readonly id: number; readonly canvas: OffscreenCanvas; readonly scene: AuraSceneSnapshot; readonly renderer?: AuraCreateAppRendererOptions; readonly assets?: AuraAssetsOption; readonly size: OffscreenCanvasSize; readonly autoStart: boolean; readonly syncLocalScenes?: boolean; readonly flags?: AuraWorkerRenderFlags }
+  | { readonly type: "init"; readonly id: number; readonly canvas: OffscreenCanvas; readonly scene: AuraSceneSnapshot; readonly renderer?: AuraCreateAppRendererOptions; readonly assets?: AuraAssetsOption; readonly size: OffscreenCanvasSize; readonly autoStart: boolean; readonly syncLocalScenes?: boolean; readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */ readonly assetEvents?: boolean }
   | { readonly type: "scene"; readonly id: number; readonly scene: AuraSceneSnapshot }
   | { readonly type: "input"; readonly id: number; readonly input: AuraWorkerInput }
   /** K1: batched node transform, visibility, material, animation-param and camera changes, applied before the next frame. */
@@ -196,7 +197,10 @@ export type AuraWorkerResponse =
   | { readonly type: "scene-proposal"; readonly id: 0; readonly revision: number; readonly scene: AuraSceneSnapshot; readonly backend: AuraBackend }
   | { readonly type: "scene-commit" | "scene-abort"; readonly id: 0; readonly revision: number }
   | { readonly type: "presented"; readonly id: 0; readonly result: AuraWorkerFrameResult }
-  | { readonly type: "capture-presented"; readonly id: 0; readonly result: AuraWorkerFrameResult };
+  | { readonly type: "capture-presented"; readonly id: 0; readonly result: AuraWorkerFrameResult }
+  /** 5.4: sanitized asset events of the worker renderer, sent only when `init.assetEvents` is set. */
+  | { readonly type: "asset-progress"; readonly id: 0; readonly event: AuraAssetProgressEvent }
+  | { readonly type: "asset-error"; readonly id: 0; readonly event: { readonly url?: string; readonly assetId?: string; readonly message: string } };
 
 /** The deliberately small portion of Worker / DedicatedWorkerGlobalScope used by the bridge. */
 export interface AuraWorkerEndpoint<Incoming, Outgoing> {

@@ -17,7 +17,7 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { Autopilot } from "./autopilot";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
@@ -347,7 +347,7 @@ async function boot(): Promise<void> {
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look });
   // WebGPU by default (backend "auto", WebGL2 fallback kept): real-GPU check 2026-11-08 rendered the same frame and kept
   // >= 0.9x the WebGL2 frame rate. `?backend=webgl2` forces WebGL2.
-  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
+  const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */
@@ -356,6 +356,7 @@ async function boot(): Promise<void> {
     /* lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with no flag `lab` is `{}` and nothing changes */
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "none", dither: false, ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await loading.track(app.ready(), 1);

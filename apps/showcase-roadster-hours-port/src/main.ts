@@ -3,6 +3,7 @@ import "../../showcase-port-shared/diag";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import "../../showcase-port-shared/quickbar.css";
 import { labAppOptions, labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 // A1: drive the shared loading-progress helper from the game's own loading overlay (no visual change; exposes
 // `data-progress` on #loading). The game hides #loading when the route is ready.
@@ -40,8 +41,9 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 // W-8 lab flags; the game merges the published fragment into its createAuraApp options. WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const lab = readLabFlags();
 {
-  const { renderer, output } = labAppOptions(lab, { backend: "auto" });
-  if (renderer || output) (window as unknown as { __A3D_LAB_APP_OPTIONS__?: unknown }).__A3D_LAB_APP_OPTIONS__ = { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) };
+  // `?worker=1` adds the worker fragment (render worker, main-thread fallback kept).
+  const { renderer, output, worker } = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
+  if (renderer || output || worker) (window as unknown as { __A3D_LAB_APP_OPTIONS__?: unknown }).__A3D_LAB_APP_OPTIONS__ = { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}), ...(worker ? { worker } : {}) };
 }
 // A9: reversed depth by default (real-GPU checked); `?depth=standard` opts out, `?depth=logarithmic` overrides. The fragment
 // reaches `camera.perspective({ depth })` in world.ts through this global.

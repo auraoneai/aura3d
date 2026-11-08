@@ -12,6 +12,7 @@ import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import { Texture, type TexturePixelData } from "@aura3d/rendering";
 import { TextureHandle, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";
+import type { AuraAssetErrorEvent, AuraAssetProgressEvent } from "../nodes/types/runtime.js";
 
 export class AuraWorkerError extends Error {
   constructor(message: string, readonly code: string, readonly severity: "recoverable" | "terminal" = "terminal") {
@@ -51,6 +52,10 @@ export interface AuraWorkerRendererOptions {
   readonly onCaptureFrame?: (frame: AuraWorkerFrameResult) => void;
   readonly onError?: (error: AuraWorkerError) => void;
   readonly onInput?: (input: AuraWorkerInput) => void;
+  /** 5.4: asset progress of the worker renderer (the `createAuraApp` `onAssetProgress` event, sanitized in the worker). */
+  readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
+  /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
+  readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
   /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
   readonly disposeTimeoutMs?: number;
 }
@@ -289,6 +294,14 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
     }
     if (message.type === "presented") { if (!disposing) options.onFrame?.(message.result); return; }
     if (message.type === "capture-presented") { if (!disposing) options.onCaptureFrame?.(message.result); return; }
+    if (message.type === "asset-progress") { if (!disposing) { try { options.onAssetProgress?.(message.event); } catch { /* listener failure never fails the renderer */ } } return; }
+    if (message.type === "asset-error") {
+      if (!disposing) {
+        const { url, assetId, message: text } = message.event;
+        try { options.onAssetError?.({ ...(url !== undefined ? { url } : {}), ...(assetId !== undefined ? { assetId } : {}), error: new Error(text), message: text }); } catch { /* listener failure never fails the renderer */ }
+      }
+      return;
+    }
     if (message.type !== "result" && message.type !== "error") return;
     if (message.backend !== undefined && (message.type === "result" || message.severity === "recoverable")) activeBackend = message.backend;
     outstanding.delete(message.id);
@@ -372,7 +385,8 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
   };
   const ready = send({ type: "init", canvas: offscreen, scene: initialScene, renderer: options.renderer, assets: assetOptions, size, autoStart: options.autoStart !== false,
     ...(options.flags ? { flags: options.flags } : {}),
-    ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
+    ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}),
+    ...(options.onAssetProgress || options.onAssetError ? { assetEvents: true } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
     if (options.prepareLocalScene && (response.syncLocalScenes !== true || response.sceneRevision !== 1)) {
       throw new AuraWorkerError("Worker does not support synchronized local scene replacement.", "scene-sync-unsupported");
     }
@@ -536,6 +550,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   let runRequested = false;
   let reportedDeviceLost = false;
   let syncLocalScenes = false;
+  let assetEvents = false;
   let sceneRevision = 0;
   // Failed proposals must not reuse an ID: a late acknowledgement may still
   // be in flight when the next frame proposes another scene.
@@ -633,6 +648,18 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     const failureStore = shaderFailures.createShaderFailureStore();
     shaderFailures.bindShaderFailureStore(owner, failureStore);
     shaderFailures.setShaderFailureMode(configuration?.shaderFailures, failureStore);
+    // 5.4: the host app's onAssetProgress/onAssetError. Model and texture requests find the channel through the runtime
+    // owner (as on the main thread); events are sanitized by the scope before they are posted.
+    const assetEventChannel = assetEvents ? await import("../assetEvents.js") : undefined;
+    if (assetEventChannel) {
+      assetEventChannel.bindAppAssetEventScope(owner, assetEventChannel.createAppAssetEventScope({
+        onAssetProgress: (event) => send({ type: "asset-progress", id: 0, event: { ...event } }),
+        onAssetError: (event) => send({ type: "asset-error", id: 0, event: {
+          ...(event.url !== undefined ? { url: event.url } : {}), ...(event.assetId !== undefined ? { assetId: event.assetId } : {}),
+          message: event.message ?? "Asset load failed."
+        } })
+      }));
+    }
     let cleaned = false;
     // PRD-07: the main-thread app's atmosphere extension (live fog/sky state the compiler reads under A3D_QR_VFX_FOG).
     let atmosphere: WorkerAtmosphereBinding | null = null;
@@ -640,6 +667,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       if (cleaned) return;
       cleaned = true;
       try { atmosphere?.dispose(); } catch { /* atmosphere cleanup is best effort */ }
+      assetEventChannel?.unbindAppAssetEventScope(owner);
       actorFlags.clearTypedGLBActorQrFlags(owner);
       releaseColor();
       actorAnimation.disposeActorAnimationContext(animation);
@@ -947,6 +975,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           renderFlags = message.flags;
           canvas = message.canvas; rendererOptions = message.renderer; runRequested = message.autoStart;
           syncLocalScenes = message.syncLocalScenes === true;
+          assetEvents = message.assetEvents === true;
           resizeOffscreenCanvas(canvas, message.size);
           await mount(message.scene, controller.signal);
           sceneRevision = sceneSequence = 1;

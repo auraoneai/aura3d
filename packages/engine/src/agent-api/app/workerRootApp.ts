@@ -7,7 +7,7 @@ import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } fr
 import { groups } from "../nodes/groups.js";
 import { normalizeSceneSnapshot } from "../sceneMath.js";
 import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
-import { applyWorkerCanvasCssDefaults, isOffscreenCanvas, resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
+import { applyWorkerCanvasCssDefaults, forwardAuthoredCanvasSize, isOffscreenCanvas, resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { computeRuntimeAlpha } from "./frameAlpha.js";
 import { AURA_APP_CANVAS } from "./screenshot.js";
@@ -77,11 +77,12 @@ function validateWorkerOptions(options: AuraCreateAppOptions): void {
     throw new AuraWorkerError("worker.disposeTimeoutMs must be within the timer range.", "invalid-worker-option");
   }
   // qualityRebuild flags and the animation mixer are mirrored to the worker
-  // renderer; camera runs host-side (K3). The rest stays main-thread only.
+  // renderer; camera runs host-side (K3); onAssetProgress/onAssetError are
+  // forwarded from the worker (5.4). The rest stays main-thread only.
   const unsupportedOptions = [
     "physics", "performanceQuality", "quality", "preserveDrawingBuffer",
     "lighting", "formatRegistry", "accessibility", "strict",
-    "onDegradation", "compat", "loop", "onAssetProgress", "onAssetError"
+    "onDegradation", "compat", "loop"
   ] as const;
   for (const key of unsupportedOptions) {
     if (options[key] !== undefined) unsupported(`options.${key}`, "Use the main-thread renderer for this option.");
@@ -407,6 +408,8 @@ export function createWorkerRootApp(
         if (deviceLost) onDevice("lost");
         else reportFailure(error, error.severity === "terminal");
       },
+      ...(options.onAssetProgress ? { onAssetProgress: options.onAssetProgress } : {}),
+      ...(options.onAssetError ? { onAssetError: options.onAssetError } : {}),
       onInput: (input) => {
         if (!disposed) inputSnapshot = { pointers: input.pointers.map((pointer) => ({ ...pointer })), keys: [...input.keys], timestamp: input.timestamp };
       }
@@ -416,6 +419,16 @@ export function createWorkerRootApp(
     if (!workerCanvasTransferAttempted(canvas)) return fallback(error);
     throw error;
   }
+  // `resize: false`: the author sizes the backing store by assigning canvas.width/height, as on the main thread
+  // (authoredBackingResize). The transferred page canvas would throw on those writes; forward them to the worker.
+  const releaseAuthoredSize = options.resize === false && !isOffscreenCanvas(canvas) && workerCanvasTransferAttempted(canvas)
+    ? forwardAuthoredCanvasSize(canvas as HTMLCanvasElement, (size) => {
+        if (disposed) return;
+        void worker.resize({ ...size, pixelRatio: 1 }).catch((error: unknown) => {
+          if (!disposed && (error as AuraWorkerError)?.code !== "disposed") appendError(errorDetails(error).message);
+        });
+      })
+    : undefined;
 
   const markReady = (serial: number) => {
     if (disposed || serial !== sceneSerial) return;
@@ -799,6 +812,7 @@ export function createWorkerRootApp(
       if (disposed) return;
       disposed = true;
       stopHostLoop();
+      releaseAuthoredSize?.();
       frameCallbacks.clear();
       for (const release of extensionDisposers.splice(0)) { try { release(); } catch (error) { cleanupFailures.push(error); } }
       mirror.dispose();
