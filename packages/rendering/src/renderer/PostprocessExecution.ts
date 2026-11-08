@@ -282,6 +282,26 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
   return nativePost?.nativeDepthOfField ? passes.filter(pass => pass.name !== "depth-of-field") : passes;
 }
 
+/** W3: the WebGPU SSR trace reads a single-sample depth texture or, on a 4x target, the multisampled attachment. */
+function webgpuSsrDepthSource(source: RenderTarget): boolean {
+  const samples = source.sampleCount ?? 1;
+  return samples === 1 ? Boolean(source.depthTexture) : samples === 4 && Boolean(source.multisampledDepthTexture);
+}
+
+/**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean {
+  if (device.kind !== "webgpu" || sampleCount !== 4 || postprocess.execution === "cpu-deterministic") return false;
+  const pipeline = postprocess.pipeline && typeof postprocess.pipeline === "object" ? postprocess.pipeline as PostPipelineOptions : undefined;
+  if (!postprocess.ssr && !(postprocess.v2 === true && pipeline?.ssr)) return false;
+  const { ssr: _ssr, ...rest } = postprocess;
+  const withoutSsr = { ...rest, ...(pipeline ? { pipeline: { ...pipeline, ssr: undefined } } : {}) } as RendererPostProcessOptions;
+  return !postprocessRequiresDepthTexture(withoutSsr, postScopeId);
+}
+
 /**
  * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
  * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
@@ -301,7 +321,7 @@ export function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPo
     return passes.filter(pass => pass.name !== "ssr");
   };
   if (postprocess.v2 === true && !v2Ssr) return skip("");
-  if (!source.depthTexture || (source.sampleCount ?? 1) !== 1) return skip("WEBGPU_SSR_DEPTH_UNAVAILABLE");
+  if (!webgpuSsrDepthSource(source)) return skip("WEBGPU_SSR_DEPTH_UNAVAILABLE");
   const inverse = camera?.projectionMatrixInverse;
   if (!camera || !inverse || !camera.depth) return skip("WEBGPU_SSR_CAMERA_UNAVAILABLE");
   const webgpuFrame = { projection: camera.projectionMatrix, inverseProjection: inverse, far: camera.far,
@@ -1052,7 +1072,7 @@ export class RendererPostprocessPipeline {
     // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
     // back. Declining fusion here routes those passes through the per-pass CPU path, which
     // consumes the caller's depth directly and is the behaviour the options already imply.
-    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
+    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || (pass.name === "ssr" && !(this.host.device.kind === "webgpu" && webgpuSsrDepthSource(current))))) return false;
     if (!forceCpuDeterministic && this.host.device.presentLdrPostprocess) {
       this.host.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
@@ -1235,7 +1255,7 @@ export class RendererPostprocessPipeline {
     // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
     // back. Declining fusion here routes those passes through the per-pass CPU path, which
     // consumes the caller's depth directly and is the behaviour the options already imply.
-    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
+    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || (pass.name === "ssr" && !(this.host.device.kind === "webgpu" && webgpuSsrDepthSource(current))))) return false;
     if (!forceCpuDeterministic && this.host.device.presentLdrPostprocess) {
       this.host.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({

@@ -16,6 +16,10 @@
  *   - no history reprojection: the hit colour is always this frame's HDR
  *     colour (the GLSL `u_reproject = 0` branch).
  *
+ * `SSR_TRACE_MSAA_WGSL` is the same trace over a 4x depth attachment
+ * (`texture_depth_multisampled_2d`, sample 0): WebGPU cannot resolve depth,
+ * so an MSAA forward target keeps its attachment and the trace reads it.
+ *
  * Binding convention of `runWebGPUFullscreenPass`: 0 uniform block,
  * 1 filtering sampler, 2.. textures. Every binding is referenced (the auto
  * layout strips unreferenced bindings and invalidates the bind group).
@@ -79,13 +83,16 @@ fn projectToUv(viewPos: vec3<f32>) -> vec2<f32> {
 
 @fragment
 fn fs_ssr_trace(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
-  let uv = fragCoord.xy / (u_ssr.size * 0.5);
+  // The full-res pixel under this half-res texel, and its +x / +y neighbours, at exact pixel centres: the GLSL
+  // gl_FragCoord / halfSize lands on a pixel boundary, and the nearest-pixel lookup then picks either side by
+  // rounding, which flips the reconstructed normal on whole rows (the trace dropped those rows: horizontal stripes).
+  let pixel = floor(fragCoord.xy * 2.0);
+  let uv = (pixel + vec2<f32>(0.5)) / u_ssr.size;
   let z = linearDepthAt(uv);
   if (z <= 0.0 || z >= u_ssr.far * 0.999) { return vec4<f32>(0.0); }
-  let texel = 1.0 / u_ssr.size;
   let p = viewPosition(uv, z);
-  let uvx = uv + vec2<f32>(texel.x, 0.0);
-  let uvy = uv + vec2<f32>(0.0, texel.y);
+  let uvx = (pixel + vec2<f32>(1.5, 0.5)) / u_ssr.size;
+  let uvy = (pixel + vec2<f32>(0.5, 1.5)) / u_ssr.size;
   let px = viewPosition(uvx, linearDepthAt(uvx));
   let py = viewPosition(uvy, linearDepthAt(uvy));
   var n = normalize(cross(px - p, py - p));
@@ -164,3 +171,6 @@ fn fs_ssr_composite(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec
   return vec4<f32>(src.rgb + refl.rgb * refl.a * u_composite.intensity, src.a);
 }
 `;
+
+/** The trace over a multisampled depth attachment (sample 0; `textureLoad` takes the sample index where the mip was). */
+export const SSR_TRACE_MSAA_WGSL = SSR_TRACE_WGSL.replace("var u_depth: texture_depth_2d;", "var u_depth: texture_depth_multisampled_2d;");

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
-import { SSR_COMPOSITE_WGSL, SSR_TRACE_UNIFORM_BYTES, SSR_TRACE_WGSL } from "../../../packages/rendering/src/post/shaders/ssr.wgsl";
+import { SSR_COMPOSITE_WGSL, SSR_TRACE_MSAA_WGSL, SSR_TRACE_UNIFORM_BYTES, SSR_TRACE_WGSL } from "../../../packages/rendering/src/post/shaders/ssr.wgsl";
 import {
   resolveWebGPUSsrOptions, validateWebGPUSsrFrame, webgpuNativeDepthPostStages, webgpuSsrTraceUniforms, type WebGPUSsrFrame
 } from "../../../packages/rendering/src/post/WebGPUScreenSpaceReflections";
-import { withWebgpuSsrFrame } from "../../../packages/rendering/src/renderer/PostprocessExecution";
+import { webgpuMultisampledDepthServesPost, withWebgpuSsrFrame } from "../../../packages/rendering/src/renderer/PostprocessExecution";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { createProductionRuntimePostprocess } from "../../../packages/engine/src/agent-api/compiler/postprocess";
 import { effects, primitives, scene } from "../../../packages/engine/src/agent-api/index";
@@ -190,5 +190,34 @@ describe("W3 pre-mount check", () => {
     expect(stages()).toEqual(webgpuNativeDepthPostStages());
     expect(webgpuNativeDepthPostStages(true)).toEqual(["ssr"]);
     expect(webgpuNativeDepthPostStages(false)).toEqual([]);
+  });
+});
+
+describe("W3 native WebGPU SSR: MSAA forward targets", () => {
+  it("traces the 4x depth attachment with the multisampled variant", async () => {
+    const f = await nativeFixture();
+    try {
+      const source = f.device.createRenderTarget({ width: 10, height: 5, format: "rgba16f", depth: true, sampleCount: 4, label: "forward" });
+      const out = f.device.executeWebGPUSsr(source, { webgpuFrame: frame() });
+      const trace = f.passes.find(pass => pass.label.startsWith("webgpu-ssr-trace"))!;
+      expect(trace.label).toBe("webgpu-ssr-trace-24-msaa-pass");
+      expect(trace.pipeline!.descriptor.fragment.module.code).toBe(SSR_TRACE_MSAA_WGSL);
+      expect(SSR_TRACE_MSAA_WGSL).toContain("var u_depth: texture_depth_multisampled_2d;");
+      expect(SSR_TRACE_MSAA_WGSL.replace("texture_depth_multisampled_2d", "texture_depth_2d")).toBe(SSR_TRACE_WGSL);
+      expect(out.sampleCount ?? 1).toBe(1);
+    } finally { f.device.dispose(); }
+  });
+
+  it("keeps MSAA without a sampleable depth texture only when SSR is the frame's only depth reader on WebGPU", () => {
+    const webgpu = { kind: "webgpu" } as never;
+    expect(webgpuMultisampledDepthServesPost(webgpu, { ssr: { intensity: 1 } } as never, 4)).toBe(true);
+    expect(webgpuMultisampledDepthServesPost(webgpu, { v2: true, pipeline: { ssr: {} } } as never, 4)).toBe(true);
+    expect(webgpuMultisampledDepthServesPost(webgpu, { v2: true, pipeline: { ssr: {}, ao: {} } } as never, 4)).toBe(false);
+    expect(webgpuMultisampledDepthServesPost(webgpu, { ssr: {}, ssao: {} } as never, 4)).toBe(false);
+    expect(webgpuMultisampledDepthServesPost(webgpu, { ssr: {} } as never, 1)).toBe(false);
+    expect(webgpuMultisampledDepthServesPost({ kind: "webgl2" } as never, { ssr: {} } as never, 4)).toBe(false);
+    expect(withWebgpuSsrFrame(webgpu, { cameraFrame: { projectionMatrix: PERSPECTIVE, projectionMatrixInverse: PERSPECTIVE, far: 100, projection: "perspective",
+      depth: { clipRange: "minus-one-to-one", clearValue: 1 } } } as never, { sampleCount: 4, multisampledDepthTexture: {} } as never,
+      [{ name: "ssr", options: {} }] as never)[0]!.options).toMatchObject({ webgpuFrame: { clipRange: "minus-one-to-one", clearDepth: 1 } });
   });
 });

@@ -21,7 +21,7 @@ import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shader
 import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
@@ -3825,7 +3825,9 @@ export class Renderer {
       if (nativeDofPlan && (sampleCount !== 1 || (format !== "rgba16f" && format !== "rgba32f"))) {
         throw new RenderDeviceError("Native depth of field requires single-sample HDR color and depth", "NATIVE_DOF_TARGET_UNSUPPORTED");
       }
-      let forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      // W3: a WebGPU 4x target whose only depth reader is SSR keeps MSAA and a plain depth attachment (the trace reads it).
+      const forwardDepthTexture = requiresDepthTexture && ((scalarVolumes.length > 0 && scalarVolumeToneMap) || !webgpuMultisampledDepthServesPost(this.device, postprocess, sampleCount, this.viewScopeId));
+      let forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan));
       // Native depth of field (5.0) owns colour attachment 1 for coverage, so
       // the 4.7.x selective signal (also attachment 1) declines on those frames.
       if (selectiveRequested && !selectiveEarlyReason && nativeDofPlan) selectiveEarlyReason = "native-depth-of-field";
@@ -4742,7 +4744,9 @@ export class Renderer {
       if (nativeDofPlan && (sampleCount !== 1 || (format !== "rgba16f" && format !== "rgba32f"))) {
         throw new RenderDeviceError("Native depth of field requires single-sample HDR color and depth", "NATIVE_DOF_TARGET_UNSUPPORTED");
       }
-      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      // W3: a WebGPU 4x target whose only depth reader is SSR keeps MSAA and a plain depth attachment (the trace reads it).
+      const forwardDepthTexture = requiresDepthTexture && ((scalarVolumes.length > 0 && scalarVolumeToneMap) || !webgpuMultisampledDepthServesPost(this.device, postprocess, sampleCount, this.viewScopeId));
+      const forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan));
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
       frameHooks.setForwardTarget(forwardTarget);

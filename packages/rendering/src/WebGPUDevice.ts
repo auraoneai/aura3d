@@ -75,7 +75,7 @@ import { createOutputWgsl } from "./output/ToneMappingOperators.wgsl";
 import { WebGPULinearDepth, linearizeWebGPUDepthSample, type WebGPULinearDepthDraw } from "./post/WebGPULinearDepth";
 import { WebGPUDepthOfField, nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions, type WebGPUDepthOfFieldDraw } from "./post/WebGPUDepthOfField";
 import { resolveWebGPUSsrOptions, validateWebGPUSsrFrame, webgpuSsrCompositeUniforms, webgpuSsrTraceUniforms } from "./post/WebGPUScreenSpaceReflections";
-import { SSR_COMPOSITE_WGSL, SSR_TRACE_WGSL } from "./post/shaders/ssr.wgsl";
+import { SSR_COMPOSITE_WGSL, SSR_TRACE_MSAA_WGSL, SSR_TRACE_WGSL } from "./post/shaders/ssr.wgsl";
 import { validateNativePostEffect, type NativePostEffect } from "./post/NativeEffectShaders";
 import { NATIVE_EFFECT_WGSL } from "./webgpu/NativeEffectShaders.wgsl";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
@@ -5254,8 +5254,11 @@ export class WebGPUDevice implements RenderDevice {
     const src = this.requireRenderTarget(source);
     const frame = validateWebGPUSsrFrame(options.webgpuFrame);
     const ssr = resolveWebGPUSsrOptions(options);
-    if (!src.nativeView || !src.nativeDepthTexture || !src.depthTexture || src.depthTexture.disposed || (src.sampleCount ?? 1) !== 1) {
-      throw new RenderDeviceError("WebGPU SSR requires a single-sample source with a sampleable depth attachment", "WEBGPU_SSR_DEPTH_REQUIRED", { label: src.label });
+    // A single-sample source exposes a sampleable depth texture; a 4x source keeps its multisampled attachment.
+    const multisampled = (src.sampleCount ?? 1) === 4;
+    const depthAlias = multisampled ? src.multisampledDepthTexture : src.depthTexture;
+    if (!src.nativeView || !src.nativeDepthTexture || !depthAlias || depthAlias.disposed || ((src.sampleCount ?? 1) !== 1 && !multisampled)) {
+      throw new RenderDeviceError("WebGPU SSR requires a source with a sampleable depth attachment", "WEBGPU_SSR_DEPTH_REQUIRED", { label: src.label });
     }
     const format = src.colorTexture.format;
     if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") {
@@ -5269,7 +5272,7 @@ export class WebGPUDevice implements RenderDevice {
       format: "rgba16f", depth: false, label: "a3d-webgpu-ssr-trace" });
     let out: RenderTarget | undefined;
     try {
-      this.runWebGPUFullscreenPass({ label: `webgpu-ssr-trace-${ssr.steps}`, fragment: SSR_TRACE_WGSL, entryPoint: "fs_ssr_trace",
+      this.runWebGPUFullscreenPass({ label: `webgpu-ssr-trace-${ssr.steps}${multisampled ? "-msaa" : ""}`, fragment: multisampled ? SSR_TRACE_MSAA_WGSL : SSR_TRACE_WGSL, entryPoint: "fs_ssr_trace",
         uniforms: webgpuSsrTraceUniforms(frame, ssr, src.width, src.height), views: [src.nativeView, depthView], target: trace });
       out = this.createRenderTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-ssr" });
       const traceView = this.requireRenderTarget(trace).nativeView;
