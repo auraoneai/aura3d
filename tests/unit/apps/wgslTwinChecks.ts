@@ -8,6 +8,9 @@ import type { AuraCustomMaterialSpec } from "../../../packages/engine/src/agent-
 /** Renderer-supplied members of the portable `aura` struct (always present). */
 const RENDERER_BUILTINS = new Set(["u_modelViewProjection", "u_modelMatrix", "u_normalMatrix"]);
 
+/** `defaultShaderLocation` in packages/rendering/src/VertexFormat.ts: where the device binds each geometry stream. */
+const GEOMETRY_LOCATIONS: Readonly<Record<string, number>> = { a_position: 0, a_normal: 1, a_uv: 2 };
+
 /** `@location(N) name: type` pairs of a WGSL entry point's parameter list (or of a struct body). */
 function locations(text: string): Map<string, { location: number; type: string }> {
   const out = new Map<string, { location: number; type: string }>();
@@ -27,12 +30,17 @@ export function checkWgslTwin(_name: string, spec: AuraCustomMaterialSpec, insta
     const pair = globalShaderSource(materialObject.shaderKey)!;
     expect(pair.webgpu).toBeDefined();
     const reflection = reflectShaderSources({ vertex: pair.vertex, fragment: pair.fragment });
-    // Vertex inputs: same names at the locations the device binds from the GLSL reflection.
+    // Vertex inputs: the names the GLSL program declares, at the locations the WebGPU device binds.
     const vsHeader = /@vertex\s+fn\s+vs_main\s*\(([\s\S]*?)\)\s*->/.exec(pair.webgpu!.vertex)![1]!;
     // (the shield's earlier twin names its position input `position`)
     const inputs = new Map([...locations(vsHeader)].map(([name, value]) => [name === "position" ? "a_position" : name, value]));
     expect(inputs.has("a_position")).toBe(true);
-    for (const [name, { location }] of inputs) expect([name, reflection.attributes.get(name)]).toEqual([name, location]);
+    // Geometry streams arrive at their fixed VertexFormat locations; instance columns at the program's (8-11) location.
+    for (const [name, { location }] of inputs) {
+      const expected = GEOMETRY_LOCATIONS[name] ?? reflection.attributes.get(name);
+      expect([name, location]).toEqual([name, expected]);
+      expect([name, reflection.attributes.has(name)]).toEqual([name, true]);
+    }
     const instanceInputs = [...inputs.keys()].filter((name) => name.startsWith("a_instanceMatrix"));
     expect(instanceInputs.length).toBe(instanced ? 4 : 0);
     // Inter-stage: every fragment input is a vertex output at the same location with the same type.

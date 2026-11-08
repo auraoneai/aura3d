@@ -165,7 +165,8 @@ void main() {
 
 /**
  * A3/W6: the WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL above (same pixels as before). Input locations
- * follow the GLSL reflection of the adapter's preamble: position, normal, then the four instance-matrix columns.
+ * follow the engine contract: geometry streams at their fixed locations (position 0, normal 1), the four instance-matrix
+ * columns at 8-11 (the adapter declares them there).
  */
 const WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
 struct TowerVarying {
@@ -178,10 +179,10 @@ struct TowerVarying {
 @vertex fn vs_main(
   @location(0) a_position: vec3<f32>,
   @location(1) a_normal: vec3<f32>,
-  @location(2) a_instanceMatrix0: vec4<f32>,
-  @location(3) a_instanceMatrix1: vec4<f32>,
-  @location(4) a_instanceMatrix2: vec4<f32>,
-  @location(5) a_instanceMatrix3: vec4<f32>
+  @location(8) a_instanceMatrix0: vec4<f32>,
+  @location(9) a_instanceMatrix1: vec4<f32>,
+  @location(10) a_instanceMatrix2: vec4<f32>,
+  @location(11) a_instanceMatrix3: vec4<f32>
 ) -> TowerVarying {
   var out: TowerVarying;
   let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);

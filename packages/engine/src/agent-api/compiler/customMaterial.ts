@@ -572,16 +572,19 @@ function instanceInputLines(userSource: string): string[] {
   if (!wantMatrix && !wantColor) return [];
   const lines = [
     "uniform float u_a3dInstancing;",
-    "in vec4 a_instanceMatrix0;",
-    "in vec4 a_instanceMatrix1;",
-    "in vec4 a_instanceMatrix2;",
-    "in vec4 a_instanceMatrix3;"
+    // A3/W6: the built-in programs' instance locations (8-11, colour 12). Implicit locations were assigned in declaration
+    // order (2.. after position/normal), which on WebGPU collides with the geometry's fixed stream locations (uv is 2), so
+    // a WGSL twin could not take the per-instance matrix. WebGL2 binds by name either way: same program, same pixels.
+    "layout(location = 8) in vec4 a_instanceMatrix0;",
+    "layout(location = 9) in vec4 a_instanceMatrix1;",
+    "layout(location = 10) in vec4 a_instanceMatrix2;",
+    "layout(location = 11) in vec4 a_instanceMatrix3;"
   ];
   if (wantMatrix) {
     lines.push("#define instanceMatrix (u_a3dInstancing > 0.5 ? mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3) : mat4(1.0))");
   }
   if (wantColor) {
-    lines.push("uniform float u_a3dInstanceColors;", "in vec4 a_instanceColor;");
+    lines.push("uniform float u_a3dInstanceColors;", "layout(location = 12) in vec4 a_instanceColor;");
     lines.push("#define instanceColor (u_a3dInstancing > 0.5 && u_a3dInstanceColors > 0.5 ? a_instanceColor : vec4(1.0))");
   }
   return lines;

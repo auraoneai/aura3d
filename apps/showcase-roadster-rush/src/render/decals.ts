@@ -167,10 +167,10 @@ struct DecalVarying {
 };
 @vertex fn vs_main(
   @location(0) a_position: vec3<f32>,
-  @location(1) a_instanceMatrix0: vec4<f32>,
-  @location(2) a_instanceMatrix1: vec4<f32>,
-  @location(3) a_instanceMatrix2: vec4<f32>,
-  @location(4) a_instanceMatrix3: vec4<f32>
+  @location(8) a_instanceMatrix0: vec4<f32>,
+  @location(9) a_instanceMatrix1: vec4<f32>,
+  @location(10) a_instanceMatrix2: vec4<f32>,
+  @location(11) a_instanceMatrix3: vec4<f32>
 ) -> DecalVarying {
   var out: DecalVarying;
   let m = aura.u_modelMatrix * mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);

@@ -109,10 +109,10 @@ void main() {
 function plumeWgslVertex(instanced: boolean): string {
   const inputs = instanced
     ? `@location(0) a_position: vec3<f32>,
-  @location(1) a_instanceMatrix0: vec4<f32>,
-  @location(2) a_instanceMatrix1: vec4<f32>,
-  @location(3) a_instanceMatrix2: vec4<f32>,
-  @location(4) a_instanceMatrix3: vec4<f32>`
+  @location(8) a_instanceMatrix0: vec4<f32>,
+  @location(9) a_instanceMatrix1: vec4<f32>,
+  @location(10) a_instanceMatrix2: vec4<f32>,
+  @location(11) a_instanceMatrix3: vec4<f32>`
     : "@location(0) a_position: vec3<f32>";
   const model = instanced
     ? "aura.u_modelMatrix * mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3)"
