@@ -52,7 +52,7 @@ async function build(opts: { shadow: boolean; withCaster: boolean }): Promise<{ 
   if (opts.withCaster) for (const n of body(0, 3.0, "caster")) s = s.add(n);
   const parked = num("hidden", 0);
   for (let i = 0; i < parked; i++) for (const n of body(0, -50, `parked${i}`)) s = s.add(n);
-  const app = createAuraApp(canvas, { scene: s, autoStart: false, resize: false, pixelRatio: 1, renderer: { quality: "high" } } as never);
+  const app = createAuraApp(canvas, { plainLook: false, scene: s, autoStart: false, resize: false, pixelRatio: 1, renderer: { quality: "high" } } as never);
   await app.ready();
   app.step(1 / 60);
   app.step(1 / 60);

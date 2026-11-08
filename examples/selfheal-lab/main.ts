@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   const canvas = document.querySelector<HTMLCanvasElement>("#world")!;
   canvas.width = 320;
   canvas.height = 180;
-  const app = createAuraApp(canvas, { scene: build(), autoStart: false, resize: false, pixelRatio: 1, renderer: { quality: "high" } } as never);
+  const app = createAuraApp(canvas, { plainLook: false, scene: build(), autoStart: false, resize: false, pixelRatio: 1, renderer: { quality: "high" } } as never);
   await app.ready();
   const start = (): void => {
     lab.running = true;

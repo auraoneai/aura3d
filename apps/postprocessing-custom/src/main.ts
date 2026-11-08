@@ -44,6 +44,8 @@ async function run(): Promise<void> {
   try {
     const app = createAuraApp(canvas, {
       diagnostics: { overlay: false, performancePanel: false },
+      // Tuned on the pre-N3 default output (ACES fit); keep it rather than the plain look path.
+      plainLook: false,
       scene: scene()
         .background("#0a0d12")
         .add(primitives.plane({

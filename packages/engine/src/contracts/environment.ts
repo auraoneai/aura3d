@@ -14,6 +14,8 @@ export interface AuraEnvironmentSourceResolution {
   readonly intensity: number; readonly diffuseIntensity: number; readonly specularIntensity: number; readonly rotation: number;
   readonly background: false | { readonly visible: boolean; readonly blurriness: number; readonly intensity: number; readonly rotation: number };
   readonly ambient: { readonly color: AuraColor; readonly intensity: number } | null;   // ADDITIVE to IBL (never replaces it)
+  /** N3 plain look: the environment keeps its reflections and binds no diffuse fill (authored hemisphere/ambient lights fill instead). */
+  readonly diffuseYield?: boolean;
   /**
    * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
    * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.

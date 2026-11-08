@@ -66,7 +66,8 @@ function around(target: AuraVec3, distance: number, azimuthDeg: number, elevatio
 }
 
 function group(name: string, children: readonly AuraSceneNode[]): AuraNodeBuilder<AuraGroupNode> {
-  return new AuraNodeBuilder<AuraGroupNode>({ kind: "group", name, children: [...children] } as AuraGroupNode);
+  // `lookStage` marks the rig/stage as a chosen look, so the N3 plain path (plainLook.ts) leaves its scene alone.
+  return new AuraNodeBuilder<AuraGroupNode>({ kind: "group", name, children: [...children], lookStage: true } as AuraGroupNode);
 }
 
 function heroLights(options: AuraHeroRigOptions): AuraLightNode[] {

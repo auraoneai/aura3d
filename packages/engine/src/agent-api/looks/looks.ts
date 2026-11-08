@@ -32,6 +32,7 @@ import { resolveQrFlags } from "../../contracts/flags.js";
 import { lookPresets, type AuraLookPreset } from "./lookPresets.js";
 import { fogDensityForExtent, fogForExtent, heroRig, heroStage } from "./lookStage.js";
 import { authoredLookIds } from "./lookLint.js";
+import { PLAIN_LOOK_GROUP } from "./plainLook.js";
 
 export interface AuraLookBuildOptions {
   /** Default "auto": v1 iff every required slot is provided and its flag is on. */
@@ -724,11 +725,48 @@ export function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPrese
   return found;
 }
 
+/** `looks.preset("plain")` defaults: a white key and a white/grey hemisphere that light a lit face close to its albedo. */
+const PLAIN_KEY = { elevationDeg: 50, azimuthDeg: 35, intensity: 2.6, color: "#ffffff" } as const;
+const PLAIN_FILL = { skyColor: "#ffffff", groundColor: "#9a9a9a", intensity: 1 } as const;
+/** Reflection strength of the plain look's neutral room: at 1 it greys rough dielectrics (garden ground S 0.41 -> 0.32). */
+const PLAIN_REFLECTIONS = 0.5;
+
+/**
+ * N3: the plain look. Authored colours render close to what was asked for: a shadowed white key, a hemisphere fill, a
+ * neutral room for reflections only (it yields its diffuse fill to the hemisphere) and the PBR Neutral output
+ * (looks/plainLook.ts applies it when the app authors no `output`). No grade, bloom, fog or HDRI. Honoured overrides:
+ * `sun`, `key`, `environmentIntensity` (reflection strength) and `background`; the others are ignored.
+ */
+function plainLook(overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode> {
+  const clamped = clampLookOverrides(overrides);
+  const key = clamped?.key;
+  const children: AuraSceneNode[] = [
+    environments.neutral({ name: "look reflections neutral", intensity: clamped?.environmentIntensity ?? PLAIN_REFLECTIONS }).toJSON(),
+    lights.hemisphere({ name: "look fill hemisphere", ...PLAIN_FILL }).toJSON(),
+    lights.directional({
+      name: "look key light",
+      position: sunPosition(clamped?.sun?.elevationDeg ?? PLAIN_KEY.elevationDeg, clamped?.sun?.azimuthDeg ?? PLAIN_KEY.azimuthDeg),
+      target: [0, 0, 0],
+      intensity: key?.intensity ?? PLAIN_KEY.intensity,
+      color: key?.color ?? PLAIN_KEY.color,
+      shadow: key?.shadow ?? true
+    }).toJSON()
+  ];
+  const background = clamped?.background !== undefined && clamped.background !== "look" ? clamped.background : undefined;
+  return new AuraNodeBuilder<AuraGroupNode>({
+    kind: "group",
+    name: PLAIN_LOOK_GROUP,
+    ...(background !== undefined ? { background } : {}),
+    children
+  } as AuraGroupNode);
+}
+
 function presetImpl(
-  id: AuraLookId,
+  id: AuraLookId | "plain",
   overrides?: AuraLookOverrides,
   options?: AuraLookBuildOptions
 ): AuraNodeBuilder<AuraGroupNode> | AuraLookNode {
+  if (id === "plain") return plainLook(overrides);
   const preset = describeOrThrow(id);
   const clamped = clampLookOverrides(overrides);
   const expansion = resolveLookExpansion(options);
@@ -767,9 +805,9 @@ export const looks = {
    * Callers that pass `options` get the union type (v1 emission is opt-in).
    */
   preset: presetImpl as {
-    (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+    (id: AuraLookId | "plain", overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
     (
-      id: AuraLookId,
+      id: AuraLookId | "plain",
       overrides: AuraLookOverrides | undefined,
       options: AuraLookBuildOptions
     ): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;

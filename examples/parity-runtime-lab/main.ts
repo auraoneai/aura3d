@@ -121,7 +121,7 @@ async function shot(app: AuraApp): Promise<Shot> {
 async function mount(label: string, build: () => ReturnType<typeof scene>): Promise<AuraApp> {
   const canvas = addCanvas(label);
   canvas.dataset.frame = label;
-  const app = createAuraApp(canvas, { scene: build(), pixelRatio: 1, resize: false });
+  const app = createAuraApp(canvas, { plainLook: false, scene: build(), pixelRatio: 1, resize: false });
   presented.set(app, canvas);
   await app.ready();
   const start = Date.now();
