@@ -206,7 +206,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       effect: "volumetric-fog",
       name: options.name ?? "volumetric fog inscatter",
       density: options.density ?? 0.18,
-      color: options.color === undefined ? "#6f84b9" : fogColor(options.color, "effects.volumetricFog({ color })") as string,
+      // `== null` keeps the old `options.color ?? "#6f84b9"` default for an explicit null.
+      color: options.color == null ? "#6f84b9" : fogColor(options.color, "effects.volumetricFog({ color })") as string,
       intensity: options.intensity ?? 0.7,
       ...(options.volumetricQuality ? { volumetricQuality: options.volumetricQuality } : {}),
       ...(options.lightPosition ? { lightPosition: options.lightPosition } : {}),

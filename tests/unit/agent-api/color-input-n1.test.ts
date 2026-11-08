@@ -130,6 +130,7 @@ describe("N1 API entry points", () => {
     expectInvalid(() => vfxEffectBuilders.fog({ color: "foggy" }), "foggy", /effects\.fog\(\{ color \}\)/);
     const vol = (options: Record<string, unknown>) => (vfxEffectBuilders.volumetricFog(options).toJSON() as { color?: unknown }).color;
     expect(vol({})).toBe("#6f84b9");
+    expect(vol({ color: null })).toBe("#6f84b9");
     expect(vol({ color: "#123456" })).toBe("#123456");
     expect(vol({ color: "rgb(255, 0, 0)" })).toBe("#ff0000");
     expectInvalid(() => vfxEffectBuilders.volumetricFog({ color: "misty" }), "misty", /volumetricFog/);
