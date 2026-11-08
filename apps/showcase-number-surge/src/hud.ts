@@ -26,7 +26,17 @@ export const HUD_PAIRS: readonly { readonly name: string; readonly ink: string; 
   { name: "results-value", ink: "#3ef2ff", paper: "#23224c" },
   { name: "results-label", ink: "#eaf6ff", paper: "#23224c" },
   { name: "corner-button", ink: "#eaf6ff", paper: "#1d1c44" },
-  { name: "pause-heading", ink: "#ffd84d", paper: "#191840" }
+  { name: "pause-heading", ink: "#ffd84d", paper: "#191840" },
+  { name: "howto-title", ink: "#3ef2ff", paper: "#1e1d43" },
+  { name: "howto-section", ink: "#ffd84d", paper: "#1e1d43" },
+  { name: "howto-body", ink: "#eaf6ff", paper: "#1e1d43" },
+  { name: "howto-body-dim", ink: "#a9b8d8", paper: "#1e1d43" },
+  { name: "howto-key-chip", ink: "#eaf6ff", paper: "#23224c" },
+  { name: "howto-swatch-gate-good", ink: "#ffffff", paper: "#0d3540" },
+  { name: "howto-swatch-gate-bad", ink: "#ffffff", paper: "#381131" },
+  { name: "howto-swatch-wall", ink: "#ffd84d", paper: "#5a2d91" },
+  { name: "howto-swatch-ball", ink: "#10102e", paper: "#3ef2ff" },
+  { name: "howto-button-ghost", ink: "#eaf6ff", paper: "#1d1c44" }
 ];
 
 export function auditHudContrast(): { name: string; ratio: number }[] {
