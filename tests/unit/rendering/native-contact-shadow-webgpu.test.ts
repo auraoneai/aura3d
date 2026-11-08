@@ -290,8 +290,9 @@ describe("native WebGPU contact shadow producer", () => {
     expect(ctx.blackboard.has("prd02.contactShadowMask")).toBe(false);
     expect(f.native.queue.submit).not.toHaveBeenCalled();
     delete (f.device as unknown as { drawChecked?: unknown }).drawChecked;
-    const reversed = { ...ctx, camera: { ...ctx.camera!, depth: { requestedMode: "reversed", mode: "reversed", clipRange: "minus-one-to-one", clearValue: 0, compare: "greater-equal", biasSign: -1 } } } as FrameContributorContext;
-    expect(() => contributor.passes!("shadows", reversed)[0]!.execute({ device: f.device, width: 32, height: 24 })).toThrow(/standard depth/i);
+    // Reversed depth is decoded by the mask; logarithmic depth is not projective and is still refused before drawing.
+    const logarithmic = { ...ctx, camera: { ...ctx.camera!, depth: { requestedMode: "logarithmic", mode: "logarithmic", clipRange: "minus-one-to-one", clearValue: 1, compare: "less-equal", biasSign: 1 } } } as FrameContributorContext;
+    expect(() => contributor.passes!("shadows", logarithmic)[0]!.execute({ device: f.device, width: 32, height: 24 })).toThrow(/standard or reversed depth/i);
     expect(f.native.queue.submit).not.toHaveBeenCalled();
     pass.execute({ device: f.device, width: 32, height: 24 });
     expect(resolveContactShadowMask(scope(ctx))).toBeDefined();
