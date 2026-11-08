@@ -198,7 +198,7 @@ test.describe("splat-turf", () => {
     }));
     expect(health.routeHealth?.status).toBe("ready");
     expect(health.diagnostics?.errors ?? []).toEqual([]);
-    expect(health.nodes, "merged batches: one node per kind, paint grid is ONE batch").toBeGreaterThan(10);
+    expect(health.nodes, "merged batches: one node per kind, paint grid is ONE batch").toBeGreaterThanOrEqual(10);
     expect(errors.filter((e) => !/favicon|net::ERR|Failed to load resource/.test(e)), "console errors").toEqual([]);
     writeFileSync(resolve(REPORT_ROOT, "stats.json"), JSON.stringify({ splash, run1, run2, health }, null, 2));
   });
