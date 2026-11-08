@@ -255,8 +255,9 @@ describe("generated forward clipping", () => {
       // the native billboard), then rejected because an instance-only u_spriteMode override does not select that variant.
       // Without the flag nothing is compiled. Either way nothing is drawn.
       if (parity) {
-        expect(device.sources.length).toBeLessThanOrEqual(1);
-        for (const source of device.sources) expect(source.generatedProgram?.features.features["prd15.paritySprite"]).not.toBe(true);
+        expect(device.sources).toHaveLength(1);
+        expect(device.sources[0]?.generatedProgram?.features.features).toMatchObject({ "a3d.nativePrimitive": "triangles" });
+        expect(device.sources[0]?.generatedProgram?.features.features["prd15.paritySprite"]).not.toBe(true);
       } else expect(device.sources).toHaveLength(0);
       expect(device.drawCommands).toHaveLength(0);
     } finally { geometry.dispose(); material.dispose(); device.dispose(); }
