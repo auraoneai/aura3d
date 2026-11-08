@@ -64,7 +64,7 @@ void main() {
  * a cool front fill, a warm-white fresnel rim (rounded toy plastic), and exponential distance fog that also hazes
  * anything far below the road into the cloud sea. Colours are linear; the engine encodes to sRGB on output.
  */
-const FRAGMENT = (tone: boolean): string => /* glsl */ `
+const FRAGMENT = (tone: boolean, stripes = false): string => /* glsl */ `
 in vec3 vNormal;
 in vec3 vWorld;
 in vec2 vUv;
@@ -82,6 +82,7 @@ void main() {
   if (dot(N, toCam) < 0.0) N = -N;
   vec3 V = normalize(toCam);
   vec3 base = baseColor${tone ? " * vTone" : ""};
+${stripes ? "  base = mix(stripeA, stripeB, step(0.5, fract(vWorld.z / stripePeriod)));" : ""}
   vec3 skyC = vec3(0.86, 0.93, 1.0);
   vec3 groundC = vec3(0.36, 0.30, 0.46);
   vec3 hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.46;
@@ -101,6 +102,8 @@ void main() {
 }`;
 
 export interface ToyToonOptions {
+  /** Candy stripes along world z: [colour A, colour B, period]; replaces the base colour. */
+  readonly stripes?: readonly [Rgb, Rgb, number];
   readonly emissive?: Rgb;
   readonly rim?: number;
   readonly tone?: boolean;
@@ -112,7 +115,7 @@ export interface ToyToonOptions {
 export function toyToonSpec(base: Rgb, options: ToyToonOptions = {}): CustomSpec {
   const tone = options.tone ?? false;
   return {
-    glsl: { vertex: VERTEX(tone), fragment: FRAGMENT(tone) },
+    glsl: { vertex: VERTEX(tone), fragment: FRAGMENT(tone, options.stripes !== undefined) },
     uniforms: {
       baseColor: { type: "color3", value: [...base] },
       emissive: { type: "color3", value: [...(options.emissive ?? [0, 0, 0])] },
@@ -121,7 +124,12 @@ export function toyToonSpec(base: Rgb, options: ToyToonOptions = {}): CustomSpec
       fogColor: { type: "color3", value: [...L(SCENERY.fog)] },
       fogLow: { type: "color3", value: [...L(SCENERY.fogLow)] },
       fogStart: { type: "f32", value: options.fogStart ?? SCENERY.fogStart },
-      fogDensity: { type: "f32", value: SCENERY.fogDensity }
+      fogDensity: { type: "f32", value: SCENERY.fogDensity },
+      ...(options.stripes ? {
+        stripeA: { type: "color3" as const, value: [...options.stripes[0]] },
+        stripeB: { type: "color3" as const, value: [...options.stripes[1]] },
+        stripePeriod: { type: "f32" as const, value: options.stripes[2] }
+      } : {})
     },
     side: "double"
   };
@@ -395,15 +403,15 @@ function rockMesh(radius: number, depth: number, seed: number): ToneMesh {
 /** Grass cap: a slightly domed disc with a soft rounded lip, plus a thin earth band under it. */
 function grassCap(radius: number, seed: number): ToneMesh {
   const grass = SCENERY.grass[seed % SCENERY.grass.length] as string;
-  const lip = frustumMesh(radius * 1.02, radius * 0.97, -0.35, 0.18, 22, false);
-  const dome = xform(sphereMesh(1, 22, 6), { sx: radius * 0.97, sy: 0.32, sz: radius * 0.97, ty: 0.12 });
-  const earth = frustumMesh(radius * 0.98, radius * 1.02, -0.7, -0.33, 22, false);
+  const lip = frustumMesh(radius * 1.02, radius * 0.97, -0.35, 0.18, 18, false);
+  const dome = xform(sphereMesh(1, 18, 5), { sx: radius * 0.97, sy: 0.32, sz: radius * 0.97, ty: 0.12 });
+  const earth = frustumMesh(radius * 0.98, radius * 1.02, -0.7, -0.33, 18, false);
   return mergeToned([toned(dome, grass), toned(lip, grass), toned(earth, SCENERY.rockTop)]);
 }
 
 function lollipopTree(x: number, z: number, h: number, crown: string, scale = 1): ToneMesh {
   const trunk = xform(frustumMesh(0.16, 0.11, 0, h, 8), { tx: x, tz: z, sx: scale, sy: scale, sz: scale });
-  const ball = xform(sphereMesh(0.75, 14, 10), { tx: x, ty: (h + 0.45) * scale, tz: z, sx: scale, sy: scale * 0.92, sz: scale });
+  const ball = xform(sphereMesh(0.75, 12, 8), { tx: x, ty: (h + 0.45) * scale, tz: z, sx: scale, sy: scale * 0.92, sz: scale });
   return mergeToned([toned(trunk, SCENERY.trunk), toned(ball, crown)]);
 }
 
@@ -426,7 +434,7 @@ export function islandMesh(variant: IslandVariant, seed: number): ToneMesh {
   const crown = (i: number): string => SCENERY.crowns[(i + seed) % SCENERY.crowns.length] as string;
   if (variant === "monument") {
     parts.push(toned(xform(boxMesh(1.7, 1.7, 1.7), { ty: 0.95, ry: 0.5 }), toy(1)));
-    parts.push(toned(sphereMesh(0.9, 18, 12, 0, 2.7, 0), toy(0)));
+    parts.push(toned(sphereMesh(0.9, 14, 10, 0, 2.7, 0), toy(0)));
     parts.push(toned(xform(coneMesh(0.75, 1.4, 4, 0), { tx: 1.7, ty: 0.75, tz: 0.8, ry: 0.3 }), toy(2)));
     parts.push(toned(sphereMesh(0.32, 10, 8, 0.9, 0.35, -1.6), pastel(1)));
     parts.push(lollipopTree(-1.8, 0.6, 1.3, crown(0)));
@@ -439,7 +447,7 @@ export function islandMesh(variant: IslandVariant, seed: number): ToneMesh {
     parts.push(toned(sphereMesh(0.45, 12, 8, 1.4, 0.4, -1.2), toy(0)));
     parts.push(toned(xform(boxMesh(0.7, 0.7, 0.7), { tx: 2.0, ty: 0.45, tz: -0.2, ry: 0.7 }), toy(1)));
   } else if (variant === "arch") {
-    parts.push(toned(xform(torusMesh(1.6, 0.42, 10, 28), { ty: 0.3 }), pastel(0)));
+    parts.push(toned(xform(torusMesh(1.6, 0.42, 8, 24), { ty: 0.3 }), pastel(0)));
     parts.push(toned(xform(boxMesh(1.0, 1.0, 1.0), { tx: 1.9, ty: 0.6, tz: 1.0, ry: 0.4 }), toy(1)));
     parts.push(toned(sphereMesh(0.55, 14, 10, -2.0, 0.65, 0.9), toy(0)));
     parts.push(toned(xform(coneMesh(0.6, 1.2, 4, 0), { tx: -1.2, ty: 0.7, tz: -1.6 }), toy(2)));
@@ -457,13 +465,13 @@ export function islandMesh(variant: IslandVariant, seed: number): ToneMesh {
 }
 
 /** A pastel puff cloud: five squashed spheres, flat-bottomed. */
-export function puffMesh(seed: number): ToneMesh {
+export function puffMesh(seed: number, widthSegments = 12, heightSegments = 8): ToneMesh {
   const parts: MeshData[] = [];
   const n = 5;
   for (let i = 0; i < n; i++) {
     const x = (i - (n - 1) / 2) * 1.5 + (jitter(i, seed) - 0.5) * 0.8;
     const r = 1.2 + jitter(i, seed + 3) * 1.1 - Math.abs(i - (n - 1) / 2) * 0.25;
-    parts.push(sphereMesh(r, 14, 9, x, r * 0.35, (jitter(i, seed + 5) - 0.5) * 1.2));
+    parts.push(sphereMesh(r, widthSegments, heightSegments, x, r * 0.35, (jitter(i, seed + 5) - 0.5) * 1.2));
   }
   const m = mergeMeshes(parts);
   for (let i = 1; i < m.positions.length; i += 3) m.positions[i] = Math.max(-0.1, m.positions[i] as number);
@@ -484,7 +492,7 @@ export function cloudSeaTile(w: number, d: number, seed: number): ToneMesh {
     const x = side * (3 + Math.pow(jitter(i, seed), 0.8) * (w / 2 - 3));
     const z = (jitter(i, seed + 9) - 0.5) * d;
     const s = 2.2 + jitter(i, seed + 4) * 2.6;
-    const p = puffMesh(seed * 31 + i);
+    const p = puffMesh(seed * 31 + i, 10, 7);
     parts.push({ mesh: xform(p.mesh, { tx: x, tz: z, sx: s, sy: s * 0.55, sz: s, ry: jitter(i, seed + 7) * 6.28 }), tones: p.tones });
   }
   return mergeToned(parts);
@@ -499,16 +507,21 @@ export function pillarMesh(): ToneMesh {
   return mergeToned(parts);
 }
 
-/** Road skirt for one 2 m segment: the bridge deck's side fascia (below the road surface) and a raised curb each side. */
-export const SKIRT_DIMS = { depth: 0.75, curbWidth: 0.32, curbHeight: 0.16 } as const;
+/**
+ * Road skirt: the bridge deck's side fascia (below the road surface) and a raised curb each side, as one long static
+ * strip from `zNear` to `zFar`. Candy stripes come from the stripe program (world z), and the node only shifts by the
+ * road scroll modulo the stripe period, so the stripes travel with the road without per-segment geometry.
+ */
+export const SKIRT_DIMS = { depth: 0.75, curbWidth: 0.32, curbHeight: 0.16, zNear: 24, zFar: -232, period: 4 } as const;
 
 export function skirtMesh(): MeshData {
-  const w = ROAD_DIMS.width, len = ROAD_DIMS.length, { depth, curbWidth, curbHeight } = SKIRT_DIMS;
+  const w = ROAD_DIMS.width, { depth, curbWidth, curbHeight, zNear, zFar } = SKIRT_DIMS;
+  const len = zNear - zFar, cz = (zNear + zFar) / 2;
   const curbX = w / 2 + curbWidth / 2;
   return mergeMeshes([
-    boxMesh(w + curbWidth * 2, depth, len, 0, -depth / 2 - 0.02, 0),
-    boxMesh(curbWidth, curbHeight, len * 0.999, -curbX, curbHeight / 2 - 0.02, 0),
-    boxMesh(curbWidth, curbHeight, len * 0.999, curbX, curbHeight / 2 - 0.02, 0)
+    boxMesh(w + curbWidth * 2, depth, len, 0, -depth / 2 - 0.02, cz),
+    boxMesh(curbWidth, curbHeight, len, -curbX, curbHeight / 2 - 0.02, cz),
+    boxMesh(curbWidth, curbHeight, len, curbX, curbHeight / 2 - 0.02, cz)
   ]);
 }
 
@@ -562,8 +575,8 @@ export const PIECES: readonly ScenePiece[] = (() => {
     const side = i % 2 === 0 ? 1 : -1;
     out.push({
       id: `puff-${i}`, variant: "puff", layer,
-      x: side * (layer === 0 ? 9 + jitter(i, 41) * 14 : 26 + jitter(i, 42) * 20),
-      y: layer === 0 ? 3 + jitter(i, 43) * 9 : 10 + jitter(i, 44) * 12,
+      x: side * (layer === 0 ? 15 + jitter(i, 41) * 12 : 28 + jitter(i, 42) * 20),
+      y: layer === 0 ? 7 + jitter(i, 43) * 8 : 11 + jitter(i, 44) * 12,
       z0: (i / 10) * LAYERS[layer].span + jitter(i, 45) * 12,
       scale: layer === 0 ? 0.6 + jitter(i, 46) * 0.5 : 1.1 + jitter(i, 47) * 0.8,
       yaw: jitter(i, 48) * 0.6 - 0.3
@@ -589,6 +602,7 @@ export function sceneryProgramSpecs(): readonly { readonly name: string; readonl
     { name: "toy-sky", spec: toySkySpec() },
     { name: "toy-toon", spec: toyToonSpec([1, 1, 1]) },
     { name: "toy-toon-tone", spec: toyToonSpec([1, 1, 1], { tone: true }) },
+    { name: "toy-toon-stripes", spec: toyToonSpec([1, 1, 1], { stripes: [[1, 0, 0], [1, 1, 1], 4] }) },
     { name: "contact", spec: contactSpec() }
   ];
 }

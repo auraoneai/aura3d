@@ -5,7 +5,7 @@
  * on cream, day gradient sky, hole rims glow on match, morph burst + shape-confetti trail (the trail is
  * presentation-only and draws from its own RNG stream, never the gameplay stream).
  */
-import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import {
   Batch, Slots, GameRng, scrollFrameZ, flatSpec, shadowSpec, hexToLinear,
   type CustomSpec, type MeshData, type Rgb
@@ -14,7 +14,7 @@ import { CONFIG, POOL, type ShapeShiftSim, type Segment, type Token, type WallRo
 import { LOOK, SHAPE_LINEAR, ROAD_LINEAR, WALL_LINEAR, TOKEN_LINEAR, SUN_DIRECTION } from "./look";
 import {
   PIECES, PILLAR_COUNT, PILLAR_SPACING, SEA_TILE, SCENERY, cloudSeaTile, contactSpec, ringSpec, islandMesh, pieceZ, pillarMesh, puffMesh,
-  sceneryProgramSpecs, skirtMesh, tonedGeometry, toySkySpec, toyToonSpec, wallContactMesh
+  sceneryProgramSpecs, skirtMesh, SKIRT_DIMS, tonedGeometry, toySkySpec, toyToonSpec, wallContactMesh
 } from "./scenery";
 import {
   playerMesh, wallCellMesh, rimMesh, tokenMesh, roadSegmentMesh, roadTones, confettiMesh, sphereMesh, groundQuad, mergeMeshes
@@ -30,10 +30,9 @@ const TRAIL_MAX = 24;
 const GAME_FOG_START = 48;
 const CLOUD_MAX = 8;
 const PLAYER_BASE_Y = [0.55, 0.48, 0.55] as const;
-export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "clouds", "road-skirt", "wall-contact"] as const;
+export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "clouds", "wall-contact"] as const;
 export const PLAYER_IDS = ["player-0", "player-1", "player-2"] as const;
 
-const SKIRT_TONES: readonly Rgb[] = [hexToLinear(SCENERY.coral), hexToLinear(SCENERY.cream)];
 
 export type PostMode = "lite" | "full" | "bloom" | "off";
 
@@ -108,8 +107,9 @@ export function buildWorld(options: WorldOptions): World {
 
   const road = new Batch(roadSegmentMesh(), POOL.segments, roadTones());
   addBatch("road", road, toyToonSpec(ROAD_LINEAR, { tone: true, rim: 0, fogStart: GAME_FOG_START }));
-  const skirt = new Batch(skirtMesh(), POOL.segments, [1, 1, 1]);
-  addBatch("road-skirt", skirt, toyToonSpec([1, 1, 1], { tone: true, rim: 0.12, fogStart: GAME_FOG_START }));
+  add("road-skirt", skirtMesh(), toyToonSpec([1, 1, 1], {
+    rim: 0.12, fogStart: GAME_FOG_START, stripes: [hexToLinear(SCENERY.coral), hexToLinear(SCENERY.cream), SKIRT_DIMS.period]
+  }));
 
   const walls = new Batch(wallCellMesh(), POOL.rows * 3);
   addBatch("walls", walls, toyToonSpec(WALL_LINEAR, { rim: 0.1, fogStart: GAME_FOG_START }));
@@ -137,15 +137,20 @@ export function buildWorld(options: WorldOptions): World {
   /* Toybox Skyway scenery (presentation only, scenery.ts): cloud sea, bridge pillars, floating toy islands. */
   const seaTile = cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3);
   for (let i = 0; i < SEA_TILE.count; i++) {
-    builder.add(geometry.custom(tonedGeometry(i === 0 ? seaTile : cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3 + i)), { name: `sea-${i}`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.25 })) }).runtime({ id: `sea-${i}` }));
+    // Static and without a runtime id: the renderer snapshots every runtime node each frame and re-derives its bounds
+    // from all of its vertices, and the sea tiles hold most of the scenery's vertices.
+    builder.add(geometry.custom(tonedGeometry(i === 0 ? seaTile : cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3 + i)), { name: `sea-${i}`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.25 })) })
+      .position(0, SEA_TILE.y, SEA_TILE.d * 0.6 - (i + 0.5) * SEA_TILE.d));
   }
   const pillar = pillarMesh();
   for (let i = 0; i < PILLAR_COUNT; i++) {
-    builder.add(geometry.custom(tonedGeometry(pillar), { name: `pillar-${i}`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.15 })) }).runtime({ id: `pillar-${i}` }));
+    builder.add(group(`pillar-${i}`, [geometry.custom(tonedGeometry(pillar), { name: `pillar-${i}-mesh`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.15 })) })]).runtime({ id: `pillar-${i}` }));
   }
   for (const piece of PIECES) {
     const mesh = piece.variant === "puff" ? puffMesh(piece.z0 | 0) : islandMesh(piece.variant, Math.round(piece.z0) % 7);
-    builder.add(geometry.custom(tonedGeometry(mesh), { name: piece.id, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: piece.variant === "puff" ? 0.35 : 0.2 })) }).runtime({ id: piece.id }));
+    // A runtime group around a static mesh: the renderer snapshots each runtime node every frame and re-derives a mesh
+    // node's bounds from all of its vertices, while a group's snapshot is cheap; moving the group moves the mesh.
+    builder.add(group(piece.id, [geometry.custom(tonedGeometry(mesh), { name: `${piece.id}-mesh`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: piece.variant === "puff" ? 0.35 : 0.2 })) })]).runtime({ id: piece.id }));
   }
 
   /* Post: gentle bloom on the sun glow, glowing rims and confetti; warm grade; soft vignette. */
@@ -210,11 +215,7 @@ export function buildWorld(options: WorldOptions): World {
           const z = ((((i * PILLAR_SPACING + scrollNow) % pillarSpan) + pillarSpan) % pillarSpan) - pillarSpan + 30;
           node(`pillar-${i}`).setPosition(0, 0, z);
         }
-        const seaSpan = SEA_TILE.d * SEA_TILE.count;
-        for (let i = 0; i < SEA_TILE.count; i++) {
-          const z = ((((i * SEA_TILE.d + scrollNow * 0.6) % seaSpan) + seaSpan) % seaSpan) - seaSpan + SEA_TILE.d * 0.75;
-          node(`sea-${i}`).setPosition(0, SEA_TILE.y, z);
-        }
+
       }
 
       function writeParticle(i: number, x: number, y: number, z: number, yaw: number, scale: number, color: string, rgb: Rgb): void {
@@ -240,20 +241,14 @@ export function buildWorld(options: WorldOptions): World {
         lastDistance = o.distance;
 
         /* road (scrolling frame) */
-        segSlots.retain(simNow.segments, (slot) => { road.collapse(slot); skirt.collapse(slot); });
+        segSlots.retain(simNow.segments, (slot) => road.collapse(slot));
         for (const seg of simNow.segments) {
           const { slot, fresh } = segSlots.use(seg);
-          if (slot >= 0 && fresh) {
-            const z = scrollFrameZ(seg.z, scroll);
-            road.place(slot, 0, 0, z, 0, 1, 1, 1);
-            skirt.place(slot, 0, 0, z, 0, 1, 1, 1);
-            skirt.setTone(slot, (Math.round(seg.z / CONFIG.SEGMENT_LENGTH) & 1) === 0 ? SKIRT_TONES[0] : SKIRT_TONES[1]);
-          }
+          if (slot >= 0 && fresh) road.place(slot, 0, 0, scrollFrameZ(seg.z, scroll), 0, 1, 1, 1);
         }
         node("road").setPosition(0, 0, scroll);
-        node("road-skirt").setPosition(0, 0, scroll);
+        node("road-skirt").setPosition(0, 0, ((scroll % SKIRT_DIMS.period) + SKIRT_DIMS.period) % SKIRT_DIMS.period);
         road.flush(node("road"), false);
-        skirt.flush(node("road-skirt"));
 
         /* wall cells + shape rims (scrolling frame); rims glow when they fit the current shape */
         rowSlots.retain(simNow.rows, (slot) => {
@@ -389,7 +384,7 @@ export function buildWorld(options: WorldOptions): World {
         }, { cut: false });
       }
 
-      const batches = [road, walls, rims, tokens, particles, clouds, skirt, contact];
+      const batches = [road, walls, rims, tokens, particles, clouds, contact];
       function warm(on: boolean): void {
         const parkY = -50, parkZ = -60;
         for (const id of ["shield", "wildcard-ring", ...PLAYER_IDS]) {
@@ -403,13 +398,12 @@ export function buildWorld(options: WorldOptions): World {
           tokens.place(0, 4, parkY, parkZ, 0, 1, 1, 1);
           particles.place(0, 6, parkY, parkZ, 0, 0.2, 0.2, 0.2);
           clouds.place(0, 8, parkY, parkZ, 0, 1, 1, 1);
-          skirt.place(0, 10, parkY, parkZ, 0, 1, 1, 1);
           contact.place(0, 12, parkY, parkZ, 0, 1, 1, 1);
           for (const b of batches) b.flush(node(BATCH_IDS[batches.indexOf(b)] as string));
         } else {
           for (const id of ["shield", "wildcard-ring", ...PLAYER_IDS]) node(id).setVisible(false);
           road.collapse(0); walls.collapse(0); rims.collapse(0); tokens.collapse(0); particles.collapse(0); clouds.collapse(0);
-          skirt.collapse(0); contact.collapse(0);
+          contact.collapse(0);
           for (const b of batches) b.flush(node(BATCH_IDS[batches.indexOf(b)] as string));
           cloudsPlaced = false;
         }
