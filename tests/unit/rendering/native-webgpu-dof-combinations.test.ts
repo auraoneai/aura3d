@@ -181,11 +181,49 @@ describe("native WebGPU depth of field with registered post passes", () => {
     } finally { f.close(); }
   });
 
-  it("still rejects a pass anchored before depth of field", async () => {
+  it("runs a pass anchored before depth of field ahead of it, once", async () => {
     release = registerPostPass(pass("after-depth") as never);
     const f = await fixture();
     try {
-      expect(() => f.renderer.render(f.source, f.camera)).toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
+      f.renderer.render(f.source, f.camera);
+      const names = drawn(f.passes);
+      expect(names.filter(name => name === "fs_test")).toHaveLength(1);
+      expect(names.indexOf("fs_test")).toBeLessThan(names.indexOf("fs_linear_depth"));
+      expect(names.indexOf("fs_dof_composite")).toBeLessThan(names.indexOf("fs_tone"));
+    } finally { f.close(); }
+  });
+
+  it("skips a pre-DoF pass whose enabled gate is off this frame (an underwater-only pass above water)", async () => {
+    release = registerPostPass({ ...pass("after-depth"), enabled: () => false } as never);
+    const f = await fixture();
+    try {
+      const diagnostics = f.renderer.render(f.source, f.camera);
+      expect(diagnostics.nativeDepthOfField).toMatchObject({ effect: "submitted" });
+      expect(drawn(f.passes)).not.toContain("fs_test");
+    } finally { f.close(); }
+  });
+});
+
+describe("native WebGPU depth of field after S2 AO, S3 SSR and S4 god rays (WebGL2 v2 order)", () => {
+  const ao = { radius: 0.5, intensity: 0.8, falloff: 1, directions: 4, steps: 4, multiBounce: true, fallbackStrength: 0.1 };
+  const godRays = { samples: 16, decay: 0.94, weight: 0.7, color: [1, 0.9, 0.8], intensity: 0.4, lightDirection: [0, 0.3, -1] };
+
+  it.each([1, 4] as const)("runs AO, SSR, god rays, then DoF on their output, with the legacy twins dropped (samples=%s)", async sampleCount => {
+    const f = await fixture({ ao, ssr: { intensity: 0.5 }, godRays, lut: { status: "pending", source: "x.cube" }, ...(sampleCount === 4 ? msaa : {}) },
+      { sampleCount, ssao: { radius: 3, intensity: 0.4, bias: 0.025 }, ssr: { intensity: 0.5 }, depthOfField: { focusDepth: 0.2, focusRange: 0.1, maxRadius: 4 } });
+    try {
+      const diagnostics = f.renderer.render(f.source, f.camera);
+      expect(diagnostics.nativeDepthOfField).toMatchObject({ depthPreparation: "submitted", effect: "submitted" });
+      const names = drawn(f.passes);
+      const order = ["fs_ao_apply", "fs_ssr_composite", "fs_godrays_composite", "fs_linear_depth", "fs_dof_composite", "fs_tone"].map(name => names.indexOf(name));
+      expect(order.every(index => index >= 0)).toBe(true);
+      expect([...order].sort((a, b) => a - b)).toEqual(order);
+      expect(names).not.toContain("fs_ssao");
+      // The DoF color input is the god-ray composite, not the raw forward source.
+      const composite = f.passes.filter(item => item.draws > 0).find(item => entry(item) === "fs_godrays_composite")!;
+      const prefilter = f.passes.filter(item => item.draws > 0).find(item => entry(item) === "fs_dof_prefilter")!;
+      expect(prefilter).toBeDefined();
+      expect(composite.descriptor.colorAttachments![0]!.view).toBeDefined();
     } finally { f.close(); }
   });
 });
@@ -199,14 +237,90 @@ describe("pre-mount WebGPU gap for the W2 combinations", () => {
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, vignette: { intensity: 0.3 }, filmGrain: { intensity: 0.1 }, chromaticAberration: { intensity: 0.002 } } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1], targets: ["ball"] } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1] } })).toMatchObject({ missing: ["outline"] });
-    // Motion blur and god rays combine since W4 (native depth stages after DoF); ao still does not.
-    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, lut: {} } })).toMatchObject({
-      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["ao", "anti-aliasing-smaa", "lut"] });
+    // AO, SSR, god rays, motion blur, a LUT, registered passes and the legacy twins combine; SMAA, TAA and legacy-only ssao do not.
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, ssr: {}, lut: {} } })).toMatchObject({
+      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["anti-aliasing-smaa"] });
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, ao: {}, ssr: {}, lut: {} }, ssao: {}, ssr: {}, depthOfField: { focusDepth: 0.1 } })).toBeUndefined();
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof, taa: {} }, ssao: {} })).toMatchObject({ missing: ["taa", "ssao"] });
   });
 
   it("reports display stages on Display-P3 output, which the device refuses", () => {
     expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3", vignette: { intensity: 0.3 } } })).toMatchObject({
       code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["display-p3-display-stages"] });
     expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3" } })).toBeUndefined();
+  });
+});
+
+describe("native WebGPU depth of field on the general scene route", () => {
+  const sceneDof = ["fs_ao_linear_depth", "fs_dof_prefilter", "fs_dof_prefilter_coc", "fs_dof_near_tile", "fs_dof_gather", "fs_dof_gather_influence", "fs_dof_composite"];
+
+  it.each([1, 4] as const)("linearizes the frame's own depth (no coverage proof) after AO and before tone (samples=%s)", async sampleCount => {
+    const ao = { radius: 0.5, intensity: 0.8, falloff: 1, directions: 4, steps: 4, multiBounce: true, fallbackStrength: 0.1 };
+    const f = await fixture({ ao, ...(sampleCount === 4 ? msaa : {}) }, { sampleCount });
+    const begin = vi.spyOn(f.renderer.device, "beginNativeDepthOfFieldFrame" as never);
+    try {
+      // A translucent surface is outside the coverage-proof route, so the frame takes the scene route.
+      (f.source.renderItems[0]!.material as UnlitMaterial).color = [0.2, 0.4, 0.6, 0.5];
+      const diagnostics = f.renderer.render(f.source, f.camera);
+      expect(begin).not.toHaveBeenCalled();
+      expect(diagnostics.nativeDepthOfField).toBeUndefined();
+      const draws = f.passes.filter(pass => pass.draws > 0);
+      const names = draws.map(entry);
+      const apply = names.indexOf("fs_ao_apply");
+      const start = names.indexOf("fs_ao_linear_depth", apply);
+      expect(apply).toBeGreaterThan(0);
+      expect(names.slice(start, start + sceneDof.length)).toEqual(sceneDof);
+      expect(names.indexOf("fs_tone")).toBeGreaterThan(start + sceneDof.length - 1);
+      const code = (draws[start]!.pipeline!.descriptor.fragment as { module: { code: string } }).module.code;
+      expect(code).toContain(sampleCount === 4 ? "texture_depth_multisampled_2d" : "texture_2d<f32>");
+      expect(draws.some(pass => pass.pipeline?.descriptor.fragment?.targets.length === 2)).toBe(false);
+    } finally { f.close(); }
+  });
+
+  it.each([false, true])("sends a strict-eligible frame with clipping to the scene route instead of throwing (async=%s)", async asynchronous => {
+    const f = await fixture();
+    const begin = vi.spyOn(f.renderer.device, "beginNativeDepthOfFieldFrame" as never);
+    try {
+      // Opaque unlit content passes every strict-route check except clipping, which the strict route refuses later.
+      const source = { ...f.source, globalClipping: { planes: [[1, 0, 0, 4]] as [number, number, number, number][], space: "world" as const } };
+      if (asynchronous) await f.renderer.renderAsync(source, f.camera); else f.renderer.render(source, f.camera);
+      expect(begin).not.toHaveBeenCalled();
+      expect(drawn(f.passes)).toEqual(expect.arrayContaining(["fs_ao_linear_depth", "fs_dof_composite"]));
+    } finally { f.close(); }
+  });
+
+  it("copies a 4x color source to a single-sample float target before the kernel", async () => {
+    const f = await fixture(msaa, { sampleCount: 4 });
+    try {
+      (f.source.renderItems[0]!.material as UnlitMaterial).color = [0.2, 0.4, 0.6, 0.5];
+      f.renderer.render(f.source, f.camera);
+      const names = drawn(f.passes);
+      expect(names.indexOf("fs_scene_dof_color")).toBeGreaterThan(0);
+      expect(names.indexOf("fs_scene_dof_color")).toBeLessThan(names.indexOf("fs_dof_prefilter"));
+    } finally { f.close(); }
+  });
+});
+
+describe("WebGPU S10b user LUT", () => {
+  const cube = ["LUT_3D_SIZE 2", "0 0 0", "1 0 0", "0 1 0", "1 1 0", "0 0 1", "1 0 1", "0 1 1", "1 1 1"].join("\n");
+
+  it("applies a loaded .cube after tone mapping and the grade, with the intensity as bypass", async () => {
+    const f = await fixture({ lut: { source: "/luts/a.cube", cube, intensity: 0.8 } }, { colorGrade: { contrast: 1.1, saturation: 1 } });
+    try {
+      f.renderer.render(f.source, f.camera);
+      const names = drawn(f.passes);
+      const lut = names.indexOf("fs_display_lut");
+      expect(lut).toBeGreaterThan(names.indexOf("fs_grade"));
+      expect(names.indexOf("fs_grade")).toBeGreaterThan(names.indexOf("fs_tone"));
+      expect(Array.from(f.writes.get("webgpu-display-lut-uniforms")!).map(v => Math.round(v * 100) / 100)).toEqual([2, 0.2, 0, 0]);
+    } finally { f.close(); }
+  });
+
+  it("renders the identity grade while the .cube is pending", async () => {
+    const f = await fixture({ lut: { source: "/luts/a.cube", status: "pending" } });
+    try {
+      f.renderer.render(f.source, f.camera);
+      expect(drawn(f.passes)).not.toContain("fs_display_lut");
+    } finally { f.close(); }
   });
 });

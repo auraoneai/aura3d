@@ -14,12 +14,13 @@ import { qrCoreOutputOn } from "./qrSubFlags";
 import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
 import { type PostPassDescriptor, type PostPipelineOptions, registeredPostPasses } from "../contracts/post";
-import type { GtaoOptions } from "../post/PostGraph";
+import type { DofOptions, GtaoOptions, LutTexture3D } from "../post/PostGraph";
+import { validateWebGPUDepthOfFieldOptions } from "../post/WebGPUDepthOfField";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
-import { nativeDofCustomAnchorPrecedesDof, nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayStages";
+import { nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayStages";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { markPostV2Presented, recordPostSkipped, recordPostStage } from "./postSkipped";
 import { postDiagnostics, type PostDiagnosticToken } from "./PostDiagnosticsScope";
@@ -199,54 +200,31 @@ export function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: R
   return value !== undefined && value !== false;
 }
 
-type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
-
-// A strict-v2 root compile also retains a legacy DoF for WebGL fallback. Its
-// focus controls are different from the native lens controls, so equality of
-// the numbers cannot identify a duplicate. Accept only the unchanged pair
-// linked by that compile; all independently supplied combinations still fail.
-const ROOT_DOF_TWIN = Symbol.for("@aura3d/root-postprocess/dof-twin/v1");
-
-function unchangedDofFields(value: unknown, fields: unknown, extraKeys: number): boolean {
-  if (!value || typeof value !== "object" || Array.isArray(value) || !Array.isArray(fields)
-    || ![Object.prototype, null].includes(Object.getPrototypeOf(value))
-    || Reflect.ownKeys(value).length !== fields.length + extraKeys) return false;
-  return fields.every(entry => {
-    if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== "string") return false;
-    const descriptor = Object.getOwnPropertyDescriptor(value, entry[0]);
-    return descriptor?.enumerable === true && "value" in descriptor && Object.is(descriptor.value, entry[1]);
-  });
-}
-
-function isRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nativeDof: unknown): boolean {
-  if (!legacy || typeof legacy !== "object") return false;
-  const descriptor = Object.getOwnPropertyDescriptor(legacy, ROOT_DOF_TWIN);
-  const link = descriptor && "value" in descriptor ? descriptor.value as {
-    legacy?: unknown; nativeDof?: unknown; legacyFields?: unknown; nativeFields?: unknown;
-  } | undefined : undefined;
-  return Boolean(link && link.legacy === legacy && link.nativeDof === nativeDof
-    && unchangedDofFields(legacy, link.legacyFields, 1) && unchangedDofFields(nativeDof, link.nativeFields, 0));
-}
+type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeSceneDepthOfField" | "nativeLut" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
 
 /**
  * The post stages that native WebGPU depth of field cannot yet combine with,
  * as bounded identifiers (empty when the combination is supported).
  */
-export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[] {
+export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, _scopeId?: object): string[] {
   const conflicts: string[] = [];
   const add = (condition: unknown, name: string): void => { if (condition) conflicts.push(name); };
-  // God rays and motion blur run as native WebGPU depth stages after native DoF (WebGPUDepthEffects), so they combine.
-  add(pipeline.ao, "ao"); add(pipeline.ssr, "ssr"); add(pipeline.taa, "taa");
+  // The native chain runs in the WebGL2 v2 order around DoF: after-depth customs, S2 AO, S3 SSR, S4 god rays,
+  // before/after-taa customs, S6 DoF, S7 motion blur (WebGPUDevice.presentLdrPostprocess), so those combine.
+  add(pipeline.taa, "taa");
   // MSAA: the 4x producer is resolved into the single-sample DoF source when the frame is sealed.
   add(pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa" && pipeline.antiAliasing !== "msaa",
     `anti-aliasing-${String(pipeline.antiAliasing)}`);
   add(pipeline.antiAliasing === "fxaa" && !postprocess.fxaa, "fxaa");
   add(pipeline.nativeEffects?.length, "native-effects");
   add(pipeline.customPasses?.length, "custom-passes");
-  add(registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false && nativeDofCustomAnchorPrecedesDof(pass.insertAt)), "registered-passes");
-  add(postprocess.depthOfField && !isRootDofTwin(postprocess.depthOfField, pipeline.dof), "legacy-depth-of-field");
+  // Registered passes anchored before DoF (after-depth, before/after-taa) run before it, like the v2 graph; their
+  // `enabled` gate is evaluated per frame by the device, so a pass that is off this frame changes nothing.
+  // The legacy depth-of-field twin is dropped on this route (the v2 lens owns S6, as on WebGL2 v2).
   add(postprocess.volumetricLight, "volumetric-light");
-  add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao, "ssao"); add(postprocess.ssr, "legacy-ssr");
+  // A legacy ssao twin is dropped when native GTAO owns S2; a legacy-only ssao has no slot before DoF.
+  // The legacy ssr pass is the device's native S3 stage (it reads the single-sample DoF source depth).
+  add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao && !pipeline.ao, "ssao");
   // A targeted outline draws after the whole chain (executeOutlineTargets),
   // outside the depth-of-field route; only the full-frame chain pass conflicts.
   add(postprocess.taa, "legacy-taa"); add(postprocess.outline && outlineTargetsOf(postprocess.outline) === null, "outline");
@@ -254,7 +232,7 @@ export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipe
   // display stages (webgpu/NativeDofDisplayStages.ts); legacy twins do not.
   add(postprocess.chromaticAberration, "chromatic-aberration");
   add(postprocess.filmGrain, "film-grain");
-  add(pipeline.lut, "lut");
+  // pipeline.lut: the WebGPU chain applies it as the S10b stage after tone mapping and the grade (webgpuNativeLut).
   // The device refuses the display stages on Display-P3 output; report it before mount.
   add((pipeline as { outputColorSpace?: unknown }).outputColorSpace === "display-p3" && nativeDofDisplayStagesFor(pipeline), "display-p3-display-stages");
   add(pipeline.bloom && !postprocess.bloom, "bloom"); add(pipeline.grade && !postprocess.colorGrade, "grade");
@@ -295,7 +273,9 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
   // webgpuNativePostOptions already validated that any legacy twin is the
   // unchanged root-authored pair before this native-only filter runs. Native
   // GTAO owns AO like the WebGL2 v2 S2 stage, so the legacy ssao twin is dropped.
-  const routed = passes.filter(pass => !(nativePost?.nativeDepthOfField && pass.name === "depth-of-field")
+  // On WebGPU a v2 lens owns DoF (native, scene or recorded skipped), so the legacy twin never runs there.
+  const v2Dof = device !== undefined && webgpuDepthOfFieldRequested(device, postprocess);
+  const routed = passes.filter(pass => !((nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField || v2Dof) && pass.name === "depth-of-field")
     && !(nativePost?.nativeAmbientOcclusion && pass.name === "ssao"));
   if (device?.kind !== "webgpu" || postprocess.execution === "cpu-deterministic") return routed;
   // WebGPU serves motion blur as the native S7 stage (`nativeMotionBlur`), or records it skipped; never as an LDR pass.
@@ -465,7 +445,11 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
   }
   const context = postprocess.postFrameContext;
   let nativeDepthOfField: LdrPostprocessPresentationOptions["nativeDepthOfField"];
-  if (depthOfField !== undefined) {
+  let nativeSceneDepthOfField: LdrPostprocessPresentationOptions["nativeSceneDepthOfField"];
+  const dofRoute = context?.nativeDepthOfFieldRoute;
+  if (depthOfField !== undefined && dofRoute === "scene") {
+    nativeSceneDepthOfField = webgpuSceneDepthOfField(device, postprocess, pipeline!, source, depthOfField);
+  } else if (depthOfField !== undefined && dofRoute !== "skipped") {
     validateNativeDofRoute(postprocess, pipeline!, context?.scopeId);
     if (postprocess.execution === "cpu-deterministic" || !device.presentLdrPostprocess || device.canPresentNativeDepthOfField?.() !== true) {
       throw new RenderDeviceError("Depth of field requires the native WebGPU implementation", "WEBGPU_DOF_NATIVE_REQUIRED");
@@ -484,7 +468,7 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
     }
     nativeDepthOfField = { options: depthOfField as NonNullable<LdrPostprocessPresentationOptions["nativeDepthOfField"]>["options"], frame: dofFrame };
   }
-  const nativeDofDisplay = nativeDepthOfField ? nativeDofDisplayStagesFor(pipeline) : undefined;
+  const nativeDofDisplay = nativeDepthOfField || nativeSceneDepthOfField ? nativeDofDisplayStagesFor(pipeline) : undefined;
   const validView = typeof context?.viewId === "string" || (typeof context?.viewId === "number" && Number.isFinite(context.viewId));
   const frame = context?.scopeId && typeof context.scopeId === "object" && validView && Number.isSafeInteger(context.frameId) && context.frameId! >= 0
     ? { scopeId: context.scopeId, viewId: context.viewId, frameId: context.frameId!, cameraCut: context.cameraCut,
@@ -494,11 +478,62 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
   if (autoExposure !== undefined && !frame) throw new RenderDeviceError("WebGPU auto exposure requires a renderer, view and frame identity", "POSTPROCESS_HISTORY_IDENTITY_REQUIRED");
   if (autoExposure !== undefined && !Number.isFinite(frame?.timeSeconds)) throw new RenderDeviceError("WebGPU auto exposure requires a finite frame time", "WEBGPU_AUTO_EXPOSURE_TIME_REQUIRED");
   const nativeAmbientOcclusion = webgpuNativeAmbientOcclusion(device, postprocess, pipeline);
-  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeAmbientOcclusion) return undefined;
+  const nativeLut = webgpuNativeLut(pipeline, context?.diagnosticToken);
+  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion && !nativeLut) return undefined;
   return { ...(effects?.length ? { nativeEffects: effects } : {}), ...(frame ? { postFrameContext: frame as NonNullable<WebgpuNativePostOptions["postFrameContext"]> } : {}),
     ...(autoExposure !== undefined ? { autoExposure: autoExposure as NonNullable<WebgpuNativePostOptions["autoExposure"]> } : {}),
-    ...(nativeDepthOfField ? { nativeDepthOfField } : {}), ...(nativeDofDisplay ? { nativeDofDisplay } : {}),
+    ...(nativeDepthOfField ? { nativeDepthOfField } : {}), ...(nativeSceneDepthOfField ? { nativeSceneDepthOfField } : {}),
+    ...(nativeDofDisplay ? { nativeDofDisplay } : {}), ...(nativeLut ? { nativeLut } : {}),
     ...(nativeAmbientOcclusion ? { nativeAmbientOcclusion } : {}) };
+}
+
+/**
+ * The v2 `pipeline.lut` bag for the WebGPU chain's S10b LUT stage, once its `.cube` text (or parsed data) arrived.
+ * Until then the frame renders the identity grade and records `LUT_PENDING` / `LUT_UNAVAILABLE`, as WebGL2 does.
+ */
+function webgpuNativeLut(pipeline: PostPipelineOptions | undefined, token: PostDiagnosticToken | undefined): LdrPostprocessPresentationOptions["nativeLut"] {
+  const bag = pipeline?.lut as { readonly source?: unknown; readonly cube?: unknown; readonly data?: LutTexture3D; readonly intensity?: unknown; readonly status?: unknown } | undefined;
+  if (!bag || typeof bag !== "object" || typeof bag.source !== "string") return undefined;
+  if (typeof bag.cube !== "string" && !bag.data) {
+    recordPostSkipped(`${bag.status === "failed" ? "LUT_UNAVAILABLE" : "LUT_PENDING"}:${bag.source}`, token);
+    return undefined;
+  }
+  return { source: bag.source, ...(typeof bag.cube === "string" ? { cube: bag.cube } : {}), ...(bag.data ? { data: bag.data } : {}),
+    ...(typeof bag.intensity === "number" ? { intensity: bag.intensity } : {}) };
+}
+
+/** WebGL2 v2 S6 never blurs linear depth at or beyond 990 m (`z_mm >= 9.9e5`), the S1 sky sentinel included. */
+const SCENE_DOF_SKY_DEPTH_METERS = 990;
+
+/**
+ * The general-scene native DoF request: the v2 lens fields and the frame camera planes. A frame this route cannot
+ * serve (no camera, a non-HDR source or out-of-range optics) records the reason and renders without DoF
+ * instead of failing: it is reached only after the canvas holds a WebGPU context (DoF enabled at runtime).
+ */
+function webgpuSceneDepthOfField(device: RenderDevice, postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions,
+  source: RenderTarget, depthOfField: unknown): LdrPostprocessPresentationOptions["nativeSceneDepthOfField"] {
+  const token = postprocess.postFrameContext?.diagnosticToken;
+  const skip = (reason: string): undefined => { recordPostSkipped(`WEBGPU_DOF_SKIPPED:${reason}`, token); return undefined; };
+  const conflicts = nativeDofConflicts(postprocess, pipeline);
+  if (conflicts.length) return skip(conflicts.join(","));
+  if (postprocess.execution === "cpu-deterministic" || !device.presentLdrPostprocess) return skip("native-chain");
+  if (!isHdrRenderTarget(source) || source.colorTexture.colorSpace !== "linear") return skip("hdr-source");
+  const camera = postprocess.cameraFrame;
+  // An infinite far plane is valid for perspective (1/far = 0 in the linearization), never for orthographic.
+  if (!camera || !Number.isFinite(camera.near) || !(camera.far > camera.near)
+    || (camera.projection === "orthographic" ? !Number.isFinite(camera.far) : !(camera.near > 0))) return skip("camera");
+  const dof = depthOfField !== null && typeof depthOfField === "object" ? depthOfField as Partial<DofOptions> : undefined;
+  if (!dof) return skip("options");
+  // The native kernel always works at half resolution (the v2 default); `halfRes: false` keeps the half-res kernel.
+  const options: Partial<DofOptions> = {
+    ...(dof.focusDistance !== undefined ? { focusDistance: dof.focusDistance } : {}), ...(dof.fStop !== undefined ? { fStop: dof.fStop } : {}),
+    ...(dof.focalLengthMm !== undefined ? { focalLengthMm: dof.focalLengthMm } : {}), ...(dof.sensorHeightMm !== undefined ? { sensorHeightMm: dof.sensorHeightMm } : {}),
+    ...(dof.maxBlurPx !== undefined ? { maxBlurPx: Math.min(dof.maxBlurPx, 64) } : {}),
+    ...(dof.tiltShift ? { tiltShift: dof.tiltShift } : {})
+  };
+  const skyDepthMeters = SCENE_DOF_SKY_DEPTH_METERS, maxGeometryDepthMeters = Math.fround(skyDepthMeters * 0.999);
+  try { validateWebGPUDepthOfFieldOptions(options, maxGeometryDepthMeters, skyDepthMeters); } catch { return skip("options"); }
+  return { options, camera: { near: camera.near, far: camera.far, orthographic: camera.projection === "orthographic" }, maxGeometryDepthMeters, skyDepthMeters };
 }
 
 /**
@@ -533,12 +568,12 @@ function webgpuNativeOnlyPasses(source: RenderTarget, postprocess: RendererPostP
 function withWebgpuExposureOutputPass(passes: readonly RendererPostProcessPassPlan[], postprocess: RendererPostProcessOptions,
   nativePost: WebgpuNativePostOptions | undefined): readonly RendererPostProcessPassPlan[] {
   const pipeline = postprocess.pipeline as PostPipelineOptions;
-  const authored = nativePost?.nativeDepthOfField && postprocess.toneMapping !== false
+  const authored = (nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField) && postprocess.toneMapping !== false
     ? passes.map(pass => pass.name === "tone-mapping"
       ? { ...pass, options: { operator: pipeline.toneMapping, exposure: pipeline.exposure, ...pass.options } }
       : pass)
     : passes;
-  if ((!nativePost?.autoExposure && !nativePost?.nativeDepthOfField) || postprocess.toneMapping !== false || authored.length === 0 || authored.some(pass => pass.name === "tone-mapping")) return authored;
+  if ((!nativePost?.autoExposure && !nativePost?.nativeDepthOfField && !nativePost?.nativeSceneDepthOfField) || postprocess.toneMapping !== false || authored.length === 0 || authored.some(pass => pass.name === "tone-mapping")) return authored;
   const index = authored[0]?.name === "bloom" ? 1 : 0;
   return [...authored.slice(0, index), { name: "tone-mapping", options: { operator: "linear", exposure: pipeline.exposure } }, ...authored.slice(index)];
 }
@@ -871,7 +906,7 @@ export class RendererPostprocessPipeline {
   ): boolean {
     const device = this.host.device;
     if (device.kind !== "webgpu" || outputTarget || current.colorTexture.format !== "rgba8" || current.colorTexture.colorSpace !== "linear" ||
-        nativePost?.autoExposure || nativePost?.nativeDepthOfField) return false;
+        nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField) return false;
     if (postprocess.execution === "cpu-deterministic" || !device.presentLdrPostprocess) {
       throw new RenderDeviceError("Linear WebGPU canvas output requires native sRGB encoding", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
@@ -1104,7 +1139,7 @@ export class RendererPostprocessPipeline {
       if (postprocess.v2 === true && this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget)) return;
       if (this.presentLinearWebgpuCanvas(current, postprocess, outputTarget, nativePost, outputDefaults)) return;
       const outputPolicy = webgpuOutputPolicyRequested(this.host.device, postprocess);
-      if ((nativePost?.nativeEffects?.length || nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeAmbientOcclusion || nativePost?.nativeGodRays || nativePost?.nativeMotionBlur || outputPolicy) && postprocess.execution !== "cpu-deterministic" && this.host.device.presentLdrPostprocess) {
+      if ((nativePost?.nativeEffects?.length || nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField || nativePost?.nativeAmbientOcclusion || nativePost?.nativeGodRays || nativePost?.nativeMotionBlur || outputPolicy) && postprocess.execution !== "cpu-deterministic" && this.host.device.presentLdrPostprocess) {
         this.host.device.presentLdrPostprocess(current, { passes: webgpuNativeOnlyPasses(current, postprocess), ...nativePost, ...(outputTarget ? { outputTarget } : {}), toneMappingDefaults: outputDefaults });
         markWebgpuMotionBlurPresented(nativePost);
         return;
@@ -1121,6 +1156,7 @@ export class RendererPostprocessPipeline {
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget)) return;
     if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange, nativePost, outputDefaults)) return;
     if (nativePost?.nativeDepthOfField) throw new RenderDeviceError("Depth of field requires a compatible native postprocess chain", "WEBGPU_DOF_NATIVE_REQUIRED");
+    if (nativePost?.nativeSceneDepthOfField) recordPostSkipped("WEBGPU_DOF_SKIPPED:native-chain", postprocess.postFrameContext?.diagnosticToken);
     if (nativePost?.nativeAmbientOcclusion) recordPostSkipped("WEBGPU_AO_NATIVE_CHAIN_UNAVAILABLE", postprocess.postFrameContext?.diagnosticToken);
     if (nativePost?.autoExposure) throw new RenderDeviceError("WebGPU auto exposure requires a compatible native postprocess chain", "WEBGPU_AUTO_EXPOSURE_NATIVE_REQUIRED");
     if (nativePost?.nativeEffects?.length) throw new RenderDeviceError("Native WebGPU effects require a compatible postprocess chain", "WEBGPU_NATIVE_EFFECTS_UNAVAILABLE");
@@ -1285,7 +1321,7 @@ export class RendererPostprocessPipeline {
       if (postprocess.v2 === true && this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2ModulesEmpty)) return;
       if (this.presentLinearWebgpuCanvas(current, postprocess, outputTarget, nativePost, outputDefaults)) return;
       const outputPolicy = webgpuOutputPolicyRequested(this.host.device, postprocess);
-      if ((nativePost?.nativeEffects?.length || nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeAmbientOcclusion || nativePost?.nativeGodRays || nativePost?.nativeMotionBlur || outputPolicy) && postprocess.execution !== "cpu-deterministic" && this.host.device.presentLdrPostprocess) {
+      if ((nativePost?.nativeEffects?.length || nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField || nativePost?.nativeAmbientOcclusion || nativePost?.nativeGodRays || nativePost?.nativeMotionBlur || outputPolicy) && postprocess.execution !== "cpu-deterministic" && this.host.device.presentLdrPostprocess) {
         this.host.device.presentLdrPostprocess(current, { passes: webgpuNativeOnlyPasses(current, postprocess), ...nativePost, ...(outputTarget ? { outputTarget } : {}), toneMappingDefaults: outputDefaults });
         markWebgpuMotionBlurPresented(nativePost);
         return;
@@ -1310,6 +1346,7 @@ export class RendererPostprocessPipeline {
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2Modules)) return;
     if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange, nativePost, outputDefaults)) return;
     if (nativePost?.nativeDepthOfField) throw new RenderDeviceError("Depth of field requires a compatible native postprocess chain", "WEBGPU_DOF_NATIVE_REQUIRED");
+    if (nativePost?.nativeSceneDepthOfField) recordPostSkipped("WEBGPU_DOF_SKIPPED:native-chain", postprocess.postFrameContext?.diagnosticToken);
     if (nativePost?.nativeAmbientOcclusion) recordPostSkipped("WEBGPU_AO_NATIVE_CHAIN_UNAVAILABLE", postprocess.postFrameContext?.diagnosticToken);
     if (nativePost?.autoExposure) throw new RenderDeviceError("WebGPU auto exposure requires a compatible native postprocess chain", "WEBGPU_AUTO_EXPOSURE_NATIVE_REQUIRED");
     if (nativePost?.nativeEffects?.length) throw new RenderDeviceError("Native WebGPU effects require a compatible postprocess chain", "WEBGPU_NATIVE_EFFECTS_UNAVAILABLE");

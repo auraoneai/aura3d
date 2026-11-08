@@ -125,33 +125,45 @@ describe("native depth of field through the public renderer", () => {
     } finally { f.close(); }
   });
 
-  it.each([false, true])("rejects transparent surfaces before drawing (async=%s)", async asynchronous => {
+  // The general scene route: no coverage attachment or frame proof; the device linearizes the frame's own depth.
+  const sceneDof = ["fs_ao_linear_depth", "fs_dof_prefilter", "fs_dof_prefilter_coc", "fs_dof_near_tile", "fs_dof_gather", "fs_dof_gather_influence", "fs_dof_composite"];
+  const drawnNames = (passes: readonly Pass[]) => passes.filter(pass => pass.draws > 0).map(entry);
+
+  it.each([false, true])("serves transparent surfaces through the scene route instead of rejecting them (async=%s)", async asynchronous => {
     const f = await fixture();
+    const begin = vi.spyOn(f.renderer.device, "beginNativeDepthOfFieldFrame" as never);
     try {
       f.material.color = [0.2, 0.4, 0.6, 0.5];
-      if (asynchronous) await expect(f.renderer.renderAsync(f.source, f.camera)).rejects.toMatchObject({ code: "NATIVE_DOF_SCENE_UNSUPPORTED" });
-      else expect(() => f.renderer.render(f.source, f.camera)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_SCENE_UNSUPPORTED" }));
-      expect(f.passes.some(pass => pass.draws > 0)).toBe(false);
+      const diagnostics = asynchronous ? await f.renderer.renderAsync(f.source, f.camera) : f.renderer.render(f.source, f.camera);
+      expect(begin).not.toHaveBeenCalled();
+      expect(diagnostics.nativeDepthOfField).toBeUndefined();
+      const names = drawnNames(f.passes), start = names.indexOf("fs_ao_linear_depth");
+      expect(names.slice(start, start + sceneDof.length)).toEqual(sceneDof);
+      expect(names).not.toContain("fs_linear_depth");
+      expect(names.indexOf("fs_tone")).toBeGreaterThan(start);
+      // The forward pass keeps a single color attachment (no coverage plane).
+      expect(f.passes.filter(pass => pass.draws > 0).some(pass => pass.pipeline?.descriptor.fragment?.targets.length === 2)).toBe(false);
     } finally { f.close(); }
   });
 
-  it("rejects missing or inconsistent raster projection metadata and unsupported post stages before drawing", async () => {
+  it("serves frames without projection metadata through the scene route; skips DoF (no throw) next to TAA", async () => {
     const f = await fixture();
     try {
       const noMetadata = { ...f.camera, projectionMetadata: undefined };
-      expect(() => f.renderer.render(f.source, noMetadata)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_PROJECTION_UNSUPPORTED" }));
-      const inconsistent = { ...f.camera, projectionMetadata: { ...f.camera.projectionMetadata!, near: 2 } };
-      expect(() => f.renderer.render(f.source, inconsistent)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_PROJECTION_UNSUPPORTED" }));
-      const withTaa = { ...f.source, postprocess: { ...f.source.postprocess, pipeline: { ...f.pipeline, taa: {} } } };
-      expect(() => f.renderer.render(withTaa, f.camera)).toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
-      expect(f.passes.some(pass => pass.draws > 0)).toBe(false);
+      expect(() => f.renderer.render(f.source, noMetadata)).not.toThrow();
+      expect(drawnNames(f.passes)).toContain("fs_dof_composite");
+      f.passes.length = 0;
+      const withTaa = { ...f.source, postprocess: { ...f.source.postprocess, toneMapping: { operator: "aces" as const }, pipeline: { ...f.pipeline, taa: {} } } };
+      expect(() => f.renderer.render(withTaa, f.camera)).not.toThrow();
+      expect(drawnNames(f.passes).filter(name => name?.startsWith("fs_dof_"))).toEqual([]);
     } finally { f.close(); }
   });
 
-  it("rejects partial coverage and nonopaque clear color", async () => {
+  it("serves a nonopaque clear through the scene route; still rejects a partial viewport", async () => {
     const f = await fixture([0, 0, 0, 0]);
     try {
-      expect(() => f.renderer.render(f.source, f.camera)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_FRAME_UNSUPPORTED" }));
+      expect(() => f.renderer.render(f.source, f.camera)).not.toThrow();
+      expect(drawnNames(f.passes)).toContain("fs_dof_composite");
     } finally { f.close(); }
     const g = await fixture();
     try {

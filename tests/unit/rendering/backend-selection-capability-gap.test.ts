@@ -87,10 +87,10 @@ describe("backend selection: fallback is announced and native DoF combinations a
     const dof = { focusDistance: 4, aperture: 2.8 };
     const base = { v2: true, pipeline: { antiAliasing: "off", dof } };
     expect(dofGap(base)).toBeUndefined();
-    // MSAA, vignette and grain run on the native DoF chain (W2); SMAA and a LUT do not.
+    // MSAA, vignette and grain run on the native DoF chain (W2), and a LUT is no DoF gap; SMAA is.
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, vignette: { intensity: 0.3 }, filmGrain: { intensity: 0.1 } } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, lut: {} } })).toEqual({
-      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["anti-aliasing-smaa", "lut"]
+      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["anti-aliasing-smaa"]
     });
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof }, outline: { color: [1, 1, 1, 1] } })).toMatchObject({ missing: ["outline"] });
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "off" } })).toBeUndefined();

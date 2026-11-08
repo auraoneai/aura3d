@@ -5,7 +5,7 @@ import { reflectShaderSources, type ShaderReflection } from "./ShaderReflection"
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 import type { NativePostEffect } from "./post/NativeEffectShaders";
 import type { GeneratedProgramDescriptor } from "./contracts/program";
-import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph";
+import type { AutoExposureOptionsV2, DofOptions, LutTexture3D } from "./post/PostGraph";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages";
@@ -320,6 +320,18 @@ export interface NativeWebGPUDofRequest {
   readonly frame: NativeWebGPUDofFrame;
 }
 
+/**
+ * Native depth of field over any forward frame (the general scene route): the device linearizes the frame's own
+ * depth attachment (single-sample or 4x) from the camera planes, so it needs no coverage attachment or frame proof.
+ * Depth equal to the clear value is sky (never blurred), like the WebGL2 v2 S1 depth preparation.
+ */
+export interface NativeSceneDofRequest {
+  readonly options: Partial<DofOptions>;
+  readonly camera: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+  readonly maxGeometryDepthMeters: number;
+  readonly skyDepthMeters: number;
+}
+
 /** Submission state retained by the issuing device for one exact DoF frame. */
 export interface NativeWebGPUDofFrameSubmission {
   readonly depthSubmitted: boolean;
@@ -357,6 +369,13 @@ export interface LdrPostprocessPresentationOptions {
   readonly autoExposure?: Partial<AutoExposureOptionsV2>;
   /** Native HDR DoF before exposure, bloom and output conversion. */
   readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+  /**
+   * The v2 S10b user `.cube` LUT for the WebGPU chain, applied on display-referred values after tone mapping and the
+   * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
+   */
+  readonly nativeLut?: { readonly source: string; readonly cube?: string; readonly data?: LutTexture3D; readonly intensity?: number };
+  /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
+  readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
   /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
   readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
   /** Chromatic aberration, vignette and grain stages of a native DoF chain. */

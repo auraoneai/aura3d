@@ -502,40 +502,9 @@ function webgpuPostGapForPostprocess(
   if (postLacksWebgpuDepth(post, nativeDepthStages)) return { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures", ...webgpuDepthStagesMissing(post, nativeDepthStages)] };
   let gap: WebgpuPostGap | undefined;
   try { gap = dofGap?.(post); } catch { return undefined; }
-  return gap ?? nativeDofSceneGap(snapshot, post);
-}
-
-/**
- * Native WebGPU depth of field draws only opaque built-in unlit primitives over
- * a plain clear (the renderer's NATIVE_DOF_SCENE/FRAME checks). Report any
- * other content before a WebGPU context is taken, so the app keeps WebGL2
- * instead of failing every frame once the post combination itself is admitted.
- */
-const NATIVE_DOF_SCENE_EFFECTS: ReadonlySet<string> = new Set(["fog", "rain", "snow", "particles", "flipbook-sprite", "light-beam", "fogVolume", "volumetric-fog"]);
-
-function nativeDofSceneGap(snapshot: AuraSceneSnapshot, post: RendererPostProcessOptions): WebgpuPostGap | undefined {
-  const pipeline = post.v2 === true && post.pipeline && typeof post.pipeline === "object" ? post.pipeline as { dof?: unknown } : undefined;
-  if (!pipeline || pipeline.dof === undefined || pipeline.dof === false) return undefined;
-  const missing = new Set<string>();
-  if (snapshot.backgroundImage) missing.add("background-image");
-  // Lit-only factors (roughness/metallic) are ignored by the unlit program.
-  const allowedMaterialKeys = new Set(["unlit", "color", "opacity", "name", "roughness", "metallic", "metalness"]);
-  const visit = (nodes: readonly AuraSceneNode[]): void => {
-    for (const node of nodes) {
-      // Post effects are handled by the post route; effects that draw scene
-      // content (fog, particles, weather, sprites, beams) are not unlit primitives.
-      if (node.kind === "effect") { if (NATIVE_DOF_SCENE_EFFECTS.has(node.effect)) missing.add(`effect-${node.effect}`); continue; }
-      if (node.kind === "light" || node.kind === "interaction") continue;
-      if (node.kind === "group") { visit(node.children); continue; }
-      if (node.kind !== "primitive") { missing.add(`node-${node.kind}`); continue; }
-      const material = node.material as Record<string, unknown> | undefined;
-      if (material?.unlit !== true || (material.opacity !== undefined && material.opacity !== 1)
-        || Object.keys(material).some(key => !allowedMaterialKeys.has(key))) missing.add("non-unlit-material");
-      if (node.instances?.length || node.instanceColors?.length) missing.add("instancing");
-    }
-  };
-  visit(snapshot.nodes);
-  return missing.size ? { code: "NATIVE_DOF_SCENE_UNSUPPORTED", missing: [...missing].sort() } : undefined;
+  // Scene content is no gap: frames the coverage-proof DoF route cannot draw (lit or custom materials, environment
+  // backgrounds, fog, particles) take the renderer's general scene DoF route over the frame's own depth.
+  return gap;
 }
 
 Object.defineProperty(createProductionRuntimePostprocess, Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1"), {

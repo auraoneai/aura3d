@@ -23,6 +23,7 @@ import {
   type NativeWebGPUDofFrameDescriptor,
   type ShaderReflection,
   type NativeAmbientOcclusionRequest,
+  type NativeSceneDofRequest,
   type ShaderCompilationDiagnostic,
   type ShaderSources,
   type UniformValue,
@@ -61,6 +62,8 @@ import { reflectShaderSources } from "./ShaderReflection";
 import { clearPostSkipped, recordPostSkipped, recordPostStage } from "./renderer/postSkipped";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { registeredPostPasses, type PostPassDescriptor } from "./contracts/post";
+import { parseCubeLut } from "./post/CubeLut";
+import type { LutTexture3D } from "./post/PostGraph";
 import type { FrameContributorContext } from "./contracts/frameGraph";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { Texture, bytesPerPixel, claimRenderTargetTextureOwner, compressedTextureByteLength, getRenderTargetTextureOwner, isCompressedTextureFormat, type TextureCubeFace, type TextureFormat, type TexturePixelData } from "./Texture";
@@ -199,6 +202,50 @@ function snapshotNativeDofDisplay(stages: NativeDofDisplayStages): NativeDofDisp
     ...(stages.finalize ? { finalize: Object.freeze({ ...stages.finalize }) } : {})
   });
 }
+/**
+ * Remove the custom passes anchored before native depth of field from the chain slots and return them by anchor,
+ * each list keeping the slot order (ascending `order`, then registration).
+ */
+function takeNativeDofPrecedingCustoms(customAt: Map<number, PostPassDescriptor[]>): {
+  readonly afterDepth: PostPassDescriptor[]; readonly beforeTaa: PostPassDescriptor[]; readonly afterTaa: PostPassDescriptor[];
+} {
+  const taken: PostPassDescriptor[] = [];
+  for (const [position, list] of customAt) {
+    const kept = list.filter(pass => !nativeDofCustomAnchorPrecedesDof(pass.insertAt));
+    taken.push(...list.filter(pass => nativeDofCustomAnchorPrecedesDof(pass.insertAt)));
+    if (kept.length) customAt.set(position, kept); else customAt.delete(position);
+  }
+  const order = (pass: PostPassDescriptor): number => typeof pass.order === "number" && Number.isFinite(pass.order) ? pass.order : Number.MAX_SAFE_INTEGER;
+  const sorted = taken.sort((a, b) => order(a) - order(b));
+  return { afterDepth: sorted.filter(pass => pass.insertAt === "after-depth"),
+    beforeTaa: sorted.filter(pass => pass.insertAt === "before-taa"), afterTaa: sorted.filter(pass => pass.insertAt === "after-taa") };
+}
+
+/** Single-sample float copy of a (possibly 4x-resolved or rgba8) color source for the scene DoF kernel. */
+const WEBGPU_SCENE_DOF_COLOR_FRAGMENT = /* wgsl */ `@group(0) @binding(2) var u_color: texture_2d<f32>;
+@fragment fn fs_scene_dof_color(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  return textureLoad(u_color, vec2<i32>(position.xy), 0);
+}
+`;
+
+/**
+ * The WebGL2 S10b user-LUT fetch on display-referred colour: the `.cube` rows are lattice samples at i/(N-1), so the
+ * coordinate gets the half-texel remap, and `bypass` (1 - intensity) keeps that much of the ungraded colour.
+ */
+const WEBGPU_DISPLAY_LUT_FRAGMENT = /* wgsl */ `struct LutParams { size: f32, bypass: f32, _pad: vec2<f32> };
+@group(0) @binding(0) var<uniform> u_params: LutParams;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+@group(0) @binding(3) var u_lut: texture_3d<f32>;
+@fragment fn fs_display_lut(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let source = textureLoad(u_color, vec2<i32>(position.xy), 0);
+  let n = u_params.size;
+  let coord = clamp(source.rgb, vec3<f32>(0.0), vec3<f32>(1.0)) * ((n - 1.0) / n) + vec3<f32>(0.5 / n);
+  let graded = textureSampleLevel(u_lut, u_sampler, coord, 0.0).rgb;
+  return vec4<f32>(mix(graded, source.rgb, u_params.bypass), source.a);
+}
+`;
+
 /** One fragment for the 4x DoF producer resolve (see resolveNativeDofMultisampleProducer). */
 function nativeDofMultisampleResolveWgsl(reversed: boolean, clearDepth: number): string {
   return `
@@ -1410,6 +1457,9 @@ export class WebGPUDevice implements RenderDevice {
   private nativeSsaoPasses = 0;
   private nativeAmbientOcclusionPasses = 0;
   private nativeSsrPasses = 0;
+  /** S10b user LUTs (one rgba8unorm 3-D texture per `.cube` source, LRU 4), valid for one device generation. */
+  private readonly webgpuLuts = new Map<string, { readonly texture: WebGPUTextureLike & { destroy(): void }; readonly view: unknown; readonly size: number; readonly generation: number }>();
+  private readonly webgpuLutFailed = new Set<string>();
   private nativeTaaPasses = 0;
   private nativeTemporalBindings = 0;
   /** Native S4 god-ray, S7 motion-blur and volumetric-light draws (`webgpu/WebGPUDepthEffects.ts`). */
@@ -5650,13 +5700,15 @@ export class WebGPUDevice implements RenderDevice {
     if (target.colorTexture.format === "rgba32f" && !this.device.features?.has("float32-filterable")) {
       throw new RenderDeviceError("Native depth-of-field presentation requires filterable rgba32f", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
-    if (options.nativeEffects?.length || options.passes.some(pass => pass.name === "taa") ||
-        registeredPostPasses().some(pass => pass.postScopeMatches?.(context.scopeId) !== false && nativeDofCustomAnchorPrecedesDof(pass.insertAt))) {
-      throw new RenderDeviceError("Native depth of field cannot combine with temporal or custom passes", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+    // Registered passes anchored before S6 run ahead of depth of field (takeNativeDofPrecedingCustoms).
+    if (options.nativeEffects?.length || options.passes.some(pass => pass.name === "taa")) {
+      throw new RenderDeviceError("Native depth of field cannot combine with temporal passes or native effects", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
     }
     if (options.autoExposure !== undefined) normalizeWebGPUAutoExposure(options.autoExposure);
     let previousStage = -1;
     for (const pass of options.passes) {
+      // SSR runs as the S3 stage before depth of field; a legacy ssao (no native S2 this frame) reads the frame depth in place.
+      if (pass.name === "ssr" || pass.name === "ssao") continue;
       const stage = pass.name === "bloom" ? 0 : pass.name === "tone-mapping" ? 1 : pass.name === "color-grade" ? 2 : pass.name === "fxaa" ? 3 : -1;
       if (stage < previousStage || stage < 0) throw new RenderDeviceError("Native depth-of-field post stages are unsupported or out of order", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
       previousStage = stage;
@@ -5992,7 +6044,10 @@ export class WebGPUDevice implements RenderDevice {
      * silently, never as a GLSL fallback.
      */
     const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId);
-    const dofDisplay = options.nativeDepthOfField ? options.nativeDofDisplay : undefined;
+    // Native depth of field: passes anchored before S6 (after-depth, before-taa, after-taa) leave the chain slots and
+    // run around the HDR depth stages in the v2 graph order instead (see the try block below).
+    const preDofCustoms = options.nativeDepthOfField || options.nativeSceneDepthOfField ? takeNativeDofPrecedingCustoms(customAt) : undefined;
+    const dofDisplay = options.nativeDepthOfField || options.nativeSceneDepthOfField ? options.nativeDofDisplay : undefined;
     if (dofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
     const dofFrameIndex = Number.isSafeInteger(options.postFrameContext?.frameId) ? options.postFrameContext!.frameId : 0;
     let vignetteRun = false;
@@ -6001,6 +6056,14 @@ export class WebGPUDevice implements RenderDevice {
       vignetteRun = true;
       track(this.executeNativeDofDisplayStage(current, "vignette", dofDisplay, dofFrameIndex));
       if (diagnosticToken) recordPostStage("S10b:display-grade:vignette", diagnosticToken);
+    };
+    let lutRun = false;
+    const runLut = (): void => {
+      if (lutRun || !options.nativeLut) return;
+      lutRun = true;
+      if (displayP3) { recordPostSkipped(`WEBGPU_LUT_P3_UNSUPPORTED:${options.nativeLut.source}`, diagnosticToken); return; }
+      const out = this.executeWebGPUDisplayLut(current, options.nativeLut, diagnosticToken);
+      if (out) { track(out); if (diagnosticToken) recordPostStage("S10b:display-grade:lut", diagnosticToken); }
     };
     let effectsRun = false;
     const runEffects = (): void => {
@@ -6038,19 +6101,9 @@ export class WebGPUDevice implements RenderDevice {
       } else runCustoms(customs);
     };
     try {
-      // v2 S2: ambient occlusion composes in linear HDR, before SSR (S3), TAA, bloom and tone.
-      // Native depth of field refuses ao (nativeDofConflicts), so the two never share a frame.
-      if (options.nativeAmbientOcclusion) {
-        track(this.executeWebGPUAmbientOcclusion(current, source, options.nativeAmbientOcclusion, options.postFrameContext?.frameId ?? 0, diagnosticToken));
-      }
-      // W3: SSR composites onto the scene-linear source before bloom and tone
-      // mapping (the v2 S3 position), reading the source's depth attachment.
-      const ssrPass = options.passes.find(pass => pass.name === "ssr");
-      if (ssrPass) {
-        if (options.nativeDepthOfField) throw new RenderDeviceError("Native depth of field cannot combine with SSR", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
-        track(this.executeWebGPUSsr(current, ssrPass.options, source));
-        if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
-      }
+      // Consume the sealed native DoF frame before any pre-DoF stage submits (a sealed proof is valid only until the
+      // next submission); `assertDofCurrent` then guards the source through the whole chain.
+      let dofProof: NativeDofFrameProof | undefined;
       if (options.nativeDepthOfField) {
         const frame = options.nativeDepthOfField.frame;
         const proof = this.#nativeDofProofs.get(frame);
@@ -6069,6 +6122,32 @@ export class WebGPUDevice implements RenderDevice {
           this.assertNativeDofTarget(proof.target);
         };
         assertDofCurrent = assertCurrent;
+        dofProof = proof;
+      }
+      if (preDofCustoms) runCustoms(preDofCustoms.afterDepth);
+      // v2 S2: ambient occlusion composes in linear HDR, before SSR (S3), TAA, depth of field, bloom and tone.
+      if (options.nativeAmbientOcclusion) {
+        track(this.executeWebGPUAmbientOcclusion(current, source, options.nativeAmbientOcclusion, options.postFrameContext?.frameId ?? 0, diagnosticToken));
+      }
+      // W3: SSR composites onto the scene-linear source before bloom and tone
+      // mapping (the v2 S3 position), reading the source's depth attachment.
+      const ssrPass = options.passes.find(pass => pass.name === "ssr");
+      if (ssrPass) {
+        track(this.executeWebGPUSsr(current, ssrPass.options, source));
+        if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
+      }
+      const depthStagesP3 = Boolean((options.nativeGodRays || options.nativeMotionBlur) && displayP3);
+      if (depthStagesP3) recordPostSkipped("WEBGPU_DEPTH_STAGES_P3_UNSUPPORTED", diagnosticToken);
+      // v2 S4: god rays precede TAA and depth of field.
+      if (options.nativeGodRays && !depthStagesP3) {
+        track(this.executeWebGPUGodRays(current, source, options.nativeGodRays));
+        recordPostStage(`S4:god-rays-${options.nativeGodRays.samples}`, diagnosticToken);
+      }
+      if (preDofCustoms) { runCustoms(preDofCustoms.beforeTaa); runCustoms(preDofCustoms.afterTaa); }
+      if (options.nativeDepthOfField && dofProof && assertDofCurrent) {
+        const frame = options.nativeDepthOfField.frame;
+        const proof = dofProof, assertCurrent = assertDofCurrent;
+        assertCurrent();
         const generation = () => this.generation, isLost = () => this.disposed || this.contextLost;
         linearDriver = new WebGPULinearDepth({ createTarget: descriptor => this.createRenderTarget(descriptor),
           assertTargetOwned: target => { this.assertNativeDofTarget(target); },
@@ -6080,7 +6159,8 @@ export class WebGPUDevice implements RenderDevice {
         if (diagnosticToken) recordPostStage("S1:depth-prep", diagnosticToken);
         dofDriver = new WebGPUDepthOfField({ createTarget: descriptor => this.createRenderTarget(descriptor),
           draw: pass => this.executeNativeDofPass(pass, assertCurrent), deviceGeneration: generation, isDeviceLost: isLost });
-        dofResult = dofDriver.execute({ color: source, alpha: frame.alpha, depthModel: frame.depthModel,
+        // The color is the HDR chain so far (S2 AO, S3 SSR, S4 god rays, pre-DoF customs); depth stays the frame's.
+        dofResult = dofDriver.execute({ color: current, alpha: frame.alpha, depthModel: frame.depthModel,
           linearDepth: linearResult.target, depthEncoding: "linear-view-metres", maxGeometryDepthMeters: frame.maxGeometryDepthMeters,
           skyDepthMeters: frame.skyDepthMeters, options: options.nativeDepthOfField.options });
         assertCurrent();
@@ -6089,19 +6169,14 @@ export class WebGPUDevice implements RenderDevice {
         current = dofResult.target;
         linearResult.release(); linearResult = undefined;
       }
-      // Native depth stages (S4 god rays, S7 motion blur) on the HDR source, before bloom: the WebGL2 v2 order.
-      if (options.nativeGodRays || options.nativeMotionBlur) {
-        if (displayP3) recordPostSkipped("WEBGPU_DEPTH_STAGES_P3_UNSUPPORTED", diagnosticToken);
-        else {
-          if (options.nativeGodRays) {
-            track(this.executeWebGPUGodRays(current, source, options.nativeGodRays));
-            recordPostStage(`S4:god-rays-${options.nativeGodRays.samples}`, diagnosticToken);
-          }
-          if (options.nativeMotionBlur) {
-            track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
-            recordPostStage(`S7:motion-blur-${options.nativeMotionBlur.samples}x${options.nativeMotionBlur.tileSize}`, diagnosticToken);
-          }
-        }
+      if (options.nativeSceneDepthOfField && !options.nativeDepthOfField) {
+        track(this.executeWebGPUSceneDepthOfField(current, source, options.nativeSceneDepthOfField));
+        if (diagnosticToken) { recordPostStage("S1:depth-prep", diagnosticToken); recordPostStage("S6:dof", diagnosticToken); }
+      }
+      // v2 S7: motion blur follows depth of field, on HDR before bloom.
+      if (options.nativeMotionBlur && !depthStagesP3) {
+        track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
+        recordPostStage(`S7:motion-blur-${options.nativeMotionBlur.samples}x${options.nativeMotionBlur.tileSize}`, diagnosticToken);
       }
       // The native DoF chain's chromatic aberration follows S7 (HDR, before bloom).
       if (dofDisplay?.chromaticAberration) {
@@ -6122,7 +6197,7 @@ export class WebGPUDevice implements RenderDevice {
         const pass = options.passes[passIndex]!;
         if (pass.name === "fxaa") { runDofVignette(); runEffects(); }
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));
-        else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
+        else if (pass.name === "color-grade") { track(this.executeWebGPUColorGrade(current, pass.options)); runLut(); }
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
         else if (pass.name === "ssao") track(this.executeWebGPUSsao(current, source, pass.options));
         // The renderer offers legacy volumetric light only to this WebGPU chain (outside the shared LDR pass-name union).
@@ -6156,6 +6231,7 @@ export class WebGPUDevice implements RenderDevice {
                 }
               } } : {}) });
           current = target;
+          if (!options.passes.some(candidate => candidate.name === "color-grade")) runLut();
         }
         assertDofCurrent?.();
       }
@@ -6205,6 +6281,98 @@ export class WebGPUDevice implements RenderDevice {
       dofDriver?.dispose();
       linearDriver?.dispose();
     }
+  }
+
+  /**
+   * The general-scene S6 stage: linear depth from the frame's own depth attachment (a 4x attachment is read at sample
+   * 0, like the native AO stage) with the clear value as sky, then the native six-pass DoF kernel on `color`. Returns
+   * a caller-owned target in the color's float format.
+   */
+  private executeWebGPUSceneDepthOfField(color: RenderTarget, depthSource: RenderTarget, request: NativeSceneDofRequest): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(color);
+    if (!src.nativeView) throw new RenderDeviceError("WebGPU depth of field source has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    if (depthSource.width !== src.width || depthSource.height !== src.height) {
+      throw new RenderDeviceError("WebGPU depth of field depth and color sizes differ", "WEBGPU_DOF_DEPTH_UNSUPPORTED");
+    }
+    const depth = this.nativeAmbientOcclusionDepth(depthSource, "depth-of-field", true);
+    let linearUniforms: Float32Array;
+    try { linearUniforms = packWebGPUAoLinearDepthUniforms({ ...request.camera, reversed: depth.reversed }); }
+    catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "WEBGPU_DOF_DEPTH_UNSUPPORTED"); }
+    const w = src.width, h = src.height;
+    const scratch: RenderTarget[] = [];
+    const generation = () => this.generation, isLost = () => this.disposed || this.contextLost;
+    const driver = new WebGPUDepthOfField({ createTarget: descriptor => this.createRenderTarget(descriptor),
+      draw: pass => this.executeNativeDofPass(pass, () => this.assertAlive()), deviceGeneration: generation, isDeviceLost: isLost });
+    let succeeded = false;
+    try {
+      let input: RenderTarget = color;
+      const format = src.colorTexture.format;
+      if ((src.sampleCount ?? 1) !== 1 || (format !== "rgba16f" && format !== "rgba32f") || src.colorTexture.colorSpace !== "linear") {
+        input = this.createRenderTarget({ width: w, height: h, format: "rgba16f", depth: false, label: "a3d-webgpu-scene-dof-color" });
+        scratch.push(input);
+        this.runWebGPUFullscreenPass({ label: "webgpu-scene-dof-color", fragment: WEBGPU_SCENE_DOF_COLOR_FRAGMENT, entryPoint: "fs_scene_dof_color",
+          uniforms: new Float32Array(4), views: [src.nativeView], target: input, textureLoadBindings: true });
+      }
+      const linear = this.createRenderTarget({ width: w, height: h, format: "rgba32f", depth: false, label: "a3d-webgpu-scene-dof-linear-depth" });
+      scratch.push(linear);
+      this.runWebGPUFullscreenPass({ label: "webgpu-scene-dof-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
+        uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true, ...(depth.multisampled ? { multisampledDepthViews: [0] } : {}) });
+      const result = driver.execute({ color: input, alpha: "opaque", depthModel: "single-surface", linearDepth: linear, depthEncoding: "linear-view-metres",
+        maxGeometryDepthMeters: request.maxGeometryDepthMeters, skyDepthMeters: request.skyDepthMeters, options: request.options });
+      succeeded = true;
+      // The driver is dropped without dispose: its output now belongs to the caller's chain.
+      return result.target;
+    } finally {
+      for (const target of scratch) target.dispose();
+      if (!succeeded) { try { driver.dispose(); } catch { /* Preserve the original failure. */ } }
+    }
+  }
+
+  /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
+  private executeWebGPUDisplayLut(color: RenderTarget, lut: NonNullable<WebGPUNativePostPresentationOptions["nativeLut"]>,
+    diagnosticToken?: PostDiagnosticToken): RenderTarget | null {
+    const source = lut.source;
+    if (typeof source !== "string" || (typeof lut.cube !== "string" && !lut.data) || this.webgpuLutFailed.has(source)) return null;
+    let entry = this.webgpuLuts.get(source);
+    if (entry && entry.generation !== this.generation) { this.webgpuLuts.delete(source); entry = undefined; }
+    if (!entry) {
+      if (!this.device.createTexture) return null;
+      let parsed: LutTexture3D;
+      try { parsed = lut.data ?? parseCubeLut(lut.cube!); } catch (error) {
+        this.webgpuLutFailed.add(source);
+        const code = error instanceof Error ? /^[A-Z0-9_]+/.exec(error.message)?.[0] ?? "LUT_UPLOAD_FAILED" : "LUT_UPLOAD_FAILED";
+        recordPostSkipped(`LUT_INVALID:${source}:${code}`, diagnosticToken);
+        return null;
+      }
+      const n = parsed.size;
+      const bytes = new Uint8Array(n * n * n * 4);
+      for (let i = 0; i < bytes.length; i += 1) {
+        const v = parsed.data[i] ?? 1;
+        bytes[i] = Math.round(Math.min(1, Math.max(0, Number.isFinite(v) ? v : 0)) * 255);
+      }
+      const texture = this.device.createTexture({ label: "a3d-webgpu-display-lut", size: [n, n, n], dimension: "3d", format: "rgba8unorm",
+        usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST }) as WebGPUTextureLike & { destroy(): void };
+      this.registerNativeCleanup(texture, []);
+      this.device.queue.writeTexture?.({ texture }, bytes, { bytesPerRow: n * 4, rowsPerImage: n }, [n, n, n]);
+      entry = { texture, view: texture.createView({ dimension: "3d" }), size: n, generation: this.generation };
+      this.webgpuLuts.set(source, entry);
+      while (this.webgpuLuts.size > 4) {
+        const [oldest, value] = this.webgpuLuts.entries().next().value!;
+        this.webgpuLuts.delete(oldest);
+        this.retireNative(value.texture);
+      }
+    } else { this.webgpuLuts.delete(source); this.webgpuLuts.set(source, entry); }
+    const src = this.requireRenderTarget(color);
+    if (!src.nativeView) return null;
+    const size = entry.size;
+    const intensity = typeof lut.intensity === "number" && Number.isFinite(lut.intensity) ? Math.min(1, Math.max(0, lut.intensity)) : 1;
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format: src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f", depth: false, label: "a3d-webgpu-display-lut-out" });
+    try {
+      this.runWebGPUFullscreenPass({ label: "webgpu-display-lut", fragment: WEBGPU_DISPLAY_LUT_FRAGMENT, entryPoint: "fs_display_lut",
+        uniforms: new Float32Array([size, 1 - intensity, 0, 0]), views: [src.nativeView, entry.view], target: out });
+    } catch (error) { out.dispose(); throw error; }
+    return out;
   }
 
   private executeWebGPUExposurePass(pass: WebGPUExposureDraw): void {
