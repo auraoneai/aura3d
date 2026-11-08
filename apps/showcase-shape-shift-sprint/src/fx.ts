@@ -23,6 +23,12 @@ export function eventFlash(cue: CueName, shapeColor: string): Flash | null {
   }
 }
 
+/** "#rrggbb" -> "rgba(r,g,b,a)" (presentation only). */
+function translucent(hex: string, alpha: number): string {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
 export class Fx {
   private readonly fx: ScreenFx;
   constructor(host?: HTMLElement) {
@@ -30,7 +36,8 @@ export class Fx {
   }
   cue(cue: CueName, shapeColor: string, reducedMotion: boolean): void {
     if (cue === "gameover") {
-      this.fx.reveal(shapeColor, reducedMotion);
+      // Translucent wipe so the Toybox Skyway world stays visible behind the results card.
+      this.fx.reveal(translucent(shapeColor, 0.42), reducedMotion);
       return;
     }
     const flash = eventFlash(cue, shapeColor);
