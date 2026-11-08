@@ -441,15 +441,17 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
 /**
  * True when the post bag this scene would submit needs a sampleable depth texture that the WebGPU device does not
  * advertise. Mirrors the Renderer check (`DEPTH_POSTPROCESS_UNSUPPORTED`, `postprocessRequiresDepthTexture`): the legacy
- * passes, and on the v2 chain the ao / god-rays / motion-blur / ssr / taa stages. Depth of field is exempt because the
- * WebGPU device runs it natively.
+ * passes, and on the v2 chain the ao / ssr / taa stages. Exempt because the WebGPU device runs them natively: depth of
+ * field, and god rays, motion blur and legacy volumetric light, which read the forward target's own depth attachment
+ * (`webgpuNativeDepthPassesCover` in the renderer). A caller-supplied volumetric-light depth array stays a gap: the
+ * native pass reads only the frame depth.
  */
 function postLacksWebgpuDepth(post: RendererPostProcessOptions): boolean {
-  if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
+  if ((post.volumetricLight && post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
       (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth)) return true;
   if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
-  const bag = post.pipeline as { ao?: unknown; godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
-  return [bag.ao, bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
+  const bag = post.pipeline as { ao?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
+  return [bag.ao, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
 }
 
 type WebgpuPostGap = { readonly code: string; readonly missing: readonly string[] };
