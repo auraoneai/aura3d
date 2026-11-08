@@ -12,6 +12,7 @@
  */
 import type { material } from "@aura3d/engine";
 import { APEX_PALETTE, hexToUnit } from "../art/look";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, wgslStage } from "../art/wgsl";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 type V3 = [number, number, number];
@@ -197,6 +198,52 @@ void main() {
   outColor = vec4(a3dFinite(col), a);
 }`;
 
+/** A3/W6: the WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL above (same pixels as before). */
+const WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct WakeVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) along: f32,
+  @location(1) across: f32,
+  @location(2) strength: f32,
+  @location(3) dist: f32,
+};
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(8) a_instanceMatrix0: vec4<f32>,
+  @location(9) a_instanceMatrix1: vec4<f32>,
+  @location(10) a_instanceMatrix2: vec4<f32>,
+  @location(11) a_instanceMatrix3: vec4<f32>
+) -> WakeVarying {
+  var out: WakeVarying;
+  let m = aura.u_modelMatrix * mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let center = (m * vec4<f32>(0.0, 0.0, 0.0, 1.0)).xyz;
+  let axis = a3dMat3Mul(aura.u_modelMatrix, a_instanceMatrix2.xyz);
+  let width = length(a_instanceMatrix0.xyz);
+  out.strength = length(a_instanceMatrix1.xyz);
+  var p = center + axis * a_position.z;
+  var side = cross(axis, aura.u_cameraPosition - p);
+  let sl = length(side);
+  side = select(vec3<f32>(1.0, 0.0, 0.0), side / sl, sl > 1e-5);
+  p = p + side * a_position.x * width;
+  out.along = a_position.z + 0.5;
+  out.across = a_position.x * 2.0;
+  out.dist = length(aura.u_cameraPosition - p);
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * vec4<f32>(p, 1.0));
+  return out;
+}`);
+
+const WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_COLOR], /* wgsl */ `
+@fragment fn fs_main(@location(0) vAlong: f32, @location(1) vAcross: f32, @location(2) vStrength: f32, @location(3) vDist: f32) -> @location(0) vec4<f32> {
+  let edge = a3dSaturate(1.0 - vAcross * vAcross);
+  let body = edge * edge;
+  let core = a3dPow(edge, 10.0);
+  let along = mix(1.0 - aura.u_wakeTaper, 1.0, vAlong);
+  let fade = 1.0 - smoothstep(aura.u_wakeFade.x, aura.u_wakeFade.y, vDist);
+  let a = a3dSaturate(vStrength) * body * along * fade;
+  let col = a3dSrgbToLinear(aura.u_wakeColor) * aura.u_wakeIntensity + vec3<f32>(1.0) * core * aura.u_wakeCore;
+  return vec4<f32>(a3dFinite3(col), a);
+}`);
+
 /**
  * The additive strip material. `taper` fades each instance toward its older end (1 = to zero: a rival streak; small: the
  * player's segments, whose strength already falls per segment); `fade` is the camera distance band (m) it fades out over.
@@ -204,6 +251,7 @@ void main() {
 export function wakeSpec(color: string, taper: number, fade: readonly [number, number]): CustomSpec {
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
+    wgsl: { vertex: WGSL_VERTEX, fragment: WGSL_FRAGMENT },
     uniforms: {
       wakeColor: { type: "vec3", value: hexToUnit(color) },
       wakeIntensity: { type: "f32", value: 1.6 },

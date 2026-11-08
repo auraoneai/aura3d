@@ -2,6 +2,7 @@
 import type { material } from "@aura3d/engine";
 import { ACTIVE_LOOK, lookRow, type CumulusLookRow } from "./art/look";
 import { BALL_FRAGMENT, BALL_VERTEX, SCENERY_FRAGMENT, SCENERY_SHADOWED_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, PUDDLE_FRAGMENT, PUDDLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, STORM_SKY_FRAGMENT, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX, WATERFALL_FRAGMENT, WATERFALL_VERTEX } from "./shaders";
+import { SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, STORM_SKY_FRAGMENT_WGSL, VALLEY_FRAGMENT_WGSL, VALLEY_VERTEX_WGSL } from "./shaders-wgsl";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 type Rgb = readonly [number, number, number];
@@ -37,6 +38,8 @@ export const skySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => {
   const k = lookConstants(row), storm = row.sky.rainbow > 0 || row.sky.towers > 0 || row.sky.rain > 0;
   return {
   glsl: { vertex: SKY_VERTEX, fragment: storm ? STORM_SKY_FRAGMENT : SKY_FRAGMENT },
+  // A3/W6: WebGPU twin (shaders-wgsl.ts); WebGL2 keeps drawing the GLSL.
+  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: storm ? STORM_SKY_FRAGMENT_WGSL : SKY_FRAGMENT_WGSL },
   uniforms: {
     skyTop: { type: "vec3", value: [...k.skyTop] }, skyMid: { type: "vec3", value: [...k.skyMid] }, skyHorizon: { type: "vec3", value: [...k.skyHorizon] },
     cloudLight: { type: "vec3", value: [...k.cloudLight] }, cloudShade: { type: "vec3", value: [...k.cloudShade] },
@@ -51,6 +54,7 @@ export const skySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => {
 
 export const valleySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: VALLEY_VERTEX, fragment: VALLEY_FRAGMENT },
+  wgsl: { vertex: VALLEY_VERTEX_WGSL, fragment: VALLEY_FRAGMENT_WGSL },
   uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: 0.0011 }, cloudPhase: { type: "f32", value: 0 } },
   side: "double"
 });

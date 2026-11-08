@@ -39,6 +39,9 @@ const FRAME_BINDINGS: readonly PortableShaderBinding[] = [
   { name: "u_geometryMatrix", kind: "mat4", required: false },
   { name: "u_viewMatrix", kind: "mat4", required: false },
   { name: "u_a3dSunDirection", kind: "vec3", required: false },
+  // `a3d_scene` sun radiance: bound by the forward pass when the GLSL twin declares it; WGSL twins read `aura.u_a3dSun*`.
+  { name: "u_a3dSunColor", kind: "vec3", required: false },
+  { name: "u_a3dSunIntensity", kind: "float", required: false },
   { name: "u_projectionMatrix", kind: "mat4", required: false },
   { name: "u_cameraPosition", kind: "vec3", required: false },
   { name: "u_time", kind: "float", required: false },

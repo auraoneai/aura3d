@@ -1,5 +1,6 @@
 import type { material } from "@aura3d/engine";
 import { apexLookAt, hexToUnit } from "./look";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, WGSL_NOISE, WGSL_SKY, wgslStage } from "./wgsl";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 type V3 = [number, number, number];
@@ -69,10 +70,68 @@ void main() {
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
 
+/** A3/W6: the WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL above (same pixels as before). */
+const WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct SkyVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) dir: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>) -> SkyVarying {
+  var out: SkyVarying;
+  out.dir = a_position;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+const WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_SKY, WGSL_COLOR], /* wgsl */ `
+fn starField(d: vec3<f32>) -> f32 {
+  let cell = floor(d * 520.0);
+  let h = a3dHash31(cell);
+  let twinkle = 0.65 + 0.35 * sin(aura.u_time * 2.0 + h * 40.0);
+  return step(0.9965, h) * smoothstep(0.02, 0.3, d.y) * twinkle;
+}
+@fragment fn fs_main(@location(0) vDir: vec3<f32>) -> @location(0) vec4<f32> {
+  let d = a3dSafeNormalize3(vDir, vec3<f32>(0.0, 0.0, -1.0));
+  let horizon = a3dSrgbToLinear(aura.u_skyHorizon);
+  let mid = a3dSrgbToLinear(aura.u_skyMid);
+  let top = a3dSrgbToLinear(aura.u_skyTop);
+  let up = max(d.y, 0.0);
+  var col = mix(mid, top, smoothstep(0.06, 0.62, up));
+  let sunSide = 0.55 + 0.45 * a3dSaturate(dot(normalize(vec2<f32>(d.x, d.z) + vec2<f32>(1e-5)), normalize(aura.u_sunDirXZ + vec2<f32>(1e-5))));
+  let band = (1.0 - smoothstep(0.0, 0.105, up)) * sunSide;
+  col = mix(col, horizon, band);
+  col = mix(col, horizon * 0.35, 1.0 - smoothstep(-0.08, 0.0, d.y));
+
+  let h = max(d.y, 0.0);
+  let uv = d.xz / (h + 0.22) * 1.6 + vec2<f32>(aura.u_time * 0.004, 0.0);
+  let n = a3dFbm2(uv * 1.2, 5);
+  let n2 = a3dFbm2(uv * 1.2 + aura.u_sunDirXZ * 0.18, 5);
+  let sunTintLin = a3dSrgbToLinear(aura.u_sunColor);
+  let moonTint = vec3<f32>(0.12, 0.17, 0.32);
+  let lightTint = mix(sunTintLin, moonTint, aura.u_nightAmount);
+  let dens = smoothstep(0.5, 0.76, n) * smoothstep(0.0, 0.14, d.y) * (1.0 - aura.u_nightAmount * 0.72);
+  let lit = a3dSaturate(0.55 + (n - n2) * 5.0);
+  let cloud = mix(mid * 0.55, lightTint * 1.25, lit);
+  col = mix(col, cloud, dens * 0.82);
+
+  let sunPower = 1.0 - aura.u_nightAmount * 0.82;
+  let disc = a3dSunDisc(d, aura.u_sunDir, 0.04);
+  let glow = a3dSunGlow(d, aura.u_sunDir, 34.0);
+  let wide = a3dSunGlow(d, aura.u_sunDir, 6.0);
+  col = col + lightTint * (disc * 2.6 + glow * 0.8 + wide * 0.2) * sunPower;
+  col = col + a3dHorizonHaze(d, lightTint * 0.3, 0.09) * (1.0 - aura.u_nightAmount * 0.7);
+
+  col = col + a3dSrgbToLinear(aura.u_cityGlow) * (1.0 - smoothstep(0.0, 0.08, abs(d.y))) * (0.1 + aura.u_nightAmount * 0.6);
+  col = col + vec3<f32>(0.8, 0.88, 1.0) * starField(d) * aura.u_nightAmount * (1.0 - dens);
+
+  return vec4<f32>(a3dFinite3(col), 1.0);
+}`);
+
 export function skySpec(): CustomSpec {
   const boot = skyLook(0);
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
+    wgsl: { vertex: WGSL_VERTEX, fragment: WGSL_FRAGMENT },
     uniforms: {
       skyHorizon: { type: "vec3", value: boot.skyHorizon },
       skyMid: { type: "vec3", value: boot.skyMid },
