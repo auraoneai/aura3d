@@ -93,7 +93,7 @@ import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, generatedSkinningForGeometry, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
@@ -5429,6 +5429,8 @@ export class Renderer {
       if (nativePrimitive) selectedFeatures["a3d.nativePrimitive"] = nativePrimitive;
       let record = featuresForGeometry({ ...mf, features: selectedFeatures }, has);
       if (record.lighting === "lit" && physicalVertexColorsForGeometry(item.geometry, this.device)) record = { ...record, vertexColors: true };
+      // Same bone-texture skinning record ForwardPass draws; a geometry the draw rejects is not warmed.
+      try { record = generatedSkinningForGeometry(record, item.geometry, m.name); } catch { continue; }
       const geometryMask = ["a_uv", "a_uv1", "a_color", "a_joints", "a_weights", "a_joints1", "a_weights1"].map((n) => (has(n) ? 1 : 0)).join("");
       const variants = prewarmClipping || itemMayClip(item)
         ? [record, { ...record, features: { ...record.features, "a3d.clipping": true } }]
