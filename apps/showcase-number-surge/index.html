@@ -235,6 +235,10 @@
       .howto-score .gold { color: var(--gold); }
       .howto-actions { display: flex; justify-content: center; padding-top: 4px; position: sticky; bottom: -18px; padding-bottom: 2px; background: linear-gradient(rgba(19, 18, 48, 0), rgba(19, 18, 48, 0.96) 35%); }
       #btn-howto-close { min-height: 52px; min-width: 200px; }
+      /* Footer bar: solid so the close hint never sits over scrolled rules text; button and hint share one row on wide screens. */
+      .howto-actions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 0 -22px -18px; padding: 10px 22px 14px; bottom: -18px; background: rgb(19, 18, 48); border-top: 1px solid rgba(62, 242, 255, 0.2); }
+      .howto-hint { font-size: 12px; color: var(--ink-dim); }
+      .howto-section { margin-bottom: -4px !important; }
       #howto-screen button:focus-visible, #btn-howto:focus-visible, #btn-howto-pause:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
       .btn-ghost {
         font-size: 16px;
@@ -248,6 +252,7 @@
       @media (max-width: 620px) {
         .howto-card { padding: 16px 14px 14px; gap: 10px; }
         .howto-cols, .howto-things { grid-template-columns: 1fr; }
+        .howto-actions { flex-direction: column; margin: 0 -14px -14px; padding: 10px 14px 12px; bottom: -14px; }
       }
       @media (max-height: 760px) and (min-width: 621px) {
         .howto-card { gap: 8px; padding: 12px 20px 12px; }
@@ -261,6 +266,7 @@
         .howto-list, .thing, .howto-score { font-size: 13px; }
         .howto-list { gap: 4px; }
         kbd { height: 23px; min-width: 25px; font-size: 12px; }
+        .howto-actions { margin: 0 -20px -12px; padding: 8px 20px 10px; bottom: -12px; }
       }
       @media (prefers-reduced-motion: reduce) {
         .popup { animation-duration: 0.6s; }
@@ -330,6 +336,7 @@
         <h2 id="howto-title">HOW TO PLAY</h2>
         <p class="howto-goal" id="howto-goal">Steer your number ball through the better gate in every pair to grow its number, then smash each wall by being bigger than it.</p>
 
+        <h3 class="howto-section">Controls</h3>
         <div class="howto-cols">
           <section class="howto-box" aria-labelledby="howto-kb">
             <h3 id="howto-kb">Keyboard</h3>
@@ -343,10 +350,10 @@
           <section class="howto-box" aria-labelledby="howto-touch">
             <h3 id="howto-touch">Touch &amp; mouse</h3>
             <ul class="howto-list">
-              <li><span class="what"><b>Drag left / right</b> anywhere to steer</span></li>
-              <li><span class="what">Tap <b>PLAY NOW</b> to start a run</span></li>
-              <li><span class="what"><b>PAUSE</b> and <b>SOUND</b> buttons sit bottom right</span></li>
-              <li><span class="what"><b>PLAY AGAIN</b> after a run ends</span></li>
+              <li><span class="keys"><kbd>Drag</kbd></span><span class="what">drag left / right anywhere to steer</span></li>
+              <li><span class="keys"><kbd>PLAY NOW</kbd></span><span class="what">start a run, or <b>PLAY AGAIN</b> after one</span></li>
+              <li><span class="keys"><kbd>PAUSE</kbd></span><span class="what">pause button, bottom right</span></li>
+              <li><span class="keys"><kbd>SOUND</kbd></span><span class="what">sound button, bottom right</span></li>
             </ul>
           </section>
         </div>
@@ -374,7 +381,7 @@
             </ul>
           </section>
           <section class="howto-box" aria-labelledby="howto-end">
-            <h3 id="howto-end">How a run ends</h3>
+            <h3 id="howto-end">Lives &amp; the end of a run</h3>
             <ul class="howto-score">
               <li><b>One life.</b> Reach a wall with a number that is not bigger than it and the run is over, unless a shield blocks it.</li>
               <li>Walls roughly double each time and the road speeds up, so keep picking the bigger gate.</li>
@@ -385,6 +392,7 @@
 
         <div class="howto-actions">
           <button id="btn-howto-close" type="button">GOT IT</button>
+          <p class="howto-hint keys-hint">Esc, Enter or Space to close</p>
         </div>
       </div>
     </div>
