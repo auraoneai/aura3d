@@ -55,6 +55,26 @@ describe("GU47 ED-4 castShadow on material.custom", () => {
     expect(globalShaderSource(key)).toBeUndefined();
   });
 
+  it("a WGSL twin gives the depth program a WebGPU stage (twin vertex + encoded depth) and leaves its GLSL stages unchanged", () => {
+    const twinVertex = "/* @aura3d-bindings */\noverride a3dZeroToOneProjection: bool = false;\n@vertex fn vs_main(@location(0) a_position: vec3<f32>) -> @builtin(position) vec4<f32> {\n  var p = a_position;\n  p.x = p.x + sin(aura.u_uSway * p.y) * p.y;\n  let clip = aura.u_modelViewProjection * vec4<f32>(p, 1.0);\n  return vec4<f32>(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);\n}";
+    const twinFragment = "/* @aura3d-bindings */\n@fragment fn fs_main() -> @location(0) vec4<f32> { return vec4<f32>(0.8, 0.7, 0.5, 1.0); }";
+    const spec = { glsl: { vertex: SWAY_VERTEX, fragment: FRAGMENT }, uniforms: { uSway: { type: "f32" as const, value: 0.35 } }, castShadow: true, side: "double" as const };
+    const glslOnly = createCustomShaderMaterial(spec);
+    const twin = createCustomShaderMaterial({ ...spec, wgsl: { vertex: twinVertex, fragment: twinFragment } });
+    const before = globalShaderSource(glslOnly.customDepthShaderKey!)!;
+    const pair = globalShaderSource(twin.customDepthShaderKey!)!;
+    expect(before.webgpu).toBeUndefined();
+    const strip = (source: string): string => source.replace(/@aura3d-portable:\S+/g, "");
+    expect(strip(pair.vertex)).toBe(strip(before.vertex));
+    expect(strip(pair.fragment)).toBe(strip(before.fragment));
+    expect(pair.webgpu!.vertex).toContain("sin(aura.u_uSway * p.y)");
+    expect(pair.webgpu!.vertex).toContain(`@aura3d-portable:${twin.customDepthShaderKey}`);
+    expect(pair.webgpu!.fragment).toContain("return vec4f(a3dFragCoord.z, a3dFragCoord.z, a3dFragCoord.z, 1.0);");
+    expect(pair.portableBindings!.map((binding) => binding.name)).toEqual(expect.arrayContaining(["u_modelViewProjection", "u_uSway"]));
+    glslOnly.dispose();
+    twin.dispose();
+  });
+
   it("without castShadow there is no depth program and the caster keeps the position-only depth shader", () => {
     const plain = createCustomShaderMaterial({ glsl: { vertex: SWAY_VERTEX, fragment: FRAGMENT }, uniforms: { uSway: { type: "f32", value: 0.35 } } });
     expect(plain.customDepthShaderKey).toBeUndefined();
