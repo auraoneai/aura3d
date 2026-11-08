@@ -1,9 +1,9 @@
 /**
  * Point sprites as quads for a requested lab backend (`?backend=webgpu|auto`): WebGPU has no point size (a point list
  * rasterises one pixel), so ports that draw `gl_PointSize` sprites can draw each point as four corners sharing its position
- * with `uv` as the corner. The corner/array helpers are Ion Circuit's (heatsink-port/point-quads.ts).
+ * with `uv` as the corner. The corner/array helpers are the shared ones (./point-quads.ts) Ion Circuit also uses.
  */
-import { expandToCorners, pointQuadArrays, quadUpdater } from "../heatsink-port/point-quads";
+import { expandToCorners, pointQuadArrays, quadUpdater } from "./point-quads";
 
 export { quadUpdater };
 

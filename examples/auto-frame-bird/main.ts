@@ -44,7 +44,7 @@ const birdParts = (): AuraNodeInput[] => [
 
 // The bird's body box (beak to tail; the flapping wings are left out so the size does not pulse) at the origin,
 // made rotation-safe for yaw and bank: a cube of the largest half-extent.
-const local = camera.worldBounds(group("bird probe", birdParts()), { exclude: (node) => /^w[lr]-/.test(node.name ?? "") });
+const local = camera.worldBounds(group("bird probe", birdParts()), { exclude: (node) => "name" in node && /^w[lr]-/.test(node.name ?? "") });
 const half = Math.max(...[0, 1, 2].map((i) => (local.max[i]! - local.min[i]!) / 2));
 const boxAt = (p: V3) => ({ min: [p[0] - half, p[1] - half, p[2] - half] as V3, max: [p[0] + half, p[1] + half, p[2] + half] as V3 });
 
