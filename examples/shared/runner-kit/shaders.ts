@@ -6,6 +6,10 @@
  */
 import { material, type texture } from "@aura3d/engine";
 import { hexSrgb, type Rgb } from "./look-utils";
+import {
+  FLAT_FRAGMENT_WGSL, FLAT_TONE_FRAGMENT_WGSL, FLAT_TONE_VERTEX_WGSL, FLAT_VERTEX_WGSL, SHADOW_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL,
+  SKY_VERTEX_WGSL, TOON_TONE_VERTEX_WGSL, TOON_VERTEX_WGSL, gradientSkyFragmentWgsl, toonFragmentWgsl
+} from "./shaders-wgsl";
 
 export const TOON_VERTEX = /* glsl */ `
 out vec3 vNormal;
@@ -93,7 +97,19 @@ export interface SkyStop {
   readonly hex: string;
 }
 
+/** WGSL twin of every fragment `gradientSkyFragment` produced (keyed by the GLSL text), so `skySpec` can pair it. */
+const SKY_FRAGMENT_TWINS = new Map<string, string>();
+
+/** The WGSL twin of a `gradientSkyFragment` result (undefined for any other GLSL). */
+export const skyFragmentWgslTwin = (fragment: string): string | undefined => SKY_FRAGMENT_TWINS.get(fragment);
+
 export function gradientSkyFragment(stops: readonly SkyStop[]): string {
+  const glsl = gradientSkyFragmentGlsl(stops);
+  if (!SKY_FRAGMENT_TWINS.has(glsl)) SKY_FRAGMENT_TWINS.set(glsl, gradientSkyFragmentWgsl(stops));
+  return glsl;
+}
+
+function gradientSkyFragmentGlsl(stops: readonly SkyStop[]): string {
   if (stops.length < 2) throw new Error("runner-kit: a sky gradient needs at least two stops");
   const sorted = [...stops].sort((a, b) => a.t - b.t);
   const col = (i: number): string => {
@@ -181,6 +197,7 @@ export type CustomSpec = Parameters<typeof material.custom>[0];
 
 export const toonSpec = (base: Rgb, map?: TextureHandle, emissive: Rgb = [0, 0, 0], tone = false): CustomSpec => ({
   glsl: { vertex: tone ? TOON_TONE_VERTEX : TOON_VERTEX, fragment: toonFragment(map !== undefined, tone) },
+  wgsl: { vertex: tone ? TOON_TONE_VERTEX_WGSL : TOON_VERTEX_WGSL, fragment: toonFragmentWgsl(map !== undefined, tone) },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
     emissive: { type: "color3", value: [...emissive] },
@@ -192,6 +209,7 @@ export const toonSpec = (base: Rgb, map?: TextureHandle, emissive: Rgb = [0, 0, 
 
 export const flatSpec = (base: Rgb, alpha: number, tone = false): CustomSpec => ({
   glsl: tone ? { vertex: FLAT_TONE_VERTEX, fragment: FLAT_TONE_FRAGMENT } : { vertex: FLAT_VERTEX, fragment: FLAT_FRAGMENT },
+  wgsl: tone ? { vertex: FLAT_TONE_VERTEX_WGSL, fragment: FLAT_TONE_FRAGMENT_WGSL } : { vertex: FLAT_VERTEX_WGSL, fragment: FLAT_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [...base] }, alpha: { type: "f32", value: alpha } },
   transparent: true,
   depthWrite: false,
@@ -200,10 +218,20 @@ export const flatSpec = (base: Rgb, alpha: number, tone = false): CustomSpec => 
 
 export const shadowSpec = (): CustomSpec => ({
   glsl: { vertex: SHADOW_VERTEX, fragment: SHADOW_FRAGMENT },
+  wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: SHADOW_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [0.02, 0.02, 0.05] }, alpha: { type: "f32", value: 0.3 } },
   transparent: true,
   depthWrite: false,
   side: "double"
 });
 
-export const skySpec = (fragment: string = SKY_FRAGMENT): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment }, side: "double", depthWrite: false });
+/**
+ * Sky dome spec. A `gradientSkyFragment` result pairs its WGSL twin on its own; any other GLSL fragment needs
+ * `wgslFragment` (without one the program has no twin and `?backend=webgpu` falls back to WebGL2).
+ */
+export const skySpec = (fragment: string = SKY_FRAGMENT, wgslFragment: string | undefined = skyFragmentWgslTwin(fragment)): CustomSpec => ({
+  glsl: { vertex: SKY_VERTEX, fragment },
+  ...(wgslFragment ? { wgsl: { vertex: SKY_VERTEX_WGSL, fragment: wgslFragment } } : {}),
+  side: "double",
+  depthWrite: false
+});
