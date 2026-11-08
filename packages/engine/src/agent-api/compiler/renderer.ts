@@ -1,5 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
+import { webgpuCustomShaderGap } from "./webgpuCustomShaderGap.js";
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraMaterialSpec, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
 import { configureBloomFusionDevice, decodedModelDirectPathBlockers, isDirectRenderPath, isFusedBloomPasses, recordDecodedDirectPathBlockers, type BloomFusionDevice } from "../app/renderPath.js";
@@ -646,7 +647,8 @@ export async function createProductionRuntimeSceneRenderer(
   // Checked on the final post bag before any WebGPU context exists: WebGPU never advertises sampleable depth textures
   // (the legacy depth-aware passes need them; Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame), and its
   // native depth of field cannot yet combine with most other stages (WEBGPU_DOF_COMBINATION_UNSUPPORTED at mount).
-  () => isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap));
+  // A `material.custom` with GLSL but no WGSL twin has no WebGPU program (its draws would be skipped), so it also falls back.
+  () => (isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap)) ?? webgpuCustomShaderGap(snapshot));
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
