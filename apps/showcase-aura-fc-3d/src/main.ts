@@ -113,18 +113,21 @@ function boot(): void {
   document.body.appendChild(loadingBar);
   const loading = createLoadingProgress({ element: loadingBar, onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
   let app: ReturnType<typeof createAuraApp>;
-  const bootLookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look);
   try {
+    // Lab flags: `?worker=1` carries createWorkerRendererWorker; the renderer/output fragments merge over the look's renderer and the venue output
+    // preset instead of being overwritten by them, so `?backend=` / `?gamut=` reach the engine.
+    const { renderer: labRenderer, output: labOutput } = labAppOptions(lab);
+    const lookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look) as { renderer?: object; output?: object };
+    // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
+    // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
+    // PRD D11: the 4.6.2 look path set no output preset; `?outputPreset=off` is the QA A/B for the GU47 path.
+    const presetOutput = bootOriginal || bootParams.get("outputPreset") === "off" ? undefined : { preset: VENUE_LOOKS[bootVenue].post };
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
-      ...labAppOptions(lab, createWorkerRendererWorker),
-      ...bootLookOptions,
-      // The look's renderer options would otherwise replace the lab backend request (?backend=webgpu was ignored).
-      ...(bootLookOptions.renderer || labAppOptions(lab).renderer ? { renderer: { ...bootLookOptions.renderer, ...labAppOptions(lab).renderer } } : {}),
-      // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
-      // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
-      // PRD D11: the 4.6.2 look path set no output preset; `?outputPreset=off` is the QA A/B for the GU47 path.
-      ...(bootOriginal || bootParams.get("outputPreset") === "off" ? {} : { output: { preset: VENUE_LOOKS[bootVenue].post } }),
+      ...(lab.worker ? { worker: labAppOptions(lab, createWorkerRendererWorker).worker } : {}),
+      ...lookOptions,
+      ...(labRenderer ? { renderer: { ...lookOptions.renderer, ...labRenderer } } : {}),
+      ...(presetOutput || labOutput ? { output: { ...lookOptions.output, ...presetOutput, ...labOutput } } : {}),
       qualityRebuild: { flags: ["game"] }
     } as any);
   } catch (e) {

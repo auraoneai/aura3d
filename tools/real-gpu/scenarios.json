@@ -81,5 +81,15 @@
   "last-train-port--band-d": {"path": "/apps/lamplight-line/", "query": "?band=D&title=0&autopilot=1", "settleMs": 25000, "steps": [{"evaluate": "window.__AURA_LAST_TRAIN__?.runCircuit?.(0) ?? null"}, {"shot": "circuit"}]},
   "where-the-wind-wanders-port--found3": {"path": "/apps/the-bellkeepers-walk/", "query": "?found=3", "settleMs": 25000, "steps": [{"shot": "t25", "evaluate": "({ shadows: window.__AURA_WIND__?.app?.()?.diagnostics()?.lighting?.shadows ?? null, daylight: window.__AURA_WIND__?.daylight ?? null })"}]},
   "where-the-wind-wanders-port--epilogue": {"path": "/apps/the-bellkeepers-walk/", "query": "?found=epilogue", "settleMs": 25000, "steps": [{"shot": "t25", "evaluate": "({ shadows: window.__AURA_WIND__?.app?.()?.diagnostics()?.lighting?.shadows ?? null, daylight: window.__AURA_WIND__?.daylight ?? null })"}]},
-  "silt-and-signal-port--ch4": {"path": "/apps/duneglide/", "query": "?chapter=4&start=1", "settleMs": 12000, "steps": [{"shot": "ch4"}, {"burst": {"count": 6, "everyMs": 500, "label": "storm"}}]}
+  "silt-and-signal-port--ch4": {"path": "/apps/duneglide/", "query": "?chapter=4&start=1", "settleMs": 12000, "steps": [{"shot": "ch4"}, {"burst": {"count": 6, "everyMs": 500, "label": "storm"}}]},
+  "shape-shift-sprint": { "path": "/apps/showcase-shape-shift-sprint/", "settleMs": 8000, "steps": [
+    { "click": "PLAY NOW", "wait": 2500, "shot": "start" }, { "down": "ArrowLeft" }, { "burst": { "count": 5, "everyMs": 300, "label": "run" } }, { "up": "ArrowLeft" } ] },
+  "number-surge": { "path": "/apps/showcase-number-surge/", "settleMs": 8000, "steps": [
+    { "click": "PLAY NOW", "wait": 2500, "shot": "start" }, { "down": "ArrowLeft" }, { "burst": { "count": 5, "everyMs": 300, "label": "run" } }, { "up": "ArrowLeft" } ] },
+  "splat-turf": { "path": "/apps/showcase-splat-turf/", "settleMs": 8000, "steps": [
+    { "click": "PLAY NOW", "wait": 2500, "shot": "start" }, { "down": "ArrowLeft" }, { "burst": { "count": 5, "everyMs": 300, "label": "paint" } }, { "up": "ArrowLeft" } ] },
+  "polarity-orbs": { "path": "/apps/showcase-polarity-orbs/", "settleMs": 8000, "steps": [
+    { "click": "PLAY NOW", "wait": 2500, "shot": "start" }, { "press": "Space" }, { "burst": { "count": 5, "everyMs": 300, "label": "flip" } } ] },
+  "beat-hopper": { "path": "/apps/showcase-beat-hopper/", "settleMs": 8000, "steps": [
+    { "click": "PLAY NOW", "wait": 2500, "shot": "start" }, { "press": "Space" }, { "burst": { "count": 5, "everyMs": 300, "label": "hop" } } ] }
 }

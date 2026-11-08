@@ -253,4 +253,34 @@
     <changefreq>weekly</changefreq>
     <priority>0.60</priority>
   </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/showcase-number-surge/</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/showcase-splat-turf/</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/showcase-polarity-orbs/</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/showcase-beat-hopper/</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
 </urlset>

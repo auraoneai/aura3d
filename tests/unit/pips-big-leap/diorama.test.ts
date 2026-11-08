@@ -1,7 +1,7 @@
 // GU47 WP-16 (G06): the diorama scene per world (PBL-L1, L2, E1, E2, E3, P1, P2, P3, M1, M2, W1, PF1) and
 // the PRD D8 guarantee that the collision world is identical in the diorama and the original look.
 import { describe, expect, it } from "vitest";
-import { BASE_TILES, buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
+import { BASE_TILES, LEGACY_SLAB_NORMAL_WORLDS, buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
 import { baseTileTransforms, dioramaName, floraLayers, hazardMaterial, SURFACES } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 import { WORLD_IDS, WORLD_LOOKS, baseDepthFor } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
@@ -169,7 +169,8 @@ describe("pips-big-leap diorama scene", () => {
       const nodes = sceneOf(id);
       const statics = worldSpec(id).platforms.filter((p) => !p.mover && !p.timed);
       const instanced = nodes.filter((n) => (n.name ?? "").startsWith("plats:") || (n.name ?? "").startsWith("plat-tops:"));
-      expect(instanced.every((n) => n.primitive === "roundedBox")).toBe(true);
+      // Lane 521: w1 and w6 draw the same slabs as one world-space mesh per kind with the 4.7.18 normals.
+      expect(instanced.every((n) => n.primitive === (LEGACY_SLAB_NORMAL_WORLDS.has(id) ? "custom" : "roundedBox")), id).toBe(true);
       const kinds = new Set(statics.map((p) => p.kind ?? "grass"));
       expect(instanced.length, id).toBe(kinds.size * 2);
       expect(buildWorld(worldSpec(id)).presentation.instancedPlatforms).toBe(statics.length);

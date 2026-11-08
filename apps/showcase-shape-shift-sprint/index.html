@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2e9be6" />
+    <meta name="description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for combo multipliers." />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/" />
+    <meta property="og:title" content="Shape Shift Sprint — Aura3D Shape-Matching Runner" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Shape Shift Sprint — Aura3D Shape-Matching Runner" />
+    <link rel="icon" href="data:," />
+    <title>Shape Shift Sprint — Aura3D Shape-Matching Runner</title>
+    <style>
+      /* GT Walsheim Bold (licensed library, public/aura-assets/GT-Walsheim-Bold.woff2; loaded as
+         "Shape Display" by src/main.ts from the admitted same-origin copy). No system fonts. */
+      html, body { margin: 0; height: 100%; background: #fdf3df; overflow: hidden; }
+      body { font-family: "Shape Display"; font-synthesis: none; user-select: none; color: #1f2a44; }
+      canvas#app { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; user-select: none; outline: none; }
+      .chip { background: #fff6e8; color: #1f2a44; border: 3px solid #1f2a44; border-radius: 14px; box-shadow: 3px 4px 0 rgba(31,42,68,0.55); padding: 4px 14px 6px; font-weight: 700; }
+      #hud { position: fixed; top: 0; left: 0; right: 0; z-index: 5; pointer-events: none;
+        padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+        display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+      #hud-left { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+      #hud-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+      #score { font-size: clamp(22px, 4.8vh, 32px); font-variant-numeric: tabular-nums; }
+      #best { font-size: 13px; }
+      #lives { display: flex; gap: 6px; }
+      .pip { width: clamp(16px, 3.4vh, 22px); height: clamp(16px, 3.4vh, 22px); border-radius: 50%; border: 3px solid #1f2a44; background: #fff6e8; display: inline-block; }
+      .pip.on { background: #e8453c; }
+      #combo-chip { display: flex; align-items: center; gap: 8px; }
+      #mult { font-size: clamp(16px, 3.4vh, 22px); }
+      #combo-tube { position: relative; width: 96px; height: 14px; border: 3px solid #1f2a44; border-radius: 8px; background: #fff6e8; overflow: hidden; }
+      #combo-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: #f7c531; transition: width 0.18s ease-out; }
+      #shape-meter { display: flex; align-items: center; gap: 8px; }
+      #shape-chip { width: 26px; height: 26px; border: 3px solid #1f2a44; background: #e8453c; display: inline-flex; align-items: center; justify-content: center; color: #fff6e8; font-size: 15px; }
+      #shape-chip[data-shape="sphere"] { border-radius: 50%; }
+      #shape-chip[data-shape="cube"] { border-radius: 4px; }
+      #shape-chip[data-shape="cone"] { border-radius: 50% 50% 4px 4px; clip-path: polygon(50% 0, 100% 100%, 0 100%); border-width: 0; outline: 3px solid #1f2a44; }
+      .symbols-on #shape-chip::after { content: "●"; }
+      .symbols-on #shape-chip[data-shape="cube"]::after { content: "■"; }
+      .symbols-on #shape-chip[data-shape="cone"]::after { content: "▲"; }
+      #shape-name { font-size: 14px; }
+      #status-line { font-size: 13px; min-height: 18px; color: #1f2a44; }
+      #popups { position: fixed; left: 50%; top: 24vh; transform: translateX(-50%); z-index: 15; pointer-events: none;
+        display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      .popup { background: #fff6e8; color: #1f2a44; border: 3px solid var(--popup-accent, #1f2a44); border-radius: 12px;
+        padding: 3px 14px 5px; font-weight: 700; white-space: nowrap; box-shadow: 2px 3px 0 rgba(31,42,68,0.4);
+        animation: popup-rise 1s cubic-bezier(0.2,0.8,0.3,1) forwards; }
+      @keyframes popup-rise { 0% { opacity: 0; transform: translateY(12px) scale(0.6); } 16% { opacity: 1; transform: translateY(0) scale(1.12); }
+        32% { transform: scale(1); } 100% { opacity: 0; transform: translateY(-46px) scale(1); } }
+      .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; text-align: center; }
+      .overlay-card { background: #fff6e8; border: 4px solid #1f2a44; border-radius: 24px; box-shadow: 10px 12px 0 rgba(31,42,68,0.3);
+        padding: clamp(14px, 4.5vh, 44px) 36px; max-height: 92vh; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; max-width: 520px; }
+      .overlay-card h1 { font-size: clamp(30px, 8.5vh, 58px); margin: 0 0 clamp(6px, 2vh, 14px); line-height: 1.08; color: #1f2a44; }
+      .overlay-card h1 .red { color: #c0271f; } .overlay-card h1 .yellow { color: #8a5e06; } .overlay-card h1 .blue { color: #2f6fe4; }
+      .instructions { font-size: clamp(14px, 2.6vh, 19px); margin: 0 0 clamp(8px, 2.2vh, 18px); color: #1f2a44; }
+      .btn { padding: clamp(8px, 2vh, 14px) 46px; font-size: clamp(20px, 4.4vh, 30px); font-weight: 700; font-family: inherit;
+        background: #f7c531; color: #1f2a44; border: 4px solid #1f2a44; border-radius: 40px; cursor: pointer; text-transform: uppercase;
+        box-shadow: 0 7px 0 #1f2a44, 0 14px 18px rgba(31,42,68,0.25); }
+      .btn:active { transform: translateY(3px); box-shadow: 0 4px 0 #1f2a44; }
+      #btn-start[aria-busy="true"] { opacity: 0.72; }
+      .load-bar { --aura3d-loading: 0; position: relative; width: min(260px, 60%); height: 8px; margin: clamp(6px, 1.6vh, 12px) auto 0;
+        border-radius: 4px; overflow: hidden; background: rgba(31,42,68,0.18); border: 2px solid #1f2a44; box-sizing: content-box; }
+      .load-bar::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: #e8453c; transition: transform 160ms linear; }
+      .load-bar[data-complete="true"] { opacity: 0; transition: opacity 240ms ease 120ms; }
+      .settings { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: clamp(6px, 1.6vh, 12px) 0 0; }
+      .toggle { font-weight: 700; font-size: 13px; line-height: 1; font-family: inherit; color: #1f2a44; background: #fff6e8;
+        border: 2px solid #1f2a44; border-radius: 100px; padding: 7px 12px; cursor: pointer; box-shadow: 0 2px 0 #1f2a44; }
+      .toggle[aria-pressed="true"] { background: #f7c531; }
+      .hint { font-size: 13px; color: #1f2a44; margin: 12px 0 0; }
+      #splash-best { font-size: 19px; margin: 0 0 12px; min-height: 24px; color: #1f2a44; }
+      #splash-screen { background: linear-gradient(180deg, rgba(46,155,230,0.12), rgba(253,243,223,0.22)); }
+      #gameover-screen { background: rgba(31,42,68,0.55); }
+      #final-score { font-size: clamp(22px, 5vh, 32px); margin: 0 0 clamp(6px, 1.5vh, 10px); color: #1f2a44; font-variant-numeric: tabular-nums; }
+      #final-stats { font-size: clamp(13px, 2.4vh, 17px); margin: 0 0 clamp(8px, 2vh, 16px); color: #1f2a44; }
+      .go-best { display: inline-block; margin-top: 8px; font-size: 22px; color: #8a5e06; }
+      #pause-screen { background: rgba(31,42,68,0.45); }
+      .icon-btn { position: fixed; left: calc(14px + env(safe-area-inset-left)); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 12;
+        width: 44px; height: 44px; border-radius: 50%; border: 3px solid #1f2a44; background: #fff6e8; color: #1f2a44;
+        box-shadow: 0 4px 0 #1f2a44; font-size: 19px; line-height: 1; cursor: pointer; padding: 0; }
+      .icon-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f2a44; }
+      #btn-pause { left: calc(68px + env(safe-area-inset-left)); }
+      #render-error { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; background: #fdf3df; }
+      #render-error .overlay-card { max-width: 440px; }
+      .hidden { display: none !important; }
+      @media (max-width: 520px) {
+        .overlay-card { width: calc(100vw - 28px); max-width: calc(100vw - 28px); padding-left: 16px; padding-right: 16px; }
+        #combo-tube { width: 64px; }
+        #score { font-size: clamp(18px, 5.2vw, 26px); }
+      }
+      @media (max-height: 420px) { .hint { display: none; } }
+      /* keyboard-only hints mean nothing on a phone or tablet */
+      @media (hover: none) and (pointer: coarse) { .hint.keys-only { display: none; } }
+      @media (prefers-reduced-motion: reduce) {
+        .popup { animation-duration: 0.01s; }
+        #combo-fill, .load-bar::after, .load-bar[data-complete="true"] { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="app" tabindex="0" aria-label="Shape Shift Sprint 3D runner"></canvas>
+    <div id="hud" aria-live="polite">
+      <div id="hud-left">
+        <div id="score" class="chip">0</div>
+        <div id="best" class="chip">BEST 0</div>
+        <div id="lives" class="chip" aria-label="Lives"></div>
+      </div>
+      <div id="hud-right">
+        <div id="combo-chip" class="chip"><span id="mult">x1</span><span id="combo-tube"><span id="combo-fill"></span></span></div>
+        <div id="shape-meter" class="chip"><span id="shape-chip" data-shape="sphere"></span><span id="shape-name">SPHERE</span></div>
+        <div id="status-line" class="chip"></div>
+      </div>
+    </div>
+    <div id="popups"></div>
+    <button id="btn-mute" class="icon-btn no-steer" type="button" aria-label="Toggle sound (M)" aria-pressed="false">&#x1F50A;</button>
+    <button id="btn-pause" class="icon-btn no-steer" type="button" aria-label="Pause (P or Esc)">&#x23F8;&#xFE0E;</button>
+    <div id="splash-screen" class="overlay">
+      <div class="overlay-card">
+        <h1><span class="red">SHAPE</span> <span class="yellow">SHIFT</span> <span class="blue">SPRINT</span></h1>
+        <p class="instructions">Drag to steer. Fit your shape through the matching hole.<br />Grab morph tokens to switch!</p>
+        <div id="splash-best"></div>
+        <button id="btn-start" class="btn no-steer" type="button">PLAY NOW</button>
+        <div id="load-bar" class="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <div class="settings no-steer">
+          <button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Shape symbols: off</button>
+          <button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button>
+        </div>
+        <p class="hint">Drag to steer &middot; Space to start &middot; &larr; &rarr; or A / D steer &middot; C symbols &middot; P pause &middot; M mute</p>
+      </div>
+    </div>
+    <div id="gameover-screen" class="overlay hidden">
+      <div class="overlay-card">
+        <h1><span class="red">SPLAT!</span></h1>
+        <p id="final-score"></p>
+        <p id="final-stats"></p>
+        <button id="btn-restart" class="btn no-steer" type="button">PLAY AGAIN</button>
+        <p class="hint keys-only">Space or Enter to play again</p>
+      </div>
+    </div>
+    <div id="pause-screen" class="overlay hidden no-steer">
+      <div class="overlay-card">
+        <h1><span class="blue">PAUSED</span></h1>
+        <button id="btn-resume" class="btn" type="button">RESUME</button>
+        <div class="settings">
+          <button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Shape symbols: off</button>
+          <button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button>
+        </div>
+        <p class="hint keys-only">P or Esc to resume</p>
+      </div>
+    </div>
+    <div id="render-error">
+      <div class="overlay-card">
+        <h1><span class="red">CAN'T RENDER</span></h1>
+        <p class="instructions">This game needs WebGL2. Try a current browser with hardware acceleration enabled.</p>
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -77,7 +77,12 @@ const showcaseRoutes = [
   "showcase-roadster-hours-port",
   "showcase-where-the-wind-wanders-port",
   "showcase-silt-and-signal-port",
-  "showcase-cloud-runner-port"
+  "showcase-cloud-runner-port",
+  "showcase-shape-shift-sprint",
+  "showcase-number-surge",
+  "showcase-splat-turf",
+  "showcase-polarity-orbs",
+  "showcase-beat-hopper"
 ];
 
 const retiredPrototypeRoutes = [

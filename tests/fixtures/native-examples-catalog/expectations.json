@@ -2001,7 +2001,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "51823ca6cf011f3c0a584f98c10f583af2cd66d3ec250e982950811e0b7f8855"
+        "sha256": "1f95e92f8a5f931899ff82c641b0964afda3634594e6cce096ebe9cd288963bd"
       },
       "sourceDependencies": [
         {
@@ -2440,7 +2440,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
-          "sha256": "bd562ac5d0e696d77b79ce301452af1a0056c7af2f16deb5aaff19566e68e51c"
+          "sha256": "c48823b94cbb2972510bbf13ab03ed116510b855a1f9d30894d25cac89833973"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",
@@ -3848,7 +3848,7 @@
       },
       "source": {
         "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "2fa063a39a5d7550d09ad165e223674f0736415ccee13165e84c284f6fe92f47"
+        "sha256": "c4bb2c63b71210eef4fb6675f0f5241bae0447bfea35537c796e230ba657529d"
       },
       "sourceDependencies": [
         {
@@ -3947,7 +3947,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "c9d12ae897108faa791cf57845516bb600f93f94344b06d39809d71372d030e0"
+        "sha256": "0b8436147c04fe3a1be192ac5873fac6d5ab403528d83e044b39ccf912996cb1"
       },
       "sourceDependencies": [
         {
@@ -3956,7 +3956,7 @@
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/look.ts",
-          "sha256": "1910b6ce8f90d0e5345d26b94fd5e8cdf79beed25276c021fc4939642fb48b36"
+          "sha256": "2baef23ce1c96e6f892f91d059a0b6ff18553d9abf5d6b9e20115549bc3307d9"
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/motion.ts",
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "2dce870ec75529f93c428d748397bf18219be1b645a1d9bac4bc229e59572d4e"
+          "sha256": "8e545b257a9ddef3b8204e04a5517f590a5850333129f4afcf3a1d96e5274785"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4818,7 +4818,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "2dce870ec75529f93c428d748397bf18219be1b645a1d9bac4bc229e59572d4e"
+          "sha256": "8e545b257a9ddef3b8204e04a5517f590a5850333129f4afcf3a1d96e5274785"
         },
         {
           "path": "examples/heatsink-port/models.ts",

@@ -164,7 +164,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   const courseBounds = { min: [minX - PAD, minY - PAD, minZ - PAD] as [number, number, number], max: [maxX + PAD, maxY + PAD, maxZ + PAD] as [number, number, number] };
   const b: Scene = scene()
     .background("#02040a")
-    .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: CFG.camera.fovBase, near: 0.3, far: 4200, ...labCameraOptions(readLabFlags()) /* A9: ?depth=reversed|logarithmic (EXPERIMENTAL, default off) */ }));
+    .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: CFG.camera.fovBase, near: 0.3, far: 4200, ...labCameraOptions(readLabFlags(), "reversed") /* A9: reversed depth by default (verified on real GPU); ?depth=standard opts out, ?depth=logarithmic overrides */ }));
 
   b.add(geometry.custom(dynamicFrom(buildRoad(track, high ? 3 : 5)), { name: "road", material: material.custom(roadSpec()) }).runtime({ id: fogTracked("road", "road") }));
   b.add(geometry.custom(dynamicFrom(buildDividers(track, 3, 3)), { name: "dividers", material: material.custom(solidSpec(hexLinear("#2a2f3f"), hexLinear("#40e0ff"), 0.25)) }).runtime({ id: fogTracked("dividers", "dividers") }));

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en" data-density="compact">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a0f1e">
+    <meta
+      name="description"
+      content="Polarity Orbs — an Aura3D arcade polarity-flip collector. Drag to steer, tap to flip between red and blue, collect your colour and dodge the rest."
+    >
+    <title>Polarity Orbs — Aura3D Arcade Polarity Collector</title>
+    <style>
+      @font-face {
+        font-family: "GT Walsheim";
+        src: url("/aura-assets/GT-Walsheim-Bold.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      :root {
+        --ink: #fff4ec;
+        --paper: #241226;
+        --red: #ff5a4e;
+        --blue: #4ea8ff;
+        --gold: #ffd24e;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; overflow: hidden; background: var(--paper); }
+      body {
+        font-family: "GT Walsheim", sans-serif;
+        font-weight: 700;
+        color: var(--ink);
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: none;
+      }
+      #app { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+      .no-steer { touch-action: auto; }
+
+      #hud {
+        position: fixed;
+        top: calc(10px + var(--safe-top));
+        left: calc(12px + var(--safe-left));
+        right: calc(12px + var(--safe-right));
+        display: none;
+        align-items: flex-start;
+        justify-content: space-between;
+        pointer-events: none;
+        font-variant-numeric: tabular-nums;
+      }
+      #hud.visible { display: flex; }
+      .hud-left { display: flex; flex-direction: column; gap: 4px; }
+      #hud-score { font-size: 34px; line-height: 1; text-shadow: 0 2px 0 rgba(0,0,0,0.45); }
+      #hud-best { font-size: 13px; opacity: 0.92; text-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+      #combo-tube {
+        width: 120px; height: 8px; border-radius: 4px;
+        background: rgba(0,0,0,0.45); overflow: hidden; margin-top: 4px;
+      }
+      #combo-fill { height: 100%; width: 0%; background: var(--gold); border-radius: 4px; transition: width 120ms linear; }
+      #hud-mult { font-size: 13px; color: var(--gold); text-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+      .hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+      #polarity-icon {
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 3px solid var(--ink);
+        background: var(--red);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; color: #241226;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      }
+      #polarity-icon.blue { background: var(--blue); }
+      #lives { display: flex; gap: 5px; }
+      .life-pip {
+        width: 12px; height: 12px; border-radius: 50%;
+        background: var(--red); border: 2px solid var(--ink);
+      }
+      .life-pip.lost { background: transparent; opacity: 0.45; }
+      #powerup-badges { display: flex; gap: 4px; font-size: 11px; }
+      .badge {
+        padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,0.55);
+        color: var(--ink); display: none;
+      }
+      .badge.on { display: inline-block; }
+
+      #corner-buttons {
+        position: fixed;
+        bottom: calc(12px + var(--safe-bottom));
+        right: calc(12px + var(--safe-right));
+        display: flex; gap: 8px; z-index: 30;
+      }
+      #corner-buttons button {
+        font-family: inherit; font-weight: 700; font-size: 15px;
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 2px solid var(--ink); background: rgba(36,18,38,0.8); color: var(--ink);
+        cursor: pointer;
+      }
+
+      #popups {
+        position: fixed; left: 50%; top: 26%;
+        transform: translateX(-50%);
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        pointer-events: none; z-index: 20;
+      }
+      .popup {
+        font-size: 22px; text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+        animation: popup-rise 900ms ease-out forwards;
+      }
+      @keyframes popup-rise {
+        0% { opacity: 0; transform: translateY(10px) scale(0.8); }
+        15% { opacity: 1; transform: translateY(0) scale(1.05); }
+        100% { opacity: 0; transform: translateY(-46px) scale(1); }
+      }
+
+      .screen {
+        position: fixed; inset: 0; z-index: 40;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        gap: 14px; text-align: center;
+        padding: calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(20px + var(--safe-left));
+        background: rgba(26,15,30,0.82);
+        backdrop-filter: blur(3px);
+      }
+      .screen.visible { display: flex; }
+      .screen h1 { font-size: clamp(34px, 7vw, 58px); letter-spacing: 1px; }
+      .screen h1 .red { color: var(--red); }
+      .screen h1 .blue { color: var(--blue); }
+      .screen p { font-size: 16px; max-width: 420px; line-height: 1.45; }
+      .big-btn {
+        font-family: inherit; font-weight: 700; font-size: 21px;
+        padding: 14px 40px; border-radius: 999px; border: none;
+        background: var(--gold); color: #241226; cursor: pointer;
+        box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+      }
+      .big-btn[aria-busy="true"] { opacity: 0.6; cursor: progress; }
+      #load-bar {
+        width: min(280px, 70vw); height: 10px; border-radius: 5px;
+        background: rgba(255,255,255,0.18); overflow: hidden;
+      }
+      #load-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--red), var(--blue)); transition: width 120ms linear; }
+      #load-label { font-size: 12px; opacity: 0.85; }
+      .settings { display: flex; gap: 16px; font-size: 13px; }
+      .settings label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+      .hint { font-size: 12px; opacity: 0.8; }
+      #splash-best { color: var(--gold); font-size: 15px; }
+
+      #final-score { font-size: 52px; color: var(--gold); font-variant-numeric: tabular-nums; }
+      .stats { display: grid; grid-template-columns: auto auto; gap: 4px 18px; font-size: 15px; }
+      .stats dt { opacity: 0.85; text-align: right; }
+      .stats dd { font-variant-numeric: tabular-nums; text-align: left; }
+      /* Lighter splash veil so the 3D orb field reads behind the title (0.82 left an almost empty dark backdrop). */
+      #splash-screen { background: radial-gradient(ellipse at 50% 45%, rgba(26,15,30,0.62) 0%, rgba(26,15,30,0.38) 70%); backdrop-filter: blur(1.5px); }
+      #splash-screen h1, #splash-screen p, #splash-screen .settings, #splash-screen .hint, #splash-screen #load-label { text-shadow: 0 2px 6px rgba(0,0,0,0.55); }
+      #gameover-screen { background: radial-gradient(ellipse at 50% 45%, rgba(40,14,30,0.78) 0%, rgba(40,14,30,0.5) 75%); backdrop-filter: blur(2px); }
+      #render-error {
+        position: fixed; inset: 0; z-index: 60; display: none;
+        align-items: center; justify-content: center; text-align: center;
+        background: var(--paper); padding: 24px; font-size: 16px; line-height: 1.5;
+      }
+      #render-error.visible { display: flex; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .popup { animation: none; opacity: 1; }
+        #combo-fill, #load-fill { transition: none; }
+      }
+      body.reduced-motion .popup { animation: none; opacity: 1; }
+      body.reduced-motion #combo-fill, body.reduced-motion #load-fill { transition: none; }
+    </style>
+  </head>
+  <body>
+    <canvas id="app" aria-label="Polarity Orbs 3D orb field"></canvas>
+
+    <div id="hud" aria-live="polite">
+      <div class="hud-left">
+        <div id="hud-score">0</div>
+        <div id="hud-best">BEST 0</div>
+        <div id="combo-tube"><div id="combo-fill"></div></div>
+        <div id="hud-mult">x1</div>
+      </div>
+      <div class="hud-right">
+        <div id="polarity-icon" aria-label="Current polarity: red">+</div>
+        <div id="lives" aria-label="Lives">
+          <span class="life-pip"></span><span class="life-pip"></span><span class="life-pip"></span>
+        </div>
+        <div id="powerup-badges">
+          <span class="badge" id="badge-rainbow">RAINBOW</span>
+          <span class="badge" id="badge-shield">SHIELD</span>
+          <span class="badge" id="badge-x2">x2</span>
+          <span class="badge" id="badge-magnet">MAGNET</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="popups"></div>
+
+    <div id="corner-buttons" class="no-steer">
+      <button type="button" id="btn-mute" aria-label="Toggle sound">♪</button>
+      <button type="button" id="btn-pause" aria-label="Pause game">II</button>
+    </div>
+
+    <div id="splash-screen" class="screen visible no-steer">
+      <h1>POLARITY <span class="red">O</span><span class="blue">R</span>BS</h1>
+      <p>Drag to steer. Tap to flip polarity. Collect your colour, dodge the rest!</p>
+      <div id="splash-best">BEST 0</div>
+      <button type="button" id="btn-start" class="big-btn" aria-busy="true">PLAY NOW</button>
+      <div id="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="load-fill"></div>
+      </div>
+      <div id="load-label">Warming up…</div>
+      <div class="settings">
+        <label><input type="checkbox" id="toggle-motion"> Reduced motion</label>
+        <label><input type="checkbox" id="toggle-symbols"> Polarity symbols</label>
+      </div>
+      <div class="hint">Drag / ← → steer · Tap / Space flip · M mute · P pause</div>
+    </div>
+
+    <div id="gameover-screen" class="screen no-steer">
+      <h1>GAME OVER</h1>
+      <div id="final-score">0</div>
+      <dl class="stats">
+        <dt>Best</dt><dd id="stat-best">0</dd>
+        <dt>Best combo</dt><dd id="stat-combo">0</dd>
+        <dt>Orbs collected</dt><dd id="stat-orbs">0</dd>
+        <dt>Distance</dt><dd id="stat-distance">0 m</dd>
+      </dl>
+      <button type="button" id="btn-restart" class="big-btn">PLAY AGAIN</button>
+      <div class="hint">Space / Enter to restart</div>
+    </div>
+
+    <div id="pause-screen" class="screen no-steer">
+      <h1>PAUSED</h1>
+      <button type="button" id="btn-resume" class="big-btn">RESUME</button>
+      <div class="hint">P / Esc to resume</div>
+    </div>
+
+    <div id="render-error" role="alert">
+      <p>Polarity Orbs needs WebGL2. Your browser or device could not start the renderer — try a recent Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -43,7 +43,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 
 - [Aura3D Concept Car Cinema: Typed GLB Product Configurator Example](https://aura3d.auraone.ai/apps/wow-concept-car-cinema/)
 - [Aura3D Damaged Helmet PBR Detail: Typed GLB Asset Viewer Example](https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/)
-- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 25 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
+- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 30 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
 - [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
 - [THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink/)
@@ -69,6 +69,11 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [The Bellkeeper's Walk — Meadow Walk](https://aura3d.auraone.ai/apps/the-bellkeepers-walk/): Meadow walk: collect three letters and ring the bell, with a boat epilogue, a journal and audio.
 - [Duneglide — Silt-World Flight](https://aura3d.auraone.ai/apps/duneglide/): Free-ride flight over a silt world, through ring beacons; the first chapter has real colliders.
 - [Cumulus Dash — Cloud Obstacle Runner](https://aura3d.auraone.ai/apps/cumulus-dash/): Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio.
+- [Shape Shift Sprint — Aura3D Shape-Matching Runner](https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/): Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for combo multipliers.
+- [Number Surge — Aura3D](https://aura3d.auraone.ai/apps/showcase-number-surge/): Drag to steer. Pick the better gate. Grow your number and smash the wall! A neon-arcade number runner built with Aura3D.
+- [Splat Turf — paint the road | Aura3D](https://aura3d.auraone.ai/apps/showcase-splat-turf/): A finite 1200 m paint-the-road arcade runner. Drag to steer, paint the road, dodge solvent strips and eraser bots, and watch your tank.
+- [Polarity Orbs — Aura3D Arcade Polarity Collector](https://aura3d.auraone.ai/apps/showcase-polarity-orbs/): Polarity Orbs — an Aura3D arcade polarity-flip collector. Drag to steer, tap to flip between red and blue, collect your colour and dodge the rest.
+- [Beat Hopper — Aura3D](https://aura3d.auraone.ai/apps/showcase-beat-hopper/): Swipe between three lanes, tap to hop, hold to duck. Dodge walls, grab beat orbs and ride the 132 BPM beat — PERFECT timing builds combos! A neon lane-runner rhythm game built with Aura3D.
 
 ## Notes
 

@@ -8,7 +8,7 @@ Decision D1: EXPERIMENTAL 5.0 features (WebGPU, worker rendering, reversed/log d
 
 ## Lab flags (W-8)
 
-Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`). All flags are off by default; unknown values are ignored and listed in `flags.ignored`.
+Parser: `apps/showcase-port-shared/lab-flags.ts` (`parseLabFlags`, `readLabFlags`, `labAppOptions`, `labCameraOptions`). Flags are off by default except where a game passed a real-GPU check and turned one on (owner decision 2026-11-07): reversed depth in Ion Circuit (`labCameraOptions(flags, "reversed")`, opt out with `?depth=standard`) and the portable shader pilots in Lamplight Line and Duneglide (opt out with `?portable=0`). Unknown values are ignored and listed in `flags.ignored`.
 
 | Query | Effect | Option fragment it produces | Label |
 |---|---|---|---|
