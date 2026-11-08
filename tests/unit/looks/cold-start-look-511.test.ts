@@ -3,6 +3,8 @@
 import { describe, expect, it } from "vitest";
 import { camera, effects, environments, group, lights, looks, material, primitives, scene } from "../../../packages/engine/src/agent-api/index.js";
 import { coldStartLookApplies, coldStartLookEnabled, withColdStartLook } from "../../../packages/engine/src/agent-api/looks/coldStartLook.js";
+import { sceneUsesStudioGlass } from "../../../packages/engine/src/agent-api/nodes/scene.js";
+import { isStudioMaterial } from "../../../packages/engine/src/agent-api/nodes/studioMaterial.js";
 
 const cube = () => primitives.box({ name: "cube", material: material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 }) });
 const names = (s: ReturnType<typeof withColdStartLook>): string[] => {
@@ -11,13 +13,34 @@ const names = (s: ReturnType<typeof withColdStartLook>): string[] => {
 };
 
 describe("withColdStartLook", () => {
-  it("adds studio IBL, key/fill/rim, floor and fade to a geometry-only scene", () => {
+  it("adds the structured room IBL, key/fill/rim, floor and fade to a geometry-only scene", () => {
     const base = scene({ background: "#2b2b2e" }).add(cube()).camera(camera.orbit({ position: [2.8, 1.9, 3.4], target: [0, 0, 0], fov: 40 })).toJSON();
     const out = withColdStartLook(base);
     expect(out).not.toBe(base);
-    expect(names(out)).toEqual(expect.arrayContaining(["hero studio environment", "hero key", "hero fill", "hero rim", "hero floor", "hero floor fade"]));
+    expect(names(out)).toEqual(expect.arrayContaining(["hero room environment", "hero key", "hero fill", "hero rim", "hero floor", "hero floor fade"]));
     expect(out.nodes.slice(0, base.nodes.length)).toEqual(base.nodes);
     expect(out.background).toBe(base.background);
+  });
+
+  it("N2: binds the embedded structured room (no preset file to fetch), not the studio preset", () => {
+    const out = withColdStartLook(scene().add(cube()).toJSON());
+    const stage = out.nodes.at(-1) as unknown as { children: Record<string, unknown>[] };
+    const env = stage.children.find((c) => c.kind === "environment")!;
+    expect(env).toMatchObject({ environment: "preset", preset: "softbox", intensity: 0.4, background: false });
+    expect(stage.children.filter((c) => c.kind === "environment")).toHaveLength(1);
+  });
+
+  it("N2: transmissive materials turn physical transmission on, on copies; the authored scene is not mutated", () => {
+    const glass = material.clearGlass({ transmission: 1, opacity: 0.25 });
+    const base = scene().add(primitives.sphere({ name: "glass", material: glass })).add(group("g", [cube()])).toJSON();
+    expect(sceneUsesStudioGlass(base.nodes)).toBe(false);
+    const out = withColdStartLook(base);
+    expect(sceneUsesStudioGlass(out.nodes)).toBe(true);
+    expect(isStudioMaterial((base.nodes[0] as { material?: unknown }).material)).toBe(false);
+    expect(isStudioMaterial(glass)).toBe(false);
+    // Nodes without a transmissive material keep their identity.
+    expect(out.nodes[1]).toBe(base.nodes[1]);
+    expect(sceneUsesStudioGlass(withColdStartLook(scene().add(cube()).toJSON()).nodes)).toBe(false);
   });
 
   it("sizes the rig to the scene bounds and puts the floor under the lowest geometry", () => {
