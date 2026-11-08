@@ -1,4 +1,5 @@
 /**
+ * Build: `PROBE_OUT=/tmp/out pnpm exec vite build --config tools/release/render-gate/probes/vite.config.ts`.
  * Isolated proof page for the WebGPU native depth stages (W4). The same scene renders on WebGL2 (default) and on
  * WebGPU (`?backend=webgpu`), so a pair of captures compares the passes directly.
  *
@@ -14,7 +15,7 @@
  *   ?t=<sec>     freeze the camera sweep at this time (deterministic captures)
  */
 import { camera, createAuraApp, effects, environments, lights, material, primitives, scene } from "@aura3d/engine";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags.js";
+import { labAppOptions, readLabFlags } from "../../../../../examples/shared/lab-flags.js";
 
 const params = new URLSearchParams(location.search);
 const fx = params.get("fx") ?? "both";
