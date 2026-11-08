@@ -4,13 +4,16 @@
  * the scrolling frame (vertices written once, node moved by the distance); entities are small enough to rewrite
  * per frame with dirty-range uploads.
  */
-import { camera, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import {
   Batch, Slots, flatSpec, shadowSpec, toonSpec, hexToLinear, scrollFrameZ,
   type CustomSpec, type MeshData, type Rgb
 } from "../../../examples/shared/runner-kit/index";
 import { CONFIG, type PolarityOrbsSim, type PowerupKind } from "./sim";
-import { LOOK, LINEAR, mixRgb, skyBlendSpec } from "./look";
+import { LOOK, LINEAR, mixRgb } from "./look";
+import {
+  LAYERS, CLOUD_SEA_Y, cloudSeaGeometry, cloudSeaSpec, deckSpec, layerGeometry, layerScroll, sceneSkySpec, sceneryGlowSpec, sceneryLitSpec
+} from "./scenery";
 import {
   BALL_RADIUS, SEG_LEN, DECK_WIDTH, ballMesh, orbMesh, particleMesh, powerupMesh,
   deckHalfMesh, railMesh, dashMesh, shadowMesh, shockwaveMesh, streamMesh, symbolMesh, translateMesh
@@ -47,13 +50,25 @@ export interface WorldRuntime {
 
 export const NODE_IDS = [
   "sky", "deck-warm", "deck-cool", "rails", "dashes", "ball", "ball-shadow", "ball-symbol",
-  "shield", "orbs", "powerups", "particles", "shockwave", "streams"
+  "shield", "orbs", "powerups", "particles", "shockwave", "streams",
+  "cloud-sea", "scenery-near", "scenery-mid", "scenery-far", "scenery-motes"
 ] as const;
+
+/** Fog density / end per lit scenery layer (presentation). */
+const LAYER_FOG: Record<string, readonly [number, number]> = {
+  "scenery-near": [1 / 400, 380],
+  "scenery-mid": [1 / 330, 380],
+  "scenery-far": [1 / 230, 385]
+};
 
 /** Every distinct `material.custom` program the game draws with (for the GLSL compile test). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
-    { name: "sky-blend", spec: skyBlendSpec() },
+    { name: "sky-blend", spec: sceneSkySpec() },
+    { name: "scenery-lit", spec: sceneryLitSpec(1 / 300, 380) },
+    { name: "scenery-glow", spec: sceneryGlowSpec() },
+    { name: "cloud-sea", spec: cloudSeaSpec() },
+    { name: "deck", spec: deckSpec() },
     { name: "toon", spec: toonSpec(LINEAR.red) },
     { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
     { name: "flat", spec: flatSpec(LINEAR.mint, 0.25) },
@@ -102,10 +117,13 @@ export function buildWorld(options: WorldOptions): World {
       color: "#ffe8d8",
       shadow: { cascades: 1, maxDistance: 120 }
     }))
-    .add(environments.preset("sunset", { name: "dusk-environment", intensity: 0.55, background: false }));
+    .add(environments.preset("sunset", { name: "dusk-environment", intensity: 0.55, background: false }))
+    /* Post: emissive crystals, arch strips and orbs bloom; a gentle grade and vignette frame the dusk. */
+    .add(effects.bloom({ name: "bloom", intensity: 0.55, threshold: 0.82, radius: 0.55 }))
+    .add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.6 }));
 
-  const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
-    builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
+  const add = (id: string, mesh: MeshData, spec: CustomSpec, shadows = true): void => {
+    builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec), ...(shadows ? {} : { castShadow: false, receiveShadow: false }) }).runtime({ id }));
   };
   const addBatch = (id: string, batch: Batch, spec: CustomSpec): void => {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
@@ -115,13 +133,22 @@ export function buildWorld(options: WorldOptions): World {
     // Sky dome: a coarse sphere is enough for a per-direction gradient.
     const m = orbMesh();
     const scaled: MeshData = {
-      positions: m.positions.map((v) => v * (150 / 0.45)),
+      positions: m.positions.map((v) => v * (388 / 0.45)),
       normals: m.normals.slice(),
       uvs: m.uvs.slice(),
       indices: m.indices.slice()
     };
     return scaled;
-  })(), skyBlendSpec());
+  })(), sceneSkySpec(), false);
+
+  /* Scenery never casts or receives engine shadows (its programs light themselves); a 1400-unit cloud plane in the
+   * shadow pass alone cost about three quarters of the frame rate. */
+  builder.add(geometry.custom(cloudSeaGeometry(), { name: "cloud-sea", material: material.custom(cloudSeaSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "cloud-sea" }));
+  for (const layer of LAYERS) {
+    const fog = LAYER_FOG[layer.id] ?? [1 / 300, 380];
+    const spec = layer.glow ? sceneryGlowSpec(layer.tile) : sceneryLitSpec(fog[0], fog[1], layer.tile);
+    builder.add(geometry.custom(layerGeometry(layer).geometry, { name: layer.id, material: material.custom(spec), castShadow: false, receiveShadow: false }).runtime({ id: layer.id }));
+  }
 
   add("ball", ballMesh(), toonSpec(LINEAR.red));
   add("ball-shadow", shadowMesh(), shadowSpec());
@@ -132,8 +159,8 @@ export function buildWorld(options: WorldOptions): World {
   const deckCool = new Batch(translateMesh(deckHalfMesh(), DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckCoolDim);
   const rails = new Batch(railMesh(), CONFIG.POOL_SEGMENTS, LINEAR.railWarm);
   const dashes = new Batch(dashMesh(), 60, LINEAR.dash);
-  addBatch("deck-warm", deckWarm, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
-  addBatch("deck-cool", deckCool, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  addBatch("deck-warm", deckWarm, deckSpec());
+  addBatch("deck-cool", deckCool, deckSpec());
   addBatch("rails", rails, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   addBatch("dashes", dashes, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
 
@@ -224,6 +251,19 @@ export function buildWorld(options: WorldOptions): World {
         const target = o.polarity === 1 ? 0 : 1;
         mix += (target - mix) * Math.min(1, 6 * Math.max(dt, 1 / 60));
         node("sky").setUniform?.("uMix", mix);
+        node("sky").setUniform?.("uDrift", elapsed);
+        const clouds = node("cloud-sea");
+        clouds.setUniform?.("uMix", mix);
+        clouds.setUniform?.("uScroll", o.distance);
+        clouds.setUniform?.("uDrift", elapsed);
+        clouds.setPosition(0, CLOUD_SEA_Y, -250);
+        node("deck-warm").setUniform?.("uMix", mix);
+        node("deck-cool").setUniform?.("uMix", mix);
+        for (const layer of LAYERS) {
+          const h = node(layer.id);
+          h.setUniform?.("uScroll", layerScroll(layer, o.distance));
+          if (!layer.glow) h.setUniform?.("uMix", mix);
+        }
 
         /* road in the scrolling frame: vertices written once at run-space z, nodes moved by -distance */
         const distance = o.distance;
@@ -244,7 +284,7 @@ export function buildWorld(options: WorldOptions): World {
           const { slot, fresh } = segSlots.use(s);
           if (slot < 0) continue;
           if (fresh) {
-            const z = scrollFrameZ(s.i * SEG_LEN, 0);
+            const z = scrollFrameZ(-s.i * SEG_LEN, 0);
             deckWarm.place(slot, 0, -0.15, z, 0, 1, 1, 1);
             deckCool.place(slot, 0, -0.15, z, 0, 1, 1, 1);
             rails.place(slot * 2, -DECK_WIDTH / 2 - 0.15, 0.05, z, 0, 1, 1, 1);
@@ -253,16 +293,16 @@ export function buildWorld(options: WorldOptions): World {
         }
         for (const s of liveDashes) {
           const { slot, fresh } = dashSlots.use(s);
-          if (slot >= 0 && fresh) dashes.place(slot, 0, 0.01, scrollFrameZ(s.i * SEG_LEN, 0), 0, 1, 1, 1);
+          if (slot >= 0 && fresh) dashes.place(slot, 0, 0.01, scrollFrameZ(-s.i * SEG_LEN, 0), 0, 1, 1, 1);
         }
         if (Math.abs(mix - appliedMix) > 0.01) {
           applyRoadTones(live);
           appliedMix = mix;
         }
-        node("deck-warm").setPosition(0, 0, -distance);
-        node("deck-cool").setPosition(0, 0, -distance);
-        node("rails").setPosition(0, 0, -distance);
-        node("dashes").setPosition(0, 0, -distance);
+        node("deck-warm").setPosition(0, 0, distance);
+        node("deck-cool").setPosition(0, 0, distance);
+        node("rails").setPosition(0, 0, distance);
+        node("dashes").setPosition(0, 0, distance);
 
         /* ball */
         const p = shown?.player ?? { x: o.laneOffset, y: BALL_RADIUS * o.ballScale, z: 0, rotX: -distance / BALL_RADIUS, scale: o.ballScale };

@@ -46,16 +46,20 @@ export const LOOK: PolarityLook = {
   railCool: "#6a8ac0",
   dash: "#ffe8d8",
   skyWarm: [
-    { t: 0, hex: "#2a1230" },
-    { t: 0.4, hex: "#6a2a44" },
-    { t: 0.72, hex: "#c06a5e" },
-    { t: 1, hex: "#e8a08a" }
+    { t: 0, hex: "#160a26" },
+    { t: 0.28, hex: "#3e1646" },
+    { t: 0.42, hex: "#9a3a5c" },
+    { t: 0.49, hex: "#ff9a6e" },
+    { t: 0.53, hex: "#e07a70" },
+    { t: 1, hex: "#5a2446" }
   ],
   skyCool: [
-    { t: 0, hex: "#101a33" },
-    { t: 0.4, hex: "#24406a" },
-    { t: 0.72, hex: "#5a8ac0" },
-    { t: 1, hex: "#9ac0e0" }
+    { t: 0, hex: "#060b22" },
+    { t: 0.28, hex: "#142a62" },
+    { t: 0.42, hex: "#3a6ab8" },
+    { t: 0.49, hex: "#a6d4ff" },
+    { t: 0.53, hex: "#7aa0d8" },
+    { t: 1, hex: "#22346a" }
   ],
   sun: sunDirection(32, -24),
   shockwave: { seconds: 0.45, maxRadius: 6, alpha: 0.7 },

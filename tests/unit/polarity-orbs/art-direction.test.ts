@@ -6,8 +6,8 @@ import { buildWorld } from "../../../apps/showcase-polarity-orbs/src/world";
 import { LOOK } from "../../../apps/showcase-polarity-orbs/src/look";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
-/** Expected in-play draws: sky, ball, shadow, shield, shockwave + 9 merged batches. */
-const DRAWS_ESTIMATE = 14;
+/** Expected in-play draws: sky, cloud sea, 4 scenery layers, ball, shadow, shield, shockwave + 9 merged batches. */
+const DRAWS_ESTIMATE = 19;
 
 describe("polarity orbs art direction", () => {
   it("the mounted scene passes auditArtDirection and the audit record is written", () => {
