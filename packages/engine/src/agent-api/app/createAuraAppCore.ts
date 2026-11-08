@@ -67,7 +67,7 @@ import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { createWorkerRootApp } from "./workerRootApp.js";
 import { workerCanvasTransferAttempted } from "./workerRuntime.js";
 import { coldStartLookApplies, withColdStartLook } from "../looks/coldStartLook.js";
-import { resolvePlainLook, withPlainFillYield } from "../looks/plainLook.js";
+import { plainLookForNextScene, resolvePlainLook } from "../looks/plainLook.js";
 
 type ReadinessStage = "renderer" | "first-frame";
 type ReadyBackend = "webgl2" | "webgpu";
@@ -301,6 +301,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   const plainLook = typeof (globalThis as { WebGL2RenderingContext?: unknown }).WebGL2RenderingContext === "undefined"
     ? null
     : resolvePlainLook(snapshot, options);
+  // The options the author passed (before the plain output rides on them); `setScene` re-decides against these.
+  const authoredOptions = options;
   if (plainLook) {
     snapshot = plainLook.snapshot;
     options = { ...options, output: plainLook.output };
@@ -2240,7 +2242,15 @@ export function createAuraAppWithPhysicsWorldAccess(
     },
     setScene(nextScene) {
       assertMutableFrame();
-      const normalizedNext = plainLook ? withPlainFillYield(normalizeSceneSnapshot(nextScene)) : normalizeSceneSnapshot(nextScene);
+      // An app that booted on the plain path re-decides per scene: a later scene that authors a look, post effect or HDRI
+      // drops the neutral output (its look's own output applies again); a plain scene keeps it. Apps that did not boot on
+      // the plain path never gain it here, so existing games that switch scenes keep their look.
+      let normalizedNext = normalizeSceneSnapshot(nextScene);
+      if (plainLook) {
+        const nextPlain = plainLookForNextScene(normalizedNext, authoredOptions);
+        normalizedNext = nextPlain.snapshot;
+        options = nextPlain.output ? { ...authoredOptions, output: nextPlain.output } : authoredOptions;
+      }
       const nextSnapshot = coldStartLookApplies(options) ? withColdStartLook(normalizedNext) : normalizedNext;
       assertScenePhysicsPivotSupport(nextSnapshot.nodes);
       const nextRenderSnapshot = flattenForRender(nextSnapshot, true);

@@ -176,3 +176,17 @@ export function withPlainFillYield(snapshot: AuraSceneSnapshot): AuraSceneSnapsh
   const nodes = markYield(snapshot.nodes);
   return nodes === snapshot.nodes ? snapshot : { ...snapshot, nodes };
 }
+
+/**
+ * `app.setScene` on an app that booted on the plain path: the next scene re-decides against the author's own options.
+ * A plain next scene keeps the neutral output (and the no-stack rule); a scene that authors a look, post effect or HDRI
+ * returns no output, so the app falls back to what the author passed (a look's own output preset applies again instead
+ * of being overridden by the neutral tone map). Apps that did not boot on the plain path never call this.
+ */
+export function plainLookForNextScene(
+  next: AuraSceneSnapshot,
+  authoredOptions: PlainLookAppOptions
+): { readonly snapshot: AuraSceneSnapshot; readonly output?: AuraOutputOptions } {
+  const resolved = resolvePlainLook(next, authoredOptions);
+  return resolved ? { snapshot: resolved.snapshot, output: resolved.output } : { snapshot: next };
+}

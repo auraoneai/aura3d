@@ -2,7 +2,7 @@
 // look, output or post effect (or to `looks.preset("plain")`); everything authored comes back untouched.
 import { describe, expect, it } from "vitest";
 import { camera, effects, environments, group, lights, looks, material, primitives, scene, sky } from "../../../packages/engine/src/agent-api/index.js";
-import { createPlainOutput, isPlainDefaultOutput, plainLookOptionsApply, resolvePlainLook, withPlainFillYield } from "../../../packages/engine/src/agent-api/looks/plainLook.js";
+import { createPlainOutput, isPlainDefaultOutput, plainLookForNextScene, plainLookOptionsApply, resolvePlainLook, withPlainFillYield } from "../../../packages/engine/src/agent-api/looks/plainLook.js";
 import { explicitEnvironmentResolution, prd02ProbeBindIntensities } from "../../../packages/engine/src/agent-api/compiler/environment.js";
 import { renderPathBlockers } from "../../../packages/engine/src/agent-api/app/renderPath.js";
 import type { AuraSceneNode } from "../../../packages/engine/src/agent-api/nodes/types.js";
@@ -133,5 +133,18 @@ describe("plain output on the render path", () => {
     expect(env(withPlainFillYield(next).nodes).plainDiffuseYield).toBe(true);
     const plainNext = scene().add(cube()).add(key()).toJSON();
     expect(withPlainFillYield(plainNext)).toBe(plainNext);
+  });
+
+  it("setScene on a plain-booted app: a look scene drops the neutral output, a plain scene keeps it", () => {
+    const lookNext = scene().add(looks.preset("outdoor-day")).add(cube()).toJSON();
+    const dropped = plainLookForNextScene(lookNext, {});
+    expect(dropped.output).toBeUndefined();
+    expect(dropped.snapshot).toBe(lookNext);
+    const bloomNext = scene().add(cube()).add(key()).add(effects.bloom({ intensity: 0.3 })).toJSON();
+    expect(plainLookForNextScene(bloomNext, {}).output).toBeUndefined();
+    const plainNext = scene().add(environments.neutral({ intensity: 1 })).add(lights.hemisphere({ intensity: 1 })).add(cube()).toJSON();
+    const kept = plainLookForNextScene(plainNext, {});
+    expect(isPlainDefaultOutput(kept.output)).toBe(true);
+    expect(env(kept.snapshot.nodes).plainDiffuseYield).toBe(true);
   });
 });
