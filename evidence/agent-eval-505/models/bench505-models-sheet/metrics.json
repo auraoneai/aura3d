@@ -1,0 +1,974 @@
+[
+  {
+    "runId": "bench505-models-sheet-t10-aura-r1",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 109.1,
+    "tokensIn": 162043,
+    "tokensOut": 5747,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 2,
+    "readCalls": 5,
+    "searchCalls": 5,
+    "writeCalls": 1,
+    "srcLines": 134,
+    "srcTokens": 2314,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6495.9,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 28,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build succeeded, canvas #app is used, and the probes show a non-blank frame (nonblack 0.999, std 57.2) with 0 page errors and 0 console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "Five tower bands are built as tapered cylinders with radiusTop/radiusBottom params, and each band's size also shrinks with height. The probes cannot confirm that params is honoured, but the stacked narrowing segments give a taper either way"
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "BANDS = 5, alternating the white and red materials."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The gallery has a corbel, a deck, and 16 rail posts with 16 connecting rail segments in a ring near the top."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The lamp sphere uses an emissive material with emissiveIntensity 3, plus a point light. The roof is a cone with a finial ball and spike."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "There are 6 tower windows with frames, a tower door, and 3 cottage windows with a cottage door."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "12 base rocks and 10 shore rocks use random scale and rotation. A keeper's cottage with walls, roof, chimney, door and windows is added."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is set in a requestAnimationFrame after app.ready() with ready true and bandCount 5. By my count partCount is about 90, well above 30. readyTimeout is false."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The source references no external textures, models or fonts, and everything is procedural. The probes did not report network requests directly."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "camera.orbit has autoRotate 0.12. The probes show animated true, with diff 9.96 and changedFrac 0.15 between frames."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 115,
+        "rulesLines": 0,
+        "glueLines": 28,
+        "notes": "Glue covers the global type declaration, the seeded RNG, the add/partCount wrapper, the pbr helper, the taper radius function, the onTower polar placement helper, and the createAuraApp/ready/state bootstrap. Loops that place rocks, rails and windows are counted as scene description. The engine hides"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t10-aura-r2",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 15,
+    "agentWallSec": 182.2,
+    "tokensIn": 348984,
+    "tokensOut": 7945,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 4,
+    "readCalls": 9,
+    "searchCalls": 8,
+    "writeCalls": 1,
+    "srcLines": 182,
+    "srcTokens": 2492,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6532,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 60,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeds, canvas #app is used, and the probes show a non-blank frame (mean 194, std 34.7) with 0 page errors and 0 console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The tower is 7 stacked tapered frustum bands built with a custom frustum geometry (radius from 3.2 down to 2.2), not a single cylinder."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 7 bands (band-0 to band-6) that alternate matRed and matWhite."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The gallery has a floor, a corbel, 16 posts and 16 rail segments in a ring around the top of the tower."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The lamp is an emissive sphere (emissiveIntensity 4) with a point light, inside a glass lantern room. A conical roof and a finial spike and ball sit on top."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The tower has 6 window boxes and a door box with a lintel and knob. The cottage adds 2 more windows and a door."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "19 rock frustums (13 + 4 + 2) are placed with random scale, shape and rotation. A cottage is built with walls, roof, door, windows and chimney."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is set after await app.ready() with ready true and bandCount 7. partCount is about 100, well above 30, and readyTimeout is false."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "The source has no fetch, texture, model or HDR loads. Everything is procedural, with no external assets."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The camera uses orbit with autoRotate 0.12. The probes show animated true, with a frame diff of 18.03 and a changedFrac of 0.38."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 115,
+        "rulesLines": 0,
+        "glueLines": 60,
+        "notes": "Glue is the hand-written frustum mesh generator with its normal math (~35 lines), the seeded RNG, range, add and nm helpers, the material factory M, the global declaration, and the app bootstrap and ready-state lines. The remaining lines describe the scene (tower, gallery, lantern, rocks, cottage, l"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t10-aura-r3",
+    "arm": "aura",
+    "task": 10,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 10,
+    "agentWallSec": 167.5,
+    "tokensIn": 187398,
+    "tokensOut": 19521,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 3,
+    "readCalls": 6,
+    "searchCalls": 7,
+    "writeCalls": 2,
+    "srcLines": 138,
+    "srcTokens": 2522,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6497,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 30,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build succeeds, the canvas is #app, probes show blank=false (mean 173.6, std 50.4) and there are 0 page or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "The tower is six stacked cylinder bands whose sizes shrink from bottom radius 2.4 to top radius 1.5, with radiusTop/radiusBottom params also set. This is stacked scaled segments and not a single cylinder."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "BANDS = 6, alternating #cc2f28 and #f3efe4."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A gallery floor and corbel, 16 posts in a ring and 16 rail segments sit at the top (GY = 19.2)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "The lantern room has glass, mullions and an emissive lamp sphere (emissiveIntensity 3) plus a point light. A tapered roof with a finial ball and spike sits above it."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "There are 6 tower windows (frame plus emissive glass) and a tower door with frame, knob and step."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "There is a rock core, 12 ring rocks and 4 shore rocks, each with randomized scale and rotation. A keeper's cottage with walls, roof, chimney, door and windows exists."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is set after await app.ready() with ready=true, bandCount=6 and partCount of about 103 (at least 30). readyTimeout is false."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry and materials are procedural and the source references no external asset files."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The camera has autoRotate 0.12, and the probes show animated=true with a diff of 21.41 and changedFrac of 0.387 between frames 2 seconds apart."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 85,
+        "rulesLines": 4,
+        "glueLines": 30,
+        "notes": "Glue is the global Window declaration, the seeded rand helper, the put/partCount wrapper, the mat helper, radiusAt and tower constants, the createAuraApp/onFrame/ready bootstrapping and the state flags. Ring placement trig for rocks, posts, rails and mullions is counted as scene description. The onl"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t11-aura-r1",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 13,
+    "agentWallSec": 154.6,
+    "tokensIn": 306335,
+    "tokensOut": 8465,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 3,
+    "readCalls": 8,
+    "searchCalls": 9,
+    "writeCalls": 1,
+    "srcLines": 233,
+    "srcTokens": 3121,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6491,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 35,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Vite app with canvas #app. The build succeeded, the frame is not blank (mean 184.9, std 27.2), and there are no page errors or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "makeWheel is called twice. Each wheel has a hub, 14 felloe rim segments, iron tyre segments and 10 spokes, so there are 20 spokes in total."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "8 floor planks plus 8 wall planks. Each plank gets random wood colour, length, position jitter and rotation jitter."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The axle runs along x at y=0.56, z=0.1 and spans ±0.95. The wheels sit at x=±0.8 with the same y and z, outside the bed walls at ±0.6."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Two handle poles with grips extend rearward from the runners. A front prop stand has two legs, feet and a crossbar."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Iron hub bands, hub nuts, wall straps, bolts, post caps, tyre bands and hoops are all built with the iron materials."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "3 sacks, 2 barrels plus a lying sack, and 3 crates are placed. The ground plane has 17 scattered stones as instances."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is set after await app.ready() with ready true, wheelCount 2, spokeCount 20 and plankCount 16. wheelCount is hardcoded rather than counted."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry is procedural primitives and instances. No textures, models or fetch calls appear in the source."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The probe reports animated true, with a frame diff of 8.06 and 21.2% of pixels changed. The wheels spin each frame and the camera auto-rotates."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 175,
+        "rulesLines": 8,
+        "glueLines": 35,
+        "notes": "Glue is the seeded RNG and range helpers, the name counter, the box/cyl/ball wrapper functions, the global Window declaration, the type aliases, the manual pivot-group trick for placing spokes and rim segments, the cart array accumulation loop, and the createAuraApp/ready bootstrap. Rules are the pe"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t11-aura-r2",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 8,
+    "agentWallSec": 128.1,
+    "tokensIn": 145006,
+    "tokensOut": 5735,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 4,
+    "searchCalls": 4,
+    "writeCalls": 2,
+    "srcLines": 152,
+    "srcTokens": 2139,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6488.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 40,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Vite build ok, canvas #app, probes show blank=false (mean 168, std 35.5) and zero console or page errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "wheel() is called for wheelL and wheelR. Each has a hub cylinder, 2 iron hub bands, 10 spokes and 12 felloe rim segments, so 20 spokes in total."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "10 planks. Each gets random length, colour (hsl), y and z offset, and slight yaw."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The axle is a cylinder along X at x=0, y=0.62, z=0.1, length 2.3. Wheels sit at x=±0.9 with the same y and z, on opposite sides of the bed, whose half-width is about 0.7."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Two push handles at x=±0.6 extend rearward to z≈-2.6. The front has a cross bar and two angled prop legs with iron feet."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Iron-coloured elements: hub bands, rim tyre strips, floor straps, axle block plates, rail bolts, barrel hoops, handle caps and leg feet."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "2 barrels and 4 sacks (6 cargo items), 3 crates, and a ground plane with 16 instanced stones plus dirt patches."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "__TASK_STATE__ is set after await app.ready() with ready true, wheelCount 2, spokeCount 20 and plankCount 10. The values are hardcoded from constants that match the scene."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry is procedural primitives and the materials are colour-only. No texture, model or other asset references appear in the source."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "Probe animated=true, with diff 9.35 and changedFrac 0.201. The wheels spin and the camera auto-rotates."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 115,
+        "rulesLines": 8,
+        "glueLines": 40,
+        "notes": "Glue covers: the global type declaration and aliases, the seeded LCG rand, the name counter, the box/cyl/ball wrapper helpers, hand-written trig for wheel spoke and rim placement and for crate corner rotation, the stone and patch transform and colour array building with rejection sampling, the onFra"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t11-aura-r3",
+    "arm": "aura",
+    "task": 11,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 1,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 14,
+    "agentWallSec": 216.5,
+    "tokensIn": 298799,
+    "tokensOut": 25284,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 3,
+    "readCalls": 7,
+    "searchCalls": 5,
+    "writeCalls": 6,
+    "srcLines": 250,
+    "srcTokens": 3206,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6490.8,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 55,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The page is a Vite app with canvas #app. The build succeeded, the probes report blank=false, mean 177 and std 25.2, and there are no page or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "wheelGroup builds a hub, 10 spokes and 10 felloe rim segments per wheel, and is called twice. That gives 20 spokes in total."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "There are 8 floor planks. Each has random length, thickness, position, rotation and wood colour from range(). Side and end boards bring the plank count to 14."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A single axle cylinder runs along z at y=0.56 with length 2.14. The wheel groups sit at z=±0.85 and y=AXLE_Y, so they are on opposite sides of the bed (half-width 0.66) and on the axle line."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "Two long handles at z=±0.5 have grip ends. Two front prop legs at x≈1.03 are joined by a cross brace."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "Iron-coloured parts include wheel hub bands, tyre segments, nails, side straps, bolts, floor straps, axle brackets, linchpins and barrel hoops."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "There are 5 sacks, 3 barrels and 3 crates. The ground is a plane with dirt patches, plus 22 instanced stones placed outside the cart footprint."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "After await app.ready(), window.__TASK_STATE__ is set to ready true, wheelCount 2, spokeCount 20 and plankCount 14. The values are partly hardcoded but meet the thresholds."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry comes from primitives and instances, and the materials are procedural PBR. The source references no asset URLs."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The probes report animated=true with diff 9.91 and changedFrac 0.29. The wheels spin in onFrame and the camera has autoRotate."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 175,
+        "rulesLines": 20,
+        "glueLines": 55,
+        "notes": "Glue is the seeded RNG and range helper, the hsl-to-hex converter, the material cache, the box/cyl/sph wrappers with name counters, the global type declaration, the stone rejection-sampling loop, scene accumulation loops, and the app creation, onFrame and ready boilerplate. Rules are the wheel spin "
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t12-aura-r1",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 6,
+    "agentWallSec": 137.5,
+    "tokensIn": 127855,
+    "tokensOut": 7893,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 3,
+    "writeCalls": 1,
+    "srcLines": 309,
+    "srcTokens": 3175,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6532.5,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 95,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Build succeeded and the page has canvas #app. The probes show a non-blank frame (mean 155, nonblack 0.999), no page errors and 0 console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A seeded LCG (SEED 20240611, Math.imul) drives all layout through rand() and range(). Math.random is never used."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Nested loops build limbs (level 1), twigs (level 2) and sub-twigs (level 3) on top of the trunk (level 0). Radii shrink at each level: limb about 0.5 of trunk radius, twig 0.55 of limb, sub-twig 0.6 of twig, with thin tip radii of 0.07, 0.0"
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "The trunk has an exponential base flare with lobes in addTube's mulFn, and 7 tube-mesh surface roots run along the mound."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "There is one clump per branch tip: 8 limbs, 24 twigs and at least 24 sub-twigs, so well over 15. Each clump has a second sphere, sizes vary by level and range(), and the palette has 6 colours."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The source adds a knot and a hollow on the trunk, 3 mushrooms and 26 fallen leaves as ground clutter, and a rope swing with a seat hanging from the low limb."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A green sphere mound sits at the base of the tree, and the 'sun' directional light is configured with shadow: true. The probes do not contradict either."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "window.__TASK_STATE__ is set after await app.ready() with ready true, branchCount of at least 33 (trunk + 8 limbs + 24 twigs + sub-twigs), foliageClumpCount equal to the number of branch tips (at least 56) and the numeric seed 20240611. rea"
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry and materials are procedural. There are no texture, model or other asset references, and the page has no console errors."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "camera.orbit has autoRotate 0.15. The probes report animated true, diff 6.43 and changedFrac 0.0986."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 190,
+        "rulesLines": 5,
+        "glueLines": 95,
+        "notes": "Glue is the hand-written mesh plumbing: vector helpers (add, sub, mul, dot, cross, norm), the addTube tube-mesh builder with parallel-transport frames, the position/normal/color/index buffers with bounds tracking, the LCG, and childDir. The scene, tree generation, foliage, details and ground make up"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t12-aura-r2",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 31,
+    "agentWallSec": 707.4,
+    "tokensIn": 975746,
+    "tokensOut": 43818,
+    "docsFilesOpened": 3,
+    "typesFilesOpened": 4,
+    "readCalls": 12,
+    "searchCalls": 20,
+    "writeCalls": 4,
+    "srcLines": 265,
+    "srcTokens": 2800,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6496.1,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 70,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "The build succeeds and the page uses canvas #app. The probes show a non-blank frame (nonblack 0.998, std 57.5) with zero page errors and zero console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "A mulberry32 generator seeded with 7421 (makeRng) drives every layout value through range() and rand(). Math.random is never used."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Branches are generated at levels 0 to 3 (trunk, limbs, sub-branches, twigs) by nested loops. Base radii shrink from 1.1 to 0.44, 0.2 and 0.09 across the levels."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "A 'trunk-flare' cylinder widens the trunk base, and 14 surface roots are added (7 azimuths, 2 roots each)."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "There are 37 clumps: 36 at twig tips plus one on top. Sphere scales range from 2.0 to 3.4 with random aspect, and 4 leaf colours are chosen at random across the 36 tip clumps, so at least 3 distinct colours are very likely. The exact colour"
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The source adds a trunk hollow and knot, 3 mushrooms, 28 instanced fallen leaves, and a rope swing with a seat."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "The 'mound' is a grass-coloured sphere half-buried in the ground plane, and the directional 'sun' light is configured with shadow: { mapSize: 2048 }. Whether shadows actually render was not probed."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "After app.ready() and a requestAnimationFrame, __TASK_STATE__ is set with ready true, branchCount 63, foliageClumpCount 37 and seed 7421. readyTimeout is false."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry and materials are procedural, and the source contains no fetch, texture or model URLs."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "The orbit camera has autoRotate set to 0.12. The probes report animated true, with diff 7.68 and changedFrac 0.13."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 130,
+        "rulesLines": 90,
+        "glueLines": 70,
+        "notes": "Glue is mainly the hand-written vector helpers (norm, cross, along, quatFromUp), the mulberry32 RNG, the Branch bookkeeping and trunkPoint, the global type declarations, and the app bootstrap and ready flag. Scene lines cover the materials, primitives, lights, camera, roots, clumps, details and inst"
+      }
+    }
+  },
+  {
+    "runId": "bench505-models-sheet-t12-aura-r3",
+    "arm": "aura",
+    "task": 12,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "animated": true
+    },
+    "probePassFraction": 1,
+    "turns": 4,
+    "agentWallSec": 122.3,
+    "tokensIn": 75927,
+    "tokensOut": 7667,
+    "docsFilesOpened": 2,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 1,
+    "writeCalls": 1,
+    "srcLines": 254,
+    "srcTokens": 3143,
+    "srcTokensEstimated": true,
+    "bundleRawKB": 6532.7,
+    "bundleGzipKB": null,
+    "readyMs": null,
+    "consoleErrors": 0,
+    "docsSha256": "98655def9977eced69ae18b82116e06b2640646764f0fdcfbdcc91273b2d5f74",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 90,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "c1",
+          "pass": true,
+          "why": "Vite build succeeds and canvas #app is used. The probes report blank=false, mean 158.6, std 56.8, and 0 page or console errors."
+        },
+        {
+          "id": "c2",
+          "pass": true,
+          "why": "makeRng is a mulberry32-style seeded generator that drives all tree and foliage layout. Math.random is not used."
+        },
+        {
+          "id": "c3",
+          "pass": true,
+          "why": "Branches are built in levels 0 to 3 (trunk, limbs, secondary, twigs) through child() and grow(). Each child's start radius is 0.72 of its parent's and tapers to 0.28 of that, so thickness decreases per level."
+        },
+        {
+          "id": "c4",
+          "pass": true,
+          "why": "trunkRadius has an exponential base flare, and 7 tapered surface roots are generated along the mound."
+        },
+        {
+          "id": "c5",
+          "pass": true,
+          "why": "One clump per branch tip gives about 60 clumps (6 limbs, 18 secondary, 36 twigs). Widths come from range(1.5, 2.6) and there are 5 distinct greens."
+        },
+        {
+          "id": "c6",
+          "pass": true,
+          "why": "The trunk has a knot-rim and hollow, the ground has 3 mushrooms and 40 instanced fallen leaves, and a rope swing with a seat hangs from a limb."
+        },
+        {
+          "id": "c7",
+          "pass": true,
+          "why": "A sphere mound is scaled to 16x3x16 and a directional light is configured with shadow: true. The probes cannot confirm the shadow renders."
+        },
+        {
+          "id": "c8",
+          "pass": true,
+          "why": "After app.ready() and a requestAnimationFrame, __TASK_STATE__ is set with ready=true, branchCount of about 68, foliageClumpCount of about 60 and numeric seed 20240611. readyTimeout is false."
+        },
+        {
+          "id": "c9",
+          "pass": true,
+          "why": "All geometry is procedural or primitives. No textures, models or other asset URLs are referenced."
+        },
+        {
+          "id": "c10",
+          "pass": true,
+          "why": "camera.orbit has autoRotate 0.15. The probes report animated=true, diff 7.81 and changedFrac 0.1."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 120,
+        "rulesLines": 60,
+        "glueLines": 90,
+        "notes": "Scene lines include the procedural tree description and its props. Glue is the vector math helpers, the RNG, the manual tube-mesh builder (positions, normals, colors, indices, bounds), the global type declaration, the Branch interface, and the ready-state bootstrapping. Estimates are approximate."
+      }
+    }
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "batch": "bench505-models",
+  "wallMs": 1024990,
+  "runs": 2,
+  "invalid": 2
+}

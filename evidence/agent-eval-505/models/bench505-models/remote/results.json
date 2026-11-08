@@ -1,0 +1,448 @@
+[
+  {
+    "id": "bench505-models-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 192.6,
+        "std": 31.1,
+        "nonblack": 1,
+        "diff": 14.19,
+        "changedFrac": 0.2914
+      }
+    },
+    "bundle": {
+      "rawKB": 6497
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 179.8,
+        "std": 44.5,
+        "nonblack": 0.999,
+        "diff": 16.94,
+        "changedFrac": 0.2775
+      }
+    },
+    "bundle": {
+      "rawKB": 6495.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 195.4,
+        "std": 35.3,
+        "nonblack": 1,
+        "diff": 15.12,
+        "changedFrac": 0.3703
+      }
+    },
+    "bundle": {
+      "rawKB": 6497.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t10-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 144.8,
+        "std": 58.9,
+        "nonblack": 0.997,
+        "diff": 15.3,
+        "changedFrac": 0.2974
+      }
+    },
+    "bundle": {
+      "rawKB": 543.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t10-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 153.1,
+        "std": 62,
+        "nonblack": 0.998,
+        "diff": 18.23,
+        "changedFrac": 0.3533
+      }
+    },
+    "bundle": {
+      "rawKB": 543.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t10-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 155.8,
+        "std": 57.4,
+        "nonblack": 0.998,
+        "diff": 14.78,
+        "changedFrac": 0.3
+      }
+    },
+    "bundle": {
+      "rawKB": 513
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 188.6,
+        "std": 23.9,
+        "nonblack": 1,
+        "diff": 3.59,
+        "changedFrac": 0.1018
+      }
+    },
+    "bundle": {
+      "rawKB": 6489.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 173.2,
+        "std": 29.1,
+        "nonblack": 0.999,
+        "diff": 5.54,
+        "changedFrac": 0.0855
+      }
+    },
+    "bundle": {
+      "rawKB": 6491.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 181.4,
+        "std": 29,
+        "nonblack": 1,
+        "diff": 5.18,
+        "changedFrac": 0.064
+      }
+    },
+    "bundle": {
+      "rawKB": 6490.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t11-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 106,
+        "std": 49.1,
+        "nonblack": 0.993,
+        "diff": 13.29,
+        "changedFrac": 0.499
+      }
+    },
+    "bundle": {
+      "rawKB": 517
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t11-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 112,
+        "std": 56.3,
+        "nonblack": 0.996,
+        "diff": 3.95,
+        "changedFrac": 0.0871
+      }
+    },
+    "bundle": {
+      "rawKB": 520.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t11-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 130.6,
+        "std": 46.5,
+        "nonblack": 1,
+        "diff": 2.81,
+        "changedFrac": 0.071
+      }
+    },
+    "bundle": {
+      "rawKB": 552.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 202.6,
+        "std": 40.3,
+        "nonblack": 1,
+        "diff": 7.61,
+        "changedFrac": 0.1331
+      }
+    },
+    "bundle": {
+      "rawKB": 6536
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 195.1,
+        "std": 37.6,
+        "nonblack": 1,
+        "diff": 7.26,
+        "changedFrac": 0.1638
+      }
+    },
+    "bundle": {
+      "rawKB": 6538.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 154.1,
+        "std": 55.5,
+        "nonblack": 0.988,
+        "diff": 8.2,
+        "changedFrac": 0.1524
+      }
+    },
+    "bundle": {
+      "rawKB": 6538.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t12-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 141.4,
+        "std": 62,
+        "nonblack": 0.998,
+        "diff": 7.53,
+        "changedFrac": 0.1963
+      }
+    },
+    "bundle": {
+      "rawKB": 548.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t12-three-r2-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-t12-three-r3-final",
+    "build": {
+      "ok": false
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "bundle": {
+      "rawKB": null
+    },
+    "readyMs": null
+  }
+]

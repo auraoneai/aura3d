@@ -1,0 +1,307 @@
+{
+  "runId": "bench505-models-t12-aura-r2",
+  "batch": "bench505-models",
+  "arm": "aura",
+  "task": 12,
+  "idx": 2,
+  "order": 5,
+  "seed": 20261106005,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-06T23:15:09.211Z",
+  "docsCommit": "dfe8051fa51c5afd7dacd9c18232670a1ffe6012",
+  "docs": {
+    "files": 110,
+    "sha256": "7e01e0334f1658b5f2d21f7df4c225f9006698187fb1f108beaabc3b3fe08896"
+  },
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-needed"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 429: {\"detail\":\"Kiro unavailable after 1 attempts: Too many requests, please wait before trying again. (com.amazon.kiro.runtimeservice#ThrottlingException, HTTP 429)\"}",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 1484,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 16
+    },
+    {
+      "i": 1,
+      "t": 1484,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 1484,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 7911,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 143
+    },
+    {
+      "i": 4,
+      "t": 7911,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 5,
+      "t": 9663,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 101
+    },
+    {
+      "i": 6,
+      "t": 9663,
+      "type": "list",
+      "path": "docs/agents/recipes-src"
+    },
+    {
+      "i": 7,
+      "t": 15050,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 103
+    },
+    {
+      "i": 8,
+      "t": 15050,
+      "type": "list",
+      "path": "docs/agents/recipes-src/props-kit-instances"
+    },
+    {
+      "i": 9,
+      "t": 15050,
+      "type": "list",
+      "path": "docs/agents/recipes-src/terrain-water-fog"
+    },
+    {
+      "i": 10,
+      "t": 16937,
+      "type": "read",
+      "path": "docs/agents/recipes-src/terrain-water-fog/main.ts",
+      "lines": 48
+    },
+    {
+      "i": 11,
+      "t": 16937,
+      "type": "read",
+      "path": "docs/agents/recipes-src/procedural-humanoid/main.ts",
+      "lines": 78
+    },
+    {
+      "i": 12,
+      "t": 22088,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 66
+    },
+    {
+      "i": 13,
+      "t": 22095,
+      "type": "search",
+      "pattern": "\\.rotation\\(|\\.scale\\(|rotationDeg|\\.lookAt\\("
+    },
+    {
+      "i": 14,
+      "t": 25275,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 15,
+      "t": 25275,
+      "type": "read",
+      "path": "docs/agents/recipes-src/translation-table.check.ts",
+      "lines": 90
+    },
+    {
+      "i": 16,
+      "t": 34430,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 17,
+      "t": 34430,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 18,
+      "t": 37194,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 19,
+      "t": 37194,
+      "type": "read",
+      "path": "package.json",
+      "lines": 11
+    },
+    {
+      "i": 20,
+      "t": 37194,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 21,
+      "t": 37194,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 22,
+      "t": 40219,
+      "type": "search",
+      "pattern": "app\\.camera|autoRotate|setPosition\\(|frame\\.time|frame\\.elapsed"
+    },
+    {
+      "i": 23,
+      "t": 42043,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 24,
+      "t": 42054,
+      "type": "search",
+      "pattern": "AuraCameraController|camera\\.orbit\\("
+    },
+    {
+      "i": 25,
+      "t": 48590,
+      "type": "search",
+      "pattern": "autoRotate"
+    },
+    {
+      "i": 26,
+      "t": 48595,
+      "type": "search",
+      "pattern": "autoRotate|app\\.camera|AuraCameraController"
+    },
+    {
+      "i": 27,
+      "t": 50824,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 10
+    },
+    {
+      "i": 28,
+      "t": 50824,
+      "type": "read",
+      "path": ".agents/skills/aura3d-browser-game/SKILL.md",
+      "lines": 25
+    },
+    {
+      "i": 29,
+      "t": 56111,
+      "type": "search",
+      "pattern": "camera\\.(set|move|orbit|update|apply)\\w*\\(|AuraCameraController"
+    },
+    {
+      "i": 30,
+      "t": 56119,
+      "type": "search",
+      "pattern": "app\\.camera"
+    },
+    {
+      "i": 31,
+      "t": 61423,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 222
+    },
+    {
+      "i": 32,
+      "t": 61590,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 33,
+      "t": 64164,
+      "type": "list",
+      "path": "node_modules"
+    },
+    {
+      "i": 34,
+      "t": 64170,
+      "type": "search",
+      "pattern": "AuraCameraController|setLookAt|camera controller"
+    },
+    {
+      "i": 35,
+      "t": 69638,
+      "type": "list",
+      "path": "docs"
+    },
+    {
+      "i": 36,
+      "t": 69638,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 37,
+      "t": 71276,
+      "type": "search",
+      "pattern": "camera\\.(rigs|orbit|cinematic|dolly|path)|\\.camera\\?\\.|cameraRig|timeline"
+    },
+    {
+      "i": 38,
+      "t": 127935,
+      "type": "read",
+      "path": "docs/agents/recipes-src/sky-day-night/main.ts",
+      "lines": 52
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-browser-game/SKILL.md",
+    "AGENTS.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/procedural-humanoid/main.ts",
+    "docs/agents/recipes-src/sky-day-night/main.ts",
+    "docs/agents/recipes-src/terrain-water-fog/main.ts",
+    "docs/agents/recipes-src/translation-table.check.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "src/main.ts(1,38): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.",
+  "firstTryTypecheck": false
+}

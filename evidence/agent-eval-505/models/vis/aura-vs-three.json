@@ -1,0 +1,391 @@
+{
+  "model": "claude-sonnet-5.5",
+  "subjectBatch": "bench505-models",
+  "threeBatch": "bench505-models",
+  "pairs": [
+    {
+      "task": 10,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-models-t10-aura-r1",
+        "three": "bench505-models-t10-three-r1"
+      },
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 19,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has richer depth (sea gradient, light beams, sandy shore, visible shadows, fuller colour contrast) but is framed tighter with rocks cropped at the bottom, while A is well framed yet looks flatter with a washed-out blown-out sea glare on the right."
+        },
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 19,
+            "subject": 17
+          },
+          "winner": "three",
+          "why": "A has richer detail, a glowing lamp with beams, stronger band contrast and more depth in the shading, though its island is cropped at the bottom edge; B is better framed with more varied rocks, but its colours are paler and the sea glare is blown out"
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 20,
+            "three": 19
+          },
+          "winner": "subject",
+          "why": "A frames the whole island and lighthouse with margins and a coherent palette, while B crops the island at the bottom, has its cottage overlapping the door in the second frame, and uses blown-out light beams."
+        }
+      ],
+      "majority": "three",
+      "votes": {
+        "subject": 1,
+        "three": 2,
+        "tie": 0
+      }
+    },
+    {
+      "task": 10,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-models-t10-aura-r2",
+        "three": "bench505-models-t10-three-r2"
+      },
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 15,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "Candidate B has a clean sky and horizon, glowing lamp and windows, varied low-poly rocks and good sea depth, while Candidate A's sky and sea show large blown-out white rectangular artifacts and its rocks are tiny pebbles."
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 15,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B has a clean sky and horizon, a believable sea with reflections, varied low-poly rocks and glowing windows, while A has blocky white blown-out patches across the sky and sea and only small pebble-like rocks."
+        },
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 20,
+            "subject": 16
+          },
+          "winner": "three",
+          "why": "A has a clear sea, horizon and sky, with a glowing lamp, beams, rocky base and a cottage that is well integrated, while B shows large blown-out white patches and a foggy sky and sea that break the horizon and look like rendering artifacts."
+        }
+      ],
+      "majority": "three",
+      "votes": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      }
+    },
+    {
+      "task": 10,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-models-t10-aura-r3",
+        "three": "bench505-models-t10-three-r3"
+      },
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 15,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has a clear blue sky, a deep-blue sea, varied dark rocks, a visible light beam and a distinct cottage, while A has washed-out sky, blown-out white streaks on the water and small pale rocks."
+        },
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 19,
+            "subject": 15
+          },
+          "winner": "three",
+          "why": "A has a crisp red-and-white tower, a glowing lamp, a clear sea and horizon, and varied rocks with good shading, while B has washed-out sky, blown-out white streaks across the sea, and flatter, smaller rocks."
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 15,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has richer colour, a clear blue sky and sea, varied low-poly rocks, a visible light beam and wave rings, while A looks washed out with blown-out white streaks on the sea and smaller, plainer rocks."
+        }
+      ],
+      "majority": "three",
+      "votes": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      }
+    },
+    {
+      "task": 11,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-models-t11-aura-r1",
+        "three": "bench505-models-t11-three-r1"
+      },
+      "judges": [
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 18,
+            "subject": 13
+          },
+          "winner": "three",
+          "why": "A has a darker iron-banded cart, a clear cast shadow, and a readable, grounded scene, though the cart is small in frame; B is washed out with a monochrome orange palette, almost no shadows, and poor material contrast."
+        },
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 19,
+            "subject": 13
+          },
+          "winner": "three",
+          "why": "A has darker iron bands, clear wood and cargo contrast, and strong cast shadows that ground the cart, while B is washed out in a single orange tone with almost no shadows, so its form and materials are hard to read."
+        },
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 19,
+            "subject": 13
+          },
+          "winner": "three",
+          "why": "A has darker iron bands, contrasting materials, and clear soft cast shadows grounding the cart on textured dirt, while B is washed-out and monochrome with no visible shadows, so the cargo and parts blend together."
+        }
+      ],
+      "majority": "three",
+      "votes": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      }
+    },
+    {
+      "task": 11,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-models-t11-aura-r2",
+        "three": "bench505-models-t11-three-r2"
+      },
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 14,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has believable ground contact with a clear cast shadow and a readable cart with a cohesive warm palette, while A's flat overlapping ground discs give no real shadows and make the cart look like it is floating."
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 14,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has believable soft cast shadows, grounded stones and a coherent warm dirt palette with a readable cart, while A has flat patchy ground discs, no clear shadows, and a cart that looks like it floats."
+        },
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 18,
+            "subject": 15
+          },
+          "winner": "three",
+          "why": "A has a grounded cart with believable soft shadows, readable wheels and a coherent warm palette, while B's flat overlapping ground discs, weak shadows and a bed that looks raised on stilts make it less grounded despite more visible plank and rail det"
+        }
+      ],
+      "majority": "three",
+      "votes": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      }
+    },
+    {
+      "task": 11,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-models-t11-aura-r3",
+        "three": "bench505-models-t11-three-r3"
+      },
+      "judges": [
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 13,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B shows a warm, light-wood cart with visible planks, iron bands, convincing cargo and a soft cast shadow on textured dirt, whereas A's cart is almost entirely dark and flat, with indistinct materials, weak shadows and a small, off-center framing."
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 11,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B shows a warm wooden cart with visible planks, iron straps, cargo and a clear cast shadow on textured dirt, while A is a dark, flat cart with unreadable planks, odd orange patches on the ground and weak shadows."
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 12,
+            "three": 20
+          },
+          "winner": "three",
+          "why": "B shows a warm, readable wooden cart with visible planks, iron straps, wheels, props and a clear cast shadow on textured dirt, while A is a dark, small, near-black cart on a flat pale ground with weak shadows and poor material contrast."
+        }
+      ],
+      "majority": "three",
+      "votes": {
+        "subject": 0,
+        "three": 3,
+        "tie": 0
+      }
+    },
+    {
+      "task": 12,
+      "idx": 1,
+      "ids": {
+        "subject": "bench505-models-t12-aura-r1",
+        "three": "bench505-models-t12-three-r1"
+      },
+      "judges": [
+        {
+          "order": [
+            "three",
+            "subject"
+          ],
+          "totals": {
+            "three": 18,
+            "subject": 18
+          },
+          "winner": "subject",
+          "why": "B shows the whole tree with margins, clearly visible roots, a knot, a swing, mushrooms and leaf clutter, with a varied autumn palette, while A's crown fills the frame, the tree sits off-centre with a cropped mound, and the trunk, roots and details ar"
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 17,
+            "three": 19
+          },
+          "winner": "three",
+          "why": "B has darker, faceted foliage with real light/dark depth, a visible crown shadow on the mound and a clear asymmetric limb with the swing, while A's smooth, flat-shaded autumn blobs show no discernible crown shadow and hide the branch structure, even "
+        },
+        {
+          "order": [
+            "subject",
+            "three"
+          ],
+          "totals": {
+            "subject": 19,
+            "three": 18
+          },
+          "winner": "subject",
+          "why": "A shows a flared trunk with visible surface roots, a knot, a swing, mushrooms and a varied autumn palette on a readable mound, though its shadow is weak. B has a better lit, asymmetric crown and a visible shadow on the mound, but its roots and branch"
+        }
+      ],
+      "majority": "subject",
+      "votes": {
+        "subject": 2,
+        "three": 1,
+        "tie": 0
+      }
+    },
+    {
+      "task": 12,
+      "idx": 2,
+      "ids": {
+        "subject": "bench505-models-t12-aura-r2",
+        "three": "bench505-models-t12-three-r2"
+      },
+      "judges": [],
+      "error": "missing frames"
+    },
+    {
+      "task": 12,
+      "idx": 3,
+      "ids": {
+        "subject": "bench505-models-t12-aura-r3",
+        "three": "bench505-models-t12-three-r3"
+      },
+      "judges": [],
+      "error": "missing frames"
+    }
+  ]
+}

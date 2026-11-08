@@ -1,0 +1,74 @@
+{
+  "runId": "bench505-models-t12-three-r2",
+  "batch": "bench505-models",
+  "arm": "three",
+  "task": 12,
+  "idx": 2,
+  "order": 4,
+  "seed": 20261106004,
+  "model": "claude-sonnet-5.5",
+  "condition": "base",
+  "startedAt": "2026-11-07T02:34:59.151Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 504: <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>",
+  "endReason": "infra_error",
+  "wallMs": null,
+  "usage": null,
+  "events": [
+    {
+      "i": 0,
+      "t": 1098,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 16
+    },
+    {
+      "i": 1,
+      "t": 1098,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2380,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2380,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2380,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    }
+  ],
+  "docsOpened": [],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/b505-models-runs/bench505-models/bench505-models-t12-three-r2/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

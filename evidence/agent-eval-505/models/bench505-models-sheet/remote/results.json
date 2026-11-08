@@ -1,0 +1,236 @@
+[
+  {
+    "id": "bench505-models-sheet-t10-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 161.1,
+        "std": 57.2,
+        "nonblack": 0.999,
+        "diff": 9.96,
+        "changedFrac": 0.1496
+      }
+    },
+    "bundle": {
+      "rawKB": 6495.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t10-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 194.3,
+        "std": 34.7,
+        "nonblack": 1,
+        "diff": 18.03,
+        "changedFrac": 0.3842
+      }
+    },
+    "bundle": {
+      "rawKB": 6532
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t10-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 173.6,
+        "std": 50.4,
+        "nonblack": 1,
+        "diff": 21.41,
+        "changedFrac": 0.3872
+      }
+    },
+    "bundle": {
+      "rawKB": 6497
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t11-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 184.9,
+        "std": 27.2,
+        "nonblack": 1,
+        "diff": 8.06,
+        "changedFrac": 0.212
+      }
+    },
+    "bundle": {
+      "rawKB": 6491
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t11-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 168.3,
+        "std": 35.5,
+        "nonblack": 1,
+        "diff": 9.35,
+        "changedFrac": 0.201
+      }
+    },
+    "bundle": {
+      "rawKB": 6488.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t11-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 177,
+        "std": 25.2,
+        "nonblack": 1,
+        "diff": 9.91,
+        "changedFrac": 0.2931
+      }
+    },
+    "bundle": {
+      "rawKB": 6490.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t12-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 155.1,
+        "std": 52.1,
+        "nonblack": 0.999,
+        "diff": 6.43,
+        "changedFrac": 0.0986
+      }
+    },
+    "bundle": {
+      "rawKB": 6532.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t12-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 143.2,
+        "std": 57.5,
+        "nonblack": 0.998,
+        "diff": 7.68,
+        "changedFrac": 0.1328
+      }
+    },
+    "bundle": {
+      "rawKB": 6496.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "bench505-models-sheet-t12-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 158.6,
+        "std": 56.8,
+        "nonblack": 1,
+        "diff": 7.81,
+        "changedFrac": 0.1
+      }
+    },
+    "bundle": {
+      "rawKB": 6532.7
+    },
+    "readyMs": null
+  }
+]
