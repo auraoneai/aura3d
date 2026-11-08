@@ -182,7 +182,7 @@ describe("root-authored depth of field on native WebGPU", () => {
   it("still rejects separate post effects and multiple authored DoF nodes", () => {
     const authored = authoredOptions();
     const pipeline = authored.pipeline as PostPipelineOptions;
-    for (const stage of [{ ao: {} }, { ssr: {} }, { taa: {} }, { motionBlur: {} }, { godRays: {} }, { vignette: {} },
+    for (const stage of [{ ao: {} }, { ssr: {} }, { taa: {} }, { vignette: {} },
       { antiAliasing: "smaa" }, { nativeEffects: [{ kind: "pixelation", size: 2 }] }, { customPasses: [{}] }]) {
       expect(() => validateNativeDofRoute(authored, { ...pipeline, ...stage } as PostPipelineOptions, {}))
         .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
@@ -192,8 +192,8 @@ describe("root-authored depth of field on native WebGPU", () => {
     const volumePipeline = volume.pipeline as PostPipelineOptions;
     expect(volumePipeline.godRays).toBeTruthy();
     expect(volume.volumetricLight).toBeUndefined();
-    expect(() => validateNativeDofRoute(volume, volumePipeline, {}))
-      .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
+    // W4: god rays run as a native WebGPU depth stage after DoF, so the pair combines.
+    expect(() => validateNativeDofRoute(volume, volumePipeline, {})).not.toThrow();
     const duplicates = createProductionRuntimePostprocess(scene().add(effects.depthOfField({ focusDistance: 3 }))
       .add(effects.depthOfField({ focusDistance: 9 })).add(effects.antiAlias({ mode: "off" })).toJSON());
     expect(() => validateNativeDofRoute(duplicates, duplicates.pipeline as PostPipelineOptions, {}))

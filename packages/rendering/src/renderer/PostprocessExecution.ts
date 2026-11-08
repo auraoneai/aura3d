@@ -231,14 +231,15 @@ function isRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nativ
 export function nativeDofConflicts(postprocess: RendererPostProcessOptions, pipeline: PostPipelineOptions, scopeId: object | undefined): string[] {
   const conflicts: string[] = [];
   const add = (condition: unknown, name: string): void => { if (condition) conflicts.push(name); };
-  add(pipeline.ao, "ao"); add(pipeline.ssr, "ssr"); add(pipeline.godRays, "god-rays"); add(pipeline.taa, "taa"); add(pipeline.motionBlur, "motion-blur");
+  // God rays and motion blur run as native WebGPU depth stages after native DoF (WebGPUDepthEffects), so they combine.
+  add(pipeline.ao, "ao"); add(pipeline.ssr, "ssr"); add(pipeline.taa, "taa");
   add(pipeline.antiAliasing !== undefined && pipeline.antiAliasing !== "off" && pipeline.antiAliasing !== "fxaa", `anti-aliasing-${String(pipeline.antiAliasing)}`);
   add(pipeline.antiAliasing === "fxaa" && !postprocess.fxaa, "fxaa");
   add(pipeline.nativeEffects?.length, "native-effects");
   add(pipeline.customPasses?.length, "custom-passes");
   add(registeredPostPasses().some(pass => pass.postScopeMatches?.(scopeId) !== false), "registered-passes");
   add(postprocess.depthOfField && !isRootDofTwin(postprocess.depthOfField, pipeline.dof), "legacy-depth-of-field");
-  add(postprocess.volumetricLight, "volumetric-light"); add(postprocess.motionBlur, "legacy-motion-blur");
+  add(postprocess.volumetricLight, "volumetric-light");
   add(postprocess.contactShadow, "contact-shadow"); add(postprocess.ssao, "ssao"); add(postprocess.ssr, "legacy-ssr");
   add(postprocess.taa, "legacy-taa"); add(postprocess.outline, "outline");
   add(postprocess.chromaticAberration || pipeline.chromaticAberration, "chromatic-aberration");

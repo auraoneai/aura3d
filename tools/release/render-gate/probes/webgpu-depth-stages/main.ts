@@ -10,6 +10,7 @@
  *   ?fx=none     neither (baseline)
  *   ?compat=3    compat.post "3.0": volumetric fog compiles to the legacy volumetric-light pass
  *   ?post=0      post lane flag off (legacy chain; volumetric fog runs the legacy volumetric-light pass)
+ *   ?dof=1       add native depth of field (and AA off) in front of the stages
  *   ?tier=high   pin the post quality tier (S7 motion blur needs High or Ultra)
  *   ?step=<sec>  sweep step alternated per frame while frozen (default 0.03)
  *   ?t=<sec>     freeze the camera sweep at this time (deterministic captures)
@@ -40,6 +41,8 @@ for (let i = 0; i < 10; i += 1) {
 if (god) s.add(effects.godRays({ source: [0, 7, -40], intensity: 1.1, samples: 48, decay: 0.95, color: "#fff1d0" }));
 if (fog) s.add(effects.volumetricFog({ density: 0.35, intensity: 0.8, godRayDensity: 0.6 } as never));
 if (blur) s.add(effects.motionBlur({ intensity: 1 }));
+// ?dof=1 adds native depth of field (AA off: native DoF needs a single-sample frame) to prove the stages compose after DoF.
+if (params.get("dof") === "1") s.add(effects.depthOfField({ focusDistance: 8 })).add(effects.antiAlias({ mode: "off" }));
 s.camera(camera.perspective({ position: eye(frozen ?? 0), target: [eye(frozen ?? 0)[0], 3, -40], fov: 55, near: 0.1, far: 200 }));
 
 const app = createAuraApp("#app", {
