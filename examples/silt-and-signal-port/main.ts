@@ -590,8 +590,7 @@ async function boot(): Promise<void> {
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
   // W-8 lab flags (?backend=auto|webgpu, ?gamut=p3): EXPERIMENTAL, default off; with no flag both fragments are empty
-  // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out (borderline 0.90).
-  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
+  const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

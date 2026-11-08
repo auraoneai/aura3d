@@ -2518,7 +2518,7 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "a23cca932b3d4f3d171ede14d58ff2457f681869a671e87f8039a54a1dc5c10b"
+        "sha256": "c351dbdb7c0e1e6358156609f6c726a81043d855dbe8a5c2915cb9c40c6ff2b0"
       },
       "sourceDependencies": [
         {
@@ -6070,7 +6070,7 @@
       },
       "source": {
         "path": "examples/silt-and-signal-port/main.ts",
-        "sha256": "9db76a04d596184f5e2eec76dff4aa9eccffa17357c2ca0965e09e27f81c62a2"
+        "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
       },
       "sourceDependencies": [
         {
@@ -6174,7 +6174,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/main.ts",
-          "sha256": "9db76a04d596184f5e2eec76dff4aa9eccffa17357c2ca0965e09e27f81c62a2"
+          "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
