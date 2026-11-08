@@ -20,6 +20,7 @@ import type { Race } from "./race";
 import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
 import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
+import { pointQuadArrays, quadUpdater } from "./point-quads";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
@@ -114,8 +115,28 @@ export function resolveLook(look: HeatsinkLookRow | string | undefined, quality:
   return quality === "low" ? lowTier(row) : row;
 }
 
-export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string): World {
+export interface BuildWorldOptions {
+  /**
+   * Draw the exhaust and spore sprites as quads with a WGSL twin instead of `gl_PointSize` points (WebGPU has no point
+   * size). Defaults to on only when a lab backend is requested (`?backend=webgpu|auto`), so the default scene is unchanged.
+   */
+  readonly pointQuads?: boolean;
+}
+
+export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string, options: BuildWorldOptions = {}): World {
   const high = quality === "high";
+  const quads = options.pointQuads ?? readLabFlags().backend !== undefined;
+  /* the sprite attributes as quad corners (four per point) or as points */
+  const spriteGeometry = (n: number) => {
+    const attrs = (count: number) => ({
+      size: { itemSize: 1 as const, data: f32(new Array<number>(count).fill(0)) },
+      tint: { itemSize: 3 as const, data: f32(new Array<number>(count * 3).fill(1)) },
+      fade: { itemSize: 1 as const, data: f32(new Array<number>(count).fill(0)) }
+    });
+    if (!quads) return geometry.dynamic({ positions: f32(new Array<number>(n * 3).fill(0)), topology: "points", bounds: courseBounds, attributes: attrs(n) });
+    const q = pointQuadArrays(n);
+    return geometry.dynamic({ positions: q.positions, uvs: q.uvs, indices: q.indices, bounds: courseBounds, attributes: attrs(n * 4) });
+  };
   const look = resolveLook(lookInput, quality);
   setShading(look);
   /*
@@ -269,16 +290,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
 
   /* exhaust / dust points */
   const POINTS = 420;
-  b.add(geometry.custom(geometry.dynamic({
-    positions: f32(new Array<number>(POINTS * 3).fill(0)),
-    topology: "points",
-    bounds: courseBounds,
-    attributes: {
-      size: { itemSize: 1, data: f32(new Array<number>(POINTS).fill(0)) },
-      tint: { itemSize: 3, data: f32(new Array<number>(POINTS * 3).fill(1)) },
-      fade: { itemSize: 1, data: f32(new Array<number>(POINTS).fill(0)) }
-    }
-  }), { ...noCast, name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
+  b.add(geometry.custom(spriteGeometry(POINTS), { ...noCast, name: "exhaust", material: material.custom(pointsSpec(quads)) }).runtime({ id: "exhaust" }));
 
   /* IC-18 ion wake: one dynamic strip (+1 draw), rebuilt every frame from the drone's last 1.2 s; twilight look only */
   if (look.wake.enabled) {
@@ -295,16 +307,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* IC-20: slow bioluminescent spores in a camera-following 60 m box (one points draw, +1); twilight only, 120 on Low */
   if (look.dressing.spores > 0) {
     const n = look.dressing.spores;
-    b.add(geometry.custom(geometry.dynamic({
-      positions: f32(new Array<number>(n * 3).fill(0)),
-      topology: "points",
-      bounds: courseBounds,
-      attributes: {
-        size: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) },
-        tint: { itemSize: 3, data: f32(new Array<number>(n * 3).fill(1)) },
-        fade: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) }
-      }
-    }), { ...noCast, name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
+    b.add(geometry.custom(spriteGeometry(n), { ...noCast, name: "spores", material: material.custom(pointsSpec(quads)) }).runtime({ id: "spores" }));
   }
 
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
@@ -329,7 +332,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     ] }));
   }
 
-  return { scene: b, track, look, bind: (app) => bindRuntime(app, track, POINTS, look) };
+  return { scene: b, track, look, bind: (app) => bindRuntime(app, track, POINTS, look, quads) };
 }
 
 /** IC-07: the flare source sits this far along the shader sun from the eye (inside the 4200 m far plane) */
@@ -345,7 +348,7 @@ function rgbHex(c: readonly [number, number, number]): string {
   return `#${((1 << 24) | (enc(c[0]) << 16) | (enc(c[1]) << 8) | enc(c[2])).toString(16).slice(1)}`;
 }
 
-function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLookRow): WorldRuntime {
+function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLookRow, quads = false): WorldRuntime {
   const twilight = row.wake.enabled;
   if (twilight) { try { if (app.effects) registerHeatsinkVfx(app as { effects: NonNullable<AuraApp["effects"]> }); } catch { /* effects runtime unavailable: the game's own points still burst */ } }
   const wake = twilight ? createIonWake(row) : null;
@@ -373,6 +376,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     let h = handles.get(id);
     if (!h) handles.set(id, h = app.nodes.require(id));
     return h;
+  };
+  /* the exhaust / spore handles: point arrays, written to the quad corners when the sprites are quads */
+  const spriteUpdaters = new Map<string, ReturnType<typeof quadUpdater>>();
+  const spriteNode = (id: string) => {
+    if (!quads) return node(id);
+    let u = spriteUpdaters.get(id);
+    if (!u) spriteUpdaters.set(id, u = quadUpdater(node(id), { position: 3, tint: 3, size: 1, fade: 1 }));
+    return u;
   };
   const gatePulse = track.checkpoints.map(() => 0);
   const targetFlash = new Array<number>(STRIKE.perLap).fill(0);
@@ -743,7 +754,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     if (spores) {
       const live = motion.reduced ? Math.floor(spores.n / 2) : spores.n;
       sporeField(spores, time, dEye, live);
-      const sn = node("spores");
+      const sn = spriteNode("spores");
       sn.updateAttribute?.("position", { array: spores.pos, offset: 0 });
       sn.updateAttribute?.("fade", { array: spores.fade, offset: 0 });
       if (!spores.tinted) {
@@ -779,7 +790,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       size[k] = alive ? 7 * scale[k]! * (1 - age[k]! * 0.5) : 0;
       fade[k] = alive ? (1 - age[k]!) * 0.8 : 0;
     }
-    const ex = node("exhaust");
+    const ex = spriteNode("exhaust");
     ex.updateAttribute?.("position", { array: pos, offset: 0 });
     ex.updateAttribute?.("size", { array: size, offset: 0 });
     ex.updateAttribute?.("fade", { array: fade, offset: 0 });
