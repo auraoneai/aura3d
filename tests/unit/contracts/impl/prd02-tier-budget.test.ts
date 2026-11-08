@@ -158,6 +158,17 @@ describe("tier change reallocation (§6.8)", () => {
     device.dispose();
   });
 
+  it("a receiver-only change (camera-following normal bias, strength, bias) keeps the system and its depth programs", () => {
+    const device = new MockRenderDevice();
+    const a = shadowSystemForDevice(device, cfg(1024));
+    const retuned = { ...cfg(1024), normalBias: 1.5000001, strength: 0.8, bias: 0.001 };
+    const b = shadowSystemForDevice(device, retuned);
+    expect(b).toBe(a);
+    expect((b as unknown as { config: unknown }).config).toBe(retuned);
+    expect(shadowSystemForDevice(device, { ...cfg(1024), maxDistance: 120 })).not.toBe(a);
+    device.dispose();
+  });
+
   it("tier change (map size) disposes and recreates exactly once", () => {
     const device = new MockRenderDevice();
     const high = shadowSystemForDevice(device, cfg(1024));

@@ -379,6 +379,14 @@ export class Prd02ShadowSystem {
     return out;
   }
 
+  /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+  retune(config: ShadowSystemConfigInput): void {
+    if (config.mapSize !== this.config.mapSize || config.cascades !== this.config.cascades) {
+      throw new RenderDeviceError("Shadow map size and cascade count need a new shadow system", "SHADOW_CONFIG_STRUCTURAL_CHANGE");
+    }
+    this.config = config;
+  }
+
   dispose(): void {
     this.resetFrameState();
     for (const target of this.cascadeTargets) target?.dispose();

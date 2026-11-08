@@ -1161,104 +1161,6 @@ describe("WebGPU device post teardown", () => {
     }
   });
 
-  it("retains failed one-shot post uniforms for retry without repeating successful retirement", async () => {
-    const f = await fixture(true);
-    f.afterimage();
-    const device = f.device as WebGPUDevice & { readonly [resourceDisposalPending]: boolean };
-    const owner = device as unknown as { webgpuPostRetiredUniformBuffers: WebGPUBufferLike[]; retireNative(resource: WebGPUBufferLike): void };
-    const failed = owner.webgpuPostRetiredUniformBuffers[0]!;
-    expect(failed).toBeDefined();
-    const healthy = f.native.createBuffer({ label: "healthy-post-uniform" });
-    device.resourceInterop.register(healthy, () => healthy.destroy());
-    owner.webgpuPostRetiredUniformBuffers.push(healthy);
-    const original = owner.retireNative.bind(device), failure = new Error("one-shot post uniform retirement failed");
-    let fail = true;
-    const retire = vi.spyOn(owner, "retireNative").mockImplementation(resource => {
-      if (resource === failed && fail) throw failure;
-      original(resource);
-    });
-    try {
-      expect(causes(capture(() => device.dispose()))).toContain(failure);
-      expect(device[resourceDisposalPending]).toBe(true);
-      expect(owner.webgpuPostRetiredUniformBuffers).toEqual([failed]);
-      expect(retire.mock.calls.filter(([resource]) => resource === healthy)).toHaveLength(1);
-      fail = false;
-      device.dispose();
-      device.dispose();
-      // Both uniforms are retired; their scheduled fences are not receipts yet.
-      expect(device[resourceDisposalPending]).toBe(true);
-      expect(owner.webgpuPostRetiredUniformBuffers).toEqual([]);
-      expect(healthy.destroy).not.toHaveBeenCalled();
-      f.finish();
-      await flush();
-      expect(device[resourceDisposalPending]).toBe(false);
-      expect(healthy.destroy).toHaveBeenCalledOnce();
-      expect((failed as unknown as { destroy: ReturnType<typeof vi.fn> }).destroy).toHaveBeenCalledOnce();
-      device.dispose();
-      expect(retire.mock.calls.filter(([resource]) => resource === failed)).toHaveLength(2);
-      expect(retire.mock.calls.filter(([resource]) => resource === healthy)).toHaveLength(1);
-    } finally {
-      fail = false;
-      capture(() => device.dispose());
-      f.finish();
-      await flush();
-      retire.mockRestore();
-    }
-  });
-
-  it("keeps an in-flight post-uniform retirement visible to a reentrant parent lifecycle", async () => {
-    const f = await fixture(true);
-    f.afterimage();
-    const device = f.device as WebGPUDevice & { readonly [resourceDisposalPending]: boolean };
-    const owner = device as unknown as {
-      webgpuPostRetiredUniformBuffers: WebGPUBufferLike[];
-      reclaimWebGPUPostUniformBuffers(): void;
-      retireNative(resource: WebGPUBufferLike): void;
-    };
-    const uniform = owner.webgpuPostRetiredUniformBuffers[0]!;
-    const original = owner.retireNative.bind(device), failure = new Error("in-flight post uniform failed");
-    const lifecycle = new ResourceLifecycle();
-    lifecycle.track(device);
-    const sibling = vi.spyOn(f.output, "dispose");
-    let fail = true, nested: unknown;
-    const retire = vi.spyOn(owner, "retireNative").mockImplementation(resource => {
-      if (resource === uniform && fail) { nested = capture(() => lifecycle.dispose()); throw failure; }
-      original(resource);
-    });
-    try {
-      expect(causes(capture(() => owner.reclaimWebGPUPostUniformBuffers()))).toContain(failure);
-      expect(nested).toBeInstanceOf(AggregateError);
-      expect(device.disposed).toBe(true);
-      expect(device[resourceDisposalPending]).toBe(true);
-      expect(owner.webgpuPostRetiredUniformBuffers).toEqual([uniform]);
-      expect(lifecycle.leakCount()).toBe(1);
-      expect(sibling).toHaveBeenCalledOnce();
-      fail = false;
-      // Strict teardown: the retry completes the failed cleanup, but scheduled
-      // retirement fences still wait, so the lifecycle keeps owning the device.
-      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
-      expect(lifecycle.disposed).toBe(false);
-      expect(device[resourceDisposalPending]).toBe(true);
-      f.finish();
-      await flush();
-      expect(device[resourceDisposalPending]).toBe(false);
-      lifecycle.dispose();
-      lifecycle.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
-      expect(lifecycle.disposed).toBe(true);
-      expect(retire.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(2);
-      expect(sibling).toHaveBeenCalledOnce();
-    } finally {
-      fail = false;
-      capture(() => lifecycle.dispose());
-      capture(() => device.dispose());
-      f.finish();
-      await flush();
-      retire.mockRestore();
-      sibling.mockRestore();
-    }
-  });
-
   it("reports an in-flight sampled-texture retirement across a reentrant queue fence", async () => {
     const f = await fixture(true);
     const device = f.device as WebGPUDevice & { readonly [resourceDisposalPending]: boolean };
@@ -2106,39 +2008,30 @@ describe("WebGPU device post teardown", () => {
     }
   });
 
-  it("preserves the original submission error if post-uniform retirement also fails", async () => {
+  it("preserves the original submission error and keeps the post uniform for reuse until disposal", async () => {
     const f = await fixture(true);
-    const renderingFailure = new Error("original submission failure"), cleanupFailure = new Error("uniform cleanup failure");
-    const internals = f.device as unknown as {
-      webgpuPostRetiredUniformBuffers: WebGPUBufferLike[];
-      retireNative(resource: WebGPUBufferLike & { label?: string }): void;
-    };
-    const retire = internals.retireNative.bind(f.device);
-    let failRetirement = true;
-    const retireSpy = vi.spyOn(internals, "retireNative").mockImplementation(resource => {
-      if (failRetirement && resource.label === "webgpu-native-effect-0-afterimage-uniforms") throw cleanupFailure;
-      retire(resource);
-    });
+    const renderingFailure = new Error("original submission failure");
     f.onSubmit(label => { if (label === "webgpu-native-effect-0-afterimage-encoder") throw renderingFailure; });
     try {
       expect(capture(() => f.afterimage())).toBe(renderingFailure);
-      const uniform = f.buffers.find(buffer => buffer.label === "webgpu-native-effect-0-afterimage-uniforms")!;
-      expect(internals.webgpuPostRetiredUniformBuffers).toContain(uniform);
-      failRetirement = false;
+      const uniforms = () => f.buffers.filter(buffer => buffer.label === "webgpu-native-effect-0-afterimage-uniforms");
+      expect(uniforms()).toHaveLength(1);
+      const uniform = uniforms()[0]!;
       f.onSubmit();
+      f.afterimage();
+      // Fullscreen passes submit right after their uniform write, so the next frame reuses the buffer.
+      expect(uniforms()).toEqual([uniform]);
+      expect(uniform.destroy).not.toHaveBeenCalled();
       f.device.dispose();
-      expect(retireSpy.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(2);
       expect(uniform.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
       expect(uniform.destroy).toHaveBeenCalledOnce();
     } finally {
-      failRetirement = false;
       f.onSubmit();
       capture(() => f.device.dispose());
       f.finish();
       await flush();
-      retireSpy.mockRestore();
     }
   });
 
@@ -2165,7 +2058,6 @@ describe("WebGPU device post teardown", () => {
       expect(f.device.getDiagnostics().lastError).toContain("history loss cleanup failed");
       expect(exposure.attempts).toBe(1);
       expect(history.attempts).toBe(1);
-      expect((f.device as unknown as { webgpuPostRetiredUniformBuffers: unknown[] }).webgpuPostRetiredUniformBuffers).toHaveLength(0);
       if (loss === "rejected") expect(liveResources.filter(resource => resource.destroy.mock.calls.length !== 0).map(resource => resource.label)).toEqual([]);
       else expect(liveResources.filter(resource => resource.destroy.mock.calls.length !== 1).map(resource => resource.label)).toEqual([]);
 
