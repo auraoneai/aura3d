@@ -12,6 +12,7 @@ import {
   camera,
   effects,
   game,
+  geometry,
   instances,
   looks,
   material,
@@ -21,6 +22,7 @@ import {
 } from "@aura3d/engine";
 import { assets, BOSS_CLIPS, PIP_CLIPS } from "../aura-assets.js";
 import { deriveWorldMotion, type WorldMotion } from "./motion.js";
+import { legacySlabGeometry, type SlabTransform as SlabTransformSpec } from "./legacySlab.js";
 import {
   GATE_RING_MATERIAL,
   SLAB_RADIUS,
@@ -591,6 +593,14 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
  * (clay body, felt top); movers and timed platforms keep their own runtime nodes so
  * `tickPlatforms` can move and hide them exactly as before.
  */
+/**
+ * Lane 521: the worlds whose 4.7.18 look depended on the 4.7.18 slab normals (see legacySlab.ts):
+ * Whispering Forest (shaded lawn edges and nap bands) and Starfall Garden (the dark mirrored rim on
+ * the crystal slabs). Their static slabs draw as one world-space mesh per kind with those normals;
+ * every other world keeps the instanced slabs and today's look.
+ */
+export const LEGACY_SLAB_NORMAL_WORLDS: ReadonlySet<WorldId> = new Set<WorldId>(["w1", "w6"]);
+
 function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec, bobNodes: string[]): number {
   const groups = new Map<PlatformKind, { body: ReturnType<typeof slabTransforms>["body"][]; top: ReturnType<typeof slabTransforms>["top"][] }>();
   let instanced = 0;
@@ -618,8 +628,13 @@ function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec, bobNodes: s
   }
   for (const [kind, group] of groups) {
     const surface = SURFACES[kind];
-    const body = instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true });
-    const top = instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: surface.top, castShadow: false, receiveShadow: true });
+    const legacy = LEGACY_SLAB_NORMAL_WORLDS.has(spec.id);
+    const body = legacy
+      ? geometry.custom(geometry.define(legacySlabGeometry(group.body as readonly SlabTransformSpec[], SLAB_RADIUS)), { name: `plats:${kind}`, material: surface.body, castShadow: true, receiveShadow: true })
+      : instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true });
+    const top = legacy
+      ? geometry.custom(geometry.define(legacySlabGeometry(group.top as readonly SlabTransformSpec[], 0.3)), { name: `plat-tops:${kind}`, material: surface.top, castShadow: false, receiveShadow: true })
+      : instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: surface.top, castShadow: false, receiveShadow: true });
     if (BOBBING_PLATFORM_KINDS.has(kind)) {
       // PBL-AN1: the leaf pads bob as one draw each; the instance transforms are world
       // space, so the node's own position is the bob offset.
