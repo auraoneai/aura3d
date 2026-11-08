@@ -1,7 +1,7 @@
 /** Shared checks for hand-written WGSL twins of `material.custom` GLSL programs (A3/W6). */
 import { expect } from "vitest";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial.js";
-import { globalShaderSource } from "../../../packages/rendering/src/index.js";
+import { assignCustomAttributeLocations, globalShaderSource } from "../../../packages/rendering/src/index.js";
 import { reflectShaderSources } from "../../../packages/rendering/src/ShaderReflection.js";
 import type { AuraCustomMaterialSpec } from "../../../packages/engine/src/agent-api/nodes/types.js";
 
@@ -35,9 +35,11 @@ export function checkWgslTwin(_name: string, spec: AuraCustomMaterialSpec, insta
     // (the shield's earlier twin names its position input `position`)
     const inputs = new Map([...locations(vsHeader)].map(([name, value]) => [name === "position" ? "a_position" : name, value]));
     expect(inputs.has("a_position")).toBe(true);
-    // Geometry streams arrive at their fixed VertexFormat locations; instance columns at the program's (8-11) location.
+    // Geometry streams arrive at their fixed VertexFormat locations; instance columns at the program's (8-11) location;
+    // author attributes (`in vec3 tone;`) at the geometry's custom pool (`assignCustomAttributeLocations`, names sorted).
+    const custom = assignCustomAttributeLocations([...reflection.attributes.keys()].filter((name) => !name.startsWith("a_")));
     for (const [name, { location }] of inputs) {
-      const expected = GEOMETRY_LOCATIONS[name] ?? reflection.attributes.get(name);
+      const expected = GEOMETRY_LOCATIONS[name] ?? custom.get(name) ?? reflection.attributes.get(name);
       expect([name, location]).toEqual([name, expected]);
       expect([name, reflection.attributes.has(name)]).toEqual([name, true]);
     }
