@@ -8,7 +8,7 @@
 // does not count as covered, so only the visible silhouette is inked; without it the ring is drawn x-ray style.
 // Scenes whose outline has no `targets` never reach this file: their full-frame luma outline is unchanged.
 
-import type { RenderBuffer, RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } from "../RenderDevice";
+import type { RenderBuffer, RenderDevice, RenderShaderProgram, RenderTarget, ShaderSources, UniformValue } from "../RenderDevice";
 import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
@@ -176,6 +176,69 @@ void main() {
 /** @internal Ink program sources (GLSL validation in unit tests). */
 export const OUTLINE_TARGET_SHADER_SOURCES = { vertex: FULLSCREEN_VERT, fragment: INK_FRAGMENT } as const;
 
+// WebGPU twin of the ink program. Mask, scene depth and the output share one pixel grid (WebGPU's top-left origin on
+// both), so the ring reads integer texels with textureLoad. `u_outlineParams.w` = 1 under reversed depth (clear 0, nearer
+// is larger): the empty test and the visibility bias flip with it.
+const FULLSCREEN_VERT_WGSL_GLSL = /* glsl */ `#version 300 es
+// ${OUTLINE_TARGET_SHADER_MARKER}
+layout(location = 0) in vec2 a_position;
+void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
+`;
+
+const FULLSCREEN_VERT_WGSL = /* wgsl */ `
+// ${OUTLINE_TARGET_SHADER_MARKER}
+/* @aura3d-bindings */
+@vertex fn vs_main(@location(0) position: vec2<f32>) -> @builtin(position) vec4<f32> {
+  return vec4<f32>(position, 0.0, 1.0);
+}
+`;
+
+const DIRECTIONS_WGSL = OUTLINE_TARGET_DIRECTIONS.map(([x, y]) => `vec2<i32>(${x}, ${y})`).join(", ");
+
+const INK_FRAGMENT_WGSL = /* wgsl */ `
+// ${OUTLINE_TARGET_SHADER_MARKER}
+/* @aura3d-bindings */
+fn outlineCoveredAt(pixel: vec2<i32>) -> bool {
+  let size = vec2<i32>(textureDimensions(u_outlineMaskTexture));
+  if (pixel.x < 0 || pixel.y < 0 || pixel.x >= size.x || pixel.y >= size.y) { return false; }
+  let d = textureLoad(u_outlineMaskTexture, pixel, 0);
+  let reversed = aura.u_outlineParams.w > 0.5;
+  if ((!reversed && d >= ${OUTLINE_TARGET_EMPTY_DEPTH.toFixed(5)}) || (reversed && d <= ${(1 - OUTLINE_TARGET_EMPTY_DEPTH).toFixed(5)})) { return false; }
+  if (aura.u_outlineParams.z < 0.5) { return true; }
+  let scene = textureLoad(u_outlineSceneTexture, pixel, 0);
+  return select(d <= scene + aura.u_outlineParams.y, d >= scene - aura.u_outlineParams.y, reversed);
+}
+@fragment fn fs_main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let pixel = vec2<i32>(position.xy);
+  if (outlineCoveredAt(pixel)) { discard; }
+  let dirs = array<vec2<i32>, 8>(${DIRECTIONS_WGSL});
+  for (var step: i32 = 1; step <= ${OUTLINE_TARGET_MAX_RADIUS}; step += 1) {
+    if (f32(step) > aura.u_outlineParams.x) { break; }
+    for (var k: i32 = 0; k < 8; k += 1) {
+      if (outlineCoveredAt(pixel + dirs[k] * step)) { return aura.u_outlineColor; }
+    }
+  }
+  discard;
+  return vec4<f32>(0.0);
+}
+`;
+
+/** @internal WebGPU ink program (portable WGSL stages; GLSL is the reflection source). */
+export const OUTLINE_TARGET_WEBGPU_SHADER: ShaderSources = {
+  label: "a3d_gu47_outline_targets_webgpu",
+  marker: OUTLINE_TARGET_SHADER_MARKER,
+  vertex: FULLSCREEN_VERT_WGSL_GLSL,
+  fragment: INK_FRAGMENT,
+  webgpu: { vertex: FULLSCREEN_VERT_WGSL, fragment: INK_FRAGMENT_WGSL },
+  portableBindings: [
+    { name: "u_outlineMask", kind: "depth2d", required: true },
+    { name: "u_outlineScene", kind: "depth2d", required: true },
+    { name: "u_outlineColor", kind: "vec4", required: true },
+    { name: "u_outlineParams", kind: "vec4", required: true },
+    { name: "u_outlineTexel", kind: "vec2", required: true }
+  ]
+};
+
 export interface OutlineTargetPassInput {
   /** This frame's render items (the renderer's `postFrameContext.items`). */
   readonly items: readonly RenderItem[];
@@ -253,7 +316,11 @@ export class OutlineTargetPass {
     const device = this.device;
     const radius = Math.max(1, Math.min(OUTLINE_TARGET_MAX_RADIUS, Math.round(input.radius ?? 3)));
     const targetItems = selectOutlineTargetItems(input.items, input.targets);
-    const sceneDepth = input.sceneDepth ?? null;
+    const webgpu = device.kind === "webgpu";
+    // WebGPU binds the scene depth as a single-sample depth2d texture; a multisampled one draws the ring x-ray style.
+    const sceneDepth = input.sceneDepth && (!webgpu || ((input.sceneDepth as { sampleCount?: number }).sampleCount ?? 1) === 1) ? input.sceneDepth : null;
+    const convention = webgpu ? device.getDepthConvention?.() : undefined;
+    const reversed = convention?.mode === "reversed" && convention.clearValue === 0;
     const record: OutlineTargetRecord = {
       targets: [...input.targets],
       maskItems: targetItems.map((item) => item.label ?? "item"),
@@ -268,7 +335,7 @@ export class OutlineTargetPass {
     const height = Math.max(1, Math.floor(input.height));
     if (!this.mask || this.mask.disposed || this.mask.width !== width || this.mask.height !== height) {
       this.mask?.dispose();
-      this.mask = device.createRenderTarget({ width, height, format: "rgba8", depth: "texture", label: OUTLINE_TARGET_MASK_LABEL });
+      this.mask = device.createRenderTarget({ width, height, format: "rgba8", depth: "texture", label: OUTLINE_TARGET_MASK_LABEL, ...(reversed ? { depthPrecision: "float" as const } : {}) });
     }
     const context = { device, width, height };
     try {
@@ -290,7 +357,7 @@ export class OutlineTargetPass {
       }).execute(context);
       const maskDepth = this.mask.depthTexture;
       if (!maskDepth) return { ...record, inked: false };
-      this.program ??= device.createShaderProgram({
+      this.program ??= device.createShaderProgram(webgpu ? OUTLINE_TARGET_WEBGPU_SHADER : {
         label: "a3d_gu47_outline_targets",
         marker: OUTLINE_TARGET_SHADER_MARKER,
         vertex: FULLSCREEN_VERT,
@@ -300,7 +367,8 @@ export class OutlineTargetPass {
       const color = input.color ?? [255, 152, 34, 255];
       const opacity = Math.max(0, Math.min(1, input.opacity ?? 0.9)) * ((color[3] ?? 255) / 255);
       device.setRenderTarget(input.output);
-      device.draw({
+      const draw = webgpu && device.drawChecked ? device.drawChecked.bind(device) : device.draw.bind(device);
+      draw({
         label: "gu47-outline-targets-ink",
         topology: "triangles",
         vertexBuffer: this.triangle,
@@ -312,7 +380,7 @@ export class OutlineTargetPass {
           ["u_outlineMask", new TextureBinding({ name: "u_outlineMask", texture: maskDepth, sampler: NEAREST() })],
           ["u_outlineScene", new TextureBinding({ name: "u_outlineScene", texture: sceneDepth ?? maskDepth, sampler: NEAREST() })],
           ["u_outlineColor", [color[0] / 255, color[1] / 255, color[2] / 255, opacity]],
-          ["u_outlineParams", [radius, OUTLINE_TARGET_DEPTH_BIAS, sceneDepth ? 1 : 0, 0]],
+          ["u_outlineParams", [radius, OUTLINE_TARGET_DEPTH_BIAS, sceneDepth ? 1 : 0, reversed ? 1 : 0]],
           ["u_outlineTexel", [1 / width, 1 / height]]
         ])
       });

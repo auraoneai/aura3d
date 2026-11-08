@@ -21,7 +21,7 @@ import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shader
 import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, nativeDofConflicts, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDepthPassesCover, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, resolvePostprocessTargetFormat, webgpuLinearHdrWithoutTone, nativeDofConflicts, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested, webgpuMultisampledDepthServesPost, webgpuNativeDepthPassesCover, webgpuNativeDofGap } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
@@ -3862,7 +3862,7 @@ export class Renderer {
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     let directCaptureTarget: RenderTarget | undefined;
     if (postprocess) {
-      const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
+      const format = resolvePostprocessTargetFormat(this.device, postprocess);
       postprocessTargetFormat = format;
       if ((format === "rgba16f" || format === "rgba32f") && !this.device.info.capabilities?.includes("hdr-render-targets")) {
         throw new RenderDeviceError("Renderer HDR postprocess requires an HDR-capable backend", "HDR_POSTPROCESS_UNSUPPORTED", {
@@ -3870,7 +3870,7 @@ export class Renderer {
           format
         });
       }
-      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess)) {
+      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess) && !webgpuLinearHdrWithoutTone(this.device, postprocess)) {
         throw new RenderDeviceError("Renderer HDR postprocess requires tone mapping before presentation or LDR postprocess passes", "HDR_POSTPROCESS_TONEMAPPING_REQUIRED", {
           backend: this.device.kind,
           format
@@ -4794,7 +4794,7 @@ export class Renderer {
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     let directCaptureTarget: RenderTarget | undefined;
     if (postprocess) {
-      const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
+      const format = resolvePostprocessTargetFormat(this.device, postprocess);
       postprocessTargetFormat = format;
       if ((format === "rgba16f" || format === "rgba32f") && !this.device.info.capabilities?.includes("hdr-render-targets")) {
         throw new RenderDeviceError("Renderer HDR postprocess requires an HDR-capable backend", "HDR_POSTPROCESS_UNSUPPORTED", {
@@ -4802,7 +4802,7 @@ export class Renderer {
           format
         });
       }
-      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess)) {
+      if ((format === "rgba16f" || format === "rgba32f") && postprocess.toneMapping === false && !nativeDofPlan && this.nativeDofRoute !== "scene" && !webgpuAutoExposureRequested(this.device, postprocess) && !webgpuLinearHdrWithoutTone(this.device, postprocess)) {
         throw new RenderDeviceError("Renderer HDR postprocess requires tone mapping before presentation or LDR postprocess passes", "HDR_POSTPROCESS_TONEMAPPING_REQUIRED", {
           backend: this.device.kind,
           format

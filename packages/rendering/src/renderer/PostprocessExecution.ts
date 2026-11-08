@@ -567,20 +567,22 @@ function webgpuNativeOnlyPasses(source: RenderTarget, postprocess: RendererPostP
   if (!isHdrRenderTarget(source)) return [];
   const pipeline = postprocess.pipeline as PostPipelineOptions;
   return [{ name: "tone-mapping", options: { operator: postprocess.toneMapping === false &&
-    ((pipeline.autoExposure !== undefined && pipeline.autoExposure !== false) || (pipeline.dof !== undefined && pipeline.dof !== false))
+    ((pipeline.autoExposure !== undefined && pipeline.autoExposure !== false) || (pipeline.dof !== undefined && pipeline.dof !== false) || pipeline.toneMapping === undefined || (pipeline.toneMapping as string) === "none")
     ? "linear" : pipeline.toneMapping, exposure: pipeline.exposure } }];
 }
 
 /** An HDR effect frame still needs its authored tone or a linear output conversion. */
 function withWebgpuExposureOutputPass(passes: readonly RendererPostProcessPassPlan[], postprocess: RendererPostProcessOptions,
-  nativePost: WebgpuNativePostOptions | undefined): readonly RendererPostProcessPassPlan[] {
+  nativePost: WebgpuNativePostOptions | undefined, source?: RenderTarget): readonly RendererPostProcessPassPlan[] {
   const pipeline = postprocess.pipeline as PostPipelineOptions;
   const authored = (nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField) && postprocess.toneMapping !== false
     ? passes.map(pass => pass.name === "tone-mapping"
       ? { ...pass, options: { operator: pipeline.toneMapping, exposure: pipeline.exposure, ...pass.options } }
       : pass)
     : passes;
-  if ((!nativePost?.autoExposure && !nativePost?.nativeDepthOfField && !nativePost?.nativeSceneDepthOfField) || postprocess.toneMapping !== false || authored.length === 0 || authored.some(pass => pass.name === "tone-mapping")) return authored;
+  // A linear HDR source without a tone operator (webgpuLinearHdrWithoutTone) gets the same linear output conversion.
+  const linearHdr = source !== undefined && isHdrRenderTarget(source) && source.colorTexture.colorSpace === "linear";
+  if ((!nativePost?.autoExposure && !nativePost?.nativeDepthOfField && !nativePost?.nativeSceneDepthOfField && !linearHdr) || postprocess.toneMapping !== false || authored.length === 0 || authored.some(pass => pass.name === "tone-mapping")) return authored;
   const index = authored[0]?.name === "bloom" ? 1 : 0;
   return [...authored.slice(0, index), { name: "tone-mapping", options: { operator: "linear", exposure: pipeline.exposure } }, ...authored.slice(index)];
 }
@@ -804,6 +806,26 @@ export function defaultPostprocessTargetFormat(
   return device.info.capabilities?.includes("hdr-render-targets") ? "rgba16f" : "rgba8";
 }
 
+/**
+ * WebGPU, `output.toneMapping: "none"` with a v2 chain: the scene draws into a linear HDR target (not the display-space
+ * rgba8 target the legacy WebGL2 route uses) so the native chain's bloom, S10 grade and scene depth of field run as the
+ * WebGL2 v2 graph runs them; a linear output conversion stands in for the absent tone operator.
+ */
+export function webgpuLinearHdrWithoutTone(device: RenderDevice, postprocess: RendererPostProcessOptions): boolean {
+  return device.kind === "webgpu" && postprocess.toneMapping === false && postprocess.v2 === true
+    && postprocess.execution !== "cpu-deterministic" && typeof device.presentLdrPostprocess === "function"
+    && device.info.capabilities?.includes("hdr-render-targets") === true;
+}
+
+/** The forward target format a postprocess frame draws into (`targetFormat`, else the default; see {@link webgpuLinearHdrWithoutTone}). */
+export function resolvePostprocessTargetFormat(
+  device: RenderDevice,
+  postprocess: RendererPostProcessOptions
+): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> {
+  const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(device, postprocess);
+  return format === "rgba8" && webgpuLinearHdrWithoutTone(device, postprocess) ? "rgba16f" : format;
+}
+
 export function createPostprocessDiagnostics(
   postprocess: RendererPostProcessOptions | undefined,
   ownedTargets: readonly RenderTarget[],
@@ -865,7 +887,7 @@ export class RendererPostprocessPipeline {
 
   /** Pre-render twin of the `tryExecutePostGraphV2` decline check (same shared predicate); `null` = the v2 seam runs this chain. */
   v2SeamDeclineFor(postprocess: RendererPostProcessOptions): string | null {
-    const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.host.device, postprocess);
+    const format = resolvePostprocessTargetFormat(this.host.device, postprocess);
     return postV2SeamDeclineReason(this.host.device.kind, postprocess, createRendererPostprocessPasses(postprocess), format !== "rgba8");
   }
 
@@ -912,7 +934,10 @@ export class RendererPostprocessPipeline {
     outputDefaults: Readonly<Record<string, unknown>>
   ): boolean {
     const device = this.host.device;
-    if (device.kind !== "webgpu" || outputTarget || current.colorTexture.format !== "rgba8" || current.colorTexture.colorSpace !== "linear" ||
+    // A linear HDR source without a tone operator (webgpuLinearHdrWithoutTone) takes the same encode on an opaque canvas.
+    const linearSource = current.colorTexture.format === "rgba8"
+      || (isHdrRenderTarget(current) && webgpuLinearHdrWithoutTone(device, postprocess) && device.getPresentationAlphaMode?.() === "opaque");
+    if (device.kind !== "webgpu" || outputTarget || !linearSource || current.colorTexture.colorSpace !== "linear" ||
         nativePost?.autoExposure || nativePost?.nativeDepthOfField || nativePost?.nativeSceneDepthOfField) return false;
     if (postprocess.execution === "cpu-deterministic" || !device.presentLdrPostprocess) {
       throw new RenderDeviceError("Linear WebGPU canvas output requires native sRGB encoding", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
@@ -1095,7 +1120,8 @@ export class RendererPostprocessPipeline {
     outputTarget: RenderTarget | undefined
   ): void {
     const device = this.host.device;
-    if (device.kind === "webgpu") {
+    // WebGPU draws the same mask and ring (OutlineTargets.ts WGSL twin); without checked submission it records the skip.
+    if (device.kind === "webgpu" && !device.drawChecked) {
       recordPostSkipped("OUTLINE_TARGETS_WEBGL2_ONLY", postprocess.postFrameContext?.diagnosticToken);
       return;
     }
@@ -1139,7 +1165,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device))), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device))), postprocess, nativePost, this.host.device.kind === "webgpu" ? current : undefined);
     if (passes.length === 0) {
       // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
       // emits no plan passes — the v2 route still applies its stages.
@@ -1319,7 +1345,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device))), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost, this.host.device))), postprocess, nativePost, this.host.device.kind === "webgpu" ? current : undefined);
     if (passes.length === 0) {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")
