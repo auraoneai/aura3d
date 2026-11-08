@@ -1,28 +1,35 @@
 /**
  * Beat Hopper world on the public engine surface: toon `material.custom` surfaces, `geometry.dynamic` batches,
- * a gradient night sky and an equalizer skyline. Road tiles live in a scrolling frame (written once, node moved by
+ * a synthwave night stage (`stage.ts`: striped sunset sun, neon grid floor, city, palms, arches, floating islands,
+ * LED equalizer meters, searchlights, haze) around an elevated track, plus bloom, grade and vignette. Road tiles live in a scrolling frame (written once, node moved by
  * `dist % SEGMENT_LENGTH`); beat stripes and obstacles are placed per frame from the deterministic beat-grid formula
  * `z = (crossTime - t) * speed`. Particles and pulse rings are presentation-only pools with their own LCG — they never
  * consume gameplay RNG draws. The whole world pulses on the sim beat; PERFECT judgements fire expanding timing rings.
  */
-import { camera, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import {
-  Batch, flatSpec, gradientSkyFragment, shadowSpec, skySpec, toonSpec,
+  Batch, flatSpec, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
 } from "../../../examples/shared/runner-kit/index";
 import { CONFIG, obstacleZ, type BeatHopperSim, type ObstacleType } from "./sim";
 import { LOOK, beatPulse, linear } from "./look";
 import {
-  ROAD_WIDTH, SEGMENT_LENGTH, barMesh, blockMesh, boxMesh, gapMesh, playerMesh, ringMesh, sphereMesh
+  PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH, barMesh, blockMesh, boxMesh, gapMesh, mergeMeshes, playerMesh, ringMesh, sphereMesh
 } from "./meshes";
 import { poseScale, type CameraPose, type Shown } from "./presentation";
+import { addStage, transformMesh } from "./stage";
+import { glowSpec, heroSpec, stageLitSpec, stageSkySpec, type Haze } from "./stage-shaders";
 
 type Scene = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
 const STRIPES = 40;
-const TOWERS = 64;
-const SKY_RADIUS = 160;
+const SKY_RADIUS = 360;
+
+/** Distance haze bands (presentation): near layers, the static far skyline and the horizon ridges. */
+export const HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0085 };
+const FAR_HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0052 };
+const RIDGE_HAZE: Haze = { color: linear("#7a1c6c"), density: 0.0026 };
 export const CAMERA_FAR = 400;
 
 export interface WorldOptions {
@@ -72,18 +79,50 @@ const dynamicFrom = (m: MeshData) => geometry.dynamic({
   uvs: Float32Array.from(m.uvs), indices: Uint32Array.from(m.indices)
 });
 
-export const BATCH_IDS = ["deck", "rails", "stripes", "skyline", "blocks", "bars", "gaps", "rings", "particles"] as const;
+export const BATCH_IDS = ["deck", "rails", "stripes", "blocks", "bars", "gaps", "rings", "particles"] as const;
 
 /** Every custom program the world draws (the shaders-compile test bakes each one). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
-    { name: "sky", spec: skySpec(gradientSkyFragment(LOOK.skyStops)) },
+    { name: "sky", spec: stageSkySpec() },
+    { name: "deck", spec: deckSpec() },
+    { name: "hero", spec: heroSpec(linear(LOOK.player)) },
+    ...stagePrograms(),
     { name: "toon", spec: toonSpec(linear(LOOK.road)) },
     { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
     { name: "flat", spec: flatSpec(linear(LOOK.roadLine), 0.9) },
     { name: "flat-tone", spec: flatSpec([1, 1, 1], 0.9, true) },
     { name: "shadow", spec: shadowSpec() }
   ];
+}
+
+/** Road deck: dark tiles (per-tile tone) with the stage lighting and haze so the far track melts into the horizon. */
+const deckSpec = (): CustomSpec => stageLitSpec({ base: [1, 1, 1], haze: HAZE, toneBase: 1, rim: [0.25, 0.04, 0.2] });
+
+const stagePrograms = (): { name: string; spec: CustomSpec }[] =>
+  addStage(() => undefined, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE }).programs();
+
+const translateBox = (w: number, h: number, d: number, y: number, z: number): MeshData => {
+  const m = boxMesh(w, h, d);
+  for (let i = 0; i < m.positions.length; i += 3) {
+    m.positions[i + 1] = (m.positions[i + 1] as number) + y;
+    m.positions[i + 2] = (m.positions[i + 2] as number) + z;
+  }
+  return m;
+};
+
+/** Headphones on the hopper (presentation): a band over the top and two ear cups, in the player's frame. */
+function headphonesMesh(): MeshData {
+  const top = PLAYER_RADIUS * 2 + PLAYER_LENGTH;
+  const parts: MeshData[] = [];
+  const steps = 9;
+  for (let k = 0; k <= steps; k++) {
+    const a = Math.PI * (k / steps);
+    const r = PLAYER_RADIUS + 0.06;
+    parts.push(transformMesh(boxMesh(0.07, 0.07, 0.12), 0, 0, Math.cos(a) * r, top - PLAYER_RADIUS * 0.75 + Math.sin(a) * r * 0.9, 0, a));
+  }
+  for (const side of [-1, 1]) parts.push(transformMesh(boxMesh(0.12, 0.3, 0.3), 0, 0, side * (PLAYER_RADIUS + 0.03), top - PLAYER_RADIUS * 0.85, 0));
+  return mergeMeshes(parts);
 }
 
 export function buildWorld(options: WorldOptions): World {
@@ -106,7 +145,17 @@ export function buildWorld(options: WorldOptions): World {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
   };
 
-  add("sky", sphereMesh(SKY_RADIUS, 24, 16), skySpec(gradientSkyFragment(LOOK.skyStops)));
+  add("sky", sphereMesh(SKY_RADIUS, 32, 20), stageSkySpec());
+
+  /* synthwave stage: floor, ridges, city, palms, arches, islands, equalizer meters, searchlights, motes */
+  const stage = addStage((id, geom, spec) => {
+    builder.add(geometry.custom(geom, { name: id, material: material.custom(spec) }).runtime({ id }));
+  }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
+
+  /* elevated track girder with a cyan under-glow strip (uniform along z, so it never scrolls) */
+  const trackLen = CONFIG.POOL_SEGMENTS * SEGMENT_LENGTH;
+  add("girder", translateBox(ROAD_WIDTH + 0.7, 0.55, trackLen, -0.6, 18 - trackLen / 2), stageLitSpec({ base: linear("#1a1038"), haze: HAZE, toneless: true }));
+  add("underglow", translateBox(ROAD_WIDTH + 0.78, 0.07, trackLen, -0.42, 18 - trackLen / 2), stageLitSpec({ base: [0, 0, 0], haze: HAZE, emissive: linear("#23e6ff"), toneless: true }));
 
   /* road tiles + neon rails in the scrolling frame */
   const deck = new Batch(boxMesh(ROAD_WIDTH, 0.3, SEGMENT_LENGTH), CONFIG.POOL_SEGMENTS, linear(LOOK.road));
@@ -120,33 +169,16 @@ export function buildWorld(options: WorldOptions): World {
     rails.place(k * 2, -(ROAD_WIDTH / 2 + 0.12), 0.05, z, 0, 1, 1, 1);
     rails.place(k * 2 + 1, ROAD_WIDTH / 2 + 0.12, 0.05, z, 0, 1, 1, 1);
   }
-  addBatch("deck", deck, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  addBatch("deck", deck, deckSpec());
   addBatch("rails", rails, toonSpec(linear(LOOK.rail), undefined, linear(LOOK.rail)));
 
   /* beat-grid stripes (world space, placed per frame from the sim clock) */
   const stripes = new Batch(boxMesh(ROAD_WIDTH, 0.02, 0.22), STRIPES, linear(LOOK.roadLine));
   addBatch("stripes", stripes, flatSpec([1, 1, 1], 0.85, true));
 
-  /* equalizer skyline: two rows of towers whose heights dance on the beat */
-  const skyline = new Batch(boxMesh(1, 1, 1), TOWERS, linear(LOOK.skyline[0] as string));
-  const towerRand = lcg(0xbea7);
-  const towerBase: number[] = [];
-  const towerPhase: number[] = [];
-  const towerX: number[] = [];
-  const towerZ: number[] = [];
-  for (let i = 0; i < TOWERS; i++) {
-    const side = i % 2 === 0 ? -1 : 1;
-    const row = Math.floor(i / 2);
-    towerBase.push(3 + towerRand() * 9);
-    towerPhase.push(towerRand() * Math.PI * 2);
-    towerX.push(side * (7.5 + (row % 4) * 2.6 + towerRand() * 1.2));
-    towerZ.push(12 - row * 6.5);
-    skyline.setTone(i, linear(LOOK.skyline[i % LOOK.skyline.length] as string));
-  }
-  addBatch("skyline", skyline, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
-
   /* the hopper + contact shadow */
-  add("player", playerMesh(), toonSpec(linear(LOOK.player), undefined, linear(LOOK.player)));
+  add("player", playerMesh(), heroSpec(linear(LOOK.player)));
+  add("player-gear", headphonesMesh(), stageLitSpec({ base: linear("#2a1a5a"), haze: HAZE, emissive: linear("#ff2fb3"), rim: linear("#ff8fd8"), toneless: true }));
   add("player-shadow", boxMesh(1.7, 0.002, 1.7), shadowSpec());
 
   /* obstacles: one batch per type, slots mirror the sim pool */
@@ -159,9 +191,15 @@ export function buildWorld(options: WorldOptions): World {
 
   /* PERFECT timing rings + event particles (presentation pools) */
   const rings = new Batch(ringMesh(0.8, 1, 32), CONFIG.POOL_RINGS, linear(LOOK.perfect));
-  addBatch("rings", rings, flatSpec([1, 1, 1], 0.8, true));
+  addBatch("rings", rings, glowSpec({ beam: false, wobble: 0, gain: [1.2, 1.2, 1.2] }));
   const particles = new Batch(sphereMesh(0.1, 6, 5), CONFIG.POOL_PARTICLES, [1, 1, 1]);
   addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+
+  /* post: bloom on the sun, neon and meters; a cool-magenta grade and a soft vignette (tone mapping stays off) */
+  builder
+    .add(effects.bloom({ name: "bloom", intensity: 0.72, threshold: 0.62, scatter: 0.7 }))
+    .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.1, temperature: -0.04, gain: 1.04 }))
+    .add(effects.vignette({ name: "vignette", intensity: 0.32, color: "#0b0620" }));
 
   return {
     scene: builder,
@@ -172,6 +210,9 @@ export function buildWorld(options: WorldOptions): World {
         if (!h) handles.set(id, (h = app.nodes.require(id)));
         return h;
       };
+      const stageRt = stage.bind(node);
+      let clock = 0;
+      let lastWall = -1;
       const maybeController = app.camera;
       if (!maybeController) throw new Error("beat-hopper: the app exposes no camera controller");
       const controller: NonNullable<typeof maybeController> = maybeController;
@@ -254,20 +295,21 @@ export function buildWorld(options: WorldOptions): World {
         }
         stripes.flush(node("stripes"), false);
 
-        /* equalizer skyline */
-        for (let i = 0; i < TOWERS; i++) {
-          const dance = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(towerPhase[i] as number + (t / CONFIG.BEAT) * Math.PI);
-          const h = (towerBase[i] as number) * (0.55 + 0.45 * dance);
-          skyline.place(i, towerX[i] as number, h / 2 - 0.4, towerZ[i] as number, 0, 1.6, h, 1.6);
-        }
-        skyline.flush(node("skyline"));
-        node("skyline").setUniform?.("emissive", [0.10 * gain, 0.03 * gain, 0.16 * gain]);
+        /* stage scenery: presentation clock from the wall clock (never the sim) */
+        const wall = typeof performance !== "undefined" ? performance.now() / 1000 : t;
+        clock += lastWall < 0 ? 0 : Math.min(0.1, Math.max(0, wall - lastWall));
+        lastWall = wall;
+        stageRt.update(dist, t / CONFIG.BEAT, pulse, reduced ? 0 : clock, reduced);
+        node("sky").setUniform?.("uClock", reduced ? 0 : clock);
+        node("sky").setUniform?.("uPulse", pulse);
+        node("underglow").setUniform?.("emissive", [linear("#23e6ff")[0] * (0.6 + gain), linear("#23e6ff")[1] * (0.6 + gain), linear("#23e6ff")[2] * (0.6 + gain)]);
 
         /* hopper */
         const scale = poseScale(pose, sim.o.vy);
         const bodyColor = pose === "duck" ? LOOK.playerDuck : LOOK.player;
         const rgb = linear(bodyColor);
         node("player").setPosition(0, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
+        node("player-gear").setPosition(0, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
         node("player").setUniform?.("baseColor", [...rgb]);
         node("player").setUniform?.("emissive", [rgb[0] * (0.3 + gain * 0.7), rgb[1] * (0.3 + gain * 0.7), rgb[2] * (0.3 + gain * 0.7)]);
         node("player-shadow").setPosition(0, 0.02, 0).setScale(1 / (1 + 0.25 * y));
@@ -377,13 +419,14 @@ export function buildWorld(options: WorldOptions): World {
       const parked = ["blocks", "bars", "gaps", "rings", "particles"];
       function warm(on: boolean): void {
         for (const id of parked) {
-          const h = node(id).setVisible(on);
+          /* parked far away while the programs warm, then back in place and visible (they were left hidden) */
+          const h = node(id).setVisible(true);
           if (on) h.setPosition(0, -50, -60);
           else h.setPosition(0, 0, 0);
         }
       }
 
-      const batches = [deck, rails, stripes, skyline, blocks, bars, gaps, rings, particles];
+      const batches = [deck, rails, stripes, blocks, bars, gaps, rings, particles];
       return {
         update,
         warm,
