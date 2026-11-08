@@ -6,6 +6,7 @@
  * presentation-only and draws from its own RNG stream, never the gameplay stream).
  */
 import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, Slots, GameRng, scrollFrameZ, flatSpec, shadowSpec, hexToLinear,
   type CustomSpec, type MeshData, type Rgb
@@ -85,7 +86,7 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
 export function buildWorld(options: WorldOptions): World {
   const builder = scene()
     .background(LOOK.skyStops[LOOK.skyStops.length - 1].hex)
-    .camera(camera.perspective({ position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 600 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 600 }));
 
   // Blended overlays (contact strips, the ball's ground shadow, the shield bubble, the wildcard ring) never cast:
   // a blended caster has no alpha-hashed depth path, so it would draw into the sun shadow map as an opaque block

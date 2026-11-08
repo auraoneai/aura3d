@@ -6,6 +6,7 @@
  * ball-number decal repainted only when the value changes.
  */
 import { camera, effects, environments, geometry, lights, material, scene, texture, type AuraApp } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, Slots, mergeMeshes, scrollFrameZ, flatSpec, shadowSpec, skySpec, gradientSkyFragment, toonSpec,
   hexToLinear, type CustomSpec, type MeshData, type Rgb
@@ -178,7 +179,7 @@ export function buildWorld(options: WorldOptions): World {
   const look = options.look ?? LOOK;
   const builder: Scene = scene()
     .background(look.background)
-    .camera(camera.perspective({ position: [0, LOOK.camera.height, LOOK.camera.back], target: [0, 1, LOOK.camera.lookAheadZ], fov: LOOK.camera.fovDeg, near: 0.1, far: 320 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, LOOK.camera.height, LOOK.camera.back], target: [0, 1, LOOK.camera.lookAheadZ], fov: LOOK.camera.fovDeg, near: 0.1, far: 320 }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));

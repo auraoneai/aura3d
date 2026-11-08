@@ -5,6 +5,7 @@
  * per frame with dirty-range uploads.
  */
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, Slots, flatSpec, shadowSpec, toonSpec, hexToLinear, scrollFrameZ,
   type CustomSpec, type MeshData, type Rgb
@@ -106,7 +107,7 @@ function dynamicFrom(m: MeshData) {
 export function buildWorld(options: WorldOptions): World {
   const builder = scene()
     .background(LOOK.background)
-    .camera(camera.perspective({ position: [0, 5.4, 9], target: [0, 0.9, -10], fov: 60, near: 0.1, far: CAMERA_FAR }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 5.4, 9], target: [0, 0.9, -10], fov: 60, near: 0.1, far: CAMERA_FAR }))
     /* Authored key + IBL fill (art direction contract): the toon programs shade themselves, but the scene still
      * mounts exactly one shadowed directional key and a preset environment, never an ambient light. */
     .add(lights.directional({

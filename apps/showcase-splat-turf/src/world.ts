@@ -5,6 +5,7 @@
  * and wipes only rewrite tone, and the coverage map persists behind the player for the whole run.
  */
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
+import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, flatSpec, shadowSpec, toonSpec, type CustomSpec
 } from "../../../examples/shared/runner-kit/index";
@@ -96,7 +97,7 @@ export function buildWorld(options: WorldOptions): World {
   void options.aspect;
   const builder: AuraSceneBuilder = scene()
     .background(LOOK.background)
-    .camera(camera.perspective({ position: [0, 8, 12], target: [0, 0.5, -10], fov: 55, near: 0.1, far: CAMERA_FAR }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 8, 12], target: [0, 0.5, -10], fov: 55, near: 0.1, far: CAMERA_FAR }));
 
   // Audit rig: one shadowed key + neutral IBL preset (the toon programs carry their own light terms).
   builder.add(lights.directional({ name: "key", position: [6, 12, 6], target: [0, 0, 0], intensity: 1.2, color: "#ffffff", shadow: { cascades: 1, maxDistance: 120 } }));
