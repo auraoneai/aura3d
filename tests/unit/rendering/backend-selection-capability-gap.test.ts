@@ -8,6 +8,7 @@ const createSelectedProductionRenderer = (publicSelect as unknown as Record<symb
 void createProductionRuntimePostprocess;
 import { resolveBackendOptions } from "../../../packages/engine/src/agent-api/app/rendererOptions";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
+import { effects, primitives, scene } from "../../../packages/engine/src/agent-api/index";
 
 const gap = () => ({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] });
 const fakeCreate = () => {
@@ -110,4 +111,15 @@ describe("backend selection: the gap check sees context recorded synchronously a
       expect(result.selection).toMatchObject({ active: "webgl2", fallbackReason: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missingFeatures: ["vignette"] });
     } finally { warn.mockRestore(); }
   });
+});
+
+describe("backend selection: ambient occlusion is no longer a WebGPU gap", () => {
+  it("passes an ambient-occlusion scene through the post pre-check", () => {
+    const postGap = (createProductionRuntimePostprocess as unknown as Record<symbol, (snapshot: unknown, canvas: unknown) => unknown>)[
+      Symbol.for("@aura3d/root-postprocess/webgpu-post-gap/v1")]!;
+    const canvas = { width: 64, height: 64 };
+    const ao = scene().add(primitives.box()).add(effects.ambientOcclusion({ radius: 0.5, intensity: 0.4 })).toJSON();
+    expect(createProductionRuntimePostprocess(ao, [], 64, 64, true, { canvas: canvas as never }).ssao).toBeTruthy();
+    expect(postGap(ao, canvas)).toBeUndefined();
+  }, 30_000);
 });
