@@ -1,6 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from Renderer.ts; 0 changed logic lines.
 // File: packages/rendering/src/renderer/PostprocessExecution.ts — owner lane 03.
 
+import { resolveHdrGradeUniforms, type HdrGradeInput } from "../post/shaders/hdrGrade.glsl";
 import { standardizeDepthReadback } from "./FrameDepthConvention";
 import type { RenderItem } from "../ForwardPass";
 import { type BloomOptions, BloomPass, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthOfFieldOptions, type DepthTextureBinding, type FXAAOptions, FXAAPass, type FilmGrainOptions, type FusedLdrPostProcessPass, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, ToneMappingPass, type VolumetricLightOptions, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels } from "../PostProcessPass";
@@ -200,7 +201,7 @@ export function webgpuDepthOfFieldRequested(device: RenderDevice, postprocess: R
   return value !== undefined && value !== false;
 }
 
-type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeSceneDepthOfField" | "nativeLut" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
+type WebgpuNativePostOptions = Pick<LdrPostprocessPresentationOptions, "nativeEffects" | "postFrameContext" | "autoExposure" | "nativeDepthOfField" | "nativeSceneDepthOfField" | "nativeLut" | "nativeHdrGrade" | "nativeDofDisplay" | "nativeAmbientOcclusion" | "nativeGodRays" | "nativeMotionBlur">;
 
 /**
  * The post stages that native WebGPU depth of field cannot yet combine with,
@@ -483,11 +484,13 @@ function webgpuNativePostOptions(device: RenderDevice, postprocess: RendererPost
   if (autoExposure !== undefined && !Number.isFinite(frame?.timeSeconds)) throw new RenderDeviceError("WebGPU auto exposure requires a finite frame time", "WEBGPU_AUTO_EXPOSURE_TIME_REQUIRED");
   const nativeAmbientOcclusion = webgpuNativeAmbientOcclusion(device, postprocess, pipeline);
   const nativeLut = webgpuNativeLut(pipeline, context?.diagnosticToken);
-  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion && !nativeLut && !nativeDofDisplay) return undefined;
+  // The v2 S10 linear grade (white balance, lift/gamma/gain, tonal ranges); identity resolves to null and draws nothing.
+  const nativeHdrGrade = postprocess.v2 === true && postprocess.execution !== "cpu-deterministic" ? resolveHdrGradeUniforms(pipeline?.grade as HdrGradeInput | undefined) ?? undefined : undefined;
+  if (!effects?.length && !frame && autoExposure === undefined && !nativeDepthOfField && !nativeSceneDepthOfField && !nativeAmbientOcclusion && !nativeLut && !nativeDofDisplay && !nativeHdrGrade) return undefined;
   return { ...(effects?.length ? { nativeEffects: effects } : {}), ...(frame ? { postFrameContext: frame as NonNullable<WebgpuNativePostOptions["postFrameContext"]> } : {}),
     ...(autoExposure !== undefined ? { autoExposure: autoExposure as NonNullable<WebgpuNativePostOptions["autoExposure"]> } : {}),
     ...(nativeDepthOfField ? { nativeDepthOfField } : {}), ...(nativeSceneDepthOfField ? { nativeSceneDepthOfField } : {}),
-    ...(nativeDofDisplay ? { nativeDofDisplay } : {}), ...(nativeLut ? { nativeLut } : {}),
+    ...(nativeDofDisplay ? { nativeDofDisplay } : {}), ...(nativeLut ? { nativeLut } : {}), ...(nativeHdrGrade ? { nativeHdrGrade } : {}),
     ...(nativeAmbientOcclusion ? { nativeAmbientOcclusion } : {}) };
 }
 

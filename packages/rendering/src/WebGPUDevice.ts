@@ -45,8 +45,16 @@ import {
 } from "./webgpu/WebGPUDepthEffects";
 import {
   defaultWebGPUBloomWeights,
+  isWebGPUBloomV2,
   normalizeWebGPUColorGradeOptions,
   normalizeWebGPUBloomOptions,
+  normalizeWebGPUBloomV2Options,
+  WEBGPU_BLOOM_V2_ACCUMULATE_FRAGMENT,
+  WEBGPU_BLOOM_V2_BLUR_FRAGMENT,
+  WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT,
+  WEBGPU_BLOOM_V2_DOWNSAMPLE_FRAGMENT,
+  WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT,
+  WEBGPU_HDR_GRADE_FRAGMENT,
   webgpuBlurFragment,
   webgpuBloomCompositeFragment,
   webgpuBrightExtractFragment,
@@ -57,6 +65,7 @@ import {
   type WebGPUColorGradeOptions
 } from "./webgpu/WebGPUPostShaders";
 import { DEFAULT_DEPTH_SHADER_MARKER } from "./ShaderLibraryCore";
+import { resolveBloomPyramidPlan, resolveBloomPyramidV2Response } from "./postprocess/NativeBloomPyramid";
 import { FXAA_NATIVE_INTERMEDIATE_WGSL } from "./post/shaders/fxaa.wgsl";
 import { reflectShaderSources } from "./ShaderReflection";
 import { clearPostSkipped, recordPostSkipped, recordPostStage } from "./renderer/postSkipped";
@@ -5295,11 +5304,109 @@ export class WebGPUDevice implements RenderDevice {
    * is disposed before return. Throws fail-closed when the native device
    * cannot run fullscreen passes.
    */
+  /**
+   * The WebGL2 v2 bloom (LegacyPost `executeNativeBloomPyramidPasses` / `executeNativeBloomPasses` with the `excess`
+   * options) on native targets: full-resolution excess prefilter, then either the single-scale blur (performance) or
+   * the box-downsampled pyramid with the §6.6 widening kernels and spread weights, summed at level-0 size, and the
+   * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
+   */
+  private executeNativeWebGPUBloomV2(source: RenderTarget, options: Readonly<Record<string, unknown>>, protectP3Inputs: boolean): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const request = normalizeWebGPUBloomV2Options(options);
+    const src = this.requireRenderTarget(source);
+    const srcView = src.nativeView;
+    if (!srcView) throw new RenderDeviceError("WebGPU bloom source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    const width = src.width, height = src.height;
+    const owned: RenderTarget[] = [];
+    const track = (target: RenderTarget): RenderTarget => { owned.push(target); return target; };
+    const viewOf = (target: RenderTarget): unknown => {
+      const view = this.requireRenderTarget(target).nativeView;
+      if (!view) throw new RenderDeviceError("WebGPU bloom target has no native view", "NATIVE_POST_UNSUPPORTED", { label: target.label });
+      return view;
+    };
+    const protectPass = (inputs: readonly RenderTarget[], output: RenderTarget) => {
+      if (!protectP3Inputs) return {};
+      const inputNatives = inputs.map(input => this.requireP3ResolvedColor(input, true));
+      const outputNative = this.requireP3ResolvedColor(output, false);
+      if (inputNatives.includes(outputNative)) throw new RenderDeviceError("Bloom input and output alias", "POSTPROCESS_INPUT_OUTPUT_ALIAS");
+      return {
+        accesses: [...inputNatives.map(resource => ({ resource, mode: "read" as const })), { resource: outputNative, mode: "write" as const }],
+        protectedSubmission: true,
+        beforeSubmit: () => {
+          if (inputs.some((input, index) => this.requireP3ResolvedColor(input, true) !== inputNatives[index]) ||
+              this.requireP3ResolvedColor(output, false) !== outputNative) {
+            throw new RenderDeviceError("Display-P3 bloom resources changed before submission", "WEBGPU_PRESENTATION_STALE");
+          }
+        }
+      };
+    };
+    const pass = (label: string, fragment: string, entryPoint: string, uniforms: Float32Array, inputs: readonly RenderTarget[], target: RenderTarget): void => {
+      this.runWebGPUFullscreenPass({ label, fragment, entryPoint, uniforms, views: inputs.map(viewOf), target, ...protectPass(inputs, target) });
+    };
+    const blur = (input: RenderTarget, w: number, h: number, radius: number, label: string): RenderTarget => {
+      const scratch = track(this.createRenderTarget({ width: w, height: h, format: "rgba16f", label: `${label}-h` }));
+      const out = track(this.createRenderTarget({ width: w, height: h, format: "rgba16f", label: `${label}-v` }));
+      pass(`${label}-h`, WEBGPU_BLOOM_V2_BLUR_FRAGMENT, "fs_bloom_blur", new Float32Array([1, 0, radius, 0]), [input], scratch);
+      pass(`${label}-v`, WEBGPU_BLOOM_V2_BLUR_FRAGMENT, "fs_bloom_blur", new Float32Array([0, 1, radius, 0]), [scratch], out);
+      return out;
+    };
+    try {
+      const extracted = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-v2-extract" }));
+      pass("webgpu-bloom-v2-prefilter", WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT, "fs_bloom_prefilter",
+        new Float32Array([request.threshold, request.softKnee, 0, 0]), [src], extracted);
+      let bloom: RenderTarget;
+      let mipCount = 1;
+      let passes = 1;
+      if (request.quality === "performance") {
+        bloom = blur(extracted, width, height, request.radius, "webgpu-bloom-v2-blur");
+        passes += 2;
+      } else {
+        const plan = resolveBloomPyramidPlan(width, height, request.quality, true);
+        const response = resolveBloomPyramidV2Response(plan, request.spread);
+        mipCount = plan.mips.length;
+        const mips: RenderTarget[] = [];
+        let previous = extracted, previousWidth = width, previousHeight = height;
+        for (let level = 0; level < mipCount; level += 1) {
+          const size = plan.mips[level]!;
+          const down = track(this.createRenderTarget({ width: size.width, height: size.height, format: "rgba16f", label: `a3d-webgpu-bloom-v2-mip${level}` }));
+          pass(`webgpu-bloom-v2-down${level}`, WEBGPU_BLOOM_V2_DOWNSAMPLE_FRAGMENT, "fs_bloom_downsample",
+            new Float32Array([1 / previousWidth, 1 / previousHeight, size.width, size.height]), [previous], down);
+          const blurred = blur(down, size.width, size.height, response.blurRadii[level]!, `webgpu-bloom-v2-mip${level}`);
+          mips.push(blurred);
+          previous = blurred; previousWidth = size.width; previousHeight = size.height;
+          passes += 3;
+        }
+        const level0 = plan.mips[0]!;
+        bloom = track(this.createRenderTarget({ width: level0.width, height: level0.height, format: "rgba16f", label: "a3d-webgpu-bloom-v2-sum" }));
+        const weights = new Float32Array(8);
+        for (let level = 0; level < 5; level += 1) weights[level] = level < mipCount ? response.weights[level]! : 0;
+        pass("webgpu-bloom-v2-accumulate", WEBGPU_BLOOM_V2_ACCUMULATE_FRAGMENT, "fs_bloom_accumulate", weights,
+          Array.from({ length: 5 }, (_, level) => mips[level < mipCount ? level : 0]!), bloom);
+        passes += 1;
+      }
+      const composite = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      pass("webgpu-bloom-v2-composite", WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT, "fs_bloom_composite",
+        new Float32Array([request.intensity, 0, 0, 0]), [src, bloom], composite);
+      passes += 1;
+      this.lastWebGPUBloom = { mipCount, halfFloat: true, targetBytes: owned.reduce((total, target) => total + target.width * target.height * 8, 0),
+        compositeGain: request.intensity, passes, executionMode: "webgpu-native-post" };
+      this.nativeBloomPasses += passes;
+      for (const target of owned) if (target !== composite) target.dispose();
+      return composite;
+    } catch (error) {
+      for (const target of owned) target.dispose();
+      throw error;
+    }
+  }
+
   executeWebGPUBloom(source: RenderTarget, options: WebGPUBloomOptions = {}): RenderTarget {
     return this.executeNativeWebGPUBloom(source, options, false);
   }
 
   private executeNativeWebGPUBloom(source: RenderTarget, options: WebGPUBloomOptions, protectP3Inputs: boolean): RenderTarget {
+    // A v2-stamped pass (postprocess.v2) runs the WebGL2 v2 bloom: its option names (intensity, knee, spread) and
+    // response differ from this J2 chain's (strength, knee width), which otherwise read as defaults (strength 0.6).
+    if (isWebGPUBloomV2(options)) return this.executeNativeWebGPUBloomV2(source, options as unknown as Readonly<Record<string, unknown>>, protectP3Inputs);
     this.reclaimWebGPUPostUniformBuffers();
     const normalized = normalizeWebGPUBloomOptions(options);
     const src = this.requireRenderTarget(source);
@@ -5442,6 +5549,25 @@ export class WebGPUDevice implements RenderDevice {
    * Exposure (stops) -> saturation around luma -> contrast around middle
    * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
    */
+  /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
+  private executeWebGPUHdrGrade(source: RenderTarget, grade: NonNullable<WebGPUNativePostPresentationOptions["nativeHdrGrade"]>): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(source);
+    if (!src.nativeView) throw new RenderDeviceError("WebGPU HDR grade source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    const format = src.colorTexture.format === "rgba32f" ? "rgba32f" : src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f";
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format, label: "a3d-webgpu-hdr-grade" });
+    const rows = [grade.whiteBalance, grade.lift, grade.gamma, grade.gain, grade.shadows, grade.midtones, grade.highlights];
+    const uniforms = new Float32Array(28);
+    rows.forEach((row, index) => uniforms.set([row[0], row[1], row[2], 0], index * 4));
+    try {
+      this.runWebGPUFullscreenPass({ label: "webgpu-hdr-grade", fragment: WEBGPU_HDR_GRADE_FRAGMENT, entryPoint: "fs_hdr_grade", uniforms, views: [src.nativeView], target: out });
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
+    }
+  }
+
   executeWebGPUColorGrade(source: RenderTarget, options: WebGPUColorGradeOptions = {}): RenderTarget {
     this.reclaimWebGPUPostUniformBuffers();
     const normalized = normalizeWebGPUColorGradeOptions(options);
@@ -6071,6 +6197,15 @@ export class WebGPUDevice implements RenderDevice {
       track(this.executeNativeDofDisplayStage(current, "vignette", dofDisplay, dofFrameIndex));
       if (diagnosticToken) recordPostStage("S10b:display-grade:vignette", diagnosticToken);
     };
+    let hdrGradeRun = false;
+    // v2 S10: the linear grade follows S8 auto exposure (and the customs anchored there), before bloom and tone mapping.
+    const runHdrGrade = (): void => {
+      if (hdrGradeRun || !options.nativeHdrGrade) return;
+      hdrGradeRun = true;
+      if (displayP3) { recordPostSkipped("WEBGPU_HDR_GRADE_P3_UNSUPPORTED", diagnosticToken); return; }
+      track(this.executeWebGPUHdrGrade(current, options.nativeHdrGrade));
+      if (diagnosticToken) recordPostStage(exposureFrame ? "S10:hdr-grade:folded-s8" : "S10:hdr-grade", diagnosticToken);
+    };
     let lutRun = false;
     const runLut = (): void => {
       if (lutRun || !options.nativeLut) return;
@@ -6208,6 +6343,7 @@ export class WebGPUDevice implements RenderDevice {
       for (let passIndex = 0; passIndex < options.passes.length; passIndex += 1) {
         assertDofCurrent?.();
         runCustomsAt(passIndex);
+        if (passIndex >= exposurePosition) runHdrGrade();
         const pass = options.passes[passIndex]!;
         if (pass.name === "fxaa") { runDofVignette(); runEffects(); }
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));
@@ -6252,6 +6388,7 @@ export class WebGPUDevice implements RenderDevice {
       assertDofCurrent?.();
       runDofVignette();
       runCustomsAt(options.passes.length);
+      runHdrGrade();
       runEffects();
       if (dofDisplay?.finalize) {
         track(this.executeNativeDofDisplayStage(current, "finalize", dofDisplay, dofFrameIndex));

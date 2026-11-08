@@ -374,6 +374,17 @@ export interface LdrPostprocessPresentationOptions {
    * grade (lattice-sampled, `intensity` blends over the ungraded colour), like the WebGL2 display grade.
    */
   readonly nativeLut?: { readonly source: string; readonly cube?: string; readonly data?: LutTexture3D; readonly intensity?: number };
+  /**
+   * The v2 S10 linear grade (`pipeline.grade` temperature/tint white balance, lift/gamma/gain, shadows/midtones/
+   * highlights) resolved to `HDR_GRADE_GLSL` uniforms; applied on the HDR chain after auto exposure, before bloom and
+   * tone mapping, as the WebGL2 v2 chain applies it.
+   */
+  readonly nativeHdrGrade?: {
+    readonly whiteBalance: readonly [number, number, number]; readonly lift: readonly [number, number, number];
+    readonly gamma: readonly [number, number, number]; readonly gain: readonly [number, number, number];
+    readonly shadows: readonly [number, number, number]; readonly midtones: readonly [number, number, number];
+    readonly highlights: readonly [number, number, number];
+  };
   /** Native HDR DoF on a general scene frame (no coverage proof); mutually exclusive with `nativeDepthOfField`. */
   readonly nativeSceneDepthOfField?: NativeSceneDofRequest;
   /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
