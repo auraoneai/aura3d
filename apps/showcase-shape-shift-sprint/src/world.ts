@@ -156,8 +156,8 @@ export function buildWorld(options: WorldOptions): World {
   if (post === "full" || post === "bloom") builder.add(effects.bloom({ name: "bloom", intensity: 0.25, threshold: 0.98, scatter: 0.5 }));
   if (post === "full" || post === "lite") {
     builder
-      .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08 }))
-      .add(effects.vignette({ name: "vignette", intensity: 0.14, color: "#3a2a55" }));
+      .add(effects.colorGrade({ name: "grade", contrast: 1.12, saturation: 1.14 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.2, color: "#3a2a55" }));
   }
 
   return {

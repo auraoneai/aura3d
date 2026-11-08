@@ -15,11 +15,11 @@ import { boxMesh, coneMesh, groundQuad, mergeMeshes, sphereMesh, ROAD_DIMS } fro
 
 export const SCENERY = {
   /** Fog colour = the sky's horizon so far surfaces melt into it. */
-  fog: "#fbe6d2",
+  fog: "#f8d6bd",
   /** Fog colour for surfaces far below the road (the cloud sea haze). */
-  fogLow: "#e7e1f4",
-  fogStart: 34,
-  fogDensity: 0.0125,
+  fogLow: "#d9d0ef",
+  fogStart: 40,
+  fogDensity: 0.0085,
   grass: ["#7cc95a", "#5fb34e", "#9bd86a"],
   rockTop: "#d9a47a",
   rockMid: "#b9785a",
@@ -32,7 +32,7 @@ export const SCENERY = {
   coral: "#ff8a7a",
   mint: "#8fe0c4",
   cloudTop: "#ffffff",
-  cloudShade: "#e9e6f7"
+  cloudShade: "#c9c1e6"
 } as const;
 
 const L = (hex: string): Rgb => hexToLinear(hex);
@@ -74,7 +74,7 @@ ${SHOULDER}
 float ramp(float d) {
   float c = d * 0.5 + 0.5;
   float fw = fwidth(c) * 0.5;
-  return mix(0.68, 1.0, smoothstep(0.66 - fw, 0.66 + fw, c));
+  return mix(0.52, 1.0, smoothstep(0.66 - fw, 0.66 + fw, c));
 }
 void main() {
   vec3 N = normalize(vNormal);
@@ -85,10 +85,10 @@ void main() {
 ${stripes ? "  base = mix(stripeA, stripeB, step(0.5, fract(vWorld.z / stripePeriod)));" : ""}
   vec3 skyC = vec3(0.86, 0.93, 1.0);
   vec3 groundC = vec3(0.36, 0.30, 0.46);
-  vec3 hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.46;
+  vec3 hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.36;
   vec3 L1 = normalize(vec3(5.0, 11.0, 7.5));
   vec3 L2 = normalize(vec3(-7.0, 6.0, -6.0));
-  vec3 lit = hemi + vec3(0.70, 0.62, 0.50) * ramp(dot(N, L1)) + vec3(0.22, 0.30, 0.52) * ramp(dot(N, L2));
+  vec3 lit = hemi + vec3(0.66, 0.56, 0.42) * ramp(dot(N, L1)) + vec3(0.13, 0.18, 0.32) * ramp(dot(N, L2));
   vec3 c = shoulder(base * lit);
   float rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
   c += vec3(1.0, 0.86, 0.72) * rim * rimStrength;
@@ -97,7 +97,7 @@ ${stripes ? "  base = mix(stripeA, stripeB, step(0.5, fract(vWorld.z / stripePer
   float f = 1.0 - exp(-max(d - fogStart, 0.0) * fogDensity);
   float low = clamp((-vWorld.y - 6.0) / 26.0, 0.0, 1.0);
   vec3 fc = mix(fogColor, fogLow, low);
-  f = clamp(max(f, low * 0.45), 0.0, 1.0);
+  f = clamp(max(f, low * 0.32), 0.0, 1.0);
   outColor = vec4(mix(c, fc, f), alpha);
 }`;
 
