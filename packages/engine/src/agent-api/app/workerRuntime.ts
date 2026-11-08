@@ -4,7 +4,7 @@ import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSiz
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
 import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
-import { applyWorkerNodePatch } from "./workerPatch.js";
+import { applyWorkerNodePatch, type AuraWorkerAppCall } from "./workerPatch.js";
 import { bindWorkerAtmosphere, type WorkerAtmosphereBinding } from "./workerAtmosphere.js";
 import type { AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
@@ -13,6 +13,7 @@ import { Texture, type TexturePixelData } from "@aura3d/rendering";
 import { TextureHandle, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";
 import type { AuraAssetErrorEvent, AuraAssetProgressEvent } from "../nodes/types/runtime.js";
+import { BatchedMeshState, batchedStateFor, registerBatchedState, type BatchedMeshStateSnapshot } from "../nodes/batchedState.js";
 
 export class AuraWorkerError extends Error {
   constructor(message: string, readonly code: string, readonly severity: "recoverable" | "terminal" = "terminal") {
@@ -551,6 +552,13 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   let reportedDeviceLost = false;
   let syncLocalScenes = false;
   let assetEvents = false;
+  // 5.4 app calls (setOutput, post.setEffect/setEffectEnabled): merged state, re-applied after a remount.
+  let appOutput: Record<string, unknown> | undefined;
+  let postBridge: typeof import("../postBridge.js") | undefined;
+  let outputBridge: typeof import("../../lanes/prd01/outputSurface.js") | undefined;
+  let flagsModule: typeof import("../../contracts/flags.js") | undefined;
+  let postSurface: import("../../contracts/post.js").AuraPostSurface | undefined;
+  const postPassReleases = new Map<number, () => void>();
   let sceneRevision = 0;
   // Failed proposals must not reuse an ID: a late acknowledgement may still
   // be in flight when the next frame proposes another scene.
@@ -710,10 +718,61 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       throw error;
     }
   });
+  // Loaded on the first app call only, so plain node patches and mounts never wait for them.
+  const loadAppBridges = async (): Promise<void> => {
+    if (!postBridge || !outputBridge || !flagsModule) [postBridge, outputBridge, flagsModule] = await Promise.all([import("../postBridge.js"), import("../../lanes/prd01/outputSurface.js"), import("../../contracts/flags.js")]);
+  };
+  const applyOutput = (): void => {
+    const live = (renderer as { auraRenderer?: { setOutput?: (output: unknown) => void; outputPathActive?: boolean } } | undefined)?.auraRenderer;
+    if (!appOutput || !outputBridge || !live?.setOutput || live.outputPathActive === false) return;
+    live.setOutput(outputBridge.toRendererOutput(appOutput));
+  };
+  const applyAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (!canvas) throw new AuraWorkerError("Initialize the worker before calling app members.", "not-initialized", "recoverable");
+    if (!postBridge || !outputBridge || !flagsModule) throw new AuraWorkerError(`app.${call}() needs the worker's post and output modules.`, "not-initialized", "recoverable");
+    if (call === "setOutput") {
+      const patch = args[0];
+      if (!patch || typeof patch !== "object" || Array.isArray(patch)) throw new Error("app.setOutput() expects an output options object.");
+      appOutput = { ...appOutput, ...(patch as Record<string, unknown>) };
+      postBridge.updateAuthoredPostOutput({ canvas } as unknown as AuraApp, patch as Record<string, unknown>);
+      applyOutput();
+      return;
+    }
+    // One post surface per worker canvas (the main-thread app has one per app): its runtime overrides are the store the
+    // compiler reads for this canvas, and custom passes register under its scope. Same flags as the worker renderer.
+    if (!postSurface) {
+      const flags = flagsModule!.qrFlagsWithAnimationMixer(flagsModule!.resolveQrFlags({ ...(renderFlags?.qualityRebuild === undefined ? {} : { options: renderFlags.qualityRebuild }), ...(renderFlags?.url === undefined ? {} : { url: renderFlags.url }) }), renderFlags?.animationMixer);
+      postSurface = new postBridge.Prd03PostSurface(flags, canvas as unknown as ConstructorParameters<typeof postBridge.Prd03PostSurface>[1]);
+    }
+    switch (call) {
+      case "post.setEffect": postSurface.setEffect(args[0] as string, args[1] as Record<string, number | string | boolean | number[]>); break;
+      case "post.setEffectEnabled": postSurface.setEffectEnabled(args[0] as string, args[1] as boolean); break;
+      case "post.setQualityTier": postSurface.setQualityTier(args[0] as Parameters<NonNullable<typeof postSurface>["setQualityTier"]>[0]); break;
+      case "post.setPassUniform": postSurface.setPassUniform?.(args[0] as string, args[1] as string, args[2] as number | readonly number[]); break;
+      case "post.addPostPass": {
+        const token = args[0] as number;
+        postPassReleases.get(token)?.();
+        postPassReleases.set(token, postSurface.addPostPass(args[1] as Parameters<NonNullable<typeof postSurface>["addPostPass"]>[0]));
+        break;
+      }
+      case "post.removePostPass": {
+        const token = args[0] as number;
+        const release = postPassReleases.get(token);
+        postPassReleases.delete(token);
+        release?.();
+        break;
+      }
+    }
+  };
   type SceneCommit = { verify: () => void; commit: () => void };
   const mount = async (next: AuraSceneSnapshot, signal: AbortSignal, beforeCommit?: (value: AuraSceneSnapshot, backend: AuraBackend) => Promise<SceneCommit>): Promise<void> => {
     if (!canvas) throw new AuraWorkerError("Initialize the worker before setting a scene.", "not-initialized");
     validateScene(next);
+    if (hasWorkerBatchedStates(next)) {
+      // The batched handler, geometry resolver and node seeder register on import (the page loads them with the engine entry).
+      await import("../nodes/batched.js");
+      next = registerWorkerBatchedStates(next);
+    }
     const hydrated = rehydrateWorkerScene(next, sceneTextures);
     if (closing || signal.aborted) { for (const handle of hydrated.created) handle.dispose(); throw cancelled(); }
     const target = canvas;
@@ -722,6 +781,8 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       renderer = mounted;
       scene = value;
       try {
+        // A remounted renderer starts from the scene's output; replay the host's setOutput calls.
+        applyOutput();
         if (mounted.onDeviceLost) subscriptions.push(mounted.onDeviceLost(() => {
           if (closing || renderer !== mounted) return;
           scheduler.pause();
@@ -1011,10 +1072,11 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
         case "patch":
           // Serialize with automatic frames so a batch never lands inside an
           // asynchronous submission; the next frame sees all of it.
+          if (Array.isArray(message.ops) && message.ops.some((op) => op && typeof op === "object" && "app" in op)) await loadAppBridges();
           await scheduler.runExclusive(() => {
             const current = renderer;
             const nodes = current ? workerRendererNodes.get(current) ?? (current as { runtimeNodes?: AuraRuntimeNodeRegistry }).runtimeNodes : undefined;
-            applyWorkerNodePatch(nodes, scene, message.ops, (id) => findWorkerCanvasTexture(sceneTextures, id));
+            applyWorkerNodePatch(nodes, scene, message.ops, (id) => findWorkerCanvasTexture(sceneTextures, id), applyAppCall);
           });
           break;
         case "input": {
@@ -1328,8 +1390,67 @@ function mapWorkerScene<T>(value: T, replace: (value: object) => unknown | undef
   return copy(value) as T;
 }
 
+/** Key of the batched-state copy a host attaches to `batched` nodes (`instances.mesh`, `batched.mesh`). */
+const WORKER_BATCHED_STATE_KEY = "workerBatchedState";
+
+/** Applies `visit` to every scene node (group children included), copying only the paths it changes. */
+function mapSceneNodes(scene: AuraSceneSnapshot, visit: (node: AuraSceneSnapshot["nodes"][number]) => AuraSceneSnapshot["nodes"][number]): AuraSceneSnapshot {
+  const walk = (nodes: AuraSceneSnapshot["nodes"]): AuraSceneSnapshot["nodes"] => {
+    let changed = false;
+    const next = nodes.map((node) => {
+      let result = visit(node);
+      const children = (result as { readonly children?: AuraSceneSnapshot["nodes"] }).children;
+      if (result.kind === "group" && Array.isArray(children)) {
+        const mapped = walk(children);
+        if (mapped !== children) result = { ...result, children: mapped } as typeof result;
+      }
+      if (result !== node) changed = true;
+      return result;
+    });
+    return changed ? next : nodes;
+  };
+  const nodes = Array.isArray(scene?.nodes) ? walk(scene.nodes) : scene?.nodes;
+  return nodes === scene?.nodes ? scene : { ...scene, nodes };
+}
+
+/**
+ * 5.4: a `batched` node built by `instances.mesh` / `batched.mesh` names a host-side state (geometry pool, matrices,
+ * colours) by `batchedId`; the worker has no such state. Attach a plain-data copy so the worker rebuilds it.
+ */
+function withWorkerBatchedStates(scene: AuraSceneSnapshot): AuraSceneSnapshot {
+  return mapSceneNodes(scene, (node) => {
+    if (node.kind !== "batched" || (node as unknown as Record<string, unknown>)[WORKER_BATCHED_STATE_KEY] !== undefined) return node;
+    const state = batchedStateFor((node as { readonly batchedId?: string }).batchedId ?? (node as { readonly runtime?: { readonly id?: string } }).runtime?.id);
+    if (!state) return node;
+    const snapshot = state.toWorkerSnapshot();
+    if (!snapshot) throw new AuraWorkerError("A batched node with live Geometry inputs cannot be copied to a render worker.", "worker-unsupported");
+    return { ...node, [WORKER_BATCHED_STATE_KEY]: snapshot } as typeof node;
+  });
+}
+
+/** Worker side of {@link withWorkerBatchedStates}: register the copied states (replacing older ones) and strip the copies. */
+function registerWorkerBatchedStates(scene: AuraSceneSnapshot): AuraSceneSnapshot {
+  return mapSceneNodes(scene, (node) => {
+    const snapshot = (node as unknown as Record<string, unknown>)[WORKER_BATCHED_STATE_KEY] as BatchedMeshStateSnapshot | undefined;
+    if (node.kind !== "batched" || snapshot?.kind !== "aura-worker-batched-state") return node;
+    const previous = batchedStateFor(snapshot.id);
+    registerBatchedState(BatchedMeshState.fromWorkerSnapshot(snapshot));
+    previous?.dispose();
+    const { [WORKER_BATCHED_STATE_KEY]: _copy, ...rest } = node as unknown as Record<string, unknown>;
+    return rest as unknown as typeof node;
+  });
+}
+
+/** True when a scene carries batched-state copies (the worker then loads the batched handler before compiling). */
+function hasWorkerBatchedStates(scene: AuraSceneSnapshot): boolean {
+  let found = false;
+  mapSceneNodes(scene, (node) => { if ((node as unknown as Record<string, unknown>)[WORKER_BATCHED_STATE_KEY] !== undefined) found = true; return node; });
+  return found;
+}
+
 /** Snapshot host pixels synchronously; neither the host handle nor its backing crosses realms. */
 function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly Transferable[], reserve: (size: number) => void, copyPixels = true): AuraSceneSnapshot {
+  scene = withWorkerBatchedStates(scene);
   const transferSet = new Set<unknown>(transfers);
   const backings = new Set<Texture>();
   let bytes = 0;

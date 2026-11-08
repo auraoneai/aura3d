@@ -37,7 +37,21 @@ export type AuraWorkerNodePatchOp =
   | { readonly id: string; readonly set: AuraWorkerPatchProperty; readonly value: unknown }
   | { readonly camera: AuraSceneSnapshot["camera"] }
   /** A host repaint of a live image texture (`texture.canvas`): its full RGBA8 pixels, top row first. */
-  | { readonly texture: string; readonly width: number; readonly height: number; readonly data: Uint8ClampedArray | Uint8Array };
+  | { readonly texture: string; readonly width: number; readonly height: number; readonly data: Uint8ClampedArray | Uint8Array }
+  /** 5.4: an app-level runtime control replayed in the worker (see {@link WORKER_APP_CALLS}). */
+  | { readonly app: AuraWorkerAppCall; readonly args: readonly unknown[] };
+
+/**
+ * 5.4: app members a worker app forwards to the render worker: the output (tone mapping, exposure), the runtime
+ * post-effect overrides and custom post passes. They apply to the worker renderer between frames, like node patches.
+ */
+export const WORKER_APP_CALLS = [
+  "setOutput", "post.setEffect", "post.setEffectEnabled", "post.setQualityTier", "post.setPassUniform",
+  // `post.addPostPass` carries [token, pass]; the host's release posts `post.removePostPass` [token].
+  "post.addPostPass", "post.removePostPass"
+] as const;
+export type AuraWorkerAppCall = (typeof WORKER_APP_CALLS)[number];
+const WORKER_APP_CALL_SET = new Set<string>(WORKER_APP_CALLS);
 
 /** Worker-side target of a `texture` op (see workerRuntime.ts). */
 export interface AuraWorkerPatchTextureTarget {
@@ -58,6 +72,7 @@ export const WORKER_HOST_READS = new Set<string>([
 /** Absolute writes: a later op with the same key makes an earlier one redundant. */
 export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
   if ("camera" in op) return "camera";
+  if ("app" in op) return undefined;
   if ("texture" in op) return `\u0000texture\u0000${op.texture}`;
   if ("set" in op) {
     const field = op.set === "visible" ? "visible" : op.set;
@@ -83,7 +98,8 @@ export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
  * so one stale id does not drop a whole frame of movement.
  */
 export function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefined, scene: AuraSceneSnapshot | undefined, ops: readonly AuraWorkerNodePatchOp[],
-  textures?: (id: string) => AuraWorkerPatchTextureTarget | undefined): number {
+  textures?: (id: string) => AuraWorkerPatchTextureTarget | undefined,
+  appCall?: (call: AuraWorkerAppCall, args: readonly unknown[]) => void): number {
   if (!Array.isArray(ops)) throw new AuraWorkerError("Worker patch ops must be an array.", "invalid-patch", "recoverable");
   let applied = 0;
   let failure: unknown;
@@ -93,6 +109,13 @@ export function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefin
       if ("camera" in op) {
         if (!scene) throw new Error("Worker scene is not mounted.");
         (scene as { camera: AuraSceneSnapshot["camera"] }).camera = op.camera;
+        applied += 1;
+        continue;
+      }
+      if ("app" in op) {
+        if (typeof op.app !== "string" || !WORKER_APP_CALL_SET.has(op.app) || !Array.isArray(op.args)) throw new Error(`Worker patch cannot call app.${String(op.app)}().`);
+        if (!appCall) throw new AuraWorkerError("This worker renderer does not accept app calls.", "patch-unsupported", "recoverable");
+        appCall(op.app, op.args);
         applied += 1;
         continue;
       }

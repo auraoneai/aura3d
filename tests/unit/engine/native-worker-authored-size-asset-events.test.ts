@@ -3,6 +3,7 @@ import { forwardAuthoredCanvasSize } from "../../../packages/engine/src/agent-ap
 import { createWorkerRenderer, installWorkerRenderer } from "../../../packages/engine/src/agent-api/app/workerRuntime.js";
 import type { AuraWorkerEndpoint, AuraWorkerHostEndpoint, AuraWorkerRequest, AuraWorkerResponse } from "../../../packages/engine/src/agent-api/app/workerProtocol.js";
 import type { AuraSceneSnapshot, WebGLSceneRenderer } from "../../../packages/engine/src/agent-api/nodes/types.js";
+import { applyWorkerNodePatch } from "../../../packages/engine/src/agent-api/app/workerPatch.js";
 import { labAppOptions, labRenderWorker, parseLabFlags, registerLabWorkerFactory } from "../../../examples/shared/lab-flags";
 
 /** A transferred page canvas: the prototype accessors reject writes, as Chrome does after transferControlToOffscreen. */
@@ -124,5 +125,59 @@ describe("example lab worker registration", () => {
     expect(labRenderWorker()).toBe(worker);
     registerLabWorkerFactory(undefined);
     expect(labAppOptions(parseLabFlags(""), { createWorker: labRenderWorker })).toEqual({});
+  });
+});
+
+describe("worker app calls (setOutput, app.post)", () => {
+  it("routes app ops to the app-call hook and rejects members outside the allowlist", () => {
+    const appCall = vi.fn();
+    expect(applyWorkerNodePatch(undefined, undefined, [{ app: "post.setEffect", args: ["bloom", { intensity: 2 }] }], undefined, appCall)).toBe(1);
+    expect(appCall).toHaveBeenCalledWith("post.setEffect", ["bloom", { intensity: 2 }]);
+    expect(() => applyWorkerNodePatch(undefined, undefined, [{ app: "dispose", args: [] } as never], undefined, appCall)).toThrow(/cannot call app\.dispose/);
+  });
+
+  it("applies setOutput to the worker renderer's output surface and replays it after a remount", async () => {
+    const host = new Port();
+    const remote = new Port();
+    host.peer = remote;
+    remote.peer = host;
+    const setOutput = vi.fn();
+    const make = () => ({ backend: "webgl2", diagnostics: {}, render: () => 1, resize: vi.fn(), viewProjection: () => new Float32Array(16), dispose: vi.fn(), auraRenderer: { setOutput } }) as unknown as WebGLSceneRenderer;
+    installWorkerRenderer(remote as unknown as AuraWorkerEndpoint<AuraWorkerRequest, AuraWorkerResponse>, { createRenderer: async () => make() });
+    const app = createWorkerRenderer({ canvas: new Canvas() as unknown as HTMLCanvasElement, worker: host as unknown as AuraWorkerHostEndpoint, scene: scene(), autoStart: false, bridgeEvents: false });
+    await app.ready;
+    await app.patch!([{ app: "setOutput", args: [{ toneMapping: "aces", exposure: 1.4 }] }, { app: "setOutput", args: [{ dither: true }] }]);
+    expect(setOutput).toHaveBeenLastCalledWith({ toneMapping: "aces", exposure: 1.4, dithering: true });
+    setOutput.mockClear();
+    await app.setScene(scene());
+    expect(setOutput).toHaveBeenCalledWith({ toneMapping: "aces", exposure: 1.4, dithering: true });
+    await app.dispose();
+  }, 60_000); // the first app call imports the post and output modules (slow on a cold transform)
+});
+
+describe("worker batched-state copy", () => {
+  it("round-trips slots, gaps, matrices, colours and visibility", async () => {
+    await import("../../../packages/engine/src/agent-api/nodes/batched.js"); // registers the geometry resolver
+    const { BatchedMeshState } = await import("../../../packages/engine/src/agent-api/nodes/batchedState.js");
+    const source = new BatchedMeshState({ id: "worker-batched-roundtrip", capacity: 4 });
+    const cube = source.addGeometry("box");
+    const sphere = source.addGeometry("sphere");
+    source.addInstance(cube);
+    source.addInstance(sphere);
+    source.addInstance(cube);
+    source.deleteInstance(1);
+    source.setMatrixAt(2, [2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 5, 6, 7, 1]);
+    source.setColorAt(0, [0.5, 0.25, 1, 1]);
+    source.setVisibleAt(2, false);
+    const snapshot = source.toWorkerSnapshot()!;
+    const copy = BatchedMeshState.fromWorkerSnapshot(structuredClone({ ...snapshot, id: "worker-batched-roundtrip-copy" }));
+    expect(Array.from(copy.alive)).toEqual([1, 0, 1, 0]);
+    expect(copy.count).toBe(source.count);
+    expect(Array.from(copy.getMatrixAt(2))).toEqual(Array.from(source.getMatrixAt(2)));
+    expect(copy.getColorAt(0)).toEqual(source.getColorAt(0));
+    expect(copy.visible[2]).toBe(0);
+    expect(copy.geometryIds[2]).toBe(cube);
+    source.dispose();
+    copy.dispose();
   });
 });

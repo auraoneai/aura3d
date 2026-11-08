@@ -71,7 +71,7 @@ function laneRenderer(app: AuraApp): Prd01OutputRenderer | undefined {
 }
 
 /** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
-function toRendererOutput(output: Partial<AuraOutputOptions>): {
+export function toRendererOutput(output: Partial<AuraOutputOptions>): {
   readonly toneMapping?: AuraOutputOptions["toneMapping"];
   readonly exposure?: number;
   readonly dithering?: boolean;

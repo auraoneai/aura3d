@@ -13,7 +13,10 @@ import { computeRuntimeAlpha } from "./frameAlpha.js";
 import { AURA_APP_CANVAS } from "./screenshot.js";
 import { normalizeCreateAppRendererOptions, resolveBackendOptions, resolveDrawingPathOptions } from "./rendererOptions.js";
 import { AuraWorkerError, createWorkerRenderer, measureWorkerCanvas, supportsWorkerRendering, validateWorkerSceneGroups, workerCanvasTransferAttempted } from "./workerRuntime.js";
-import type { AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerRenderFlags } from "./workerProtocol.js";
+import type { AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerRenderFlags } from "./workerProtocol.js";
+import type { AuraWorkerAppCall } from "./workerPatch.js";
+import { normalizeOutputToneMapping } from "./toneMappingNames.js";
+import type { AuraPostSurface } from "../../contracts/post.js";
 import { createWorkerNodeMirror, type AuraWorkerNodeMirror } from "./workerNodes.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
@@ -491,12 +494,21 @@ export function createWorkerRootApp(
   // the replacement settles; posted earlier they would land on the old
   // registry (and be lost with it, or fail on unknown ids).
   let sceneReplacementsPending = 0;
+  // 5.4: app-level calls (setOutput, post.setEffect/setEffectEnabled) ride the patch stream after the node ops.
+  // They are not scene-scoped, so a scene replacement keeps them.
+  let appOps: AuraWorkerNodePatchOp[] = [];
+  const queueAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (disposed) return;
+    appOps.push({ app: call, args: structuredClone(args) });
+    flushPatches();
+  };
   const flushPatches = (force = false): Promise<void> | undefined => {
     if (disposed) return undefined;
     const camera = JSON.stringify(mirror.scene.camera ?? null);
     if (camera !== sentCamera) { sentCamera = camera; mirror.setCamera(mirror.scene.camera); }
-    if (mirror.pending === 0 || sceneReplacementsPending > 0 || (!force && patchesInFlight > 0)) return undefined;
+    if ((mirror.pending === 0 && appOps.length === 0) || sceneReplacementsPending > 0 || (!force && patchesInFlight > 0)) return undefined;
     const ops = mirror.drain();
+    if (appOps.length) { ops.push(...appOps); appOps = []; }
     // Posted now (not when the queue reaches it) so ops always precede any
     // later scene replacement; earlier replacements are awaited above.
     // createWorkerRenderer always provides patch (optional only in the public interface type).
@@ -664,6 +676,12 @@ export function createWorkerRootApp(
       });
     },
     setPerformanceQuality(): never { return unsupported("app.setPerformanceQuality", "Select renderer options before creating the worker."); },
+    // 5.4: output and runtime post controls are replayed in the worker (between frames, like node patches).
+    setOutput(output) {
+      const patch = { ...normalizeOutputToneMapping(output, "app.setOutput") };
+      for (const key of Object.keys(patch) as (keyof typeof patch)[]) if (patch[key] === undefined) delete patch[key];
+      queueAppCall("setOutput", [patch]);
+    },
     // Callbacks run on the main thread; node changes they make reach the
     // worker as one patch per frame.
     onFrame(callback) {
@@ -840,6 +858,21 @@ export function createWorkerRootApp(
       await shutdown;
     }
   };
+  // 5.4: `app.post` (runtime effect overrides, custom passes, uniforms) is replayed in the worker's post surface.
+  let postPassToken = 0;
+  const post: AuraPostSurface = {
+    setEffect(name, patch) { queueAppCall("post.setEffect", [name, patch]); },
+    setEffectEnabled(name, enabled) { queueAppCall("post.setEffectEnabled", [name, enabled]); },
+    setQualityTier(tier) { queueAppCall("post.setQualityTier", [tier]); },
+    setPassUniform(passName, key, value) { queueAppCall("post.setPassUniform", [passName, key, value]); },
+    addPostPass(pass) {
+      const token = ++postPassToken;
+      queueAppCall("post.addPostPass", [token, pass]);
+      let released = false;
+      return () => { if (!released) { released = true; queueAppCall("post.removePostPass", [token]); } };
+    }
+  };
+  (app as unknown as Record<string, unknown>).post = post;
   // K3: camera (and time) extensions only need app.onFrame/nodes/scene, which
   // a worker app now provides host-side; the camera spec they write reaches
   // the worker through flushPatches.
