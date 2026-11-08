@@ -1,8 +1,8 @@
 /**
  * Beat Hopper boot: loading bar → world → createAuraApp → warm programs → fixed-step loop. Three lanes: a horizontal
- * drag/swipe or ArrowLeft/ArrowRight/A/D steers, a tap (short, little movement) or Space/ArrowUp/W hops, a still
- * hold or ArrowDown/S ducks (the sim tells a drag from a tap by travel). Music is scheduled from sim beat diffs
- * (audio.ts), never a wall clock.
+ * drag/swipe or ArrowLeft/ArrowRight/A/D steers, a tap (short, little movement) hops on release, Space/ArrowUp/W hop
+ * on keydown, a still hold or held ArrowDown/S ducks (the sim tells a drag from a tap by travel; input.ts maps keys).
+ * Music is scheduled from sim beat diffs (audio.ts), never a wall clock.
  *
  * Query parameters: `seed=N`, `manual=1` (sim advances only through QA stepFrames), `autostart=1`, `autopilot=1`,
  * `warmup=N` (idle splash frames before autostart, default 30), `dpr=N`, `motion=reduced|full`.
@@ -14,6 +14,7 @@ import { warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { IDLE, BeatHopperSim, TRACE_COLUMNS, replay, type Input } from "./sim";
+import { InputQueue, isGameKey } from "./input";
 import { Autopilot } from "./autopilot";
 import { BeatHopperSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
@@ -48,12 +49,11 @@ let ready = false;
 let steps = 0;
 let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
 let renderFailed = false;
-const pending: Input = { ...IDLE };
-/** A release that arrives in the same step as its press waits one step, so a very quick tap still hops. */
-let deferredUp = false;
-const queueUp = (): void => {
-  if (pending.down) deferredUp = true;
-  else pending.up = true;
+const queue = new InputQueue();
+/** Drop focus from any button so Space/Enter during play never activate it (keyboard input is window-level). */
+const releaseFocus = (): void => {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active !== document.body) active.blur();
 };
 
 const sound = new BeatHopperSound();
@@ -128,6 +128,7 @@ function reactToFrame(): void {
   fx.vignette(o.mult, false, "#341259", o.t, reducedMotion);
   if (o.phase !== lastPhase) {
     phaseStart = o.t;
+    if (o.phase === "playing") releaseFocus();
     if (o.phase === "gameOver") showResults();
     if (o.phase !== "playing" && o.phase !== "bursting") $("popups").replaceChildren();
     lastPhase = o.phase;
@@ -167,11 +168,8 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howtoOpen,
   step() {
-    const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
-    pending.start = pending.down = pending.up = pending.duck = false;
-    pending.dx = 0;
-    pending.lane = 0;
-    if (deferredUp) { pending.up = true; deferredUp = false; }
+    const typed = queue.take();
+    const input: Input = pilot ? pilot.next(sim, steps) : typed;
     advance(input);
     presenter.afterStep();
   },
@@ -256,7 +254,7 @@ addEventListener("pointerdown", (e) => {
   if (target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "splash") requestStart();
   else if (sim.o.phase === "playing") {
-    pending.down = true;
+    queue.press();
     dragging = true;
     lastX = e.clientX;
     if (!target?.closest?.("button")) {
@@ -266,26 +264,21 @@ addEventListener("pointerdown", (e) => {
 });
 addEventListener("pointermove", (e) => {
   if (config.manual || pilot || !dragging) return;
-  pending.dx += e.clientX - lastX;
+  queue.drag(e.clientX - lastX);
   lastX = e.clientX;
 });
 const release = (): void => {
   if (config.manual || pilot) return;
   dragging = false;
-  queueUp();
+  queue.release();
 };
 addEventListener("pointerup", release);
 addEventListener("pointercancel", release);
 canvas.addEventListener("lostpointercapture", () => { if (dragging) release(); });
 
-const held = new Set<string>();
-const PRESS_KEYS = ["Space", "ArrowUp", "KeyW", "ArrowDown", "KeyS"];
-const DUCK_KEYS = ["ArrowDown", "KeyS"];
-const STEER_KEYS: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
 function dropInput(): void {
-  held.clear();
   dragging = false;
-  pending.up = true;
+  queue.drop();
 }
 addEventListener("blur", dropInput);
 
@@ -302,37 +295,31 @@ addEventListener("keydown", (e) => {
     }
     return;
   }
-  if (e.repeat) return;
+  const playing = sim.o.phase === "playing";
+  // During play the game owns Space/Enter and the game keys: never scroll, never activate a focused button.
+  if (playing && (isGameKey(e.code) || e.code === "Enter")) {
+    e.preventDefault();
+    releaseFocus();
+  }
+  if (e.repeat) {
+    if (isGameKey(e.code) || e.code === "Enter") e.preventDefault();
+    return;
+  }
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
   if (paused) return;
-  if (e.code === "Enter" || (e.code === "Space" && sim.o.phase !== "playing")) {
+  if (e.code === "Enter" || (e.code === "Space" && !playing)) {
     e.preventDefault();
     if (sim.o.phase === "splash") requestStart();
     else if (sim.o.phase === "gameOver") restart();
     return;
   }
-  const steer = STEER_KEYS[e.code];
-  if (steer !== undefined) {
-    e.preventDefault();
-    if (sim.o.phase === "playing") pending.lane += steer;
-    return;
-  }
-  if (PRESS_KEYS.includes(e.code)) {
-    e.preventDefault();
-    if (sim.o.phase !== "playing") return;
-    held.add(e.code);
-    if (held.size === 1) {
-      pending.down = true;
-      // ArrowDown/S duck straight away (a quick tap of them must never hop into a bar).
-      if (DUCK_KEYS.includes(e.code)) pending.duck = true;
-    }
-  }
+  if (queue.keyDown(e.code, false, playing)) e.preventDefault();
 });
 addEventListener("keyup", (e) => {
-  if (!PRESS_KEYS.includes(e.code)) return;
-  held.delete(e.code);
-  if (held.size === 0) queueUp();
+  if (!queue.keyUp(e.code)) return;
+  // A focused button would fire its Space click on keyup.
+  if (sim.o.phase === "playing" && !howtoOpen) e.preventDefault();
 });
 
 /* ------------------------------------------------------------------ pause, settings, restart */
@@ -353,7 +340,7 @@ document.addEventListener("visibilitychange", () => {
     void sound.suspend();
   } else if (!paused) void sound.resume();
 });
-$("btn-resume").addEventListener("click", () => setPaused(false));
+$("btn-resume").addEventListener("click", () => { setPaused(false); releaseFocus(); });
 
 /* ------------------------------------------------------------------ how to play */
 
@@ -366,7 +353,7 @@ function openHowto(thenStart: boolean): void {
   howtoOpen = true;
   startAfterHowto = thenStart;
   dropInput();
-  pending.start = false;
+  queue.start(false);
   howtoReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   $("btn-howto-close").textContent = thenStart ? "GOT IT \u2014 PLAY" : "GOT IT";
   $("howto-screen").classList.remove("hidden");
@@ -380,10 +367,13 @@ function closeHowto(): void {
   $("howto-screen").classList.add("hidden");
   loop.resetAccumulator();
   if (startAfterHowto && sim.o.phase === "splash") {
-    pending.start = true;
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-  } else {
+    queue.start();
+    releaseFocus();
+  } else if (sim.o.phase === "splash") {
     howtoReturnFocus?.focus?.({ preventScroll: true });
+  } else {
+    // Back to a run (paused): keep focus off the buttons so Space hops instead of clicking one.
+    releaseFocus();
   }
   startAfterHowto = false;
   howtoReturnFocus = null;
@@ -391,12 +381,12 @@ function closeHowto(): void {
 /** Every Play press goes through here: the first one ever shows How to play and starts the run when it closes. */
 function requestStart(): void {
   if (store.get(HOWTO_KEY) !== "1" && !config.autostart) openHowto(true);
-  else pending.start = true;
+  else queue.start();
 }
 $("btn-howto-close").addEventListener("click", closeHowto);
 $("btn-howto-splash").addEventListener("click", () => { if (!config.manual && !pilot) openHowto(false); });
 $("btn-howto-pause").addEventListener("click", () => { if (paused) openHowto(false); });
-$("btn-pause").addEventListener("click", () => { if (!config.manual && !pilot) setPaused(!paused); });
+$("btn-pause").addEventListener("click", () => { if (!config.manual && !pilot) setPaused(!paused); releaseFocus(); });
 
 function restart(): void {
   sim.begin();
@@ -429,7 +419,7 @@ const toggleMute = (): void => {
   store.set("splatSiblings.beat-hopper.mute", sound.muted ? "1" : "0");
   paintMute();
 };
-muteButton.addEventListener("click", toggleMute);
+muteButton.addEventListener("click", () => { toggleMute(); if (sim.o.phase === "playing") releaseFocus(); });
 $("toggle-sound").addEventListener("change", (e) => {
   const on = (e.target as HTMLInputElement).checked;
   if (on === sound.muted) toggleMute();
