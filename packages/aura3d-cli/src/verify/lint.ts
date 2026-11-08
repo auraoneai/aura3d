@@ -450,13 +450,68 @@ function lintScene(files: readonly ParsedFile[], calls: readonly CallSite[]): Li
     scan(expr);
     return hit;
   };
+  // Any other engine promise (loadGltfScene, createProductViewer, Renderer.create, a local mount() that awaits ready) can
+  // need the same lazy chunks, so a module-level await on it is LINT_TOP_LEVEL_AWAIT_ENGINE (a warning: some engine
+  // promises resolve without lazy code). Engine calls are calls whose root identifier is imported from `@aura3d/...`, or a
+  // call to a same-file function whose body (outside nested functions) waits on the mount or makes such a call.
+  const rootIdentifier = (expr: ts.Expression): string | undefined => {
+    let e = unwrap(expr);
+    while (ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e) || ts.isCallExpression(e)) e = unwrap(e.expression);
+    return ts.isIdentifier(e) ? e.text : undefined;
+  };
+  const engineBindings = (file: ParsedFile): Set<string> => {
+    const names = new Set<string>();
+    for (const stmt of file.sf.statements) {
+      if (!ts.isImportDeclaration(stmt) || !ts.isStringLiteral(stmt.moduleSpecifier) || !stmt.moduleSpecifier.text.startsWith("@aura3d/")) continue;
+      const clause = stmt.importClause;
+      if (!clause || clause.isTypeOnly) continue;
+      if (clause.name) names.add(clause.name.text);
+      const bindings = clause.namedBindings;
+      if (bindings && ts.isNamespaceImport(bindings)) names.add(bindings.name.text);
+      else if (bindings) for (const el of bindings.elements) if (!el.isTypeOnly) names.add(el.name.text);
+    }
+    return names;
+  };
+  const callsEngine = (file: ParsedFile, expr: ts.Node, engine: ReadonlySet<string>): string | undefined => {
+    let hit: string | undefined;
+    const scan = (node: ts.Node): void => {
+      if (hit || ts.isFunctionLike(node)) return;
+      if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+        const root = rootIdentifier(node.expression);
+        if (root && engine.has(root)) hit = `${node.expression.getText(file.sf).replace(/\s+/g, "")}()`;
+      }
+      ts.forEachChild(node, scan);
+    };
+    scan(expr);
+    return hit;
+  };
   for (const file of files) {
+    const engine = engineBindings(file);
+    // Same-file functions that wait on the mount or call the engine, to a fixpoint (mount() -> boot() -> app.ready()).
+    const localFns = new Map<string, ts.Node>();
+    for (const stmt of file.sf.statements) {
+      if (ts.isFunctionDeclaration(stmt) && stmt.name && stmt.body) localFns.set(stmt.name.text, stmt.body);
+      if (ts.isVariableStatement(stmt)) for (const d of stmt.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.initializer && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer))) localFns.set(d.name.text, d.initializer.body);
+      }
+    }
+    const waiting = new Set<string>(engine);
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const [name, body] of localFns) {
+        if (waiting.has(name)) continue;
+        if (waitsOnMount(body) || callsEngine(file, body, waiting)) { waiting.add(name); changed = true; }
+      }
+    }
     const visit = (node: ts.Node, inFunction: boolean): void => {
       const fn = ts.isFunctionLike(node);
       if (!inFunction && ts.isAwaitExpression(node)) {
         const call = waitsOnMount(node.expression);
         if (call) {
           out.push(finding(file, node, "LINT_TOP_LEVEL_AWAIT_READY", `Module-level await on ${call} deadlocks a production build: the engine's lazy chunks import this entry chunk back, so the module never finishes evaluating and the page stays black (vite dev hides it). Use \`void app.ready().then(() => { ... })\` or await inside \`async function main() { ... } void main();\`.`));
+        } else {
+          const engineCall = callsEngine(file, node.expression, waiting);
+          if (engineCall) out.push(finding(file, node, "LINT_TOP_LEVEL_AWAIT_ENGINE", `Module-level await on ${engineCall}: if that promise needs a lazily loaded engine chunk, a production build deadlocks (the chunk imports this entry chunk back, which is still evaluating) and the page stays black. Move the code into \`async function main() { ... } void main();\`.`));
         }
       }
       ts.forEachChild(node, (child) => visit(child, inFunction || fn));

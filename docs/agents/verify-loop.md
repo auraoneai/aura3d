@@ -85,6 +85,7 @@ Each rule fires only on literal evidence in source; a value it cannot see produc
 | `LINT_EFFECT_OPTION_IGNORED` | `effects.fog` gets a key outside its read list, or `instances.model` gets `lod`, `maxInstancesPerDraw`, `static`, `chunkSize`, `shadowLod` or `impostor` | the value is `undefined` |
 | `LINT_READY_NOT_AWAITED` | `const app = createAuraApp(...)` and `app.ready()` is never awaited or chained | the handle is discarded (templates report readiness through `data-aura3d-ready`) |
 | `LINT_TOP_LEVEL_AWAIT_READY` | `await app.ready()` at module scope (see "A finding from building this") | it is inside a function |
+| `LINT_TOP_LEVEL_AWAIT_ENGINE` (warning) | module-level `await` on a call to an `@aura3d/*` import (`loadGltfScene`, `createProductViewer`, `Renderer.create`, ...) or on a same-file function that awaits one (`await mount()`); the promise may need a lazy engine chunk and deadlock the same way | it is inside a function |
 | `LINT_SCALE_EXTREME` | `.scale()` literal >= 50 or <= 0.02 on a primitive or model that is not named like a ground, sky, water or backdrop | |
 | `LINT_CAMERA_INSIDE_OBJECT` | a camera distance or position is inside a large scaled node at a literal position | |
 | `ASSET_PATH_INVENTED` | a `defineAuraAssets` entry whose local `url` is not a file under `public/`, or `model("...glb")` with a string | the URL is `http(s)` |
@@ -112,6 +113,7 @@ Two tables are copied from the engine and guarded by a parity test (`tests/unit/
 | `LINT_UNIFORM_RESERVED` | error | lint | Reserved uniform name |
 | `LINT_READY_NOT_AWAITED` | warning | lint | app.ready() is not awaited |
 | `LINT_TOP_LEVEL_AWAIT_READY` | error | lint | Module-level `await app.ready()` |
+| `LINT_TOP_LEVEL_AWAIT_ENGINE` | warning | lint | Module-level await on an engine promise |
 | `LINT_SCALE_EXTREME` | warning | lint | Node scale looks off by orders of magnitude |
 | `LINT_CAMERA_INSIDE_OBJECT` | warning | lint | Camera starts inside an object |
 | `BUILD_FAILED` | error | build | Build failed |

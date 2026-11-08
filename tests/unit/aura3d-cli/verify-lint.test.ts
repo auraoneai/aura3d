@@ -83,6 +83,18 @@ describe("verify lint rules", () => {
     expect(codes(`const app = createAuraApp("#app", {}); app.ready();`)).toEqual(["LINT_READY_NOT_AWAITED"]);
   });
 
+  test("module-level await on any engine promise (templates/production-product-viewer deadlocked a default vite build)", () => {
+    const imp = `import { loadGltfScene, Renderer, createAuraApp } from "@aura3d/engine/renderer";\nimport type { AuraApp } from "@aura3d/engine";\n`;
+    expect(codes(`${imp}const asset = await loadGltfScene({ url: "/x.glb" });`)).toEqual(["LINT_TOP_LEVEL_AWAIT_ENGINE"]);
+    expect(codes(`${imp}const r = await Renderer.create({ backend: "webgl2" });`)).toEqual(["LINT_TOP_LEVEL_AWAIT_ENGINE"]);
+    // a same-file function that waits on the mount or calls the engine, through a chain of local calls
+    expect(codes(`${imp}async function boot() { const app = createAuraApp("#app", {}); await app.ready(); return app; }\nconst mount = () => boot();\nexport const app = await mount();`)).toEqual(["LINT_TOP_LEVEL_AWAIT_ENGINE"]);
+    // inside a function, a non-engine await, or a type-only import: clean
+    expect(codes(`${imp}async function main() { await loadGltfScene({ url: "/x.glb" }); }\nvoid main();`)).toEqual([]);
+    expect(codes(`${imp}const data = await fetch("/x.json");\nvoid loadGltfScene({ url: "/x.glb" });`)).toEqual([]);
+    expect(codes(`import type { AuraApp } from "@aura3d/engine";\nconst make = async (): Promise<AuraApp | undefined> => undefined;\nawait make();`)).toEqual([]);
+  });
+
   test("scale off by orders of magnitude, and a camera inside a big node", () => {
     expect(codes(`primitives.box({ name: "crate" }).position(0, 0.5, 0).scale(100);`)).toEqual(["LINT_SCALE_EXTREME"]);
     expect(codes(`primitives.box({ name: "tiny" }).scale(0.01);`)).toEqual(["LINT_SCALE_EXTREME"]);
