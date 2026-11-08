@@ -16,6 +16,8 @@ export interface OutputWgslOptions {
   readonly fullCoverage?: boolean;
   readonly outputColorSpace?: "srgb" | "display-p3";
   readonly alphaMode?: "opaque" | "straight" | "premultiplied";
+  /** Legacy display-space colour grade after the tone curve (`u_gradeA`, `u_gradeB`); mirrors GLSL OUTPUT_COLOR_GRADE. */
+  readonly colorGrade?: boolean;
 }
 
 /** WebGPU render-target textures have top-left UV origins. */
@@ -141,6 +143,30 @@ fn a3dApplyOutputOverlay(encoded: vec3<f32>, uv: vec2<f32>) -> vec3<f32> {
   return a3dLinearToSrgb(clamp(color, vec3<f32>(0.0), vec3<f32>(1.0)));
 }`;
 
+const OUTPUT_COLOR_GRADE_WGSL = `
+fn a3dGradeSrgbToLinear(c: vec3<f32>) -> vec3<f32> {
+  return select(c / 12.92, pow((c + vec3<f32>(0.055)) / 1.055, vec3<f32>(2.4)), c >= vec3<f32>(0.04045));
+}
+// Same display-space grade as the GLSL OUTPUT_COLOR_GRADE epilogue (sRGB-encoded grade, decoded before the gamut transform).
+fn a3dOutputColorGrade(linearSrgb: vec3<f32>, uv: vec2<f32>) -> vec3<f32> {
+  let color = a3dLinearToSrgb(clamp(linearSrgb, vec3<f32>(0.0), vec3<f32>(1.0)));
+  let contrast = aura.u_gradeA.x;
+  let contrastOffset = 0.5 - 0.5 * contrast;
+  let redShift = aura.u_gradeA.y * 0.08 - aura.u_gradeA.z * 0.02;
+  let greenShift = aura.u_gradeA.z * 0.06;
+  let blueShift = -aura.u_gradeA.y * 0.08 - aura.u_gradeA.z * 0.02;
+  let luma = dot(color, vec3<f32>(0.2126, 0.7152, 0.0722));
+  var graded = color * contrast + vec3<f32>(contrastOffset + redShift, contrastOffset + greenShift, contrastOffset + blueShift);
+  let distanceFromLuma = min(1.0, abs(graded.r - luma) + abs(graded.g - luma) + abs(graded.b - luma));
+  let vibranceBoost = select(aura.u_gradeB.x * (1.0 - distanceFromLuma), 0.0, aura.u_gradeB.x == 0.0);
+  let saturation = aura.u_gradeA.w + vibranceBoost;
+  graded = vec3<f32>(luma) + (graded - vec3<f32>(luma)) * saturation;
+  // GLSL v_uv is bottom-up; WebGPU uv is top-down. The radial vignette is symmetric, so either origin gives the same value.
+  let centered = uv * 2.0 - vec2<f32>(1.0);
+  let vignette = 1.0 - aura.u_gradeB.y * clamp((length(centered) - 0.28) / 1.12, 0.0, 1.0);
+  return a3dGradeSrgbToLinear(clamp(graded * vignette, vec3<f32>(0.0), vec3<f32>(1.0)));
+}`;
+
 /**
  * Construct a native shader and its group-0 schema for a single OutputPass
  * variant. Resource order is scene sampler/texture followed by coverage when
@@ -165,7 +191,8 @@ export function createOutputWgsl(options: OutputWgslOptions): {
   for (const [name, value] of Object.entries({
     backgroundCoverage: options.backgroundCoverage, overlay: options.overlay,
     vignette: options.vignette === undefined ? false : options.vignette,
-    fullCoverage: options.fullCoverage === undefined ? false : options.fullCoverage
+    fullCoverage: options.fullCoverage === undefined ? false : options.fullCoverage,
+    colorGrade: options.colorGrade === undefined ? false : options.colorGrade
   })) {
     if (typeof value !== "boolean") throw new Error(`OUTPUT_VARIANT_UNSUPPORTED:${name}`);
   }
@@ -176,6 +203,7 @@ export function createOutputWgsl(options: OutputWgslOptions): {
     { name: "u_dither", kind: "float" },
     { name: "u_outputHeight", kind: "float" },
     ...(options.vignette ? [{ name: "u_vignette", kind: "vec4" as const }, { name: "u_vignetteColor", kind: "vec3" as const }] : []),
+    ...(options.colorGrade ? [{ name: "u_gradeA", kind: "vec4" as const }, { name: "u_gradeB", kind: "vec4" as const }] : []),
     ...(options.overlay ? [
       { name: "u_overlayFlash", kind: "vec4" as const }, { name: "u_overlayVignette", kind: "vec4" as const },
       { name: "u_overlayShape", kind: "vec4" as const }, { name: "u_overlayFade", kind: "vec4" as const }
@@ -196,7 +224,7 @@ ${OUTPUT_TONE_WGSL}
 ${OUTPUT_TRANSFER_WGSL}
 fn a3dOutputGamut(linearSrgb: vec3<f32>) -> vec3<f32> { ${gamut} }
 ${options.vignette ? OUTPUT_VIGNETTE_WGSL : ""}
-${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}
+${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}${options.colorGrade ? `\n${OUTPUT_COLOR_GRADE_WGSL}` : ""}
 @fragment fn fs_main(@location(0) uv: vec2<f32>, @builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
   var scene = textureSampleLevel(u_sceneTexture, u_sceneSampler, uv, 0.0);
   // Exponent bits set in any component identify NaN or infinity, including alpha.
@@ -209,7 +237,7 @@ ${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}
   ${options.vignette ? "hdr = a3dLinearVignette(hdr, uv);" : ""}
   let coverage = ${coverage};
   // Coverage mixes already-composited light; it cannot independently tone-map foreground and raw background.
-  let display = mix(clamp(hdr, vec3<f32>(0.0), vec3<f32>(1.0)), ${TONE_FUNCTIONS[options.toneMapping]}(hdr * aura.u_exposure), coverage);
+  ${options.colorGrade ? "var" : "let"} display = mix(clamp(hdr, vec3<f32>(0.0), vec3<f32>(1.0)), ${TONE_FUNCTIONS[options.toneMapping]}(hdr * aura.u_exposure), coverage);${options.colorGrade ? "\n  display = a3dOutputColorGrade(display, uv);" : ""}
   var encoded = a3dLinearToSrgb(clamp(a3dOutputGamut(display), vec3<f32>(0.0), vec3<f32>(1.0)));
   // Match GLSL's bottom-left gl_FragCoord in the full destination framebuffer,
   // independent of the HDR input's size or a sub-viewport's origin.

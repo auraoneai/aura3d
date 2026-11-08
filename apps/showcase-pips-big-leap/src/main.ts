@@ -36,6 +36,7 @@ import { createDioramaPresentation, type QaCrop } from "./game/presentation.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress.js";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags.js";
 
 installBlackFrameGuard();
 
@@ -157,6 +158,8 @@ declare global {
 const pipsGame = createGame({
   id: "showcase-pips-big-leap",
   target: "#app",
+  // Lab flag ?gamut=p3 requests a Display-P3 canvas (opt-in; the default output stays sRGB).
+  ...(() => { const { output } = labAppOptions(readLabFlags()); return output ? { output } : {}; })(),
   autoStart: true,
   input: {
     actions: {

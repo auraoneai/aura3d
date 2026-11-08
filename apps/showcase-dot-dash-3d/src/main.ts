@@ -8,6 +8,7 @@ import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
 import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -47,6 +48,8 @@ const inputOptions = {
 const g = createGame({
   id: "dot-dash-3d",
   target: "#app",
+  // Lab flag ?gamut=p3 requests a Display-P3 canvas (opt-in; the default output stays sRGB).
+  ...(() => { const { output } = labAppOptions(readLabFlags()); return output ? { output } : {}; })(),
   diagnostics: { overlay: false, performancePanel: false },
   scene: buildScene,
   input: inputOptions,

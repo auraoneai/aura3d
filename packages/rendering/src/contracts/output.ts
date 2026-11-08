@@ -30,7 +30,13 @@ export interface OutputPassOptions {
   readonly vignette?: OutputVignetteUniforms;
   /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */
   readonly fullCoverage?: boolean;
+  /**
+   * The legacy display-space colour grade, applied after the tone curve on sRGB-encoded values and decoded again
+   * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
+   */
+  readonly colorGrade?: OutputColorGradeUniforms;
 }
+export interface OutputColorGradeUniforms { readonly contrast: number; readonly temperature: number; readonly tint: number; readonly saturation: number; readonly vibrance: number; readonly vignette: number; }
 export interface OutputVignetteUniforms { readonly intensity: number; readonly smoothness: number; readonly roundness: number; readonly color: readonly [number, number, number]; }
 export interface OutputOverlayUniforms { readonly flash: readonly [number, number, number, number]; readonly vignette: readonly [number, number, number, number]; readonly shape: readonly [number, number]; readonly fade: readonly [number, number, number, number]; }
 export interface OutputPassLike { execute(input: RenderTarget, coverage: RenderTarget | null, options: OutputPassOptions, output: RenderTarget | "canvas"): void; }

@@ -173,6 +173,34 @@ vec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {
   return a3dLinearToSRGB(clamp(c, 0.0, 1.0));
 }
 #endif
+#ifdef OUTPUT_COLOR_GRADE
+uniform vec4 u_gradeA; // x = contrast, y = temperature, z = tint, w = saturation
+uniform vec4 u_gradeB; // x = vibrance, y = display vignette
+vec3 a3dGradeSrgbToLinear(vec3 c) {
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+// The legacy fused present's colour grade (webgl2/LdrPostprocessShader.ts applyColorGrade). It is authored on
+// sRGB-encoded display values, so it runs on the sRGB transfer of the tone-mapped linear-sRGB colour and decodes
+// back; the destination gamut transform and final encode follow. On an sRGB destination this reproduces the
+// fused grade; on Display-P3 the same graded colours land on P3 primaries.
+vec3 a3dOutputColorGrade(vec3 linearSrgb, vec2 uv) {
+  vec3 color = a3dLinearToSRGB(clamp(linearSrgb, 0.0, 1.0));
+  float contrast = u_gradeA.x;
+  float contrastOffset = 0.5 - 0.5 * contrast;
+  float redShift = u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
+  float greenShift = u_gradeA.z * 0.06;
+  float blueShift = -u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
+  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+  vec3 graded = color * contrast + vec3(contrastOffset + redShift, contrastOffset + greenShift, contrastOffset + blueShift);
+  float distanceFromLuma = min(1.0, abs(graded.r - luma) + abs(graded.g - luma) + abs(graded.b - luma));
+  float vibranceBoost = u_gradeB.x == 0.0 ? 0.0 : u_gradeB.x * (1.0 - distanceFromLuma);
+  float saturation = u_gradeA.w + vibranceBoost;
+  graded = vec3(luma) + (graded - vec3(luma)) * saturation;
+  vec2 centered = uv * 2.0 - 1.0;
+  float vignette = 1.0 - u_gradeB.y * clamp((length(centered) - 0.28) / 1.12, 0.0, 1.0);
+  return a3dGradeSrgbToLinear(clamp(graded * vignette, 0.0, 1.0));
+}
+#endif
 void main() {
   vec4 scene = texture(u_scene, v_uv);
   // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.
@@ -202,6 +230,9 @@ void main() {
   // The legacy opaque coverage mix operates on already-composited RGB. It
   // cannot independently tone-map translucent foreground and a raw background.
   vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);
+#ifdef OUTPUT_COLOR_GRADE
+  display = a3dOutputColorGrade(display, v_uv);
+#endif
   vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));
   if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;
 #ifdef OUTPUT_OVERLAY
@@ -247,6 +278,8 @@ export function outputFragmentGlsl(options: {
   fullCoverage?: boolean;
   outputColorSpace?: "srgb" | "display-p3";
   alphaMode?: "opaque" | "straight" | "premultiplied";
+  /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
+  colorGrade?: boolean;
 }): string {
   const fn = TONE_MAP_OPERATOR_FUNCTIONS[options.toneMapping] ?? TONE_MAP_OPERATOR_FUNCTIONS["aces"];
   const outputColorSpace = options.outputColorSpace ?? "srgb";
@@ -265,7 +298,8 @@ export function outputFragmentGlsl(options: {
     ...(options.fullCoverage && !options.backgroundCoverage ? ["#define OUTPUT_FULL_COVERAGE"] : []),
     ...(outputColorSpace === "display-p3" ? ["#define OUTPUT_DISPLAY_P3"] : []),
     ...(alphaMode !== "opaque" ? ["#define OUTPUT_ALPHA_PRESERVE"] : []),
-    ...(alphaMode === "premultiplied" ? ["#define OUTPUT_ALPHA_PREMULTIPLIED"] : [])
+    ...(alphaMode === "premultiplied" ? ["#define OUTPUT_ALPHA_PREMULTIPLIED"] : []),
+    ...(options.colorGrade ? ["#define OUTPUT_COLOR_GRADE"] : [])
   ];
   return [
     "#version 300 es",
