@@ -254,7 +254,7 @@
       <p id="howto-goal" class="howto-goal">Run down three neon lanes on a 132 BPM beat: <b>hop, duck or switch lanes</b> past every row, grab beat orbs and score as much as you can before your <b>3 lives</b> run out.</p>
 
       <section aria-labelledby="howto-controls">
-        <h3 id="howto-controls">CONTROLS</h3>
+        <h3 id="howto-controls">Controls</h3>
         <div class="howto-cols">
           <div class="howto-box">
             <h4>Keyboard</h4>
@@ -262,7 +262,9 @@
               <li><span class="keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>A</kbd><kbd>D</kbd></span><span><b>Change lane</b>, one lane per press</span></li>
               <li><span class="keys"><kbd>Space</kbd><kbd>&uarr;</kbd><kbd>W</kbd></span><span><b>Tap to hop</b> (holding Space also ducks)</span></li>
               <li><span class="keys"><kbd>&darr;</kbd><kbd>S</kbd></span><span><b>Hold to duck</b>, let go to stand up</span></li>
-              <li><span class="keys"><kbd>Enter</kbd></span><span>Start a run, or play again after one</span></li>
+              <li><span class="keys"><kbd>Enter</kbd></span><span>Start a run, or play again (Space works too on those screens)</span></li>
+              <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume</span></li>
+              <li><span class="keys"><kbd>M</kbd></span><span>Sound on / off</span></li>
             </ul>
           </div>
           <div class="howto-box">
@@ -271,14 +273,15 @@
               <li><span class="keys"><kbd class="touch">Swipe &harr;</kbd></span><span><b>Change lane</b>: drag left or right, a longer drag moves two lanes</span></li>
               <li><span class="keys"><kbd class="touch">Tap</kbd></span><span><b>Hop</b>: a quick tap or click</span></li>
               <li><span class="keys"><kbd class="touch">Press &amp; hold</kbd></span><span><b>Duck</b>: hold still, release to stand up</span></li>
-              <li><span class="keys"><kbd class="touch">PLAY NOW</kbd></span><span>Start a run; the PAUSE and SOUND buttons sit bottom right</span></li>
+              <li><span class="keys"><kbd class="touch">PLAY NOW</kbd></span><span>Start a run, or <b>PLAY AGAIN</b> after one</span></li>
+              <li><span class="keys"><kbd class="touch">PAUSE</kbd><kbd class="touch">SOUND</kbd></span><span>Pause and sound buttons, bottom right</span></li>
             </ul>
           </div>
         </div>
       </section>
 
       <section aria-labelledby="howto-track">
-        <h3 id="howto-track">ON THE TRACK</h3>
+        <h3 id="howto-track">On the track</h3>
         <div class="howto-cols">
           <ul class="howto-list">
             <li><span class="swatch sw-block" aria-hidden="true"></span><span><b>Orange crate</b>: hop over it, or step into an open lane</span></li>
@@ -294,28 +297,28 @@
       </section>
 
       <section aria-labelledby="howto-score">
-        <h3 id="howto-score">SCORING</h3>
+        <h3 id="howto-score">Scoring</h3>
         <div class="howto-cols">
           <ul class="howto-list">
-            <li><span class="swatch sw-mult" aria-hidden="true" style="color:#ffd166">PERF</span><span><b>PERFECT</b> 60 / <b style="color:#5eead4">GOOD</b> 30: hop so you peak right over the crate or trench, duck just before the bar</span></li>
-            <li><span class="swatch sw-mult" aria-hidden="true" style="color:#c9a7ff">+20</span><span><b>DODGE</b> 20 for passing a wall in a free lane, <b>orb</b> 15</span></li>
+            <li><span class="swatch sw-mult" aria-hidden="true" style="color:#ffd166">PERF</span><span><b>PERFECT</b> 60 / <b style="color:#5eead4">GOOD</b> 30 &times; your multiplier: hop so you peak right over the crate or trench, duck just before the bar</span></li>
+            <li><span class="swatch sw-mult" aria-hidden="true" style="color:#c9a7ff">+20</span><span><b>DODGE</b> 20 for passing a wall in a free lane, <b>orb</b> 15, both &times; your multiplier</span></li>
           </ul>
           <ul class="howto-list">
-            <li><span class="swatch sw-mult" aria-hidden="true">x5</span><span>Each PERFECT, GOOD, DODGE or orb adds to your <b>combo</b>. Every 4 in a row raises the multiplier, up to <b>x5</b></span></li>
+            <li><span class="swatch sw-mult" aria-hidden="true">x5</span><span>Each PERFECT, GOOD, DODGE or orb adds to your <b>combo</b>. Every 4 in a row raises the multiplier by one, up to <b>&times;5</b>. A MISS resets it to &times;1</span></li>
             <li><span class="swatch sw-mult" aria-hidden="true">+100</span><span><b>Bonus +100</b> every 750 points</span></li>
           </ul>
         </div>
       </section>
 
       <section aria-labelledby="howto-lives">
-        <h3 id="howto-lives">LIVES</h3>
+        <h3 id="howto-lives">Lives &amp; the end of a run</h3>
         <ul class="howto-list">
           <li><span class="swatch sw-life" aria-hidden="true"></span><span>Hitting an obstacle in your lane (the wrong move, or a hop or duck far off the beat) is a <b style="color:#ff4d6d">MISS</b>: you lose a life and your combo. Passing a hop or duck row in an open lane is safe but scores nothing. Lose all 3 lives and the set is over.</span></li>
         </ul>
       </section>
 
       <div class="howto-foot">
-        <p class="hint"><kbd>P</kbd><kbd>Esc</kbd> pause &nbsp;<kbd>M</kbd> mute &nbsp;<kbd>Space</kbd><kbd>Enter</kbd> play again on the results screen</p>
+        <p class="hint">Esc, Enter or Space to close</p>
         <button id="btn-howto-close" type="button">GOT IT</button>
       </div>
     </div>
