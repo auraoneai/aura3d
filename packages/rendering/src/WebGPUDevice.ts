@@ -5991,8 +5991,12 @@ export class WebGPUDevice implements RenderDevice {
       if (typeof frame.timeSeconds !== "number" || !Number.isFinite(frame.timeSeconds)) {
         throw new RenderDeviceError("Auto exposure requires the renderer's captured frame time", "WEBGPU_AUTO_EXPOSURE_TIME_REQUIRED");
       }
-      this.requireRenderTarget(source);
-      if ((source.colorTexture.format !== "rgba16f" && source.colorTexture.format !== "rgba32f") || (source.sampleCount ?? 1) !== 1) {
+      const exposureSource = this.requireRenderTarget(source);
+      // A 4x scene target meters its single-sample resolve (`nativeView`), the
+      // same texture every following post stage samples; the tier's MSAA count
+      // reaches the forward target explicitly (Saltwind Halo on medium+).
+      if ((source.colorTexture.format !== "rgba16f" && source.colorTexture.format !== "rgba32f")
+        || ((source.sampleCount ?? 1) !== 1 && (!exposureSource.nativeMultisampleTexture || !exposureSource.nativeView))) {
         throw new RenderDeviceError("WebGPU auto exposure requires a live, single-sample linear HDR color target", "WEBGPU_AUTO_EXPOSURE_HDR_REQUIRED");
       }
       // The exposure passes use textureLoad, but the following tone/copy

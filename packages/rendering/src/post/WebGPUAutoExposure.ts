@@ -112,7 +112,8 @@ function validateFrame(frame: WebGPUExposureFrame): void {
 
 function validateSource(source: RenderTarget): asserts source is RenderTarget & { readonly colorTexture: RenderTarget["colorTexture"] & { readonly format: "rgba16f" | "rgba32f" } } {
   if (!source || source.disposed || source.colorTexture?.disposed || (source.colorTexture?.format !== "rgba16f" && source.colorTexture?.format !== "rgba32f")
-    || (source.sampleCount ?? 1) !== 1 || (source.dimension ?? "2d") !== "2d" || source.depthOnly) {
+    // 4x targets are metered through their single-sample color resolve (the host binds that view).
+    || ((source.sampleCount ?? 1) !== 1 && source.sampleCount !== 4) || (source.dimension ?? "2d") !== "2d" || source.depthOnly) {
     throw new RenderDeviceError("WebGPU auto exposure requires a live, single-sample linear HDR color target", "WEBGPU_AUTO_EXPOSURE_HDR_REQUIRED");
   }
   if (!Number.isSafeInteger(source.width) || !Number.isSafeInteger(source.height) || source.width < 1 || source.height < 1
