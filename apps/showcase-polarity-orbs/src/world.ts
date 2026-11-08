@@ -125,8 +125,8 @@ export function buildWorld(options: WorldOptions): World {
   const add = (id: string, mesh: MeshData, spec: CustomSpec, shadows = true): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec), ...(shadows ? {} : { castShadow: false, receiveShadow: false }) }).runtime({ id }));
   };
-  const addBatch = (id: string, batch: Batch, spec: CustomSpec): void => {
-    builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
+  const addBatch = (id: string, batch: Batch, spec: CustomSpec, shadows = true): void => {
+    builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec), ...(shadows ? {} : { castShadow: false, receiveShadow: false }) }).runtime({ id }));
   };
 
   add("sky", (() => {
@@ -171,12 +171,12 @@ export function buildWorld(options: WorldOptions): World {
   const particles = new Batch(particleMesh(), CONFIG.POOL_PARTICLES, [1, 1, 1]);
   addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   const streams = new Batch(streamMesh(), LOOK.magnet.streams);
-  addBatch("streams", streams, flatSpec(LINEAR.purple, LOOK.magnet.alpha));
+  addBatch("streams", streams, flatSpec(LINEAR.purple, LOOK.magnet.alpha), false); // translucent glow lines: no opaque shadow
 
   const plus = symbolMesh("plus");
   const minus = symbolMesh("minus");
   const ballSymbol = new Batch(plus, 1, [1, 1, 1]);
-  addBatch("ball-symbol", ballSymbol, flatSpec([1, 1, 1], 0.95, true));
+  addBatch("ball-symbol", ballSymbol, flatSpec([1, 1, 1], 0.95, true), false);
 
   const batches = [deckWarm, deckCool, rails, dashes, orbs, powerups, particles, streams, ballSymbol];
 
