@@ -299,7 +299,8 @@ export function buildWorld(options: WorldOptions): World {
         for (let i = 0; i < STRIPES; i++) {
           const b = beatNow - 2 + i;
           if (b < 0) { stripes.collapse(i); continue; }
-          const z = (b * CONFIG.BEAT - t) * o.speed;
+          /* the camera looks down -z, so "ahead" is negative z (same as the scrolling deck and stage) */
+          const z = -(b * CONFIG.BEAT - t) * o.speed;
           stripes.place(i, 0, 0.012, z, 0, 1, 1, b % 4 === 0 ? 1.8 : 1);
           const k = b % 4 === 0 ? 1 : 0.45 + 0.55 * pulse;
           const c = linear(LOOK.roadLine);
@@ -327,7 +328,7 @@ export function buildWorld(options: WorldOptions): World {
         node("player-shadow").setPosition(0, 0.02, 0).setScale(1 / (1 + 0.25 * y));
         node("player-shadow").setUniform?.("alpha", 0.34 / (1 + 0.4 * y));
 
-        /* obstacles: deterministic beat-grid z, collapsed when the slot is free */
+        /* obstacles: deterministic beat-grid distance ahead (world -z, towards the horizon), collapsed when the slot is free */
         const batches: Record<ObstacleType, Batch> = { gap: gaps, block: blocks, bar: bars };
         for (let i = 0; i < CONFIG.POOL_OBSTACLES; i++) {
           const slot = o.obstacles[i];
@@ -335,7 +336,7 @@ export function buildWorld(options: WorldOptions): World {
             const batch = batches[type];
             const shownHere = slot && slot.active && slot.type === type;
             if (shownHere) {
-              batch.place(i, 0, 0, obstacleZ(o, slot), 0, 1, 1, 1);
+              batch.place(i, 0, 0, -obstacleZ(o, slot), 0, 1, 1, 1);
               obstacleShown[type][i] = true;
             } else if (obstacleShown[type][i]) {
               batch.collapse(i);
