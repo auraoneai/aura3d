@@ -50,6 +50,16 @@ describe("native WebGPU rim program", () => {
     expect(plain.fragment).not.toContain("material.rim.rgb *");
   });
 
+  it("builds rim together with bone-texture skinning (Bunker Zero's rim-lit hostiles)", () => {
+    const skinned = generateProgramImpl(normalizeProgramFeatures({
+      lighting: "lit", lights, maps: {}, extensions: [], environment: "none", doubleSided: true,
+      skinning: { influences: 4, palette: "texture" }, features: { "prd06.deform": "skin4", "prd06.joint0Type": "uint", "prd04.rim": true }
+    }), { flags }).descriptor!;
+    const program = createGeneratedPbrProgram(skinned);
+    expect(program.skinning).toBe(4);
+    expect(program.fragment).toContain("material.rim.rgb * (material.rim.a * pow(");
+  });
+
   it("fails closed on unverified or inconsistent rim metadata", () => {
     const rim = descriptor({ "prd04.rim": true });
     expect(() => createGeneratedPbrProgram({ ...rim, verifiedFeatures: [] })).toThrow(/unverified prd04.rim/);

@@ -31,6 +31,28 @@ describe("generated skinning warmup", () => {
     geometry.dispose();
   });
 
+  it("types integer joints per set for eight influences and rejects integer weights like the draw", () => {
+    const eight = new Geometry(new VertexBuffer(new VertexFormat([
+      { semantic: "position", components: 3, offset: 0 }, { semantic: "normal", components: 3, offset: 12 },
+      { semantic: "joints", components: 4, offset: 24, type: "uint16", integer: true },
+      { semantic: "weights", components: 4, offset: 32, type: "uint8", normalized: true },
+      { semantic: "joints1", components: 4, offset: 36, type: "int16", integer: true },
+      { semantic: "weights1", components: 4, offset: 44, type: "uint8", normalized: true }
+    ], 48), 3), new IndexBuffer([0, 1, 2], 3));
+    const record = { features: { "prd06.deform": "skin8" }, skinning: undefined } as Pick<ProgramFeatures, "features" | "skinning">;
+    expect(generatedSkinningForGeometry(record, eight, "m")).toEqual({
+      features: { "prd06.deform": "skin8", "prd06.joint0Type": "uint", "prd06.joint1Type": "sint" }, skinning: { influences: 8, palette: "texture" }
+    });
+    const integerWeights = new Geometry(new VertexBuffer(new VertexFormat([
+      { semantic: "position", components: 3, offset: 0 }, { semantic: "normal", components: 3, offset: 12 },
+      { semantic: "joints", components: 4, offset: 24, type: "uint16", integer: true },
+      { semantic: "weights", components: 4, offset: 32, type: "uint8", integer: true }
+    ], 36), 3), new IndexBuffer([0, 1, 2], 3));
+    expect(() => generatedSkinningForGeometry({ features: { "prd06.deform": "skin4" }, skinning: undefined }, integerWeights, "m"))
+      .toThrow(/float or normalized/);
+    eight.dispose(); integerWeights.dispose();
+  });
+
   it("warms the record ForwardPass draws for a skinned item", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16, qrFlags: FLAGS });
     setRendererQrFlags(FLAGS);
@@ -46,6 +68,23 @@ describe("generated skinning warmup", () => {
         expect(record.skinning).toEqual({ influences: 4, palette: "texture" });
         expect(record.features?.["prd06.joint0Type"]).toBe("float");
       }
+    } finally { renderer.dispose(); geometry.dispose(); material.dispose(); }
+  });
+
+  it("does not warm a skinned item whose geometry the draw rejects", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16, qrFlags: FLAGS });
+    setRendererQrFlags(FLAGS);
+    const geometry = new Geometry(new VertexBuffer(new VertexFormat([
+      { semantic: "position", components: 3, offset: 0 }, { semantic: "normal", components: 3, offset: 12 },
+      { semantic: "joints", components: 4, offset: 24, type: "uint16", integer: true },
+      { semantic: "weights", components: 4, offset: 32, type: "uint8", integer: true }
+    ], 36), 3), new IndexBuffer([0, 1, 2], 3));
+    const material = new PBRMaterial({ name: "skinned-rejected" });
+    try {
+      const item: RenderItem = { geometry, material, label: "skinned", skinning: { jointCount: 2, matrices: new Float32Array(32), extraInfluences: false } };
+      const internals = renderer as unknown as { collectWarmupInput(...args: unknown[]): { materials: Partial<ProgramFeatures>[] } };
+      const input = internals.collectWarmupInput([item], [], undefined, undefined, undefined, undefined, FLAGS, "high");
+      expect(input.materials.filter((record) => typeof record.features?.["prd06.deform"] === "string")).toEqual([]);
     } finally { renderer.dispose(); geometry.dispose(); material.dispose(); }
   });
 });
