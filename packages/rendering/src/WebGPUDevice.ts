@@ -8508,7 +8508,7 @@ export class WebGPUDevice implements RenderDevice {
     )) {
       throw new RenderDeviceError("WebGPU PBR requires a selected standalone shadow receiver", "WEBGPU_PUNCTUAL_SHADOW_UNSUPPORTED");
     }
-    if (shader.nativeUniformLayout.includes("pbr") && (
+    if (shader.nativeUniformLayout.includes("pbr") && !shader.generatedPbr?.transmissionDegraded && (
       (activePbrMap("u_transmissionTexture") && !shader.generatedPbr?.transmissionMap)
       || (activePbrMap("u_volumeThicknessTexture") && !shader.generatedPbr?.thicknessMap)
       || (uniformNumber(command.uniforms?.get("u_volumeThicknessFactor"), 0) > 0 && !shader.generatedPbr?.materialVolume)

@@ -94,6 +94,7 @@ import { isStockPrd07BloomChunk } from "../atmosphere/fogChunks";
 import { isStockPrd07BloomFeature } from "../atmosphere/Prd07ShaderFeatures";
 import { isStockCameraFadeBloomChunk, isStockCameraFadeBloomFeature } from "../shaders/camera-fade.glsl";
 import { isStockPrd04Lobe } from "../materials/lobes";
+import { isStockPrd04ShaderFeature } from "../materials/features";
 import { A3D_PRD04_EMISSIVE_STRENGTH } from "../shaders/physical/emissive_strength.glsl";
 import { A3D_PRD04_EMISSIVE_STRENGTH_CALL } from "../shaders/physical/lobe_calls.glsl";
 import { stockChunkVerifier, stockFeatureVerifier } from "./FeatureSelect";
@@ -1617,11 +1618,11 @@ function generateProgramInternal(features: ProgramFeatures, options: GeneratePro
     activeExtensions: lobes.active,
     defines: { ...defines },
     lighting: { compilerLightingConjunction: e3Conjunction, iblReplacesIndirect: prd02IblReplacesIndirect },
-    // Native WGSL replaces the wetness and fog GLSL chunks with its own templates, so it
+    // Native WGSL replaces the wetness, fog and rim GLSL chunks with its own templates, so it
     // admits those contributors only when they are the unchanged built-in objects.
     verifiedFeatures: contributions
       .filter(({ feature }) => ((feature.id === "prd07.wetness" || feature.id === "prd07.fog") && isStockPrd07BloomFeature(feature))
-        || isStockPrd10WindDeform(feature))
+        || isStockPrd10WindDeform(feature) || (feature.id === "prd04.rim" && isStockPrd04ShaderFeature(feature)))
       .map(({ feature }) => feature.id)
   };
   // Native templates also depend on resolved flags/providers, not just the

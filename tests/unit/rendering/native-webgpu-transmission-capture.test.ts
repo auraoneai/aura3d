@@ -194,6 +194,13 @@ describe("WebGPU transmission capture device contract", () => {
     const mappedGroup = f.groups.at(-2)!;
     expect(mappedGroup.entries.map(entry => entry.binding)).toEqual([0, 3, 4, 54, 55, 59, 60, 61, 62]);
     expect((mappedGroup.entries.find(entry => entry.binding === 60)!.resource as { texture: unknown }).texture).toBe(f.device.getNativeTexture(dataMap));
+    // Without a scoped capture the lobe draws without refraction (the WebGL2 program's A3D_TRANSMISSION guard).
+    const degradedGenerated = generateProgramImpl(normalizeProgramFeatures({ ...mappedFeatures, features: {} }), { flags: { values: {}, on: () => true } });
+    const degradedShader = f.device.createShaderProgram({ label: "degraded-transmission", marker: GENERATED_PROGRAM_MARKER, vertex: degradedGenerated.vertex,
+      fragment: degradedGenerated.fragment, generatedProgram: degradedGenerated.descriptor! });
+    const degradedUniforms = new Map(mappedUniforms); degradedUniforms.delete("a3d_prd04_transmissionSampler"); degradedUniforms.delete("a3d_prd04_transmissionSamplerSize");
+    f.device.draw({ ...pbrDraw, vertexBuffer: mappedVertices, vertexFormat: VertexFormat.P3N3T4T2T2, shader: degradedShader, uniforms: degradedUniforms });
+    expect(f.groups.at(-2)!.entries.map(entry => entry.binding).filter(binding => [54, 55, 59, 60, 61, 62].includes(binding))).toEqual([]);
     const instancedFeatures = normalizeProgramFeatures({ ...mappedFeatures, instancing: { color: false } });
     const instancedSources = generateProgramImpl(instancedFeatures, { flags: { values: {}, on: () => true } });
     const instancedShader = f.device.createShaderProgram({ label: "instanced-volume", marker: GENERATED_PROGRAM_MARKER, vertex: instancedSources.vertex,
