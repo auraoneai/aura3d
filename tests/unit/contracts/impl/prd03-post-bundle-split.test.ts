@@ -27,6 +27,8 @@ const DEFERRED_ONLY_INPUTS = [
   "packages/rendering/src/post/shaders/composite.glsl.ts",
   "packages/rendering/src/post/shaders/displayGrade.glsl.ts",
   "packages/rendering/src/post/shaders/finalize.glsl.ts",
+  // S10 linear grade GLSL (its CPU uniform resolver lives in renderer/hdrGradeUniforms.ts).
+  "packages/rendering/src/post/shaders/hdrGrade.glsl.ts",
   // Phase 3: S1/S2/S4 GLSL + the stage driver.
   "packages/rendering/src/post/v2Stages.ts",
   "packages/rendering/src/post/shaders/depthDownsample.glsl.ts",
@@ -100,9 +102,15 @@ describe("post v2 bundle split (§9 gate)", () => {
     // invariant: the §9 bundle gate requires v2 GPU code to load only via a
     // dynamic import() edge — a static string keeps it splittable by esbuild.
     expect(exec).toContain('import("../post/v2Entry")');
-    // No static `import { ... } from "<post module>"` of phase-2 GPU code.
-    const staticPostImports = exec.match(/^import\s.*from\s+"[^"]*post\//gm) ?? [];
+    // No static `import { ... } from "<post module>"` of phase-2 GPU code. The one
+    // value import allowed is the independent WebGPU depth-of-field validator: that
+    // module has been eager since 5.2.1 (Renderer.ts imports it statically), so the
+    // import adds nothing to the flag-off chunk; the metafile proof below still checks
+    // every phase-2 input.
+    const EAGER_POST_MODULES = ['"../post/WebGPUDepthOfField"'];
+    const staticPostImports = exec.match(/^import\s.*from\s+"[^"]*post\/[^"]*"/gm) ?? [];
     for (const line of staticPostImports) {
+      if (EAGER_POST_MODULES.some((specifier) => line.endsWith(specifier))) continue;
       expect(line).toContain("import type");
     }
 

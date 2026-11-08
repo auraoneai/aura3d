@@ -1,7 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from Renderer.ts; 0 changed logic lines.
 // File: packages/rendering/src/renderer/PostprocessExecution.ts — owner lane 03.
 
-import { resolveHdrGradeUniforms, type HdrGradeInput } from "../post/shaders/hdrGrade.glsl";
+import { resolveHdrGradeUniforms, type HdrGradeInput } from "./hdrGradeUniforms";
 import { standardizeDepthReadback } from "./FrameDepthConvention";
 import type { RenderItem } from "../ForwardPass";
 import { type BloomOptions, BloomPass, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthOfFieldOptions, type DepthTextureBinding, type FXAAOptions, FXAAPass, type FilmGrainOptions, type FusedLdrPostProcessPass, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, ToneMappingPass, type VolumetricLightOptions, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels } from "../PostProcessPass";
@@ -21,7 +21,7 @@ import { webgl2DeviceHost } from "../webgl2/Counters";
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
-import { nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayStages";
+import { nativeDofDisplayStagesFor } from "../webgpu/NativeDofDisplayPlan";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { markPostV2Presented, recordPostSkipped, recordPostStage } from "./postSkipped";
 import { postDiagnostics, type PostDiagnosticToken } from "./PostDiagnosticsScope";
