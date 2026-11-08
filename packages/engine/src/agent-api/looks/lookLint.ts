@@ -6,6 +6,7 @@
 
 import type { AuraColor, AuraEffectNode, AuraLightNode, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
+import { parseAuraColorSrgb } from "../color.js";
 import type { AuraLookId, AuraLookLintFinding, AuraLookLintRule } from "../../contracts/looks.js";
 import {
   lookLintRegisteredCodes,
@@ -40,7 +41,11 @@ function allNodes(snapshot: AuraSceneSnapshot): AuraSceneNode[] {
 }
 
 function hexToSrgb(hex: AuraColor | undefined): [number, number, number] | null {
-  if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return null;
+  if (typeof hex === "string" && !/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    // Lint reads every CSS colour form; an unparseable value is reported by the compile, not here.
+    try { const [r, g, b] = parseAuraColorSrgb(hex); return [r, g, b]; } catch { return null; }
+  }
+  if (!hex || typeof hex !== "string") return null;
   return [
     parseInt(hex.slice(1, 3), 16) / 255,
     parseInt(hex.slice(3, 5), 16) / 255,

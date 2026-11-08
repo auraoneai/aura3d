@@ -70,6 +70,7 @@ import {
 import type { BlendMode } from "@aura3d/rendering/contracts";
 import { shaderGraphGlslFieldNames } from "@aura3d/rendering/shader-graph";
 import { AuraRuntimeError } from "./errors.js";
+import { parseAuraColorSrgb } from "../color.js";
 import { assertCustomAttributeName } from "../RootGeometry.js";
 import { auraTextureRefBackingStatus, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraAssetRef, AuraCustomMaterialSpec, AuraCustomUniformType, AuraTextureRef, AuraUniformValue } from "../nodes/types.js";
@@ -316,8 +317,9 @@ const numericArray = (value: unknown): readonly number[] | null => {
 
 const parseColor3 = (value: string): readonly number[] | null => {
   const hex = value.trim().replace(/^#/, "");
-  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return null;
-  return [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) return [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  // Any other CSS colour form (`#rgb`, rgb(), hsl(), names); sRGB channels like the hex path.
+  try { return parseAuraColorSrgb(value).slice(0, 3); } catch { return null; }
 };
 
 const padMat3 = (values: readonly number[]): readonly number[] => {
@@ -368,7 +370,7 @@ export function normalizeCustomUniformValue(type: AuraCustomUniformType, value: 
   }
   if (type === "color3" && typeof value === "string") {
     const color = parseColor3(value);
-    if (!color) invalidSpec("material.custom", `uniform "${name}" (color3) expects a #rrggbb string`);
+    if (!color) invalidSpec("material.custom", `uniform "${name}" (color3) expects a CSS colour string; COLOR_INVALID: ${JSON.stringify(value).slice(0, 64)}`);
     return [...color!];
   }
   const scalars = numericArray(value);

@@ -115,7 +115,7 @@ describe("effects.particles options reach the CPU emitter", () => {
     }
   });
 
-  it("lifetimeColorRamp lerps linear colour across life and ignores ramps it cannot resolve", () => {
+  it("lifetimeColorRamp lerps linear colour across life, resolves any CSS colour and rejects invalid stops", () => {
     const desc = lower({ ...still, rate: 50, maxParticles: 50, lifetimeColorRamp: ["#ff0000", "#0000ff"], shape: "point" }).emitter;
     expect(desc.colorOverLife).toHaveLength(2);
     const state = createEmitter(desc);
@@ -127,7 +127,8 @@ describe("effects.particles options reach the CPU emitter", () => {
       expect(out[i * 16 + 8]).toBeCloseTo(1 - t, 4);
       expect(out[i * 16 + 10]).toBeCloseTo(t, 4);
     }
-    expect(lower({ lifetimeColorRamp: ["red", "#00ff00"] }).emitter.colorOverLife).toBeUndefined();
+    expect(lower({ lifetimeColorRamp: ["red", "#00ff00"] }).emitter.colorOverLife).toEqual([[1, 0, 0], [0, 1, 0]]);
+    expect(() => lower({ lifetimeColorRamp: ["reddish", "#00ff00"] })).toThrow(/COLOR_INVALID/);
   });
 
   it("stretch forces velocity-stretched or upright billboards and keeps batches with different stretch apart", () => {
