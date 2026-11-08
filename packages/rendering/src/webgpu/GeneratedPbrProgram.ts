@@ -20,6 +20,8 @@ import { PHOTOMETRIC_PROFILE_WGSL } from "../lighting/shaders/PhotometricProfile
 import { DEPTH_COVERAGE_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, depthCoverageUnsupportedReason } from "../program/ProgramFeatures";
 import { PHYSICAL_LIGHTING_WGSL } from "./PhysicalLighting.wgsl";
 import { PRD07_WETNESS_WGSL } from "../atmosphere/shaders/wetness.wgsl";
+import { PRD07_FOG_WGSL_FIELDS, packPrd07FogWgslFields, prd07FogWgsl } from "../atmosphere/shaders/fog.wgsl";
+import { prd10WindOffsetWgsl } from "../world/vegetation/shaders/wind.js";
 import { isTextureBinding } from "../TextureBinding";
 import { PACKED_LOOP_PHYSICAL_WGSL } from "./PackedLoopPhysical.wgsl";
 import { deriveShaderDataLayout, writeShaderData, type ShaderDataType } from "./ShaderDataLayout";
@@ -44,7 +46,7 @@ export interface GeneratedPbrDescriptor {
 }
 
 export type GeneratedPbrTextureResource = {
-  readonly uniform: "u_baseColorMap" | "u_dfgLut" | "u_envSpecular" | "u_environmentCubeMap" | "u_environmentMap" | "u_prd02ProbeCubeA" | "u_prd02ProbeCubeB" | "u_diffuseRoughnessTexture" | "u_bumpTexture" | "u_normalMap" | "u_metallicRoughnessMap" | "u_occlusionMap" | "u_emissiveMap" | "u_specularTexture" | "u_specularColorTexture" | "u_sheenColorTexture" | "u_sheenRoughnessTexture" | "u_clearcoatTexture" | "u_clearcoatRoughnessTexture" | "u_clearcoatNormalTexture" | "u_iridescenceTexture" | "u_iridescenceThicknessTexture" | "u_anisotropyTexture" | "u_shadowMapTexture" | "u_localShadowAtlas" | "a3d_prd04_transmissionSampler" | "u_transmissionTexture" | "u_volumeThicknessTexture" | "u_contactShadowMask" | "u_pointShadowMapTexture" | "u_spotShadowMapTexture" | "u_diffuseTransmissionTexture" | "u_diffuseTransmissionColorTexture";
+  readonly uniform: "u_baseColorMap" | "u_dfgLut" | "u_envSpecular" | "u_environmentCubeMap" | "u_environmentMap" | "u_prd02ProbeCubeA" | "u_prd02ProbeCubeB" | "u_diffuseRoughnessTexture" | "u_bumpTexture" | "u_normalMap" | "u_metallicRoughnessMap" | "u_occlusionMap" | "u_emissiveMap" | "u_specularTexture" | "u_specularColorTexture" | "u_sheenColorTexture" | "u_sheenRoughnessTexture" | "u_clearcoatTexture" | "u_clearcoatRoughnessTexture" | "u_clearcoatNormalTexture" | "u_iridescenceTexture" | "u_iridescenceThicknessTexture" | "u_anisotropyTexture" | "u_shadowMapTexture" | "u_localShadowAtlas" | "a3d_prd04_transmissionSampler" | "u_transmissionTexture" | "u_volumeThicknessTexture" | "u_contactShadowMask" | "u_pointShadowMapTexture" | "u_spotShadowMapTexture" | "u_diffuseTransmissionTexture" | "u_diffuseTransmissionColorTexture" | "u_windNoise";
   readonly samplerBinding: number;
   readonly textureBinding: number;
   readonly dimension: "2d" | "cube";
@@ -128,6 +130,10 @@ export interface GeneratedPbrProgram {
   readonly photometricProfile: boolean;
   /** Experimental native PRD-07 wetness response (`material.wetness`). */
   readonly wetness: boolean;
+  /** Native PRD-07 forward fog (`prd07.fog`), replacing the default fog body. */
+  readonly prd07Fog: boolean;
+  /** Native PRD-10 wind sway (`prd10.wind`) in the vertex stage; its gust noise is a vertex-stage texture. */
+  readonly wind: boolean;
   /** This program emits location 1; the device must validate paired depth writes. */
   readonly writesDepthCoverage: boolean;
   /** Writes ln(d / near) / ln(far / near) as @builtin(frag_depth) (logarithmic frames). */
@@ -204,7 +210,15 @@ const MATERIAL_FIELDS: readonly { readonly name: string; readonly type: ShaderDa
   { name: "wetness", type: vec4, wgsl: "vec4f" },
   // Logarithmic frames: u_a3dLogDepthView and (near, far) from u_a3dLogDepthRange.
   { name: "logDepthView", type: mat4, wgsl: "mat4x4f" },
-  { name: "logDepthRange", type: vec4, wgsl: "vec4f" }
+  { name: "logDepthRange", type: vec4, wgsl: "vec4f" },
+  // PRD-07 forward fog (`prd07.fog`), packed from the u_fog* uniforms of the GLSL chunk.
+  ...PRD07_FOG_WGSL_FIELDS.map(({ name, length }) => length
+    ? { name, type: { kind: "array", element: vec4, length } as ShaderDataType, wgsl: `array<vec4f, ${length}>` }
+    : { name, type: vec4, wgsl: "vec4f" }),
+  // PRD-10 wind (`prd10.wind`): u_windDirStrength, u_windGust and (u_windAssetHeight, -, -, -).
+  { name: "windDirStrength", type: vec4, wgsl: "vec4f" },
+  { name: "windGust", type: vec4, wgsl: "vec4f" },
+  { name: "windParams", type: vec4, wgsl: "vec4f" }
 ];
 export const GENERATED_PBR_MATERIAL_LAYOUT = deriveShaderDataLayout({
   kind: "struct", fields: MATERIAL_FIELDS.map(({ name, type }) => ({ name, type }))
@@ -237,7 +251,7 @@ function canonicalLobe(name: string): string {
 /** Reject unimplemented program axes and contradictory producer metadata. */
 type LobeMapSlot = "specular" | "specularColor" | "sheenColor" | "sheenRoughness" | "clearcoat" | "clearcoatRoughness" | "clearcoatNormal" | "iridescence" | "iridescenceThickness" | "anisotropy" | "transmission" | "volumeThickness" | "diffuseTransmission" | "diffuseTransmissionColor";
 type LobeMaps = Partial<Record<LobeMapSlot, 0 | 1>>;
-function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: boolean; normalMap: boolean; diffuseMap: boolean; bumpMap: boolean; metalRoughMap: boolean; occlusionMap: boolean; emissiveMap: boolean; lobeMaps: LobeMaps; uv0: boolean; uv1: boolean; ibl: boolean; sampled: "none" | "cube" | "equirect"; procedural: boolean; localProbe: boolean; volume: boolean; advanced: "none" | "probe" | "voxel" | "lightmap"; lightmapUv: 0 | 1; lightmapAdd: boolean; directBound: number; sheen: boolean; coat: boolean; iridescence: boolean; anisotropy: boolean; transmission: boolean; diffuseTransmission: boolean; materialVolume: boolean; dispersion: boolean; tangent: boolean; fraction: boolean; outputSrgb: boolean; wetness: boolean; alphaToCoverage: boolean; skinning: 4 | 8 | null; morph: GeneratedPbrMorph | null; jointKinds: readonly ("float" | "uint" | "sint" | null)[] } {
+function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: boolean; normalMap: boolean; diffuseMap: boolean; bumpMap: boolean; metalRoughMap: boolean; occlusionMap: boolean; emissiveMap: boolean; lobeMaps: LobeMaps; uv0: boolean; uv1: boolean; ibl: boolean; sampled: "none" | "cube" | "equirect"; procedural: boolean; localProbe: boolean; volume: boolean; advanced: "none" | "probe" | "voxel" | "lightmap"; lightmapUv: 0 | 1; lightmapAdd: boolean; directBound: number; sheen: boolean; coat: boolean; iridescence: boolean; anisotropy: boolean; transmission: boolean; diffuseTransmission: boolean; materialVolume: boolean; dispersion: boolean; tangent: boolean; fraction: boolean; outputSrgb: boolean; wetness: boolean; prd07Fog: boolean; wind: boolean; alphaToCoverage: boolean; skinning: 4 | 8 | null; morph: GeneratedPbrMorph | null; jointKinds: readonly ("float" | "uint" | "sint" | null)[] } {
   const f = descriptor.features;
   if (!f || f.pass !== "forward" || f.lighting !== "lit") unsupported("pass", "anything except forward lit materials");
   const depthCoverageIssue = depthCoverageUnsupportedReason(f);
@@ -265,10 +279,10 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const active = new Map<string, string | number | boolean>();
   for (const item of descriptor.activeFeatures) {
     if (active.has(item.id)) unsupported("activeFeatures", `duplicate contributor ${item.id}`);
-    if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness", ALPHA_TO_COVERAGE_FEATURE].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
+    if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness", "prd07.fog", "prd10.wind", ALPHA_TO_COVERAGE_FEATURE].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
     active.set(item.id, item.value);
   }
-  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
+  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", "prd07.fog", "prd10.wind", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !structural.has(name)) unsupported(`features.${name}`, `feature ${name}`);
     if ((name === "prd02.localProbe" || name === "prd02.irradianceVolume" || name === "prd04.geometryTangent" || name === "a3d.output.srgb" || name === "a3d.clipping" || name === "a3d.packedLoopColor" || name === "a3d.independentPhysicalPreview" || name === "a3d.photometricProfile" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name} feature`);
@@ -288,6 +302,15 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   }
   if (wetness && !descriptor.verifiedFeatures?.includes("prd07.wetness")) unsupported("activeFeatures", "a replaced or unverified prd07.wetness contributor");
   if (wetness && descriptor.defines.A3D_WETNESS !== 1 && descriptor.defines.A3D_WETNESS !== true) unsupported("defines.A3D_WETNESS", "invalid wetness define");
+  const prd07Fog = validatePrd07FogMetadata(descriptor, active, unsupported);
+  // PRD-10 wind: the selected stock feature (value 1), its bit and its define agree; the native vertex twin replaces its GLSL chunk.
+  const wind = active.has("prd10.wind");
+  if ((wind && (active.get("prd10.wind") !== 1 || f.features["prd10.wind"] !== 1)) || (!wind && f.features["prd10.wind"] !== undefined && f.features["prd10.wind"] !== false)) {
+    unsupported("features.prd10.wind", "inconsistent wind metadata");
+  }
+  if (wind && !descriptor.verifiedFeatures?.includes("prd10.wind")) unsupported("activeFeatures", "a replaced or unverified prd10.wind contributor");
+  // With prd06.deform the GLSL chunks compose through A3D_DEFORM_ENTRY; the native template has no such composition yet.
+  if (wind && active.has("prd06.deform")) unsupported("prd10.wind", "wind combined with skinning or morph deformation");
   const packedLoopColor = active.get("a3d.packedLoopColor") === true;
   if ((active.has("a3d.packedLoopColor") && !packedLoopColor) || (f.features["a3d.packedLoopColor"] === true) !== packedLoopColor) unsupported("features.a3d.packedLoopColor", "inactive packed member color");
   const deform = active.get("prd06.deform");
@@ -419,6 +442,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     DOUBLE_SIDED: f.doubleSided, SPECULAR_AA: f.specularAntialiasing, SHADOW_CONTACT: f.shadows.contact,
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height", A3D_CLIPPING: f.features["a3d.clipping"] === true,
     A3D_PHOTOMETRIC_PROFILE: photometric, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_WETNESS: wetness,
+    A3D_FOG: prd07Fog !== undefined, A3D_FOG_FROXEL_TIER: prd07Fog === "volumetric", A3D_PRD10_WIND: wind,
     A3D_LOG_DEPTH: f.features[PROGRAM_LOG_DEPTH_FEATURE] === true,
     A3D_PRD04_ALPHA_TO_COVERAGE: alphaToCoverage, ALPHA_TO_COVERAGE: alphaToCoverage,
     A3D_LEGACY_POINT_SHADOW: pointShadow, A3D_LEGACY_SPOT_SHADOW: spotShadow,
@@ -459,9 +483,37 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (f.shadows.cascades && descriptor.defines.NUM_SHADOW_CASCADES !== f.shadows.cascades) unsupported("defines.NUM_SHADOW_CASCADES", "inconsistent shadow cascade metadata");
   if (f.shadows.localShadows && descriptor.defines.NUM_LOCAL_SHADOWS !== f.shadows.localShadows) unsupported("defines.NUM_LOCAL_SHADOWS", "inconsistent local shadow metadata");
   if (fraction && f.alphaMode !== "blend" && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on a direct presentation output");
-  return { baseMap, normalMap, diffuseMap, bumpMap, metalRoughMap, occlusionMap, emissiveMap, lobeMaps, uv0, uv1, ibl, sampled, procedural, localProbe, volume, advanced, lightmapUv: lightmapUv === 1 ? 1 : 0, lightmapAdd: lightmap === "add-indirect", directBound, sheen, coat, iridescence, anisotropy, transmission, diffuseTransmission, materialVolume, dispersion, tangent, fraction, outputSrgb, wetness, alphaToCoverage, skinning, morph, jointKinds };
+  return { baseMap, normalMap, diffuseMap, bumpMap, metalRoughMap, occlusionMap, emissiveMap, lobeMaps, uv0, uv1, ibl, sampled, procedural, localProbe, volume, advanced, lightmapUv: lightmapUv === 1 ? 1 : 0, lightmapAdd: lightmap === "add-indirect", directBound, sheen, coat, iridescence, anisotropy, transmission, diffuseTransmission, materialVolume, dispersion, tangent, fraction, outputSrgb, wetness, prd07Fog: prd07Fog !== undefined, wind, alphaToCoverage, skinning, morph, jointKinds };
 }
 
+
+/**
+ * PRD-10 wind, as `a3d_prd10_wind_deform` compiles in a generated forward vertex stage: the instance origin is the
+ * instance translation column when instanced, the weights are the vertex colour when present (else the trunk-bend
+ * default), and the offset is added to the object-space position before instancing and the geometry transform.
+ */
+const GENERATED_WIND_WGSL = `@group(0) @binding(76) var u_windNoiseSampler: sampler;
+@group(0) @binding(77) var u_windNoiseTexture: texture_2d<f32>;
+${prd10WindOffsetWgsl("generatedWindOffset", "material.windDirStrength", "material.windGust", "u_windNoiseTexture", "u_windNoiseSampler")}`;
+
+/**
+ * PRD-07 forward fog: the selected value, the feature bit and the A3D_FOG define agree, and the contributor is the
+ * unchanged built-in object (the native template replaces its GLSL chunk). Returns the selected tier or undefined.
+ */
+export function validatePrd07FogMetadata(
+  descriptor: GeneratedPbrDescriptor, active: ReadonlyMap<string, string | number | boolean>, fail: (field: string, detail: string) => never
+): "height" | "volumetric" | undefined {
+  const value = active.get("prd07.fog");
+  const bit = descriptor.features.features["prd07.fog"];
+  if (value === undefined) {
+    if (bit !== undefined && bit !== false) fail("features.prd07.fog", "inactive fog metadata");
+    return undefined;
+  }
+  if ((value !== "height" && value !== "volumetric") || bit !== value) fail("features.prd07.fog", "inconsistent fog metadata");
+  if (!descriptor.verifiedFeatures?.includes("prd07.fog")) fail("activeFeatures", "a replaced or unverified prd07.fog contributor");
+  if (descriptor.defines.A3D_FOG !== 1 && descriptor.defines.A3D_FOG !== true) fail("defines.A3D_FOG", "invalid fog define");
+  return value as "height" | "volumetric";
+}
 
 const SHEEN_WGSL = `const sheenAlbedo: array<f32, 256> = array<f32, 256>(${A3D_SHEEN_ALBEDO_LUT.map((v) => v.toFixed(8)).join(", ")});
 fn generatedSheenAlbedo(ndv: f32, roughness: f32) -> f32 {
@@ -925,8 +977,9 @@ export function createGeneratedPbrProgram(descriptor: GeneratedPbrDescriptor): G
     resources.push({ uniform: "u_clusterLightIndices", textureBinding: 74, dimension: "2d", sampleType: "unfilterable-float" });
   }
   if (photometricProfile) resources.push({ uniform: "u_a3dPhotometricAtlas", textureBinding: 75, dimension: "2d", sampleType: "unfilterable-float" });
+  if (mode.wind) resources.push({ uniform: "u_windNoise", samplerBinding: 76, textureBinding: 77, dimension: "2d", sampleType: "filterable-float" });
   if (resources.filter(resource => resource.uniform !== "u_boneTexture" && resource.uniform !== "u_morphTexture").length > 16) unsupported("resources", "more than 16 sampled textures in one generated PBR fragment stage");
-  const textureDecls = resources.filter(resource => resource.uniform !== "u_boneTexture" && resource.uniform !== "u_morphTexture").map((r) => !("samplerBinding" in r)
+  const textureDecls = resources.filter(resource => resource.uniform !== "u_boneTexture" && resource.uniform !== "u_morphTexture" && resource.uniform !== "u_windNoise").map((r) => !("samplerBinding" in r)
     ? `@group(0) @binding(${r.textureBinding}) var ${r.uniform}Texture: texture_${r.dimension === "2d-array" ? "2d_array" : "2d"}<f32>;`
     : `@group(0) @binding(${r.samplerBinding}) var ${r.uniform}Sampler: sampler;\n@group(0) @binding(${r.textureBinding}) var ${r.uniform}Texture: texture_${r.dimension === "cube" ? "cube" : "2d"}<f32>;`).join("\n");
   const lobeProcedural = mode.procedural && !mode.ibl && (mode.sampled === "none" || !descriptor.lighting.compilerLightingConjunction);
@@ -956,7 +1009,7 @@ fn generatedMorphFetch(vertex: u32, target: i32, attribute: i32) -> vec3f {
   let y = index / width; let x = index - y * width;
   return textureLoad(u_morphTextureTexture, vec2i(x, y), target, 0).xyz;
 }` : "";
-  const vertex = `${MATERIAL_STRUCT}\n${FRAME_STRUCT}\n${ZERO_TO_ONE_PROJECTION_WGSL}\n${skinningWgsl}\n${morphWgsl}
+  const vertex = `${MATERIAL_STRUCT}\n${FRAME_STRUCT}\n${ZERO_TO_ONE_PROJECTION_WGSL}\n${skinningWgsl}\n${morphWgsl}\n${mode.wind ? GENERATED_WIND_WGSL : ""}
 struct VertexOutput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
 fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   let a = transform[0].xyz; let b = transform[1].xyz; let c = transform[2].xyz;
@@ -989,6 +1042,7 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
     deformedNormal = (skin * vec4f(deformedNormal, 0.0)).xyz;
     ${mode.tangent ? "deformedTangent = vec4f((skin * vec4f(deformedTangent.xyz, 0.0)).xyz, deformedTangent.w);" : ""}
   }` : ""}
+  ${mode.wind ? `deformedPosition += generatedWindOffset(deformedPosition, ${f.instancing ? "instance3.xyz" : "vec3f(0.0)"}, ${f.vertexColors ? "color" : "vec4f(1.0, 1.0, 0.5, 1.0)"}, max(material.windParams.x, 0.01));` : ""}
   let instanceMatrix = ${f.instancing ? "mat4x4f(instance0, instance1, instance2, instance3)" : "mat4x4f(vec4f(1.0, 0.0, 0.0, 0.0), vec4f(0.0, 1.0, 0.0, 0.0), vec4f(0.0, 0.0, 1.0, 0.0), vec4f(0.0, 0.0, 0.0, 1.0))"};
   let localTransform = instanceMatrix * material.geometry;
   let world = material.model * localTransform * vec4f(deformedPosition, 1.0);
@@ -1070,6 +1124,7 @@ ${burley}
 ${mode.sheen ? independentPhysicalPreview ? A3D_PRD04_SHEEN_FAST_WGSL : SHEEN_WGSL : ""}
 ${photometricProfile ? PHOTOMETRIC_PROFILE_WGSL : ""}
 ${mode.wetness ? PRD07_WETNESS_WGSL : ""}
+${mode.prd07Fog ? prd07FogWgsl() : ""}
 ${directEnabled ? DIRECT_LIGHT_WGSL : ""}
 ${f.lights.rect ? RECT_LIGHT_WGSL : ""}
 ${f.shadows.cascades && directEnabled ? FORWARD_SHADOW_WGSL : ""}
@@ -1457,8 +1512,9 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let transmitted = (vec3f(1.0) - transReflectance) * diffuseColor * transmittedScene${sheenView};
   indirectDiffuse = mix(directDiffuse + indirectDiffuse, transmitted, clamp(material.transmission.x${mode.lobeMaps.transmission !== undefined ? " * transmissionSample" : ""}, 0.0, 1.0));
   directDiffuse = vec3f(0.0);` : ""}
-  let ${f.fog === "none" ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
-  ${f.fog !== "none" ? `let fogDepth = input.position.z / input.position.w;
+  let ${f.fog === "none" && !mode.prd07Fog ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
+  ${mode.prd07Fog ? "let color = a3dPrd07ApplyFog(unfoggedColor, input.worldPosition);" : ""}
+  ${f.fog !== "none" && !mode.prd07Fog ? `let fogDepth = input.position.z / input.position.w;
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let fogDensity = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.worldPosition.y, 0.0) * material.fogParams.w)" : ""};
   let fogDistance = fogDensity * fogDepth;
   let fogAmount = clamp(1.0 - exp(-fogDistance * fogDistance), 0.0, 1.0);`}
@@ -1481,7 +1537,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     morph: mode.morph, transmission: mode.transmission, transmissionMap: mode.lobeMaps.transmission !== undefined, contactShadow: f.shadows.contact,
     pointShadow, spotShadow,
     diffuseTransmission: mode.diffuseTransmission, diffuseTransmissionMap: mode.lobeMaps.diffuseTransmission !== undefined, diffuseTransmissionColorMap: mode.lobeMaps.diffuseTransmissionColor !== undefined,
-    fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage: mode.alphaToCoverage, // validateDescriptor has rejected volumetric fog.
+    fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, prd07Fog: mode.prd07Fog, wind: mode.wind, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage: mode.alphaToCoverage, // validateDescriptor has rejected volumetric fog.
     materialVolume: mode.materialVolume, thicknessMap: mode.lobeMaps.volumeThickness !== undefined, dispersion: mode.dispersion, jointKinds: mode.jointKinds,
     requiresFloatColorAttachment: fraction
   });
@@ -1722,6 +1778,11 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     wetness: [scalar(uniforms, "u_wetness", 0), scalar(uniforms, "u_puddleThreshold", 0.62), scalar(uniforms, "u_rainRipples", 0), scalar(uniforms, "u_snowCover", 0)],
     logDepthView: numbers(uniforms, "u_a3dLogDepthView", 16, IDENTITY),
     logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0],
+    // Only a program that selected the stock prd07.fog feature receives u_fogMode (its bindUniforms always writes it).
+    ...packPrd07FogWgslFields(uniforms, (name, length, fallback) => uniforms.has("u_fogMode") ? numbers(uniforms, name, length, fallback) : [...fallback]),
+    windDirStrength: numbers(uniforms, "u_windDirStrength", 4, [0, 0, 0, 0]),
+    windGust: numbers(uniforms, "u_windGust", 4, [0, 0, 0, 0]),
+    windParams: [scalar(uniforms, "u_windAssetHeight", 0), 0, 0, 0],
     lights: Array.from({ length: 96 }, (_, index) => lights.slice(index * 4, index * 4 + 4))
   });
 }

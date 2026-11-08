@@ -3,7 +3,7 @@
  * Shared by foliage, grass and the depth pass (`prd10.wind` feature, hook
  * `vertex:deform`). Length-preserving offset, quadratic-in-height bend.
  */
-import type { ShaderChunk } from "../../../contracts/program.js";
+import { shaderChunk, type ShaderChunk } from "../../../contracts/program.js";
 
 /** `a3dWindOffset` body, shared by the Path S UBO chunk and the Path G deform chunk. */
 const WIND_OFFSET_FN_GLSL = /* glsl */ `
@@ -112,3 +112,39 @@ export const a3d_prd10_wind_deform: ShaderChunk = {
   glsl: deformGlsl,
   wgsl
 };
+
+/**
+ * True when a feature is the stock `prd10.wind` deform: its only chunk is the registered built-in
+ * `a3d_prd10_wind_deform` object, so native WGSL twins (generated PBR, PRD-02 depth) reproduce exactly
+ * what the GLSL programs splice. A replaced chunk or feature is never trusted by id alone.
+ */
+export function isStockPrd10WindDeform(feature: { readonly id: string; readonly chunks: readonly string[] }): boolean {
+  return feature.id === "prd10.wind" && feature.chunks.length === 1 && feature.chunks[0] === a3d_prd10_wind_deform.name
+    && shaderChunk(a3d_prd10_wind_deform.name) === a3d_prd10_wind_deform;
+}
+
+/**
+ * WGSL twin of `a3dWindOffset` reading the plain deform uniforms from a struct (`m.windDirStrength`, `m.windGust`)
+ * and the gust noise as `<tex>`/`<sampler>`. Vertex stages have no derivatives, so the noise is read at LOD 0
+ * (what GLSL texture() does in a vertex shader).
+ */
+export function prd10WindOffsetWgsl(fn: string, dirStrength: string, gustParams: string, texture: string, sampler: string): string {
+  return `
+fn ${fn}(localPos: vec3<f32>, instanceOrigin: vec3<f32>, weights: vec4<f32>, assetHeight: f32) -> vec3<f32> {
+  let dir = ${dirStrength}.xy;
+  let strength = ${dirStrength}.z;
+  let t = ${dirStrength}.w;
+  let gustUv = instanceOrigin.xz * ${gustParams}.y - dir * t * 0.08;
+  let gust = textureSampleLevel(${texture}, ${sampler}, gustUv, 0.0).r * ${gustParams}.x;
+  let h = clamp(localPos.y / max(assetHeight, 0.01), 0.0, 1.0);
+  let bend = (strength + gust) * h * h * weights.r;
+  let sway = sin(t * (1.1 + weights.b) + dot(instanceOrigin.xz, vec2<f32>(0.37, 0.71))) * 0.25 * strength * weights.r;
+  var offset = vec3<f32>(dir.x, 0.0, dir.y) * (bend + sway) * 0.35 * assetHeight;
+  let flutter = sin(t * 7.3 + weights.b * 6.2831 + dot(localPos, vec3<f32>(2.1, 1.7, 2.9))) * 0.035 * (strength + gust) * weights.g;
+  offset = offset + vec3<f32>(flutter, flutter * 0.4, -flutter);
+  let bent = localPos + offset;
+  let len = length(localPos);
+  if (len < 1e-5) { return vec3<f32>(0.0); }
+  return normalize(bent) * len - localPos;
+}`;
+}

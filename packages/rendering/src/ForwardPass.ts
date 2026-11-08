@@ -1723,10 +1723,13 @@ export class ForwardPass extends BaseRenderPass {
     const previewClipRange = baseMaterial instanceof DepthPreviewMaterial
       ? validateDepthPreviewDraw(item, baseMaterial, this.options, device) : undefined;
     const nativePoint = device.kind === "webgpu" && item.geometry.topology === "points";
-    if (nativePoint) {
-      if (!isNativePointQuadDevice(device) || !qrCoreGeneratorOn(rendererQrFlags(device))
-        || Object.getPrototypeOf(baseMaterial) !== UnlitMaterial.prototype
-        || (material instanceof MaterialInstance && Object.getPrototypeOf(material) !== MaterialInstance.prototype)) {
+    // A custom (non built-in unlit) point material has no point-quad program. Its shader is still resolved first so a
+    // custom shader without WGSL takes the ordinary skip path (CUSTOM_SHADER_WGSL_MISSING, every other draw continues)
+    // instead of failing the mount; a resolvable one is rejected below, before anything is submitted.
+    const customNativePoint = nativePoint && (Object.getPrototypeOf(baseMaterial) !== UnlitMaterial.prototype
+      || (material instanceof MaterialInstance && Object.getPrototypeOf(material) !== MaterialInstance.prototype));
+    if (nativePoint && !customNativePoint) {
+      if (!isNativePointQuadDevice(device) || !qrCoreGeneratorOn(rendererQrFlags(device))) {
         throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: baseMaterial.name });
       }
       if (item.skinning || item.morphTargets || item.morphWeights || item.geometry.morphTargets?.length
@@ -1735,8 +1738,10 @@ export class ForwardPass extends BaseRenderPass {
         throw new RenderDeviceError("WebGPU point quads do not support deformation or instancing", "WEBGPU_POINT_SOURCE_UNSUPPORTED", { label: item.label });
       }
     }
-    if (device.kind === "webgpu" && (baseMaterial instanceof UnlitMaterial || baseMaterial instanceof InstancedUnlitMaterial)
-      && material.getParameter("u_spriteMode") === 1) {
+    const nativeSprite = device.kind === "webgpu" && (baseMaterial instanceof UnlitMaterial || baseMaterial instanceof InstancedUnlitMaterial)
+      && material.getParameter("u_spriteMode") === 1;
+    // Native billboards exist only as the generated unlit program's prd15.paritySprite variant (selected under A3D_PARITY_LINES).
+    if (nativeSprite && (!qrCoreGeneratorOn(rendererQrFlags(device)) || !rendererQrFlags(device).on("A3D_PARITY_LINES"))) {
       throw new RenderDeviceError("Native WebGPU billboard sprites require a dedicated shader", "NATIVE_UNLIT_SPRITE_UNSUPPORTED", { material: baseMaterial.name });
     }
     const clipping = resolveForwardClipping(item, this.options, device);
@@ -1865,7 +1870,13 @@ export class ForwardPass extends BaseRenderPass {
     }
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
+    if (customNativePoint) {
+      throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: baseMaterial.name });
+    }
     let generated = this.lastProgramFeatures !== undefined;
+    if (nativeSprite && (!generated || this.lastProgramFeatures?.features["prd15.paritySprite"] !== true)) {
+      throw new RenderDeviceError("Native WebGPU billboard sprites require a dedicated shader", "NATIVE_UNLIT_SPRITE_UNSUPPORTED", { material: baseMaterial.name });
+    }
     if (selective?.enabled && (!generated || this.lastProgramFeatures?.features[SELECTIVE_BLOOM_FEATURE] !== true)) {
       invalidateSelectiveBloomFrame(selective, generated ? "signal-program-unprepared" : "legacy-program");
     }
