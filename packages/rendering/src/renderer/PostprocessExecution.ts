@@ -268,8 +268,9 @@ export function validateNativeDofRoute(postprocess: RendererPostProcessOptions, 
     || ![Object.prototype, null].includes(Object.getPrototypeOf(options))) {
     throw new RenderDeviceError("Depth of field requires an options object", "WEBGPU_DOF_INVALID");
   }
-  if (nativeDofConflicts(postprocess, pipeline, scopeId).length) {
-    throw new RenderDeviceError("Native depth of field cannot yet combine with the requested post stages", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+  const conflicts = nativeDofConflicts(postprocess, pipeline, scopeId);
+  if (conflicts.length) {
+    throw new RenderDeviceError("Native depth of field cannot yet combine with the requested post stages", "WEBGPU_DOF_COMBINATION_UNSUPPORTED", { missing: conflicts.join(",") });
   }
 }
 
