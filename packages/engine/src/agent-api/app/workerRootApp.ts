@@ -85,6 +85,8 @@ function validateWorkerOptions(options: AuraCreateAppOptions): void {
     "onDegradation", "compat", "loop"
   ] as const;
   for (const key of unsupportedOptions) {
+    // quality: "auto" is the default pipeline selection, which the worker renderer already uses.
+    if (key === "quality" && options.quality === "auto") continue;
     if (options[key] !== undefined) unsupported(`options.${key}`, "Use the main-thread renderer for this option.");
   }
   const diagnosticsOption = options.diagnostics as unknown;

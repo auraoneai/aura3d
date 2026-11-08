@@ -365,9 +365,10 @@ describe("createAuraApp worker integration", () => {
   it("rejects unsupported host callbacks before constructing or transferring a worker", async () => {
     const f = fixture();
     expect(() => createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
-      scene: makeScene("callback"), onAssetProgress: () => {},
+      // onAssetProgress/onAssetError are forwarded from the worker since 5.4; onDegradation stays main-thread only.
+      scene: makeScene("callback"), onDegradation: () => {},
       worker: { createWorker: f.createWorker }
-    })).toThrow(/onAssetProgress.*worker/i);
+    })).toThrow(/onDegradation.*worker/i);
     expect(f.createWorker).not.toHaveBeenCalled();
     expect(f.canvas.transfer).not.toHaveBeenCalled();
     await f.stop();
