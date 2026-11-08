@@ -886,7 +886,10 @@ function createProductionRuntimeRendererInputOwned(
   }
   const buildPostprocess = () => {
     const prevTime = cache.lastFrameTime;
-    const frameTime = prevTime === undefined ? 1 / 60 : Math.min(1, Math.max(0, time - prevTime));
+    // A second build at the same timestamp (a re-render without a clock advance) has no elapsed time; the temporal
+    // history rejects a zero frame time as TEMPORAL_INVALID_INPUT and the frame went terminal. Use the nominal frame.
+    const elapsed = prevTime === undefined ? 0 : time - prevTime;
+    const frameTime = elapsed > 0 ? Math.min(1, elapsed) : 1 / 60;
     cache.lastFrameTime = time;
     return createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal, {
       canvas, frameTime, ...(temporalSceneIdentity ? { temporalSceneIdentity } : {})
