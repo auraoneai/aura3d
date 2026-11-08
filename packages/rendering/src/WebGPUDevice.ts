@@ -246,7 +246,8 @@ const WEBGPU_NATIVE_TONE_FRAGMENT = `
 @fragment fn fs_tone(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
  let sample = textureSample(source, linearSampler, uv);
  var c = max(sample.rgb * params.x / params.w, vec3<f32>(0.0));
- if (params.y > 2.5) { let toe=max(c-vec3<f32>(0.004),vec3<f32>(0.0)); c=min((toe*(6.2*toe+vec3<f32>(0.5)))/(toe*(6.2*toe+vec3<f32>(1.7))+vec3<f32>(0.06)),c*1.08); }
+ if (params.y > 5.5) { c = min(vec3<f32>(1.0), (c * (vec3<f32>(1.0) + c / 7.5)) / (vec3<f32>(1.0) + c)); }
+ else if (params.y > 2.5) { let toe=max(c-vec3<f32>(0.004),vec3<f32>(0.0)); c=min((toe*(6.2*toe+vec3<f32>(0.5)))/(toe*(6.2*toe+vec3<f32>(1.7))+vec3<f32>(0.06)),c*1.08); }
  else if (params.y > 1.5) { c = clamp((c * (2.51 * c + vec3<f32>(0.03))) / (c * (2.43 * c + vec3<f32>(0.59)) + vec3<f32>(0.14)), vec3<f32>(0.0), vec3<f32>(1.0)); }
  else if (params.y > 0.5) { c = c / (vec3<f32>(1.0) + c); }
  if (params.z > 0.5) { c = select(1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055), c * 12.92, c <= vec3<f32>(0.0031308)); }
@@ -6130,7 +6131,7 @@ export class WebGPUDevice implements RenderDevice {
         } else if (pass.name === "tone-mapping") {
           const tone = { ...options.toneMappingDefaults, ...pass.options };
           const operator = tone.operator ?? "reinhard";
-          const operatorId = operator === "linear" || operator === "none" ? 0 : operator === "reinhard" ? 1 : operator === "aces" || operator === "aces-filmic" ? 2 : operator === "filmic" ? 3 : -1;
+          const operatorId = operator === "linear" || operator === "none" ? 0 : operator === "reinhard" ? 1 : operator === "aces" || operator === "aces-filmic" ? 2 : operator === "filmic" ? 3 : operator === "neutral" ? 6 : -1;
           if (operatorId < 0) throw new RenderDeviceError(`Unsupported native WebGPU tone operator ${String(operator)}`, "WEBGPU_POSTPROCESS_UNSUPPORTED");
           const exposure = typeof tone.exposure === "number" ? tone.exposure : 1;
           const whitePoint = typeof tone.whitePoint === "number" ? tone.whitePoint : 1;
@@ -8054,7 +8055,8 @@ export class WebGPUDevice implements RenderDevice {
     if (!this.device.createBindGroupLayout || !this.device.createPipelineLayout) {
       throw new RenderDeviceError("Generated PBR load-only textures require explicit texture layouts", "WEBGPU_GENERATED_PBR_LAYOUT_UNAVAILABLE");
     }
-    const vertexTextures = program.resources.filter(resource => resource.uniform === "u_boneTexture" || resource.uniform === "u_morphTexture").length;
+    const vertexStage = (uniform: string): boolean => uniform === "u_boneTexture" || uniform === "u_morphTexture" || uniform === "u_windNoise";
+    const vertexTextures = program.resources.filter(resource => vertexStage(resource.uniform)).length;
     const fragmentTextures = program.resources.length - vertexTextures;
     const samplers = program.resources.filter(resource => "samplerBinding" in resource).length;
     const textureLimit = this.device.limits?.maxSampledTexturesPerShaderStage ?? 16;
@@ -8064,8 +8066,8 @@ export class WebGPUDevice implements RenderDevice {
     }
     const material: WebGPUBindGroupLayoutEntryLike[] = [{ binding: 0, visibility: 3, buffer: { type: "uniform" } }];
     for (const resource of program.resources) {
-      if ("samplerBinding" in resource) material.push({ binding: resource.samplerBinding, visibility: 2, sampler: { type: "filtering" } });
-      material.push({ binding: resource.textureBinding, visibility: resource.uniform === "u_boneTexture" || resource.uniform === "u_morphTexture" ? 1 : 2,
+      if ("samplerBinding" in resource) material.push({ binding: resource.samplerBinding, visibility: vertexStage(resource.uniform) ? 1 : 2, sampler: { type: "filtering" } });
+      material.push({ binding: resource.textureBinding, visibility: vertexStage(resource.uniform) ? 1 : 2,
         texture: { sampleType: resource.sampleType === "unfilterable-float" ? "unfilterable-float" : "float", viewDimension: resource.dimension } });
     }
     material.sort((a, b) => a.binding - b.binding);

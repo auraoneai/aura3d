@@ -48,6 +48,7 @@ import { snapshotOf } from "../contracts/structuralMemo";
 import { PHYSICAL_GEOMETRY_TANGENT_FEATURE, PHYSICAL_LOBE_MAP_BITS } from "./MaterialFeatures";
 import { materialLobes } from "../contracts/materialLobes";
 import { COMMON_CHUNK_GLSL } from "./chunks/common.glsl";
+import { isStockPrd10WindDeform } from "../world/vegetation/shaders/wind.js";
 import { BRDF_CHUNK_GLSL } from "./chunks/brdf.glsl";
 import { NORMAL_CHUNK_GLSL } from "./chunks/normal.glsl";
 import { INSTANCING_VERTEX_PARS_GLSL, INSTANCING_VERTEX_PARS_EIGHT_INFLUENCES_GLSL, INSTANCING_VERTEX_BODY_GLSL } from "./chunks/instancing.glsl";
@@ -1616,10 +1617,11 @@ function generateProgramInternal(features: ProgramFeatures, options: GeneratePro
     activeExtensions: lobes.active,
     defines: { ...defines },
     lighting: { compilerLightingConjunction: e3Conjunction, iblReplacesIndirect: prd02IblReplacesIndirect },
-    // Native WGSL replaces the wetness GLSL chunk with its own template, so it
-    // admits that contributor only when this is the unchanged built-in object.
+    // Native WGSL replaces the wetness and fog GLSL chunks with its own templates, so it
+    // admits those contributors only when they are the unchanged built-in objects.
     verifiedFeatures: contributions
-      .filter(({ feature }) => feature.id === "prd07.wetness" && isStockPrd07BloomFeature(feature))
+      .filter(({ feature }) => ((feature.id === "prd07.wetness" || feature.id === "prd07.fog") && isStockPrd07BloomFeature(feature))
+        || isStockPrd10WindDeform(feature))
       .map(({ feature }) => feature.id)
   };
   // Native templates also depend on resolved flags/providers, not just the

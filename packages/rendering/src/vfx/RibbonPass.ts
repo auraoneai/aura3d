@@ -5,6 +5,7 @@
 import type { RenderBuffer, RenderDevice, RenderShaderProgram } from "../RenderDevice";
 import type { FrameContributorContext, TransparentQueueItem } from "../contracts/frameGraph";
 import { TextureBinding } from "../TextureBinding";
+import { glslOnlyVfxProgram } from "./webgpuGlslOnly";
 import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { VertexFormat } from "../VertexFormat";
 import { RibbonBatch, RIBBON_VERTEX_FLOATS, type RibbonGeometry } from "./RibbonBatch";
@@ -28,6 +29,8 @@ export class RibbonPass {
   private indexBuffer: RenderBuffer | null = null;
   private vertexCapacity = 0;
   private indexCapacity = 0;
+  /** Set once a WebGPU device has rejected the GLSL-only ribbon program. */
+  private wgslUnavailable = false;
 
   constructor(private readonly device: RenderDevice) {}
 
@@ -46,7 +49,9 @@ export class RibbonPass {
 
     const depth = resolveSceneDepth(ctx);
     const softParticles = depth?.available === true && depth.source.texture !== null;
-    const shader = this.program({ softParticles });
+    if (this.wgslUnavailable) return;
+    const shader = glslOnlyVfxProgram(this.device, "VFX_RIBBONS_WGSL_MISSING", "ribbon trails", () => this.program({ softParticles }));
+    if (!shader) { this.wgslUnavailable = true; return; }
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_viewProjection", ctx.camera?.viewProjectionMatrix ?? IDENTITY_MAT4],
       // §6.2.7 output contract (same as particles/beams): linear into HDR.
