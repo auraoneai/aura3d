@@ -112,7 +112,9 @@ function updateHud(): void {
   hud.update(o, best);
   if (o.phase !== lastPhase) {
     if (o.phase === "gameOver") showResults();
-    if (o.phase === "splash" || o.phase === "playing") fx?.clearReveal();
+    // The burst disc floods the frame during "bursting"; once the results card is up, fade it so the
+    // translucent game-over screen shows the world behind it (presentation only).
+    if (o.phase === "splash" || o.phase === "playing" || o.phase === "gameOver") fx?.clearReveal();
     if (o.phase !== "playing") $("popups").replaceChildren();
     sound.setIntensity(o.phase === "playing" || o.phase === "bursting" ? "play" : o.phase === "gameOver" ? "over" : "title");
     lastPhase = o.phase;
@@ -375,7 +377,9 @@ function restart(): void {
   rig.reset(sim);
   hud.resetCache();
   prevFrame = null;
-  lastPhase = "playing";
+  // Leave lastPhase at "gameOver" so updateHud sees the phase change: it clears the burst reveal and
+  // returns the music to "play" (setting it to "playing" here left the reveal over the scene after restart).
+  fx?.clearReveal();
   $("splash-screen").classList.remove("visible");
   $("gameover-screen").classList.remove("visible");
   $("hud").classList.add("visible");
@@ -513,7 +517,7 @@ const qa = installQaHooks("polarity-orbs", {
     steps = 0;
     nextPopupSeq = 0;
     prevFrame = null;
-    lastPhase = "splash";
+    fx?.clearReveal();
     pilot = config.autopilot ? new Autopilot() : null;
     render();
     updateHud();
