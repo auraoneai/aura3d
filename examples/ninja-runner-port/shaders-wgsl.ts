@@ -253,6 +253,7 @@ export const AURA_FRAGMENT_WGSL = stage([POW], /* wgsl */ `
 
 /** SPARKS_VERTEX (one-pixel points on WebGPU, see the header). */
 export const SPARKS_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+// @aura3d-point-list: one-pixel WebGPU points (no gl_PointSize)
 struct SparkVarying {
   @builtin(position) position: vec4<f32>,
   @location(0) vAlpha: f32,
@@ -276,6 +277,7 @@ export const SPARKS_FRAGMENT_WGSL = stage([], /* wgsl */ `
 
 /** FLAME_VERTEX (one-pixel points on WebGPU). */
 export const FLAME_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+// @aura3d-point-list: one-pixel WebGPU points (no gl_PointSize)
 struct FlameVarying {
   @builtin(position) position: vec4<f32>,
   @location(0) vFade: f32,
@@ -302,6 +304,7 @@ export const FLAME_FRAGMENT_WGSL = stage([], /* wgsl */ `
 
 /** PARTICLE_VERTEX (one-pixel points on WebGPU). */
 export const PARTICLE_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+// @aura3d-point-list: one-pixel WebGPU points (no gl_PointSize)
 struct ParticleVarying {
   @builtin(position) position: vec4<f32>,
   @location(0) vColor: vec3<f32>,

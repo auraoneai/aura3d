@@ -605,6 +605,7 @@ export const TOWN_FRAGMENT_WGSL = stage([MATH, SHADOW, ATMOS], /* wgsl */ `
 
 /** PLUME_VERTEX (point sprites; one-pixel points on WebGPU, see the header). */
 export const PLUME_VERTEX_WGSL = stage([CLIP, MATH], /* wgsl */ `
+// @aura3d-point-list: one-pixel WebGPU points (no gl_PointSize)
 struct PlumeVarying {
   @builtin(position) position: vec4<f32>,
   @location(0) vAlpha: f32,
@@ -641,6 +642,7 @@ export const PLUME_FRAGMENT_WGSL = stage([], /* wgsl */ `
 
 /** SPRAY_VERTEX (art/spray.ts; one-pixel points on WebGPU). */
 export const SPRAY_VERTEX_WGSL = stage([CLIP, MATH], /* wgsl */ `
+// @aura3d-point-list: one-pixel WebGPU points (no gl_PointSize)
 struct SprayVarying {
   @builtin(position) position: vec4<f32>,
   @location(0) vAlpha: f32,

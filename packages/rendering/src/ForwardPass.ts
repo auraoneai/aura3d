@@ -1722,7 +1722,9 @@ export class ForwardPass extends BaseRenderPass {
     const baseMaterial = getBaseMaterial(material);
     const previewClipRange = baseMaterial instanceof DepthPreviewMaterial
       ? validateDepthPreviewDraw(item, baseMaterial, this.options, device) : undefined;
-    const nativePoint = device.kind === "webgpu" && item.geometry.topology === "points";
+    // A portable/custom point material whose WGSL vertex stage declares `@aura3d-point-list` draws as a plain WebGPU
+    // point list (one pixel per point: WebGPU has no point size) through the ordinary draw path, like any custom draw.
+    const nativePoint = device.kind === "webgpu" && item.geometry.topology === "points" && !declaresWebgpuPointList(baseMaterial);
     // A custom (non built-in unlit) point material has no point-quad program. Its shader is still resolved first so a
     // custom shader without WGSL takes the ordinary skip path (CUSTOM_SHADER_WGSL_MISSING, every other draw continues)
     // instead of failing the mount; a resolvable one is rejected below, before anything is submitted.
@@ -5585,3 +5587,8 @@ function mat4FromArrayLike(values: ArrayLike<number>, offset: number): Mat4 {
 Object.defineProperty(ForwardPass, Symbol.for("@aura3d/rendering:forwardContactGuards"), {
   value: { providersSafe: forwardContactProvidersSafe, frameUnsafeReason: forwardContactFrameUnsafeReason }
 });
+
+/** `@aura3d-point-list` in a portable material's WGSL vertex stage: the author accepts one-pixel WebGPU points. */
+function declaresWebgpuPointList(material: Material): boolean {
+  return material instanceof PortableShaderMaterial && /@aura3d-point-list\b/.test(material.sources.wgsl?.vertex ?? "");
+}
