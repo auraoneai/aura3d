@@ -107,7 +107,7 @@ export function guardRendererPostprocessPlan(
   const guarded = guardPostprocessPlan(passes, {
     mode: flags?.on("A3D_QR_STRICT") ? "throw" : "drop",
     gpuFusable: Boolean(device.presentLdrPostprocess),
-    hasDepthTexture: Boolean(source.depthTexture),
+    hasDepthTexture: Boolean(source.depthTexture) || webgpuSsrReadsMultisampledDepth(device, source, passes),
     cpuDeterministic: postprocess.execution === "cpu-deterministic"
   });
   for (const name of guarded.dropped) recordPostSkipped(`POSTPROCESS_PASS_DROPPED:${name}`, postprocess.postFrameContext?.diagnosticToken);
@@ -292,6 +292,64 @@ function postprocessPassesForRoute(postprocess: RendererPostProcessOptions, nati
   // GTAO owns AO like the WebGL2 v2 S2 stage, so the legacy ssao twin is dropped.
   return passes.filter(pass => !(nativePost?.nativeDepthOfField && pass.name === "depth-of-field")
     && !(nativePost?.nativeAmbientOcclusion && pass.name === "ssao"));
+}
+
+/**
+ * W3: a 4x WebGPU source exposes no resolved depth texture, but the native SSR trace reads its multisampled attachment.
+ * The C-27 guard then keeps the SSR pass, as long as no other depth-sampling pass (depth of field, SSAO) is planned.
+ */
+function webgpuSsrReadsMultisampledDepth(device: RenderDevice, source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): boolean {
+  return device.kind === "webgpu" && (source.sampleCount ?? 1) === 4 && webgpuSsrDepthSource(source)
+    && passes.some(pass => pass.name === "ssr") && !passes.some(pass => pass.name === "depth-of-field" || pass.name === "ssao");
+}
+
+/** W3: the WebGPU SSR trace reads a single-sample depth texture or, on a 4x target, the multisampled attachment. */
+function webgpuSsrDepthSource(source: RenderTarget): boolean {
+  const samples = source.sampleCount ?? 1;
+  return samples === 1 ? Boolean(source.depthTexture) : samples === 4 && Boolean(source.multisampledDepthTexture);
+}
+
+/**
+ * W3: true when a WebGPU MSAA forward target needs no sampleable (resolved) depth texture because SSR is its only
+ * depth reader: WebGPU cannot resolve depth, and the SSR trace reads the 4x attachment directly. The renderer then
+ * keeps MSAA and a plain depth attachment instead of requesting an impossible 4x sampleable depth target.
+ */
+export function webgpuMultisampledDepthServesPost(device: RenderDevice, postprocess: RendererPostProcessOptions, sampleCount: number, postScopeId?: object): boolean {
+  if (device.kind !== "webgpu" || sampleCount !== 4 || postprocess.execution === "cpu-deterministic") return false;
+  const pipeline = postprocess.pipeline && typeof postprocess.pipeline === "object" ? postprocess.pipeline as PostPipelineOptions : undefined;
+  if (!postprocess.ssr && !(postprocess.v2 === true && pipeline?.ssr)) return false;
+  const { ssr: _ssr, ...rest } = postprocess;
+  const withoutSsr = { ...rest, ...(pipeline ? { pipeline: { ...pipeline, ssr: undefined } } : {}) } as RendererPostProcessOptions;
+  return !postprocessRequiresDepthTexture(withoutSsr, postScopeId);
+}
+
+/**
+ * W3: on WebGPU the legacy `ssr` pass runs as the native WGSL trace, which needs the frame's raster projection and
+ * depth convention (`WebGPUSsrFrame`) and takes the v2 S3 options (`pipeline.ssr`: roughness, thickness, steps) over the
+ * legacy twin. A v2 bag whose tier dropped S3 drops the pass too, as WebGL2's v2 chain does. Without a camera frame or a
+ * sampleable depth attachment the pass is skipped and recorded, never run on the CPU.
+ */
+export function withWebgpuSsrFrame(device: RenderDevice, postprocess: RendererPostProcessOptions, source: RenderTarget,
+  passes: readonly RendererPostProcessPassPlan[]): readonly RendererPostProcessPassPlan[] {
+  if (device.kind !== "webgpu" || postprocess.execution === "cpu-deterministic" || !passes.some(pass => pass.name === "ssr")) return passes;
+  const pipeline = postprocess.v2 === true && postprocess.pipeline && typeof postprocess.pipeline === "object"
+    ? postprocess.pipeline as PostPipelineOptions : undefined;
+  const v2Ssr = pipeline?.ssr;
+  const camera = postprocess.cameraFrame;
+  const token = postprocess.postFrameContext?.diagnosticToken;
+  const skip = (reason: string): readonly RendererPostProcessPassPlan[] => {
+    if (reason) recordPostSkipped(reason, token);
+    return passes.filter(pass => pass.name !== "ssr");
+  };
+  if (postprocess.v2 === true && !v2Ssr) return skip("");
+  if (!webgpuSsrDepthSource(source)) return skip("WEBGPU_SSR_DEPTH_UNAVAILABLE");
+  const inverse = camera?.projectionMatrixInverse;
+  if (!camera || !inverse || !camera.depth) return skip("WEBGPU_SSR_CAMERA_UNAVAILABLE");
+  const webgpuFrame = { projection: camera.projectionMatrix, inverseProjection: inverse, far: camera.far,
+    orthographic: camera.projection === "orthographic", clipRange: camera.depth.clipRange, clearDepth: camera.depth.clearValue };
+  return passes.map(pass => pass.name === "ssr"
+    ? { ...pass, options: { ...pass.options, ...(v2Ssr && typeof v2Ssr === "object" ? v2Ssr : {}), webgpuFrame } } as unknown as RendererPostProcessPassPlan
+    : pass);
 }
 
 /** Forward native effects and frame attribution to the backend that executes them. */
@@ -942,7 +1000,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost)), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost))), postprocess, nativePost);
     if (passes.length === 0) {
       // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
       // emits no plan passes — the v2 route still applies its stages.
@@ -1059,7 +1117,7 @@ export class RendererPostprocessPipeline {
     // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
     // back. Declining fusion here routes those passes through the per-pass CPU path, which
     // consumes the caller's depth directly and is the behaviour the options already imply.
-    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
+    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || (pass.name === "ssr" && !(this.host.device.kind === "webgpu" && webgpuSsrDepthSource(current))))) return false;
     if (!forceCpuDeterministic && this.host.device.presentLdrPostprocess) {
       this.host.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
@@ -1119,7 +1177,7 @@ export class RendererPostprocessPipeline {
       throw new RenderDeviceError("WebGPU output policy requires native postprocess presentation", "WEBGPU_OUTPUT_POLICY_UNAVAILABLE");
     }
     const outputDefaults = webgpuOutputDefaults(this.host.device, postprocess, outputTarget);
-    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost)), postprocess, nativePost);
+    let passes = withWebgpuExposureOutputPass(guardRendererPostprocessPlan(this.host.device, postprocess, current, withWebgpuSsrFrame(this.host.device, postprocess, current, postprocessPassesForRoute(postprocess, nativePost))), postprocess, nativePost);
     if (passes.length === 0) {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")
@@ -1243,7 +1301,7 @@ export class RendererPostprocessPipeline {
     // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
     // back. Declining fusion here routes those passes through the per-pass CPU path, which
     // consumes the caller's depth directly and is the behaviour the options already imply.
-    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
+    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || (pass.name === "ssr" && !(this.host.device.kind === "webgpu" && webgpuSsrDepthSource(current))))) return false;
     if (!forceCpuDeterministic && this.host.device.presentLdrPostprocess) {
       this.host.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
