@@ -1,0 +1,48 @@
+{
+  "bridgeVersion": 1,
+  "name": "shader-kiosk",
+  "generator": {
+    "path": "recipes/shader-kiosk.mjs",
+    "sha256": "e079d161a0ada65dd290542eafb26306b4a4fd704effe57516dd849a65fd0a8c",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "glow": "#38d9ff",
+    "bands": 9,
+    "top": "#1b2440",
+    "bottom": "#4a2a5e"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/shader-kiosk.glb",
+    "sha256": "33a5298bfc52088ef747bf2e7185587c77f7a3f1799236043621d638398fc837",
+    "bytes": 111912
+  },
+  "nodeIds": [
+    "floor",
+    "backdrop",
+    "plinth",
+    "ring",
+    "orb",
+    "sign",
+    "hemispherelight",
+    "key"
+  ],
+  "materials": [
+    "floor",
+    "backdrop_gradient",
+    "plinth",
+    "trim",
+    "orb_glow",
+    "sign_chunks"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 8,
+    "approximated": 3,
+    "unsupported": 2
+  }
+}

@@ -1,5 +1,7 @@
 # three-bridge: B1 narrow three.js asset bridge (prototype)
 
+Agent guide: [docs/agents/three-bridge.md](../../docs/agents/three-bridge.md).
+
 `aura3d import-three` runs a structured three.js scene factory headless at build time, exports it with three's
 `GLTFExporter`, admits the GLB as a typed Aura3D asset, emits Aura3D source that references it, and writes a
 supported / approximated / unsupported report. Plan row: B1 in `docs/project/future-engine-work.md` section 4.
@@ -28,6 +30,7 @@ A recipe is an ES module whose default export (or `createScene`) returns `{ scen
 | `renderer` | `{ toneMapping, exposure }` of the three.js original; emitted as `createAuraApp({ output })` so the first import keeps the authored look |
 | `environment` | `{ kind: "room", intensity }` when the original uses RoomEnvironment PMREM; emitted as `environments.neutral` (approximated) |
 | `post` | post-processing passes; always reported, never emitted |
+| `update` | paired three.js page only: `update(t)` advances the recipe's own clock (shader time uniforms) |
 
 The factory receives `{ THREE, seed, random, params, mode }`. `random` is a seeded mulberry32; `Math.random` is
 replaced by the same sequence while the factory and its readiness promises run, so a seed gives byte-identical
@@ -50,8 +53,10 @@ Stable ids: `userData.auraId` when the generator sets one, else parent id + `__`
 edits keep working after regeneration with the same structure.
 
 Classification rules worth knowing: `MeshStandardMaterial`/`MeshPhysicalMaterial` are supported; Lambert/Phong/Toon
-and unlit are approximated (the exporter converts them); `ShaderMaterial`, `RawShaderMaterial`, node materials and
-unknown types are unsupported and the meshes using them are hidden rather than shown with a substitute;
+and unlit are approximated (the exporter converts them); a simple `ShaderMaterial`/`RawShaderMaterial` is carried as
+`material.custom` on a named placeholder slot (GLSL pass-through, see `packages/aura3d-cli/src/import-three/shader.ts`
+and the agent guide for what is renamed and what is refused); refused shaders, node materials and unknown types are
+unsupported and the meshes using them are hidden rather than shown with a substitute;
 `onBeforeCompile` patches are unsupported (the GLB carries the unpatched base material); fog, texture backgrounds,
 sprites, extra cameras and post are unsupported; `flatShading` is baked into faceted normals; hidden objects are
 exported (`onlyVisible: false`) and hidden again through `model({ hiddenNodeNames })`; lights and cameras leave the
@@ -65,13 +70,19 @@ cd tools/three-bridge
 node ../../node_modules/tsx/dist/cli.mjs --tsconfig ../../tsconfig.base.json ../../packages/aura3d-cli/src/cli.ts import-three recipes/tree-grove.mjs
 node ../../node_modules/tsx/dist/cli.mjs --tsconfig ../../tsconfig.base.json ../../packages/aura3d-cli/src/cli.ts import-three recipes/city-block.mjs
 node ../../node_modules/tsx/dist/cli.mjs --tsconfig ../../tsconfig.base.json ../../packages/aura3d-cli/src/cli.ts import-three recipes/stylized-car.mjs --params '{"paint":"#2a6fd2"}'
+node ../../node_modules/tsx/dist/cli.mjs --tsconfig ../../tsconfig.base.json ../../packages/aura3d-cli/src/cli.ts import-three recipes/shader-kiosk.mjs
+node ../../node_modules/tsx/dist/cli.mjs --tsconfig ../../tsconfig.base.json ../../packages/aura3d-cli/src/cli.ts import-three recipes/windmill.mjs --params '{"sail":"#3c6fb0","roof":"#2f4a3a","tower":"#d8d2c4","height":4.8}'
 node ../../node_modules/vite/bin/vite.js build --config vite.config.ts     # dist/three.html + dist/aura.html
 python3 -m http.server 10671 --bind 127.0.0.1 -d dist &                    # kill this PID afterwards
 node capture.mjs http://127.0.0.1:10671 /tmp/three-bridge-frames 10672     # real GPU (headless Chrome, ANGLE Metal)
+PAIR_TIME=1 QUERY=settle=90 node capture.mjs http://127.0.0.1:10671 /tmp/three-bridge-frames 10672 windmill shader-kiosk   # time-matched animated pairs
 ```
 
 `three.html?recipe=<name>[&params=<json>]` renders the factory with three's `WebGLRenderer` (same seed);
-`aura.html?recipe=<name>` mounts the emitted `<name>.scene.ts` unchanged. Evidence: `evidence/2026-11-08/README.md`.
+`aura.html?recipe=<name>[&settle=<frames>]` mounts the emitted `<name>.scene.ts` unchanged, pauses after `settle` frames and
+publishes the clock and clip times; `three.html?...&t=<s>&clips=<json>` poses the original at those times. Evidence:
+`evidence/2026-11-08/README.md` (tree grove, city block, car) and `evidence/2026-11-08b/README.md` (animated windmill,
+shader kiosk, city sign via material.custom, regeneration with native edits).
 
 Typecheck: `tsc -p tools/three-bridge/tsconfig.json` is clean, and the folder's TypeScript is part of the root
 `tsconfig.check.json` program. `assets typegen` writes `metadata.animationClips` as clip names (the engine's

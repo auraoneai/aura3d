@@ -134,6 +134,24 @@ function blendingName(blending: unknown): BridgeCustomMaterialSpec["blending"] |
   return null;
 }
 
+const MAIN = /\bvoid\s+main\s*\(\s*(?:void)?\s*\)/;
+
+/**
+ * three writes a ShaderMaterial's colour to the canvas as-is (no colour-space or tone-mapping chunk), while Aura3D
+ * encodes every material's output linear -> sRGB. Decoding at the end of the author's `main` makes the two agree
+ * exactly under an untone-mapped output, and closely under ACES/AgX (mid-tones within a few code values).
+ */
+function withDisplayDecode(fragment: string, output: string): string {
+  return `${fragment.replace(MAIN, "void a3dThreeMain()")}
+vec3 a3dThreeSrgbToLinear(vec3 c) {
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+void main() {
+  a3dThreeMain();
+  ${output}.rgb = a3dThreeSrgbToLinear(max(${output}.rgb, vec3(0.0)));
+}`;
+}
+
 /**
  * Convert one ShaderMaterial / RawShaderMaterial. Pure string work over the material's own fields, so it runs in the
  * headless export and in unit tests without three.
@@ -211,11 +229,22 @@ export function convertShaderMaterial(material: ThreeMaterialLike): ShaderConver
     vertex = vertex.replace(token, to);
     fragment = fragment.replace(token, to);
   }
+  // three's normalMatrix is the view-space normal matrix (inverse-transpose of modelViewMatrix); the Aura3D prelude's
+  // is world-space. Rotating it by the view matrix restores three's meaning (exact for a rigid view transform).
+  const viewNormal = (source: string): string => (/\bnormalMatrix\b/.test(source)
+    ? `#define a3dThreeNormalMatrix (mat3(viewMatrix) * normalMatrix)\n${source.replace(/\bnormalMatrix\b/g, "a3dThreeNormalMatrix")}`
+    : source);
+  vertex = viewNormal(vertex);
+  fragment = viewNormal(fragment);
   if (!glsl3) {
     vertex = lowerToGlsl3(vertex, "vertex");
     fragment = lowerToGlsl3(fragment, "fragment");
   }
-  if (!/\bout\s+(?:(?:lowp|mediump|highp)\s+)?vec4\s+\w+\s*;/.test(fragment)) return { ok: false, reasons: ["fragment stage declares no vec4 output"] };
+  const output = /\bout\s+(?:(?:lowp|mediump|highp)\s+)?vec4\s+(\w+)\s*;/.exec(fragment)?.[1];
+  if (!output) return { ok: false, reasons: ["fragment stage declares no vec4 output"] };
+  if (!MAIN.test(fragment)) return { ok: false, reasons: ["fragment stage has no plain void main()"] };
+  fragment = withDisplayDecode(fragment, output);
+  notes.push("output is sRGB-decoded so Aura3D's output encode shows the values three wrote to the canvas; under a tone-mapped output Aura3D also tone-maps it (three does not tone-map a ShaderMaterial without its tonemapping chunk)");
 
   const defines: Record<string, string | number> = {};
   for (const [key, value] of Object.entries((material.defines ?? {}) as Record<string, unknown>)) {

@@ -117,6 +117,8 @@ export interface ThreeBridgeFactoryResult {
   readonly environment?: { readonly kind: "room"; readonly intensity?: number } | null;
   /** Post-processing passes (EffectComposer passes or names); always reported, never emitted. */
   readonly post?: readonly unknown[];
+  /** Paired three.js page only: advance the recipe's own clock (shader time uniforms) to `t` seconds. Ignored headless. */
+  readonly update?: (t: number) => void;
 }
 
 export type ThreeBridgeFactory = (context: ThreeBridgeFactoryContext) => ThreeBridgeFactoryResult | Promise<ThreeBridgeFactoryResult>;

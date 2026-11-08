@@ -1,0 +1,73 @@
+{
+  "bridgeVersion": 1,
+  "name": "windmill",
+  "generator": {
+    "path": "recipes/windmill.mjs",
+    "sha256": "58ef4470d79fa1a8d067bd43a10da48735b362c8977749f38c870958102f4374",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "sail": "#3c6fb0",
+    "tower": "#d8d2c4",
+    "roof": "#2f4a3a",
+    "height": 4.8,
+    "rpm": 15
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/windmill.glb",
+    "sha256": "9cd94f64ab6199b6ff458cfdaa76740e9f8c030cdb2b5f9d94b7df5de5617bde",
+    "bytes": 55956
+  },
+  "nodeIds": [
+    "ground",
+    "windmill",
+    "windmill__tower",
+    "windmill__cap",
+    "windmill__door",
+    "windmill__rotor",
+    "windmill__rotor__hub",
+    "windmill__rotor__blade_0",
+    "windmill__rotor__blade_0__arm",
+    "windmill__rotor__blade_0__cloth",
+    "windmill__rotor__blade_1",
+    "windmill__rotor__blade_1__arm",
+    "windmill__rotor__blade_1__cloth",
+    "windmill__rotor__blade_2",
+    "windmill__rotor__blade_2__arm",
+    "windmill__rotor__blade_2__cloth",
+    "windmill__rotor__blade_3",
+    "windmill__rotor__blade_3__arm",
+    "windmill__rotor__blade_3__cloth",
+    "windmill__vane",
+    "windmill__vane__rod",
+    "windmill__vane__tail",
+    "pole",
+    "flag",
+    "barrel",
+    "crate",
+    "hemispherelight",
+    "sun"
+  ],
+  "materials": [
+    "grass",
+    "tower",
+    "roof",
+    "wood",
+    "metal",
+    "sail",
+    "flag"
+  ],
+  "clips": [
+    "rotor_spin",
+    "breeze"
+  ],
+  "counts": {
+    "supported": 14,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

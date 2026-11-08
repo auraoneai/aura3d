@@ -122,8 +122,14 @@ describe("import-three ShaderMaterial -> material.custom", () => {
     expect(vertex).toContain("out vec2 vUv;");
     expect(vertex).toContain("sin(uTime)");
     expect(vertex).toContain("projectionMatrix * modelViewMatrix * vec4(p, 1.0)");
+    // three's normalMatrix is view-space; the prelude's is world-space.
+    expect(vertex).toContain("#define a3dThreeNormalMatrix (mat3(viewMatrix) * normalMatrix)");
+    expect(vertex).toContain("normalize(a3dThreeNormalMatrix * normal)");
     expect(fragment).toContain("out highp vec4 a3dThreeFragColor;");
     expect(fragment).toContain("a3dThreeFragColor = vec4(tint * s, 1.0);");
+    // The author's main runs first, then the display decode (three writes ShaderMaterial colour to the canvas as-is).
+    expect(fragment).toContain("void a3dThreeMain()");
+    expect(fragment).toContain("a3dThreeFragColor.rgb = a3dThreeSrgbToLinear(max(a3dThreeFragColor.rgb, vec3(0.0)));");
     expect(fragment).not.toMatch(/uniform vec3 tint|gl_FragColor/);
     expect(result.spec.uniforms).toEqual({ tint: { type: "vec3", value: [1, 0.5, 0.25] }, scale: { type: "vec2", value: [12, 4] } });
     expect(result.spec).toMatchObject({ defines: { STEPS: 4 }, side: "double", transparent: true, blending: "additive" });
@@ -193,7 +199,7 @@ describe("import-three emission", () => {
   it("installs carried shaders on their placeholder slots through materialOverrides", () => {
     const spec = { glsl: { vertex: "void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }\n", fragment: "out highp vec4 c;\nvoid main() { c = vec4(1.0); }\n" } };
     const src = emitBridgeModule({ ...data, customMaterials: [{ name: "neon", spec }] }, { assetKey: "city-block", assetsImport: "../aura-assets", regenerateCommand: "x" });
-    expect(src).toContain('import { camera, lights, model, material, type AuraModelMaterialOverride');
+    expect(src).toContain('import { camera, lights, model, material, type AuraMaterialSpec, type AuraModelMaterialOverride');
     expect(src).toContain('"neon": material.custom({');
     expect(src).toContain("materialOverrides: [...cityBlockMaterialOverrides, ...(options.materialOverrides ?? [])]");
   });

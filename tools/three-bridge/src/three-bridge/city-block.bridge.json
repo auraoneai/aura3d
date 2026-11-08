@@ -3,7 +3,7 @@
   "name": "city-block",
   "generator": {
     "path": "recipes/city-block.mjs",
-    "sha256": "b337373c300d1ceddd69ebb3aeb84bb36a8195cbb5d0fd55ea13a7e6ece39289",
+    "sha256": "e548105d7ba087e4a62738a066579aaa00fb95179a000150eb5178dfdebe91bc",
     "export": "default"
   },
   "seed": 1,
@@ -18,8 +18,8 @@
   },
   "glb": {
     "path": ".aura3d/three-bridge/city-block.glb",
-    "sha256": "8f9f5c55e491f558d191139c8270ee8cd1d58d2f938f0dacf0f1a3035b59d8dd",
-    "bytes": 77048
+    "sha256": "6844cde39fee9dc8a386cb46055936f29537967ace1c148c155275cf005c35f2",
+    "bytes": 77236
   },
   "nodeIds": [
     "street",
@@ -124,6 +124,6 @@
   "counts": {
     "supported": 106,
     "approximated": 1,
-    "unsupported": 2
+    "unsupported": 0
   }
 }
