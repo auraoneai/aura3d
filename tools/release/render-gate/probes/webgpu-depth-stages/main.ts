@@ -47,7 +47,8 @@ s.camera(camera.perspective({ position: eye(frozen ?? 0), target: [eye(frozen ??
 
 const app = createAuraApp("#app", {
   scene: s,
-  ...labAppOptions(readLabFlags()),
+  // No createWorker here, so drop the worker fragment (?worker=1 is not part of this probe).
+  ...(({ worker: _worker, ...lab }) => lab)(labAppOptions(readLabFlags())),
   ...(params.get("compat") === "3" ? { compat: { post: "3.0" as const } } : {}),
   // ?post=0 turns the post lane flag off: the legacy chain, where WebGL2 runs its CPU volumetric-light kernel.
   ...(params.get("post") === "0" ? { qualityRebuild: { flags: { A3D_QR_POST: false } } } as never : {})

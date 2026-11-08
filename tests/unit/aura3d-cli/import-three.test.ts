@@ -10,7 +10,7 @@ import { assignStableIds, retargetClipTracks } from "../../../packages/aura3d-cl
 import type { BridgeSceneData, CompatRow, ThreeObjectLike } from "../../../packages/aura3d-cli/src/import-three/contract";
 import { emitBridgeModule, emitNativeSceneModule } from "../../../packages/aura3d-cli/src/import-three/emit";
 import { encodePng, installHeadlessExportShims, seededRandom } from "../../../packages/aura3d-cli/src/import-three/headless";
-// @ts-expect-error plain .mjs helper shared with the paired three.js page
+// plain .mjs helper shared with the paired three.js page
 import { seededRandom as browserSeededRandom } from "../../../tools/three-bridge/pages/seeded.mjs";
 
 const THREE_DIR = resolve("tools/three-bridge/node_modules/three");

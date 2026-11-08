@@ -32,7 +32,7 @@ describe("Ion Circuit (heatsink-port) WGSL twins", () => {
     try {
       const pair = globalShaderSource(materialObject.shaderKey)!;
       expect(pair.webgpu).toBeDefined();
-      const reflection = reflectShaderSources({ vertex: pair.vertex, fragment: pair.fragment });
+      const reflection = reflectShaderSources({ label: name, marker: name, vertex: pair.vertex, fragment: pair.fragment });
       const glslInputs = [...reflection.attributes.keys()];
       const custom = assignCustomAttributeLocations(glslInputs.filter((input) => !(input in FIXED)));
       const vsHeader = /@vertex\s+fn\s+vs_main\s*\(([\s\S]*?)\)\s*->/.exec(pair.webgpu!.vertex)![1]!;

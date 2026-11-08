@@ -50,6 +50,10 @@
     // E6 spatial benchmark: standalone package (own package.json/lockfile) that
     // imports three and patched engine copies under experiments/; not engine source.
     "tools/spatial-bench",
+    // B1 three.js asset bridge demo and the C1 harness's recorded agent outputs: standalone (own package.json or
+    // generated per-run projects) that import three, which is not an engine dependency; not engine source.
+    "tools/three-bridge",
+    "tools/agent-eval/c1/stub",
     "tests/qr/prd04/browser",
     "tests/qr/prd04/harness",
     "tests/qr/prd07/browser",

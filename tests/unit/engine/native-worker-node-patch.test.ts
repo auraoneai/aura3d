@@ -167,7 +167,7 @@ describe("worker node mirror (K1)", () => {
   it("replays updateAttribute and keeps no undrained attribute writes on the host mirror", () => {
     const mirror = createWorkerNodeMirror(normalizeSceneSnapshot(boxScene()));
     const node = mirror.nodes.require("mover");
-    node.updateAttribute("position", { array: new Float32Array([0, 1, 0]), offset: 0 });
+    node.updateAttribute!("position", { array: new Float32Array([0, 1, 0]), offset: 0 });
     const ops = mirror.drain();
     expect(ops).toEqual([{ id: "mover", call: "updateAttribute", args: ["position", { array: new Float32Array([0, 1, 0]), offset: 0 }] }]);
     expect((mirror.registry.require("mover") as unknown as { __parityL2AttributeUpdates?: unknown[] }).__parityL2AttributeUpdates).toEqual([]);
@@ -257,7 +257,7 @@ describe("worker app node patches, host frames and picking (K1-K3)", () => {
     // No further frame runs: the coalesced ops still go out once the in-flight patch returns.
     await flush();
     await flush();
-    const patches = f.host.sent.filter((message) => message.type === "patch") as Array<{ ops: unknown[] }>;
+    const patches = f.host.sent.filter((message) => message.type === "patch") as unknown as Array<{ ops: unknown[] }>;
     expect(patches).toHaveLength(2);
     // The second patch carries the four coalesced frames: translates kept, setPosition merged.
     expect(patches[1]!.ops.filter((op) => (op as { call?: string }).call === "translate")).toHaveLength(4);

@@ -29,7 +29,7 @@ export function checkWgslTwin(_name: string, spec: AuraCustomMaterialSpec, insta
   try {
     const pair = globalShaderSource(materialObject.shaderKey)!;
     expect(pair.webgpu).toBeDefined();
-    const reflection = reflectShaderSources({ vertex: pair.vertex, fragment: pair.fragment });
+    const reflection = reflectShaderSources({ label: _name, marker: _name, vertex: pair.vertex, fragment: pair.fragment });
     // Vertex inputs: the names the GLSL program declares, at the locations the WebGPU device binds.
     const vsHeader = /@vertex\s+fn\s+vs_main\s*\(([\s\S]*?)\)\s*->/.exec(pair.webgpu!.vertex)![1]!;
     // (the shield's earlier twin names its position input `position`)

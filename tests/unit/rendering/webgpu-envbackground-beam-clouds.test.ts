@@ -89,8 +89,8 @@ describe("WebGPU environment background", () => {
         f.device.beginFrame(4, 4);
         f.device.setRenderTarget(f.device.createRenderTarget({ width: 4, height: 4, format: "rgba16f", depth: false }));
         const shaderLibrary = library();
-        new EnvironmentBackgroundPass({ ...equirect(), inverseViewProjectionMatrix: IDENTITY, shaderLibrary }).execute({ device: f.device } as RenderPassContext);
-        new EnvironmentBackgroundPass({ ...cubemap(), inverseViewProjectionMatrix: IDENTITY, shaderLibrary }).execute({ device: f.device } as RenderPassContext);
+        new EnvironmentBackgroundPass({ ...equirect(), inverseViewProjectionMatrix: IDENTITY, shaderLibrary }).execute({ device: f.device, width: 4, height: 4 } as RenderPassContext);
+        new EnvironmentBackgroundPass({ ...cubemap(), inverseViewProjectionMatrix: IDENTITY, shaderLibrary }).execute({ device: f.device, width: 4, height: 4 } as RenderPassContext);
         f.device.endFrame?.();
         const recorded = draws(f);
         expect(recorded.map(draw => draw.vertices)).toEqual([3, 3]);
@@ -117,7 +117,7 @@ describe("WebGPU environment background", () => {
     device.createShaderProgram = (source: ShaderSources) => { sources.push(source); return create(source); };
     try {
       device.beginFrame(2, 2);
-      new EnvironmentBackgroundPass({ ...equirect(), inverseViewProjectionMatrix: IDENTITY }).execute({ device } as RenderPassContext);
+      new EnvironmentBackgroundPass({ ...equirect(), inverseViewProjectionMatrix: IDENTITY }).execute({ device, width: 2, height: 2 } as RenderPassContext);
       expect(sources[0]!.vertex).toContain("#version 300 es");
       expect(device.drawCommands).toHaveLength(1);
     } finally {
@@ -128,7 +128,7 @@ describe("WebGPU environment background", () => {
 
 describe("WebGPU gradient sky clouds", () => {
   const cloudy = () => (sky.gradient({ zenith: "#2860a0", horizon: "#b0c0e0", ground: "#405020", clouds: { coverage: 0.3, speed: 0.4, color: "#fbe9db" } })
-    .toJSON() as { spec: Readonly<Record<string, unknown>> }).spec;
+    .toJSON() as unknown as { spec: Readonly<Record<string, unknown>> }).spec;
 
   it("compiles the cloud variant with the cloud uniforms instead of rejecting it", async () => {
     const f = await nativeFixture();
@@ -171,7 +171,7 @@ describe("WebGPU light beam", () => {
         { nodeId: "beam", kind: "light-beam", color: [1, 0.9, 0.6, 1], intensity: 2, from: [0, 2, 0], to: [0, 0, 0], widthWorld: 0.5 },
         { nodeId: "aurora", kind: "auroraRibbon", color: [0.2, 1, 0.5, 1], intensity: 1, width: 4, height: 2, segments: 8, sway: 0.3, shimmer: 0.5 }
       ], context());
-      for (const item of items) item.draw();
+      for (const item of items) item.draw(context());
       f.device.endFrame?.();
       const recorded = draws(f);
       expect(recorded).toHaveLength(2);
@@ -187,7 +187,7 @@ describe("WebGPU light beam", () => {
       expect(beamFragment).not.toContain("curtain folds");
       expect(auroraFragment).toContain("curtain folds");
     } finally {
-      pass.dispose?.();
+      (pass as { dispose?: () => void }).dispose?.();
       f.device.dispose();
     }
   });
@@ -200,11 +200,11 @@ describe("WebGPU light beam", () => {
     const pass = new BeamPass(device);
     try {
       device.beginFrame(2, 2);
-      for (const item of pass.transparentItems([{ nodeId: "beam", kind: "light-beam", color: [1, 1, 1, 1], intensity: 1, from: [0, 1, 0], to: [0, 0, 0] }], context())) item.draw();
+      for (const item of pass.transparentItems([{ nodeId: "beam", kind: "light-beam", color: [1, 1, 1, 1], intensity: 1, from: [0, 1, 0], to: [0, 0, 0] }], context())) item.draw(context());
       expect(sources[0]!.webgpu).toBeUndefined();
       expect(sources[0]!.portableBindings).toBeUndefined();
     } finally {
-      pass.dispose?.();
+      (pass as { dispose?: () => void }).dispose?.();
       device.dispose();
     }
   });

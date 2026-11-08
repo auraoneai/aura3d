@@ -56,7 +56,7 @@ describe("WebGPU post without a tone operator", () => {
   });
 
   it("the targeted-outline WGSL twin reads the bindings its GLSL reflection declares", () => {
-    const reflection = reflectShaderSources({ vertex: OUTLINE_TARGET_WEBGPU_SHADER.vertex, fragment: OUTLINE_TARGET_WEBGPU_SHADER.fragment });
+    const reflection = reflectShaderSources({ label: "outline-target", marker: "outline-target", vertex: OUTLINE_TARGET_WEBGPU_SHADER.vertex, fragment: OUTLINE_TARGET_WEBGPU_SHADER.fragment });
     const names = OUTLINE_TARGET_WEBGPU_SHADER.portableBindings!.map((binding) => binding.name);
     for (const name of names) expect(reflection.uniforms.has(name)).toBe(true);
     const wgsl = OUTLINE_TARGET_WEBGPU_SHADER.webgpu!;
