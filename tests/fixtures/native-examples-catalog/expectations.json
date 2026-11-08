@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "6bae016244f3d0f2d67f0eb7838694243ba8c279c04d27b96794bbee9af0079a"
+          "sha256": "4e382709833f60ead4d04790b78f4cc4619054a72ce22b15c9a9af9b9a55e712"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
