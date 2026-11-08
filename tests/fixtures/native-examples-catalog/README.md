@@ -19,7 +19,7 @@ are source-derived acceptance inputs, **not calibrated or passing results**.
 The dedicated unit tests check the source digests, camera projections, bounded
 bands, and failure on synthetic wrong/absent subjects without launching a browser.
 
-This manifest covers all 20 templates, every currently enumerated capability
+This manifest covers all 26 templates, every currently enumerated capability
 scenario, the four classified starter examples and the discovered documented
 examples (see the last section). The browser catalog fails closed on missing IDs. The separate source
 inventory tests also require every current catalog ID; do not fill the
@@ -430,7 +430,15 @@ occlusion, animation and real browser layout were not exercised. Each case's
 | `examples/external-product-configurator` | `?material=contrast` | `__A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__.materialMode` = `"contrast"` | Typed showcaseHeadphones left ear cup under the fixture's documented ?material=contrast mode (Product Studio contrast palette entry 0, base [0.9, 0.16, 0.12]) |
 | `examples/postprocess-lab` | `?material=contrast` | `__AURA3D_POSTPROCESS_LAB__.realScene.materialMode` = `"contrast"` | Typed showcaseHeadphones left ear cup in the final postprocess composite, rendered with the lab's documented ?material=contrast flat red base [0.9, 0.16, 0.12] (canvas2d) |
 | `examples/renderer-stress-lab` | `?lights=1` | `__AURA3D_RENDERER_STRESS_LAB__.lightCount` = `1` | Front face of grid object 15 (a Geometry.litCube, material 7: dielectric pink base [0.96,0.48,0.68], roughness 0.5, emissive [0.02,0.08,0.04]) lit only by the orange directional key light under the documented ?lights=1 start |
+| `apps/showcase-shape-shift-sprint` | `?autostart=1&manual=1` | `__AURA_SHAPE_SHIFT__.booted` = `true`; driver `__AURA_SHAPE_SHIFT__.begin()` | The player's red #e8453c sphere on the cream runway at the first step of a run (frozen chase pose) |
+| `apps/showcase-number-surge` | `?autostart=1&manual=1` | `__AURA_NUMBER_SURGE__.booted` = `true`; driver `__AURA_NUMBER_SURGE__.begin()` | The player's cyan #3ef2ff number ball on the neon road at the first step of a run |
+| `apps/showcase-splat-turf` | `?autostart=1&manual=1` | `__AURA_SPLAT_TURF__.booted` = `true`; driver `__AURA_SPLAT_TURF__.begin()` | The player's pink #ff3d8b paint ball on the white runway at the first step of a run |
+| `apps/showcase-polarity-orbs` | `?autostart=1&manual=1` | `__AURA_POLARITY_ORBS__.booted` = `true`; driver `__AURA_POLARITY_ORBS__.begin()` | The player's red #ff5a4e orb on the warm #63303a deck at the first step of a run |
+| `apps/showcase-beat-hopper` | `?autostart=1&manual=1` | `__AURA_BEAT_HOPPER__.booted` = `true`; driver `__AURA_BEAT_HOPPER__.begin()` | The player's cyan #23e6ff hopper on the neon road at the first step of a run |
+| `examples/auto-frame-bird` | - | `__AURA_AUTO_FRAME__.requestedFill` >= 0.45 | The flapping red #e8573c bird held near the frame centre by the per-frame camera.framePose chase |
 
 Digest refresh 2026-11-03 (source pass 004 review): `tools/agent-examples/index.ts` (packed-candidate examples mode, packed-c stage — no case data change), `createAuraAppCore.ts` (onFrame error text restored; one scene-change notification per commit), `runtimeNodes.ts` (pivot + look-at composition for nodes that set both; no cataloged subject sets model/primitive lookAt), `Renderer.ts` (per-frame memoization/perf work and aborted-frame transmission diagnostics; no draw-output change for cataloged subjects). Reviewed against each case's subject region and colour sources; re-pinned.
 
 Digest refresh 2026-11-03 (source pass 008 shard fix): `tools/agent-examples/index.ts` (packed-candidate examples mode: `--shard I/N` deterministic cost-balanced slice, bounded two-project concurrency with per-project timings, per-command 10 minute limit; sharded stages packed-c1..packed-c4 — no case data change). Re-pinned; the previous pin was already stale at `07509fb35` (npm config change).
+
+5.3.0 candidate (2026-11-08): the five `starter-*` templates, the five new showcase games and `examples/auto-frame-bird` were added. Their regions were derived from source and then located once on a headless-Chrome (ANGLE/Metal) frame of each dev route at 1280 × 720; no frame is stored or blessed, and lighting, grade and real browser layout remain unverified. Templates take no route query, so the animated `starter-product` (turntable) and `starter-presentation` (15 s loop, numbers beat) regions rely on the catalog's polling capture.
