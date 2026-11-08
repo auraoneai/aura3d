@@ -25,12 +25,18 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return proto === Object.prototype || proto === null;
 }
 
-/** A `{ kind: "custom", custom: { glsl } }` material spec whose `custom.wgsl` is absent. */
+/**
+ * A `{ kind: "custom", custom: { glsl } }` material spec with no usable WGSL program: `custom.wgsl` is absent, or it has
+ * no fragment stage (the compiler fills a missing WGSL vertex with its default, but a missing fragment stays empty).
+ */
 function isGlslOnlyCustomMaterial(value: Record<string, unknown>): boolean {
   if (value.kind !== "custom") return false;
   const custom = value.custom;
   if (!isPlainRecord(custom) || custom.glsl === null || typeof custom.glsl !== "object") return false;
-  return custom.wgsl === undefined || custom.wgsl === null;
+  const wgsl = custom.wgsl;
+  if (wgsl === undefined || wgsl === null) return true;
+  if (!isPlainRecord(wgsl)) return false;
+  return typeof wgsl.fragment !== "string" || wgsl.fragment.trim().length === 0;
 }
 
 function safeName(value: unknown): string | undefined {

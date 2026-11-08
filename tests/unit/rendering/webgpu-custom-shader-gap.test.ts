@@ -30,6 +30,12 @@ describe("WebGPU pre-check: material.custom with GLSL and no WGSL twin", () => {
     expect(webgpuCustomShaderGap(undefined)).toBeUndefined();
   });
 
+  it("flags a WGSL twin with a vertex stage but no fragment stage (the compiler leaves that fragment empty)", () => {
+    const vertexOnly = { vertex: "/* @aura3d-bindings */\n@vertex fn vs_main() -> @builtin(position) vec4<f32> { return vec4<f32>(0.0); }" };
+    const snapshot = scene().add(primitives.box({ name: "half", material: material.custom({ glsl: GLSL, wgsl: vertexOnly }) })).toJSON();
+    expect(webgpuCustomShaderGap(snapshot)).toEqual({ code: "CUSTOM_SHADER_WGSL_MISSING", missing: ["wgsl:half"] });
+  });
+
   it("flags built-in materials that lower to GLSL-only custom programs (material.toon)", () => {
     const snapshot = scene().add(primitives.box({ name: "toon", material: material.toon({ color: "#88aaff" }) })).toJSON();
     expect(webgpuCustomShaderGap(snapshot)?.code).toBe("CUSTOM_SHADER_WGSL_MISSING");
