@@ -10,6 +10,7 @@ import { animation } from "../nodes/animation.js";
 import { effects } from "../nodes/effects.composite.js";
 import { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, runtimeMorphWeightSanitizer } from "../runtimeEvidence.js";
 import { AuraRuntimeError } from "./errors.js";
+import { createHandleGuessedNameMethods } from "./handleAliases.js";
 import { calculateRuntimeNodeBounds, calculateRuntimeNodeModelBounds, type AuraRuntimeNodeAnimationBindingMetadata, type AuraRuntimeNodeAnimationPoseBindingMetadata, type AuraRuntimeNodeEffectAttachment, type RuntimeNodeVec3 } from "../RuntimeNodeHandle.js";
 import type { AnimationPose } from "@aura3d/animation";
 import { material } from "../nodes/material.js";
@@ -1880,6 +1881,8 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       onMaterialChange?.(handle);
       return this;
     },
+    // 5.4 N7: three.js-style setters (setColor / setIntensity / setOpacity / setEmissive) written through setLight / setMaterial.
+    ...createHandleGuessedNameMethods(() => node),
     setInstances(transforms: readonly import("../nodes/types.js").AuraTransformSpec[], colors?: readonly import("../nodes/types.js").AuraColor[]) {
       assertMutableInstanceBuffer(handle);
       const next = transforms.map((transform) => {

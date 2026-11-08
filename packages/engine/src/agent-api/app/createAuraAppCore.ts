@@ -17,6 +17,7 @@ import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { animatedPosition, animatedRotation, normalizeSceneSnapshot, scaleToVec3 } from "../sceneMath.js";
 import { configureCanvas, resolveCanvas } from "./canvas.js";
 import { resolveAppOutputColorPolicy } from "./colorManagement.js";
+import { normalizeAppToneMapping } from "./toneMappingNames.js";
 import { mountFailureConsoleMessage } from "./mountFailure.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
@@ -258,6 +259,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   options: AuraCreateAppOptions,
   admissionFailure?: RenderDeviceError
 ): AuraApp {
+  // 5.4 N7: same-meaning tone-mapping spellings ("aces-filmic", "ACESFilmicToneMapping") map to the operator; unknown names throw.
+  options = normalizeAppToneMapping(options);
   // Reject invalid presentation policy before any canvas/context acquisition.
   resolveAppOutputColorPolicy({ ...options.renderer?.output, ...options.output });
   if (options.worker !== undefined) {
