@@ -21,7 +21,7 @@ Adoption (5.0 adoption row)
 
 - [x] A1 determinate loading bar (default on): `createLoadingProgress({ element })` drives `#loading-bar` (4 stages, 10/40/60/92/100 %), replacing the 5.0.2 text-percent hack; evidence `evidence/game-upgrades-503/heatsink-port/after-a1-loading.png` (mid-load frame; base shows only the status line)
 - [x] Lab flags (`readLabFlags`/`labAppOptions`, default off; worker flag not wired, game has no createWorker): A3 `?backend=`, A10 `?gamut=p3` wired in main.ts (5.0.2)
-- [x] A9 `?depth=reversed|logarithmic` now wired into the world camera via `labCameraOptions` (default off, EXPERIMENTAL, far plane is 4200 m); flagged frame `evidence/game-upgrades-503/heatsink-port/after-depth-reversed.png` renders identically to default on WebGL2, no new console errors
+- [x] A9 `?depth=reversed|logarithmic` now wired into the world camera via `labCameraOptions`, far plane is 4200 m. 5.2.1: reversed depth is the default (`labCameraOptions(flags, "reversed")`, real-GPU depth probe shows GEQUAL + clip control, matched race frames match standard depth); `?depth=standard` opts out. Original flagged frame `evidence/game-upgrades-503/heatsink-port/after-depth-reversed.png` renders identically to default on WebGL2, no new console errors
 - [x] A2 diagnostics: already wired via `apps/showcase-heatsink-port/src/main.ts` (`?diag=1`)
 - [x] B2 partial AuraApp cast: none present in this game
 
