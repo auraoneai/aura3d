@@ -528,7 +528,8 @@ function sizeCanvas(): void {
 /* A1: shared loading-progress helper drives the determinate loading bar (#loading-bar); the status line keeps its copy. */
 const loadingProgress = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
 /* W-8: experimental lab flags (?backend=, ?worker=, ?gamut=) are parsed here; all off by default, so `lab` is `{}` without a query. */
-const lab = labAppOptions(readLabFlags());
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const lab = labAppOptions(readLabFlags(), { backend: "auto" });
 
 async function boot(): Promise<void> {
   loadingProgress.set(0.1);

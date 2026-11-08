@@ -2001,7 +2001,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "1f95e92f8a5f931899ff82c641b0964afda3634594e6cce096ebe9cd288963bd"
+        "sha256": "a290adff32e9408b5268057106944fd359d00aa959619e248e5e16f9d24cfc3a"
       },
       "sourceDependencies": [
         {
@@ -2087,7 +2087,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "29b532645405c31c7f790c30351b895102ced4cbd7ad750f33703423902d9868"
+        "sha256": "7da5be9e8de6ea1984afb72627f873cbdae6aff5cafb63e86d5f95e9eef1552e"
       },
       "sourceDependencies": [
         {
@@ -2231,7 +2231,7 @@
       },
       "source": {
         "path": "apps/showcase-cross-hop/src/main.ts",
-        "sha256": "6b8869999c6037229feb650733b40aab796a29ec8488d5ad47879c86ce1f449d"
+        "sha256": "7998f2827780e5788bff0f64e788a97690123cb28ea45a94157803ab4c54586f"
       },
       "sourceDependencies": [
         {
@@ -2518,7 +2518,7 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "c351dbdb7c0e1e6358156609f6c726a81043d855dbe8a5c2915cb9c40c6ff2b0"
+        "sha256": "a23cca932b3d4f3d171ede14d58ff2457f681869a671e87f8039a54a1dc5c10b"
       },
       "sourceDependencies": [
         {
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -3947,7 +3947,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "0b8436147c04fe3a1be192ac5873fac6d5ab403528d83e044b39ccf912996cb1"
+        "sha256": "287aebb6fadee3226503e02b8be40ddadd78da49e4220e91a34fdeafad6e4f66"
       },
       "sourceDependencies": [
         {
@@ -4163,7 +4163,7 @@
         },
         {
           "path": "examples/aura-slam/main.ts",
-          "sha256": "ffd050915867c10ec83f8466835a84126538c646cdbe6c2878dd59756d1f2ccb"
+          "sha256": "0963364be281401a51ff7335285251f1227ae90248dd5d8a436f4c0a2a81e8f7"
         },
         {
           "path": "examples/aura-slam/shell/boot.ts",
@@ -4285,7 +4285,7 @@
       },
       "source": {
         "path": "apps/showcase-iron-crown/src/main.ts",
-        "sha256": "b92bbb83ab7a832f7e6a644f59ef2eef8c152db4c02dfe0a217d7e9a24eb792b"
+        "sha256": "c7dfc2713e4f646d370c40b6d0e7d8514b15d99aa1837582a2b85d23e3530204"
       },
       "sourceDependencies": [
         {
@@ -4702,7 +4702,7 @@
       },
       "source": {
         "path": "examples/heatsink-port/main.ts",
-        "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
+        "sha256": "4193edf90dfc3c08e43d72041dfbec59df9c6eb109f39b7c640376b623839e92"
       },
       "sourceDependencies": [
         {
@@ -4711,7 +4711,7 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "4a23686798a3410cc36de4cbfa45379d544dd23ce3c729a772bae3ff03e44d9d"
+          "sha256": "30a0b4e05b398c7a39ce3261e2f0d2be3242101725c5f5d80870159ecb7d265a"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -4814,11 +4814,11 @@
         },
         {
           "path": "examples/heatsink-port/main.ts",
-          "sha256": "72daa91aca426cae837c753101daed5281effaeb29d8837e1fa57db316011168"
+          "sha256": "4193edf90dfc3c08e43d72041dfbec59df9c6eb109f39b7c640376b623839e92"
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "4a23686798a3410cc36de4cbfa45379d544dd23ce3c729a772bae3ff03e44d9d"
+          "sha256": "30a0b4e05b398c7a39ce3261e2f0d2be3242101725c5f5d80870159ecb7d265a"
         },
         {
           "path": "examples/heatsink-port/models.ts",
@@ -5930,7 +5930,7 @@
       },
       "source": {
         "path": "apps/showcase-roadster-hours-port/src/main.ts",
-        "sha256": "5129a42003047dea9d62ada3797302be5a5c889112f19de4795931bf19cd3501"
+        "sha256": "cee2c8db136aff41a28c05b3cca5cfa0aeb8b991384ee9e71462d365f53de9a6"
       },
       "sourceDependencies": [
         {
@@ -6070,7 +6070,7 @@
       },
       "source": {
         "path": "examples/silt-and-signal-port/main.ts",
-        "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
+        "sha256": "9db76a04d596184f5e2eec76dff4aa9eccffa17357c2ca0965e09e27f81c62a2"
       },
       "sourceDependencies": [
         {
@@ -6174,7 +6174,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/main.ts",
-          "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
+          "sha256": "9db76a04d596184f5e2eec76dff4aa9eccffa17357c2ca0965e09e27f81c62a2"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -6291,7 +6291,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/main.ts",
-          "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
+          "sha256": "fe24635357c4c33302dd1104c4809436239c8c4c15e88db6c82085491a51a194"
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
@@ -6744,7 +6744,7 @@
       },
       "source": {
         "path": "examples/where-the-wind-wanders-port/main.ts",
-        "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
+        "sha256": "eba9173b3c5e14fbd4ac5a60f3da89731ad23d5ac0ebf3ed80d2dbe570a486f7"
       },
       "sourceDependencies": [
         {
@@ -6839,7 +6839,7 @@
       "sourceDependencies": [
         {
           "path": "examples/where-the-wind-wanders-port/main.ts",
-          "sha256": "bdbea4c2385a966fead36587664bb37451497fcf95a635cf33085ba2f8362f72"
+          "sha256": "eba9173b3c5e14fbd4ac5a60f3da89731ad23d5ac0ebf3ed80d2dbe570a486f7"
         },
         {
           "path": "examples/where-the-wind-wanders-port/sim.ts",
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79f0c085df12537712c49352b81ba08c56dc3f83e8002755fe340faf4fbf544d"
+          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
         }
       ],
       "regions": [
@@ -8284,7 +8284,7 @@
       },
       "source": {
         "path": "examples/saiyan-snake-way-port/main.ts",
-        "sha256": "b24e04dd8f88cb40b813fffdabd62be080bc13ba7ac12552d135120a5da72130"
+        "sha256": "fe24635357c4c33302dd1104c4809436239c8c4c15e88db6c82085491a51a194"
       },
       "sourceDependencies": [
         {
@@ -8378,7 +8378,7 @@
       },
       "source": {
         "path": "examples/aura-slam/main.ts",
-        "sha256": "ffd050915867c10ec83f8466835a84126538c646cdbe6c2878dd59756d1f2ccb"
+        "sha256": "0963364be281401a51ff7335285251f1227ae90248dd5d8a436f4c0a2a81e8f7"
       },
       "sourceDependencies": [
         {
@@ -8605,7 +8605,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-diamond-3d/src/main.ts",
-        "sha256": "1f5620cb596846f79837687d8127992711e373b22d90558aeb9222028cea614d"
+        "sha256": "042a164eb0b8d87a9f739a06e9ecfb68a6efba5d938c622815d3febcc387b9a0"
       },
       "sourceDependencies": [
         {
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "d2c5a8255cd21cab2362f97640540d9ebeb33440b6b918fe23c3a6f31406dee3"
+          "sha256": "3cb8df998ed2ae099376dec610903b90540433a3bf8128db1ad9918b2d217386"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",

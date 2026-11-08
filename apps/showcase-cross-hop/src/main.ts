@@ -77,7 +77,8 @@ function tameJuice(j: Record<string, JuiceSpec>): Record<string, JuiceSpec> {
 // 5.0.2 lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu, ?gamut=p3 and ?worker=1 (worker rendering,
 // main-thread fallback kept). No depth flag is wired. Without a flag `labAppOptions` is `{}` and nothing changes.
 const LAB = parseLabFlags(window.location.search);
-const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(LAB, createWorkerRendererWorker);
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(LAB, { backend: "auto", createWorker: createWorkerRendererWorker });
 
 const g = createGame({
   ...(labRenderer ? { renderer: labRenderer } : {}),

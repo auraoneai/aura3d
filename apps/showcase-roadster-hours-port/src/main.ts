@@ -37,12 +37,11 @@ const hook = (): void => {
 };
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
 
-// W-8: EXPERIMENTAL lab flags, default OFF. Only a present `?backend=` / `?gamut=` query publishes anything; the game
-// merges the fragment into its createAuraApp options.
+// W-8 lab flags; the game merges the published fragment into its createAuraApp options. WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const lab = readLabFlags();
-if (lab.any) {
-  const { renderer, output } = labAppOptions(lab);
-  (window as unknown as { __A3D_LAB_APP_OPTIONS__?: unknown }).__A3D_LAB_APP_OPTIONS__ = { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) };
+{
+  const { renderer, output } = labAppOptions(lab, { backend: "auto" });
+  if (renderer || output) (window as unknown as { __A3D_LAB_APP_OPTIONS__?: unknown }).__A3D_LAB_APP_OPTIONS__ = { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) };
 }
 // A9: reversed depth by default (real-GPU checked); `?depth=standard` opts out, `?depth=logarithmic` overrides. The fragment
 // reaches `camera.perspective({ depth })` in world.ts through this global.

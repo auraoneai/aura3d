@@ -85,7 +85,8 @@ const ORIGINAL_LOOK = useOriginalLook(chapter.id, params.get("look"));
 /** GU47 phase 3: block pieces are rounded solid blocks (the sim's exact box) on look rows with `solidBlocks`. */
 const SOLID_BLOCKS = !ORIGINAL_LOOK && chapterLook(chapter.id).solidBlocks;
 /** W-8 lab flags (?backend=, ?gamut=): EXPERIMENTAL, default OFF; with no flag the fragment is empty. */
-const LAB = labAppOptions(readLabFlags(), createWorkerRendererWorker);
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out (borderline 0.90).
+const LAB = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
 /** A1: shared readiness tracker; publishes the fraction on `body[data-aura3d-loading]` (no visible UI). */
 const loadingVeil = document.getElementById("loading-veil");
 const loading = createLoadingProgress({

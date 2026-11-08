@@ -392,7 +392,8 @@ function boot(): void {
   try {
     // Lab flags (EXPERIMENTAL, default OFF): `?backend=webgpu`, `?gamut=p3`, `?worker=1`. With no flag the fragments are empty and the
     // options below are exactly what shipped before.
-    const lab = labAppOptions(readLabFlags(), createWorkerRendererWorker);
+    // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+    const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
     auraApp = createAuraApp("#app", {
       scene: buildParkScene(PARKS[bootPark], sceneCtx),
       // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).

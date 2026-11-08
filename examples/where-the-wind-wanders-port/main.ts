@@ -25,7 +25,8 @@ import { PAPER_PASS_NAME, paperPass, paperScale } from "./paper-pass";
 import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 
 const params = new URLSearchParams(location.search);
-const lab = labAppOptions(readLabFlags());
+// WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const lab = labAppOptions(readLabFlags(), { backend: "auto" });
 const manual = params.get("manual") === "1";
 const lowQuality = params.get("quality") === "low";
 /** `?found=0..3|bell|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). The game boots the
