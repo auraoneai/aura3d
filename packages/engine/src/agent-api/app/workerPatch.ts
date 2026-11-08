@@ -19,6 +19,8 @@ export function isReplayableExtensionMethod(member: string): boolean {
 export const WORKER_PATCH_METHODS = [
   "setPosition", "setPivot", "setTransform", "translate", "setRotation", "setScale", "setVisible",
   "setText", "setMaterial", "setLight", "setInstances", "setInstanceMatrices",
+  // 5.4 N7 guessed-name setters (handleAliases.ts); they write through setLight / setMaterial in the worker.
+  "setColor", "setIntensity", "setOpacity", "setEmissive",
   "play", "setAnimation", "setAnimationPose", "setAnimationBinding", "setMorphTarget", "setMorphTargets", "morphInfluence", "setUniform",
   // SG-05 dynamic geometry (particle and FX pools write their attributes every frame).
   "setGeometry", "updateAttribute"

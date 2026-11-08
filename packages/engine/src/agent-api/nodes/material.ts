@@ -722,6 +722,11 @@ export const material = lazyNamespace(() => ({
     }, options)), guessNotes);
   },
   /**
+   * 5.4 N7: three.js `MeshStandardMaterial` spelling (`color`, `roughness`, `metalness`, `emissive`, `map` ...).
+   * Identical to `material.pbr(options)`, including the three.js option normalisation and its OPTION_IGNORED notes.
+   */
+  standard: (options: AuraMaterialSpec = {}): AuraMaterialSpec => material.pbr(options),
+  /**
    * Film thickness endpoints are in nanometres. Explicit minimum/maximum
    * override the corresponding legacy range entries; omitted endpoints use
    * the range or the renderer defaults (100/400), respectively.

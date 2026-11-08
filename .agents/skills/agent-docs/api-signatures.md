@@ -119,6 +119,7 @@ void material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 });
 | `material.shadow(options?: AuraShadowMaterialOptions)` | `AuraMaterialSpec` | options: color?: string \| undefined; opacity?: number \| undefined; side?: "front" \| "back" \| "doubl…; light?: "directional" \| "point" \|… |
 | `material.node(options: TslMaterialNodeOptions \| ShaderGraphMaterialOptions)` | `AuraMaterialSpec` |  |
 | `material.pbr(rawOptions?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
+| `material.standard(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.physical(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.emissive(options?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |
 | `material.metal(rawOptions?: AuraMaterialSpec)` | `AuraMaterialSpec` |  |

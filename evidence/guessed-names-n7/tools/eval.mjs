@@ -1,0 +1,16 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+const root = "/Users/gurbakshchahal/platforms/aura3d-u-n7-names";
+const require = createRequire(root + "/package.json");
+const ts = require("typescript");
+const cfg = ts.getParsedCommandLineOfConfigFile(root + "/tsconfig.base.json", {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} });
+const opts = { ...cfg.options, noEmit: true, skipLibCheck: true, baseUrl: root };
+const file = root + "/.n7tmp/check.ts";
+const prog = ts.createProgram([file], opts);
+const checker = prog.getTypeChecker();
+const sf = prog.getSourceFile(file);
+const res = {};
+for (const st of sf.statements) if (ts.isTypeAliasDeclaration(st)) res[st.name.text] = checker.typeToString(checker.getTypeAtLocation(st.name));
+const diags = ts.getPreEmitDiagnostics(prog, sf).map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n").slice(0, 160) + " @" + (d.start ? sf.getLineAndCharacterOfPosition(d.start).line + 1 : "?"));
+writeFileSync("/tmp/n7names/eval.json", JSON.stringify({ res, diags }, null, 1));
+console.log(Object.keys(res).length, diags.length);

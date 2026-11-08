@@ -181,6 +181,18 @@ export interface AuraRuntimeNodeHandle {
   setText(text: string): this;
   setMaterial(material: AuraMaterialSpec): this;
   /**
+   * three.js `material.color.set(c)` / `light.color.set(c)`: a light node writes `setLight({ color })`, a primitive or
+   * instance node writes `setMaterial({ ...material, color })`. Models, groups and shader materials throw a
+   * RangeError naming the call to use (handle.materials, setUniform).
+   */
+  setColor(color: AuraColor): this;
+  /** three.js `light.intensity = v`: light nodes only (`setLight({ intensity })`); other kinds throw and name `setEmissive`. */
+  setIntensity(intensity: number): this;
+  /** three.js `material.opacity = a`: `setMaterial({ ...material, opacity })`; Aura3D blends whenever opacity < 1. */
+  setOpacity(opacity: number): this;
+  /** three.js `material.emissive.set(c)` (+ `emissiveIntensity`): `setMaterial({ ...material, emissive, emissiveIntensity })`. */
+  setEmissive(color: AuraColor, intensity?: number): this;
+  /**
    * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
    * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
    * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
