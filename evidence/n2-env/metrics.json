@@ -1,0 +1,11 @@
+{
+  "capture": "headless Chrome, ANGLE Metal (Apple M4 Max), 960x540, examples/materials-glass-steel vite-built from source (no /aura-environments served, as in the benchmark sandbox)",
+  "region": "sRGB luma inside the sphere disc (r=70 px); backdrop disc at (100,80) r=40",
+  "bare_before": { "glass": { "mean": 245.0, "sd": 0.5 }, "steel": { "mean": 235.0, "sd": 1.5 }, "backdrop": 242 },
+  "bare_after": { "glass": { "mean": 223.6, "sd": 4.6 }, "steel": { "mean": 176.9, "sd": 69.2 }, "backdrop": 230 },
+  "studio_404_before": { "steel": { "sd": 1.5 } },
+  "studio_404_after": { "steel": { "sd": 47.9 } },
+  "lights_only_and_explicit_neutral": "pixel-identical before/after (max channel diff 0)",
+  "threejs_reference_bench505_t10_three_r1": { "glass": { "mean": 214.9, "sd": 10.5 }, "steel": { "mean": 181.9, "sd": 45.6 }, "backdrop": 181 },
+  "games": "showcase-beat-hopper, shape-shift-sprint, splat-turf, heatsink-port, strange-orbit-port, top-tennis: local AURA3D_ONLY_ROUTE build vs https://aura3d.auraone.ai/apps/<slug>/ same scene; none logs LOOK_HDRI_MISSING / ENV_PRESET_MISSING or gets the cold-start look"
+}

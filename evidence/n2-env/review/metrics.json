@@ -1,0 +1,10 @@
+{
+  "reviewer": "independent review of exp/54-n2-env, 2026-11-08",
+  "method": "examples/materials-glass-steel vite-built twice from this worktree: 'after' = HEAD engine dist; 'before' = same dist with the 6 changed engine modules replaced by exp/53d-integration sources transpiled with the build tsconfig (control: HEAD sources through the same transpile are byte-identical to the tsc dist). Headless Chrome ANGLE Metal, 960x540, no /aura-environments served. Sheet rows: bare, ?env=studio (preset 404), ?lights=1, ?env=neutral; columns before, after.",
+  "region": "sRGB luma disc r=70 at glass (278,262) and steel (480,262); backdrop disc r=40 at (100,80)",
+  "bare": { "before": { "glass": [245.0, 0.6], "steel": [235.0, 1.5], "bg": 238.2 }, "after": { "glass": [222.7, 5.3], "steel": [177.0, 69.2], "bg": 230.3 } },
+  "studio_404": { "before": { "steel": [236.4, 1.5] }, "after": { "steel": [212.3, 47.0] } },
+  "lights_only": "pixel-identical (max channel diff 0)",
+  "explicit_neutral": { "before": { "steel": [235.3, 1.6] }, "after": { "steel": [183.4, 55.4] }, "note": "NOT identical in this run: before, the static scene never redrew after the neutral probe bound, so the floor probe stayed on screen (a race; the implementer's before run happened to bind first). After, onEnvironmentProbeReady schedules the frame. This is the author's chosen environment rendering correctly, not a new default." },
+  "games": "showcase-number-surge, showcase-polarity-orbs (both author environments.studio presets), showcase-beat-hopper, showcase-heatsink-port, showcase-strange-orbit-port: local single-route build of HEAD vs https://aura3d.auraone.ai/apps/<slug>/ match in scene; differences are menu UI only (How to play button merged on main after this branch's base). No ENV_PRESET_MISSING / LOOK_HDRI_MISSING / neutral-floor console lines."
+}

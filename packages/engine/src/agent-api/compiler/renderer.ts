@@ -1092,6 +1092,7 @@ export async function createProductionRuntimeSceneRenderer(
       get projectedSpotImageAdmissionEnabled() { return projectedSpotImageAdmissionEnabled; },
       ...(projectedSpotMaxDimension === undefined ? {} : { projectedSpotMaxDimension }),
       onProjectedSpotResourceReady: notifyCommittedResource,
+      onEnvironmentProbeReady: notifyCommittedResource,
       canvas,
       environmentLighting: (liveSnapshot) => {
         // LIGHT-07: the knob was computed from the mount snapshot. When runtime adds or removes change the

@@ -89,8 +89,13 @@ export function heroRig(options: AuraHeroRigOptions = {}): AuraNodeBuilder<AuraG
 }
 
 export interface AuraHeroStageOptions extends AuraHeroRigOptions {
-  /** Studio (default) gives metal and gloss something to reflect; the neutral room is flat grey. */
-  readonly environment?: "studio" | "neutral" | "none";
+  /**
+   * Studio (default) gives metal and gloss something to reflect; the neutral room is flat grey. `"room"` is the
+   * structured studio room generated in code (softbox panels, a windowed fill and dark flags over darker walls and a
+   * floor), embedded in the engine so it needs no `/aura-environments` file: glass and metal read even in an app that
+   * ships no environment assets.
+   */
+  readonly environment?: "studio" | "room" | "neutral" | "none";
   readonly environmentIntensity?: number;
   /** Colour the floor fades into; set it equal to `scene({ background })`. Default "#1b1d24". */
   readonly background?: AuraColor;
@@ -109,6 +114,7 @@ export function heroStage(options: AuraHeroStageOptions = {}): AuraNodeBuilder<A
   const environment = options.environment ?? "studio";
   const envIntensity = options.environmentIntensity ?? 1;
   if (environment === "studio") children.push(environments.studio({ name: "hero studio environment", intensity: envIntensity }).toJSON());
+  else if (environment === "room") children.push(environments.studio({ preset: "softbox", name: "hero room environment", intensity: envIntensity }).toJSON());
   else if (environment === "neutral") children.push(environments.neutral({ name: "hero neutral environment", intensity: envIntensity }).toJSON());
   children.push(...heroLights(options));
   if (options.floor !== false) {

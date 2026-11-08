@@ -8,6 +8,12 @@
  * so the fallback carries a matched overall exposure (mean linear radiance about 0.6 to 0.9) rather than a guess. It is
  * an approximation of lighting level and colour cast only: no sun disc, no softbox shapes, no reflections detail.
  * Pure functions, no DOM.
+ *
+ * N2: the `studio` family does not use its bands on the compiled-probe path. A studio look whose HDRI is missing binds
+ * the structured studio room generated in code (the embedded `softbox` probe: key and overhead softboxes, strip lights,
+ * a windowed fill and dark flags over darker walls and a floor), because a latitude gradient gives glass and polished
+ * metal nothing to reflect. Outdoor and night families keep their bands: their colour cast is the point, and an indoor
+ * room would tint a sky scene wrongly.
  */
 
 export type ProceduralEnvironmentKind = "sky" | "warm-sky" | "studio" | "night";
@@ -91,11 +97,25 @@ export function proceduralEnvironmentEquirect(kind: ProceduralEnvironmentKind, w
   return { width, height, data };
 }
 
+/** True when the compiled-probe path replaces a missing environment of this family with the structured studio room. */
+export function usesStructuredRoomFallback(kind: ProceduralEnvironmentKind): boolean {
+  return kind === "studio";
+}
+
+/** Fallback family for a baked `/aura-environments/<preset>` probe that did not load. */
+export function presetFallbackKind(preset: string): ProceduralEnvironmentKind {
+  if (preset === "night") return "night";
+  if (preset === "outdoor") return "sky";
+  if (preset === "sunset" || preset === "ocean-dusk") return "warm-sky";
+  return "studio";
+}
+
 /** The one actionable console.error line for a missing look HDRI. */
-export function lookHdriMissingMessage(url: string, reason: string, kind: ProceduralEnvironmentKind): string {
+export function lookHdriMissingMessage(url: string, reason: string, kind: ProceduralEnvironmentKind, options: { readonly room?: boolean } = {}): string {
   const bare = url.split(/[?#]/)[0]!;
   const file = bare.split("/").pop() ?? bare;
-  return `LOOK_HDRI_MISSING: HDRI "${bare}" did not load (${reason}); rendering with a procedural ${kind} probe instead, so lighting will differ from the real HDRI. ` +
+  const replacement = options.room ? "the structured studio room generated in code" : `a procedural ${kind} probe`;
+  return `LOOK_HDRI_MISSING: HDRI "${bare}" did not load (${reason}); rendering with ${replacement} instead, so lighting will differ from the real HDRI. ` +
     `Fix: put ${file} under public/hdri/ (copy fixtures/environment-corpus/hdri/${file} or run the template's hdri sync) and make sure it is not a git-LFS pointer (run \`git lfs pull\`).`;
 }
 
@@ -105,12 +125,31 @@ const reportedMissingHdris = new Set<string>();
  * Log `LOOK_HDRI_MISSING` once per URL with `console.error` and return the message for `app.diagnostics().warnings`.
  * Both the compiled-probe path and the legacy HDR chain call this, so exactly one console line appears per file.
  */
-export function reportLookHdriMissing(url: string, reason: string): { readonly message: string; readonly fallback: ProceduralEnvironmentKind } {
+export function reportLookHdriMissing(url: string, reason: string, options: { readonly room?: boolean } = {}): { readonly message: string; readonly fallback: ProceduralEnvironmentKind } {
   const fallback = proceduralEnvironmentKind(url);
-  const message = lookHdriMissingMessage(url, reason, fallback);
+  const message = lookHdriMissingMessage(url, reason, fallback, { room: options.room === true && usesStructuredRoomFallback(fallback) });
   if (!reportedMissingHdris.has(url) && reportedMissingHdris.size < 64) {
     reportedMissingHdris.add(url);
     if (typeof console !== "undefined") console.error(`[aura3d] ${message}`);
+  }
+  return { message, fallback };
+}
+
+const reportedMissingPresets = new Set<string>();
+
+/**
+ * `ENV_PRESET_MISSING`: a baked `/aura-environments/<preset>` probe (`environments.studio()`, `environments.preset(...)`)
+ * did not load. Logged once per preset with `console.warn`; the scene keeps image-based lighting from the fallback
+ * named in the message instead of the uniform neutral floor.
+ */
+export function reportEnvironmentPresetMissing(preset: string, reason: string): { readonly message: string; readonly fallback: ProceduralEnvironmentKind } {
+  const fallback = presetFallbackKind(preset);
+  const replacement = usesStructuredRoomFallback(fallback) ? "the structured studio room generated in code" : `a procedural ${fallback} probe`;
+  const message = `ENV_PRESET_MISSING: environment preset "${preset}" did not load (${reason}); rendering with ${replacement} instead. ` +
+    `Fix: copy the engine's aura-environments/${preset}.* files into public/aura-environments/, or use environments.studio({ preset: "softbox" }), which is embedded and needs no file.`;
+  if (!reportedMissingPresets.has(preset) && reportedMissingPresets.size < 32) {
+    reportedMissingPresets.add(preset);
+    if (typeof console !== "undefined") console.warn(`[aura3d] ${message}`);
   }
   return { message, fallback };
 }

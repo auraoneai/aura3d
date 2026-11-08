@@ -5,6 +5,7 @@
 
 import type { AuraSceneNode, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
 import { heroStage } from "./lookStage.js";
+import { markStudioMaterial } from "../nodes/studioMaterial.js";
 
 /** Node kinds that are plain geometry/structure. Anything else (light, environment, effect, look, scene kit, ...) means the scene is authored. */
 const GEOMETRY_KINDS: ReadonlySet<string> = new Set(["model", "primitive", "group", "label", "interaction", "line", "points", "sprite", "batched"]);
@@ -118,8 +119,38 @@ export function withColdStartLook(snapshot: AuraSceneSnapshot): AuraSceneSnapsho
     target: center,
     radius,
     background: snapshot.background,
+    // N2: the structured room generated in code, not the `studio` preset. The preset is a file under /aura-environments
+    // that a bare app usually does not ship; when it 404s the scene fell back to the uniform neutral floor, which leaves
+    // glass invisible and steel flat grey against a light backdrop (benchmark materials-1).
+    environment: "room",
+    // The hero key/fill/rim already light the subject; at full strength the room's diffuse term on top of them washed a
+    // light backdrop to white, and clear glass (which shows the backdrop) disappeared into it. At 0.4 the room is the
+    // reflection source and a soft fill: on the materials-1 rebuild the backdrop drops from about 242 to 230 (sRGB luma)
+    // and the glass reads against it.
+    environmentIntensity: 0.4,
     // The floor sits under the lowest point; a scene that already brings a ground gets lights and studio IBL only.
     floor: extent.flatFloor ? false : { y: extent.min[1] - 0.001 }
   }).toJSON();
-  return { ...snapshot, nodes: [...snapshot.nodes, stage] };
+  return { ...snapshot, nodes: [...markTransmissiveMaterials(snapshot.nodes), stage] };
+}
+
+/**
+ * Transmissive materials in a cold-start scene get the studio-material hint, so the app turns physical transmission on
+ * for them as it does for `material.studioGlass` (otherwise glass draws as a faint alpha blend that vanishes on a light
+ * backdrop). Nodes are copied, never mutated; nodes without a transmissive material keep their identity.
+ */
+function markTransmissiveMaterials(nodes: readonly AuraSceneNode[], depth = 0): AuraSceneNode[] {
+  if (depth > 12) return [...nodes];
+  return nodes.map((raw) => {
+    const node = raw as unknown as { material?: { transmission?: unknown }; children?: readonly AuraSceneNode[] };
+    let next: typeof node | undefined;
+    if (typeof node.material?.transmission === "number" && node.material.transmission > 0) {
+      next = { ...node, material: markStudioMaterial({ ...(node.material as object) }) as typeof node.material };
+    }
+    if (Array.isArray(node.children)) {
+      const children = markTransmissiveMaterials(node.children, depth + 1);
+      if (children.some((child, i) => child !== node.children![i])) next = { ...(next ?? node), children };
+    }
+    return (next ?? raw) as AuraSceneNode;
+  });
 }

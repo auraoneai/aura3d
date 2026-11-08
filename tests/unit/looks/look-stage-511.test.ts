@@ -42,6 +42,11 @@ describe("heroRig / heroStage", () => {
     const stage = looks.heroStage({ target: [0, 1, 0] }).toJSON() as AuraGroupNode;
     expect(names(stage)).toEqual(expect.arrayContaining(["hero studio environment", "hero key", "hero fill", "hero rim", "hero floor", "hero floor fade"]));
   });
+  it("environment: \"room\" binds the embedded structured room preset", () => {
+    const stage = looks.heroStage({ environment: "room", environmentIntensity: 0.7 }).toJSON() as AuraGroupNode;
+    const env = (stage.children as unknown as Record<string, unknown>[]).find((c) => c.kind === "environment");
+    expect(env).toMatchObject({ name: "hero room environment", environment: "preset", preset: "softbox", intensity: 0.7 });
+  });
   it("floor:false drops the floor and fog", () => {
     const stage = looks.heroStage({ floor: false }).toJSON() as AuraGroupNode;
     expect(names(stage).some((n) => n.includes("floor"))).toBe(false);
