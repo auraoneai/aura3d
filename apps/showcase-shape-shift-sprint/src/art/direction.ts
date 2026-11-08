@@ -1,11 +1,11 @@
 // Shape Shift Sprint art direction (SplatSiblings WP-2). Fantasy: a candy-primary shape parade on a
-// cream road under a bright day sky; the look table is ../look.ts, the signature effects live in ../world.ts.
+// cream sky bridge over a cloud sea with floating toy islands; look table ../look.ts, scenery ../scenery.ts, signature effects ../world.ts.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "shape-shift-sprint",
   genre: "platformer",
-  fantasy: "Sprint a shape-shifting toy down a cream candy road, fitting through the hole that matches your form under a bright day sky.",
+  fantasy: "Sprint a shape-shifting toy along a candy sky bridge past floating toy islands, fitting through the hole that matches your form.",
   rebuildTier: "S-presentation",
   wave: 4,
   references: [

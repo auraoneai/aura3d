@@ -17,7 +17,7 @@ import { Fx } from "./fx";
 import { Hud } from "./hud";
 import { LOOK } from "./look";
 import { ChaseCamera, createShapePresenter, shownOf, viewOf } from "./presentation";
-import { buildWorld, type WorldRuntime } from "./world";
+import { buildWorld, type PostMode, type WorldRuntime } from "./world";
 
 /* GT Walsheim Bold: the admitted same-origin copy (public/aura-assets; provenance in PROVENANCE.md). */
 if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
@@ -33,8 +33,11 @@ const config = readQaParams({
   warmup: { type: "number", default: 30 },
   dpr: { type: "number", default: 0 },
   motion: { type: "string", default: "" },
-  symbols: { type: "flag" }
+  symbols: { type: "flag" },
+  post: { type: "string", default: "" }
 });
+
+const postMode = (v: string): PostMode => (v === "0" || v === "off" ? "off" : v === "full" || v === "bloom" ? v : "lite");
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const node = document.getElementById(id);
@@ -213,7 +216,7 @@ async function boot(): Promise<void> {
   const loading = createLoadingProgress({ element: document.getElementById("load-bar") ?? undefined });
   startButton?.setAttribute("aria-busy", "true");
   loading.set(0.1);
-  const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
+  const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), post: postMode(config.post) });
   const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false,

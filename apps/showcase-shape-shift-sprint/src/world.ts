@@ -5,13 +5,17 @@
  * on cream, day gradient sky, hole rims glow on match, morph burst + shape-confetti trail (the trail is
  * presentation-only and draws from its own RNG stream, never the gameplay stream).
  */
-import { camera, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import {
-  Batch, Slots, GameRng, scrollFrameZ, toonSpec, flatSpec, shadowSpec, skySpec, gradientSkyFragment, hexToLinear,
+  Batch, Slots, GameRng, scrollFrameZ, flatSpec, shadowSpec, hexToLinear,
   type CustomSpec, type MeshData, type Rgb
 } from "../../../examples/shared/runner-kit/index";
 import { CONFIG, POOL, type ShapeShiftSim, type Segment, type Token, type WallRow } from "./sim";
 import { LOOK, SHAPE_LINEAR, ROAD_LINEAR, WALL_LINEAR, TOKEN_LINEAR, SUN_DIRECTION } from "./look";
+import {
+  PIECES, PILLAR_COUNT, PILLAR_SPACING, SEA_TILE, SCENERY, cloudSeaTile, contactSpec, ringSpec, islandMesh, pieceZ, pillarMesh, puffMesh,
+  sceneryProgramSpecs, skirtMesh, tonedGeometry, toySkySpec, toyToonSpec, wallContactMesh
+} from "./scenery";
 import {
   playerMesh, wallCellMesh, rimMesh, tokenMesh, roadSegmentMesh, roadTones, confettiMesh, sphereMesh, groundQuad, mergeMeshes
 } from "./meshes";
@@ -22,14 +26,26 @@ type SceneBuilder = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
 const TRAIL_MAX = 24;
+/** Gameplay surfaces stay crisp out to the fog start so approaching walls keep full contrast. */
+const GAME_FOG_START = 48;
 const CLOUD_MAX = 8;
 const PLAYER_BASE_Y = [0.55, 0.48, 0.55] as const;
-export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "clouds"] as const;
+export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "clouds", "road-skirt", "wall-contact"] as const;
 export const PLAYER_IDS = ["player-0", "player-1", "player-2"] as const;
+
+const SKIRT_TONES: readonly Rgb[] = [hexToLinear(SCENERY.coral), hexToLinear(SCENERY.cream)];
+
+export type PostMode = "lite" | "full" | "bloom" | "off";
 
 export interface WorldOptions {
   readonly sim: ShapeShiftSim;
   readonly aspect: number;
+  /**
+   * Post chain: "lite" (default: warm grade + soft vignette), "full" (adds bloom), "bloom" (bloom only) or "off".
+   * The toon surfaces are display-referred and shouldered near 1, so bloom on the cream road and walls washes the
+   * whole lane white; it stays opt-in for A/B checks (`?post=`).
+   */
+  readonly post?: PostMode;
 }
 
 export interface WorldView {
@@ -60,11 +76,9 @@ const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k];
 /** Every distinct `material.custom` program the game draws with (for the GLSL compile test). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
-    { name: "sky", spec: skySpec(gradientSkyFragment(LOOK.skyStops)) },
-    { name: "toon", spec: toonSpec(WALL_LINEAR) },
-    { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
+    ...sceneryProgramSpecs(),
     { name: "flat-shield", spec: flatSpec(hexToLinear(LOOK.tokenColors.shield), 0.24) },
-    { name: "flat-wildcard", spec: flatSpec(hexToLinear(LOOK.tokenColors.wildcard), 0.45) },
+    { name: "ring-wildcard", spec: ringSpec(hexToLinear(LOOK.tokenColors.wildcard), 0.85) },
     { name: "shadow", spec: shadowSpec() }
   ];
 }
@@ -72,7 +86,7 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
 export function buildWorld(options: WorldOptions): World {
   const builder = scene()
     .background(LOOK.skyStops[LOOK.skyStops.length - 1].hex)
-    .camera(camera.perspective({ position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 300 }));
+    .camera(camera.perspective({ position: [0, 14, 17], target: [0, 0.55, -10], fov: 55, near: 0.1, far: 600 }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dyn(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
@@ -81,7 +95,7 @@ export function buildWorld(options: WorldOptions): World {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
   };
 
-  add("sky", sphereMesh(140, 24, 16), skySpec(gradientSkyFragment(LOOK.skyStops)));
+  add("sky", sphereMesh(280, 32, 20), toySkySpec());
 
   // Engine environment + shadowed sun key for the art-direction contract; the toon programs carry
   // their own lighting, so these only serve the standard-path snapshot and any future PBR props.
@@ -93,28 +107,55 @@ export function buildWorld(options: WorldOptions): World {
   }));
 
   const road = new Batch(roadSegmentMesh(), POOL.segments, roadTones());
-  addBatch("road", road, toonSpec(ROAD_LINEAR, undefined, [0, 0, 0], true));
+  addBatch("road", road, toyToonSpec(ROAD_LINEAR, { tone: true, rim: 0, fogStart: GAME_FOG_START }));
+  const skirt = new Batch(skirtMesh(), POOL.segments, [1, 1, 1]);
+  addBatch("road-skirt", skirt, toyToonSpec([1, 1, 1], { tone: true, rim: 0.12, fogStart: GAME_FOG_START }));
 
   const walls = new Batch(wallCellMesh(), POOL.rows * 3);
-  addBatch("walls", walls, toonSpec(WALL_LINEAR));
+  addBatch("walls", walls, toyToonSpec(WALL_LINEAR, { rim: 0.1, fogStart: GAME_FOG_START }));
+  const contact = new Batch(wallContactMesh(WALL_DIMS.cellWidth, 1.1), POOL.rows * 3);
+  addBatch("wall-contact", contact, contactSpec(0.3));
   const rimMeshes = [rimMesh(0), rimMesh(1), rimMesh(2)];
   const rims = new Batch(rimMeshes[0] as MeshData, POOL.rows * 3, [1, 1, 1]);
-  addBatch("rims", rims, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  addBatch("rims", rims, toyToonSpec([1, 1, 1], { tone: true, rim: 0, fogStart: GAME_FOG_START }));
 
   const tokens = new Batch(tokenMesh(), POOL.tokens, [1, 1, 1]);
-  addBatch("tokens", tokens, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  addBatch("tokens", tokens, toyToonSpec([1, 1, 1], { tone: true, rim: 0.3, fogStart: GAME_FOG_START }));
 
-  for (let i = 0; i < 3; i++) add(`player-${i}`, playerMesh(i), toonSpec(SHAPE_LINEAR[i] as Rgb));
+  for (let i = 0; i < 3; i++) add(`player-${i}`, playerMesh(i), toyToonSpec(SHAPE_LINEAR[i] as Rgb, { rim: 0.32, fogStart: GAME_FOG_START }));
   add("ball-shadow", groundQuad(2, 2), shadowSpec());
   add("shield", sphereMesh(1, 20, 14), flatSpec(hexToLinear(LOOK.tokenColors.shield), 0.24));
-  add("wildcard-ring", groundQuad(1.9, 1.9), flatSpec(hexToLinear(LOOK.tokenColors.wildcard), 0.45));
+  add("wildcard-ring", groundQuad(1.9, 1.9), ringSpec(hexToLinear(LOOK.tokenColors.wildcard), 0.85));
 
   const particles = new Batch(confettiMesh(), POOL.particles + TRAIL_MAX, [1, 1, 1]);
-  addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  addBatch("particles", particles, toyToonSpec([1, 1, 1], { tone: true, rim: 0, fogStart: GAME_FOG_START }));
 
   const puff = mergeMeshes([sphereMesh(2.2, 12, 8), sphereMesh(1.5, 12, 8, -1.8, -0.4, 0), sphereMesh(1.3, 12, 8, 1.7, -0.6, 0.4)]);
   const clouds = new Batch(puff, CLOUD_MAX);
-  addBatch("clouds", clouds, toonSpec(hexToLinear(LOOK.cloud)));
+  addBatch("clouds", clouds, toyToonSpec(hexToLinear(LOOK.cloud), { rim: 0.35 }));
+
+  /* Toybox Skyway scenery (presentation only, scenery.ts): cloud sea, bridge pillars, floating toy islands. */
+  const seaTile = cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3);
+  for (let i = 0; i < SEA_TILE.count; i++) {
+    builder.add(geometry.custom(tonedGeometry(i === 0 ? seaTile : cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3 + i)), { name: `sea-${i}`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.25 })) }).runtime({ id: `sea-${i}` }));
+  }
+  const pillar = pillarMesh();
+  for (let i = 0; i < PILLAR_COUNT; i++) {
+    builder.add(geometry.custom(tonedGeometry(pillar), { name: `pillar-${i}`, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.15 })) }).runtime({ id: `pillar-${i}` }));
+  }
+  for (const piece of PIECES) {
+    const mesh = piece.variant === "puff" ? puffMesh(piece.z0 | 0) : islandMesh(piece.variant, Math.round(piece.z0) % 7);
+    builder.add(geometry.custom(tonedGeometry(mesh), { name: piece.id, material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: piece.variant === "puff" ? 0.35 : 0.2 })) }).runtime({ id: piece.id }));
+  }
+
+  /* Post: gentle bloom on the sun glow, glowing rims and confetti; warm grade; soft vignette. */
+  const post = options.post ?? "lite";
+  if (post === "full" || post === "bloom") builder.add(effects.bloom({ name: "bloom", intensity: 0.25, threshold: 0.98, scatter: 0.5 }));
+  if (post === "full" || post === "lite") {
+    builder
+      .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.14, color: "#3a2a55" }));
+  }
 
   return {
     scene: builder,
@@ -156,6 +197,26 @@ export function buildWorld(options: WorldOptions): World {
         cloudsPlaced = true;
       }
 
+      /** Scenery: pure function of the road scroll and the clock (islands bob, puffs drift; reduced motion stills them). */
+      function updateScenery(scrollNow: number, t: number, still: boolean): void {
+        const bobT = still ? 0 : t;
+        for (const piece of PIECES) {
+          const z = pieceZ(piece, scrollNow);
+          const bob = Math.sin(bobT * 0.7 + piece.z0) * (piece.variant === "puff" ? 0.35 : 0.3 * piece.scale);
+          node(piece.id).setPosition(piece.x, piece.y + bob, z).setRotation(0, piece.yaw + bobT * 0.03 * (piece.layer === 0 ? 1 : 0.5), 0).setScale(piece.scale);
+        }
+        const pillarSpan = PILLAR_SPACING * PILLAR_COUNT;
+        for (let i = 0; i < PILLAR_COUNT; i++) {
+          const z = ((((i * PILLAR_SPACING + scrollNow) % pillarSpan) + pillarSpan) % pillarSpan) - pillarSpan + 30;
+          node(`pillar-${i}`).setPosition(0, 0, z);
+        }
+        const seaSpan = SEA_TILE.d * SEA_TILE.count;
+        for (let i = 0; i < SEA_TILE.count; i++) {
+          const z = ((((i * SEA_TILE.d + scrollNow * 0.6) % seaSpan) + seaSpan) % seaSpan) - seaSpan + SEA_TILE.d * 0.75;
+          node(`sea-${i}`).setPosition(0, SEA_TILE.y, z);
+        }
+      }
+
       function writeParticle(i: number, x: number, y: number, z: number, yaw: number, scale: number, color: string, rgb: Rgb): void {
         particles.place(i, x, y, z, yaw, scale, scale, scale);
         if (particleColor[i] !== color) {
@@ -179,18 +240,26 @@ export function buildWorld(options: WorldOptions): World {
         lastDistance = o.distance;
 
         /* road (scrolling frame) */
-        segSlots.retain(simNow.segments, (slot) => road.collapse(slot));
+        segSlots.retain(simNow.segments, (slot) => { road.collapse(slot); skirt.collapse(slot); });
         for (const seg of simNow.segments) {
           const { slot, fresh } = segSlots.use(seg);
-          if (slot >= 0 && fresh) road.place(slot, 0, 0, scrollFrameZ(seg.z, scroll), 0, 1, 1, 1);
+          if (slot >= 0 && fresh) {
+            const z = scrollFrameZ(seg.z, scroll);
+            road.place(slot, 0, 0, z, 0, 1, 1, 1);
+            skirt.place(slot, 0, 0, z, 0, 1, 1, 1);
+            skirt.setTone(slot, (Math.round(seg.z / CONFIG.SEGMENT_LENGTH) & 1) === 0 ? SKIRT_TONES[0] : SKIRT_TONES[1]);
+          }
         }
         node("road").setPosition(0, 0, scroll);
+        node("road-skirt").setPosition(0, 0, scroll);
         road.flush(node("road"), false);
+        skirt.flush(node("road-skirt"));
 
         /* wall cells + shape rims (scrolling frame); rims glow when they fit the current shape */
         rowSlots.retain(simNow.rows, (slot) => {
           for (let i = 0; i < 3; i++) {
             walls.collapse(slot * 3 + i);
+            contact.collapse(slot * 3 + i);
             rims.collapse(slot * 3 + i);
             rimKey[slot * 3 + i] = -1;
           }
@@ -203,6 +272,7 @@ export function buildWorld(options: WorldOptions): World {
             const idx = slot * 3 + i;
             if (fresh) {
               walls.place(idx, hole.laneX, 0, z, 0, 1, 1, 1);
+              contact.place(idx, hole.laneX, 0.03, z + WALL_DIMS.thickness / 2, 0, 1, 1, 1);
               rims.place(idx, hole.laneX, WALL_DIMS.openingCenterY, z + WALL_DIMS.thickness / 2 + 0.03, 0, 1, 1, 1, rimMeshes[hole.shapeIndex] as MeshData);
             }
             const fits = hole.shapeIndex === o.shapeIndex || o.wildcardTimer > 0;
@@ -216,8 +286,10 @@ export function buildWorld(options: WorldOptions): World {
           });
         }
         node("walls").setPosition(0, 0, scroll);
+        node("wall-contact").setPosition(0, 0, scroll);
         node("rims").setPosition(0, 0, scroll);
         walls.flush(node("walls"));
+        contact.flush(node("wall-contact"), false);
         rims.flush(node("rims"));
 
         /* tokens (scrolling frame); morph tokens cycle the shape colours */
@@ -303,6 +375,7 @@ export function buildWorld(options: WorldOptions): World {
         particles.flush(node("particles"));
 
         if (!cloudsPlaced) placeClouds();
+        updateScenery(scroll, elapsed, reduced);
 
         /* camera */
         const pose = view.camera ?? view.shown?.camera ?? { x: 0.5 * p.x, y: p.y + 5, z: p.z + 9, lookX: p.x, lookY: p.y, lookZ: p.z - 10 };
@@ -316,7 +389,7 @@ export function buildWorld(options: WorldOptions): World {
         }, { cut: false });
       }
 
-      const batches = [road, walls, rims, tokens, particles, clouds];
+      const batches = [road, walls, rims, tokens, particles, clouds, skirt, contact];
       function warm(on: boolean): void {
         const parkY = -50, parkZ = -60;
         for (const id of ["shield", "wildcard-ring", ...PLAYER_IDS]) {
@@ -330,10 +403,13 @@ export function buildWorld(options: WorldOptions): World {
           tokens.place(0, 4, parkY, parkZ, 0, 1, 1, 1);
           particles.place(0, 6, parkY, parkZ, 0, 0.2, 0.2, 0.2);
           clouds.place(0, 8, parkY, parkZ, 0, 1, 1, 1);
+          skirt.place(0, 10, parkY, parkZ, 0, 1, 1, 1);
+          contact.place(0, 12, parkY, parkZ, 0, 1, 1, 1);
           for (const b of batches) b.flush(node(BATCH_IDS[batches.indexOf(b)] as string));
         } else {
           for (const id of ["shield", "wildcard-ring", ...PLAYER_IDS]) node(id).setVisible(false);
           road.collapse(0); walls.collapse(0); rims.collapse(0); tokens.collapse(0); particles.collapse(0); clouds.collapse(0);
+          skirt.collapse(0); contact.collapse(0);
           for (const b of batches) b.flush(node(BATCH_IDS[batches.indexOf(b)] as string));
           cloudsPlaced = false;
         }
