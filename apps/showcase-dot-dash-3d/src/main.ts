@@ -14,7 +14,6 @@ import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 installBlackFrameGuard();
 
