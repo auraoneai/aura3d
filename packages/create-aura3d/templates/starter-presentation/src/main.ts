@@ -27,7 +27,7 @@ const SUBTITLE_X = -textWidth(subtitle) / 2;
 
 const stage = scene()
   .add(looks.preset(LOOK_ID, { exposureEv: -0.2, fogDensityScale: 0.25, background: "#070a12" }))
-  .add(primitives.plane({ name: "stage floor", size: [60, 1, 60], material: material.pbr({ color: "#0d1018", roughness: 0.22, metallic: 0.3 }), receiveShadow: true }))
+  .add(primitives.plane({ name: "stage floor", size: [60, 1, 60], material: material.pbr({ color: "#0d1018", roughness: 0.6, metallic: 0 }), receiveShadow: true })) // matte: a glossy floor mirrors the look HDRI as blown white patches
   // Beat 1: headline and subtitle.
   .add(headline.position(HEADLINE_X, 2.6, -2).runtime({ id: "headline", mutable: true }))
   .add(subtitle.position(SUBTITLE_X, 1.9, -2).runtime({ id: "subtitle", mutable: true }))
@@ -60,16 +60,18 @@ const app = createAuraApp("#app", {
   ...looks.appOptions(LOOK_ID)
 });
 
-const frozen = new URLSearchParams(location.search).get("t");
-let clock = frozen === null ? 0 : Number(frozen);
+const frozenParam = Number(new URLSearchParams(location.search).get("t") ?? Number.NaN);
+const frozen = Number.isFinite(frozenParam) ? frozenParam : null; // ignore missing or malformed ?t=
+let clock = frozen ?? 0;
 app.onFrame((frame) => {
   if (frozen === null) clock += frame.dt;
   const t = clock % LOOP_SECONDS;
 
-  // Title: rise and settle in the first 1.5 s.
+  // Title: rise and settle in the first 1.5 s, then lift out of frame before beat 2 so it never sits behind the product.
   const rise = beat(t, 0.2, 1.5);
-  app.nodes.require("headline").setPosition(HEADLINE_X, lerp(1.6, 2.6, rise), -2).setScale(lerp(0.85, 1, rise));
-  app.nodes.require("subtitle").setPosition(SUBTITLE_X, lerp(1.2, 1.9, beat(t, 0.8, 1.5)), -2);
+  const exit = 6 * beat(t, 4.2, 0.8);
+  app.nodes.require("headline").setPosition(HEADLINE_X, lerp(1.6, 2.6, rise) + exit, -2).setScale(lerp(0.85, 1, rise));
+  app.nodes.require("subtitle").setPosition(SUBTITLE_X, lerp(1.2, 1.9, beat(t, 0.8, 1.5)) + exit, -2);
 
   // Product: always spinning, lifts in at the start of beat 2.
   app.nodes.require("product").setRotation(0.3, t * 0.9, 0).setPosition(0, lerp(0.9, 1.3, beat(t, 4.6, 1.2)), 0);

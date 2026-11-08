@@ -57,13 +57,14 @@ const reset = (): void => {
 };
 
 let wasMoving = false;
+let started = false; // the round clock waits until the scene and the player model are ready, so loading never eats play time
 createFixedStepLoop({
   stepSeconds: 1 / 60,
   step: (dt) => {
     input.update(dt);
     state.clock += dt;
     if (input.pressed("restart")) reset();
-    if (state.over) return;
+    if (state.over || !started) return;
     const dx = (input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0);
     const dz = (input.held("down") ? 1 : 0) - (input.held("up") ? 1 : 0);
     const len = Math.hypot(dx, dz);
@@ -103,6 +104,7 @@ createFixedStepLoop({
 };
 
 void app.ready().then(() => {
+  started = true;
   const diagnostics = app.diagnostics();
   document.body.dataset.aura3dReady = "true";
   document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);

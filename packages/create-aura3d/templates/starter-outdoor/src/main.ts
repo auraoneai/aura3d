@@ -65,7 +65,7 @@ const app = createAuraApp("#app", {
       geometry.define({ positions, normals, colors, indices, bounds: { min: [-SIZE / 2, -2, -SIZE / 2], max: [SIZE / 2, 14, SIZE / 2] } }),
       { name: "terrain", material: material.pbr({ color: "#ffffff", roughness: 0.95 }), receiveShadow: true }
     ))
-    .add(primitives.plane({ name: "lake", size: [SIZE, 1, SIZE], material: material.pbr({ color: "#1d4a5e", roughness: 0.04, metallic: 0.3, opacity: 0.9 }), castShadow: false }).position(0, WATER_Y, 0))
+    .add(primitives.plane({ name: "lake", size: [SIZE, 1, SIZE], material: material.pbr({ color: "#1b5f7a", roughness: 0.18, metallic: 0, opacity: 0.88 }), castShadow: false }).position(0, WATER_Y, 0))
     .add(instances.model(assets.tree, { name: "trees", transforms: trees, targetHeight: 3.2, castShadow: true }))
     .add(instances.model(assets.rocks, { name: "rocks", transforms: rocks, targetHeight: 1, castShadow: true, receiveShadow: true }))
     .add(interactions.orbit({ target: "terrain" }))

@@ -32,6 +32,13 @@ describe("create-aura3d starter scenes", () => {
     expect(main("starter-product")).toMatch(/camera\.framePose\(product,/);
   });
 
+  test("starter-game's round clock waits for app.ready and starter-presentation ignores a malformed ?t=", () => {
+    const game = main("starter-game");
+    expect(game).toMatch(/if \(state\.over \|\| !started\) return;/);
+    expect(game).toMatch(/app\.ready\(\)\.then\(\(\) => \{\n  started = true;/);
+    expect(main("starter-presentation")).toMatch(/Number\.isFinite\(frozenParam\)/);
+  });
+
   test("starters are linked from the cheat sheet, llms.txt and the template guide", () => {
     const sheet = readFileSync("docs/agents/first-screen.md", "utf8");
     const llms = readFileSync("llms.txt", "utf8");
