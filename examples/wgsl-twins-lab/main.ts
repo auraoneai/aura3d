@@ -28,8 +28,8 @@ function roadsterScene() {
   const s = scene()
     .background("#140b1c")
     .camera(camera.perspective({ fov: 55, near: 0.25, far: 550, position: [0, 3.6, 5.2], target: [0, 0.6, -6.0] }))
-    .add(lights.hemisphere({ sky: "#7c8cff", ground: "#2a1630", intensity: 0.8 }))
-    .add(lights.directional({ direction: [-0.087, -0.122, 0.989], color: "#ffb47a", intensity: 2.2 }))
+    .add(lights.hemisphere({ skyColor: "#7c8cff", groundColor: "#2a1630", intensity: 0.8 }))
+    .add(lights.directional({ position: [3.48, 4.88, -39.56], target: [0, 0, 0], color: "#ffb47a", intensity: 2.2 })) // sun travels along [-0.087, -0.122, 0.989]
     .add(primitives.sphere({ name: "sky", size: [760, 760, 760], material: custom(roadsterSky()), castShadow: false, receiveShadow: false }))
     .add(primitives.box({ name: "ground", size: [1400, 0.12, 900], material: custom(groundSpec()), castShadow: false, receiveShadow: false })
       .position(0, HAZE_FLOOR_Y, -300))

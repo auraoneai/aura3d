@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CONFIG } from "../../../apps/showcase-polarity-orbs/src/sim";
 
+// invariant: the How to play panel is static HTML, so its dialog semantics and the numbers it states can only be checked in the markup against the sim's CONFIG
 const html = readFileSync(resolve(__dirname, "../../../apps/showcase-polarity-orbs/index.html"), "utf8");
 const panel = html.slice(html.indexOf('id="howto-screen"'), html.indexOf('id="render-error"'));
 

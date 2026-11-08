@@ -8,7 +8,7 @@
  * prd10.waterOnly; this game keeps its own shader until the phase-2 capture compares the two).
  */
 import type { CustomSpec } from "./headlights";
-import { WGSL_CLIP, WGSL_FOG, WGSL_MATH, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, WGSL_FOG, WGSL_MATH, wgslStage } from "../shared/wgsl-twins";
 
 /** World z of the quay edge (look.ts `waterPlane`). */
 export const QUAY_Z = 510;

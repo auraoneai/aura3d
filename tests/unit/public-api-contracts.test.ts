@@ -288,6 +288,11 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
   // examples consume typed `assets.*` rather than guessing public model URLs.
   // A game port may share its showcase app's generated typed asset map, the
   // same artifact kind (never app source or package internals).
+  // The one diagnostic exception: examples/wgsl-twins-lab exists to mount Roadster Rush's own material specs (the GLSL
+  // programs the game draws and their WGSL twins) and compare backends, so it may read that game's art/ and render/ spec
+  // modules. A copy would stop proving the game's real programs. No other example may reach into apps/ source.
+  const fromRoot = relative(process.cwd(), file).replaceAll("\\", "/");
+  if (fromRoot === "examples/wgsl-twins-lab/main.ts" && /^apps\/showcase-roadster-rush\/src\/(?:art|render)\/[a-z0-9-]+$/.test(relativeToRoot)) return true;
   return relativeToRoot === "src/aura-assets" || relativeToRoot === "src/aura-assets.js"
     || /^apps\/[a-z0-9-]+\/src\/aura-assets(?:\.js)?$/.test(relativeToRoot)
     || relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");

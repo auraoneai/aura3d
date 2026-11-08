@@ -3,7 +3,7 @@
  * worker. Kept free of registry/query imports so the worker entry stays small.
  */
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
-import { AuraWorkerError } from "./workerRuntime.js";
+import { AuraWorkerError } from "./workerError.js";
 import { nodeHandleExtensionsAll } from "../../contracts/runtimeNodes.js";
 
 /**

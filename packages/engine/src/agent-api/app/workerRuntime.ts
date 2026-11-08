@@ -1,5 +1,5 @@
 import type { AuraApp, AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraScreenshot, WebGLSceneRenderer } from "../nodes/types.js";
-import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
+import { formatDiagnosticError } from "../sanitizeDiagnostics.js";
 import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSize } from "./canvas.js";
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
@@ -13,12 +13,9 @@ import { Texture, type TexturePixelData } from "@aura3d/rendering";
 import { TextureHandle, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";
 
-export class AuraWorkerError extends Error {
-  constructor(message: string, readonly code: string, readonly severity: "recoverable" | "terminal" = "terminal") {
-    super(sanitizeDiagnosticText(message));
-    this.name = "AuraWorkerError";
-  }
-}
+import { AuraWorkerError } from "./workerError.js";
+
+export { AuraWorkerError } from "./workerError.js";
 
 export interface AuraWorkerRendererOptions {
   readonly canvas: HTMLCanvasElement | OffscreenCanvas;

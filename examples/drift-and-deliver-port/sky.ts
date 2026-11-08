@@ -4,7 +4,7 @@
  * programs are exercised by the headlight beam on the same page.
  */
 import type { CustomSpec } from "./headlights";
-import { WGSL_CLIP, WGSL_COLOR, WGSL_FOG, WGSL_MATH, WGSL_NOISE, WGSL_SKY, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_FOG, WGSL_MATH, WGSL_NOISE, WGSL_SKY, wgslStage } from "../shared/wgsl-twins";
 
 export const SUN_DIR: readonly [number, number, number] = (() => {
   const v = [88, 38, 50];

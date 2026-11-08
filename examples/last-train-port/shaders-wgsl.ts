@@ -8,7 +8,7 @@
  * (`@aura3d-point-list`) with the sprite centre's value (the documented WebGPU difference). Its inputs sit at the geometry's
  * custom-pool locations in name order (fade 3, size 5).
  */
-import { WGSL_CLIP, WGSL_COLOR, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, WGSL_COLOR, wgslStage } from "../shared/wgsl-twins";
 
 const POW = /* wgsl */ `
 fn a3dPow(x: f32, y: f32) -> f32 { return pow(max(abs(x), 1e-30), y); }
