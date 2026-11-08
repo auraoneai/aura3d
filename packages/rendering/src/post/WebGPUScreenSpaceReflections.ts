@@ -16,9 +16,13 @@ import { SSR_TRACE_UNIFORM_BYTES } from "./shaders/ssr.wgsl";
  */
 export const WEBGPU_PRECHECK_ASSUMES_DEPTH_TEXTURES = false;
 
-/** Post stages the native WebGPU chain runs over the device's sampleable depth (pre-mount check input). */
+/**
+ * Post stages the native WebGPU chain runs over scene depth (pre-mount check input). `ssr` runs on any frame once the
+ * device advertises sampleable depth; `ssr:msaa` runs on a 4x frame where SSR is the only depth reader, because the
+ * trace reads the multisampled attachment, which every native WebGPU target can bind.
+ */
 export function webgpuNativeDepthPostStages(assumeDepthTextures = WEBGPU_PRECHECK_ASSUMES_DEPTH_TEXTURES): readonly string[] {
-  return assumeDepthTextures ? ["ssr"] : [];
+  return assumeDepthTextures ? ["ssr", "ssr:msaa"] : ["ssr:msaa"];
 }
 
 /** Frame inputs the renderer attaches to the `ssr` pass on WebGPU. */

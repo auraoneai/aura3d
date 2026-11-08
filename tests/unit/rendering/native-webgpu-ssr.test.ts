@@ -182,14 +182,17 @@ describe("W3 pre-mount check", () => {
   it("an SSR scene is a depth gap until the renderer reports ssr as a native WebGPU depth stage", () => {
     expect(gapFn(ssrScene(), canvas)).toMatchObject({ code: "DEPTH_POSTPROCESS_UNSUPPORTED" });
     expect(gapFn(ssrScene(), canvas, undefined, ["ssr"])).toBeUndefined();
+    // "ssr:msaa" only covers an explicit 4x frame (the tier's resolved MSAA); this bag resolves no sample count.
+    expect((createProductionRuntimePostprocess(ssrScene(), [], 640, 360, true, { canvas }) as { sampleCount?: number }).sampleCount).toBeUndefined();
+    expect(gapFn(ssrScene(), canvas, undefined, ["ssr:msaa"])).toMatchObject({ code: "DEPTH_POSTPROCESS_UNSUPPORTED" });
     expect(gapFn(scene().add(primitives.box()).add(effects.ambientOcclusion({})).toJSON(), canvas, undefined, ["ssr"])).toMatchObject({ code: "DEPTH_POSTPROCESS_UNSUPPORTED" });
   });
 
   it("the renderer reports ssr only once the device advertises depth textures", () => {
     const stages = (Renderer as unknown as Record<symbol, () => readonly string[]>)[Symbol.for("@aura3d/rendering/webgpu-native-depth-stages/v1")]!;
     expect(stages()).toEqual(webgpuNativeDepthPostStages());
-    expect(webgpuNativeDepthPostStages(true)).toEqual(["ssr"]);
-    expect(webgpuNativeDepthPostStages(false)).toEqual([]);
+    expect(webgpuNativeDepthPostStages(true)).toEqual(["ssr", "ssr:msaa"]);
+    expect(webgpuNativeDepthPostStages(false)).toEqual(["ssr:msaa"]);
   });
 });
 

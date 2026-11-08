@@ -3810,7 +3810,9 @@ export class Renderer {
       }
       const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId);
       const requiresDepthTexture = requiresPostDepthTexture || (scalarVolumes.length > 0 && scalarVolumeToneMap);
-      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")) {
+      // W3: an explicit 4x WebGPU frame whose only depth reader is SSR reads the multisampled attachment, no capability needed.
+      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")
+        && !webgpuMultisampledDepthServesPost(this.device, postprocess, postprocess.sampleCount ?? 0, this.viewScopeId)) {
         throw new RenderDeviceError("Depth-aware renderer postprocess requires a backend with sampleable depth texture render targets.", "DEPTH_POSTPROCESS_UNSUPPORTED", {
           backend: this.device.kind
         });
@@ -4729,7 +4731,9 @@ export class Renderer {
       }
       const requiresPostDepthTexture = postprocessRequiresDepthTexture(postprocess, this.viewScopeId);
       const requiresDepthTexture = requiresPostDepthTexture || (scalarVolumes.length > 0 && scalarVolumeToneMap);
-      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")) {
+      // W3: an explicit 4x WebGPU frame whose only depth reader is SSR reads the multisampled attachment, no capability needed.
+      if (requiresPostDepthTexture && !nativeDofPlan && !this.device.info.capabilities?.includes("depth-textures")
+        && !webgpuMultisampledDepthServesPost(this.device, postprocess, postprocess.sampleCount ?? 0, this.viewScopeId)) {
         throw new RenderDeviceError("Depth-aware renderer postprocess requires a backend with sampleable depth texture render targets.", "DEPTH_POSTPROCESS_UNSUPPORTED", {
           backend: this.device.kind
         });

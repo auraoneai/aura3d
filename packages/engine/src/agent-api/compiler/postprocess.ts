@@ -445,8 +445,10 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
  * WebGPU device runs it natively.
  */
 function postLacksWebgpuDepth(post: RendererPostProcessOptions, nativeDepthStages: readonly string[] = []): boolean {
-  // Stages the renderer package reports as native on WebGPU over the device's sampleable depth (W3: "ssr").
-  const native = (stage: string): boolean => nativeDepthStages.includes(stage);
+  // Stages the renderer package reports as native on WebGPU over scene depth (W3: "ssr" with sampleable depth on any
+  // frame, "ssr:msaa" on an explicit 4x frame whose only depth reader is SSR).
+  const ssrMsaa = post.sampleCount === 4 && nativeDepthStages.includes("ssr:msaa");
+  const native = (stage: string): boolean => nativeDepthStages.includes(stage) || (stage === "ssr" && ssrMsaa);
   if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
       (post.ssao && !post.ssao.depth) || (post.ssr && !post.ssr.depth && !native("ssr"))) return true;
   if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return false;
