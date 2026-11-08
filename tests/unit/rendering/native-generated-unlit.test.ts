@@ -93,8 +93,9 @@ function nativeFixture() {
     lost,
     queue: {
       submit(commands: readonly unknown[]) { submissions.push(...commands); }, onSubmittedWorkDone: () => fence,
-      writeBuffer(buffer: { descriptor: { label?: string } }, _offset: number, data: ArrayBufferView) {
-        writes.set(buffer.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
+      writeBuffer(buffer: { label?: string; descriptor: { label?: string } }, _offset: number, data: ArrayBufferView) {
+        // Pooled per-draw uniforms carry the current draw's label on the buffer itself.
+        writes.set(buffer.label ?? buffer.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
       },
       writeTexture() {}
     },
@@ -280,7 +281,7 @@ describe("native generated unlit WebGPU submission", () => {
     }
   });
 
-  it("binds the selected texture, AuraFrame and grouped clipping packet and retires uniforms after the fence", async () => {
+  it("binds the selected texture, AuraFrame and grouped clipping packet and pools its uniforms", async () => {
     const fixture = nativeFixture();
     const device = await WebGPUDevice.create({ adapter: { requestDevice: async () => fixture.native } });
     const source = generated("lines", { vertexColors: true, maps: { baseColor: { uvSet: 0, transform: true } }, features: { "a3d.clipping": true } });
@@ -321,7 +322,8 @@ describe("native generated unlit WebGPU submission", () => {
       const materialBuffer = fixture.buffers.find(buffer => buffer.descriptor.label === "clipped-line-generated-unlit-material")!;
       expect(materialBuffer.destroyed).toBe(false);
       fixture.completeFence(); await Promise.resolve();
-      expect(materialBuffer.destroyed).toBe(true);
+      // Per-draw uniforms return to the device pool after submission; the device retires them on disposal.
+      expect(materialBuffer.destroyed).toBe(false);
       device.endFrame();
     } finally { target.dispose(); texture.dispose(); vertices.dispose(); frame.dispose(); device.dispose(); }
   });

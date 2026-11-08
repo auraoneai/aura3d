@@ -1598,8 +1598,9 @@ describe("generated PBR irradiance-volume WebGPU bindings", () => {
       queue: {
         submit(commands: readonly unknown[]) { submissions.push(...commands); },
         onSubmittedWorkDone: () => fence,
-        writeBuffer(buffer: { descriptor: { label?: string } }, _offset: number, data: ArrayBufferView) {
-          writes.set(buffer.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
+        writeBuffer(buffer: { label?: string; descriptor: { label?: string } }, _offset: number, data: ArrayBufferView) {
+          // Pooled per-draw uniforms carry the current draw's label on the buffer itself.
+          writes.set(buffer.label ?? buffer.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
         },
         writeTexture(destination: { texture: { descriptor: { label?: string } } }, data: ArrayBufferView) {
           textureWrites.set(destination.texture.descriptor.label ?? "", new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());

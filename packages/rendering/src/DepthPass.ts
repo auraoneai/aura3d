@@ -636,7 +636,12 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
   const attributes = [...base.requiredAttributes];
   const graphPristine = base instanceof PortableShaderMaterial ? base.graphSourcesPristine : undefined;
   const graphRequiresWebGPU = base instanceof PortableShaderMaterial ? base.graphRequiresWebGPU : undefined;
-  const params = [...recursiveMaterialParameters(material)].map(([name, value]) => ({
+  // The renderer's shared parameter snapshot keeps its identity until a parameter changes (Material.setParameterValue is
+  // the only writer and keeps the snapshot only for an identical value), so an unchanged identity proves unchanged values
+  // without rebuilding and comparing a cloned parameter map on every check. Texture bindings are borrowed, so their
+  // texture revision and transform are still compared on every check.
+  const snapshot = material.parameterSnapshot();
+  const params = [...snapshot].map(([name, value]) => ({
     name,
     value,
     textureRevision: isTextureBinding(value) ? value.texture?.revision : undefined,
@@ -645,6 +650,7 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
     textureScale: isTextureBinding(value) ? [...value.scale] : undefined,
     textureRotation: isTextureBinding(value) ? value.rotation : undefined
   }));
+  const textureParams = params.filter((entry) => isTextureBinding(entry.value));
   const storage = base instanceof PortableShaderMaterial && graphRequiresWebGPU
     ? base.graphStorageBindings("depth").map((binding) => ({ ...binding })) : undefined;
   return () => {
@@ -653,9 +659,10 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
         || base.renderState.blend !== blend || base.renderState.blendMode !== blendMode || base.renderState.alphaToCoverage !== alphaToCoverage
         || base.requiredAttributes.length !== attributes.length || attributes.some((name, index) => base.requiredAttributes[index] !== name)
         || (base instanceof PortableShaderMaterial && (base.graphSourcesPristine !== graphPristine || base.graphRequiresWebGPU !== graphRequiresWebGPU))) return false;
-      const current = recursiveMaterialParameters(material);
+      const current = material.parameterSnapshot();
+      const unchanged = current === snapshot;
       if (current.size !== params.length) return false;
-      for (const entry of params) {
+      for (const entry of unchanged ? textureParams : params) {
         const value = current.get(entry.name);
         if (isTextureBinding(entry.value)) {
           if (value !== entry.value || entry.value.texture?.disposed || entry.value.texture?.revision !== entry.textureRevision || entry.value.texture?.disposed !== entry.textureDisposed
@@ -907,7 +914,13 @@ export class DepthPass extends BaseRenderPass {
   }
 
   private drawEntries(device: RenderDevice, entries: readonly PreparedDepthEntry[]): void {
-    for (const entry of entries) this.drawCaster(device, entry.drawSource, entry.clip);
+    // WebGPU records the caster loop into one command encoder (RenderDevice.beginDrawBatch); WebGL2 has no window.
+    device.beginDrawBatch?.();
+    try {
+      for (const entry of entries) this.drawCaster(device, entry.drawSource, entry.clip);
+    } finally {
+      device.endDrawBatch?.();
+    }
   }
 
   private assertBatchClippingCallback(casters: readonly RenderItem[], callback: unknown): void {

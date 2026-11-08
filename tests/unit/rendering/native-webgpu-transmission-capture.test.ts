@@ -250,9 +250,11 @@ describe("WebGPU transmission capture device contract", () => {
     const failedUniform = f.buffers.find(buffer => buffer.label === "draw-portable-uniforms")!;
     expect(failedUniform.destroy).not.toHaveBeenCalled();
     f.finish(); await Promise.resolve(); await Promise.resolve();
-    expect(failedUniform.destroy).toHaveBeenCalledOnce();
+    // A failed draw hands its per-draw uniform back to the device pool instead of destroying it.
+    expect(failedUniform.destroy).not.toHaveBeenCalled();
     expect(() => f.device.getNativeTexture(target.colorTexture)).toThrow(/mip chain/);
     f.device.drawTransmissionCapture(draw);
+    expect(f.buffers.filter(buffer => buffer.label === "draw-portable-uniforms")).toEqual([failedUniform]);
     f.failNextSubmit();
     expect(() => f.device.generateRenderTargetMipmaps(target)).toThrow(/injected submit/);
     expect(() => f.device.getNativeTexture(target.colorTexture)).toThrow(/mip chain/);
@@ -282,11 +284,12 @@ describe("WebGPU transmission capture device contract", () => {
     const failedUniform = f.buffers.find(value => value.label === "draw-portable-uniforms")!;
     expect(failedUniform.destroy).not.toHaveBeenCalled();
     f.finish(); await Promise.resolve(); await Promise.resolve();
-    expect(failedUniform.destroy).toHaveBeenCalledOnce();
+    // A failed draw hands its per-draw uniform back to the device pool instead of destroying it.
+    expect(failedUniform.destroy).not.toHaveBeenCalled();
     f.device.endFrame(); f.device.dispose();
   });
 
-  it("fence-retires uniforms after a required portable texture or generated material binding is missing", async () => {
+  it("pools uniforms after a required portable texture or generated material binding is missing", async () => {
     const portable = await fixture();
     const target = portable.device.createRenderTarget({ width: 1, height: 1, depth: false });
     const shader = copyShader(portable.device), vertices = portable.device.createBuffer("vertex", 24);
@@ -297,7 +300,8 @@ describe("WebGPU transmission capture device contract", () => {
     expect(portable.native.queue.submit.mock.calls.length).toBe(submissions);
     expect(portableUniform.destroy).not.toHaveBeenCalled();
     portable.finish(); await Promise.resolve(); await Promise.resolve();
-    expect(portableUniform.destroy).toHaveBeenCalledOnce();
+    // A failed draw hands its per-draw uniform back to the device pool instead of destroying it.
+    expect(portableUniform.destroy).not.toHaveBeenCalled();
     portable.device.endFrame(); portable.device.dispose();
 
     const generated = await fixture(true, { noLayout: true });
@@ -315,7 +319,8 @@ describe("WebGPU transmission capture device contract", () => {
     expect(generated.native.queue.submit.mock.calls.length).toBe(before);
     expect(generatedUniform.destroy).not.toHaveBeenCalled();
     generated.finish(); await Promise.resolve(); await Promise.resolve();
-    expect(generatedUniform.destroy).toHaveBeenCalledOnce();
+    // A failed draw hands its per-draw uniform back to the device pool instead of destroying it.
+    expect(generatedUniform.destroy).not.toHaveBeenCalled();
     generated.device.endFrame(); generated.device.dispose();
   });
 });

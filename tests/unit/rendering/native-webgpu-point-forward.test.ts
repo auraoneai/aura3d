@@ -21,6 +21,8 @@ const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 interface CapturedBuffer {
   readonly descriptor: { readonly label?: string };
+  /** Set by the device when a pooled per-draw uniform buffer is reused for another draw. */
+  readonly label?: string;
   destroyed: boolean;
   destroy(): void;
 }
@@ -41,7 +43,7 @@ async function fixture(options: { readonly generator?: boolean; readonly parity?
     queue: {
       writeBuffer(buffer: CapturedBuffer, offset: number, data: ArrayBuffer | ArrayBufferView) {
         const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        writes.push({ label: buffer.descriptor.label ?? "", offset, bytes: bytes.slice() });
+        writes.push({ label: buffer.label ?? buffer.descriptor.label ?? "", offset, bytes: bytes.slice() });
       },
       writeTexture() {},
       submit(commands: readonly unknown[]) {

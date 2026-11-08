@@ -54,7 +54,7 @@ async function nativeFixture() {
     createBindGroup(descriptor: { readonly entries: readonly { readonly binding: number; readonly resource: unknown }[] }) {
       const resource = descriptor.entries.find(entry => entry.binding === 0)?.resource as { readonly buffer?: object } | undefined;
       const bytes = resource?.buffer && writes.get(resource.buffer);
-      return { ...(bytes ? { bytes: bytes.slice() } : {}) };
+      return { buffer: resource?.buffer, ...(bytes ? { bytes: bytes.slice() } : {}) };
     },
     createCommandEncoder() {
       const passes: RecordedPass[] = [];
@@ -64,7 +64,11 @@ async function nativeFixture() {
           passes.push(pass);
           return {
             setPipeline(pipeline: RecordedPass["pipeline"]) { pass.pipeline = pipeline; },
-            setBindGroup(_index: number, group: RecordedPass["group"]) { pass.group = group; },
+            // A bind group reads its buffer's contents as of this submission (queue writes are ordered before it).
+            setBindGroup(_index: number, group: RecordedPass["group"] & { readonly buffer?: object }) {
+              const bytes = group?.buffer ? writes.get(group.buffer) : undefined;
+              pass.group = bytes ? { ...group, bytes: bytes.slice() } : group;
+            },
             setVertexBuffer(_slot: number, buffer: object) { pass.vertexBytes = writes.get(buffer)?.slice(); },
             setViewport() {}, setScissorRect() {}, setBlendConstant() {}, setStencilReference() {},
             draw(count: number) { pass.vertices = count; }, end() {}
