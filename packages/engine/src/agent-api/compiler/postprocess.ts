@@ -454,7 +454,11 @@ function webgpuDepthStagesMissing(post: RendererPostProcessOptions): string[] {
   if (post.volumetricLight && !post.volumetricLight.depth) missing.push("volumetric-light");
   if (post.contactShadow && !post.contactShadow.depth) missing.push("contact-shadow");
   if (post.ssr && !post.ssr.depth) missing.push("legacy-ssr");
-  if (post.v2 !== true || post.pipeline === null || typeof post.pipeline !== "object") return missing;
+  const v2Bag = post.v2 === true && post.pipeline !== null && typeof post.pipeline === "object";
+  // The native legacy ssao pass reads single-sample depth only; on a 4x forward target only the v2 GTAO stage
+  // (which loads the multisampled attachment) replaces it, so a legacy-only ssao on msaa still needs WebGL2.
+  if (post.ssao && !post.ssao.depth && (post.sampleCount ?? 1) > 1 && !(v2Bag && (post.pipeline as { ao?: unknown }).ao)) missing.push("legacy-ssao-msaa");
+  if (!v2Bag) return missing;
   const bag = post.pipeline as { godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
   if (bag.godRays) missing.push("god-rays");
   if (bag.motionBlur) missing.push("motion-blur");
