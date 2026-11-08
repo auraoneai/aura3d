@@ -119,6 +119,21 @@ describe("W3 native WebGPU SSR: device pass", () => {
       expect(() => f.device.executeWebGPUSsr(f.source, {})).toThrow(expect.objectContaining({ code: "WEBGPU_SSR_FRAME_REQUIRED" }));
     } finally { f.device.dispose(); }
   });
+
+  it("traces the scene depth when an earlier stage (S2 AO) replaced the color with a depthless target", async () => {
+    const f = await fixtureWithSource();
+    try {
+      const aoOut = f.device.createRenderTarget({ width: 10, height: 5, format: "rgba16f", depth: false, label: "a3d-webgpu-ao-apply" });
+      expect(() => f.device.executeWebGPUSsr(aoOut, { webgpuFrame: frame() })).toThrow(expect.objectContaining({ code: "WEBGPU_SSR_DEPTH_REQUIRED" }));
+      const out = f.device.executeWebGPUSsr(aoOut, { webgpuFrame: frame() }, f.source);
+      const trace = f.passes.find(pass => pass.label.startsWith("webgpu-ssr-trace"))!;
+      const depthView = trace.group!.entries.find(entry => entry.binding === 3)!.resource as { texture: { label: string } };
+      expect(depthView.texture.label).toContain("forward");
+      expect(out.width).toBe(10);
+      const small = f.device.createRenderTarget({ width: 4, height: 2, format: "rgba16f", depth: false });
+      expect(() => f.device.executeWebGPUSsr(small, { webgpuFrame: frame() }, f.source)).toThrow(expect.objectContaining({ code: "WEBGPU_SSR_DEPTH_REQUIRED" }));
+    } finally { f.device.dispose(); }
+  });
 });
 
 async function fixtureWithSource() {

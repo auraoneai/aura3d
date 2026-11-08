@@ -5417,16 +5417,19 @@ export class WebGPUDevice implements RenderDevice {
    * source's format. `options.webgpuFrame` is the renderer-attached
    * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
    */
-  executeWebGPUSsr(source: RenderTarget, options: Readonly<Record<string, unknown>> = {}): RenderTarget {
+  executeWebGPUSsr(source: RenderTarget, options: Readonly<Record<string, unknown>> = {}, depthSource: RenderTarget = source): RenderTarget {
     this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
+    // `depthSource` is the scene target when an earlier native stage (S2 AO) already replaced the color with a depthless target.
+    const dsrc = this.requireRenderTarget(depthSource);
     const frame = validateWebGPUSsrFrame(options.webgpuFrame);
     const ssr = resolveWebGPUSsrOptions(options);
     // A single-sample source exposes a sampleable depth texture; a 4x source keeps its multisampled attachment.
-    const multisampled = (src.sampleCount ?? 1) === 4;
-    const depthAlias = multisampled ? src.multisampledDepthTexture : src.depthTexture;
-    if (!src.nativeView || !src.nativeDepthTexture || !depthAlias || depthAlias.disposed || ((src.sampleCount ?? 1) !== 1 && !multisampled)) {
-      throw new RenderDeviceError("WebGPU SSR requires a source with a sampleable depth attachment", "WEBGPU_SSR_DEPTH_REQUIRED", { label: src.label });
+    const multisampled = (dsrc.sampleCount ?? 1) === 4;
+    const depthAlias = multisampled ? dsrc.multisampledDepthTexture : dsrc.depthTexture;
+    if (!src.nativeView || !dsrc.nativeDepthTexture || !depthAlias || depthAlias.disposed || ((dsrc.sampleCount ?? 1) !== 1 && !multisampled) ||
+        dsrc.width !== src.width || dsrc.height !== src.height) {
+      throw new RenderDeviceError("WebGPU SSR requires a source with a sampleable depth attachment", "WEBGPU_SSR_DEPTH_REQUIRED", { label: dsrc.label });
     }
     const format = src.colorTexture.format;
     if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") {
@@ -5435,7 +5438,7 @@ export class WebGPUDevice implements RenderDevice {
     if (format === "rgba32f" && !this.device.features?.has("float32-filterable")) {
       throw new RenderDeviceError("WebGPU SSR of rgba32f requires float32-filterable", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
-    const depthView = src.nativeDepthTexture.createView({ aspect: "depth-only" });
+    const depthView = dsrc.nativeDepthTexture.createView({ aspect: "depth-only" });
     const trace = this.createRenderTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
       format: "rgba16f", depth: false, label: "a3d-webgpu-ssr-trace" });
     let out: RenderTarget | undefined;
@@ -6045,7 +6048,7 @@ export class WebGPUDevice implements RenderDevice {
       const ssrPass = options.passes.find(pass => pass.name === "ssr");
       if (ssrPass) {
         if (options.nativeDepthOfField) throw new RenderDeviceError("Native depth of field cannot combine with SSR", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
-        track(this.executeWebGPUSsr(current, ssrPass.options));
+        track(this.executeWebGPUSsr(current, ssrPass.options, source));
         if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
       }
       if (options.nativeDepthOfField) {
