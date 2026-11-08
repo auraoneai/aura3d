@@ -145,6 +145,13 @@ Their classification gives the route-tier inventory a source-backed signal.
 | `examples/selfheal-lab` | diagnostic | Black-frame guard behavior under dark, black and slow-load scenarios. |
 | `examples/webgpu-presentation-probe` | diagnostic | Isolates browser WebGPU presentation behavior; no Aura3D renderer parity claim. |
 | `examples/webgpu-ssao-probe` | diagnostic | Native WebGPU ambient occlusion (v2 GTAO and legacy ssao) against WebGL2 on one scene; no game claim. |
+| `examples/auto-frame-clock` | diagnostic | N4 framing and shadows by default: benchmark-505 cause-E clock rebuilt with `camera.auto({ subject })` and `lights.key`; no game claim. |
+| `examples/color-input-css` | diagnostic | One cube per CSS colour form (hex, rgb(), hsl(), names) plus an hsl() sky and rgb() fog; checks that no form falls back to near-black. |
+| `examples/materials-glass-steel` | diagnostic | Benchmark materials-1 rebuilt (glass, brushed steel, fabric on a studio sweep) under the default structured-room environment, with query variants for paired captures. |
+| `examples/webgpu-dof-combinations` | diagnostic | Isolated native WebGPU depth-of-field chain with MSAA, chromatic aberration, vignette and grain (`?backend`, `?msaa`, `?stages`, `?dof`); no game claim. |
+| `examples/webgpu-ssr-lab` | diagnostic | Isolated screen-space reflections on one glossy floor; `?backend=webgpu` runs the native WGSL pass, WebGL2 by default; no game claim. |
+| `examples/wgsl-twins-lab` | diagnostic | Hand-written WGSL twins of Roadster Rush and Cumulus Dash custom shaders mounted with no post chain, compared against the WebGL2 GLSL frame. |
+| `examples/worker-rendering-lab` | diagnostic | Worker rendering proof page: the scene renders in a dedicated worker while game logic, input and picking stay on the main thread. |
 
 ## Retained Engine Evidence
 
