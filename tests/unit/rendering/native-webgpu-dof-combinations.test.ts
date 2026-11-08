@@ -160,6 +160,20 @@ describe("native WebGPU depth of field display stages", () => {
     } finally { f.close(); }
   });
 
+  it("runs the display stages on a multisampled source without depth of field (a 4x source used to throw NATIVE_POST_UNSUPPORTED; CA reads its resolve view)", async () => {
+    const f = await fixture({ dof: undefined, ...msaa, ...stages }, { sampleCount: 4 });
+    try {
+      f.renderer.render({ source: f.source, camera: f.camera, frameId: 5 });
+      const names = drawn(f.passes);
+      expect(names).not.toContain("fs_dof_composite");
+      const ca = names.indexOf("fs_dof_ca"), vignette = names.indexOf("fs_dof_vignette"), finalize = names.indexOf("fs_dof_finalize");
+      expect(ca).toBeGreaterThanOrEqual(0);
+      expect(vignette).toBeGreaterThan(ca);
+      expect(finalize).toBeGreaterThan(vignette);
+      expect(names[finalize + 1]).toBe("fs_copy");
+    } finally { f.close(); }
+  });
+
   it("tone-maps ACES with the WebGL2 output curve (1/0.6 scale, Hill RRT+ODT fit), not the Narkowicz fit", async () => {
     const f = await fixture({ ...msaa, ...stages }, { sampleCount: 4 });
     try {
