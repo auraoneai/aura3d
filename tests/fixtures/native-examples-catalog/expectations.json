@@ -2440,7 +2440,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
-          "sha256": "79faafe2fb13de5e5c61f740daf3375d9c6e19b9bca46722eeb0b1835622e066"
+          "sha256": "9790e6860719468942617a538970869b60ed30072646d3e1ecf6bf252472b78e"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",
@@ -3947,7 +3947,7 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "f88b2282d8f9f5825d6bf689e9728a1635cc04d8a4a28da440ad3ba72194d0c7"
+        "sha256": "e55b268f15dff271229926a2b73cbd054a1f251a7a9f3653060f210075a87437"
       },
       "sourceDependencies": [
         {
@@ -3956,7 +3956,7 @@
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/look.ts",
-          "sha256": "1910b6ce8f90d0e5345d26b94fd5e8cdf79beed25276c021fc4939642fb48b36"
+          "sha256": "2baef23ce1c96e6f892f91d059a0b6ff18553d9abf5d6b9e20115549bc3307d9"
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/motion.ts",
