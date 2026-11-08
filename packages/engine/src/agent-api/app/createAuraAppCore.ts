@@ -67,6 +67,7 @@ import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { createWorkerRootApp } from "./workerRootApp.js";
 import { workerCanvasTransferAttempted } from "./workerRuntime.js";
 import { coldStartLookApplies, withColdStartLook } from "../looks/coldStartLook.js";
+import { plainLookForNextScene, resolvePlainLook } from "../looks/plainLook.js";
 
 type ReadinessStage = "renderer" | "first-frame";
 type ReadyBackend = "webgl2" | "webgpu";
@@ -294,6 +295,18 @@ export function createAuraAppWithPhysicsWorldAccess(
   // payload.extra.mountTiming (see markTiming in ./platform).
   markTiming("a3d:mount:create-app-start");
   let snapshot = normalizeSceneSnapshot(options.scene);
+  // N3: a lit scene with no authored look, output or post effect (or `looks.preset("plain")`) gets the neutral output and
+  // the no-stacked-fill rule; the output rides as this app's `options.output`, so every later read sees it. Real browsers
+  // only, like the cold-start look (unit tests and harnesses that inject a renderer keep their options untouched).
+  const plainLook = typeof (globalThis as { WebGL2RenderingContext?: unknown }).WebGL2RenderingContext === "undefined"
+    ? null
+    : resolvePlainLook(snapshot, options);
+  // The options the author passed (before the plain output rides on them); `setScene` re-decides against these.
+  const authoredOptions = options;
+  if (plainLook) {
+    snapshot = plainLook.snapshot;
+    options = { ...options, output: plainLook.output };
+  }
   // 5.1: scenes that author no look/light/environment get the hero-stage defaults; authored scenes are returned unchanged.
   if (coldStartLookApplies(options)) snapshot = withColdStartLook(snapshot);
   /*
@@ -2229,7 +2242,16 @@ export function createAuraAppWithPhysicsWorldAccess(
     },
     setScene(nextScene) {
       assertMutableFrame();
-      const nextSnapshot = coldStartLookApplies(options) ? withColdStartLook(normalizeSceneSnapshot(nextScene)) : normalizeSceneSnapshot(nextScene);
+      // An app that booted on the plain path re-decides per scene: a later scene that authors a look, post effect or HDRI
+      // drops the neutral output (its look's own output applies again); a plain scene keeps it. Apps that did not boot on
+      // the plain path never gain it here, so existing games that switch scenes keep their look.
+      let normalizedNext = normalizeSceneSnapshot(nextScene);
+      if (plainLook) {
+        const nextPlain = plainLookForNextScene(normalizedNext, authoredOptions);
+        normalizedNext = nextPlain.snapshot;
+        options = nextPlain.output ? { ...authoredOptions, output: nextPlain.output } : authoredOptions;
+      }
+      const nextSnapshot = coldStartLookApplies(options) ? withColdStartLook(normalizedNext) : normalizedNext;
       assertScenePhysicsPivotSupport(nextSnapshot.nodes);
       const nextRenderSnapshot = flattenForRender(nextSnapshot, true);
       // The preview bridge is a separate world, so prepare it before changing

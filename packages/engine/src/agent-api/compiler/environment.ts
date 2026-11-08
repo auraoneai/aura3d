@@ -455,10 +455,12 @@ export function explicitEnvironmentResolution(
   ambient: AuraEnvironmentSourceResolution["ambient"]
 ): AuraEnvironmentSourceResolution | undefined {
   const intensity = nonNegativeFinite(node.intensity);
-  const diffuseIntensity = nonNegativeFinite(node.diffuseIntensity ?? intensity);
+  // N3 plain look (looks/plainLook.ts): a neutral room next to authored hemisphere/ambient lights yields its diffuse fill.
+  const diffuseYield = (node as { readonly plainDiffuseYield?: unknown }).plainDiffuseYield === true;
+  const diffuseIntensity = diffuseYield ? 0 : nonNegativeFinite(node.diffuseIntensity ?? intensity);
   const specularIntensity = nonNegativeFinite(node.specularIntensity ?? intensity);
   const rotation = node.rotation ?? 0;
-  const base = { kind: "explicit" as const, intensity, diffuseIntensity, specularIntensity, rotation, ambient };
+  const base = { kind: "explicit" as const, intensity, diffuseIntensity, specularIntensity, rotation, ambient, ...(diffuseYield ? { diffuseYield: true } : {}) };
   switch (node.environment) {
     case "none":
       // Explicit zero-IBL opt-out: the neutral probe is still bound so the
@@ -750,14 +752,14 @@ export function scaleEnvironmentLighting(lighting: EnvironmentLightingOptions, s
  */
 export function prd02ProbeBindIntensities(
   knobLighting: EnvironmentLightingOptions | false | undefined,
-  resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">,
+  resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity" | "diffuseYield">,
   conjunction: boolean
 ): { readonly diffuseIntensity: number; readonly specularIntensity: number } {
   if (conjunction && knobLighting) {
     if (resolution.kind === "explicit") {
       const knob = knobLighting.environmentMapIntensity ?? knobLighting.intensity;
       if (Number.isFinite(knob) && knob >= 0) {
-        return { diffuseIntensity: knob, specularIntensity: knob };
+        return { diffuseIntensity: resolution.diffuseYield === true ? 0 : knob, specularIntensity: knob };
       }
     }
     if (

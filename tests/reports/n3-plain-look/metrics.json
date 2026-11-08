@@ -1,0 +1,103 @@
+{
+ "spider/three": {
+  "frameLuma": 196.1,
+  "frameSat": 0.045,
+  "groundLuma": 210.9,
+  "groundSat": 0.005,
+  "groundPixel": [
+   212,
+   211,
+   211
+  ]
+ },
+ "spider/pre-n3": {
+  "frameLuma": 233.5,
+  "frameSat": 0.02,
+  "groundLuma": 244.0,
+  "groundSat": 0.0,
+  "groundPixel": [
+   244,
+   244,
+   244
+  ]
+ },
+ "spider/n3-default": {
+  "frameLuma": 183.6,
+  "frameSat": 0.035,
+  "groundLuma": 192.0,
+  "groundSat": 0.021,
+  "groundPixel": [
+   191,
+   192,
+   195
+  ]
+ },
+ "spider/plain-preset": {
+  "frameLuma": 179.7,
+  "frameSat": 0.028,
+  "groundLuma": 187.1,
+  "groundSat": 0.011,
+  "groundPixel": [
+   187,
+   187,
+   189
+  ]
+ },
+ "garden/three": {
+  "frameLuma": 147.4,
+  "frameSat": 0.547,
+  "groundLuma": 123.6,
+  "groundSat": 0.645,
+  "groundPixel": [
+   86,
+   141,
+   54
+  ]
+ },
+ "garden/pre-n3": {
+  "frameLuma": 123.3,
+  "frameSat": 0.21,
+  "groundLuma": 149.8,
+  "groundSat": 0.46,
+  "groundPixel": [
+   130,
+   162,
+   87
+  ]
+ },
+ "garden/n3-default": {
+  "frameLuma": 108.4,
+  "frameSat": 0.179,
+  "groundLuma": 124.0,
+  "groundSat": 0.406,
+  "groundPixel": [
+   109,
+   133,
+   79
+  ]
+ },
+ "garden/plain-preset": {
+  "frameLuma": 109.0,
+  "frameSat": 0.161,
+  "groundLuma": 124.8,
+  "groundSat": 0.367,
+  "groundPixel": [
+   112,
+   133,
+   84
+  ]
+ },
+ "authored": {
+  "garden ground": "#6a8a3c = (106,138,60)",
+  "spider ground": "#e9eaed",
+  "spider body": "#3a2a24"
+ },
+ "games-live-vs-n3 meanAbsDiff (0-255)": {
+  "showcase-top-tennis": 0.4,
+  "showcase-iron-crown": 0.9,
+  "showcase-slingshot-siege": 2.2,
+  "showcase-aura-hoops-3d": 2.8,
+  "showcase-aura-links-3d": 0.3,
+  "showcase-pips-big-leap": 2.1
+ }
+}

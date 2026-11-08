@@ -620,6 +620,13 @@ export interface AuraCreateAppOptions {
   readonly qualityRebuild?: { readonly flags?: import("../../../contracts/flags").QrFlagInput; readonly allowUrlFlags?: boolean };
   readonly lighting?: import("../../../contracts/lighting").AuraLightingOptions;
   readonly output?: import("../../../contracts/output").AuraOutputOptions;
+  /**
+   * N3 plain look. A lit scene that authors no look, `output`, `lighting` or post effect renders through the PBR Neutral
+   * output (authored colours stay close to what was asked for) and an `environments.neutral()` next to a hemisphere or
+   * ambient light yields its diffuse fill to that light. `false` keeps the earlier default (ACES fit, stacked fill).
+   * Default `true`; `looks.preset("plain")` asks for the same path explicitly.
+   */
+  readonly plainLook?: boolean;
   readonly assets?: import("../../../contracts/assets").AuraAssetsOption;
   /** Optional per-app native model adapters. Install only the formats this app uses. */
   readonly formatRegistry?: import("@aura3d/assets").FormatRegistry;

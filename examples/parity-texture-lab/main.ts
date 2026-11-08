@@ -132,6 +132,7 @@ async function run(): Promise<void> {
   const canvasTex = texture.canvas({ canvas: live, colorSpace: "srgb" });
 
   const app = createAuraApp(canvas, {
+    plainLook: false, // keep the pre-N3 default output this lab was measured on
     pixelRatio: 1,
     resize: false,
     onAssetProgress: () => { state.progressEvents += 1; },

@@ -71,6 +71,7 @@ const canvas = document.querySelector<HTMLCanvasElement>("#stage")!;
 const status = document.querySelector<HTMLDivElement>("#status")!;
 const lab = labAppOptions(readLabFlags());
 const app = createAuraApp(canvas, {
+  plainLook: false, // keep the pre-N3 default output this lab was measured on
   scene: which === "roadster" ? roadsterScene() : cumulusScene(which === "cumulus-original"),
   ...(lab.renderer ? { renderer: lab.renderer } : {})
 });
