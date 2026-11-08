@@ -74,6 +74,7 @@ import { PostViewHistory, type PostHistoryLease } from "./post/PostGraph";
 import { WebGPUAutoExposure, normalizeWebGPUAutoExposure, type WebGPUExposureDraw, type WebGPUExposureResult } from "./post/WebGPUAutoExposure";
 import { createOutputWgsl } from "./output/ToneMappingOperators.wgsl";
 import { WebGPULinearDepth, linearizeWebGPUDepthSample, type WebGPULinearDepthDraw } from "./post/WebGPULinearDepth";
+import { NATIVE_DOF_CA_WGSL, NATIVE_DOF_FINALIZE_WGSL, NATIVE_DOF_VIGNETTE_WGSL, nativeDofCustomAnchorPrecedesDof, type NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages";
 import { WebGPUDepthOfField, nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions, type WebGPUDepthOfFieldDraw } from "./post/WebGPUDepthOfField";
 import { validateNativePostEffect, type NativePostEffect } from "./post/NativeEffectShaders";
 import { NATIVE_EFFECT_WGSL } from "./webgpu/NativeEffectShaders.wgsl";
@@ -176,6 +177,39 @@ const WEBGPU_NATIVE_COPY_FRAGMENT = `
  let alpha = select(c.a, 1.0, params.w > 0.5);
  return vec4<f32>(rgb, alpha);
 }`;
+/** Detach the per-frame display-stage values from caller-owned objects. */
+function snapshotNativeDofDisplay(stages: NativeDofDisplayStages): NativeDofDisplayStages {
+  const values = [stages.chromaticAberration?.intensity, ...(stages.vignette ? [stages.vignette.intensity, stages.vignette.smoothness,
+    stages.vignette.roundness, ...stages.vignette.color] : []), ...(stages.finalize ? Object.values(stages.finalize) : [])];
+  if (values.some(value => value !== undefined && (typeof value !== "number" || !Number.isFinite(value)))) {
+    throw new RenderDeviceError("Native depth-of-field display stages require finite values", "WEBGPU_DOF_INVALID");
+  }
+  return Object.freeze({
+    ...(stages.chromaticAberration ? { chromaticAberration: Object.freeze({ intensity: stages.chromaticAberration.intensity }) } : {}),
+    ...(stages.vignette ? { vignette: Object.freeze({ intensity: stages.vignette.intensity, smoothness: stages.vignette.smoothness,
+      roundness: stages.vignette.roundness, color: Object.freeze([stages.vignette.color[0], stages.vignette.color[1], stages.vignette.color[2]] as const) }) } : {}),
+    ...(stages.finalize ? { finalize: Object.freeze({ ...stages.finalize }) } : {})
+  });
+}
+/** One fragment for the 4x DoF producer resolve (see resolveNativeDofMultisampleProducer). */
+function nativeDofMultisampleResolveWgsl(reversed: boolean, clearDepth: number): string {
+  return `
+@group(0) @binding(0) var colorTex: texture_2d<f32>;
+@group(0) @binding(1) var coverageTex: texture_2d<f32>;
+@group(0) @binding(2) var depthTex: texture_depth_multisampled_2d;
+struct ResolveOut { @location(0) color: vec4<f32>, @location(1) coverage: vec4<f32>, @builtin(frag_depth) depth: f32 };
+@fragment fn fs_dof_msaa_resolve(@builtin(position) position: vec4<f32>) -> ResolveOut {
+  let p = vec2<i32>(floor(position.xy));
+  var nearest = textureLoad(depthTex, p, 0);
+  for (var i = 1; i < 4; i = i + 1) { nearest = ${reversed ? "max" : "min"}(nearest, textureLoad(depthTex, p, i)); }
+  let covered = textureLoad(coverageTex, p, 0).r > 0.0;
+  var out: ResolveOut;
+  out.color = textureLoad(colorTex, p, 0);
+  out.coverage = vec4<f32>(select(0.0, 1.0, covered), 0.0, 0.0, 0.0);
+  out.depth = select(${clearDepth.toFixed(1)}, nearest, covered);
+  return out;
+}`;
+}
 // Area weights preserve all source texels when a mip dimension is odd.
 const WEBGPU_MIP_AREA_FRAGMENT = `
 @group(0) @binding(0) var<uniform> params: vec4<f32>;
@@ -880,14 +914,20 @@ interface WebGPUColorAttachment {
 
 interface NativeDofFrameProof {
   readonly frame: NativeWebGPUDofFrame;
-  readonly target: WebGPURenderTarget;
+  /**
+   * The target the producer draws into. A multisampled producer is replaced by
+   * its single-sample `resolveTarget` when the frame is sealed.
+   */
+  target: WebGPURenderTarget;
   readonly frameToken: object;
-  readonly nativeColor: WebGPUTextureLike;
-  readonly nativeDepth: WebGPUTextureLike;
-  readonly nativeCoverage: WebGPUTextureLike;
-  readonly color: Texture;
-  readonly depth: Texture;
-  readonly coverage: Texture;
+  nativeColor: WebGPUTextureLike;
+  nativeDepth: WebGPUTextureLike;
+  nativeCoverage: WebGPUTextureLike;
+  color: Texture;
+  depth: Texture | undefined;
+  coverage: Texture;
+  /** Present while a 4x producer awaits its resolve into frame.source. */
+  resolveTarget?: WebGPURenderTarget;
   phase: "recording" | "sealed" | "consumed" | "invalid";
   normalClear: boolean;
   coverageClear: boolean;
@@ -3482,12 +3522,15 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("A native depth-of-field frame is already active", "WEBGPU_DOF_FRAME_ACTIVE");
     }
     const target = this.requireRenderTarget(descriptor.source);
-    if (this.activeRenderTarget !== target || !this.frameToken || target.nativeExtraColors.length !== 1 ||
+    // A 4x producer draws the frame; sealing resolves it into the single-sample source.
+    const producer = descriptor.multisample === undefined ? target : this.requireRenderTarget(descriptor.multisample);
+    if (this.activeRenderTarget !== producer || !this.frameToken || target.nativeExtraColors.length !== 1 ||
         !target.nativeTexture || !target.nativeDepthTexture || !target.nativeDepthView || !target.depthTexture ||
         target.sampleCount !== 1 || !["rgba16f", "rgba32f"].includes(target.colorTexture.format) ||
         target.nativeExtraColors[0]!.texture.format !== "rgba8" || descriptor.coverage?.target !== target ||
         descriptor.coverage.colorAttachment !== 1 || descriptor.coverage.encoding !== "depth-coverage-red8" ||
-        descriptor.alpha !== "opaque" || descriptor.depthModel !== "single-surface") {
+        descriptor.alpha !== "opaque" || descriptor.depthModel !== "single-surface" ||
+        (producer !== target && !this.nativeDofMultisampleProducerMatches(producer, target))) {
       throw new RenderDeviceError("Native depth of field requires its active HDR/depth/coverage target", "WEBGPU_DOF_FRAME_UNSUPPORTED");
     }
     if (!descriptor.scopeId || typeof descriptor.scopeId !== "object" ||
@@ -3507,10 +3550,10 @@ export class WebGPUDevice implements RenderDevice {
       alpha: "opaque" as const, depthModel: "single-surface" as const, scopeId: descriptor.scopeId,
       viewId: descriptor.viewId, frameId: descriptor.frameId, deviceGeneration: this.generation,
       isCurrent: () => this.nativeDofProofCurrent(proof) });
-    proof = { frame, target, frameToken: this.frameToken, nativeColor: target.nativeTexture, nativeDepth: target.nativeDepthTexture,
-      nativeCoverage: target.nativeExtraColors[0]!.native, color: target.colorTexture, depth: target.depthTexture,
-      coverage: target.nativeExtraColors[0]!.texture, phase: "recording", normalClear: false, coverageClear: false,
-      depthSubmitted: false, effectSubmitted: false, serial: 0 };
+    proof = { frame, target: producer, frameToken: this.frameToken, nativeColor: producer.nativeTexture!, nativeDepth: producer.nativeDepthTexture!,
+      nativeCoverage: producer.nativeExtraColors[0]!.native, color: producer.colorTexture, depth: producer.depthTexture,
+      coverage: producer.nativeExtraColors[0]!.texture, phase: "recording", normalClear: false, coverageClear: false,
+      depthSubmitted: false, effectSubmitted: false, serial: 0, ...(producer !== target ? { resolveTarget: target } : {}) };
     this.#nativeDofProofs.set(frame, proof);
     this.#nativeDofActive = proof;
     return frame;
@@ -3522,6 +3565,15 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("Native depth-of-field frame lacks a current color/depth and coverage clear", "WEBGPU_DOF_FRAME_STALE");
     }
     this.assertNativeDofViewport(proof.target);
+    if (proof.resolveTarget) {
+      try { this.resolveNativeDofMultisampleProducer(proof); }
+      catch (error) { proof.phase = "invalid"; throw error; }
+      if (!this.nativeDofProofCurrent(proof)) {
+        proof.phase = "invalid";
+        throw new RenderDeviceError("Native depth-of-field resolve did not produce a current frame", "WEBGPU_DOF_FRAME_STALE");
+      }
+      this.assertNativeDofViewport(proof.target);
+    }
     proof.serial = this.resourceInterop.submissionSerial;
     proof.phase = "sealed";
   }
@@ -3531,6 +3583,93 @@ export class WebGPUDevice implements RenderDevice {
     if (!proof) return;
     proof.phase = "invalid";
     if (this.#nativeDofActive === proof) this.#nativeDofActive = null;
+  }
+
+  /** A 4x producer pairs with its resolve target: same size and formats, a 4x depth and one 4x coverage plane. */
+  private nativeDofMultisampleProducerMatches(producer: WebGPURenderTarget, target: WebGPURenderTarget): boolean {
+    const coverage = producer.nativeExtraColors[0];
+    return producer !== target && producer.sampleCount === 4 && producer.width === target.width && producer.height === target.height &&
+      producer.colorTexture.format === target.colorTexture.format && producer.colorTexture.format === "rgba16f" &&
+      Boolean(producer.nativeTexture && producer.nativeView && producer.nativeMultisampleTexture && producer.nativeDepthTexture &&
+        producer.nativeDepthView && producer.multisampledDepthTexture) && !producer.depthTexture &&
+      producer.nativeExtraColors.length === 1 && coverage!.texture.format === "rgba8" && Boolean(coverage!.multisampleNative && coverage!.view) &&
+      producer.nativeDepthTexture !== target.nativeDepthTexture && producer.nativeTexture !== target.nativeTexture;
+  }
+
+  /**
+   * Resolve a sealed-ready 4x producer into the frame's single-sample source in
+   * one pass: the resolved HDR color, coverage 1 where any sample was covered,
+   * and the nearest covered sample depth (the clear value where none was). The
+   * proof then tracks the single-sample source; the producer is no longer read.
+   */
+  private resolveNativeDofMultisampleProducer(proof: NativeDofFrameProof): void {
+    const producer = proof.target, target = proof.resolveTarget!;
+    this.requireRenderTarget(target);
+    if (!this.nativeDofMultisampleProducerMatches(producer, target) || target.disposed || target.nativeExtraColors.length !== 1 ||
+        !target.nativeTexture || !target.nativeView || !target.nativeDepthTexture || !target.nativeDepthView || !target.depthTexture ||
+        !this.device.createBindGroupLayout || !this.device.createPipelineLayout || !this.device.createShaderModule ||
+        !this.device.createRenderPipeline || !this.device.createCommandEncoder || !this.device.createBindGroup) {
+      throw new RenderDeviceError("Native depth-of-field multisample resolve is unavailable", "WEBGPU_DOF_FRAME_UNSUPPORTED");
+    }
+    if (producer.nativeNeedsClear) this.flushNativeRenderTargetClear(producer);
+    const coverage = producer.nativeExtraColors[0]!;
+    const reversed = this.depthConvention.mode === "reversed";
+    const clearDepth = this.depthConvention.clearValue;
+    const depthView = producer.nativeDepthTexture!.createView({ aspect: "depth-only" });
+    const layoutEntries: WebGPUBindGroupLayoutEntryLike[] = [
+      { binding: 0, visibility: 2, texture: { sampleType: "unfilterable-float", viewDimension: "2d" } },
+      { binding: 1, visibility: 2, texture: { sampleType: "unfilterable-float", viewDimension: "2d" } },
+      { binding: 2, visibility: 2, texture: { sampleType: "depth", viewDimension: "2d", multisampled: true } }
+    ];
+    const depthFormat = target.nativeDepthFormat;
+    const hasStencil = depthFormat.includes("stencil");
+    const key = JSON.stringify(["native-dof-msaa-resolve", webgpuTextureFormat(target.colorTexture.format), depthFormat, reversed, clearDepth]);
+    let pipeline = this.webgpuPostPipelines.get(key);
+    if (!pipeline) {
+      const bindLayout = this.device.createBindGroupLayout({ label: "native-dof-msaa-resolve-layout", entries: layoutEntries });
+      const layout = this.device.createPipelineLayout({ label: "native-dof-msaa-resolve-pipeline-layout", bindGroupLayouts: [bindLayout] });
+      const vertex = this.device.createShaderModule({ label: "native-dof-msaa-resolve-vs", code: WEBGPU_POST_VERTEX_WGSL });
+      const fragment = this.device.createShaderModule({ label: "native-dof-msaa-resolve-fs", code: nativeDofMultisampleResolveWgsl(reversed, clearDepth) });
+      pipeline = this.device.createRenderPipeline({ label: "native-dof-msaa-resolve-pipeline", layout,
+        vertex: { module: vertex, entryPoint: "vs_post" },
+        fragment: { module: fragment, entryPoint: "fs_dof_msaa_resolve", targets: [{ format: webgpuTextureFormat(target.colorTexture.format) }, { format: "rgba8unorm" }] },
+        primitive: { topology: "triangle-list" },
+        depthStencil: { format: depthFormat, depthWriteEnabled: true, depthCompare: "always" } } as WebGPURenderPipelineDescriptorLike);
+      this.webgpuPostPipelines.set(key, pipeline);
+      this.nativeRenderPipelinesCreated += 1;
+    }
+    const bindLayout = pipeline.getBindGroupLayout?.(0);
+    if (!bindLayout) throw new RenderDeviceError("Native depth-of-field resolve layout is unavailable", "WEBGPU_DOF_HOST_UNAVAILABLE");
+    const group = this.device.createBindGroup({ label: "native-dof-msaa-resolve-bind", layout: bindLayout, entries: [
+      { binding: 0, resource: producer.nativeView }, { binding: 1, resource: coverage.view }, { binding: 2, resource: depthView }] });
+    const encoder = this.device.createCommandEncoder({ label: "native-dof-msaa-resolve-encoder" });
+    const pass = encoder.beginRenderPass({ label: "native-dof-msaa-resolve-pass",
+      colorAttachments: [
+        { view: target.nativeView, clearValue: [0, 0, 0, 0], loadOp: "clear", storeOp: "store" },
+        { view: target.nativeExtraColors[0]!.view, clearValue: [0, 0, 0, 0], loadOp: "clear", storeOp: "store" }],
+      depthStencilAttachment: { view: target.nativeDepthView, depthClearValue: clearDepth, depthLoadOp: "clear", depthStoreOp: "store",
+        ...(hasStencil ? { stencilClearValue: 0, stencilLoadOp: "clear" as const, stencilStoreOp: "store" as const } : {}) } } as WebGPURenderPassDescriptorLike);
+    if (!pass.setBindGroup) throw new RenderDeviceError("Native depth-of-field resolve cannot bind resources", "WEBGPU_DOF_HOST_UNAVAILABLE");
+    pass.setPipeline(pipeline); pass.setBindGroup(0, group); pass.draw(3, 1, 0); pass.end();
+    const finished = encoder.finish();
+    const reads = [producer.nativeTexture!, coverage.native, producer.nativeDepthTexture!];
+    const writes = [target.nativeTexture, target.nativeExtraColors[0]!.native, target.nativeDepthTexture];
+    this.submitMrtAware([finished], [...reads.map(resource => ({ resource, mode: "read" as const })),
+      ...writes.map(resource => ({ resource, mode: "write" as const }))], true);
+    this.nativeRenderPasses += 1;
+    this.nativeSubmissions += 1;
+    target.nativeNeedsClear = false;
+    target.nativeClearColor = producer.nativeClearColor;
+    // The proof now tracks the single-sample source; drawing stops here.
+    proof.target = target;
+    proof.nativeColor = target.nativeTexture;
+    proof.nativeDepth = target.nativeDepthTexture;
+    proof.nativeCoverage = target.nativeExtraColors[0]!.native;
+    proof.color = target.colorTexture;
+    proof.depth = target.depthTexture;
+    proof.coverage = target.nativeExtraColors[0]!.texture;
+    delete proof.resolveTarget;
+    this.setRenderTarget(target);
   }
 
   validateNativeDepthOfFieldFrame(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean {
@@ -5332,6 +5471,42 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   /**
+   * One display stage of the native depth-of-field chain (chromatic aberration
+   * on HDR, vignette or finalize on display-referred color). Caller-owned output.
+   */
+  private executeNativeDofDisplayStage(source: RenderTarget, stage: "ca" | "vignette" | "finalize",
+    stages: NativeDofDisplayStages, frameIndex: number): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(source);
+    if (!src.nativeView || src.sampleCount !== 1) {
+      throw new RenderDeviceError("Native depth-of-field display stage needs a single-sample source", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    this.flushNativeRenderTargetClear(src);
+    const format = stage === "ca" && (src.colorTexture.format === "rgba16f" || src.colorTexture.format === "rgba32f") ? src.colorTexture.format : "rgba8";
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format, depth: false, label: `a3d-webgpu-dof-${stage}` });
+    try {
+      let fragment: string, entryPoint: string, uniforms: Float32Array;
+      if (stage === "ca") {
+        fragment = NATIVE_DOF_CA_WGSL; entryPoint = "fs_dof_ca";
+        uniforms = new Float32Array([stages.chromaticAberration?.intensity ?? 0, 0, 0, 0]);
+      } else if (stage === "vignette") {
+        const v = stages.vignette!;
+        fragment = NATIVE_DOF_VIGNETTE_WGSL; entryPoint = "fs_dof_vignette";
+        uniforms = new Float32Array([v.intensity, v.smoothness, v.roundness, 0, v.color[0], v.color[1], v.color[2], 0, src.width, src.height, 0, 0]);
+      } else {
+        const f = stages.finalize!;
+        fragment = NATIVE_DOF_FINALIZE_WGSL; entryPoint = "fs_dof_finalize";
+        uniforms = new Float32Array([frameIndex, f.grainIntensity, f.grainSize, f.grainLuminanceResponse]);
+      }
+      this.runWebGPUFullscreenPass({ label: `webgpu-dof-${stage}`, fragment, entryPoint, uniforms, views: [src.nativeView], target: out });
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
+    }
+  }
+
+  /**
    * The v2 S2 GTAO stage on the linear source: linear depth, half-resolution
    * min/max depth, horizon AO, H/V bilateral denoise and the joint-bilateral
    * apply. Returns a caller-owned target in the source's format.
@@ -5413,7 +5588,7 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("Native depth-of-field presentation requires filterable rgba32f", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
     if (options.nativeEffects?.length || options.passes.some(pass => pass.name === "taa") ||
-        registeredPostPasses().some(pass => pass.postScopeMatches?.(context.scopeId) !== false)) {
+        registeredPostPasses().some(pass => pass.postScopeMatches?.(context.scopeId) !== false && nativeDofCustomAnchorPrecedesDof(pass.insertAt))) {
       throw new RenderDeviceError("Native depth of field cannot combine with temporal or custom passes", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
     }
     if (options.autoExposure !== undefined) normalizeWebGPUAutoExposure(options.autoExposure);
@@ -5662,7 +5837,8 @@ export class WebGPUDevice implements RenderDevice {
       options = { ...options, passes: options.passes.map(pass => ({ ...pass, options: { ...pass.options } })),
         ...(options.toneMappingDefaults ? { toneMappingDefaults: { ...options.toneMappingDefaults } } : {}),
         ...(options.autoExposure ? { autoExposure: { ...options.autoExposure } } : {}),
-        nativeDepthOfField: { frame: options.nativeDepthOfField.frame, options: { ...options.nativeDepthOfField.options } } };
+        nativeDepthOfField: { frame: options.nativeDepthOfField.frame, options: { ...options.nativeDepthOfField.options } },
+        ...(options.nativeDofDisplay ? { nativeDofDisplay: snapshotNativeDofDisplay(options.nativeDofDisplay) } : {}) };
     }
     this.reclaimWebGPUPostUniformBuffers();
     const diagnosticToken = options.postFrameContext?.diagnosticToken;
@@ -5753,6 +5929,16 @@ export class WebGPUDevice implements RenderDevice {
      * silently, never as a GLSL fallback.
      */
     const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId);
+    const dofDisplay = options.nativeDepthOfField ? options.nativeDofDisplay : undefined;
+    if (dofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
+    const dofFrameIndex = Number.isSafeInteger(options.postFrameContext?.frameId) ? options.postFrameContext!.frameId : 0;
+    let vignetteRun = false;
+    const runDofVignette = (): void => {
+      if (vignetteRun || !dofDisplay?.vignette) return;
+      vignetteRun = true;
+      track(this.executeNativeDofDisplayStage(current, "vignette", dofDisplay, dofFrameIndex));
+      if (diagnosticToken) recordPostStage("S10b:display-grade:vignette", diagnosticToken);
+    };
     let effectsRun = false;
     const runEffects = (): void => {
       if (effectsRun || effects.length === 0) return;
@@ -5826,6 +6012,10 @@ export class WebGPUDevice implements RenderDevice {
         if (diagnosticToken) recordPostStage("S6:dof", diagnosticToken);
         current = dofResult.target;
         linearResult.release(); linearResult = undefined;
+        if (dofDisplay?.chromaticAberration) {
+          track(this.executeNativeDofDisplayStage(current, "ca", dofDisplay, dofFrameIndex));
+          if (diagnosticToken) recordPostStage("CA:chromatic-aberration", diagnosticToken);
+        }
       }
       if (exposureFrame) {
         const { scopeId, viewId } = exposureFrame;
@@ -5843,7 +6033,7 @@ export class WebGPUDevice implements RenderDevice {
         assertDofCurrent?.();
         runCustomsAt(passIndex);
         const pass = options.passes[passIndex]!;
-        if (pass.name === "fxaa") runEffects();
+        if (pass.name === "fxaa") { runDofVignette(); runEffects(); }
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));
         else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
@@ -5881,8 +6071,13 @@ export class WebGPUDevice implements RenderDevice {
         assertDofCurrent?.();
       }
       assertDofCurrent?.();
+      runDofVignette();
       runCustomsAt(options.passes.length);
       runEffects();
+      if (dofDisplay?.finalize) {
+        track(this.executeNativeDofDisplayStage(current, "finalize", dofDisplay, dofFrameIndex));
+        if (diagnosticToken) recordPostStage("S12:film-grain", diagnosticToken);
+      }
       assertDofCurrent?.();
       const target = options.outputTarget ?? null;
       if (target === current) throw new RenderDeviceError("Native WebGPU presentation source/output alias", "INVALID_RESOURCE");
@@ -8268,8 +8463,12 @@ export class WebGPUDevice implements RenderDevice {
       const target = this.activeRenderTarget;
       const [color, coverage] = resolvedState.colorTargets;
       const bias = state.polygonOffset;
+      // A 4x coverage producer is admitted only as the active DoF frame's
+      // producer, which sealing resolves into the single-sample source.
+      const multisampleProducer = Boolean(target && this.#nativeDofActive?.phase === "recording" && this.#nativeDofActive.target === target &&
+        this.#nativeDofActive.resolveTarget && target.sampleCount === 4 && target.multisampledDepthTexture);
       if (!target || targetFormats.length !== 2 || !["rgba16float", "rgba32float"].includes(targetFormats[0]!) || targetFormats[1] !== "rgba8unorm" ||
-          target.sampleCount !== 1 || !target.depthTexture || !target.nativeDepthTexture || !target.nativeDepthView ||
+          (!multisampleProducer && (target.sampleCount !== 1 || !target.depthTexture)) || !target.nativeDepthTexture || !target.nativeDepthView ||
           !state.depthTest || !state.depthWrite || state.alphaToCoverage ||
           (bias && (bias.factor !== 0 || bias.units !== 0 || (bias.clamp ?? 0) !== 0)) ||
           !color || color.writeMask !== 15 || color.blend || !coverage || coverage.writeMask !== 1 || coverage.blend) {

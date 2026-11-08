@@ -182,7 +182,7 @@ describe("root-authored depth of field on native WebGPU", () => {
   it("still rejects separate post effects and multiple authored DoF nodes", () => {
     const authored = authoredOptions();
     const pipeline = authored.pipeline as PostPipelineOptions;
-    for (const stage of [{ ao: {} }, { ssr: {} }, { taa: {} }, { motionBlur: {} }, { godRays: {} }, { vignette: {} },
+    for (const stage of [{ ao: {} }, { ssr: {} }, { taa: {} }, { motionBlur: {} }, { godRays: {} }, { lut: {} },
       { antiAliasing: "smaa" }, { nativeEffects: [{ kind: "pixelation", size: 2 }] }, { customPasses: [{}] }]) {
       expect(() => validateNativeDofRoute(authored, { ...pipeline, ...stage } as PostPipelineOptions, {}))
         .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));

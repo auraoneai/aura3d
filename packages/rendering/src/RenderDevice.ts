@@ -8,6 +8,7 @@ import type { GeneratedProgramDescriptor } from "./contracts/program";
 import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
+import type { NativeDofDisplayStages } from "./webgpu/NativeDofDisplayStages";
 import type { VelocityCoverage } from "./forward/Velocity";
 import { hasAttachmentRenderOverrides, validateRenderCommandState } from "./contracts/blend";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout";
@@ -292,6 +293,11 @@ export interface LdrPostprocessPassDescriptor {
  */
 export interface NativeWebGPUDofFrameDescriptor {
   readonly source: RenderTarget;
+  /**
+   * Optional 4x producer (MSAA) the frame draws into. Sealing resolves it into
+   * `source` (resolved color, any-sample coverage, nearest covered depth).
+   */
+  readonly multisample?: RenderTarget;
   readonly coverage: WebGPULinearDepthCoverage;
   readonly projection: WebGPULinearDepthProjection;
   readonly maxGeometryDepthMeters: number;
@@ -353,6 +359,8 @@ export interface LdrPostprocessPresentationOptions {
   readonly nativeDepthOfField?: NativeWebGPUDofRequest;
   /** Native ambient occlusion (the v2 S2 GTAO stage) on the HDR source before bloom and tone mapping. */
   readonly nativeAmbientOcclusion?: NativeAmbientOcclusionRequest;
+  /** Chromatic aberration, vignette and grain stages of a native DoF chain. */
+  readonly nativeDofDisplay?: NativeDofDisplayStages;
   /** Ordered native display effects; texture inputs remain borrowed. */
   readonly nativeEffects?: readonly NativePostEffect[];
   /** Stable scope/view identity for temporal effects and explicit camera cuts. */
