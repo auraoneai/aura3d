@@ -9,7 +9,7 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 ### WebGPU performance round 2
 
 - WebGPU per-draw and per-frame costs cut further: the PRD-02 shadow system is no longer rebuilt every frame (both backends), generated-PBR uniforms are packed in place, portable uniform writes use a typed f32 view, post-chain targets and uniform buffers are pooled, post passes keep validation error scopes only for their first uses, shadow-plan revalidation and the contact-shadow provider proof run once instead of several times, and the WebGPU device answers `drawCallCount()` without building diagnostics.
-- WebGPU is now the default backend (`backend: "auto"`, WebGL2 fallback kept, `?backend=webgl2` opts out) in six more games that render the same frame and run at >= 0.9x WebGL2 (paired medians, headless M4 Max): Shape Shift Sprint 0.96, Duneglide 0.95, Beat Hopper 0.95, Slingshot Siege 0.93, Polarity Orbs 0.93, Number Surge 0.92. Fps table in `docs/upgrade-5.0.0/README.md`; not a performance claim.
+- WebGPU is now the default backend (`backend: "auto"`, WebGL2 fallback kept, `?backend=webgl2` opts out) in five more games that render the same frame and run at >= 0.9x WebGL2 (paired medians, headless M4 Max, lane run / independent review): Shape Shift Sprint 0.96 / 0.94, Duneglide 0.95 / 0.92, Beat Hopper 0.95 / 0.94, Slingshot Siege 0.93 / 0.94, Polarity Orbs 0.93 / 0.95. Number Surge measured 0.92 in the lane run but 0.90 (n=10, pairs 0.84 to 0.95) in review, the same borderline as Gridlock Courier and Roadster Rush, so it stays on WebGL2. Fps table in `docs/upgrade-5.0.0/README.md`; not a performance claim.
 
 ## 5.3.0 (2026-11-08)
 
