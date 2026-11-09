@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MockRenderBuffer, MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { UniformBlock, layoutStd140, uniformBlockGlsl } from "../../../packages/rendering/src/resources/UniformBlock";
 import {
+  ShaderDataRows,
   deriveShaderDataLayout,
   writeShaderData,
   type ShaderDataType
@@ -190,5 +191,22 @@ describe("std140 uniform blocks", () => {
     expect(() => block.set("items", [{ id: 3, color: [1, 2, 3] }, { id: -1, color: [4, 5, 6] }])).toThrow(/unsigned/);
     block.upload();
     expect([...bytes]).toEqual(before);
+  });
+
+  it("writes flat ShaderDataRows exactly like the nested arrays, with the same errors", () => {
+    const type: ShaderDataType = { kind: "struct", fields: [
+      { name: "rows", type: { kind: "array", length: 3, element: { kind: "vector", element: "f32", length: 4 } } },
+      { name: "mats", type: { kind: "array", length: 2, element: { kind: "matrix", columns: 3, rows: 3 } } }
+    ] };
+    const layout = deriveShaderDataLayout(type, "wgsl-uniform");
+    const flat = [1, 2, 3, 4, 5, 6, 7, 8];
+    const mats = Array.from({ length: 18 }, (_, i) => i * 0.25);
+    const nested = writeShaderData(layout, { rows: [[1, 2, 3, 4], [5, 6, 7, 8], [0, 0, 0, 0]], mats: [mats.slice(0, 9), mats.slice(9)] });
+    const rows = writeShaderData(layout, { rows: new ShaderDataRows(flat, 3, 4), mats: new ShaderDataRows(new Float32Array(mats), 2, 9) } as never);
+    expect([...rows]).toEqual([...nested]);
+    expect(() => writeShaderData(layout, { rows: new ShaderDataRows([1, 2, 3, 4, 5, 1e39], 3, 4), mats: new ShaderDataRows(mats, 2, 9) } as never))
+      .toThrow("$.rows[1][1]: value is outside the finite f32 range");
+    expect(() => writeShaderData(layout, { rows: new ShaderDataRows(flat, 3, 4), mats: new ShaderDataRows(mats.map((v, i) => i === 12 ? -1e39 : v), 2, 9) } as never))
+      .toThrow("$.mats[1][3]: value is outside the finite f32 range");
   });
 });

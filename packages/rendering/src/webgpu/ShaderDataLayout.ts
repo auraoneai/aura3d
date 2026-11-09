@@ -173,6 +173,23 @@ function memberNames(layout: ShaderDataLayout): ReadonlySet<string> {
   return names;
 }
 
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export class ShaderDataRows {
+  constructor(readonly source: ArrayLike<number>, readonly length: number, readonly width: number) {}
+  at(index: number): number { return index < this.source.length ? this.source[index]! : 0; }
+  row(element: number): number[] {
+    const values = new Array<number>(this.width);
+    for (let c = 0; c < this.width; c += 1) values[c] = this.at(element * this.width + c);
+    return values;
+  }
+}
+
 const LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
 
 /** The success condition of `sequence`, without a path. */
@@ -299,6 +316,34 @@ export function writeShaderData(
         const items = values(input, type.length, parent, key);
         const path = joinPath(parent, key);
         const element = current.element!, stride = current.stride!, elementType = element.type;
+        if (items instanceof ShaderDataRows) {
+          const width = items.width;
+          if (typeof elementType !== "string" && elementType.kind === "vector" && elementType.element === "f32" && elementType.length === width) {
+            const source = items.source, available = source.length;
+            for (let i = 0; i < type.length; i += 1) {
+              const at = offset + i * stride, base = i * width;
+              for (let c = 0; c < width; c += 1) {
+                const index = base + c, item = index < available ? source[index] : 0, slot = (at >> 2) + c;
+                // Same check as storeF32, without a call per value (these rows are most of an 8 KB PBR block).
+                if (f32 !== undefined && typeof item === "number") { f32[slot] = item; if (Number.isFinite(f32[slot]!)) continue; }
+                storeF32(item, at + c * 4, path, i, c);
+              }
+            }
+            return;
+          }
+          if (typeof elementType !== "string" && elementType.kind === "matrix" && elementType.columns * elementType.rows === width) {
+            const rows = elementType.rows, columnStride = element.stride!;
+            for (let i = 0; i < type.length; i += 1) {
+              const at = offset + i * stride, base = i * width;
+              for (let c = 0; c < elementType.columns; c += 1) {
+                for (let r = 0; r < rows; r += 1) storeF32(items.at(base + c * rows + r), at + c * columnStride + r * 4, joinPath(path, i), undefined, c * rows + r);
+              }
+            }
+            return;
+          }
+          for (let i = 0; i < type.length; i += 1) store(element, items.row(i), offset + i * stride, path, i);
+          return;
+        }
         if (typeof elementType !== "string" && elementType.kind === "vector" && elementType.element === "f32") {
           // Arrays of f32 vectors (sample kernels, packed light data) without a recursive call per element.
           const width = elementType.length;
