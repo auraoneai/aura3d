@@ -6,6 +6,8 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## 5.5.0 (2026-11-09)
 
+A minor release and the last of this program. It also carries the work prepared as 5.4.0, which was not published on its own: WebGPU is the default in 28 of 30 showcase games, worker rendering is opt-in in all 30, the plain look matches authored colours, and the three.js asset bridge carries clips, simple custom shaders and node edits.
+
 ### WebGPU performance round 3
 
 - WebGPU per-draw CPU cost cut again (WebGL2 unchanged; same bytes, same errors): generated-PBR material bytes and fast portable uniform blocks are kept per draw slot and reused or partly rewritten when only directly copied uniforms (matrices, light rows, ...) changed, pooled uniform buffers upload only the changed range, render-state resolution and vertex-layout validation are remembered for equal inputs, and several per-draw allocations and scans are gone. Pip's Big Leap: WebGPU device draw path 22.5 -> about 10 ms per frame.
@@ -17,7 +19,6 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 - Fewer WebGPU command buffers and objects per frame: post-chain passes share the frame's batch encoder, AO / SSR / god-ray / bloom-composite targets are pooled (0 textures created per frame, was 7 to 11), buffer uploads split a draw batch only when its draws read that buffer, and batched draws skip re-binding unchanged pipelines, buffers and bind groups (command encoders per frame: Teleoperator 65 -> 13, Lamplight Line 48 -> 17, Pip's Big Leap 39 -> 10). Thermal Drift's WebGPU frame rate rose 8%.
 - WebGPU is now the default backend in Teleoperator (Grid Dispatch): 0.93x WebGL2 (n=12 load-gated pairs; fresh re-measure 0.93 (n=10, 0.91 to 0.95)), same frame; `?backend=webgl2` opts out. Pip's Big Leap (0.89, n=10) and Lamplight Line (0.89, n=11) stay on WebGL2. Numbers and method: `docs/upgrade-5.0.0/README.md`, "WebGPU perf round 4". Not performance claims.
 
-## 5.4.0 (2026-11-09)
 
 ### WebGPU performance round 2
 

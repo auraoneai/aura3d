@@ -3439,6 +3439,23 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "* placeholder slot and the emitted source installs `material.custom(spec)` on it through `model({ materialOverrides })`.",
     ]
   },
+  {
+    file: "packages/rendering/src/probes/ReflectionProbeSystem.ts",
+    reason: "WebGPU probe capture wording: 'deferred' names captures whose GPU readbacks complete on a later frame (5.5.0 non-blocking probe readback), not postponed or missing work",
+    expires: EXPIRES,
+    reviewer: REVIEWER,
+    markers: [
+      "// `updateDeferred` starts captures without waiting for their readbacks (the",
+      "/** Faces rendered (and, for deferred captures, whose readback was started). */",
+      "/** Deferred captures: readbacks started and not yet settled. */",
+      "/** Deferred captures: the first readback failure, rethrown by the next `updateDeferred`. */",
+      "// A deferred cube whose six faces were rendered in one call already shows one scene state; it only awaits readbacks.",
+      "updateDeferred(maxProbes = Number.MAX_SAFE_INTEGER): readonly string[] {",
+      "this.startFaceDeferred(entry, slice, slice.next as 0 | 1 | 2 | 3 | 4 | 5);",
+      "private startFaceDeferred(entry: ProbeEntry, slice: CaptureSlice, face: 0 | 1 | 2 | 3 | 4 | 5): void {",
+      "// A deferred capture with every face started waits for its readbacks (see `updateDeferred`).",
+    ]
+  },
 ];
 
 export const runtimeEdgeAllowlistMarkers: readonly string[] = runtimeEdgeAllowlist.flatMap((group) =>
