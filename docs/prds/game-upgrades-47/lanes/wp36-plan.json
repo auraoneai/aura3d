@@ -13991,6 +13991,52 @@
    "textureRes": "2k",
    "prompt": "giant toy pinwheel on a white pole, four vanes coloured bright red, sunny yellow, sky blue and red, glossy plastic, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
    "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "aura-fc-3d",
+   "lane": "G09",
+   "key": "pitchFanBRigM07",
+   "op": "rig",
+   "priority": "P2",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "heightMeters": 1.8,
+   "sourceDep": "pitchFanB",
+   "source": "artifacts/gu47-meshy/aura-fc-3d/pitchFanB/opt/model.glb"
+  },
+  {
+   "slug": "aura-fc-3d",
+   "lane": "G09",
+   "key": "pitchFanBAnimM07",
+   "op": "animate",
+   "priority": "P2",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "pitchFanBRigM07",
+   "clips": [
+    {
+     "clip": "idle",
+     "actionId": 11
+    },
+    {
+     "clip": "cheer",
+     "actionId": 303
+    },
+    {
+     "clip": "pump",
+     "actionId": 59
+    }
+   ]
   }
  ]
 }
