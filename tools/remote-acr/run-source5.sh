@@ -169,7 +169,7 @@ fi
 run_stage() {
   set +eu
   local stage="$1" log="$OUT_DIR/acr-run-$1.log" rc=0
-  local common=(--timeout 1800 --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG"
+  local common=(--timeout "${A3D_STAGE_TIMEOUT:-3600}" --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG"
     --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" --set "PLAN_GENERATED_AT=$PLAN_GENERATED_AT" --set "EXAMPLE_SHARDS=$EXAMPLE_SHARDS")
   if [ "$stage" = packed-a ] || [ "$stage" = packed-b1 ] || [ "$stage" = packed-b2 ] || [[ "$stage" =~ ^packed-c[1-9][0-9]*$ ]]; then
     # The upload must finish before the SAS expires.
