@@ -7,7 +7,7 @@
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
-  Batch, flatSpec, shadowSpec, toonSpec, type CustomSpec
+  Batch, flatSpec, toonSpec, type CustomSpec
 } from "../../../examples/shared/runner-kit/index";
 import { CONFIG, type SplatTurfSim } from "./sim";
 import { LOOK, linear, paintColorFor } from "./look";
@@ -18,6 +18,7 @@ import {
 import type { CameraPose, Shown } from "./presentation";
 import { glowSpec, hazed, sunsetSkySpec, type Haze } from "./art/haze";
 import { addScenery } from "./scenery";
+import { ballSquash, contactShadowSpec, glossyBallSpec, paintStreakFragment, PAINT_VERTEX } from "./art/ball";
 
 export const CAMERA_FAR = 400;
 export const ROAD_WIDTH = 6.4;
@@ -64,11 +65,13 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
     { name: "sky", spec: PROGRAMS.sky() },
     { name: "toon", spec: PROGRAMS.toon(LOOK.road) },
     { name: "toon-tone", spec: PROGRAMS.toonTone() },
+    { name: "paint", spec: PROGRAMS.paint() },
+    { name: "ball", spec: PROGRAMS.ball() },
+    { name: "contact-shadow", spec: contactShadowSpec() },
     { name: "cloud", spec: PROGRAMS.cloud() },
     { name: "far", spec: PROGRAMS.far() },
     { name: "glow", spec: PROGRAMS.glow() },
-    { name: "flat", spec: flatSpec(linear(LOOK.solvent), 0.55) },
-    { name: "shadow", spec: shadowSpec() }
+    { name: "flat", spec: flatSpec(linear(LOOK.solvent), 0.55) }
   ];
 }
 
@@ -82,7 +85,15 @@ const PROGRAMS = {
   toonTone: () => hazed(toonSpec([1, 1, 1], undefined, [0, 0, 0], true), NEAR_HAZE),
   cloud: () => hazed(toonSpec([1, 1, 1], undefined, linear("#2a1420"), true), CLOUD_HAZE),
   far: () => hazed(toonSpec([1, 1, 1], undefined, linear("#3a1c30"), true), FAR_HAZE),
-  glow: () => glowSpec(2.4)
+  glow: () => glowSpec(2.4),
+  /** Glossy candy-paint ball (art/ball.ts): team pink, pale lavender sky window, warm rim, thin plum ink line. */
+  ball: () => glossyBallSpec({ color: LOOK.ball, skyWindow: "#f4e4ff", rim: "#ffc89a", ink: LOOK.ink }),
+  /** Trail cells as drippy paint streaks (white cells stay road-white). */
+  paint: (): CustomSpec => {
+    const spec = toonSpec([1, 1, 1], undefined, [0, 0, 0], true);
+    const glsl = spec.glsl as { vertex: string; fragment: string };
+    return hazed({ ...spec, glsl: { vertex: PAINT_VERTEX, fragment: paintStreakFragment(glsl.fragment) } }, NEAR_HAZE);
+  }
 };
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -111,8 +122,8 @@ export function buildWorld(options: WorldOptions): World {
   };
 
   add("sky", sphereMesh(380, 32, 24), PROGRAMS.sky());
-  add("ball", ballMesh(), PROGRAMS.toon(LOOK.ball));
-  add("ball-shadow", quadMesh(1.6, 1.6), shadowSpec());
+  add("ball", ballMesh(), PROGRAMS.ball());
+  add("ball-shadow", quadMesh(1.15, 1.15), contactShadowSpec());
   add("finish", finishMesh(), PROGRAMS.toon(LOOK.finish));
 
   const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS);
@@ -131,18 +142,18 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("road", road, PROGRAMS.toon(LOOK.road));
   addBatch("edges", edges, PROGRAMS.toon(LOOK.roadEdge));
   addBatch("props", props, PROGRAMS.toonTone());
-  addBatch("paint", paint, PROGRAMS.toonTone());
+  addBatch("paint", paint, PROGRAMS.paint());
   addBatch("strips", strips, flatSpec(linear(LOOK.solvent), 0.55));
   addBatch("cans", cans, PROGRAMS.toon(LOOK.can));
   addBatch("bots", bots, PROGRAMS.toonTone());
   addBatch("particles", particles, PROGRAMS.toonTone());
 
-  // Post: bloom on the sun and bulbs, warm grade, plum vignette, ink outline on the ball and the road entities.
+  // Post: bloom on the sun and bulbs, warm grade, plum vignette, ink outline on the road entities (the ball draws its own thin ink line).
   builder
     .add(effects.bloom({ name: "bloom", intensity: LOOK.post.bloom.intensity, threshold: LOOK.post.bloom.threshold, scatter: LOOK.post.bloom.scatter }))
     .add(effects.colorGrade({ name: "grade", ...LOOK.post.grade }))
     .add(effects.vignette({ name: "vignette", intensity: LOOK.post.vignette.intensity, color: LOOK.post.vignette.color }))
-    .add(effects.outline({ name: "ink", color: LOOK.ink, width: 2, targets: ["ball", "cans", "bots"] }));
+    .add(effects.outline({ name: "ink", color: LOOK.ink, width: 2, targets: ["cans", "bots"] }));
 
   return {
     scene: builder,
@@ -174,6 +185,10 @@ export function buildWorld(options: WorldOptions): World {
       const particleKind = new Int8Array(CONFIG.POOL_PARTICLES).fill(-1);
       let lastDistance = 0;
       let flushedInitial = false;
+      let lastLane = Number.NaN;
+      let lastTime = 0;
+      let lateral = 0;
+      let lastSquash = "";
 
       const toneFor = (state: number, row: number): readonly [number, number, number] =>
         state === 1 ? linear(paintColorFor(row)) : state === 2 ? linear(LOOK.wipeWash) : [1, 1, 1];
@@ -294,8 +309,18 @@ export function buildWorld(options: WorldOptions): World {
         const bursting = o.phase === "bursting";
         const gone = o.phase === "gameOver";
         const scale = bursting ? 1 + (1 - o.burstTimer / CONFIG.BURST_SECONDS) * 0.6 : 1;
-        node("ball").setPosition(laneOffset, BALL_RADIUS * scale, 0).setRotation(distance / BALL_RADIUS, 0, 0).setScale(scale).setVisible(!gone);
-        node("ball-shadow").setPosition(laneOffset, CELL_Y + 0.015, 0).setScale(scale).setVisible(!gone);
+        // Presentation-only squash/stretch from the presented lateral speed (eased; identity under reduced motion).
+        const dt = time - lastTime;
+        if (Number.isFinite(lastLane) && dt > 1e-4 && dt < 0.25) lateral += ((laneOffset - lastLane) / dt - lateral) * Math.min(1, dt * 18);
+        else lateral = 0;
+        lastLane = laneOffset;
+        lastTime = time;
+        const [qx, qy, qz] = ballSquash(o.phase === "playing" ? lateral : 0, o.speed, reduced);
+        const ball = node("ball");
+        ball.setPosition(laneOffset, BALL_RADIUS * scale, 0).setRotation(distance / BALL_RADIUS, 0, 0).setScale(scale).setVisible(!gone);
+        const squashKey = `${qx.toFixed(3)},${qy.toFixed(3)},${qz.toFixed(3)},${scale.toFixed(3)}`;
+        if (squashKey !== lastSquash) { ball.setUniform?.("crSquash", [qx, qy, qz, BALL_RADIUS * scale]); lastSquash = squashKey; }
+        node("ball-shadow").setPosition(laneOffset - 0.06, CELL_Y + 0.015, -0.04).setScale([scale * qx, 1, scale * qz]).setVisible(!gone);
 
         // Camera: chase pose (presenter-interpolated), deterministic shake, speed FOV — all presentation only.
         const c = view.camera ?? { x: 0.5 * laneOffset, y: 5, z: 9, lookX: laneOffset, lookY: 0.5, lookZ: -10 };

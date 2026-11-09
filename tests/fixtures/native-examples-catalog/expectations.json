@@ -3976,7 +3976,7 @@
         },
         {
           "path": "apps/showcase-bunker-zero/index.html",
-          "sha256": "01c47414148a926b854b0959ab435dd971ba5e5f6c882a1836ba10aba9ea0020"
+          "sha256": "89935f36416e6b3a2c7f3258e737b932651db07945b6bb514c5c8f088e704b09"
         },
         {
           "path": "packages/engine/src/agent-api/SceneGroundingUtils.ts",
@@ -9500,7 +9500,7 @@
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
-          "sha256": "c5d5265b33111faa98cddb1db9104559b902ab8eeca1556ef1cf6c65b23314a9"
+          "sha256": "9dc42619f52947340ee12ba0453c8f3e53b30b1ab7ddb4062db1a0ffbdcd2d2f"
         },
         {
           "path": "apps/showcase-splat-turf/src/look.ts",
@@ -9516,7 +9516,7 @@
         },
         {
           "path": "apps/showcase-splat-turf/src/meshes.ts",
-          "sha256": "5b08c3fdf39461705788d45396515a240535a5822048df05da4cfe585c9d65b9"
+          "sha256": "abd748f1b34afa008b62bbd5f09e60ade5204698faf0031c825280785281305a"
         },
         {
           "path": "packages/engine/src/qa/hooks.ts",

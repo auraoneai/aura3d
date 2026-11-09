@@ -172,12 +172,13 @@ describe("worker batched-state copy", () => {
     source.setVisibleAt(2, false);
     const snapshot = source.toWorkerSnapshot()!;
     const copy = BatchedMeshState.fromWorkerSnapshot(structuredClone({ ...snapshot, id: "worker-batched-roundtrip-copy" }));
-    expect(Array.from(copy.alive)).toEqual([1, 0, 1, 0]);
+    const copySnap = copy.toWorkerSnapshot()!;
+    expect(Array.from(copySnap.alive)).toEqual([1, 0, 1, 0]);
     expect(copy.count).toBe(source.count);
     expect(Array.from(copy.getMatrixAt(2))).toEqual(Array.from(source.getMatrixAt(2)));
     expect(copy.getColorAt(0)).toEqual(source.getColorAt(0));
-    expect(copy.visible[2]).toBe(0);
-    expect(copy.geometryIds[2]).toBe(cube);
+    expect(copySnap.visible[2]).toBe(0);
+    expect(copySnap.geometryIds[2]).toBe(cube);
     source.dispose();
     copy.dispose();
   });
@@ -258,7 +259,7 @@ describe("worker batched-state sync", () => {
     const op = ops[0] as { batched: string; state: Parameters<typeof worker.syncFromWorkerSnapshot>[0] };
     expect(op.batched).toBe(host.id);
     worker.syncFromWorkerSnapshot(structuredClone({ ...op.state, id: "worker-copy" }));
-    expect(Array.from(worker.alive)).toEqual([1, 1, 0, 0]);
+    expect(Array.from(worker.toWorkerSnapshot()!.alive)).toEqual([1, 1, 0, 0]);
     expect(Array.from(worker.getMatrixAt(1)).slice(12, 15)).toEqual([9, 8, 7]);
     mirror.dispose();
     worker.dispose();
