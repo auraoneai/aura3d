@@ -312,13 +312,16 @@ function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFl
 
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean {
-  return forwardContactGeometrySafe(item, flags) && builtinParticipantSafe(item, true);
+export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified = false): boolean {
+  return forwardContactGeometrySafe(item, flags, providersVerified) && builtinParticipantSafe(item, true);
 }
 
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean {
-  return forwardContactProvidersSafe(flags) && replayBuiltinObject(item, Object.prototype)
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified = false): boolean {
+  return (providersVerified || forwardContactProvidersSafe(flags)) && replayBuiltinObject(item, Object.prototype)
     && !item.onBeforeRender && replayGeometrySafe(item.geometry, true);
 }
 
@@ -1096,6 +1099,13 @@ export class ForwardPass extends BaseRenderPass {
   private spriteFrameCamera: { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } | undefined;
   // WP-4: which view this pass renders, so the contact-shadow mask binds only to the main camera's draws (one object per frame).
   private contactMaskScope: ContactShadowMaskScope | undefined;
+  /**
+   * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+   * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+   * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+   * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+   */
+  private contactProvidersProof: { flags: QrFlags; safe: boolean } | undefined;
 
   constructor(private readonly options: ForwardPassOptions) {
     super(
@@ -1354,6 +1364,7 @@ export class ForwardPass extends BaseRenderPass {
     this.frameHeight = context.height;
     this.spriteFrameCamera = undefined;
     this.staticPairAuraFrame = null;
+    this.contactProvidersProof = undefined;
     this.contactMaskScope = { device: context.device, width: context.width, height: context.height, cameraPosition: this.options.cameraPosition ?? [0, 0, 1],
       timeSeconds: this.options.timeSeconds ?? 0, viewProjectionMatrix: this.options.cameraViewProjectionMatrix ?? identityMatrix(), frame: this.options.frameContext };
     this.beginFramePools(context.device);
@@ -1695,6 +1706,15 @@ export class ForwardPass extends BaseRenderPass {
     return null;
   }
 
+  private contactProvidersSafe(device: RenderDevice): boolean {
+    const flags = rendererQrFlags(device);
+    const proof = this.contactProvidersProof;
+    if (proof && proof.flags === flags) return proof.safe;
+    const safe = forwardContactProvidersSafe(flags);
+    this.contactProvidersProof = { flags, safe };
+    return safe;
+  }
+
   private drawItem(device: RenderDevice, sourceItem: RenderItem, combined?: CombinedForwardSubmission, staticCapture?: StaticUnlitCapture): boolean | void {
     let item = sourceItem;
     // An instanced item with zero instances draws nothing (never a contract throw that blanks the frame).
@@ -1706,7 +1726,7 @@ export class ForwardPass extends BaseRenderPass {
       throw new RenderDeviceError("instanceCount must match the number of instance transforms", "INSTANCE_COUNT_MISMATCH", { instanceCount: item.instanceCount });
     }
     if (resolveContactShadowMask(this.contactMaskScope)
-      && (item.onBeforeRender || !forwardContactProvidersSafe(rendererQrFlags(device)))) {
+      && (item.onBeforeRender || !this.contactProvidersSafe(device))) {
       throw new RenderDeviceError("Contact shadows require stable forward providers and draw participants", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
     }
     const selective = this.options.selectiveBloom;
@@ -1722,7 +1742,7 @@ export class ForwardPass extends BaseRenderPass {
     if (this.options.photometricFrame || this.options.projectedSpotFrame) this.shadedLightsMemo = undefined;
     this.adoptProjectedSpotLights();
     if (resolveContactShadowMask(this.contactMaskScope)
-      && (item.onBeforeRender || !forwardContactProvidersSafe(rendererQrFlags(device)))) {
+      && (item.onBeforeRender || !this.contactProvidersSafe(device))) {
       throw new RenderDeviceError("Contact shadows require stable forward providers and draw participants", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
     }
     const material = item.material ?? new UnlitMaterial();
@@ -2302,7 +2322,7 @@ export class ForwardPass extends BaseRenderPass {
           }
         }
         const generatedContact = generated && this.lastProgramFeatures?.shadows.contact === true;
-        if (resolveContactShadowMask(this.contactMaskScope) && !forwardContactProvidersSafe(rendererQrFlags(device))) {
+        if (resolveContactShadowMask(this.contactMaskScope) && !this.contactProvidersSafe(device)) {
           throw new RenderDeviceError("Contact shadow forward providers changed during the draw", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
         }
         validateContactShadowReceiver(baseMaterial, receiverContactIndex, this.contactMaskScope);

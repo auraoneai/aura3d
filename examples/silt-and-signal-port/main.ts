@@ -589,8 +589,8 @@ async function boot(): Promise<void> {
   world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse, reducedMotion, water: params.get("water") === "glsl" ? "glsl" : "graph" });
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
-  // W-8 lab flags (?backend=auto|webgpu, ?gamut=p3): EXPERIMENTAL, default off; with no flag both fragments are empty
-  const lab = labAppOptions(readLabFlags());
+  // W-8 lab flags (?backend=, ?gamut=p3). WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-08 after WebGPU perf round 2: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
