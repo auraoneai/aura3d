@@ -183,12 +183,12 @@ let nextInstanceId = 0;
 /** Concurrent transient-instance pool cap (E20's `poolSize ?? 96` default). */
 const EFFECT_INSTANCE_CAP = 96;
 
-/** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
-export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects").AuraAppEffects {
-  const instances = new Map<string, EffectEntry>();
-  // §6.4 impact library: every AuraVfxKind resolves to a preset carrying the
-  // emitter parameters BURST_PRESETS encodes.
-  const presets = new Map<string, AuraVfxEffectSpec>(
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export function builtInEffectPresets(): Map<string, AuraVfxEffectSpec> {
+  return new Map<string, AuraVfxEffectSpec>(
     Object.entries(BURST_PRESETS).map(([kind, p]) => [
       kind,
       {
@@ -209,6 +209,12 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       } as AuraVfxEffectSpec,
     ])
   );
+}
+
+/** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
+export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects").AuraAppEffects {
+  const instances = new Map<string, EffectEntry>();
+  const presets = builtInEffectPresets();
 
   // P2-T1: presets that also hit the C-22 camera layers. `shake` feeds
   // trauma.add() after an optional configure(); `punch`/`fovKick` trigger the

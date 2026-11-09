@@ -19,6 +19,7 @@ import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { AuraAppAtmosphere } from "../../contracts/atmosphere.js";
+import type { AuraAppEffects } from "../../contracts/effects.js";
 
 export interface WorkerAtmosphereBinding {
   /** Run the atmosphere's frame callbacks (fog transitions) and note the scene camera before a worker frame. */
@@ -27,6 +28,8 @@ export interface WorkerAtmosphereBinding {
   mountAuthority(): Prd07MountAuthority | undefined;
   /** 5.4: the atmosphere controls a main-thread app exposes as `app.atmosphere` (host calls are replayed here). */
   readonly controls: AuraAppAtmosphere;
+  /** 5.4: the worker's `app.effects` (real under A3D_QR_VFX, as on the main thread; null otherwise). */
+  readonly effects: AuraAppEffects | null;
   dispose(): void;
 }
 
@@ -64,7 +67,7 @@ export async function bindWorkerAtmosphere(
   flags: QrFlags
 ): Promise<WorkerAtmosphereBinding | null> {
   if (!workerAtmosphereWanted(flags)) return null;
-  const [{ createAtmosphereExtension, bindAtmosphereRuntimeOwner, disposeAtmosphereExtension }, { bindPrd07AppRuntimeOwner, prd07MountAuthorityFor, prd07SystemFor }] = await Promise.all([
+  const [{ createAtmosphereExtension, bindAtmosphereRuntimeOwner, disposeAtmosphereExtension }, { bindPrd07AppRuntimeOwner, createEffectsExtension, prd07AppDisposed, prd07MountAuthorityFor, prd07SystemFor }] = await Promise.all([
     import("../vfx/atmosphere-api.js"), import("../vfx/effects-api.js")
   ]);
   const callbacks = new Set<FrameCallback>();
@@ -79,14 +82,20 @@ export async function bindWorkerAtmosphere(
   };
   const asApp = app as unknown as Parameters<typeof createAtmosphereExtension>[0];
   let disposed = false;
+  let effects: AuraAppEffects | null = null;
   const dispose = (): void => {
     if (disposed) return;
     disposed = true;
     callbacks.clear();
+    if (effects) {
+      try { effects.clear(); } finally { prd07AppDisposed(effects); }
+    }
     disposeAtmosphereExtension(asApp);
   };
   let controls: AuraAppAtmosphere;
   try {
+    // Same order as the main-thread extensions (prd07.effects before prd07.atmosphere): one shared effect system.
+    if (flags.on("A3D_QR_VFX")) effects = createEffectsExtension(asApp, { flags, options: {} } as Parameters<typeof createEffectsExtension>[1]);
     controls = createAtmosphereExtension(asApp, { flags });
     bindPrd07AppRuntimeOwner(asApp, owner);
     bindAtmosphereRuntimeOwner(asApp, owner);
@@ -97,6 +106,7 @@ export async function bindWorkerAtmosphere(
   let last: number | undefined;
   return {
     controls,
+    effects,
     tick(timeMs) {
       if (disposed) return;
       const pose = cameraPose(app.scene);

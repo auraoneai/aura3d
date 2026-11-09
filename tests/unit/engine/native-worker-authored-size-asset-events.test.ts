@@ -262,7 +262,7 @@ describe("worker batched-state sync", () => {
     expect(Array.from(worker.getMatrixAt(1)).slice(12, 15)).toEqual([9, 8, 7]);
     mirror.dispose();
     worker.dispose();
-  });
+  }, 60_000); // imports the batched handler (slow on a cold transform under load)
 });
 
 describe("worker renderer globals", () => {
@@ -297,4 +297,41 @@ describe("worker app.atmosphere", () => {
     expect(binding!.controls.state().fog).toMatchObject({ density: 0.002 });
     binding!.dispose();
   }, 60_000);
+});
+
+describe("worker app.effects", () => {
+  it("records host calls as tokened app ops and replays them on the worker effects, persistent ones after a remount", async () => {
+    const { createWorkerHostEffects, createWorkerEffectsReplayer } = await import("../../../packages/engine/src/agent-api/app/workerEffects.js");
+    const ops: [string, unknown[]][] = [];
+    const host = createWorkerHostEffects((call, args) => { ops.push([call, structuredClone([...args])]); }, () => new Map([["spark", { name: "spark" }]]));
+    const trail = host.trail({ id: "rider-0" } as never, { width: 0.3, life: 0.5 });
+    host.burst("spark", [1, 2, 3]);
+    host.registerPreset("orbit", { name: "orbit", layers: [] } as never);
+    trail.translate!(0, 0, -1);
+    expect(host.liveCount).toBe(2);
+    expect(Object.keys(host.presets).sort()).toEqual(["orbit", "spark"]);
+    expect(ops.map(([call]) => call)).toEqual(["effects.trail", "effects.burst", "effects.registerPreset", "effects.handle"]);
+    expect(ops[0]![1]).toEqual([1, "rider-0", { width: 0.3, life: 0.5 }]);
+
+    const fake = () => {
+      const calls: string[] = [];
+      const made = (name: string) => ({ id: name, alive: true, stop: () => calls.push(`stop:${name}`), setPosition: () => undefined, translate: (...d: number[]) => calls.push(`translate:${d.join(",")}`) });
+      const effects = { runtime: "on", burst: (k: string) => (calls.push(`burst:${k}`), made(k)), spawn: () => made("spawn"), trail: (t: string) => (calls.push(`trail:${t}`), made("trail")),
+        decal: () => made("decal"), registerPreset: (k: string) => calls.push(`preset:${k}`), clear: () => calls.push("clear"), presets: {}, liveCount: 0 };
+      return { effects: effects as never, calls };
+    };
+    const replayer = createWorkerEffectsReplayer();
+    const first = fake();
+    const detach = replayer.attach(first.effects);
+    for (const [call, args] of ops) replayer.apply(call as never, args);
+    expect(first.calls).toEqual(["trail:rider-0", "burst:spark", "preset:orbit", "translate:0,0,-1"]);
+    detach();
+    const second = fake();
+    replayer.attach(second.effects);
+    expect(second.calls).toEqual(["preset:orbit", "trail:rider-0"]); // the one-shot burst is not replayed
+    trail.stop();
+    replayer.apply(...(ops.at(-1)! as [never, unknown[]]));
+    expect(second.calls.at(-1)).toBe("stop:trail");
+    expect(host.liveCount).toBe(1);
+  });
 });

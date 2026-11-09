@@ -6,6 +6,7 @@ import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./wo
 import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
 import { applyWorkerNodePatch, type AuraWorkerAppCall } from "./workerPatch.js";
 import { bindWorkerAtmosphere, type WorkerAtmosphereBinding } from "./workerAtmosphere.js";
+import { createWorkerEffectsReplayer } from "./workerEffects.js";
 import type { AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
@@ -584,6 +585,35 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   // 5.4 `app.atmosphere` calls: the live worker atmospheres (one per mounted renderer) and the merged state that a
   // new mount replays without a transition (a remount rebuilds the atmosphere).
   const liveAtmospheres = new Set<WorkerAtmosphereBinding>();
+  const effectsReplayer = createWorkerEffectsReplayer();
+  // 5.4 `app.lighting`: one PRD-02 lighting runtime per mounted renderer (keyed by its runtime node registry, as the
+  // main-thread extension is keyed by app.nodes); the environment state is replayed on a new mount.
+  type WorkerLighting = { setEnvironmentIntensity(v: number): void; setEnvironmentRotation(r: number): void; setEnvironment(t: unknown, o?: unknown): void; updateProbe(n: string): Promise<void>; rebakeIrradiance(n?: string): Promise<void>; dispose(): void };
+  const liveLightings = new Set<WorkerLighting>();
+  const lightingState: { intensity?: number; rotation?: number; environment?: readonly unknown[] } = {};
+  const replayLighting = (lighting: WorkerLighting): void => {
+    if (lightingState.environment) lighting.setEnvironment(lightingState.environment[0], { ...(lightingState.environment[1] as object | undefined), crossfadeSeconds: 0 });
+    if (lightingState.intensity !== undefined) lighting.setEnvironmentIntensity(lightingState.intensity);
+    if (lightingState.rotation !== undefined) lighting.setEnvironmentRotation(lightingState.rotation);
+  };
+  const applyLightingCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (call === "lighting.setEnvironmentIntensity") lightingState.intensity = args[0] as number;
+    else if (call === "lighting.setEnvironmentRotation") lightingState.rotation = args[0] as number;
+    else if (call === "lighting.setEnvironment") {
+      lightingState.environment = [...args];
+      // A swap with its own intensity / yaw supersedes the earlier separate calls.
+      const opts = args[1] as { intensity?: number; rotationDeg?: number } | undefined;
+      if (opts?.intensity !== undefined) lightingState.intensity = opts.intensity;
+      if (opts?.rotationDeg !== undefined) lightingState.rotation = (opts.rotationDeg * Math.PI) / 180;
+    }
+    const method = call.slice("lighting.".length) as "setEnvironmentIntensity" | "setEnvironmentRotation" | "setEnvironment" | "updateProbe" | "rebakeIrradiance";
+    let failure: unknown;
+    for (const lighting of liveLightings) {
+      try { void (lighting[method] as (...values: unknown[]) => unknown)(...args); } catch (error) { failure ??= error; }
+    }
+    if (failure !== undefined) throw failure;
+  };
+  const detachEffects = new Map<WorkerAtmosphereBinding, () => void>();
   const atmosphereState: { fog?: readonly unknown[]; sky?: Record<string, unknown>; wetness?: number } = {};
   const replayAtmosphere = (binding: WorkerAtmosphereBinding): void => {
     const controls = binding.controls;
@@ -703,10 +733,12 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     let cleaned = false;
     // PRD-07: the main-thread app's atmosphere extension (live fog/sky state the compiler reads under A3D_QR_VFX_FOG).
     let atmosphere: WorkerAtmosphereBinding | null = null;
+    let lighting: WorkerLighting | null = null;
     const cleanup = (): void => {
       if (cleaned) return;
       cleaned = true;
-      if (atmosphere) liveAtmospheres.delete(atmosphere);
+      if (lighting) { liveLightings.delete(lighting); try { lighting.dispose(); } catch { /* lighting cleanup is best effort */ } }
+      if (atmosphere) { liveAtmospheres.delete(atmosphere); detachEffects.get(atmosphere)?.(); detachEffects.delete(atmosphere); }
       try { atmosphere?.dispose(); } catch { /* atmosphere cleanup is best effort */ }
       assetEventChannel?.unbindAppAssetEventScope(owner);
       actorFlags.clearTypedGLBActorQrFlags(owner);
@@ -720,7 +752,11 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       const { recordAuthoredPostContext } = await import("../postBridge.js");
       recordAuthoredPostContext({ flags, options: { renderer: configuration } }, { canvas: target } as unknown as Parameters<typeof recordAuthoredPostContext>[1]);
       atmosphere = await bindWorkerAtmosphere(target, owner, next, runtimeNodes, flags);
-      if (atmosphere) { liveAtmospheres.add(atmosphere); replayAtmosphere(atmosphere); }
+      if (atmosphere) {
+        liveAtmospheres.add(atmosphere);
+        replayAtmosphere(atmosphere);
+        if (atmosphere.effects) detachEffects.set(atmosphere, effectsReplayer.attach(atmosphere.effects));
+      }
       const mounted = await createProductionRuntimeSceneRenderer(target, next, configuration, runtimeNodes, flags, undefined, undefined, {
         runtimeOwner: owner,
         ownRenderInputCache: true,
@@ -745,6 +781,13 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
         try { dispose(); } finally { cleanup(); }
       };
       if (signal.aborted) { mounted.dispose(); await mounted.whenDisposed?.(); throw cancelled(); }
+      // PRD-02 `app.lighting` (real under A3D_QR_LIGHTING, as the main-thread extension).
+      if (flags.on("A3D_QR_LIGHTING")) {
+        const { Prd02LightingRuntime } = await import("../../lanes/prd02.js");
+        lighting = new Prd02LightingRuntime(flags, runtimeNodes, { scene: next, nodes: runtimeNodes as unknown as { add(node: unknown): unknown } } as ConstructorParameters<typeof Prd02LightingRuntime>[2]) as unknown as WorkerLighting;
+        liveLightings.add(lighting);
+        replayLighting(lighting);
+      }
       workerRendererNodes.set(mounted, runtimeNodes);
       return mounted;
     } catch (error) {
@@ -782,6 +825,8 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   const applyAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
     if (!canvas) throw new AuraWorkerError("Initialize the worker before calling app members.", "not-initialized", "recoverable");
     if (call.startsWith("atmosphere.")) { applyAtmosphereCall(call, args); return; }
+    if (call.startsWith("effects.")) { effectsReplayer.apply(call, args); return; }
+    if (call.startsWith("lighting.")) { applyLightingCall(call, args); return; }
     if (!postBridge || !outputBridge || !flagsModule) throw new AuraWorkerError(`app.${call}() needs the worker's post and output modules.`, "not-initialized", "recoverable");
     if (call === "setOutput") {
       const patch = args[0];

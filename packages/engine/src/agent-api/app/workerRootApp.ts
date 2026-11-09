@@ -18,6 +18,9 @@ import type { AuraWorkerAppCall } from "./workerPatch.js";
 import { normalizeOutputToneMapping } from "./toneMappingNames.js";
 import type { AuraPostSurface } from "../../contracts/post.js";
 import { StubAppAtmosphere, type AuraAppAtmosphere } from "../../contracts/atmosphere.js";
+import { StubLightingRuntime, type AuraLightingRuntime } from "../../contracts/lighting.js";
+import { createWorkerHostEffects } from "./workerEffects.js";
+import { builtInEffectPresets } from "../vfx/effects-api.js";
 import { createWorkerNodeMirror, type AuraWorkerNodeMirror } from "./workerNodes.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
@@ -891,6 +894,37 @@ export function createWorkerRootApp(
     state: () => atmosphereMirror.state()
   };
   (app as unknown as Record<string, unknown>).atmosphere = atmosphere;
+  // 5.4: `app.lighting` environment controls and probe refreshes run on the worker's PRD-02 lighting runtime (Gridlock
+  // Courier's daylight and Shadowstep Gauntlet's district looks scale the environment term). Caller-owned GPU data
+  // (attachIndirect, attachLightmap) cannot cross to the worker; diagnostics() answers from the host copy.
+  const lightingMirror = new StubLightingRuntime();
+  const finite = (value: number, what: string, min = -Infinity): void => {
+    if (!Number.isFinite(value) || value < min) throw new RangeError(`${what} expects a finite number${min === 0 ? " >= 0" : ""}, got ${String(value)}.`);
+  };
+  const workerOnly = (what: string): never => {
+    throw new AuraWorkerError(`app.lighting.${what}() needs caller-owned GPU data, which cannot be sent to the render worker; create the app without a worker to use it.`, "worker-unsupported");
+  };
+  const lighting = {
+    setEnvironmentIntensity(value: number) { finite(value, "setEnvironmentIntensity", 0); lightingMirror.setEnvironmentIntensity(value); queueAppCall("lighting.setEnvironmentIntensity", [value]); },
+    setEnvironmentRotation(radians: number) { finite(radians, "setEnvironmentRotation"); lightingMirror.setEnvironmentRotation(radians); queueAppCall("lighting.setEnvironmentRotation", [radians]); },
+    setEnvironment(texture, opts) { lightingMirror.setEnvironment(texture, opts); queueAppCall("lighting.setEnvironment", opts === undefined ? [texture] : [texture, opts]); },
+    updateProbe(name: string) {
+      if (typeof name !== "string" || !name.trim()) throw new RangeError("probe name must be nonempty");
+      queueAppCall("lighting.updateProbe", [name]);
+      return Promise.resolve();
+    },
+    rebakeIrradiance(name?: string) {
+      if (name !== undefined && (typeof name !== "string" || !name.trim())) throw new RangeError("irradiance volume name must be nonempty");
+      queueAppCall("lighting.rebakeIrradiance", name === undefined ? [] : [name]);
+      return Promise.resolve();
+    },
+    attachIndirect: () => workerOnly("attachIndirect"),
+    attachLightmap: () => workerOnly("attachLightmap"),
+    diagnostics: () => lightingMirror.diagnostics()
+  } as AuraLightingRuntime;
+  (app as unknown as Record<string, unknown>).lighting = lighting;
+  // 5.4: `app.effects` (bursts, looping specs, trails, decals, presets) is replayed on the worker's effects.
+  (app as unknown as Record<string, unknown>).effects = createWorkerHostEffects(queueAppCall, builtInEffectPresets);
   // K3: camera (and time) extensions only need app.onFrame/nodes/scene, which
   // a worker app now provides host-side; the camera spec they write reaches
   // the worker through flushPatches.

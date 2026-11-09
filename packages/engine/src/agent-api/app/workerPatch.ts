@@ -46,14 +46,20 @@ export type AuraWorkerNodePatchOp =
 
 /**
  * 5.4: app members a worker app forwards to the render worker: the output (tone mapping, exposure), the runtime
- * post-effect overrides, custom post passes and the atmosphere (fog, sky, wetness). They apply to the worker renderer between frames, like node patches.
+ * post-effect overrides, custom post passes, the atmosphere (fog, sky, wetness), runtime effects and the lighting environment. They apply to the worker renderer between frames, like node patches.
  */
 export const WORKER_APP_CALLS = [
   "setOutput", "post.setEffect", "post.setEffectEnabled", "post.setQualityTier", "post.setPassUniform",
   // `post.addPostPass` carries [token, pass]; the host's release posts `post.removePostPass` [token].
   "post.addPostPass", "post.removePostPass",
   // `app.atmosphere` fog/sky/wetness: replayed into the worker's PRD-07 atmosphere (and again after a remount).
-  "atmosphere.setFog", "atmosphere.setSky", "atmosphere.setWetness"
+  "atmosphere.setFog", "atmosphere.setSky", "atmosphere.setWetness",
+  // `app.effects`: starts carry a host token first ([token, ...args]); `effects.handle` is [token, method, ...args].
+  "effects.burst", "effects.spawn", "effects.trail", "effects.decal", "effects.handle",
+  "effects.registerPreset", "effects.setRuntime", "effects.clear",
+  // `app.lighting`: the environment term (scale, yaw, runtime swap) and probe / irradiance refresh requests.
+  "lighting.setEnvironmentIntensity", "lighting.setEnvironmentRotation", "lighting.setEnvironment",
+  "lighting.updateProbe", "lighting.rebakeIrradiance"
 ] as const;
 export type AuraWorkerAppCall = (typeof WORKER_APP_CALLS)[number];
 const WORKER_APP_CALL_SET = new Set<string>(WORKER_APP_CALLS);
