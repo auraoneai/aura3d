@@ -319,3 +319,144 @@ export function applyNativeRenderDynamicState(pass: NativeDynamicPass, state: Na
   if (state.blendConstant) pass.setBlendConstant!(state.blendConstant);
   if (state.stencilReference !== null) pass.setStencilReference!(state.stencilReference);
 }
+
+const NOT_PLAIN = Symbol("not plain");
+/**
+ * A deep copy of plain data (plain objects, arrays, primitives other than symbols and functions), or NOT_PLAIN when it
+ * holds anything else. With `references`, the named top-level keys may hold other objects, kept by reference (the
+ * device's limit and feature objects, which do not change).
+ */
+function plainCopy(value: unknown, references?: ReadonlySet<string>): unknown {
+  if (Array.isArray(value)) {
+    const copy = new Array<unknown>(value.length);
+    for (let i = 0; i < value.length; i += 1) { const item = plainCopy(value[i]); if (item === NOT_PLAIN) return NOT_PLAIN; copy[i] = item; }
+    return copy;
+  }
+  if (value !== null && typeof value === "object") {
+    if (Object.getPrototypeOf(value) !== Object.prototype) return NOT_PLAIN;
+    const copy: Record<string, unknown> = {};
+    for (const key of Object.keys(value)) {
+      const item = (value as Record<string, unknown>)[key];
+      const copied = references?.has(key) && item !== null && typeof item === "object" && Object.getPrototypeOf(item) !== Object.prototype ? item : plainCopy(item);
+      if (copied === NOT_PLAIN) return NOT_PLAIN;
+      copy[key] = copied;
+    }
+    return copy;
+  }
+  return typeof value === "function" || typeof value === "symbol" ? NOT_PLAIN : value;
+}
+const DEVICE_REFERENCES: ReadonlySet<string> = new Set(["vertexLimits", "colorLimits", "features"]);
+
+/** True when `value` has the same plain structure as `copy` (from plainCopy); non-plain objects compare by identity. */
+function samePlain(value: unknown, copy: unknown): boolean {
+  if (value === copy) return typeof value !== "number" || value !== 0 || 1 / value === 1 / (copy as number);
+  if (Array.isArray(value)) {
+    if (!Array.isArray(copy) || value.length !== copy.length) return false;
+    for (let i = 0; i < value.length; i += 1) if (!samePlain(value[i], copy[i])) return false;
+    return true;
+  }
+  if (value === null || typeof value !== "object" || Object.getPrototypeOf(value) !== Object.prototype
+    || copy === null || typeof copy !== "object" || Array.isArray(copy)) return false;
+  const keys = Object.keys(value);
+  if (keys.length !== Object.keys(copy).length) return false;
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(copy, key) || !samePlain((value as Record<string, unknown>)[key], (copy as Record<string, unknown>)[key])) return false;
+  }
+  return true;
+}
+
+const MEMO_ENTRIES_PER_KEY = 16;
+interface ResolvedRenderStateEntry { readonly input: unknown; readonly result: NativeRenderState }
+
+/** A non-negative-zero number for a memo key; null when the value is not one (-0 included, which a key would merge with 0). */
+function keyNumber(value: unknown): string | null {
+  return typeof value === "number" && (value !== 0 || 1 / value > 0) ? String(value) : null;
+}
+const KEY_WORD = /^[A-Za-z0-9_-]+$/;
+/** An unambiguous key for vertex layouts of plain numbers and simple words; null for anything else. */
+function vertexLayoutsKey(layouts: readonly (NativeVertexBufferLayout | null)[] | undefined): string | null {
+  if (layouts === undefined) return "u";
+  if (!Array.isArray(layouts)) return null;
+  let key = "";
+  for (const layout of layouts) {
+    if (layout === null) { key += "n;"; continue; }
+    if (typeof layout !== "object" || Object.getPrototypeOf(layout) !== Object.prototype) return null;
+    const keys = Object.keys(layout);
+    if (keys.some((name) => name !== "arrayStride" && name !== "stepMode" && name !== "attributes")) return null;
+    const stride = keyNumber(layout.arrayStride);
+    const step = layout.stepMode;
+    if (stride === null || (step !== undefined && (typeof step !== "string" || !KEY_WORD.test(step))) || !Array.isArray(layout.attributes)) return null;
+    key += `${stride},${step === undefined ? "" : step}${"stepMode" in layout ? "" : "!"}[`;
+    for (const attribute of layout.attributes) {
+      if (attribute === null || typeof attribute !== "object" || Object.getPrototypeOf(attribute) !== Object.prototype || Object.keys(attribute).length !== 3) return null;
+      const location = keyNumber(attribute.shaderLocation), offset = keyNumber(attribute.offset), format = attribute.format;
+      if (location === null || offset === null || typeof format !== "string" || !KEY_WORD.test(format)) return null;
+      key += `${location}:${offset}:${format},`;
+    }
+    key += "];";
+  }
+  return key;
+}
+
+/** `samePlain` for a render-state input, skipping `vertexLayouts` (compared through its key). */
+function sameInputExceptLayouts(input: NativeRenderStateInput, copy: unknown): boolean {
+  const record = input as unknown as Record<string, unknown>, stored = copy as Record<string, unknown>;
+  const keys = Object.keys(record);
+  if (keys.length !== Object.keys(stored).length) return false;
+  for (const key of keys) {
+    if (key === "vertexLayouts") { if (!Object.prototype.hasOwnProperty.call(stored, key)) return false; continue; }
+    if (!Object.prototype.hasOwnProperty.call(stored, key) || !samePlain(record[key], stored[key])) return false;
+  }
+  return true;
+}
+
+/**
+ * `resolveNativeRenderState` and `validateNativeVertexLayouts`, remembering their results for inputs seen before. Both
+ * are pure functions of plain data (plus the device limit and feature objects, compared by identity), so an input with
+ * the same structure and values returns the earlier result (or the earlier validated layouts) without redoing the
+ * checks and the pipeline-key serialization. An input that fails is never remembered, so it throws again. Results are
+ * shared: callers must treat them as read-only.
+ */
+export class NativeRenderStateMemo {
+  readonly #resolved = new Map<string, ResolvedRenderStateEntry[]>();
+  readonly #layouts = new Map<string, { readonly limits: unknown; readonly result: readonly (NativeVertexBufferLayout | null)[] }>();
+
+  resolve(input: NativeRenderStateInput): NativeRenderState {
+    const layoutsKey = vertexLayoutsKey(input.vertexLayouts);
+    if (layoutsKey === null || typeof input.shaderKey !== "string" || typeof input.layoutKey !== "string") return resolveNativeRenderState(input);
+    const key = `${input.shaderKey}\u0000${input.layoutKey}\u0000${layoutsKey}`;
+    const entries = this.#resolved.get(key);
+    if (entries) {
+      for (let index = 0; index < entries.length; index += 1) {
+        const entry = entries[index]!;
+        if (sameInputExceptLayouts(input, entry.input)) {
+          if (index > 0) { entries.splice(index, 1); entries.unshift(entry); }
+          return entry.result;
+        }
+      }
+    }
+    const result = resolveNativeRenderState(input);
+    const copy = plainCopy({ ...input, vertexLayouts: undefined }, DEVICE_REFERENCES);
+    if (copy === NOT_PLAIN) return result;
+    const list = entries ?? [];
+    if (!entries) {
+      if (this.#resolved.size >= 4096) this.#resolved.clear();
+      this.#resolved.set(key, list);
+    }
+    list.unshift({ input: copy, result });
+    if (list.length > MEMO_ENTRIES_PER_KEY) list.pop();
+    return result;
+  }
+
+  validateLayouts(layouts: readonly (NativeVertexBufferLayout | null)[], limits?: NativeVertexLimits): readonly (NativeVertexBufferLayout | null)[] {
+    const key = vertexLayoutsKey(layouts);
+    // A plain limits object could change in place; only the device's own (immutable) limits object is remembered.
+    if (key === null || (limits !== undefined && Object.getPrototypeOf(limits) === Object.prototype)) return validateNativeVertexLayouts(layouts, limits);
+    const known = this.#layouts.get(key);
+    if (known && known.limits === limits) return known.result;
+    const result = validateNativeVertexLayouts(layouts, limits);
+    if (this.#layouts.size >= 1024) this.#layouts.clear();
+    this.#layouts.set(key, { limits, result });
+    return result;
+  }
+}

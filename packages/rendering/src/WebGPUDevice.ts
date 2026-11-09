@@ -86,7 +86,7 @@ import { assertRgba8Level, filterNativeDataMip, planNativeDataMipmaps } from "./
 import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention, type DepthPrecisionSupport, type DepthStorage } from "./DepthConvention";
 import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "./webgpu/ShaderDataLayout";
 import { createUniformDataWriter, deriveUniformDataLayout, emitWgslStruct, type UniformBlockLayout, type UniformDataWriter } from "./program/UniformLayout";
-import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts } from "./webgpu/NativeRenderState";
+import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts, NativeRenderStateMemo } from "./webgpu/NativeRenderState";
 import { warmNativePipelineVariants, type NativePipelineWarmupJob, type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup";
 import { PostViewHistory, type PostHistoryLease } from "./post/PostGraph";
 import { WebGPUAutoExposure, normalizeWebGPUAutoExposure, type WebGPUExposureDraw, type WebGPUExposureResult } from "./post/WebGPUAutoExposure";
@@ -103,7 +103,8 @@ import { normalizeWebGPUGtaoOptions, normalizeWebGPUSsaoOptions, packWebGPUAoApp
   packWebGPUGtaoUniforms, packWebGPUSsaoUniforms, webgpuGtaoFragment, WEBGPU_AO_APPLY_FRAGMENT, WEBGPU_AO_DENOISE_FRAGMENT, webgpuAoLinearDepthFragment,
   WEBGPU_AO_MINMAX_HALF_FRAGMENT, WEBGPU_SSAO_FRAGMENT } from "./webgpu/WebGPUAmbientOcclusion";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
-import { createGeneratedPbrProgram, packGeneratedPbrMaterialUniforms, validateGeneratedPbrTarget, validateGeneratedPhotometricPacket, type GeneratedPbrProgram } from "./webgpu/GeneratedPbrProgram";
+import { diffUniformSnapshot, recordUniformReads, uniformSnapshotEntry, updateUniformSnapshotEntry, type UniformSnapshot } from "./webgpu/UniformMapSnapshot";
+import { createGeneratedPbrProgram, packGeneratedPbrMaterialUniforms, patchGeneratedPbrMaterialUniform, validateGeneratedPbrTarget, validateGeneratedPhotometricPacket, type GeneratedPbrProgram } from "./webgpu/GeneratedPbrProgram";
 import { createGeneratedUnlitProgram, packGeneratedUnlitMaterialUniforms, GENERATED_UNLIT_MATERIAL_OFFSETS, type GeneratedUnlitProgram } from "./webgpu/GeneratedUnlitProgram";
 import { assertNativePointQuadSubmission, withNativePointQuadLease, type NativePointQuadSubmission } from "./webgpu/NativePointQuads";
 import { validateNativePointRasterInputs } from "./webgpu/NativePointShader";
@@ -1579,8 +1580,18 @@ export class WebGPUDevice implements RenderDevice {
    * the same buffers in the same order (and so mostly find their own previous bytes).
    */
   #frameUniformReleases: WebGPUBufferLike[] = [];
+  /** Forward draws resolve the same render states and vertex layouts every frame; remember the pure results. */
+  readonly #renderStateMemo = new NativeRenderStateMemo();
+  /**
+   * Generated-PBR material bytes per draw slot (the nth draw of a shader in a frame), kept with a value snapshot of the
+   * uniforms they were packed from. A slot whose uniforms are unchanged reuses its bytes instead of repacking 8 KB.
+   */
+  readonly #pbrPackSlots = new WeakMap<WebGPUShaderProgram, (GeneratedPbrPackSlot | undefined)[]>();
+  readonly #pbrPackOrdinals = new Map<WebGPUShaderProgram, number>();
+  #pbrPackFrame: object | null = null;
   /** Samplers are immutable and never destroyed, so one per descriptor serves every draw on this device. */
   readonly #nativeSamplers = new Map<string, WebGPUSamplerLike>();
+  readonly #nativeSamplersBySampler = new Map<string, WebGPUSamplerLike>();
   /** `getBindGroupLayout` returns a fresh wrapper per call; keep one per pipeline and group. */
   readonly #pipelineGroupLayouts = new WeakMap<object, Map<number, unknown>>();
   /** Bind groups by layout and resource identity (bounded LRU); reused when a draw binds the same objects again. */
@@ -4938,13 +4949,14 @@ export class WebGPUDevice implements RenderDevice {
   draw(command: DrawCommand<RecursiveUniformValue>): void {
     this.assertOutsideMrtSubmission();
     if (this.#pointSubmissionActive) throw new RenderDeviceError("Point submission cannot be reentered", "WEBGPU_POINT_SUBMISSION_ACTIVE");
-    const structured = [...(command.uniforms?.entries() ?? [])].filter(([, value]) => !isLegacyUniformValue(value));
-    if (structured.length) {
+    let structured: string[] | null = null;
+    if (command.uniforms) for (const [name, value] of command.uniforms) if (!isLegacyUniformValue(value)) (structured ??= []).push(name);
+    if (structured) {
       const shader = command.shader ? this.requireShader(command.shader) : undefined;
       if (!shader || shader.nativeUniformLayout !== "portable") {
         throw new RenderDeviceError("Structured uniform data requires a portable WebGPU shader", "WEBGPU_PORTABLE_UNIFORM_VALUE_UNSUPPORTED");
       }
-      for (const [name] of structured) {
+      for (const name of structured) {
         const binding = shader.portableBindings.find((candidate) => candidate.name === name);
         if (!binding || isPortableTexture(binding.kind)) {
           throw new RenderDeviceError("Structured uniform data needs a matching numeric portable binding", "WEBGPU_PORTABLE_UNIFORM_VALUE_UNSUPPORTED", { binding: name });
@@ -4991,12 +5003,14 @@ export class WebGPUDevice implements RenderDevice {
         throw new RenderDeviceError("A Gaussian splat draw cannot sample its borrowed depth attachment", "WEBGPU_ATTACHMENT_FEEDBACK");
       }
     }
-    const sampledTextures = new Set([...(command.uniforms?.values() ?? [])].filter(isTextureBinding).map((binding) => binding.texture).filter((texture): texture is Texture => texture !== null));
+    // Sampled textures (in uniform order), collected once for the storage and attachment feedback checks below.
+    let sampledList: (Texture | null)[] | null = null;
+    if (command.uniforms) for (const value of command.uniforms.values()) if (isTextureBinding(value)) (sampledList ??= []).push(value.texture);
     const storageTextures = new Set<Texture>();
     const storageBuffers = new Set<RenderBuffer>();
     for (const binding of command.nativeStorageBindings ?? []) {
       if (binding.kind === "storage-texture") {
-        if (sampledTextures.has(binding.texture) || storageTextures.has(binding.texture)) {
+        if ((sampledList !== null && sampledList.includes(binding.texture)) || storageTextures.has(binding.texture)) {
           throw new RenderDeviceError("A draw cannot bind the same writable texture more than once", "WEBGPU_STORAGE_FEEDBACK", { name: binding.name });
         }
         storageTextures.add(binding.texture);
@@ -5018,11 +5032,9 @@ export class WebGPUDevice implements RenderDevice {
     }
     if (this.activeRenderTarget) {
       const target = this.activeRenderTarget;
-      const readTextures = [
-        ...[...(command.uniforms?.values() ?? [])].filter(isTextureBinding).map((binding) => binding.texture),
-        ...(command.nativeStorageBindings ?? []).filter((binding) => binding.kind === "storage-texture").map((binding) => binding.texture)
-      ];
-      if (readTextures.some((texture) => texture && ((target.colorTextures ?? [target.colorTexture]).includes(texture) || texture === target.depthTexture || texture === target.multisampledDepthTexture))) {
+      const writes = (texture: Texture | null): boolean => Boolean(texture && ((target.colorTextures ?? [target.colorTexture]).includes(texture) || texture === target.depthTexture || texture === target.multisampledDepthTexture));
+      if ((sampledList !== null && sampledList.some(writes))
+        || (command.nativeStorageBindings ?? []).some((binding) => binding.kind === "storage-texture" && writes(binding.texture))) {
         throw new RenderDeviceError("A draw cannot sample a texture attached for writing in the same pass", "WEBGPU_ATTACHMENT_FEEDBACK", { label: command.label });
       }
     }
@@ -8386,7 +8398,7 @@ export class WebGPUDevice implements RenderDevice {
       layouts[slot] = { arrayStride: group.stride, stepMode: "instance", attributes: group.attributes };
       sources.set(slot, this.requireBuffer(group.buffer));
     }
-    validateNativeVertexLayouts(layouts, this.device.limits);
+    this.#renderStateMemo.validateLayouts(layouts, this.device.limits);
     let lastVertex = (command.firstVertex ?? 0) + command.vertexCount - 1;
     if (command.indexBuffer) {
       const indexBuffer = this.requireBuffer(command.indexBuffer);
@@ -9122,7 +9134,7 @@ export class WebGPUDevice implements RenderDevice {
     // be skipped before a later depth-enabled pass loads the same target.
     const hasDepthStencil = depthView !== null && depthView !== undefined;
     const explicitLayout = this.portableTextureLayout(command, shader) ?? this.generatedPbrDeformLayout(shader);
-    const resolvedState = resolveNativeRenderState({
+    const resolvedState = this.#renderStateMemo.resolve({
       state, topology: command.topology, colorFormats: targetFormats, depthStencilFormat: hasDepthStencil ? this.activeDepthStencilFormat() : null,
       sampleCount, targetWidth: this.activeRenderTarget?.width ?? this.viewportWidth, targetHeight: this.activeRenderTarget?.height ?? this.viewportHeight,
       // Format- and sample-count keyed (see warmRenderPipelines): a new target with the same formats reuses the pipeline.
@@ -9656,10 +9668,15 @@ export class WebGPUDevice implements RenderDevice {
       for (const value of command.uniforms?.values() ?? []) {
         if (!isTextureBinding(value) || !value.texture || value.texture.disposed) continue;
         const texture = value.texture;
-        const target = [...this.renderTargets].find((candidate) => !candidate.disposed && (candidate.nativeColorFor(texture) !== undefined || candidate.depthTexture === texture || candidate.multisampledDepthTexture === texture));
         const streaming = this.nativeStreamingLeases.get(texture);
-        const native = (streaming ? (streaming.current ?? streaming.fallback).native : undefined)
-          ?? this.nativeSampledTextures.get(texture)?.texture ?? target?.nativeColorFor(texture) ?? target?.nativeDepthTexture;
+        let native = (streaming ? (streaming.current ?? streaming.fallback).native : undefined) ?? this.nativeSampledTextures.get(texture)?.texture;
+        if (!native) {
+          let target: WebGPURenderTarget | undefined;
+          for (const candidate of this.renderTargets) {
+            if (!candidate.disposed && (candidate.nativeColorFor(texture) !== undefined || candidate.depthTexture === texture || candidate.multisampledDepthTexture === texture)) { target = candidate; break; }
+          }
+          native = target?.nativeColorFor(texture) ?? target?.nativeDepthTexture ?? undefined;
+        }
         if (native) accesses.push({ resource: native, mode: "read" });
       }
       for (const resource of generatedTextures) if (resource.native) accesses.push({ resource: resource.native, mode: "read" });
@@ -9934,10 +9951,17 @@ export class WebGPUDevice implements RenderDevice {
       if (this.#drawBatchingEnabled) {
         const bytes = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
         const previous = this.#transientUniformContents.get(buffer);
-        if (previous && sameBytes(previous, bytes)) return buffer;
-        this.device.queue.writeBuffer(buffer, 0, data);
-        if (previous) previous.set(bytes);
-        else this.#transientUniformContents.set(buffer, bytes.slice());
+        if (previous) {
+          // Only the changed words go to the queue (usually a matrix or two of an 8 KB material block).
+          const range = changedWordRange(previous, bytes);
+          if (!range) return buffer;
+          if (range[0] === 0 && range[1] === bytes.byteLength) this.device.queue.writeBuffer(buffer, 0, data);
+          else this.device.queue.writeBuffer(buffer, range[0], bytes.subarray(range[0], range[1]));
+          previous.set(bytes);
+        } else {
+          this.device.queue.writeBuffer(buffer, 0, data);
+          this.#transientUniformContents.set(buffer, bytes.slice());
+        }
       } else {
         this.device.queue.writeBuffer(buffer, 0, data);
       }
@@ -9962,6 +9986,23 @@ export class WebGPUDevice implements RenderDevice {
     if (!list) { list = []; this.#transientUniformFree.set(key, list); }
     if (list.length >= 1024) { this.#transientUniformOwned.delete(buffer); this.retireNative(buffer); return; }
     if (!list.includes(buffer)) list.push(buffer);
+  }
+
+  /** The first live render target with `texture` as a color attachment. */
+  private liveTargetWithColor(texture: Texture): WebGPURenderTarget | undefined {
+    for (const candidate of this.renderTargets) if (!candidate.disposed && candidate.nativeColorFor(texture) !== undefined) return candidate;
+    return undefined;
+  }
+
+  /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+  private nativeSamplerFor(sampler: Sampler): WebGPUSamplerLike {
+    const key = `${sampler.minFilter}|${sampler.magFilter}|${sampler.addressU}|${sampler.addressV}|${sampler.addressW ?? ""}|${sampler.maxAnisotropy}`;
+    let native = this.#nativeSamplersBySampler.get(key);
+    if (!native) {
+      native = this.nativeSampler(webgpuSamplerDescriptor(sampler));
+      this.#nativeSamplersBySampler.set(key, native);
+    }
+    return native;
   }
 
   /** One immutable sampler per descriptor for this device. */
@@ -10057,14 +10098,14 @@ export class WebGPUDevice implements RenderDevice {
     const resource = this.nativeSampledTextures.get(texture);
     // Target color attachments can be sampled directly after their pass (or
     // the multisample resolve); no second allocation or readback is involved.
-    const target = [...this.renderTargets].find((candidate) => !candidate.disposed && candidate.nativeColorFor(texture) !== undefined);
     const streaming = this.nativeStreamingLeases.get(texture);
-    const view = (streaming ? (streaming.current ?? streaming.fallback).view : undefined) ?? resource?.view ?? target?.nativeSampledViewFor(texture);
+    const view = (streaming ? (streaming.current ?? streaming.fallback).view : undefined) ?? resource?.view
+      ?? this.liveTargetWithColor(texture)?.nativeSampledViewFor(texture);
     if (!view) throw new RenderDeviceError("Texture view cannot be sampled", "WEBGPU_TEXTURE_VIEW_UNAVAILABLE", { label: texture.label });
     this.resourceInterop.assertUsable(native);
     return {
       view,
-      sampler: this.nativeSampler(webgpuSamplerDescriptor(binding.sampler)),
+      sampler: this.nativeSamplerFor(binding.sampler),
       actual: true,
       native
     };
@@ -10820,8 +10861,52 @@ export class WebGPUDevice implements RenderDevice {
       copy.set("u_webgpuTransmissionViewport", this.normalizedTransmissionViewport());
       uniforms = copy;
     }
-    const data = packGeneratedPbrMaterialUniforms(uniforms, Boolean(program?.packedLoopColor), Boolean(program?.photometricProfile));
+    const data = this.packGeneratedPbrForSlot(command.shader ? this.requireShader(command.shader) : undefined, uniforms,
+      Boolean(program?.packedLoopColor), Boolean(program?.photometricProfile));
     return this.acquireTransientUniform(`${command.label ?? "draw"}-generated-pbr-material`, data);
+  }
+
+  /**
+   * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+   * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+   * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+   * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+   * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+   */
+  private packGeneratedPbrForSlot(shader: WebGPUShaderProgram | undefined, uniforms: ReadonlyMap<string, UniformValue>, packedLoopColor: boolean, photometricProfile: boolean): Uint8Array {
+    // The puddle-noise refusal reads the binding's texture, which a by-reference snapshot would not see change.
+    if (!shader || !this.frameToken || uniforms.has("u_puddleNoise")) return packGeneratedPbrMaterialUniforms(uniforms, packedLoopColor, photometricProfile);
+    if (this.#pbrPackFrame !== this.frameToken) { this.#pbrPackFrame = this.frameToken; this.#pbrPackOrdinals.clear(); }
+    const ordinal = this.#pbrPackOrdinals.get(shader) ?? 0;
+    this.#pbrPackOrdinals.set(shader, ordinal + 1);
+    let slots = this.#pbrPackSlots.get(shader);
+    if (!slots) { slots = []; this.#pbrPackSlots.set(shader, slots); }
+    const slot = slots[ordinal];
+    if (slot && slot.packedLoopColor === packedLoopColor && slot.photometricProfile === photometricProfile) {
+      const differing = diffUniformSnapshot(slot.snapshot, uniforms, GENERATED_PBR_PATCH_LIMIT);
+      if (differing === null) return slot.bytes;
+      if (differing) {
+        // Rewritten in the slot's other image: the bytes handed out last time are left as they were.
+        const bytes = slot.spare ?? new Uint8Array(slot.bytes.byteLength);
+        bytes.set(slot.bytes);
+        let patched = true;
+        for (const index of differing) {
+          const { name, length } = uniformSnapshotEntry(slot.snapshot, index);
+          if (!patchGeneratedPbrMaterialUniform(bytes, name, uniforms.get(name), length, photometricProfile)) { patched = false; break; }
+        }
+        if (patched) {
+          for (const index of differing) {
+            if (!updateUniformSnapshotEntry(slot.snapshot, index, uniforms.get(slot.snapshot.names[index]!))) { patched = false; break; }
+          }
+        }
+        if (patched) { slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+      }
+      slots[ordinal] = undefined;
+    }
+    if (ordinal >= GENERATED_PBR_PACK_SLOTS) return packGeneratedPbrMaterialUniforms(uniforms, packedLoopColor, photometricProfile);
+    const { result: bytes, snapshot } = recordUniformReads(uniforms, (recorded) => packGeneratedPbrMaterialUniforms(recorded, packedLoopColor, photometricProfile));
+    if (snapshot) slots[ordinal] = { snapshot, bytes, spare: null, packedLoopColor, photometricProfile };
+    return bytes;
   }
 
   private createNativeGeneratedUnlitUniformBuffer(command: DrawCommand): WebGPUBufferLike {
@@ -12061,6 +12146,37 @@ function snapshotPortableBindings(bindings: readonly PortableShaderBinding[]): r
   });
 }
 
+/** Draw slots per generated-PBR shader whose packed material bytes are kept between frames. */
+const GENERATED_PBR_PACK_SLOTS = 4096;
+/** More differing uniforms than this repack the slot instead of rewriting each one. */
+const GENERATED_PBR_PATCH_LIMIT = 8;
+interface GeneratedPbrPackSlot {
+  readonly snapshot: UniformSnapshot;
+  bytes: Uint8Array;
+  /** The previous image, reused for the next rewrite. */
+  spare: Uint8Array | null;
+  readonly packedLoopColor: boolean;
+  readonly photometricProfile: boolean;
+}
+
+/**
+ * The 4-byte-aligned `[start, end)` byte range outside which equal-length views `a` and `b` are equal, or null when they
+ * are equal. Views that are not 4-byte aligned report their whole length when they differ.
+ */
+function changedWordRange(a: Uint8Array, b: Uint8Array): readonly [number, number] | null {
+  if (a.byteLength !== b.byteLength) return [0, b.byteLength];
+  if ((a.byteOffset & 3) === 0 && (b.byteOffset & 3) === 0 && (a.byteLength & 3) === 0) {
+    const x = new Uint32Array(a.buffer, a.byteOffset, a.byteLength >> 2), y = new Uint32Array(b.buffer, b.byteOffset, b.byteLength >> 2);
+    let first = 0;
+    while (first < x.length && x[first] === y[first]) first += 1;
+    if (first === x.length) return null;
+    let last = x.length - 1;
+    while (last > first && x[last] === y[last]) last -= 1;
+    return [first << 2, (last + 1) << 2];
+  }
+  return sameBytes(a, b) ? null : [0, b.byteLength];
+}
+
 /** Equal-length byte views compare equal (word-wise when both are 4-byte aligned). */
 function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   if (a.byteLength !== b.byteLength) return false;
@@ -12143,12 +12259,22 @@ export function writeFastPortableUniforms(size: number, plan: readonly FastPorta
     } else return null;
     const length = source.length;
     if (length !== expected && !(member.array && length <= expected && length % member.count === 0)) return null;
-    for (let index = 0; index < length; index += 1) {
-      const component = source[index];
-      if (typeof component !== "number" || !Number.isFinite(component) || !Number.isFinite(Math.fround(component))) return null;
-      const element = Math.floor(index / member.count), within = index - element * member.count;
-      const column = Math.floor(within / member.rows), row = within - column * member.rows;
-      floats[(member.offset + element * member.elementStride + column * member.columnStride + row * 4) >> 2] = component;
+    // Element-major, then column, then row: the same slots as index -> (element, column, row), without a division per value.
+    const rows = member.rows, columns = member.count / rows, elements = length / member.count;
+    let index = 0;
+    for (let element = 0; element < elements; element += 1) {
+      const elementBase = member.offset + element * member.elementStride;
+      for (let column = 0; column < columns; column += 1) {
+        const columnBase = elementBase + column * member.columnStride;
+        for (let row = 0; row < rows; row += 1, index += 1) {
+          const component = source[index];
+          if (typeof component !== "number") return null;
+          const slot = (columnBase + row * 4) >> 2;
+          floats[slot] = component;
+          // A finite double whose f32 is finite (the same check as Number.isFinite(Math.fround(v)) && Number.isFinite(v)).
+          if (!Number.isFinite(floats[slot]!) || !Number.isFinite(component)) return null;
+        }
+      }
     }
   }
   return bytes;
@@ -12177,9 +12303,13 @@ function zeroPortableData(type: ShaderDataType): ShaderDataValue {
 }
 
 function isLegacyUniformValue(value: RecursiveUniformValue): boolean {
-  return typeof value === "number" || isTextureBinding(value)
-    || value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array
-    || (Array.isArray(value) && value.every((entry) => typeof entry === "number"));
+  if (typeof value === "number" || value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array) return true;
+  if (Array.isArray(value)) {
+    // Holes are skipped, as Array.prototype.every skips them.
+    for (let index = 0; index < value.length; index += 1) if (typeof value[index] !== "number" && index in value) return false;
+    return true;
+  }
+  return isTextureBinding(value);
 }
 
 function portableUniformValue(binding: PortableShaderBinding, value: RecursiveUniformValue | undefined): ShaderDataValue {
