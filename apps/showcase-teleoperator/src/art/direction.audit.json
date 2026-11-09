@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-teleoperator/src/art/direction.ts",
-  "sourceSha256": "19d6d5f8c5fac896fdc3e45aa737a66ab5a1065be7b141a863fb246d25c6070a",
+  "sourceSha256": "5c81f994f22f62f337f095887387a98c5825ded5181ea777931bac58ee7f96ae",
   "id": "showcase-teleoperator",
   "genre": "racing",
   "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",
@@ -237,6 +237,13 @@
       {
         "assetKey": "gridHatch",
         "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridPassenger",
+        "triangles": 14313,
         "textures": 3,
         "unlit": false,
         "overridesTextures": false
@@ -591,19 +598,6 @@
         "practical": true
       },
       {
-        "node": "taxi-passenger-body",
-        "practical": false
-      },
-      {
-        "node": "taxi-passenger-head",
-        "practical": false
-      },
-      {
-        "node": "taxi-passenger-arm",
-        "emissiveIntensity": 1.2,
-        "practical": true
-      },
-      {
         "node": "player-tail-lamps",
         "emissiveIntensity": 0.315,
         "practical": true
@@ -845,6 +839,14 @@
         "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "gridPassenger",
+        "maxTriangles": 15000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       }
     ],
     "vfx": [
