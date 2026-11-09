@@ -1627,10 +1627,11 @@ export async function producePackedSource(root: string, runId: string, candidate
       if (!checks.some((check) => check.id === "build")) checks.push(failed(root, logs, "build", "Build not run due to preparation failure"));
       else checks.push(failed(root, logs, "identity", String(error)));
     } finally {
-      try { retainPackedWrapper(wrapper, retainedWrapper); } catch {
+      try { retainPackedWrapper(wrapper, retainedWrapper); } catch (stageError) {
         rmSync(retainedWrapper, { recursive: true, force: true });
         record = undefined;
-        checks.push(failed(root, logs, "retained-identity", "Retained example could not be safely staged"));
+        // The thrown messages are fixed strings that never carry file contents, so they are safe to log.
+        checks.push(failed(root, logs, "retained-identity", `Retained example could not be safely staged: ${stageError instanceof Error ? stageError.message.slice(0, 240) : "unknown"}`));
       } finally { rmSync(wrapper, { recursive: true, force: true }); }
     }
     if (record) {
