@@ -1,22 +1,15 @@
 # three.js bridge report: city-block
 
-Generator `recipes/city-block.mjs` (sha256 b337373c300d), seed 1, params `{"blocksX":4,"blocksZ":3,"lot":3.2,"street":1.6}`, three r185.
-GLB `.aura3d/three-bridge/city-block.glb` (77048 bytes, sha256 8f9f5c55e491).
+Generator `recipes/city-block.mjs` (sha256 e548105d7ba0), seed 1, params `{"blocksX":4,"blocksZ":3,"lot":3.2,"street":1.6}`, three r185.
+GLB `.aura3d/three-bridge/city-block.glb` (77236 bytes, sha256 6844cde39fee).
 
-Supported 106, approximated 1, unsupported 2. Nothing is silently substituted: unsupported constructs are not reproduced, and each row says what the Aura3D output shows instead (hidden node, detached texture, or the unpatched base material).
-
-## unsupported (2)
-
-| construct | subject | note | native route |
-|---|---|---|---|
-| ShaderMaterial | `neon_sign` | custom shaders are not exported; GLTFExporter would write a default material, so meshes using it are hidden in the Aura3D output (port the shader by hand) | material.custom |
-| Mesh | `sign` | uses a material the bridge cannot carry; hidden in the Aura3D output rather than shown with a substitute |  |
+Supported 106, approximated 1, unsupported 0. Nothing is silently substituted: unsupported constructs are not reproduced, and each row says what the Aura3D output shows instead (hidden node, detached texture, or the unpatched base material).
 
 ## approximated (1)
 
 | construct | subject | note | native route |
 |---|---|---|---|
-| GLTFExporter | `export` | GLTFExporter: THREE.ShaderMaterial not supported. |  |
+| ShaderMaterial | `neon_sign` | carried as material.custom (GLSL pass-through; three built-ins map to the Aura3D prelude aliases) on a placeholder slot of the same name; output is sRGB-decoded so Aura3D's output encode shows the values three wrote to the canvas; under a tone-mapped output Aura3D also tone-maps it (three does not tone-map a ShaderMaterial without its tonemapping chunk) | material.custom |
 
 ## supported (106)
 

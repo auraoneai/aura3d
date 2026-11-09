@@ -81,9 +81,11 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
       const metadata = {
         materials: asset.materials,
         animations: asset.animations,
-        // C-17: 1.1 entries carry {name, duration, channelCount} clip objects
-        // (Q-05-1); 1.0 entries keep the legacy clip-name list.
-        animationClips: asset.animationClips ?? asset.animations,
+        // The engine types `AuraAssetMetadata.animationClips` as clip names (`readonly string[]`). C-17 1.1 manifest
+        // entries carry {name, duration, channelCount} objects (Q-05-1): the typed map lists their names here and keeps
+        // the objects under `animationClipDetails`; 1.0 entries keep the legacy clip-name list.
+        animationClips: asset.animationClips ? asset.animationClips.map((clip) => clip.name) : asset.animations,
+        animationClipDetails: asset.animationClips,
         animationMetadata: asset.animationMetadata ?? createReadinessAnimationMetadata(asset.animations),
         humanoid: asset.humanoid?.humanoid ?? false,
         humanoidStatus: asset.humanoid?.status ?? "unknown",

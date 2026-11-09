@@ -578,6 +578,7 @@ export async function createProductionRuntimeSceneRenderer(
             width: canvas.width,
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
+            ...(node.nodeTransforms ? { nodeTransforms: node.nodeTransforms } : {}),
             ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
             ...decoderOptions,
             ...applyModelTintBridge(node)

@@ -2815,7 +2815,9 @@ export function createEmbeddedGLBAnimationClipRegistryMetadata<
   const metadata = asset?.metadata;
   const nested = metadata?.animation as AuraEmbeddedGLBClipRegistryMetadata<TClipId, TEvent> | undefined;
   const registry = (nested ?? source) as AuraEmbeddedGLBClipRegistryMetadata<TClipId, TEvent>;
-  const clips = registry.clips ?? registry.animations ?? (metadata?.animationClips as readonly (TClipId | AuraEmbeddedGLBClipMetadata<TClipId, TEvent>)[] | undefined) ?? (metadata?.animations as readonly (TClipId | AuraEmbeddedGLBClipMetadata<TClipId, TEvent>)[] | undefined) ?? [];
+  // Generated typed maps list clip names in `animationClips` and the C-17 {name, duration, channelCount} objects in
+  // `animationClipDetails`; prefer the objects so authored durations survive.
+  const clips = registry.clips ?? registry.animations ?? (metadata?.animationClipDetails as readonly AuraEmbeddedGLBClipMetadata<TClipId, TEvent>[] | undefined) ?? (metadata?.animationClips as readonly (TClipId | AuraEmbeddedGLBClipMetadata<TClipId, TEvent>)[] | undefined) ?? (metadata?.animations as readonly (TClipId | AuraEmbeddedGLBClipMetadata<TClipId, TEvent>)[] | undefined) ?? [];
   const bones = registry.bones ?? metadata?.bones;
   const skeleton = registry.skeleton ?? metadata?.skeleton ?? (bones ? { bones } : undefined);
   const layers = registry.layers ?? metadata?.layers;

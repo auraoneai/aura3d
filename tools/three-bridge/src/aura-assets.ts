@@ -3,26 +3,28 @@ import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
   readonly "city-block": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "shader-kiosk": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
   readonly "stylized-car": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
   readonly "tree-grove": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "windmill": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
   "city-block": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/city-block.8f9f5c55.glb",
-    hash: "sha256-8f9f5c55e491f558d191139c8270ee8cd1d58d2f938f0dacf0f1a3035b59d8dd",
+    url: "/aura-assets/city-block.6844cde3.glb",
+    hash: "sha256-6844cde39fee9dc8a386cb46055936f29537967ace1c148c155275cf005c35f2",
     integrity: {
       "version": 1,
-      "digest": "sha256-8f9f5c55e491f558d191139c8270ee8cd1d58d2f938f0dacf0f1a3035b59d8dd"
+      "digest": "sha256-6844cde39fee9dc8a386cb46055936f29537967ace1c148c155275cf005c35f2"
     },
     bounds: [
       20.8,
       7.367,
       16.2
     ],
-    sizeBytes: 77048,
+    sizeBytes: 77236,
     metadata: {
       "materials": [
         "asphalt",
@@ -76,7 +78,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "facade_3_2",
         "facade_3_2",
         "facade_3_2",
-        "lamp_post"
+        "lamp_post",
+        "neon_sign"
       ],
       "animations": [],
       "animationClips": [],
@@ -109,7 +112,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "hierarchy": {
         "nodeCount": 40,
         "meshCount": 27,
-        "materialCount": 52,
+        "materialCount": 53,
         "textureCount": 5,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -133,14 +136,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "src/three-bridge/city-block.bridge.json"
         ],
-        "checkedAt": "2026-11-08T12:37:15.934Z"
+        "checkedAt": "2026-11-08T23:09:20.993Z"
       },
       "modelInspection": {
         "version": 1,
         "status": "metadata-only"
       },
       "sourcePath": ".aura3d/three-bridge/city-block.glb",
-      "outputPath": "public/aura-assets/city-block.8f9f5c55.glb",
+      "outputPath": "public/aura-assets/city-block.6844cde3.glb",
       "license": "LicenseRef-project-generated",
       "author": "aura3d import-three",
       "boundsMetadata": {
@@ -531,6 +534,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "readable": true,
           "opacity": 1,
           "reasons": []
+        },
+        {
+          "name": "neon_sign",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
         }
       ],
       "orientation": {
@@ -595,6 +605,179 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "procedural three.js recipe recipes/city-block.mjs (seed 1)"
     },
   },
+  "shader-kiosk": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/shader-kiosk.33a5298b.glb",
+    hash: "sha256-33a5298bfc52088ef747bf2e7185587c77f7a3f1799236043621d638398fc837",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-33a5298bfc52088ef747bf2e7185587c77f7a3f1799236043621d638398fc837"
+    },
+    bounds: [
+      10,
+      5.2,
+      7
+    ],
+    sizeBytes: 111912,
+    metadata: {
+      "materials": [
+        "floor",
+        "backdrop_gradient",
+        "plinth",
+        "trim",
+        "orb_glow"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 6,
+        "meshCount": 6,
+        "materialCount": 5,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "floor",
+          "backdrop",
+          "plinth",
+          "ring",
+          "orb",
+          "sign"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 6 nodes across 6 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": ".aura3d/three-bridge/shader-kiosk.glb",
+        "license": "LicenseRef-project-generated",
+        "author": "aura3d import-three",
+        "sourceFamily": "three-bridge",
+        "evidence": [
+          "src/three-bridge/shader-kiosk.bridge.json"
+        ],
+        "checkedAt": "2026-11-08T23:09:25.170Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": ".aura3d/three-bridge/shader-kiosk.glb",
+      "outputPath": "public/aura-assets/shader-kiosk.33a5298b.glb",
+      "license": "LicenseRef-project-generated",
+      "author": "aura3d import-three",
+      "boundsMetadata": {
+        "min": [
+          -5,
+          -0.2,
+          -3.5
+        ],
+        "max": [
+          5,
+          5,
+          3.5
+        ],
+        "size": [
+          10,
+          5.2,
+          7
+        ],
+        "center": [
+          0,
+          2.4,
+          0
+        ],
+        "maxDimension": 10,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "floor",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "backdrop_gradient",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "plinth",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "trim",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "orb_glow",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "floor",
+        "backdrop",
+        "plinth",
+        "ring",
+        "orb",
+        "sign"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/shader-kiosk.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "procedural three.js recipe recipes/shader-kiosk.mjs (seed 1)"
+    },
+  },
   "stylized-car": {
     type: "model",
     format: "glb",
@@ -624,6 +807,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "wheel_spin"
       ],
       "animationClips": [
+        "wheel_spin"
+      ],
+      "animationClipDetails": [
         {
           "name": "wheel_spin",
           "duration": 1,
@@ -700,7 +886,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "src/three-bridge/stylized-car.bridge.json"
         ],
-        "checkedAt": "2026-11-08T12:47:15.173Z"
+        "checkedAt": "2026-11-08T22:58:05.783Z"
       },
       "modelInspection": {
         "version": 1,
@@ -901,7 +1087,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "src/three-bridge/tree-grove.bridge.json"
         ],
-        "checkedAt": "2026-11-08T12:36:07.491Z"
+        "checkedAt": "2026-11-08T22:57:40.443Z"
       },
       "modelInspection": {
         "version": 1,
@@ -1074,6 +1260,266 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "ungraded",
       "role": "unknown",
       "suitabilityReason": "procedural three.js recipe recipes/tree-grove.mjs (seed 1)"
+    },
+  },
+  "windmill": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/windmill.9cd94f64.glb",
+    hash: "sha256-9cd94f64ab6199b6ff458cfdaa76740e9f8c030cdb2b5f9d94b7df5de5617bde",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-9cd94f64ab6199b6ff458cfdaa76740e9f8c030cdb2b5f9d94b7df5de5617bde"
+    },
+    bounds: [
+      18,
+      8.25,
+      18
+    ],
+    sizeBytes: 55956,
+    metadata: {
+      "materials": [
+        "grass",
+        "tower",
+        "roof",
+        "wood",
+        "metal",
+        "sail",
+        "flag"
+      ],
+      "animations": [
+        "rotor_spin",
+        "breeze"
+      ],
+      "animationClips": [
+        "rotor_spin",
+        "breeze"
+      ],
+      "animationClipDetails": [
+        {
+          "name": "rotor_spin",
+          "duration": 4,
+          "channelCount": 1
+        },
+        {
+          "name": "breeze",
+          "duration": 4,
+          "channelCount": 2
+        }
+      ],
+      "animationMetadata": {
+        "clipCount": 2,
+        "clips": [
+          {
+            "index": 0,
+            "name": "rotor_spin",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "windmill__rotor"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 1
+          },
+          {
+            "index": 1,
+            "name": "breeze",
+            "channelCount": 2,
+            "samplerCount": 2,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "windmill__vane",
+              "flag"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 1
+          }
+        ],
+        "messages": [
+          "Detected 2 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 19,
+        "materialCount": 7,
+        "textureCount": 0,
+        "animationClipCount": 2,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "ground",
+          "windmill",
+          "pole",
+          "flag",
+          "barrel",
+          "crate"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 26 nodes across 6 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": ".aura3d/three-bridge/windmill.glb",
+        "license": "LicenseRef-project-generated",
+        "author": "aura3d import-three",
+        "sourceFamily": "three-bridge",
+        "evidence": [
+          "src/three-bridge/windmill.bridge.json"
+        ],
+        "checkedAt": "2026-11-08T23:11:58.267Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": ".aura3d/three-bridge/windmill.glb",
+      "outputPath": "public/aura-assets/windmill.9cd94f64.glb",
+      "license": "LicenseRef-project-generated",
+      "author": "aura3d import-three",
+      "boundsMetadata": {
+        "min": [
+          -9,
+          -0.2,
+          -9
+        ],
+        "max": [
+          9,
+          8.05,
+          9
+        ],
+        "size": [
+          18,
+          8.25,
+          18
+        ],
+        "center": [
+          0,
+          3.925,
+          0
+        ],
+        "maxDimension": 18,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "grass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tower",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "roof",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "wood",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "metal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sail",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "flag",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "ground",
+        "windmill",
+        "windmill__tower",
+        "windmill__cap",
+        "windmill__door",
+        "windmill__rotor",
+        "windmill__rotor__hub",
+        "windmill__rotor__blade_0",
+        "windmill__rotor__blade_0__arm",
+        "windmill__rotor__blade_0__cloth",
+        "windmill__rotor__blade_1",
+        "windmill__rotor__blade_1__arm",
+        "windmill__rotor__blade_1__cloth",
+        "windmill__rotor__blade_2",
+        "windmill__rotor__blade_2__arm",
+        "windmill__rotor__blade_2__cloth",
+        "windmill__rotor__blade_3",
+        "windmill__rotor__blade_3__arm",
+        "windmill__rotor__blade_3__cloth",
+        "windmill__vane",
+        "windmill__vane__rod",
+        "windmill__vane__tail",
+        "pole",
+        "flag",
+        "barrel",
+        "crate"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/windmill.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "procedural three.js recipe recipes/windmill.mjs (seed 1)"
     },
   },
 } as const);

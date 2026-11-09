@@ -20,7 +20,7 @@ export const MODEL_OPTION_KEYS: readonly string[] = [
   "renderOrder", "frustumCulled", "layers", "userData",
   "material", "castShadow", "receiveShadow", "visible", "role", "scaleMode",
   "targetHeight", "targetMaxDimension", "targetLength", "physics", "hiddenNodeNames",
-  "materialOverrides", "variant", "wrinkle", "lod", "collider"
+  "nodeTransforms", "materialOverrides", "variant", "wrinkle", "lod", "collider"
 ];
 
 /** Builder label and readable keys for the OPTION_IGNORED note; `instances.model` passes its own. */
@@ -123,6 +123,7 @@ export function buildModel<TAsset extends AuraAssetRef<"model">>(
     targetLength: options.targetLength,
     physics: options.physics ?? (colliderBuilder && options.collider ? { type: "static" } : undefined),
     hiddenNodeNames: options.hiddenNodeNames,
+    ...(options.nodeTransforms !== undefined ? { nodeTransforms: options.nodeTransforms } : {}),
     ...(options.materialOverrides !== undefined ? { materialOverrides: options.materialOverrides } : {}),
     ...(options.variant !== undefined ? { variant: options.variant } : {}),
     ...(guard.builder === "model" && options.lod !== undefined ? { lod: options.lod } : {}),
