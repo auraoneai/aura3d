@@ -34,7 +34,7 @@ RESULTS=/tmp/source5-results.tsv
 # is therefore capped at the time left in the budget (minus a reserve for the report and upload tail), so a
 # slow command fails with rc 124 and the stage still prints its report; skipped commands are recorded rc 124.
 STAGE_STARTED=$(date +%s)
-STAGE_BUDGET="${SOURCE5_STAGE_BUDGET:-1740}"
+STAGE_BUDGET="${SOURCE5_STAGE_BUDGET:-3540}"
 CURRENT_ID=""; CURRENT_STARTED=0; CURRENT_PID=""
 
 run() {
