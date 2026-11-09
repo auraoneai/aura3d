@@ -395,6 +395,39 @@ export class BatchedMeshState {
     return state;
   }
 
+  /**
+   * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+   * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+   */
+  syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void {
+    this.assertLive();
+    if (snapshot.capacity !== this.capacity || snapshot.instanced !== this.instanced || snapshot.geometries.length < this.geometryInputs.length) {
+      throw new RangeError(`batched state "${this.id}" changed shape; it cannot be synchronized in place.`);
+    }
+    for (let index = this.geometryInputs.length; index < snapshot.geometries.length; index += 1) this.addGeometry(snapshot.geometries[index]!);
+    if (!this.instanced) {
+      for (let slot = 0; slot < this.capacity; slot += 1) {
+        const live = snapshot.alive[slot] === 1;
+        if (live && this.alive[slot] !== 1) {
+          this.allocateQueryMemberId(slot);
+          this.alive[slot] = 1;
+          this.slotLifetimes[slot] = Object.freeze({});
+          this.liveCount += 1;
+        } else if (!live && this.alive[slot] === 1) {
+          this.deleteInstance(slot);
+        }
+        if (live) this.geometryIds[slot] = snapshot.geometryIds[slot]!;
+      }
+    } else if (snapshot.count !== this.instancedCount) {
+      this.setCount(snapshot.count);
+    }
+    this.matrices.set(snapshot.matrices.subarray(0, this.matrices.length));
+    this.colors.set(snapshot.colors.subarray(0, this.colors.length));
+    this.visible.set(snapshot.visible.subarray(0, this.visible.length));
+    this.version += 1;
+    this.boundsCache = null;
+  }
+
   /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
   get count(): number {
     return this.instanced ? this.instancedCount : this.liveCount;

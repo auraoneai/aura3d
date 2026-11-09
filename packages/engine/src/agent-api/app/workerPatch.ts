@@ -5,6 +5,7 @@
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
 import { AuraWorkerError } from "./workerRuntime.js";
 import { nodeHandleExtensionsAll } from "../../contracts/runtimeNodes.js";
+import { batchedStateFor, type BatchedMeshStateSnapshot } from "../nodes/batchedState.js";
 
 /**
  * Function-valued node-handle extension members (for example prd09
@@ -38,6 +39,8 @@ export type AuraWorkerNodePatchOp =
   | { readonly camera: AuraSceneSnapshot["camera"] }
   /** A host repaint of a live image texture (`texture.canvas`): its full RGBA8 pixels, top row first. */
   | { readonly texture: string; readonly width: number; readonly height: number; readonly data: Uint8ClampedArray | Uint8Array }
+  /** 5.4: the host's current copy of a batched / instanced mesh state (`setMatrixAt`, `addInstance`, `setCount` writes). */
+  | { readonly batched: string; readonly state: BatchedMeshStateSnapshot }
   /** 5.4: an app-level runtime control replayed in the worker (see {@link WORKER_APP_CALLS}). */
   | { readonly app: AuraWorkerAppCall; readonly args: readonly unknown[] };
 
@@ -73,6 +76,7 @@ export const WORKER_HOST_READS = new Set<string>([
 export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
   if ("camera" in op) return "camera";
   if ("app" in op) return undefined;
+  if ("batched" in op) return `\u0000batched\u0000${op.batched}`;
   if ("texture" in op) return `\u0000texture\u0000${op.texture}`;
   if ("set" in op) {
     const field = op.set === "visible" ? "visible" : op.set;
@@ -116,6 +120,13 @@ export function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefin
         if (typeof op.app !== "string" || !WORKER_APP_CALL_SET.has(op.app) || !Array.isArray(op.args)) throw new Error(`Worker patch cannot call app.${String(op.app)}().`);
         if (!appCall) throw new AuraWorkerError("This worker renderer does not accept app calls.", "patch-unsupported", "recoverable");
         appCall(op.app, op.args);
+        applied += 1;
+        continue;
+      }
+      if ("batched" in op) {
+        const state = typeof op.batched === "string" ? batchedStateFor(op.batched) : undefined;
+        if (!state || op.state?.kind !== "aura-worker-batched-state" || op.state.id !== op.batched) throw new Error(`Worker batched state ${String(op.batched)} is not part of the mounted scene.`);
+        state.syncFromWorkerSnapshot(op.state);
         applied += 1;
         continue;
       }

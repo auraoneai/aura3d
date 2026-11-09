@@ -234,3 +234,33 @@ describe("worker textured-material status", () => {
     await app.dispose();
   });
 });
+
+describe("worker batched-state sync", () => {
+  it("sends a changed batched.mesh state with the next patch and syncs the worker copy in place", async () => {
+    const { batched, material, scene: buildScene } = await import("../../../packages/engine/src/public/index");
+    const { createWorkerNodeMirror } = await import("../../../packages/engine/src/agent-api/app/workerNodes.js");
+    const { BatchedMeshState, batchedStateFor } = await import("../../../packages/engine/src/agent-api/nodes/batchedState.js");
+    const mesh = batched.mesh({ name: "traffic", maxInstances: 4, material: material.pbr({ color: "#ffffff" }) });
+    const box = mesh.addGeometry("box");
+    mesh.addInstance(box);
+    const snapshot = buildScene().add(mesh).toJSON();
+    const node = snapshot.nodes[0] as { batchedId?: string };
+    const host = batchedStateFor(node.batchedId)!;
+    const mirror = createWorkerNodeMirror(snapshot);
+    expect(mirror.pending).toBe(0);
+    // The worker copy, taken when the scene was sent.
+    const worker = BatchedMeshState.fromWorkerSnapshot({ ...host.toWorkerSnapshot()!, id: "worker-copy" });
+    mesh.addInstance(box);
+    mesh.setMatrixAt(1, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9, 8, 7, 1]);
+    expect(mirror.pending).toBe(1);
+    const ops = mirror.drain();
+    expect(mirror.pending).toBe(0);
+    const op = ops[0] as { batched: string; state: Parameters<typeof worker.syncFromWorkerSnapshot>[0] };
+    expect(op.batched).toBe(host.id);
+    worker.syncFromWorkerSnapshot(structuredClone({ ...op.state, id: "worker-copy" }));
+    expect(Array.from(worker.alive)).toEqual([1, 1, 0, 0]);
+    expect(Array.from(worker.getMatrixAt(1)).slice(12, 15)).toEqual([9, 8, 7]);
+    mirror.dispose();
+    worker.dispose();
+  });
+});

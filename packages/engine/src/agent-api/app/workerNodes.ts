@@ -23,6 +23,7 @@ import { AuraWorkerError, collectWorkerTextureIds, isWorkerReadableImageTexture,
 import { auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";
 import type { Texture } from "@aura3d/rendering";
+import { batchedStateFor, type BatchedMeshState } from "../nodes/batchedState.js";
 import { WORKER_HOST_READS as READS, WORKER_PATCH_METHOD_SET as METHODS, WORKER_PATCH_PROPERTY_SET as PROPERTIES, coalesceKey, isReplayableExtensionMethod, type AuraWorkerNodePatchOp, type AuraWorkerPatchProperty } from "./workerPatch.js";
 
 export type { AuraWorkerNodePatchOp, AuraWorkerPatchMethod, AuraWorkerPatchProperty } from "./workerPatch.js";
@@ -89,6 +90,20 @@ function collectLiveImageTextures(root: unknown): LiveImageTexture[] {
   return [...found.values()];
 }
 
+/** Host batched states named by the scene's `batched` nodes, with the version the worker copy was taken at. */
+function collectBatchedStates(nodes: AuraSceneSnapshot["nodes"]): { state: BatchedMeshState; version: number }[] {
+  const found = new Map<BatchedMeshState, { state: BatchedMeshState; version: number }>();
+  const stack = [...nodes];
+  while (stack.length) {
+    const node = stack.pop()!;
+    if (node.kind === "group" && Array.isArray(node.children)) stack.push(...node.children);
+    if (node.kind !== "batched") continue;
+    const state = batchedStateFor((node as { readonly batchedId?: string }).batchedId ?? (node as { readonly runtime?: { readonly id?: string } }).runtime?.id);
+    if (state && !found.has(state)) found.set(state, { state, version: state.version });
+  }
+  return [...found.values()];
+}
+
 /**
  * Build the host mirror for one mounted scene. A new mirror is created for
  * every scene replacement; proxies of an older mirror keep updating that old
@@ -111,6 +126,12 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
     if (entry.texture.needsUpdate) entry.texture.needsUpdate = false;
     entry.revision = entry.texture.revision;
   }
+  // 5.4: batched / instanced mesh states the scene draws. Their writes (setMatrixAt, addInstance, setCount on the
+  // `batched.mesh` / `instances.mesh` handle) bypass the node proxies; a changed version sends the state's copy.
+  const batchedStates = collectBatchedStates(scene.nodes);
+  const dirtyBatched = (): { state: BatchedMeshState; version: number }[] => active
+    ? batchedStates.filter((entry) => !entry.state.disposed && entry.state.version !== entry.version)
+    : [];
   // 5.4: textures the worker holds (by host id). Patch arguments name these by id and snapshot any other one.
   const knownTextures = collectWorkerTextureIds(scene.nodes);
   const sendable = <T>(value: T, what: string): T => {
@@ -200,7 +221,7 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
     nodes,
     registry,
     scene,
-    get pending() { return live + dirtyTextures().length; },
+    get pending() { return live + dirtyTextures().length + dirtyBatched().length; },
     setCamera(camera) {
       const sent = cloneArgs(camera, "camera");
       (scene as { camera: AuraSceneSnapshot["camera"] }).camera = camera;
@@ -214,6 +235,11 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
         entry.revision = texture.revision;
         const data = readWorkerImageTexturePixels(texture);
         if (data) out.push({ texture: entry.id, width: texture.width, height: texture.height, data });
+      }
+      for (const entry of dirtyBatched()) {
+        entry.version = entry.state.version;
+        const state = entry.state.toWorkerSnapshot();
+        if (state) out.push({ batched: state.id, state });
       }
       out.push(...ops.filter((op): op is AuraWorkerNodePatchOp => op !== undefined));
       ops = [];
