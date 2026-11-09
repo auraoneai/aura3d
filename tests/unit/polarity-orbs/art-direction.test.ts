@@ -6,8 +6,15 @@ import { buildWorld } from "../../../apps/showcase-polarity-orbs/src/world";
 import { LOOK } from "../../../apps/showcase-polarity-orbs/src/look";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
-/** Expected in-play draws: sky, cloud sea, 4 scenery layers, ball, shadow, shield, shockwave + 9 merged batches. */
-const DRAWS_ESTIMATE = 19;
+/**
+ * Expected in-play draws: sky, cloud sea, 4 scenery layers, ball, shadow, shield, shockwave + 9 merged batches, plus the
+ * 12 Meshy backdrop pieces (one primitive each).
+ */
+const DRAWS_ESTIMATE = 31;
+/** Meshy backdrop models (triangles after the Meshy-07 admission decimation; three maps each: BC, ORM, N). */
+const BACKDROP_TRIANGLES: Record<string, number> = {
+  poChargeCoil: 6242, poCrystalRed: 5388, poCrystalIslandB: 5906, poCrystalBlue: 7420, poCrystalIsland: 6824, poMagnet: 6782
+};
 
 describe("polarity orbs art direction", () => {
   it("the mounted scene passes auditArtDirection and the audit record is written", () => {
@@ -22,7 +29,7 @@ describe("polarity orbs art direction", () => {
       lights,
       hasAmbient: lights.some((l) => l.type === "ambient"),
       environment: { kind: env?.environment === "hdri" ? "hdri" : env ? "preset" : "none", background: env?.background === true },
-      models: [],
+      models: Object.entries(BACKDROP_TRIANGLES).map(([assetKey, triangles]) => ({ assetKey, triangles, textures: 3, unlit: false, overridesTextures: false })),
       drawCalls: DRAWS_ESTIMATE
     };
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
