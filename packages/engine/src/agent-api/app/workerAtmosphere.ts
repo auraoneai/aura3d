@@ -18,12 +18,15 @@
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
+import type { AuraAppAtmosphere } from "../../contracts/atmosphere.js";
 
 export interface WorkerAtmosphereBinding {
   /** Run the atmosphere's frame callbacks (fog transitions) and note the scene camera before a worker frame. */
   tick(timeMs: number): void;
   /** The app-style PRD-07 mount authority for the renderer (undefined: none issued). */
   mountAuthority(): Prd07MountAuthority | undefined;
+  /** 5.4: the atmosphere controls a main-thread app exposes as `app.atmosphere` (host calls are replayed here). */
+  readonly controls: AuraAppAtmosphere;
   dispose(): void;
 }
 
@@ -82,8 +85,9 @@ export async function bindWorkerAtmosphere(
     callbacks.clear();
     disposeAtmosphereExtension(asApp);
   };
+  let controls: AuraAppAtmosphere;
   try {
-    createAtmosphereExtension(asApp, { flags });
+    controls = createAtmosphereExtension(asApp, { flags });
     bindPrd07AppRuntimeOwner(asApp, owner);
     bindAtmosphereRuntimeOwner(asApp, owner);
   } catch (error) {
@@ -92,6 +96,7 @@ export async function bindWorkerAtmosphere(
   }
   let last: number | undefined;
   return {
+    controls,
     tick(timeMs) {
       if (disposed) return;
       const pose = cameraPose(app.scene);

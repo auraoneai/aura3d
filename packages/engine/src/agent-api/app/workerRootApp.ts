@@ -17,6 +17,7 @@ import type { AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, Au
 import type { AuraWorkerAppCall } from "./workerPatch.js";
 import { normalizeOutputToneMapping } from "./toneMappingNames.js";
 import type { AuraPostSurface } from "../../contracts/post.js";
+import { StubAppAtmosphere, type AuraAppAtmosphere } from "../../contracts/atmosphere.js";
 import { createWorkerNodeMirror, type AuraWorkerNodeMirror } from "./workerNodes.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
@@ -879,6 +880,17 @@ export function createWorkerRootApp(
     }
   };
   (app as unknown as Record<string, unknown>).post = post;
+  // 5.4: `app.atmosphere` (setFog / setSky / setWetness) is replayed in the worker's PRD-07 atmosphere. Without it a
+  // worker app had no atmosphere member, so `app.atmosphere?.setFog(...)` was skipped (Craterline GP's sector haze).
+  // state() answers from the host copy of the last values set.
+  const atmosphereMirror = new StubAppAtmosphere();
+  const atmosphere: AuraAppAtmosphere = {
+    setFog(spec, o) { atmosphereMirror.setFog(spec, o); queueAppCall("atmosphere.setFog", o === undefined ? [spec] : [spec, o]); },
+    setSky(spec, o) { atmosphereMirror.setSky(spec, o); queueAppCall("atmosphere.setSky", o === undefined ? [spec] : [spec, o]); },
+    setWetness(value, o) { atmosphereMirror.setWetness(value, o); queueAppCall("atmosphere.setWetness", o === undefined ? [value] : [value, o]); },
+    state: () => atmosphereMirror.state()
+  };
+  (app as unknown as Record<string, unknown>).atmosphere = atmosphere;
   // K3: camera (and time) extensions only need app.onFrame/nodes/scene, which
   // a worker app now provides host-side; the camera spec they write reaches
   // the worker through flushPatches.

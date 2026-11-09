@@ -276,3 +276,25 @@ describe("worker renderer globals", () => {
     expect(worker).toEqual({ __A3D_SHADOW_FIT__: "current", __A3D_HDR_OUTPUT_PASS__: true, __A3D_SHADOW_TAPS__: 4, __A3D_FN__: "ok" });
   });
 });
+
+describe("worker app.atmosphere", () => {
+  it("routes atmosphere calls through the patch allowlist", () => {
+    const appCall = vi.fn();
+    expect(applyWorkerNodePatch(undefined, undefined, [{ app: "atmosphere.setFog", args: [{ color: "#223344", density: 0.002 }, { transitionSeconds: 2 }] }], undefined, appCall)).toBe(1);
+    expect(appCall).toHaveBeenCalledWith("atmosphere.setFog", [{ color: "#223344", density: 0.002 }, { transitionSeconds: 2 }]);
+    expect(() => applyWorkerNodePatch(undefined, undefined, [{ app: "atmosphere.dispose", args: [] } as never], undefined, appCall)).toThrow(/cannot call app\.atmosphere\.dispose/);
+  });
+
+  it("the worker atmosphere binding exposes the app.atmosphere controls", async () => {
+    const { bindWorkerAtmosphere } = await import("../../../packages/engine/src/agent-api/app/workerAtmosphere.js");
+    const { resolveQrFlags } = await import("../../../packages/engine/src/contracts/flags.js");
+    const { createAuraRuntimeNodeRegistry } = await import("../../../packages/engine/src/agent-api/app/runtimeNodes.js");
+    const flags = resolveQrFlags({ options: { A3D_QR_VFX_FOG: true } });
+    const nodes = createAuraRuntimeNodeRegistry(scene(), { flags, app: { scene: scene() } as never });
+    const binding = await bindWorkerAtmosphere(new Canvas() as unknown as HTMLCanvasElement, {}, scene(), nodes, flags);
+    expect(binding).not.toBeNull();
+    binding!.controls.setFog({ color: "#223344", density: 0.002 }, { transitionSeconds: 0 });
+    expect(binding!.controls.state().fog).toMatchObject({ density: 0.002 });
+    binding!.dispose();
+  }, 60_000);
+});

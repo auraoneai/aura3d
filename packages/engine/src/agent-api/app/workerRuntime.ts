@@ -581,6 +581,16 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   let flagsModule: typeof import("../../contracts/flags.js") | undefined;
   let postSurface: import("../../contracts/post.js").AuraPostSurface | undefined;
   const postPassReleases = new Map<number, () => void>();
+  // 5.4 `app.atmosphere` calls: the live worker atmospheres (one per mounted renderer) and the merged state that a
+  // new mount replays without a transition (a remount rebuilds the atmosphere).
+  const liveAtmospheres = new Set<WorkerAtmosphereBinding>();
+  const atmosphereState: { fog?: readonly unknown[]; sky?: Record<string, unknown>; wetness?: number } = {};
+  const replayAtmosphere = (binding: WorkerAtmosphereBinding): void => {
+    const controls = binding.controls;
+    if (atmosphereState.fog) controls.setFog(atmosphereState.fog[0] as Parameters<typeof controls.setFog>[0], { ...(atmosphereState.fog[1] as object | undefined), transitionSeconds: 0 } as Parameters<typeof controls.setFog>[1]);
+    if (atmosphereState.sky) controls.setSky(atmosphereState.sky as Parameters<typeof controls.setSky>[0], { transitionSeconds: 0 });
+    if (atmosphereState.wetness !== undefined) controls.setWetness(atmosphereState.wetness, { transitionSeconds: 0 });
+  };
   let sceneRevision = 0;
   // Failed proposals must not reuse an ID: a late acknowledgement may still
   // be in flight when the next frame proposes another scene.
@@ -696,6 +706,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     const cleanup = (): void => {
       if (cleaned) return;
       cleaned = true;
+      if (atmosphere) liveAtmospheres.delete(atmosphere);
       try { atmosphere?.dispose(); } catch { /* atmosphere cleanup is best effort */ }
       assetEventChannel?.unbindAppAssetEventScope(owner);
       actorFlags.clearTypedGLBActorQrFlags(owner);
@@ -709,6 +720,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       const { recordAuthoredPostContext } = await import("../postBridge.js");
       recordAuthoredPostContext({ flags, options: { renderer: configuration } }, { canvas: target } as unknown as Parameters<typeof recordAuthoredPostContext>[1]);
       atmosphere = await bindWorkerAtmosphere(target, owner, next, runtimeNodes, flags);
+      if (atmosphere) { liveAtmospheres.add(atmosphere); replayAtmosphere(atmosphere); }
       const mounted = await createProductionRuntimeSceneRenderer(target, next, configuration, runtimeNodes, flags, undefined, undefined, {
         runtimeOwner: owner,
         ownRenderInputCache: true,
@@ -749,8 +761,27 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     if (!appOutput || !outputBridge || !live?.setOutput || live.outputPathActive === false) return;
     live.setOutput(outputBridge.toRendererOutput(appOutput));
   };
+  const applyAtmosphereCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (call === "atmosphere.setFog") {
+      const spec = args[0];
+      if (spec !== null && (typeof spec !== "object" || Array.isArray(spec))) throw new Error("app.atmosphere.setFog() expects a fog spec or null.");
+      atmosphereState.fog = [...args];
+    } else if (call === "atmosphere.setSky") {
+      const spec = args[0];
+      if (!spec || typeof spec !== "object" || Array.isArray(spec)) throw new Error("app.atmosphere.setSky() expects a sky spec object.");
+      atmosphereState.sky = { ...atmosphereState.sky, ...(spec as Record<string, unknown>) };
+    } else {
+      if (typeof args[0] !== "number" || !Number.isFinite(args[0])) throw new Error("app.atmosphere.setWetness() expects a finite number.");
+      atmosphereState.wetness = args[0];
+    }
+    for (const binding of liveAtmospheres) {
+      const controls = binding.controls as unknown as Record<string, (...values: unknown[]) => void>;
+      controls[call.slice("atmosphere.".length)]!(...args);
+    }
+  };
   const applyAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
     if (!canvas) throw new AuraWorkerError("Initialize the worker before calling app members.", "not-initialized", "recoverable");
+    if (call.startsWith("atmosphere.")) { applyAtmosphereCall(call, args); return; }
     if (!postBridge || !outputBridge || !flagsModule) throw new AuraWorkerError(`app.${call}() needs the worker's post and output modules.`, "not-initialized", "recoverable");
     if (call === "setOutput") {
       const patch = args[0];
