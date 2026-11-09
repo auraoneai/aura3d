@@ -4,6 +4,10 @@ Version: 5.3.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## Unreleased (5.4.0)
+
+- Worker rendering (`?worker=1`, opt-in, main-thread fallback kept) now works in all 30 games: the other 17 (Aura Slam 3D, Iron Crown, Craterline GP, Chroma Roll, Serpentine Sky Run, Gridlock Courier, Ion Circuit, Shadowstep Gauntlet, Lamplight Line, Saltwind Highway, The Bellkeeper's Walk, Duneglide, Beat Hopper, Number Surge, Polarity Orbs, Shape Shift Sprint and Splat Turf) pass the render worker to the app. Real-GPU check 2026-11-08: each renders in the worker (transferred canvas), the title frame matches the main-thread default (mean absolute difference 0.1-3.2 of 255, animated scenes) and the game starts and plays with no errors. Engine gaps closed for them: authored canvas size (`resize: false`) and asset events reach the worker, quality `"auto"` is accepted, `app.setOutput`, `app.post`, `app.atmosphere`, `app.effects` and `app.lighting` replay in the worker (persistent ones after a remount), textures in node patches and textured-material status cross the boundary, host-side `batched.mesh` / `instances.mesh` writes reach the worker copy, and the page's `__A3D_*__` renderer switches are copied into the worker realm. Default (main-thread) rendering is unchanged.
+
 ## 5.3.0 (2026-11-08)
 
 A minor release: WebGPU renders all 25 original showcase games correctly and is the default in 15 games where it keeps up with WebGL2, the WebGPU draw path is much cheaper per draw, worker rendering and Display-P3 output are opt-in in more games, reversed depth is the default in all 30 games, and the agent-authoring baseline (N1 to N7) makes a bare or guessed scene render well. It contains everything in 5.2.1. Unless stated otherwise, measurements are single-machine (Apple M4 Max, headless Chrome, ANGLE Metal for WebGL2, Dawn for WebGPU) and are not public performance claims.
