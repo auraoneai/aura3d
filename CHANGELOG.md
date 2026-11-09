@@ -4,7 +4,7 @@ Version: 5.3.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## Unreleased (5.4.0)
+## 5.4.0 (2026-11-09)
 
 ### WebGPU performance round 2
 
