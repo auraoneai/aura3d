@@ -7,17 +7,36 @@
 import { defineModelAssets } from "@aura3d/engine";
 import { MESHY_MANIFEST, type PropId } from "./assets/meshy/manifest";
 
-export type CharacterId = "hero" | "soldier" | "brute" | "sage";
+export type CharacterId = "hero" | "soldier" | "brute" | "sage" | "caster" | "scout";
 
 export const CHARACTER_URLS: Readonly<Record<CharacterId, string>> = {
   hero: new URL("./assets/meshy/hero.glb", import.meta.url).href,
   soldier: new URL("./assets/meshy/soldier.glb", import.meta.url).href,
   brute: new URL("./assets/meshy/brute.glb", import.meta.url).href,
-  sage: new URL("./assets/meshy/sage.glb", import.meta.url).href
+  sage: new URL("./assets/meshy/sage.glb", import.meta.url).href,
+  /* GU47 meshy07 (NR-12): rigged Meshy enemies, evening look only (see EVENING_SLOT_MODEL). */
+  caster: new URL("./assets/models/ninja_runner_port_ninjaCasterAnimR2.glb", import.meta.url).href,
+  scout: new URL("./assets/models/ninja_runner_port_ninjaScoutAnimR2.glb", import.meta.url).href
 };
 
 /** Which character model each of the thirteen actor slots clones: 0 hero, 1-3 shadow clones, 4-9 soldiers, 10-11 brutes, 12 sage. */
 export const SLOT_MODEL: readonly CharacterId[] = ["hero", "hero", "hero", "hero", "soldier", "soldier", "soldier", "soldier", "soldier", "soldier", "brute", "brute", "sage"];
+
+/**
+ * GU47 meshy07 (NR-12 `ninjaCaster` / `ninjaScout`): the evening look adds three robed-caster slots (13-15) and three
+ * scout slots (16-18) after the thirteen 4.6.2 slots. Owl casters and fox scouts take their own model when one of its
+ * slots is free and fall back to a soldier slot otherwise (the eight-enemy window is unchanged); `?look=original` keeps
+ * `SLOT_MODEL` and never loads the two GLBs. Both are Meshy rows `ninjaCasterAnimR2` / `ninjaScoutAnimR2` (idle,
+ * cast or throw, hit, death) with the `run` clip of `ninjaCasterRigR2` / `ninjaScoutRigR2` merged onto the same 24-joint
+ * skeleton, decimated from 54.8k / 56.3k to 12.0k triangles with the skin kept, 512 px textures (1.39 / 1.16 MB); rights
+ * and task ids in assets/provenance/ninja_runner_port_ninja{Caster,Scout}AnimR2.*.json.
+ */
+export const EVENING_SLOT_MODEL: readonly CharacterId[] = [...SLOT_MODEL, "caster", "caster", "caster", "scout", "scout", "scout"];
+/** Attack and death clips of the two meshy07 enemy rigs (the 4.6.2 rigs use `ENEMY_ATTACK_CLIP` and `hit` in world.ts). */
+export const MESHY07_ENEMY_CLIPS: Readonly<Partial<Record<CharacterId, { readonly attack: string; readonly death: string }>>> = {
+  caster: { attack: "cast", death: "death" },
+  scout: { attack: "throw", death: "death" }
+};
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25";
 const url = (id: PropId): string => new URL(`./assets/meshy/${id}.glb`, import.meta.url).pathname;

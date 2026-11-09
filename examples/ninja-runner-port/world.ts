@@ -20,7 +20,7 @@ import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintL
 import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
-import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, PROP_ASSETS, SET_PIECE_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
+import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, PROP_ASSETS, SET_PIECE_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
 import { eveningSetPieces, shrineCentre } from "./setpieces";
 import { ENVIRONMENT_GAIN, EVENING_FILL, KEY_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig, shadowTuneFromSearch } from "./lighting";
@@ -38,6 +38,12 @@ const ENEMY_SLOTS = [4, 5, 6, 7, 8, 9, 10, 11] as const;
 const SAGE = 12;
 const BRUTE_SLOTS = [10, 11] as const;
 const SOLDIER_SLOTS = [4, 5, 6, 7, 8, 9] as const;
+/** GU47 meshy07: evening-only robed-caster and scout slots (`EVENING_SLOT_MODEL`); the enemy window stays at eight. */
+const CASTER_SLOTS = [13, 14, 15] as const;
+const SCOUT_SLOTS = [16, 17, 18] as const;
+const EVENING_ENEMY_SLOTS = [...ENEMY_SLOTS, ...CASTER_SLOTS, ...SCOUT_SLOTS] as const;
+/** True when the actors were loaded with the meshy07 enemy slots (evening look). */
+const hasMeshy07Slots = (count: number): boolean => count >= EVENING_SLOT_MODEL.length;
 const BONES = { handR: "RightHand", foreR: "RightForeArm", handL: "LeftHand" } as const;
 const PARTICLES = 480;
 /** NR-17 cross-fade time between looping hero clips (s). */
@@ -190,6 +196,8 @@ export interface ActorAssets {
   /** Clip durations per actor slot (each character GLB has its own clip set). */
   readonly slotDurations: readonly Readonly<Record<string, number>>[];
   readonly slotClips: readonly (readonly string[])[];
+  /** Character model per actor slot (`SLOT_MODEL`, or `EVENING_SLOT_MODEL` in the evening look). */
+  readonly slotModels: readonly CharacterId[];
   readonly sharedTextureEntries: number;
   readonly sharedTextureRefs: number;
   readonly clips: readonly string[];
@@ -197,10 +205,12 @@ export interface ActorAssets {
 }
 
 /** One `cloneSkinned` call per distinct character model: hero (+ shadow clones), foot soldiers, brutes and the sage. */
-export async function loadActors(canvas: HTMLCanvasElement, onProgress?: (done: number, total: number, id: CharacterId) => void): Promise<ActorAssets> {
-  const slotsOf = (id: CharacterId): number[] => SLOT_MODEL.flatMap((m, slot) => (m === id ? [slot] : []));
-  const order: CharacterId[] = ["hero", "soldier", "brute", "sage"];
-  const actors: TypedGLBActor[] = new Array(ACTOR_COUNT);
+export async function loadActors(canvas: HTMLCanvasElement, onProgress?: (done: number, total: number, id: CharacterId) => void, mode: LookMode = "original"): Promise<ActorAssets> {
+  // GU47 meshy07: the evening look also loads the robed caster and the scout; `?look=original` loads the 4.6.2 four.
+  const slotModels = mode === "evening" ? EVENING_SLOT_MODEL : SLOT_MODEL;
+  const slotsOf = (id: CharacterId): number[] => slotModels.flatMap((m, slot) => (m === id ? [slot] : []));
+  const order: CharacterId[] = mode === "evening" ? ["hero", "soldier", "brute", "sage", "caster", "scout"] : ["hero", "soldier", "brute", "sage"];
+  const actors: TypedGLBActor[] = new Array(slotModels.length);
   const batches: Awaited<ReturnType<typeof cloneSkinned>>[] = [];
   for (const id of order) {
     const slots = slotsOf(id);
@@ -228,6 +238,7 @@ export async function loadActors(canvas: HTMLCanvasElement, onProgress?: (done: 
     clipDuration: slotDurations[HERO]![clip] ?? 1,
     slotDurations,
     slotClips,
+    slotModels,
     sharedTextureEntries: batches.reduce((n, b) => n + b.sharedTextures.size, 0),
     sharedTextureRefs: batches.reduce((n, b) => n + b.sharedTextures.refCount, 0),
     clips,
@@ -473,7 +484,8 @@ export function buildWorld(options: WorldOptions): World {
 
   const steel = material.pbr({ color: "#cfd6dc", roughness: 0.28, metallic: 0.85 });
   const club = material.pbr({ color: "#5a4332", roughness: 0.8 });
-  for (let i = 0; i < ENEMY_SLOTS.length; i++) {
+  const enemySlotCount = hasMeshy07Slots(options.actors.actors.length) ? EVENING_ENEMY_SLOTS.length : ENEMY_SLOTS.length;
+  for (let i = 0; i < enemySlotCount; i++) {
     builder.add(primitives.box({ name: `blade-${i}`, size: [0.07, 0.05, 1], material: steel, castShadow: false }).runtime({ id: `blade-${i}` }));
     builder.add(primitives.box({ name: `club-${i}`, size: [0.26, 0.26, 1.1], material: club, castShadow: false }).runtime({ id: `club-${i}` }));
     builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `orb-${i}` }));
@@ -486,7 +498,7 @@ export function buildWorld(options: WorldOptions): World {
   // Opaque, like the beams: the alpha-blended version never reached the frame on the remote captures (g20-dbg-threat).
   const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1] });
   for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
-  for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
+  for (let i = 0; i < options.actors.actors.length; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
   // GU47 NR-15: the scarf ribbon's anchor, moved to the hero's upper spine every frame (hidden: +0 draws).
   builder.add(primitives.sphere({ name: SCARF.anchor, size: 0.01, material: material.pbr({ color: "#1b2236", roughness: 1 }), castShadow: false, receiveShadow: false }).runtime({ id: SCARF.anchor }));
@@ -548,7 +560,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   if (!cameraController) throw new Error("ninja-runner-port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
-  const { actors, slotDurations, slotClips } = options.actors;
+  const { actors, slotDurations, slotClips, slotModels } = options.actors;
+  const meshy07 = hasMeshy07Slots(actors.length);
+  const enemySlots: readonly number[] = meshy07 ? EVENING_ENEMY_SLOTS : ENEMY_SLOTS;
   const clipLength = (clip: string, slot: number = HERO): number => slotDurations[slot]?.[clip] ?? options.actors.clipDuration;
   const has = (clip: string, slot: number = HERO): string => {
     const list = slotClips[slot]!;
@@ -854,10 +868,12 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const assigned = new Set(slotEntity.values());
       for (const e of windowList) {
         if (assigned.has(e.id)) continue;
-        const free = (e.type === "heavy" ? BRUTE_SLOTS : SOLDIER_SLOTS).find((sl) => !slotEntity.has(sl));
+        // GU47 meshy07 (evening): owl casters and fox scouts take their own rig when one is free, else a soldier slot.
+        const own: readonly number[] = !meshy07 ? [] : e.type === "caster" ? CASTER_SLOTS : e.type === "scout" ? SCOUT_SLOTS : [];
+        const free = own.find((sl) => !slotEntity.has(sl)) ?? (e.type === "heavy" ? BRUTE_SLOTS : SOLDIER_SLOTS).find((sl) => !slotEntity.has(sl));
         if (free !== undefined) { slotEntity.set(free, e.id); assigned.add(e.id); tints[free] = ""; }
       }
-      ENEMY_SLOTS.forEach((slot, w) => {
+      enemySlots.forEach((slot, w) => {
         const id = slotEntity.get(slot);
         const e = id === undefined ? undefined : inWindow.get(id);
         if (!e) { visible[slot] = false; node(`blob-${slot}`).setVisible(false); hideWeapons(w); return; }
@@ -865,12 +881,16 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         const dead = !e.alive;
         const pop = dead ? Math.max(0, 1 - (state.time - e.defeatedAt) / 0.45) : 1;
         let ea: Anim;
-        if (dead) ea = { clip: CLIPS.hit, t: Math.min(clipLength(CLIPS.hit, slot), (state.time - e.defeatedAt) * 0.75) };
+        // GU47 meshy07: the caster and scout rigs carry their own cast/throw and death clips.
+        const rigClips = MESHY07_ENEMY_CLIPS[slotModels[slot]!];
+        const attackClip = rigClips?.attack ?? ENEMY_ATTACK_CLIP[kind];
+        if (dead && rigClips) ea = { clip: rigClips.death, t: Math.min(clipLength(rigClips.death, slot) * 0.98, ((state.time - e.defeatedAt) / 0.45) * clipLength(rigClips.death, slot) * 0.7) };
+        else if (dead) ea = { clip: CLIPS.hit, t: Math.min(clipLength(CLIPS.hit, slot), (state.time - e.defeatedAt) * 0.75) };
         else if (e.intent) {
           const i = e.intent;
           const stageP = 1 - i.timer / Math.max(1e-3, i.duration);
           const p = i.stage === "windup" ? stageP * 0.5 : i.stage === "release" ? 0.5 + stageP * 0.25 : 0.75 + stageP * 0.25;
-          ea = { clip: ENEMY_ATTACK_CLIP[kind], t: Math.max(0, Math.min(0.98, p)) * clipLength(has(ENEMY_ATTACK_CLIP[kind], slot), slot) };
+          ea = { clip: attackClip, t: Math.max(0, Math.min(0.98, p)) * clipLength(has(attackClip, slot), slot) };
         } else if (e.stagger > 0) ea = { clip: CLIPS.hit, t: 0.1 };
         else ea = e.approachSpeed > 0 ? { clip: CLIPS.run, rate: 1.25 } : { clip: CLIPS.idle, rate: 0.9 };
         setTint(slot, kind, { base: ENEMY_TINT[kind] });
