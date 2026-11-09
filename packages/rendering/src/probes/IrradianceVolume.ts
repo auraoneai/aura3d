@@ -10,7 +10,7 @@ import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import { Texture } from "../Texture";
 import { cubeFaceViewProjection } from "../environment/probeBuild";
 import { projectCubeToSH9 } from "../environment/SphericalHarmonics";
-import { flipRows, type ReflectionFaceRenderer } from "./ReflectionProbeSystem";
+import { flipRows, ONCE_ENVIRONMENT_RECAPTURES, type ReflectionFaceRenderer } from "./ReflectionProbeSystem";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 
 export type { ReflectionFaceRenderer };
@@ -67,6 +67,7 @@ export class IrradianceVolumeSystem {
   private disposed = false;
   private updating = false;
   private job: IrradianceCaptureJob | null = null;
+  private environmentRebakes = 0;
 
   constructor(
     private readonly device: RenderDevice,
@@ -85,11 +86,32 @@ export class IrradianceVolumeSystem {
     this.configRevision += 1;
     this.updateRevision += 1;
     this.job = null;
+    this.environmentRebakes = 0;
   }
 
   private pending: Required<IrradianceVolumeSpec> | null = null;
 
   updateProbe(): void { this.assertAlive(); this.dirty = true; this.updateRevision += 1; }
+
+  /**
+   * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+   * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+   */
+  environmentChanged(): void {
+    this.assertAlive();
+    if (!this.pending || this.pending.update !== "once") return;
+    // A first bake not started yet simply sees the new environment.
+    if (!this.volume && !this.job) return;
+    // Restarting a first bake in progress counts too, so an environment that changes every frame cannot keep a
+    // cell-budgeted bake from ever completing.
+    if (this.environmentRebakes >= ONCE_ENVIRONMENT_RECAPTURES) return;
+    this.environmentRebakes += 1;
+    this.job = null;
+    this.updateProbe();
+  }
+
+  /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+  restartPartialCapture(): void { this.assertAlive(); this.job = null; }
 
   get(): IrradianceVolume | null { return this.volume; }
   get maxUpdatesPerFrame(): number { return this.pending?.maxUpdatesPerFrame ?? 4; }

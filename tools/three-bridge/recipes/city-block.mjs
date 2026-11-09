@@ -1,5 +1,5 @@
 // B1 recipe 2: a city block. Exercises a baked procedural DataTexture (window grid), InstancedMesh street lamps,
-// stable explicit ids (userData.auraId), and one ShaderMaterial the bridge must report as unsupported.
+// stable explicit ids (userData.auraId), and one simple ShaderMaterial sign the bridge carries as material.custom.
 import * as THREE from "three";
 
 export const params = { blocksX: 4, blocksZ: 3, lot: 3.2, street: 1.6 };

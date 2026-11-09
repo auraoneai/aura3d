@@ -436,6 +436,8 @@ describe("@aura3d/cli assets", () => {
     expect(typedAssets).toContain('"role": "character"');
     expect(typedAssets).toContain('"suitabilityReason"');
     expect(typedAssets).toContain('"renderedProbe"');
+    // AuraAssetMetadata.animationClips is `readonly string[]`: the typed map lists clip names; C-17 objects ride alongside.
+    expect(typedAssets).toMatch(/"animationClips": \[\s*"Idle"\s*\]/);
     expect(validateAssets({ projectDir, noPlaceholders: true, requireLicense: true }).ok).toBe(true);
 
     const inspection = inspectAsset({

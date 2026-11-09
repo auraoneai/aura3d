@@ -183,6 +183,41 @@ export function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: OffscreenCa
 }
 
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export function forwardAuthoredCanvasSize(
+  canvas: HTMLCanvasElement,
+  forward: (size: { readonly width: number; readonly height: number }) => void
+): () => void {
+  const size = { width: Math.max(1, canvas.width || 1), height: Math.max(1, canvas.height || 1) };
+  let queued = false;
+  const flush = () => { queued = false; forward({ width: size.width, height: size.height }); };
+  const accessor = (axis: "width" | "height"): PropertyDescriptor => ({
+    configurable: true,
+    enumerable: true,
+    get: () => size[axis],
+    set: (value: unknown) => {
+      // HTMLCanvasElement maps width/height through ToUint32 (unsigned long); 0 is not a usable backing size.
+      const next = Number(value) >>> 0;
+      if (next < 1 || next === size[axis]) return;
+      size[axis] = next;
+      if (!queued) { queued = true; queueMicrotask(flush); }
+    }
+  });
+  Object.defineProperty(canvas, "width", accessor("width"));
+  Object.defineProperty(canvas, "height", accessor("height"));
+  return () => {
+    // Delete only our own accessors; the prototype getters take over again.
+    delete (canvas as unknown as Record<string, unknown>).width;
+    delete (canvas as unknown as Record<string, unknown>).height;
+  };
+}
+
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.

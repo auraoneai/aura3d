@@ -91,6 +91,8 @@ export interface TypedGLBActorOptions {
   readonly deduplicateIdenticalMaterials?: boolean;
   /** Exact imported glTF node names that should not contribute renderables. */
   readonly hiddenNodeNames?: readonly string[];
+  /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+  readonly nodeTransforms?: Readonly<Record<string, { readonly position?: AuraVec3; readonly rotation?: AuraVec3; readonly scale?: number | AuraVec3 }>>;
   /**
    * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
    * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -1046,6 +1048,22 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
     const hidden = new Set(options.hiddenNodeNames);
     pipeline.resources.scene.traverse((node) => {
       if (hidden.has(node.name)) node.visible = false;
+    });
+  }
+  if (options.nodeTransforms && Object.keys(options.nodeTransforms).length > 0) {
+    const edits = options.nodeTransforms;
+    pipeline.resources.scene.traverse((node) => {
+      const edit = Object.prototype.hasOwnProperty.call(edits, node.name) ? edits[node.name] : undefined;
+      if (!edit) return;
+      if (edit.position) node.transform.setPosition(edit.position[0], edit.position[1], edit.position[2]);
+      if (edit.rotation) {
+        const q = quatFromEulerXYZ(edit.rotation[0], edit.rotation[1], edit.rotation[2]);
+        node.transform.setRotation(q[0], q[1], q[2], q[3]);
+      }
+      if (edit.scale !== undefined) {
+        const s = typeof edit.scale === "number" ? [edit.scale, edit.scale, edit.scale] as const : edit.scale;
+        node.transform.setScale(s[0], s[1], s[2]);
+      }
     });
   }
   // Arbitrary custom vertex programs do not automatically apply the palette.

@@ -1718,5 +1718,13 @@
     "expires": "2027-01-31",
     "reason": "plain look probes EXT_color_buffer_float once on a throwaway WebGL2 canvas (context lost straight after) so devices without HDR render targets keep the direct path; owner moves the probe behind RenderBackend capabilities | Added 2026-11-09 for 5.3.0 (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-N3-hdr-probe"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/aura3d-cli/src/import-three/shader.ts",
+    "reason": "5.4 three.js asset bridge: the CLI rewrites an imported three.js ShaderMaterial's own GLSL (ES 1.00 -> 3.00, sRGB decode wrapper) into the emitted material.custom spec; it is source translation in a build-time tool, not engine shader code",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
   }
 ]

@@ -24,7 +24,7 @@ import { PRD07_FOG_WGSL_FIELDS, packPrd07FogWgslFields, prd07FogWgsl } from "../
 import { prd10WindOffsetWgsl } from "../world/vegetation/shaders/wind.js";
 import { isTextureBinding } from "../TextureBinding";
 import { PACKED_LOOP_PHYSICAL_WGSL } from "./PackedLoopPhysical.wgsl";
-import { deriveShaderDataLayout, writeShaderData, type ShaderDataType } from "./ShaderDataLayout";
+import { ShaderDataRows, deriveShaderDataLayout, writeShaderData, type ShaderDataType, type ShaderDataValue } from "./ShaderDataLayout";
 import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "./ProjectionClip";
 import { AUTHORED_TANGENT_WGSL } from "../materials/authoredTangent";
 
@@ -1603,23 +1603,54 @@ export function validateGeneratedPbrTarget(program: GeneratedPbrProgram, format:
   }
 }
 
+const ZEROS_8: readonly number[] = Object.freeze(new Array<number>(8).fill(0));
+const ZEROS_24: readonly number[] = Object.freeze(new Array<number>(24).fill(0));
+const ZEROS_28: readonly number[] = Object.freeze(new Array<number>(28).fill(0));
+const ZEROS_32: readonly number[] = Object.freeze(new Array<number>(32).fill(0));
+const ZEROS_64: readonly number[] = Object.freeze(new Array<number>(64).fill(0));
+const ZEROS_96: readonly number[] = Object.freeze(new Array<number>(96).fill(0));
+const ZEROS_128: readonly number[] = Object.freeze(new Array<number>(128).fill(0));
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
 const IDENTITY3 = [1, 0, 0, 0, 1, 0, 0, 0, 1] as const;
-function numbers(uniforms: ReadonlyMap<string, UniformValue>, name: string, length: number, fallback: readonly number[]): number[] {
+// Results are read-only: the fallback is returned as-is (no copy per uniform per draw).
+function numbers(uniforms: ReadonlyMap<string, UniformValue>, name: string, length: number, fallback: readonly number[]): readonly number[] {
   const value = uniforms.get(name);
-  if (value === undefined) return [...fallback];
+  if (value === undefined) return fallback;
   if (typeof value === "number") {
     if (length !== 1 || !Number.isFinite(value)) throw new RenderDeviceError(`Invalid ${name}`, "WEBGPU_PBR_UNIFORM_INVALID", { name });
     return [value];
   }
   if (Array.isArray(value) || (ArrayBuffer.isView(value) && !(value instanceof DataView))) {
-    const result = Array.from(value as ArrayLike<number>);
-    if (result.length === length && result.every(Number.isFinite)) return result;
+    // Returned in place (read-only, consumed by the same pack call): no copy per uniform per draw.
+    const result = value as ArrayLike<number>;
+    if (result.length === length && allFinite(result)) return result as readonly number[];
   }
   throw new RenderDeviceError(`Invalid ${name}`, "WEBGPU_PBR_UNIFORM_INVALID", { name });
 }
-function scalar(uniforms: ReadonlyMap<string, UniformValue>, name: string, fallback: number): number { return numbers(uniforms, name, 1, [fallback])[0]!; }
-function vec3(uniforms: ReadonlyMap<string, UniformValue>, name: string, fallback: readonly [number, number, number] = [0, 0, 0]): number[] { return numbers(uniforms, name, 3, fallback); }
+function allFinite(values: ArrayLike<unknown>): boolean {
+  for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) return false;
+  return true;
+}
+/** `count` rows of `width` values read in place from a flat validated sequence (zero past its end). */
+function rows(source: ArrayLike<number>, count: number, width: number): ShaderDataValue { return new ShaderDataRows(source, count, width) as unknown as ShaderDataValue; }
+/** A validated flat vec4 sequence of at most `max` values (u_lightData, morph slots); absent means empty. */
+function vec4Sequence(uniforms: ReadonlyMap<string, UniformValue>, name: string, max: number): ArrayLike<number> {
+  const value = uniforms.get(name);
+  if (value === undefined) return EMPTY;
+  if (!Array.isArray(value) && (!ArrayBuffer.isView(value) || value instanceof DataView)) throw new RenderDeviceError(`Invalid ${name}`, "WEBGPU_PBR_UNIFORM_INVALID", { name });
+  const result = value as ArrayLike<number>;
+  if (result.length > max || result.length % 4 !== 0 || !allFinite(result)) throw new RenderDeviceError(`Invalid ${name}`, "WEBGPU_PBR_UNIFORM_INVALID", { name });
+  return result;
+}
+const EMPTY: readonly number[] = Object.freeze([]);
+function scalar(uniforms: ReadonlyMap<string, UniformValue>, name: string, fallback: number): number {
+  const value = uniforms.get(name);
+  if (value === undefined) return fallback;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  return numbers(uniforms, name, 1, [fallback])[0]!;
+}
+const ZERO3 = Object.freeze([0, 0, 0]) as readonly [number, number, number];
+function vec3(uniforms: ReadonlyMap<string, UniformValue>, name: string, fallback: readonly [number, number, number] = ZERO3): readonly number[] { return numbers(uniforms, name, 3, fallback); }
 function mapTransform(uniforms: ReadonlyMap<string, UniformValue>, name: string): number[] {
   return [...numbers(uniforms, `${name}Offset`, 2, [0, 0]), ...numbers(uniforms, `${name}Scale`, 2, [1, 1])];
 }
@@ -1680,33 +1711,24 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
   const memberValue = packedLoopColor ? uniforms.get("u_a3dPackedLoopColor") : undefined;
   if (packedLoopColor && memberValue === undefined) throw new RenderDeviceError("Missing u_a3dPackedLoopColor", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_a3dPackedLoopColor" });
   const memberColor = memberValue === undefined ? [1, 1, 1, 1] : numbers(new Map([["u_a3dPackedLoopColor", memberValue]]), "u_a3dPackedLoopColor", 4, [1, 1, 1, 1]);
-  const sh = numbers(uniforms, "u_envSH", 28, new Array<number>(28).fill(0));
+  const sh = numbers(uniforms, "u_envSH", 28, ZEROS_28);
   const rawAttenuation = uniforms.get("u_volumeAttenuationDistance");
   const attenuationDistance = rawAttenuation === Infinity ? 3.4028234663852886e38 : scalar(uniforms, "u_volumeAttenuationDistance", 3.4028234663852886e38);
-  const shadowSamples = numbers(uniforms, "u_shadowPcfSamples", 128, new Array<number>(128).fill(0));
-  const localMatrices = numbers(uniforms, "u_localShadowMatrices", 96, new Array<number>(96).fill(0));
-  const localRects = numbers(uniforms, "u_localShadowRects", 24, new Array<number>(24).fill(0));
-  const localScales = numbers(uniforms, "u_localShadowTexelScale", 8, new Array<number>(8).fill(0));
-  const pointMatrices = numbers(uniforms, "u_pointShadowFaceMatrices", 96, new Array<number>(96).fill(0));
-  const pointRects = numbers(uniforms, "u_pointShadowFaceRects", 24, new Array<number>(24).fill(0));
-  const pointSamples = numbers(uniforms, "u_pointShadowPcfSamples", 128, new Array<number>(128).fill(0));
-  const spotSamples = numbers(uniforms, "u_spotShadowPcfSamples", 128, new Array<number>(128).fill(0));
+  const shadowSamples = numbers(uniforms, "u_shadowPcfSamples", 128, ZEROS_128);
+  const localMatrices = numbers(uniforms, "u_localShadowMatrices", 96, ZEROS_96);
+  const localRects = numbers(uniforms, "u_localShadowRects", 24, ZEROS_24);
+  const localScales = numbers(uniforms, "u_localShadowTexelScale", 8, ZEROS_8);
+  const pointMatrices = numbers(uniforms, "u_pointShadowFaceMatrices", 96, ZEROS_96);
+  const pointRects = numbers(uniforms, "u_pointShadowFaceRects", 24, ZEROS_24);
+  const pointSamples = numbers(uniforms, "u_pointShadowPcfSamples", 128, ZEROS_128);
+  const spotSamples = numbers(uniforms, "u_spotShadowPcfSamples", 128, ZEROS_128);
   const advancedSources = ["u_a3dNativeProbe", "u_a3dNativeVoxel", "u_a3dNativeLightmap"].filter(prefix => uniforms.has(`${prefix}Texture`));
   if (advancedSources.length > 1) throw new RenderDeviceError("Conflicting advanced lighting packets", "WEBGPU_ADVANCED_LIGHTING_INVALID");
   const advancedPrefix = advancedSources[0] ?? "u_a3dNativeLightmap";
-  const advancedLevels = numbers(uniforms, "u_a3dNativeVoxelLevels", 28, new Array<number>(28).fill(0));
-  const clipPlanes = numbers(uniforms, "u_a3dClipPlanes", 32, new Array<number>(32).fill(0));
-  const clipGroups = numbers(uniforms, "u_a3dClipGroups", 8, new Array<number>(8).fill(0));
-  const morphValues = (name: string): number[] => {
-    const value = uniforms.get(name);
-    if (value === undefined) return new Array<number>(64).fill(0);
-    if (!Array.isArray(value) && (!ArrayBuffer.isView(value) || value instanceof DataView)) throw new RenderDeviceError(`Invalid ${name}`, "WEBGPU_PBR_UNIFORM_INVALID", { name });
-    const result = Array.from(value as ArrayLike<number>);
-    if (result.length > 64 || result.length % 4 !== 0 || !result.every(Number.isFinite)) throw new RenderDeviceError(`Invalid ${name}`, "WEBGPU_PBR_UNIFORM_INVALID", { name });
-    while (result.length < 64) result.push(0);
-    return result;
-  };
-  const morphIndices = morphValues("u_morphActiveIndex4"), morphWeights = morphValues("u_morphActiveWeight4");
+  const advancedLevels = numbers(uniforms, "u_a3dNativeVoxelLevels", 28, ZEROS_28);
+  const clipPlanes = numbers(uniforms, "u_a3dClipPlanes", 32, ZEROS_32);
+  const clipGroups = numbers(uniforms, "u_a3dClipGroups", 8, ZEROS_8);
+  const morphIndices = vec4Sequence(uniforms, "u_morphActiveIndex4", 64), morphWeights = vec4Sequence(uniforms, "u_morphActiveWeight4", 64);
   const specularName = uniforms.has("u_specularIntensity") ? "u_specularIntensity" : "u_specularFactor";
   // A material that binds none of u_ior / u_specularIntensity / u_specularColorFactor (InstancedPBRMaterial,
   // NormalMappedPBRMaterial) leaves them at the GL default 0 in the WebGL2 program, so its dielectric draws carry no
@@ -1715,19 +1737,12 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
   const specularDefaults = uniforms.has("u_ior") || uniforms.has(specularName) || uniforms.has("u_specularColorFactor");
   const lightCount = scalar(uniforms, "u_lightCount", 0);
   if (!Number.isInteger(lightCount) || lightCount < 0 || lightCount > 16) throw new RenderDeviceError("Invalid u_lightCount", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_lightCount" });
-  const packedLights = uniforms.get("u_lightData");
-  let lights: number[] = [];
-  if (packedLights !== undefined) {
-    if (!Array.isArray(packedLights) && (!ArrayBuffer.isView(packedLights) || packedLights instanceof DataView)) throw new RenderDeviceError("Invalid u_lightData", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_lightData" });
-    lights = Array.from(packedLights as ArrayLike<number>);
-    if (lights.length > 384 || lights.length % 4 !== 0 || !lights.every(Number.isFinite)) throw new RenderDeviceError("Invalid u_lightData", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_lightData" });
-  }
+  const lights = vec4Sequence(uniforms, "u_lightData", 384);
   if (lights.length < lightCount * 24) throw new RenderDeviceError("Invalid u_lightData for u_lightCount", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_lightData" });
-  while (lights.length < 384) lights.push(0);
   if (!photometricProfile && ["u_a3dPhotometricOffsets", "u_a3dPhotometricMeta", "u_a3dPhotometricAtlas"].some((name) => uniforms.has(name))) {
     throw new RenderDeviceError("Photometric uniforms require their generated shader feature", "WEBGPU_PHOTOMETRIC_PACKET_INVALID");
   }
-  const photometric = photometricProfile ? validateGeneratedPhotometricPacket(uniforms) : { offsets: new Array<number>(64).fill(0), meta: new Array<number>(64).fill(0) };
+  const photometric = photometricProfile ? validateGeneratedPhotometricPacket(uniforms) : { offsets: ZEROS_64, meta: ZEROS_64 };
   const volumeNames = ["u_prd02IrradianceMin", "u_prd02IrradianceMax", "u_prd02IrradianceGrid"];
   const volumeSelected = [...volumeNames, "u_prd02IrradianceR", "u_prd02IrradianceG", "u_prd02IrradianceB"].some((name) => uniforms.has(name));
   if (volumeSelected && !volumeNames.every((name) => uniforms.has(name))) throw new RenderDeviceError("Incomplete irradiance-volume metadata", "WEBGPU_PBR_UNIFORM_INVALID", { name: "u_prd02IrradianceGrid" });
@@ -1787,13 +1802,13 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     coatNormalTransform: numbers(uniforms, "u_clearcoatNormalTextureUvTransform", 9, IDENTITY3),
     iridescenceTransform: numbers(uniforms, "u_iridescenceTextureUvTransform", 9, IDENTITY3), iridescenceThicknessTransform: numbers(uniforms, "u_iridescenceThicknessTextureUvTransform", 9, IDENTITY3),
     anisotropyTransform: numbers(uniforms, "u_anisotropyTextureUvTransform", 9, IDENTITY3),
-    sh: Array.from({ length: 7 }, (_, index) => sh.slice(index * 4, index * 4 + 4)),
-    morphIndices: Array.from({ length: 16 }, (_, index) => morphIndices.slice(index * 4, index * 4 + 4)),
-    morphWeights: Array.from({ length: 16 }, (_, index) => morphWeights.slice(index * 4, index * 4 + 4)),
-    shadowSamples: Array.from({ length: 32 }, (_, index) => shadowSamples.slice(index * 4, index * 4 + 4)),
-    localShadowMatrices: Array.from({ length: 6 }, (_, index) => localMatrices.slice(index * 16, index * 16 + 16)),
-    localShadowRects: Array.from({ length: 6 }, (_, index) => localRects.slice(index * 4, index * 4 + 4)),
-    localShadowScales: Array.from({ length: 2 }, (_, index) => localScales.slice(index * 4, index * 4 + 4)),
+    sh: rows(sh, 7, 4),
+    morphIndices: rows(morphIndices, 16, 4),
+    morphWeights: rows(morphWeights, 16, 4),
+    shadowSamples: rows(shadowSamples, 32, 4),
+    localShadowMatrices: rows(localMatrices, 6, 16),
+    localShadowRects: rows(localRects, 6, 4),
+    localShadowScales: rows(localScales, 2, 4),
     localShadowParams: numbers(uniforms, "u_localShadowParams", 4, [0, 0, 0, 0]),
     localShadowTexel: [...numbers(uniforms, "u_localShadowAtlasTexel", 2, [1, 1]), 0, 0],
     transmission: [scalar(uniforms, "u_transmissionFactor", 0), ...numbers(uniforms, "a3d_prd04_transmissionSamplerSize", 2, [1, 1]), 0],
@@ -1802,7 +1817,7 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     advancedDimensions: numbers(uniforms, advancedPrefix === "u_a3dNativeVoxel" ? `${advancedPrefix}Resolution` : `${advancedPrefix}Dimensions`, 4, [1, 1, 1, 0]),
     advancedConfig: numbers(uniforms, "u_a3dNativeVoxelConfig", 4, [0, 0, 0, 0]),
     advancedIntensity: [scalar(uniforms, `${advancedPrefix}Intensity`, 0), scalar(uniforms, "u_a3dNativeProbeOutside", 0), 0, 0],
-    advancedLevels: Array.from({ length: 7 }, (_, index) => advancedLevels.slice(index * 4, index * 4 + 4)),
+    advancedLevels: rows(advancedLevels, 7, 4),
     transmissionTransform: numbers(uniforms, "u_transmissionTextureUvTransform", 9, IDENTITY3),
     thicknessTransform: numbers(uniforms, "u_volumeThicknessTextureUvTransform", 9, IDENTITY3),
     volumeMaterial: [scalar(uniforms, "u_volumeThicknessFactor", 0), attenuationDistance, scalar(uniforms, "u_dispersion", 0), 0],
@@ -1812,37 +1827,37 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     pointShadowPositionRange: [...vec3(uniforms, "u_pointShadowLightPosition"), scalar(uniforms, "u_pointShadowRange", 1)],
     pointShadowParams: [scalar(uniforms, "u_pointShadowMapEnabled", 0), scalar(uniforms, "u_pointShadowStrength", 0), scalar(uniforms, "u_pointShadowBias", 0), scalar(uniforms, "u_pointShadowSlopeBias", 0)],
     pointShadowTexel: [...numbers(uniforms, "u_pointShadowTexelSize", 2, [1, 1]), scalar(uniforms, "u_pointShadowPcfSampleCount", 1), 0],
-    pointShadowMatrices: Array.from({ length: 6 }, (_, index) => pointMatrices.slice(index * 16, index * 16 + 16)),
-    pointShadowRects: Array.from({ length: 6 }, (_, index) => pointRects.slice(index * 4, index * 4 + 4)),
-    pointShadowSamples: Array.from({ length: 32 }, (_, index) => pointSamples.slice(index * 4, index * 4 + 4)),
+    pointShadowMatrices: rows(pointMatrices, 6, 16),
+    pointShadowRects: rows(pointRects, 6, 4),
+    pointShadowSamples: rows(pointSamples, 32, 4),
     spotShadowPositionRange: [...vec3(uniforms, "u_spotShadowLightPosition"), scalar(uniforms, "u_spotShadowRange", 1)],
     spotShadowDirectionAngle: [...vec3(uniforms, "u_spotShadowLightDirection", [0, -1, 0]), numbers(uniforms, "u_spotShadowCone", 2, [Math.PI / 4, 0])[0]!],
     spotShadowParams: [scalar(uniforms, "u_spotShadowMapEnabled", 0), scalar(uniforms, "u_spotShadowStrength", 0), scalar(uniforms, "u_spotShadowBias", 0), scalar(uniforms, "u_spotShadowSlopeBias", 0)],
     spotShadowTexel: [...numbers(uniforms, "u_spotShadowTexelSize", 2, [1, 1]), scalar(uniforms, "u_spotShadowPcfSampleCount", 1), 0],
     spotShadowMatrix: numbers(uniforms, "u_spotShadowMatrix", 16, IDENTITY),
-    spotShadowSamples: Array.from({ length: 32 }, (_, index) => spotSamples.slice(index * 4, index * 4 + 4)),
+    spotShadowSamples: rows(spotSamples, 32, 4),
     diffuseTransmission: [...vec3(uniforms, "u_diffuseTransmissionColorFactor", [1, 1, 1]), scalar(uniforms, "u_diffuseTransmissionFactor", 0)],
     diffuseTransmissionTransform: numbers(uniforms, "u_diffuseTransmissionTextureUvTransform", 9, IDENTITY3),
     diffuseTransmissionColorTransform: numbers(uniforms, "u_diffuseTransmissionColorTextureUvTransform", 9, IDENTITY3),
     fogColor: [...vec3(uniforms, "u_fogColor"), 0],
     fogParams: [...numbers(uniforms, "u_fogRange", 2, [0, 1]), scalar(uniforms, "u_fogDensity", 0), scalar(uniforms, "u_fogHeightFalloff", 0)],
     clusterGrid: [...numbers(uniforms, "u_clusterGridSize", 2, [1, 1]), ...numbers(uniforms, "u_clusterViewportSize", 2, [1, 1])],
-    clipPlanes: Array.from({ length: 8 }, (_, index) => clipPlanes.slice(index * 4, index * 4 + 4)),
-    clipGroups: Array.from({ length: 2 }, (_, index) => clipGroups.slice(index * 4, index * 4 + 4)),
+    clipPlanes: rows(clipPlanes, 8, 4),
+    clipGroups: rows(clipGroups, 2, 4),
     clipControl: [scalar(uniforms, "u_a3dClipGroupCount", 0), 0, 0, 0],
     packedLoopColor: memberColor,
-    photometricOffsets: Array.from({ length: 16 }, (_, index) => photometric.offsets.slice(index * 4, index * 4 + 4)),
-    photometricMeta: Array.from({ length: 16 }, (_, index) => photometric.meta.slice(index * 4, index * 4 + 4)),
+    photometricOffsets: rows(photometric.offsets, 16, 4),
+    photometricMeta: rows(photometric.meta, 16, 4),
     wetness: [scalar(uniforms, "u_wetness", 0), scalar(uniforms, "u_puddleThreshold", 0.62), scalar(uniforms, "u_rainRipples", 0), scalar(uniforms, "u_snowCover", 0)],
     logDepthView: numbers(uniforms, "u_a3dLogDepthView", 16, IDENTITY),
     logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0],
     // Only a program that selected the stock prd07.fog feature receives u_fogMode (its bindUniforms always writes it).
-    ...packPrd07FogWgslFields(uniforms, (name, length, fallback) => uniforms.has("u_fogMode") ? numbers(uniforms, name, length, fallback) : [...fallback]),
+    ...packPrd07FogWgslFields(uniforms, (name, length, fallback) => uniforms.has("u_fogMode") ? [...numbers(uniforms, name, length, fallback)] : [...fallback]),
     windDirStrength: numbers(uniforms, "u_windDirStrength", 4, [0, 0, 0, 0]),
     windGust: numbers(uniforms, "u_windGust", 4, [0, 0, 0, 0]),
     windParams: [scalar(uniforms, "u_windAssetHeight", 0), 0, 0, 0],
     rim: [...vec3(uniforms, "u_prd04RimColor", [1, 1, 1]), scalar(uniforms, "u_prd04RimStrength", 0)],
     rimParams: [scalar(uniforms, "u_prd04RimPower", 3), 0, 0, 0],
-    lights: Array.from({ length: 96 }, (_, index) => lights.slice(index * 4, index * 4 + 4))
+    lights: rows(lights, 96, 4)
   });
 }

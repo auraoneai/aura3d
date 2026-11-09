@@ -13,12 +13,20 @@ character collision, or raycast vehicles:
 ```ts
 import { createRapierPhysics } from "@aura3d/physics-rapier";
 
-const physics = await createRapierPhysics({ gravity: [0, -9.81, 0] });
-const floor = physics.createBody({ type: "fixed", shape: { kind: "box", halfExtents: [10, 0.5, 10] } });
-const ball = physics.createBody({ position: [0, 4, 0], shape: { kind: "sphere", radius: 0.5 } });
-physics.step(1 / 60);
-physics.dispose();
+async function main(): Promise<void> {
+  const physics = await createRapierPhysics({ gravity: [0, -9.81, 0] });
+  const floor = physics.createBody({ type: "fixed", shape: { kind: "box", halfExtents: [10, 0.5, 10] } });
+  const ball = physics.createBody({ position: [0, 4, 0], shape: { kind: "sphere", radius: 0.5 } });
+  physics.step(1 / 60);
+  physics.dispose();
+}
+void main();
 ```
+
+Await it inside a function, not at module top level: a module-level `await` on
+an engine promise can deadlock a default Vite production build
+(`LINT_TOP_LEVEL_AWAIT_ENGINE`; see the engine README, "Readiness and top-level
+await").
 
 This is physical simulation. `game.racing` and the default authored-unit arcade
 helpers remain separate and do not claim physical tyre, mass, or force semantics.

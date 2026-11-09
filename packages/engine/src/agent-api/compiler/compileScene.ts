@@ -1388,6 +1388,7 @@ export class CompiledSceneImpl implements CompiledScene {
             ...(ctx.textureResidency ? { retainTextureResidencySources: true } : {}),
             width: ctx.canvas.width, height: ctx.canvas.height,
             ...(modelNode.hiddenNodeNames ? { hiddenNodeNames: modelNode.hiddenNodeNames } : {}),
+            ...(modelNode.nodeTransforms ? { nodeTransforms: modelNode.nodeTransforms } : {}),
             ...(modelNode.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
             ...typedGLBActorDecoderOptions(ctx.flags, ctx.assetOptions), ...applyModelTintBridge(modelNode)
           });
@@ -1800,6 +1801,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
             width: canvas.width,
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
+            ...(node.nodeTransforms ? { nodeTransforms: node.nodeTransforms } : {}),
             ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
             ...decoderOptions,
             ...applyModelTintBridge(node)

@@ -11,6 +11,7 @@ import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, inst
 import { warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { CONFIG, IDLE, PHASE_CODE, ShapeShiftSim, TRACE_COLUMNS, replay, type Input } from "./sim";
 import { Autopilot } from "./autopilot";
 import { createShapeSound, diffSounds, type FrameState } from "./audio";
@@ -230,13 +231,15 @@ async function boot(): Promise<void> {
   startButton?.setAttribute("aria-busy", "true");
   loading.set(0.1);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), post: postMode(config.post) });
-  const lab = labAppOptions(readLabFlags());
+  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-08 after WebGPU perf round 2: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+  const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "none", dither: false, ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await loading.track(app.ready(), 1);

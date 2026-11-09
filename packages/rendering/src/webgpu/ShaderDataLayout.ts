@@ -166,6 +166,32 @@ function joinPath(parent: string, key: string | number | undefined): string {
   return key === undefined ? parent : typeof key === "number" ? `${parent}[${key}]` : `${parent}.${key}`;
 }
 
+const memberNameSets = new WeakMap<ShaderDataLayout, ReadonlySet<string>>();
+function memberNames(layout: ShaderDataLayout): ReadonlySet<string> {
+  let names = memberNameSets.get(layout);
+  if (!names) { names = new Set(layout.members!.map((member) => member.name)); memberNameSets.set(layout, names); }
+  return names;
+}
+
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export class ShaderDataRows {
+  constructor(readonly source: ArrayLike<number>, readonly length: number, readonly width: number) {}
+  at(index: number): number { return index < this.source.length ? this.source[index]! : 0; }
+  row(element: number): number[] {
+    const values = new Array<number>(this.width);
+    for (let c = 0; c < this.width; c += 1) values[c] = this.at(element * this.width + c);
+    return values;
+  }
+}
+
+const LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+
 /** The success condition of `sequence`, without a path. */
 function isSequence(value: unknown, length: number): value is ArrayLike<unknown> {
   return !!value && typeof value === "object" && !(value instanceof DataView) && (value as ArrayLike<unknown>).length === length;
@@ -232,9 +258,21 @@ export function writeShaderData(
       : new Uint8Array(target.buffer, target.byteOffset, target.byteLength);
   if (byteOffset + layout.size > bytes.byteLength) fail("SHADER_DATA_RANGE", "$", "target is too small for the layout");
 
-  // Write a temporary image first so all validation errors leave the target intact.
-  const staging = new Uint8Array(layout.size);
-  const view = new DataView(staging.buffer);
+  // Write a temporary image first so all validation errors leave the target intact. A freshly allocated image has
+  // nothing to protect, so it is written in place (saves one layout-sized allocation and copy per upload).
+  const direct = target === undefined && byteOffset === 0;
+  const staging = direct ? bytes : new Uint8Array(layout.size);
+  const view = new DataView(staging.buffer, staging.byteOffset, staging.byteLength);
+  // f32 vectors and matrices (the bulk of every uniform block) are stored through a typed view: the stored f32 is
+  // finite exactly when `plainScalarValid("f32", v)` holds, so the check reads the stored value back.
+  const f32 = LITTLE_ENDIAN && staging.byteOffset % 4 === 0 ? new Float32Array(staging.buffer, staging.byteOffset, staging.byteLength >> 2) : undefined;
+  function storeF32(item: unknown, at: number, parent: string, key: string | number | undefined, index: number): void {
+    if (f32 !== undefined && typeof item === "number") {
+      f32[at >> 2] = item;
+      if (Number.isFinite(f32[at >> 2]!)) return;
+    }
+    storeScalar("f32", item, at, joinPath(parent, key), index);
+  }
   // Paths name the failing element in errors only; they are built on failure (or once per compound level), never
   // once per scalar on the success path (this runs for every uniform block upload, every frame).
   function writeScalar(type: ShaderDataScalar, v: number, offset: number): void {
@@ -254,6 +292,10 @@ export function writeShaderData(
     switch (type.kind) {
       case "vector": {
         const items = values(input, type.length, parent, key);
+        if (type.element === "f32") {
+          for (let i = 0; i < type.length; i += 1) storeF32(items[i], offset + i * 4, parent, key, i);
+          return;
+        }
         for (let i = 0; i < type.length; i += 1) {
           const item = items[i];
           if (typeof item === "number" && plainScalarValid(type.element, item)) writeScalar(type.element, item, offset + i * 4);
@@ -265,10 +307,7 @@ export function writeShaderData(
         const items = values(input, type.columns * type.rows, parent, key);
         for (let c = 0; c < type.columns; c += 1) {
           for (let r = 0; r < type.rows; r += 1) {
-            const item = items[c * type.rows + r];
-            const at = offset + c * current.stride! + r * 4;
-            if (typeof item === "number" && plainScalarValid("f32", item)) writeScalar("f32", item, at);
-            else storeScalar("f32", item, at, joinPath(parent, key), c * type.rows + r);
+            storeF32(items[c * type.rows + r], offset + c * current.stride! + r * 4, parent, key, c * type.rows + r);
           }
         }
         return;
@@ -276,7 +315,46 @@ export function writeShaderData(
       case "array": {
         const items = values(input, type.length, parent, key);
         const path = joinPath(parent, key);
-        for (let i = 0; i < type.length; i += 1) store(current.element!, items[i], offset + i * current.stride!, path, i);
+        const element = current.element!, stride = current.stride!, elementType = element.type;
+        if (items instanceof ShaderDataRows) {
+          const width = items.width;
+          if (typeof elementType !== "string" && elementType.kind === "vector" && elementType.element === "f32" && elementType.length === width) {
+            const source = items.source, available = source.length;
+            for (let i = 0; i < type.length; i += 1) {
+              const at = offset + i * stride, base = i * width;
+              for (let c = 0; c < width; c += 1) {
+                const index = base + c, item = index < available ? source[index] : 0, slot = (at >> 2) + c;
+                // Same check as storeF32, without a call per value (these rows are most of an 8 KB PBR block).
+                if (f32 !== undefined && typeof item === "number") { f32[slot] = item; if (Number.isFinite(f32[slot]!)) continue; }
+                storeF32(item, at + c * 4, path, i, c);
+              }
+            }
+            return;
+          }
+          if (typeof elementType !== "string" && elementType.kind === "matrix" && elementType.columns * elementType.rows === width) {
+            const rows = elementType.rows, columnStride = element.stride!;
+            for (let i = 0; i < type.length; i += 1) {
+              const at = offset + i * stride, base = i * width;
+              for (let c = 0; c < elementType.columns; c += 1) {
+                for (let r = 0; r < rows; r += 1) storeF32(items.at(base + c * rows + r), at + c * columnStride + r * 4, joinPath(path, i), undefined, c * rows + r);
+              }
+            }
+            return;
+          }
+          for (let i = 0; i < type.length; i += 1) store(element, items.row(i), offset + i * stride, path, i);
+          return;
+        }
+        if (typeof elementType !== "string" && elementType.kind === "vector" && elementType.element === "f32") {
+          // Arrays of f32 vectors (sample kernels, packed light data) without a recursive call per element.
+          const width = elementType.length;
+          for (let i = 0; i < type.length; i += 1) {
+            const at = offset + i * stride;
+            const vector = values(items[i], width, path, i);
+            for (let c = 0; c < width; c += 1) storeF32(vector[c], at + c * 4, path, i, c);
+          }
+          return;
+        }
+        for (let i = 0; i < type.length; i += 1) store(element, items[i], offset + i * stride, path, i);
         return;
       }
       case "struct": {
@@ -291,13 +369,12 @@ export function writeShaderData(
           }
           store(member.layout, record[member.name], offset + member.offset, path, member.name);
         }
-        for (const key of Object.keys(record)) {
-          if (!current.members!.some((member) => member.name === key)) fail("SHADER_DATA_VALUE", `${path}.${key}`, "unknown field");
-        }
+        const names = memberNames(current);
+        for (const key of Object.keys(record)) if (!names.has(key)) fail("SHADER_DATA_VALUE", `${path}.${key}`, "unknown field");
       }
     }
   }
   store(layout, value, 0, "$", undefined);
-  bytes.set(staging, byteOffset);
+  if (!direct) bytes.set(staging, byteOffset);
   return bytes.subarray(byteOffset, byteOffset + layout.size);
 }

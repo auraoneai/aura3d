@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MockRenderBuffer, MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { UniformBlock, layoutStd140, uniformBlockGlsl } from "../../../packages/rendering/src/resources/UniformBlock";
 import {
+  ShaderDataRows,
   deriveShaderDataLayout,
   writeShaderData,
   type ShaderDataType
@@ -108,6 +109,19 @@ describe("shader data layouts", () => {
     expect([...target.slice(128)]).toEqual(Array(16).fill(0xa5));
   });
 
+  it("rejects f32 vector and matrix values outside the finite f32 range on the typed fast path", () => {
+    const layout = deriveShaderDataLayout(mixed, "glsl-std140");
+    for (const bad of [{ axis: [1, 1e39, 3] }, { axis: [1, Number.NaN, 3] }, { transform: [10, 11, 12, 20, Infinity, 22] }, { axis: [1, "2", 3] }]) {
+      expect(() => writeShaderData(layout, { ...mixedValue, ...bad })).toThrow();
+      const target = new Uint8Array(layout.size + 16).fill(7);
+      expect(() => writeShaderData(layout, { ...mixedValue, ...bad }, target, 16)).toThrow();
+      expect(target.every((byte) => byte === 7)).toBe(true);
+    }
+    const fresh = writeShaderData(layout, mixedValue);
+    const placed = writeShaderData(layout, mixedValue, new Uint8Array(layout.size + 16), 16);
+    expect([...fresh]).toEqual([...placed]);
+  });
+
   it("snapshots caller schemas so later edits cannot change a derived layout", () => {
     const schema = { kind: "array" as const, element: "u32" as const, length: 2 };
     const layout = deriveShaderDataLayout(schema, "wgsl-storage");
@@ -177,5 +191,22 @@ describe("std140 uniform blocks", () => {
     expect(() => block.set("items", [{ id: 3, color: [1, 2, 3] }, { id: -1, color: [4, 5, 6] }])).toThrow(/unsigned/);
     block.upload();
     expect([...bytes]).toEqual(before);
+  });
+
+  it("writes flat ShaderDataRows exactly like the nested arrays, with the same errors", () => {
+    const type: ShaderDataType = { kind: "struct", fields: [
+      { name: "rows", type: { kind: "array", length: 3, element: { kind: "vector", element: "f32", length: 4 } } },
+      { name: "mats", type: { kind: "array", length: 2, element: { kind: "matrix", columns: 3, rows: 3 } } }
+    ] };
+    const layout = deriveShaderDataLayout(type, "wgsl-uniform");
+    const flat = [1, 2, 3, 4, 5, 6, 7, 8];
+    const mats = Array.from({ length: 18 }, (_, i) => i * 0.25);
+    const nested = writeShaderData(layout, { rows: [[1, 2, 3, 4], [5, 6, 7, 8], [0, 0, 0, 0]], mats: [mats.slice(0, 9), mats.slice(9)] });
+    const rows = writeShaderData(layout, { rows: new ShaderDataRows(flat, 3, 4), mats: new ShaderDataRows(new Float32Array(mats), 2, 9) } as never);
+    expect([...rows]).toEqual([...nested]);
+    expect(() => writeShaderData(layout, { rows: new ShaderDataRows([1, 2, 3, 4, 5, 1e39], 3, 4), mats: new ShaderDataRows(mats, 2, 9) } as never))
+      .toThrow("$.rows[1][1]: value is outside the finite f32 range");
+    expect(() => writeShaderData(layout, { rows: new ShaderDataRows(flat, 3, 4), mats: new ShaderDataRows(mats.map((v, i) => i === 12 ? -1e39 : v), 2, 9) } as never))
+      .toThrow("$.mats[1][3]: value is outside the finite f32 range");
   });
 });

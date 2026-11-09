@@ -85,6 +85,15 @@ toneMapping constants.
    (`EffectComposer`, `RenderPass`, `UnrealBloomPass`, and others) are left
    unchanged with a `postprocessing-unsupported` warning. Treat that as a
    manual rewrite to `effects.*`, never as a pass.
+   Procedural three.js content (a scene factory that builds meshes, clips or
+   simple shaders) can be carried as an asset instead of ported by hand:
+   `aura3d import-three recipes/windmill.mjs --params '{"height":4.8}'` admits
+   the GLB as `assets.windmill`, writes a regenerated `windmill.bridge.ts` (stable
+   node ids, clips, simple `ShaderMaterial`s as `material.custom`) and a native
+   `windmill.scene.ts` that is never overwritten, so edits keyed by stable id
+   (`model({ hiddenNodeNames, nodeTransforms })`, added lights) survive a
+   regeneration. Read its `.report.md`: unsupported rows are hidden, not faked.
+   Guide: [three-bridge.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/three-bridge.md).
 4. Triage coverage from the codemod's warning list, not a matrix: the
    import map `THREE_COMPAT_THREE_IMPORT_MAP` names every specifier the
    codemod rewrites; anything three-shaped it leaves alone shows up in

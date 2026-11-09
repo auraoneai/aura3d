@@ -175,16 +175,52 @@ describe("native WebGPU auto exposure device integration", () => {
     f.device.dispose(); f.finish();
   });
 
-  it("fence-retires a queued post uniform after an unsubmitted presentation fails", async () => {
+  it("reuses post-chain stage targets, uniforms and bind groups across frames and stops scoping validated passes", async () => {
+    const f = await fixture();
+    const pushes = vi.fn();
+    (f.native as unknown as { pushErrorScope: () => void }).pushErrorScope = pushes;
+    const frame = () => f.device.presentLdrPostprocess(f.source, { outputTarget: f.output, passes: [{ name: "tone-mapping", options: {} }] });
+    frame();
+    const texturesAfterFirst = f.textures.length, buffersAfterFirst = f.buffers.length, groupsAfterFirst = f.groups.length;
+    expect(f.textures.filter(texture => texture.label === "a3d-webgpu-tone")).toHaveLength(1);
+    for (let index = 0; index < 7; index += 1) frame();
+    expect(f.textures.length).toBe(texturesAfterFirst);
+    expect(f.buffers.length).toBe(buffersAfterFirst);
+    expect(f.groups.length).toBe(groupsAfterFirst);
+    expect(f.textures.filter(texture => texture.destroy.mock.calls.length > 0)).toEqual([]);
+    // Tone and present are scoped for their first four uses only.
+    expect(pushes).toHaveBeenCalledTimes(8);
+    expect(f.passes.filter(name => name === "webgpu-tone-pass")).toHaveLength(8);
+    f.device.dispose(); f.finish();
+  });
+
+  it("keeps scoping a post pass after a scoped use reported a validation error", async () => {
+    const f = await fixture();
+    const pushes = vi.fn();
+    (f.native as unknown as { pushErrorScope: () => void }).pushErrorScope = pushes;
+    const frame = () => f.device.presentLdrPostprocess(f.source, { outputTarget: f.output, passes: [] });
+    f.failure.validation = "webgpu-post-present-pass";
+    frame();
+    expect(await f.device.drainWebGPUPostErrors()).toEqual([expect.stringContaining("injected validation error")]);
+    for (let index = 0; index < 7; index += 1) frame();
+    expect(pushes).toHaveBeenCalledTimes(8);
+    f.device.dispose(); f.finish();
+  });
+
+  it("keeps a post uniform for reuse after an unsubmitted presentation fails and fence-retires it at disposal", async () => {
     const f = await fixture();
     f.failure.draw = "webgpu-post-present-pass";
     expect(() => f.device.presentLdrPostprocess(f.source, { outputTarget: f.output, passes: [] })).toThrow("injected presentation failure");
-    const uniform = f.buffers.find(buffer => buffer.label === "webgpu-post-present-uniforms")!;
-    expect(uniform).toBeDefined();
+    const uniforms = () => f.buffers.filter(buffer => buffer.label === "webgpu-post-present-uniforms");
+    expect(uniforms()).toHaveLength(1);
+    const uniform = uniforms()[0]!;
+    f.device.presentLdrPostprocess(f.source, { outputTarget: f.output, passes: [] });
+    expect(uniforms()).toEqual([uniform]);
+    f.finish(); await Promise.resolve(); await Promise.resolve();
     expect(uniform.destroy).not.toHaveBeenCalled();
+    f.device.dispose();
     f.finish(); await Promise.resolve(); await Promise.resolve();
     expect(uniform.destroy).toHaveBeenCalledOnce();
-    f.device.dispose();
   });
 
   it("requires a queue fence before exposure allocates or submits work", async () => {

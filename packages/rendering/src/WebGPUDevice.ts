@@ -137,6 +137,8 @@ const TEXTURE_USAGE = {
   TEXTURE_BINDING: 0x0004,
   STORAGE_BINDING: 0x0008
 } as const;
+/** Uses of one fullscreen post pass that run inside a validation error scope before it is trusted (see runWebGPUFullscreenPass). */
+const WEBGPU_POST_SCOPED_USES = 4;
 const DEPTH_TEXTURE_FORMAT = "depth24plus-stencil8";
 const FLOAT_DEPTH_STENCIL_FEATURE = "depth32float-stencil8";
 const NATIVE_MORPH_MAX_TARGETS = 4;
@@ -1407,8 +1409,7 @@ export class WebGPUDevice implements RenderDevice {
       || this.nativeSampledTextures.size > 0 || this.pendingNativeSweepRetirements.size > 0
       || this.activeNativeSweepRetirements.size > 0 || this.activeNativeSampledReleases.size > 0 || this.pendingNativeBudgetedDisposals.size > 0
       || this.webgpuAutoExposure !== null || this.webgpuExposureUniformBuffers.size > 0
-      || !this.nativeEffectHistoryDisposed || this.webgpuPostRetiredUniformBuffers.length > 0
-      || this.webgpuPostUniformRetirementsInFlight.size > 0
+      || !this.nativeEffectHistoryDisposed
       || this.pendingForwardBundleRetirements.size > 0 || this.nativeForwardBundleRetirements.size > 0
       || this.nativeForwardBundleRetirementsInFlight.size > 0 || this.nativeForwardBundleDisposalUncertain || this.nativeForwardBundleDisposalInFlight
       || this.gaussianSplatAdapters.size > 0 || this.activeGaussianSplatDisposals.size > 0 || this.uncertainGaussianSplatDisposals.size > 0
@@ -1511,13 +1512,12 @@ export class WebGPUDevice implements RenderDevice {
    * of the next post run — after any intervening readback fence — or on
    * dispose.
    */
-  private webgpuPostRetiredUniformBuffers: WebGPUBufferLike[] = [];
-  private readonly webgpuPostUniformRetirementsInFlight = new Set<WebGPUBufferLike>();
   private readonly webgpuPostErrorScopePending = new Set<Promise<unknown>>();
   private readonly webgpuPostErrors = new Map<string, number>();
   private webgpuPostOtherErrors = 0;
   /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
-  private readonly webgpuExposureUniformBuffers = new Map<number, WebGPUBufferLike>();
+  /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
+  private readonly webgpuExposureUniformBuffers = new Map<number | string, WebGPUBufferLike>();
   private webgpuAutoExposure: WebGPUAutoExposure | null = null;
   private webgpuAutoExposureReleasing = false;
   private webgpuPostValidationFailure: (() => void) | null = null;
@@ -1589,6 +1589,13 @@ export class WebGPUDevice implements RenderDevice {
   #bindGroupNextObjectId = 1;
   /** Bloom v2 intermediate targets kept across frames, by label. */
   readonly #bloomTargetPool = new Map<string, RenderTarget>();
+  readonly #webgpuPostScopeUses = new Map<string, number>();
+  /** Single-use post-chain targets kept across frames (see transientPostTarget). */
+  readonly #postTargetPool = new Map<string, { targets: RenderTarget[]; lastUsed: number }>();
+  readonly #postTargetPoolMembers = new WeakSet<RenderTarget>();
+  readonly #postTargetsInUse = new Set<RenderTarget>();
+  #postTransactionDepth = 0;
+  #postTransactionSerial = 0;
   /** Draw batching (see `WebGPUDeviceOptions.nativeDrawBatching`). */
   readonly #drawBatchingEnabled: boolean;
   #drawBatchWindows = 0;
@@ -4310,7 +4317,6 @@ export class WebGPUDevice implements RenderDevice {
     const canvasView = canvasTexture.createView();
     if (!canvasView) throw new RenderDeviceError("WebGPU canvas view is unavailable", "WEBGPU_SURFACE_UNAVAILABLE");
     const activeTarget = this.activeRenderTarget, frameToken = this.frameToken, frameActive = this.frameActive, canvasGeneration = this.canvasTargetGeneration;
-    this.reclaimWebGPUPostUniformBuffers();
     this.runWebGPUFullscreenPass({
       label: "webgpu-present-render-target", fragment: WEBGPU_NATIVE_COPY_FRAGMENT, entryPoint: "fs_copy",
       uniforms: new Float32Array([1 / target.width, 1 / target.height, 0, 1]),
@@ -5303,6 +5309,11 @@ export class WebGPUDevice implements RenderDevice {
     return [...live];
   }
 
+  /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+  drawCallCount(): number {
+    return this.drawCalls;
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     const liveRenderTargets = [...this.renderTargets].filter((target) => !target.disposed);
     const bufferBytes = [...this.buffers].filter((buffer) => !buffer.disposed).reduce((total, buffer) => total + buffer.byteLength, 0);
@@ -5386,7 +5397,6 @@ export class WebGPUDevice implements RenderDevice {
    * HDR composite `scene + bloom × intensity`. Same math and pass order, so the halo matches the default backend.
    */
   private executeNativeWebGPUBloomV2(source: RenderTarget, options: Readonly<Record<string, unknown>>, protectP3Inputs: boolean): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const request = normalizeWebGPUBloomV2Options(options);
     const src = this.requireRenderTarget(source);
     const srcView = src.nativeView;
@@ -5502,7 +5512,6 @@ export class WebGPUDevice implements RenderDevice {
     // A v2-stamped pass (postprocess.v2) runs the WebGL2 v2 bloom: its option names (intensity, knee, spread) and
     // response differ from this J2 chain's (strength, knee width), which otherwise read as defaults (strength 0.6).
     if (isWebGPUBloomV2(options)) return this.executeNativeWebGPUBloomV2(source, options as unknown as Readonly<Record<string, unknown>>, protectP3Inputs);
-    this.reclaimWebGPUPostUniformBuffers();
     const normalized = normalizeWebGPUBloomOptions(options);
     const src = this.requireRenderTarget(source);
     const srcView = src.nativeView;
@@ -5646,11 +5655,10 @@ export class WebGPUDevice implements RenderDevice {
    */
   /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
   private executeWebGPUHdrGrade(source: RenderTarget, grade: NonNullable<WebGPUNativePostPresentationOptions["nativeHdrGrade"]>): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
     if (!src.nativeView) throw new RenderDeviceError("WebGPU HDR grade source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     const format = src.colorTexture.format === "rgba32f" ? "rgba32f" : src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f";
-    const out = this.createRenderTarget({ width: src.width, height: src.height, format, label: "a3d-webgpu-hdr-grade" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format, label: "a3d-webgpu-hdr-grade" });
     const rows = [grade.whiteBalance, grade.lift, grade.gamma, grade.gain, grade.shadows, grade.midtones, grade.highlights];
     const uniforms = new Float32Array(28);
     rows.forEach((row, index) => uniforms.set([row[0], row[1], row[2], 0], index * 4));
@@ -5664,14 +5672,13 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   executeWebGPUColorGrade(source: RenderTarget, options: WebGPUColorGradeOptions = {}): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const normalized = normalizeWebGPUColorGradeOptions(options);
     const src = this.requireRenderTarget(source);
     const srcView = src.nativeView;
     if (!srcView) {
       throw new RenderDeviceError("WebGPU color-grade source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     }
-    const out = this.createRenderTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-color-grade" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-color-grade" });
     try {
       this.runWebGPUFullscreenPass({
         label: "webgpu-color-grade",
@@ -5697,7 +5704,6 @@ export class WebGPUDevice implements RenderDevice {
    * `WebGPUSsrFrame`; the other fields follow the v2 S3 options.
    */
   executeWebGPUSsr(source: RenderTarget, options: Readonly<Record<string, unknown>> = {}, depthSource: RenderTarget = source): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
     // `depthSource` is the scene target when an earlier native stage (S2 AO) already replaced the color with a depthless target.
     const dsrc = this.requireRenderTarget(depthSource);
@@ -5745,13 +5751,12 @@ export class WebGPUDevice implements RenderDevice {
    * antialiasing has a separate GPU history contract in executeWebGPUTaa.
    */
   executeWebGPUFxaa(source: RenderTarget): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
     const srcView = src.nativeView;
     if (!srcView) {
       throw new RenderDeviceError("WebGPU FXAA source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     }
-    const out = this.createRenderTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-fxaa" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-fxaa" });
     try {
       this.runWebGPUFullscreenPass({
         label: "webgpu-fxaa",
@@ -5789,7 +5794,6 @@ export class WebGPUDevice implements RenderDevice {
 
   /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
   executeWebGPUSsao(source: RenderTarget, depthSource: RenderTarget, options: Readonly<Record<string, unknown>> = {}): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     let normalized: ReturnType<typeof normalizeWebGPUSsaoOptions>;
     try { normalized = normalizeWebGPUSsaoOptions(options); }
     catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "INVALID_POSTPROCESS_OPTIONS"); }
@@ -5818,7 +5822,6 @@ export class WebGPUDevice implements RenderDevice {
    */
   private executeNativeDofDisplayStage(source: RenderTarget, stage: "ca" | "vignette" | "finalize",
     stages: NativeDofDisplayStages, frameIndex: number): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
     // `nativeView` is the single-sample (resolved) color of a multisampled target, as the other post stages sample it.
     if (!src.nativeView) {
@@ -5826,7 +5829,7 @@ export class WebGPUDevice implements RenderDevice {
     }
     this.flushNativeRenderTargetClear(src);
     const format = stage === "ca" && (src.colorTexture.format === "rgba16f" || src.colorTexture.format === "rgba32f") ? src.colorTexture.format : "rgba8";
-    const out = this.createRenderTarget({ width: src.width, height: src.height, format, depth: false, label: `a3d-webgpu-dof-${stage}` });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format, depth: false, label: `a3d-webgpu-dof-${stage}` });
     try {
       let fragment: string, entryPoint: string, uniforms: Float32Array;
       if (stage === "ca") {
@@ -5856,7 +5859,6 @@ export class WebGPUDevice implements RenderDevice {
    */
   executeWebGPUAmbientOcclusion(source: RenderTarget, depthSource: RenderTarget, request: NativeAmbientOcclusionRequest,
     frameIndex = 0, diagnosticToken?: PostDiagnosticToken): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(source);
     if (!src.nativeView) throw new RenderDeviceError("WebGPU ambient occlusion source has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     if (depthSource.width !== src.width || depthSource.height !== src.height) {
@@ -6187,7 +6189,6 @@ export class WebGPUDevice implements RenderDevice {
     } else if (options.nativeDofDisplay) {
       options = { ...options, nativeDofDisplay: snapshotNativeDofDisplay(options.nativeDofDisplay) };
     }
-    this.reclaimWebGPUPostUniformBuffers();
     const diagnosticToken = options.postFrameContext?.diagnosticToken;
     const authoredTime = options.postFrameContext?.timeSeconds;
     const authoredFrame = options.postFrameContext?.frameId;
@@ -6270,6 +6271,7 @@ export class WebGPUDevice implements RenderDevice {
     let consumedProof: NativeDofFrameProof | undefined;
     let assertDofCurrent: (() => void) | undefined;
     const previousValidationFailure = this.webgpuPostValidationFailure;
+    let exposureChainScope: (() => void) | undefined;
     const track = (target: RenderTarget): void => { owned.push(target); current = target; };
     /*
      * threejs-parity SH-03/SH-06: C-13 custom passes registered via
@@ -6350,6 +6352,7 @@ export class WebGPUDevice implements RenderDevice {
         runCustoms(customs.filter(custom => !before.includes(custom)));
       } else runCustoms(customs);
     };
+    this.beginPostTargetTransaction();
     try {
       // Consume the sealed native DoF frame before any pre-DoF stage submits (a sealed proof is valid only until the
       // next submission); `assertDofCurrent` then guards the source through the whole chain.
@@ -6440,6 +6443,12 @@ export class WebGPUDevice implements RenderDevice {
           // its synchronously submitted history was already committed.
           try { this.releaseNativePostEffectView(scopeId, viewId); } catch { /* Preserve the validation diagnostic. */ }
         };
+        // One scope over the rest of the chain instead of one per pass: any error in it invalidates this view.
+        const scopeDevice = this.device as unknown as { pushErrorScope?(scope: string): void; popErrorScope?: unknown };
+        if (scopeDevice.pushErrorScope && scopeDevice.popErrorScope) {
+          scopeDevice.pushErrorScope("validation");
+          exposureChainScope = this.webgpuPostValidationFailure;
+        }
       }
       for (let passIndex = 0; passIndex < options.passes.length; passIndex += 1) {
         assertDofCurrent?.();
@@ -6465,7 +6474,9 @@ export class WebGPUDevice implements RenderDevice {
           const whitePoint = typeof tone.whitePoint === "number" ? tone.whitePoint : 1;
           if (!Number.isFinite(whitePoint) || whitePoint <= 0) throw new RenderDeviceError("Invalid tone white point", "WEBGPU_POSTPROCESS_UNSUPPORTED");
           if (!Number.isFinite(exposure) || exposure < 0) throw new RenderDeviceError("Invalid tone exposure", "WEBGPU_POSTPROCESS_UNSUPPORTED");
-          const target = this.createRenderTarget({ width: source.width, height: source.height, format: "rgba8", label: "a3d-webgpu-tone" });
+          // Display-P3 output keeps a fresh target: its resolved P3 companions are checked per submission.
+          const toneDescriptor = { width: source.width, height: source.height, format: "rgba8" as const, label: "a3d-webgpu-tone" };
+          const target = displayP3 ? this.createRenderTarget(toneDescriptor) : this.transientPostTarget(toneDescriptor);
           owned.push(target);
           const toneSource = this.requireRenderTarget(current);
           const toneSourceNative = displayP3 ? this.requireP3ResolvedColor(toneSource, true) : undefined;
@@ -6524,9 +6535,11 @@ export class WebGPUDevice implements RenderDevice {
       }
       throw error;
     } finally {
+      if (exposureChainScope) this.popWebGPUPostScope("webgpu-post-exposure-chain", undefined, exposureChainScope);
       this.webgpuPostValidationFailure = previousValidationFailure;
       if (consumedProof && this.#nativeDofActive === consumedProof) { consumedProof.phase = "invalid"; this.#nativeDofActive = null; }
-      for (const target of owned) target.dispose();
+      try { for (const target of owned) this.releaseTransientPostTarget(target); }
+      finally { this.endPostTargetTransaction(); }
       dofResult?.release();
       linearResult?.release();
       dofDriver?.dispose();
@@ -6540,7 +6553,6 @@ export class WebGPUDevice implements RenderDevice {
    * a caller-owned target in the color's float format.
    */
   private executeWebGPUSceneDepthOfField(color: RenderTarget, depthSource: RenderTarget, request: NativeSceneDofRequest): RenderTarget {
-    this.reclaimWebGPUPostUniformBuffers();
     const src = this.requireRenderTarget(color);
     if (!src.nativeView) throw new RenderDeviceError("WebGPU depth of field source has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     if (depthSource.width !== src.width || depthSource.height !== src.height) {
@@ -6553,19 +6565,21 @@ export class WebGPUDevice implements RenderDevice {
     const w = src.width, h = src.height;
     const scratch: RenderTarget[] = [];
     const generation = () => this.generation, isLost = () => this.disposed || this.contextLost;
-    const driver = new WebGPUDepthOfField({ createTarget: descriptor => this.createRenderTarget(descriptor),
+    // Stage targets come from the post-chain pool (this stage runs only inside presentLdrPostprocessTransaction).
+    const driver = new WebGPUDepthOfField({ createTarget: descriptor => this.transientPostTarget({ ...descriptor, label: descriptor.label ?? "webgpu-dof" }),
+      releaseTarget: target => this.releaseTransientPostTarget(target),
       draw: pass => this.executeNativeDofPass(pass, () => this.assertAlive()), deviceGeneration: generation, isDeviceLost: isLost });
     let succeeded = false;
     try {
       let input: RenderTarget = color;
       const format = src.colorTexture.format;
       if ((src.sampleCount ?? 1) !== 1 || (format !== "rgba16f" && format !== "rgba32f") || src.colorTexture.colorSpace !== "linear") {
-        input = this.createRenderTarget({ width: w, height: h, format: "rgba16f", depth: false, label: "a3d-webgpu-scene-dof-color" });
+        input = this.transientPostTarget({ width: w, height: h, format: "rgba16f", depth: false, label: "a3d-webgpu-scene-dof-color" });
         scratch.push(input);
         this.runWebGPUFullscreenPass({ label: "webgpu-scene-dof-color", fragment: WEBGPU_SCENE_DOF_COLOR_FRAGMENT, entryPoint: "fs_scene_dof_color",
           uniforms: new Float32Array(4), views: [src.nativeView], target: input, textureLoadBindings: true });
       }
-      const linear = this.createRenderTarget({ width: w, height: h, format: "rgba32f", depth: false, label: "a3d-webgpu-scene-dof-linear-depth" });
+      const linear = this.transientPostTarget({ width: w, height: h, format: "rgba32f", depth: false, label: "a3d-webgpu-scene-dof-linear-depth" });
       scratch.push(linear);
       this.runWebGPUFullscreenPass({ label: "webgpu-scene-dof-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
         uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true, ...(depth.multisampled ? { multisampledDepthViews: [0] } : {}) });
@@ -6575,7 +6589,7 @@ export class WebGPUDevice implements RenderDevice {
       // The driver is dropped without dispose: its output now belongs to the caller's chain.
       return result.target;
     } finally {
-      for (const target of scratch) target.dispose();
+      for (const target of scratch) this.releaseTransientPostTarget(target);
       if (!succeeded) { try { driver.dispose(); } catch { /* Preserve the original failure. */ } }
     }
   }
@@ -6618,7 +6632,7 @@ export class WebGPUDevice implements RenderDevice {
     if (!src.nativeView) return null;
     const size = entry.size;
     const intensity = typeof lut.intensity === "number" && Number.isFinite(lut.intensity) ? Math.min(1, Math.max(0, lut.intensity)) : 1;
-    const out = this.createRenderTarget({ width: src.width, height: src.height, format: src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f", depth: false, label: "a3d-webgpu-display-lut-out" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format: src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f", depth: false, label: "a3d-webgpu-display-lut-out" });
     try {
       this.runWebGPUFullscreenPass({ label: "webgpu-display-lut", fragment: WEBGPU_DISPLAY_LUT_FRAGMENT, entryPoint: "fs_display_lut",
         uniforms: new Float32Array([size, 1 - intensity, 0, 0]), views: [src.nativeView, entry.view], target: out });
@@ -6811,7 +6825,6 @@ export class WebGPUDevice implements RenderDevice {
       }
     };
     assertTransaction();
-    this.reclaimWebGPUPostUniformBuffers();
     this.flushNativeRenderTargetClear(initial);
     let current = initial;
     let mask: Extract<NativePostEffect, { kind: "mask" }> | undefined;
@@ -6894,6 +6907,51 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("Native effect float32 textures require float32-filterable", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED", { effect });
     }
     return this.getNativeSampledTexture(texture);
+  }
+
+  /**
+   * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+   * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+   * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+   * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+   * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+   */
+  private transientPostTarget(descriptor: RenderTargetDescriptor & { readonly label: string }): RenderTarget {
+    if (this.#postTransactionDepth === 0) return this.createRenderTarget(descriptor);
+    const key = `${descriptor.label}|${descriptor.width}x${descriptor.height}|${descriptor.format ?? ""}|${descriptor.depth === false ? 0 : 1}|${descriptor.sampleCount ?? 1}`;
+    let entry = this.#postTargetPool.get(key);
+    if (!entry) { entry = { targets: [], lastUsed: this.#postTransactionSerial }; this.#postTargetPool.set(key, entry); }
+    entry.lastUsed = this.#postTransactionSerial;
+    entry.targets = entry.targets.filter(target => !target.disposed && this.renderTargets.has(target as WebGPURenderTarget));
+    let target = entry.targets.find(candidate => !this.#postTargetsInUse.has(candidate));
+    if (!target) {
+      target = this.createRenderTarget(descriptor);
+      if (entry.targets.length < 2) { entry.targets.push(target); this.#postTargetPoolMembers.add(target); }
+    }
+    this.#postTargetsInUse.add(target);
+    return target;
+  }
+
+  /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+  private releaseTransientPostTarget(target: RenderTarget): void {
+    if (!this.#postTargetPoolMembers.has(target) || target.disposed) target.dispose();
+  }
+
+  private beginPostTargetTransaction(): void {
+    if (this.#postTransactionDepth++ === 0) this.#postTransactionSerial += 1;
+  }
+
+  private endPostTargetTransaction(): void {
+    if (--this.#postTransactionDepth > 0) return;
+    this.#postTargetsInUse.clear();
+    // A size or format change strands the old descriptor's targets; drop pools idle for a second or so of frames.
+    const failures: unknown[] = [];
+    for (const [key, entry] of this.#postTargetPool) {
+      if (this.#postTransactionSerial - entry.lastUsed < 120) continue;
+      this.#postTargetPool.delete(key);
+      for (const target of entry.targets) { try { if (!target.disposed) target.dispose(); } catch (error) { failures.push(error); } }
+    }
+    if (failures.length) throw new AggregateError(failures, "Failed to release idle WebGPU post targets");
   }
 
   private createNativePostTarget(descriptor: RenderTargetDescriptor): RenderTarget {
@@ -7279,8 +7337,15 @@ export class WebGPUDevice implements RenderDevice {
       pushErrorScope?(scope: string): void;
       popErrorScope?(): Promise<{ readonly message: string } | null>;
     };
-    const scopedErrors = Boolean(scopeDevice.pushErrorScope && scopeDevice.popErrorScope);
     const validationFailure = this.webgpuPostValidationFailure;
+    // A validation scope costs a GPU-process round trip per pass (~25 a frame with bloom and DoF). Scope a pass's first
+    // uses and any pass that has reported an error; later errors of a validated pass reach the device's uncaptured-error
+    // path, and a frame whose history a late error must invalidate runs inside one chain-wide scope
+    // (presentLdrPostprocessTransaction).
+    const scopeKey = `${args.label}:${args.entryPoint}:${args.views.length}`;
+    const scopeUses = this.#webgpuPostScopeUses.get(scopeKey) ?? 0;
+    const scopedErrors = Boolean(scopeDevice.pushErrorScope && scopeDevice.popErrorScope) && scopeUses < WEBGPU_POST_SCOPED_USES;
+    if (scopeUses < WEBGPU_POST_SCOPED_USES) this.#webgpuPostScopeUses.set(scopeKey, scopeUses + 1);
     if (scopedErrors) scopeDevice.pushErrorScope?.("validation");
     try {
       const format = target ? webgpuTextureFormat(target.colorTexture.format) : this.presentationFormat;
@@ -7313,10 +7378,12 @@ export class WebGPUDevice implements RenderDevice {
           minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge"
         });
       }
-      // The exposure chain submits immediately after each write. Reuse its
-      // other post uniforms as well, including on devices without fences.
-      const cacheUniform = Boolean(args.exposureBindings || args.reuseUniforms || this.webgpuPostValidationFailure);
-      let uniformBuffer = cacheUniform ? this.webgpuExposureUniformBuffers.get(args.uniforms.byteLength) : undefined;
+      // Every fullscreen pass submits its encoder immediately after writing its uniforms, so a later pass's
+      // queue.writeBuffer into the same buffer is ordered after the earlier submission: one buffer per pass label and size
+      // (the exposure chain shares one per size) serves every frame, with no per-pass allocation or fenced retirement
+      // (including on devices without fences).
+      const uniformKey = args.exposureBindings || args.reuseUniforms ? args.uniforms.byteLength : `${args.label}:${args.uniforms.byteLength}`;
+      let uniformBuffer = this.webgpuExposureUniformBuffers.get(uniformKey);
       if (!uniformBuffer) {
         const created = this.device.createBuffer({ label: `${args.label}-uniforms`, size: args.uniforms.byteLength, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
         // Even one-shot uniforms can still be awaiting the GPU when a loss
@@ -7324,85 +7391,61 @@ export class WebGPUDevice implements RenderDevice {
         try { this.registerNativeCleanup(created, []); }
         catch (error) { this.retireUnregisteredNative(created); throw error; }
         uniformBuffer = created;
-        if (cacheUniform) this.webgpuExposureUniformBuffers.set(args.uniforms.byteLength, created);
+        this.webgpuExposureUniformBuffers.set(uniformKey, created);
       }
-      let submitted = false;
-      try {
-        this.device.queue.writeBuffer(uniformBuffer, 0, args.uniforms);
-        const layout = pipeline.getBindGroupLayout?.(0);
-        if (!layout) throw new RenderDeviceError("WebGPU post pipeline has no bind-group layout", "NATIVE_POST_UNSUPPORTED", { label: args.label });
-        const group = this.device.createBindGroup({ label: `${args.label}-bind`, layout,
-          entries: loadBindings
-            ? [{ binding: 0, resource: { buffer: uniformBuffer } }, ...args.views.map((view, index) => ({ binding: index + 2, resource: view }))]
-            : args.nativeEffectBindings
-              ? [...args.views.map((view, index) => ({ binding: index, resource: view })),
-                { binding: 3, resource: this.webgpuPostLinearSampler }, { binding: 4, resource: { buffer: uniformBuffer } }]
-              : [{ binding: 0, resource: { buffer: uniformBuffer } }, { binding: 1, resource: this.webgpuPostLinearSampler },
-                ...args.views.map((view, index) => ({ binding: 2 + index, resource: view }))]
-        });
-        const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
-        const pass = encoder.beginRenderPass({ label: `${args.label}-pass`, colorAttachments: [{ view: targetView,
-          ...(args.targetViewOverride === undefined ? nativeColorSlice(target) : {}), loadOp: "load", storeOp: "store" }] });
-        pass.setPipeline(pipeline);
-        pass.setBindGroup?.(0, group);
-        pass.draw(3, 1, 0);
-        pass.end();
-        const accesses = cacheUniform
-          ? [...(args.accesses ?? []), { resource: uniformBuffer, mode: "read" as const }]
-          : args.accesses;
-        const finished = encoder.finish();
-        args.beforeSubmit?.();
-        this.submitMrtAware([finished], accesses ?? [], args.protectedSubmission === true);
-        submitted = true;
-        if (target) target.nativeNeedsClear = false;
-        this.nativeRenderPasses += 1;
-        if (!cacheUniform) this.webgpuPostRetiredUniformBuffers.push(uniformBuffer);
-      } catch (error) {
-        if (!submitted && !cacheUniform) {
-          try { this.retireWebGPUPostUniform(uniformBuffer); } catch {
-            // Retain the registered buffer for retry without replacing the submission error.
-            if (!this.webgpuPostRetiredUniformBuffers.includes(uniformBuffer)) this.webgpuPostRetiredUniformBuffers.push(uniformBuffer);
-          }
-        }
-        throw error;
-      }
+      this.device.queue.writeBuffer(uniformBuffer, 0, args.uniforms);
+      if (!pipeline.getBindGroupLayout) throw new RenderDeviceError("WebGPU post pipeline has no bind-group layout", "NATIVE_POST_UNSUPPORTED", { label: args.label });
+      const layout = this.pipelineGroupLayout(pipeline, 0);
+      if (!layout) throw new RenderDeviceError("WebGPU post pipeline has no bind-group layout", "NATIVE_POST_UNSUPPORTED", { label: args.label });
+      // Persistent post targets keep their views, so a steady chain reuses its groups. The exposure chain ping-pongs
+      // its history every frame and keeps creating them.
+      const groupDescriptor: WebGPUBindGroupDescriptorLike = { label: `${args.label}-bind`, layout,
+        entries: loadBindings
+          ? [{ binding: 0, resource: { buffer: uniformBuffer } }, ...args.views.map((view, index) => ({ binding: index + 2, resource: view }))]
+          : args.nativeEffectBindings
+            ? [...args.views.map((view, index) => ({ binding: index, resource: view })),
+              { binding: 3, resource: this.webgpuPostLinearSampler }, { binding: 4, resource: { buffer: uniformBuffer } }]
+            : [{ binding: 0, resource: { buffer: uniformBuffer } }, { binding: 1, resource: this.webgpuPostLinearSampler },
+              ...args.views.map((view, index) => ({ binding: 2 + index, resource: view }))]
+      };
+      const group = args.exposureBindings ? this.device.createBindGroup(groupDescriptor) : this.cachedBindGroup(groupDescriptor);
+      const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
+      const pass = encoder.beginRenderPass({ label: `${args.label}-pass`, colorAttachments: [{ view: targetView,
+        ...(args.targetViewOverride === undefined ? nativeColorSlice(target) : {}), loadOp: "load", storeOp: "store" }] });
+      pass.setPipeline(pipeline);
+      pass.setBindGroup?.(0, group);
+      pass.draw(3, 1, 0);
+      pass.end();
+      const accesses = [...(args.accesses ?? []), { resource: uniformBuffer, mode: "read" as const }];
+      const finished = encoder.finish();
+      args.beforeSubmit?.();
+      this.submitMrtAware([finished], accesses, args.protectedSubmission === true);
+      if (target) target.nativeNeedsClear = false;
+      this.nativeRenderPasses += 1;
     } finally {
-      if (scopedErrors && scopeDevice.popErrorScope) {
-        const report = (message: string): void => {
-          const detail = `[${args.label}] ${message}`;
-          const count = this.webgpuPostErrors.get(detail);
-          if (count !== undefined) this.webgpuPostErrors.set(detail, count + 1);
-          else if (this.webgpuPostErrors.size < 64) this.webgpuPostErrors.set(detail, 1);
-          else this.webgpuPostOtherErrors += 1;
-          try { validationFailure?.(); } catch { /* Keep the validation error observable. */ }
-        };
-        try {
-          const pending = scopeDevice.popErrorScope().then(info => {
-            if (info?.message) report(info.message);
-          }, error => report(`Validation scope failed: ${error instanceof Error ? error.message : String(error)}`));
-          this.webgpuPostErrorScopePending.add(pending);
-          void pending.finally(() => this.webgpuPostErrorScopePending.delete(pending));
-        } catch (error) { report(`Validation scope failed: ${error instanceof Error ? error.message : String(error)}`); }
-      }
+      if (scopedErrors) this.popWebGPUPostScope(args.label, scopeKey, validationFailure);
     }
   }
 
-  private retireWebGPUPostUniform(buffer: WebGPUBufferLike): void {
-    this.webgpuPostUniformRetirementsInFlight.add(buffer);
-    try { this.retireNative(buffer); } finally { this.webgpuPostUniformRetirementsInFlight.delete(buffer); }
-  }
-
-  private reclaimWebGPUPostUniformBuffers(): void {
-    const buffers = this.webgpuPostRetiredUniformBuffers;
-    this.webgpuPostRetiredUniformBuffers = [];
-    const failures: unknown[] = [];
-    for (const buffer of buffers) {
-      try { this.retireWebGPUPostUniform(buffer); } catch (error) {
-        if (!this.webgpuPostRetiredUniformBuffers.includes(buffer)) this.webgpuPostRetiredUniformBuffers.push(buffer);
-        failures.push(error);
-      }
-    }
-    if (failures.length) throw new AggregateError(failures, "Failed to retire WebGPU post uniforms");
+  /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+  private popWebGPUPostScope(label: string, scopeKey: string | undefined, validationFailure: (() => void) | null | undefined): void {
+    const scopeDevice = this.device as unknown as { popErrorScope?(): Promise<{ readonly message: string } | null> };
+    const report = (message: string): void => {
+      if (scopeKey !== undefined) this.#webgpuPostScopeUses.set(scopeKey, Number.NEGATIVE_INFINITY);
+      const detail = `[${label}] ${message}`;
+      const count = this.webgpuPostErrors.get(detail);
+      if (count !== undefined) this.webgpuPostErrors.set(detail, count + 1);
+      else if (this.webgpuPostErrors.size < 64) this.webgpuPostErrors.set(detail, 1);
+      else this.webgpuPostOtherErrors += 1;
+      try { validationFailure?.(); } catch { /* Keep the validation error observable. */ }
+    };
+    try {
+      const pending = scopeDevice.popErrorScope!().then(info => {
+        if (info?.message) report(info.message);
+      }, error => report(`Validation scope failed: ${error instanceof Error ? error.message : String(error)}`));
+      this.webgpuPostErrorScopePending.add(pending);
+      void pending.finally(() => this.webgpuPostErrorScopePending.delete(pending));
+    } catch (error) { report(`Validation scope failed: ${error instanceof Error ? error.message : String(error)}`); }
   }
 
   private releaseWebGPUAutoExposure(): void {
@@ -7516,7 +7559,6 @@ export class WebGPUDevice implements RenderDevice {
       attempt(() => this.flushNativeForwardBundleRetirements());
       attempt(() => this.releaseWebGPUAutoExposure());
       attempt(() => this.releaseNativeEffectHistory());
-      attempt(() => this.reclaimWebGPUPostUniformBuffers());
       for (const buffer of [...this.buffers]) {
         // The outer disposer still owns its callback and will restore the
         // buffer to this set if it fails. Avoid reentering wrapper side effects.
@@ -7709,7 +7751,6 @@ export class WebGPUDevice implements RenderDevice {
       const failures: unknown[] = [];
       const attempt = (action: () => void): void => { try { action(); } catch (error) { failures.push(error); } };
       attempt(() => this.releaseWebGPUAutoExposure());
-      attempt(() => this.reclaimWebGPUPostUniformBuffers());
       // Detach budget identities before invalidation destroys native handles,
       // so each destruction callback can debit the in-flight reservation.
       for (const texture of [...this.nativeSampledTextures.keys()]) attempt(() => this.releaseNativeSampledTexture(texture));
@@ -7742,7 +7783,6 @@ export class WebGPUDevice implements RenderDevice {
       const failures: unknown[] = [];
       const attempt = (action: () => void): void => { try { action(); } catch (failure) { failures.push(failure); } };
       attempt(() => this.releaseWebGPUAutoExposure());
-      attempt(() => this.reclaimWebGPUPostUniformBuffers());
       for (const texture of [...this.nativeSampledTextures.keys()]) attempt(() => this.releaseNativeSampledTexture(texture));
       attempt(() => this.detachNativeStreamingTextures());
       this.vertexConversions.clear();

@@ -117,6 +117,8 @@ export interface ThreeBridgeFactoryResult {
   readonly environment?: { readonly kind: "room"; readonly intensity?: number } | null;
   /** Post-processing passes (EffectComposer passes or names); always reported, never emitted. */
   readonly post?: readonly unknown[];
+  /** Paired three.js page only: advance the recipe's own clock (shader time uniforms) to `t` seconds. Ignored headless. */
+  readonly update?: (t: number) => void;
 }
 
 export type ThreeBridgeFactory = (context: ThreeBridgeFactoryContext) => ThreeBridgeFactoryResult | Promise<ThreeBridgeFactoryResult>;
@@ -163,6 +165,8 @@ export interface BridgeSceneData {
   readonly hiddenNodeNames: readonly string[];
   readonly materials: readonly string[];
   readonly clips: readonly string[];
+  /** ShaderMaterials carried as `material.custom` on the placeholder slot of the same name. */
+  readonly customMaterials: readonly import("./shader.js").BridgeCustomMaterial[];
   readonly lights: readonly BridgeLight[];
   readonly camera?: BridgeCamera;
   readonly background?: string;

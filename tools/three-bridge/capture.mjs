@@ -5,7 +5,12 @@ import { spawn } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 const [base, out, port, ...only] = process.argv.slice(2);
-const recipes = only.length ? only : ["tree-grove", "city-block", "stylized-car"];
+const recipes = only.length ? only : ["tree-grove", "city-block", "stylized-car", "windmill", "shader-kiosk"];
+// PAIR_TIME=1: capture the Aura3D side first, read the clock it froze at (window.__BRIDGE_TIME__), and pose the
+// three.js original at that time (?t=), so animated pairs compare the same instant. SUFFIX names a capture set.
+const pairTime = process.env.PAIR_TIME === "1";
+const suffix = process.env.SUFFIX ? `.${process.env.SUFFIX}` : "";
+const query = process.env.QUERY ? `&${process.env.QUERY}` : "";
 const sides = (process.env.SIDES ?? "three,aura").split(",");
 mkdirSync(out, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -42,20 +47,25 @@ async function shot(url, file) {
     if (!ready) errors.push("NOT READY: " + (await send("Runtime.evaluate", { expression: "JSON.stringify({canvases:document.querySelectorAll('canvas').length,html:document.body.innerHTML.slice(0,400),state:window.__BRIDGE_STATE__??null,diag:(()=>{try{const a=window.__app;const d=a.diagnostics?.();return JSON.stringify({renderer:d.renderer,renderPath:d.renderPath,frame:d.frame,frameTiming:d.frameTiming,quality:d.quality,resolution:d.resolution}).slice(0,4000)}catch(e){return String(e)}})()})", returnByValue: true })).result?.result?.value);
     const gpu = (await send("Runtime.evaluate", { expression: "(()=>{const g=document.createElement('canvas').getContext('webgl2');const e=g&&g.getExtension('WEBGL_debug_renderer_info');return e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):''})()", returnByValue: true })).result?.result?.value;
     if (process.env.DIAG_EXPR) errors.push("diag: " + (await send("Runtime.evaluate", { expression: process.env.DIAG_EXPR, returnByValue: true })).result?.result?.value);
+    const time = (await send("Runtime.evaluate", { expression: "window.__BRIDGE_TIME__ ?? null", returnByValue: true })).result?.result?.value;
+    const clips = (await send("Runtime.evaluate", { expression: "JSON.stringify(window.__BRIDGE_CLIPS__ ?? {})", returnByValue: true })).result?.result?.value;
+    const animation = (await send("Runtime.evaluate", { expression: "JSON.stringify(window.__BRIDGE_ANIMATION__ ?? null)", returnByValue: true })).result?.result?.value;
     const png = await send("Page.captureScreenshot", { format: "png" });
     writeFileSync(file, Buffer.from(png.result.data, "base64"));
     ws.close();
-    return { url, ready, gpu, errors, readyMs: Date.now() - t0 };
+    return { url, ready, gpu, errors, readyMs: Date.now() - t0, time, clips, animation };
   } finally { kill(); }
 }
 
 const log = [];
 for (const recipe of recipes) {
-  for (const side of sides) {
-    const r = await shot(`${base}/${side}.html?recipe=${recipe}`, `${out}/${recipe}.${side}.png`);
+  let t = 0, clips = "{}";
+  for (const side of pairTime ? ["aura", "three"] : sides) {
+    const r = await shot(`${base}/${side}.html?recipe=${recipe}${query}${side === "three" && pairTime ? `&t=${t}&clips=${encodeURIComponent(clips)}` : ""}`, `${out}/${recipe}${suffix}.${side}.png`);
+    if (side === "aura" && typeof r.time === "number") { t = r.time; clips = r.clips ?? "{}"; }
     log.push({ recipe, side, ...r });
     console.log(recipe, side, "ready", r.ready, `${r.readyMs}ms`, "gpu", String(r.gpu).slice(0, 50), "errors", r.errors.length, r.errors.slice(0, 3).join(" | ").slice(0, 400));
   }
 }
-writeFileSync(`${out}/capture.json`, JSON.stringify(log, null, 1));
+writeFileSync(`${out}/capture${suffix}.json`, JSON.stringify(log, null, 1));
 process.exit(0);

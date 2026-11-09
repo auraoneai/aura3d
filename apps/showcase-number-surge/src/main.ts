@@ -12,6 +12,7 @@ import { warmPrograms } from "@aura3d/engine/game";
 import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { CONFIG, IDLE, NumberSurgeSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
 import { ChaseCamera, SteadyCamera, createNumberSurgePresenter } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -278,13 +279,14 @@ async function boot(): Promise<void> {
   }
   loading.set(0.25);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look: LOOK });
-  const lab = labAppOptions(readLabFlags());
+  const lab = labAppOptions(readLabFlags(), { createWorker: createWorkerRendererWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "none", dither: false, ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await loading.track(app.ready(), 1);

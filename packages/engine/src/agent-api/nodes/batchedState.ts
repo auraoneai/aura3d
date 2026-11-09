@@ -21,6 +21,24 @@ export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCus
 
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
 
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+  readonly kind: "aura-worker-batched-state";
+  readonly id: string;
+  readonly capacity: number;
+  readonly instanced: boolean;
+  readonly mode: AuraBatchedMeshMode;
+  readonly maxVertices?: number;
+  readonly maxIndices?: number;
+  readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+  readonly matrices: Float32Array;
+  readonly colors: Float32Array;
+  readonly geometryIds: Int32Array;
+  readonly alive: Uint8Array;
+  readonly visible: Uint8Array;
+  readonly count: number;
+}
+
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -326,6 +344,88 @@ export class BatchedMeshState {
       }
     }
     if (this.instanced) this.liveCount = options.capacity;
+  }
+
+  /**
+   * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+   * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+   * buffers do not cross realms) or the state is disposed.
+   */
+  toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined {
+    if (this.isDisposed || this.geometryInputs.some((input) => input instanceof Geometry)) return undefined;
+    return {
+      kind: "aura-worker-batched-state", id: this.id, capacity: this.capacity, instanced: this.instanced, mode: this.mode,
+      ...(this.maxVertices !== undefined ? { maxVertices: this.maxVertices } : {}),
+      ...(this.maxIndices !== undefined ? { maxIndices: this.maxIndices } : {}),
+      geometries: this.geometryInputs.map((input) => (typeof input === "string" ? input : structuredClone(input))) as (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[],
+      matrices: this.matrices.slice(), colors: this.colors.slice(), geometryIds: this.geometryIds.slice(),
+      alive: this.alive.slice(), visible: this.visible.slice(), count: this.count
+    };
+  }
+
+  /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+  static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState {
+    const state = new BatchedMeshState({
+      id: snapshot.id, capacity: snapshot.capacity, instanced: snapshot.instanced, mode: snapshot.mode,
+      ...(snapshot.maxVertices !== undefined ? { maxVertices: snapshot.maxVertices } : {}),
+      ...(snapshot.maxIndices !== undefined ? { maxIndices: snapshot.maxIndices } : {})
+    });
+    try {
+      for (const input of snapshot.geometries) state.addGeometry(input);
+      if (!snapshot.instanced) {
+        // Slots are allocated lowest-free first: fill up to the last live slot, then free the gaps.
+        let last = -1;
+        for (let slot = 0; slot < snapshot.capacity; slot += 1) if (snapshot.alive[slot] === 1) last = slot;
+        for (let slot = 0; slot <= last; slot += 1) state.addInstance(snapshot.alive[slot] === 1 ? snapshot.geometryIds[slot]! : 0);
+        for (let slot = 0; slot <= last; slot += 1) if (snapshot.alive[slot] !== 1) state.deleteInstance(slot);
+      } else {
+        state.setCount(snapshot.count);
+      }
+      state.matrices.set(snapshot.matrices.subarray(0, state.matrices.length));
+      state.colors.set(snapshot.colors.subarray(0, state.colors.length));
+      for (let slot = 0; slot < snapshot.capacity; slot += 1) {
+        if (state.alive[slot] === 1 && snapshot.visible[slot] !== 1) state.setVisibleAt(slot, false);
+      }
+      state.version += 1;
+      state.boundsCache = null;
+    } catch (error) {
+      state.dispose();
+      throw error;
+    }
+    return state;
+  }
+
+  /**
+   * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+   * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+   */
+  syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void {
+    this.assertLive();
+    if (snapshot.capacity !== this.capacity || snapshot.instanced !== this.instanced || snapshot.geometries.length < this.geometryInputs.length) {
+      throw new RangeError(`batched state "${this.id}" changed shape; it cannot be synchronized in place.`);
+    }
+    for (let index = this.geometryInputs.length; index < snapshot.geometries.length; index += 1) this.addGeometry(snapshot.geometries[index]!);
+    if (!this.instanced) {
+      for (let slot = 0; slot < this.capacity; slot += 1) {
+        const live = snapshot.alive[slot] === 1;
+        if (live && this.alive[slot] !== 1) {
+          this.allocateQueryMemberId(slot);
+          this.alive[slot] = 1;
+          this.slotLifetimes[slot] = Object.freeze({});
+          this.liveCount += 1;
+        } else if (!live && this.alive[slot] === 1) {
+          this.deleteInstance(slot);
+        }
+        if (live) this.geometryIds[slot] = snapshot.geometryIds[slot]!;
+      }
+    } else if (snapshot.count !== this.instancedCount) {
+      this.setCount(snapshot.count);
+    }
+    this.matrices.set(snapshot.matrices.subarray(0, this.matrices.length));
+    this.colors.set(snapshot.colors.subarray(0, this.colors.length));
+    this.visible.set(snapshot.visible.subarray(0, this.visible.length));
+    this.version += 1;
+    this.boundsCache = null;
   }
 
   /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */

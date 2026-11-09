@@ -54,6 +54,8 @@ export interface WebGPUDepthOfFieldDraw {
  */
 export interface WebGPUDepthOfFieldHost {
   createTarget(descriptor: RenderTargetDescriptor): RenderTarget;
+  /** Return a target from `createTarget` the driver no longer needs; defaults to `target.dispose()`. A host may keep it for a later frame. */
+  releaseTarget?(target: RenderTarget): void;
   draw(pass: WebGPUDepthOfFieldDraw): void;
   deviceGeneration(): unknown;
   isDeviceLost(): boolean;
@@ -333,13 +335,18 @@ export class WebGPUDepthOfField {
     if (bytes === undefined) return;
     this.outputs.delete(target);
     this.outputBytes -= bytes;
-    if (!target.disposed) target.dispose();
+    if (!target.disposed) this.releaseTarget(target);
+  }
+
+  private releaseTarget(target: RenderTarget): void {
+    if (this.host.releaseTarget) this.host.releaseTarget(target);
+    else target.dispose();
   }
 
   private disposeTargets(targets: readonly RenderTarget[]): unknown[] {
     const errors: unknown[] = [];
     for (const target of targets) {
-      try { if (!target.disposed) target.dispose(); } catch (error) { errors.push(error); }
+      try { if (!target.disposed) this.releaseTarget(target); } catch (error) { errors.push(error); }
     }
     return errors;
   }

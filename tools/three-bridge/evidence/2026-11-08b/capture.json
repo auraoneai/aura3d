@@ -1,0 +1,167 @@
+[
+ {
+  "recipe": "windmill",
+  "side": "aura",
+  "url": "http://127.0.0.1:11131/aura.html?recipe=windmill&settle=90",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 2744,
+  "time": 1.6843739999999987,
+  "clips": "{\"rotor_spin\":2.1282039999761553,\"breeze\":1.7333039999999984}",
+  "animation": "{\"activeClip\":\"rotor_spin\",\"tracksApplied\":81,\"activeActions\":[{\"clip\":\"rotor_spin\",\"layer\":\"\",\"weight\":1,\"time\":2.1282039999761553},{\"clip\":\"breeze\",\"layer\":\"breeze\",\"weight\":1,\"time\":1.7333039999999984}],\"timeScale\":1}",
+  "set": "first-import"
+ },
+ {
+  "recipe": "windmill",
+  "side": "three",
+  "url": "http://127.0.0.1:11131/three.html?recipe=windmill&settle=90&t=1.6843739999999987&clips=%7B%22rotor_spin%22%3A2.1282039999761553%2C%22breeze%22%3A1.7333039999999984%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 1178,
+  "time": null,
+  "clips": "{}",
+  "animation": "null",
+  "set": "first-import"
+ },
+ {
+  "recipe": "shader-kiosk",
+  "side": "aura",
+  "url": "http://127.0.0.1:11131/aura.html?recipe=shader-kiosk&settle=90",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 3103,
+  "time": 1.6676699999999989,
+  "clips": "{}",
+  "animation": "null",
+  "set": "first-import"
+ },
+ {
+  "recipe": "shader-kiosk",
+  "side": "three",
+  "url": "http://127.0.0.1:11131/three.html?recipe=shader-kiosk&settle=90&t=1.6676699999999989&clips=%7B%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 1086,
+  "time": null,
+  "clips": "{}",
+  "animation": "null",
+  "set": "first-import"
+ },
+ {
+  "recipe": "city-block",
+  "side": "aura",
+  "url": "http://127.0.0.1:11131/aura.html?recipe=city-block&settle=90",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 3365,
+  "time": 2.050869999999999,
+  "clips": "{}",
+  "animation": "null",
+  "set": "first-import"
+ },
+ {
+  "recipe": "city-block",
+  "side": "three",
+  "url": "http://127.0.0.1:11131/three.html?recipe=city-block&settle=90&t=2.050869999999999&clips=%7B%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 1424,
+  "time": null,
+  "clips": "{}",
+  "animation": "null",
+  "set": "first-import"
+ },
+ {
+  "recipe": "windmill",
+  "side": "aura",
+  "url": "http://127.0.0.1:11131/aura.html?recipe=windmill&settle=90&params=%7B%22sail%22%3A%22%233c6fb0%22%2C%22roof%22%3A%22%232f4a3a%22%2C%22tower%22%3A%22%23d8d2c4%22%2C%22height%22%3A4.8%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 2632,
+  "time": 1.6508739999999977,
+  "clips": "{\"rotor_spin\":2.0650039999999974,\"breeze\":1.6665039999999978}",
+  "animation": "{\"activeClip\":\"rotor_spin\",\"tracksApplied\":81,\"activeActions\":[{\"clip\":\"rotor_spin\",\"layer\":\"\",\"weight\":1,\"time\":2.0650039999999974},{\"clip\":\"breeze\",\"layer\":\"breeze\",\"weight\":1,\"time\":1.6665039999999978}],\"timeScale\":1}",
+  "set": "regen"
+ },
+ {
+  "recipe": "windmill",
+  "side": "three",
+  "url": "http://127.0.0.1:11131/three.html?recipe=windmill&settle=90&params=%7B%22sail%22%3A%22%233c6fb0%22%2C%22roof%22%3A%22%232f4a3a%22%2C%22tower%22%3A%22%23d8d2c4%22%2C%22height%22%3A4.8%7D&t=1.6508739999999977&clips=%7B%22rotor_spin%22%3A2.0650039999999974%2C%22breeze%22%3A1.6665039999999978%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 779,
+  "time": null,
+  "clips": "{}",
+  "animation": "null",
+  "set": "regen"
+ },
+ {
+  "recipe": "windmill",
+  "side": "aura",
+  "url": "http://127.0.0.1:11131/aura.html?recipe=windmill&settle=200&params=%7B%22sail%22%3A%22%233c6fb0%22%2C%22roof%22%3A%22%232f4a3a%22%2C%22tower%22%3A%22%23d8d2c4%22%2C%22height%22%3A4.8%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 4580,
+  "time": 3.4842079999999966,
+  "clips": "{\"rotor_spin\":3.9796380000119136,\"breeze\":3.5498379999999963}",
+  "animation": "{\"activeClip\":\"rotor_spin\",\"tracksApplied\":81,\"activeActions\":[{\"clip\":\"rotor_spin\",\"layer\":\"\",\"weight\":1,\"time\":3.9796380000119136},{\"clip\":\"breeze\",\"layer\":\"breeze\",\"weight\":1,\"time\":3.5498379999999963}],\"timeScale\":1}",
+  "set": "regen-t2"
+ },
+ {
+  "recipe": "windmill",
+  "side": "three",
+  "url": "http://127.0.0.1:11131/three.html?recipe=windmill&settle=200&params=%7B%22sail%22%3A%22%233c6fb0%22%2C%22roof%22%3A%22%232f4a3a%22%2C%22tower%22%3A%22%23d8d2c4%22%2C%22height%22%3A4.8%7D&t=3.4842079999999966&clips=%7B%22rotor_spin%22%3A3.9796380000119136%2C%22breeze%22%3A3.5498379999999963%7D",
+  "ready": true,
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+  "errors": [
+   "warning: THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+   "http 404 http://127.0.0.1:11131/favicon.ico",
+   "log error: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "readyMs": 796,
+  "time": null,
+  "clips": "{}",
+  "animation": "null",
+  "set": "regen-t2"
+ }
+]

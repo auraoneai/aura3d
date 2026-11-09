@@ -108,6 +108,13 @@ export interface AuraAssetDefinition {
   readonly budget?: import("../../contracts/assets").AuraAssetBudget;
 }
 
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+  readonly position?: AuraVec3;
+  readonly rotation?: AuraVec3;
+  readonly scale?: number | AuraVec3;
+}
+
 export interface AuraAssetBoundsMetadata {
   readonly min?: readonly number[];
   readonly max?: readonly number[];
@@ -535,6 +542,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
   readonly physics?: AuraNodePhysicsSpec;
   /** Exact glTF node names to suppress when composing a typed model into a route. */
   readonly hiddenNodeNames?: readonly string[];
+  /**
+   * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+   * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+   * once at load, so an animation channel that drives the same property still wins while its clip plays.
+   */
+  readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
   /** C-15 (PR 0a, PRD 04): material override table. */
   readonly materialOverrides?: readonly import("../../contracts/materials").AuraModelMaterialOverride[];
   /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -931,6 +944,7 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly interaction?: AuraInteractionSpec;
   readonly physics?: AuraNodePhysicsSpec;
   readonly hiddenNodeNames?: readonly string[];
+  readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
   readonly materialOverrides?: readonly import("../../contracts/materials").AuraModelMaterialOverride[];
   readonly variant?: string;
   readonly runtime?: AuraRuntimeNodeSpec;

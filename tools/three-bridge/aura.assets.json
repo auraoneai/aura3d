@@ -13,10 +13,10 @@
         "status": "metadata-only"
       },
       "source": ".aura3d/three-bridge/city-block.glb",
-      "outputPath": "public/aura-assets/city-block.8f9f5c55.glb",
-      "url": "/aura-assets/city-block.8f9f5c55.glb",
-      "hash": "sha256-8f9f5c55e491f558d191139c8270ee8cd1d58d2f938f0dacf0f1a3035b59d8dd",
-      "sizeBytes": 77048,
+      "outputPath": "public/aura-assets/city-block.6844cde3.glb",
+      "url": "/aura-assets/city-block.6844cde3.glb",
+      "hash": "sha256-6844cde39fee9dc8a386cb46055936f29537967ace1c148c155275cf005c35f2",
+      "sizeBytes": 77236,
       "bounds": [
         20.8,
         7.367,
@@ -98,7 +98,8 @@
         "facade_3_2",
         "facade_3_2",
         "facade_3_2",
-        "lamp_post"
+        "lamp_post",
+        "neon_sign"
       ],
       "materialMetadata": [
         {
@@ -464,6 +465,13 @@
           "readable": true,
           "opacity": 1,
           "reasons": []
+        },
+        {
+          "name": "neon_sign",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
         }
       ],
       "animations": [],
@@ -513,7 +521,7 @@
       "hierarchy": {
         "nodeCount": 40,
         "meshCount": 27,
-        "materialCount": 52,
+        "materialCount": 53,
         "textureCount": 5,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -547,7 +555,7 @@
               "street": 1.6
             },
             "threeRevision": "185",
-            "generatorSha256": "b337373c300d1ceddd69ebb3aeb84bb36a8195cbb5d0fd55ea13a7e6ece39289"
+            "generatorSha256": "e548105d7ba087e4a62738a066579aaa00fb95179a000150eb5178dfdebe91bc"
           },
           "localMetadata": "src/three-bridge/city-block.bridge.json",
           "rightsEvidence": "recipes/city-block.mjs"
@@ -555,7 +563,7 @@
         "evidence": [
           "src/three-bridge/city-block.bridge.json"
         ],
-        "checkedAt": "2026-11-08T12:37:15.934Z"
+        "checkedAt": "2026-11-08T23:09:20.993Z"
       },
       "textures": [
         "image-0",
@@ -622,7 +630,215 @@
       ],
       "integrity": {
         "version": 1,
-        "digest": "sha256-8f9f5c55e491f558d191139c8270ee8cd1d58d2f938f0dacf0f1a3035b59d8dd"
+        "digest": "sha256-6844cde39fee9dc8a386cb46055936f29537967ace1c148c155275cf005c35f2"
+      }
+    },
+    {
+      "id": "shader-kiosk",
+      "type": "model",
+      "format": "glb",
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "source": ".aura3d/three-bridge/shader-kiosk.glb",
+      "outputPath": "public/aura-assets/shader-kiosk.33a5298b.glb",
+      "url": "/aura-assets/shader-kiosk.33a5298b.glb",
+      "hash": "sha256-33a5298bfc52088ef747bf2e7185587c77f7a3f1799236043621d638398fc837",
+      "sizeBytes": 111912,
+      "bounds": [
+        10,
+        5.2,
+        7
+      ],
+      "boundsMetadata": {
+        "min": [
+          -5,
+          -0.2,
+          -3.5
+        ],
+        "max": [
+          5,
+          5,
+          3.5
+        ],
+        "size": [
+          10,
+          5.2,
+          7
+        ],
+        "center": [
+          0,
+          2.4,
+          0
+        ],
+        "maxDimension": 10,
+        "grounded": false
+      },
+      "materials": [
+        "floor",
+        "backdrop_gradient",
+        "plinth",
+        "trim",
+        "orb_glow"
+      ],
+      "materialMetadata": [
+        {
+          "name": "floor",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "backdrop_gradient",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "plinth",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "trim",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "orb_glow",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 6,
+        "meshCount": 6,
+        "materialCount": 5,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "floor",
+          "backdrop",
+          "plinth",
+          "ring",
+          "orb",
+          "sign"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 6 nodes across 6 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": ".aura3d/three-bridge/shader-kiosk.glb",
+        "license": "LicenseRef-project-generated",
+        "author": "aura3d import-three",
+        "sourceFamily": "three-bridge",
+        "generation": {
+          "provider": "three-bridge",
+          "providerCli": "aura3d import-three",
+          "operation": "three-scene-factory",
+          "settings": {
+            "seed": 1,
+            "params": {
+              "glow": "#38d9ff",
+              "bands": 9,
+              "top": "#1b2440",
+              "bottom": "#4a2a5e"
+            },
+            "threeRevision": "185",
+            "generatorSha256": "e079d161a0ada65dd290542eafb26306b4a4fd704effe57516dd849a65fd0a8c"
+          },
+          "localMetadata": "src/three-bridge/shader-kiosk.bridge.json",
+          "rightsEvidence": "recipes/shader-kiosk.mjs"
+        },
+        "evidence": [
+          "src/three-bridge/shader-kiosk.bridge.json"
+        ],
+        "checkedAt": "2026-11-08T23:09:25.170Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "floor",
+        "backdrop",
+        "plinth",
+        "ring",
+        "orb",
+        "sign"
+      ],
+      "thumbnailUrl": "/aura-assets/shader-kiosk.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "procedural three.js recipe recipes/shader-kiosk.mjs (seed 1)",
+      "warnings": [
+        "no texture references detected",
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "integrity": {
+        "version": 1,
+        "digest": "sha256-33a5298bfc52088ef747bf2e7185587c77f7a3f1799236043621d638398fc837"
       }
     },
     {
@@ -834,7 +1050,7 @@
         "evidence": [
           "src/three-bridge/stylized-car.bridge.json"
         ],
-        "checkedAt": "2026-11-08T12:47:15.173Z"
+        "checkedAt": "2026-11-08T22:58:05.783Z"
       },
       "textures": [],
       "dependencies": [],
@@ -1069,7 +1285,7 @@
         "evidence": [
           "src/three-bridge/tree-grove.bridge.json"
         ],
-        "checkedAt": "2026-11-08T12:36:07.491Z"
+        "checkedAt": "2026-11-08T22:57:40.443Z"
       },
       "textures": [],
       "dependencies": [],
@@ -1173,6 +1389,299 @@
       "integrity": {
         "version": 1,
         "digest": "sha256-ee99a7195151195441917402c05278e3a6ce3477b50fd8b83ed64b1b6ff08217"
+      }
+    },
+    {
+      "id": "windmill",
+      "type": "model",
+      "format": "glb",
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "source": ".aura3d/three-bridge/windmill.glb",
+      "outputPath": "public/aura-assets/windmill.9cd94f64.glb",
+      "url": "/aura-assets/windmill.9cd94f64.glb",
+      "hash": "sha256-9cd94f64ab6199b6ff458cfdaa76740e9f8c030cdb2b5f9d94b7df5de5617bde",
+      "sizeBytes": 55956,
+      "bounds": [
+        18,
+        8.25,
+        18
+      ],
+      "boundsMetadata": {
+        "min": [
+          -9,
+          -0.2,
+          -9
+        ],
+        "max": [
+          9,
+          8.05,
+          9
+        ],
+        "size": [
+          18,
+          8.25,
+          18
+        ],
+        "center": [
+          0,
+          3.925,
+          0
+        ],
+        "maxDimension": 18,
+        "grounded": false
+      },
+      "materials": [
+        "grass",
+        "tower",
+        "roof",
+        "wood",
+        "metal",
+        "sail",
+        "flag"
+      ],
+      "materialMetadata": [
+        {
+          "name": "grass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tower",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "roof",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "wood",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "metal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sail",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "flag",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "rotor_spin",
+        "breeze"
+      ],
+      "animationMetadata": {
+        "clipCount": 2,
+        "clips": [
+          {
+            "index": 0,
+            "name": "rotor_spin",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "windmill__rotor"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 1
+          },
+          {
+            "index": 1,
+            "name": "breeze",
+            "channelCount": 2,
+            "samplerCount": 2,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "windmill__vane",
+              "flag"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 1
+          }
+        ],
+        "messages": [
+          "Detected 2 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 19,
+        "materialCount": 7,
+        "textureCount": 0,
+        "animationClipCount": 2,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "ground",
+          "windmill",
+          "pole",
+          "flag",
+          "barrel",
+          "crate"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 26 nodes across 6 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": ".aura3d/three-bridge/windmill.glb",
+        "license": "LicenseRef-project-generated",
+        "author": "aura3d import-three",
+        "sourceFamily": "three-bridge",
+        "generation": {
+          "provider": "three-bridge",
+          "providerCli": "aura3d import-three",
+          "operation": "three-scene-factory",
+          "settings": {
+            "seed": 1,
+            "params": {
+              "sail": "#3c6fb0",
+              "tower": "#d8d2c4",
+              "roof": "#2f4a3a",
+              "height": 4.8,
+              "rpm": 15
+            },
+            "threeRevision": "185",
+            "generatorSha256": "58ef4470d79fa1a8d067bd43a10da48735b362c8977749f38c870958102f4374"
+          },
+          "localMetadata": "src/three-bridge/windmill.bridge.json",
+          "rightsEvidence": "recipes/windmill.mjs"
+        },
+        "evidence": [
+          "src/three-bridge/windmill.bridge.json"
+        ],
+        "checkedAt": "2026-11-08T23:11:58.267Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "ground",
+        "windmill",
+        "windmill__tower",
+        "windmill__cap",
+        "windmill__door",
+        "windmill__rotor",
+        "windmill__rotor__hub",
+        "windmill__rotor__blade_0",
+        "windmill__rotor__blade_0__arm",
+        "windmill__rotor__blade_0__cloth",
+        "windmill__rotor__blade_1",
+        "windmill__rotor__blade_1__arm",
+        "windmill__rotor__blade_1__cloth",
+        "windmill__rotor__blade_2",
+        "windmill__rotor__blade_2__arm",
+        "windmill__rotor__blade_2__cloth",
+        "windmill__rotor__blade_3",
+        "windmill__rotor__blade_3__arm",
+        "windmill__rotor__blade_3__cloth",
+        "windmill__vane",
+        "windmill__vane__rod",
+        "windmill__vane__tail",
+        "pole",
+        "flag",
+        "barrel",
+        "crate"
+      ],
+      "thumbnailUrl": "/aura-assets/windmill.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "procedural three.js recipe recipes/windmill.mjs (seed 1)",
+      "animationClips": [
+        {
+          "name": "rotor_spin",
+          "duration": 4,
+          "channelCount": 1
+        },
+        {
+          "name": "breeze",
+          "duration": 4,
+          "channelCount": 2
+        }
+      ],
+      "warnings": [
+        "no texture references detected",
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "integrity": {
+        "version": 1,
+        "digest": "sha256-9cd94f64ab6199b6ff458cfdaa76740e9f8c030cdb2b5f9d94b7df5de5617bde"
       }
     }
   ]

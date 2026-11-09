@@ -1196,8 +1196,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   /**
    * Settles when the in-flight WebGL mount finishes, successfully or not. Backs `app.ready()`.
    *
-   * Resolved rather than pending when no mount is in flight, so `await app.ready()` is safe to call at
-   * any time and on any scene.
+   * Resolved rather than pending when no mount is in flight, so `app.ready()` is safe to call at any
+   * time and on any scene (await it inside a function or chain `.then`; never at module top level).
    */
   let productionMountSettled: Promise<void> = Promise.resolve();
   /** Cancel asset and decoder work belonging to the superseded mount. */

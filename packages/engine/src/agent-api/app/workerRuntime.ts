@@ -4,14 +4,17 @@ import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSiz
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
 import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
-import { applyWorkerNodePatch } from "./workerPatch.js";
+import { applyWorkerNodePatch, type AuraWorkerAppCall } from "./workerPatch.js";
 import { bindWorkerAtmosphere, type WorkerAtmosphereBinding } from "./workerAtmosphere.js";
+import { createWorkerEffectsReplayer } from "./workerEffects.js";
 import type { AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import { Texture, type TexturePixelData } from "@aura3d/rendering";
 import { TextureHandle, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";
+import type { AuraAssetErrorEvent, AuraAssetProgressEvent } from "../nodes/types/runtime.js";
+import { BatchedMeshState, batchedStateFor, registerBatchedState, type BatchedMeshStateSnapshot } from "../nodes/batchedState.js";
 
 import { AuraWorkerError } from "./workerError.js";
 
@@ -48,6 +51,10 @@ export interface AuraWorkerRendererOptions {
   readonly onCaptureFrame?: (frame: AuraWorkerFrameResult) => void;
   readonly onError?: (error: AuraWorkerError) => void;
   readonly onInput?: (input: AuraWorkerInput) => void;
+  /** 5.4: asset progress of the worker renderer (the `createAuraApp` `onAssetProgress` event, sanitized in the worker). */
+  readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
+  /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
+  readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
   /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
   readonly disposeTimeoutMs?: number;
 }
@@ -137,11 +144,13 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
   // Count snapshots until their original worker operation settles, not merely
   // until a caller aborts: queued worker messages can still retain the bytes.
   let inFlightTextureBytes = 0;
+  // Raised to two copies of the initial scene once it is measured, so a texture-heavy app can replace its scene.
+  let inFlightLimit = Number.POSITIVE_INFINITY;
   const makeTextureReservation = () => {
     let held = 0;
     return {
       reserve(size: number): void {
-        if (inFlightTextureBytes + size > MAX_IN_FLIGHT_WORKER_TEXTURE_BYTES) {
+        if (inFlightTextureBytes + size > inFlightLimit) {
           throw new AuraWorkerError("Worker texture snapshot budget is full; wait for an in-flight scene request to finish.", "worker-texture-budget", "recoverable");
         }
         held += size;
@@ -157,6 +166,7 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
   // non-destructive dry run; the original objects are sent in the real post.
   try {
     initialScene = snapshotTransferableScene(options.scene, options.sceneTransfer ?? [], initialReservation.reserve);
+    inFlightLimit = Math.max(MAX_IN_FLIGHT_WORKER_TEXTURE_BYTES, 2 * inFlightTextureBytes);
     if (typeof structuredClone === "function") structuredClone(maskTransferables({ scene: initialScene, renderer: options.renderer, assets: assetOptions }, options.sceneTransfer ?? []));
   } catch (error) { initialReservation.release(); throw error; }
 
@@ -286,6 +296,14 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
     }
     if (message.type === "presented") { if (!disposing) options.onFrame?.(message.result); return; }
     if (message.type === "capture-presented") { if (!disposing) options.onCaptureFrame?.(message.result); return; }
+    if (message.type === "asset-progress") { if (!disposing) { try { options.onAssetProgress?.(message.event); } catch { /* listener failure never fails the renderer */ } } return; }
+    if (message.type === "asset-error") {
+      if (!disposing) {
+        const { url, assetId, message: text } = message.event;
+        try { options.onAssetError?.({ ...(url !== undefined ? { url } : {}), ...(assetId !== undefined ? { assetId } : {}), error: new Error(text), message: text }); } catch { /* listener failure never fails the renderer */ }
+      }
+      return;
+    }
     if (message.type !== "result" && message.type !== "error") return;
     if (message.backend !== undefined && (message.type === "result" || message.severity === "recoverable")) activeBackend = message.backend;
     outstanding.delete(message.id);
@@ -367,9 +385,12 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
       }
     });
   };
+  const rendererGlobals = collectWorkerRendererGlobals();
   const ready = send({ type: "init", canvas: offscreen, scene: initialScene, renderer: options.renderer, assets: assetOptions, size, autoStart: options.autoStart !== false,
     ...(options.flags ? { flags: options.flags } : {}),
-    ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
+    ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}),
+    ...(options.onAssetProgress || options.onAssetError ? { assetEvents: true } : {}),
+    ...(rendererGlobals ? { globals: rendererGlobals } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
     if (options.prepareLocalScene && (response.syncLocalScenes !== true || response.sceneRevision !== 1)) {
       throw new AuraWorkerError("Worker does not support synchronized local scene replacement.", "scene-sync-unsupported");
     }
@@ -533,6 +554,70 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
   let runRequested = false;
   let reportedDeviceLost = false;
   let syncLocalScenes = false;
+  let assetEvents = false;
+  // 5.4: textured-material status, read every TEXTURED_SAMPLE_FRAMES presented frames (the diagnostics report is not
+  // cheap) and forwarded only when it changed. A new renderer starts over.
+  let texturedRenderer: object | undefined;
+  let texturedSignature: string | undefined;
+  let texturedFrames = 0;
+  const sampleTexturedMaterials = (current: object): AuraWorkerFrameResult["texturedMaterials"] => {
+    if (current !== texturedRenderer) { texturedRenderer = current; texturedSignature = undefined; texturedFrames = 0; }
+    if (texturedFrames++ % TEXTURED_SAMPLE_FRAMES !== 0) return undefined;
+    let rows: AuraWorkerFrameResult["texturedMaterials"];
+    try { rows = (current as { diagnostics?: { runtime?: { texturedMaterials?: AuraWorkerFrameResult["texturedMaterials"] } } }).diagnostics?.runtime?.texturedMaterials; }
+    catch { return undefined; }
+    if (!Array.isArray(rows)) return undefined;
+    const signature = rows.map((row) => `${row.nodeName}\u0000${row.levelName}\u0000${row.status}\u0000${row.pixelBacked}`).join("\u0001");
+    if (signature === texturedSignature) return undefined;
+    texturedSignature = signature;
+    return rows.map(({ pendingMs: _pending, ...row }) => ({ ...row, slots: [...row.slots], warnings: [...row.warnings] }));
+  };
+  // 5.4 app calls (setOutput, post.setEffect/setEffectEnabled): merged state, re-applied after a remount.
+  let appOutput: Record<string, unknown> | undefined;
+  let postBridge: typeof import("../postBridge.js") | undefined;
+  let outputBridge: typeof import("../../lanes/prd01/outputSurface.js") | undefined;
+  let flagsModule: typeof import("../../contracts/flags.js") | undefined;
+  let postSurface: import("../../contracts/post.js").AuraPostSurface | undefined;
+  const postPassReleases = new Map<number, () => void>();
+  // 5.4 `app.atmosphere` calls: the live worker atmospheres (one per mounted renderer) and the merged state that a
+  // new mount replays without a transition (a remount rebuilds the atmosphere).
+  const liveAtmospheres = new Set<WorkerAtmosphereBinding>();
+  const effectsReplayer = createWorkerEffectsReplayer();
+  // 5.4 `app.lighting`: one PRD-02 lighting runtime per mounted renderer (keyed by its runtime node registry, as the
+  // main-thread extension is keyed by app.nodes); the environment state is replayed on a new mount.
+  type WorkerLighting = { setEnvironmentIntensity(v: number): void; setEnvironmentRotation(r: number): void; setEnvironment(t: unknown, o?: unknown): void; updateProbe(n: string): Promise<void>; rebakeIrradiance(n?: string): Promise<void>; dispose(): void };
+  const liveLightings = new Set<WorkerLighting>();
+  const lightingState: { intensity?: number; rotation?: number; environment?: readonly unknown[] } = {};
+  const replayLighting = (lighting: WorkerLighting): void => {
+    if (lightingState.environment) lighting.setEnvironment(lightingState.environment[0], { ...(lightingState.environment[1] as object | undefined), crossfadeSeconds: 0 });
+    if (lightingState.intensity !== undefined) lighting.setEnvironmentIntensity(lightingState.intensity);
+    if (lightingState.rotation !== undefined) lighting.setEnvironmentRotation(lightingState.rotation);
+  };
+  const applyLightingCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (call === "lighting.setEnvironmentIntensity") lightingState.intensity = args[0] as number;
+    else if (call === "lighting.setEnvironmentRotation") lightingState.rotation = args[0] as number;
+    else if (call === "lighting.setEnvironment") {
+      lightingState.environment = [...args];
+      // A swap with its own intensity / yaw supersedes the earlier separate calls.
+      const opts = args[1] as { intensity?: number; rotationDeg?: number } | undefined;
+      if (opts?.intensity !== undefined) lightingState.intensity = opts.intensity;
+      if (opts?.rotationDeg !== undefined) lightingState.rotation = (opts.rotationDeg * Math.PI) / 180;
+    }
+    const method = call.slice("lighting.".length) as "setEnvironmentIntensity" | "setEnvironmentRotation" | "setEnvironment" | "updateProbe" | "rebakeIrradiance";
+    let failure: unknown;
+    for (const lighting of liveLightings) {
+      try { void (lighting[method] as (...values: unknown[]) => unknown)(...args); } catch (error) { failure ??= error; }
+    }
+    if (failure !== undefined) throw failure;
+  };
+  const detachEffects = new Map<WorkerAtmosphereBinding, () => void>();
+  const atmosphereState: { fog?: readonly unknown[]; sky?: Record<string, unknown>; wetness?: number } = {};
+  const replayAtmosphere = (binding: WorkerAtmosphereBinding): void => {
+    const controls = binding.controls;
+    if (atmosphereState.fog) controls.setFog(atmosphereState.fog[0] as Parameters<typeof controls.setFog>[0], { ...(atmosphereState.fog[1] as object | undefined), transitionSeconds: 0 } as Parameters<typeof controls.setFog>[1]);
+    if (atmosphereState.sky) controls.setSky(atmosphereState.sky as Parameters<typeof controls.setSky>[0], { transitionSeconds: 0 });
+    if (atmosphereState.wetness !== undefined) controls.setWetness(atmosphereState.wetness, { transitionSeconds: 0 });
+  };
   let sceneRevision = 0;
   // Failed proposals must not reuse an ID: a late acknowledgement may still
   // be in flight when the next frame proposes another scene.
@@ -630,13 +715,29 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     const failureStore = shaderFailures.createShaderFailureStore();
     shaderFailures.bindShaderFailureStore(owner, failureStore);
     shaderFailures.setShaderFailureMode(configuration?.shaderFailures, failureStore);
+    // 5.4: the host app's onAssetProgress/onAssetError. Model and texture requests find the channel through the runtime
+    // owner (as on the main thread); events are sanitized by the scope before they are posted.
+    const assetEventChannel = assetEvents ? await import("../assetEvents.js") : undefined;
+    if (assetEventChannel) {
+      assetEventChannel.bindAppAssetEventScope(owner, assetEventChannel.createAppAssetEventScope({
+        onAssetProgress: (event) => send({ type: "asset-progress", id: 0, event: { ...event } }),
+        onAssetError: (event) => send({ type: "asset-error", id: 0, event: {
+          ...(event.url !== undefined ? { url: event.url } : {}), ...(event.assetId !== undefined ? { assetId: event.assetId } : {}),
+          message: event.message ?? "Asset load failed."
+        } })
+      }));
+    }
     let cleaned = false;
     // PRD-07: the main-thread app's atmosphere extension (live fog/sky state the compiler reads under A3D_QR_VFX_FOG).
     let atmosphere: WorkerAtmosphereBinding | null = null;
+    let lighting: WorkerLighting | null = null;
     const cleanup = (): void => {
       if (cleaned) return;
       cleaned = true;
+      if (lighting) { liveLightings.delete(lighting); try { lighting.dispose(); } catch { /* lighting cleanup is best effort */ } }
+      if (atmosphere) { liveAtmospheres.delete(atmosphere); detachEffects.get(atmosphere)?.(); detachEffects.delete(atmosphere); }
       try { atmosphere?.dispose(); } catch { /* atmosphere cleanup is best effort */ }
+      assetEventChannel?.unbindAppAssetEventScope(owner);
       actorFlags.clearTypedGLBActorQrFlags(owner);
       releaseColor();
       actorAnimation.disposeActorAnimationContext(animation);
@@ -648,6 +749,11 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       const { recordAuthoredPostContext } = await import("../postBridge.js");
       recordAuthoredPostContext({ flags, options: { renderer: configuration } }, { canvas: target } as unknown as Parameters<typeof recordAuthoredPostContext>[1]);
       atmosphere = await bindWorkerAtmosphere(target, owner, next, runtimeNodes, flags);
+      if (atmosphere) {
+        liveAtmospheres.add(atmosphere);
+        replayAtmosphere(atmosphere);
+        if (atmosphere.effects) detachEffects.set(atmosphere, effectsReplayer.attach(atmosphere.effects));
+      }
       const mounted = await createProductionRuntimeSceneRenderer(target, next, configuration, runtimeNodes, flags, undefined, undefined, {
         runtimeOwner: owner,
         ownRenderInputCache: true,
@@ -672,6 +778,13 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
         try { dispose(); } finally { cleanup(); }
       };
       if (signal.aborted) { mounted.dispose(); await mounted.whenDisposed?.(); throw cancelled(); }
+      // PRD-02 `app.lighting` (real under A3D_QR_LIGHTING, as the main-thread extension).
+      if (flags.on("A3D_QR_LIGHTING")) {
+        const { Prd02LightingRuntime } = await import("../../lanes/prd02.js");
+        lighting = new Prd02LightingRuntime(flags, runtimeNodes, { scene: next, nodes: runtimeNodes as unknown as { add(node: unknown): unknown } } as ConstructorParameters<typeof Prd02LightingRuntime>[2]) as unknown as WorkerLighting;
+        liveLightings.add(lighting);
+        replayLighting(lighting);
+      }
       workerRendererNodes.set(mounted, runtimeNodes);
       return mounted;
     } catch (error) {
@@ -679,10 +792,82 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       throw error;
     }
   });
+  // Loaded on the first app call only, so plain node patches and mounts never wait for them.
+  const loadAppBridges = async (): Promise<void> => {
+    if (!postBridge || !outputBridge || !flagsModule) [postBridge, outputBridge, flagsModule] = await Promise.all([import("../postBridge.js"), import("../../lanes/prd01/outputSurface.js"), import("../../contracts/flags.js")]);
+  };
+  const applyOutput = (): void => {
+    const live = (renderer as { auraRenderer?: { setOutput?: (output: unknown) => void; outputPathActive?: boolean } } | undefined)?.auraRenderer;
+    if (!appOutput || !outputBridge || !live?.setOutput || live.outputPathActive === false) return;
+    live.setOutput(outputBridge.toRendererOutput(appOutput));
+  };
+  const applyAtmosphereCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (call === "atmosphere.setFog") {
+      const spec = args[0];
+      if (spec !== null && (typeof spec !== "object" || Array.isArray(spec))) throw new Error("app.atmosphere.setFog() expects a fog spec or null.");
+      atmosphereState.fog = [...args];
+    } else if (call === "atmosphere.setSky") {
+      const spec = args[0];
+      if (!spec || typeof spec !== "object" || Array.isArray(spec)) throw new Error("app.atmosphere.setSky() expects a sky spec object.");
+      atmosphereState.sky = { ...atmosphereState.sky, ...(spec as Record<string, unknown>) };
+    } else {
+      if (typeof args[0] !== "number" || !Number.isFinite(args[0])) throw new Error("app.atmosphere.setWetness() expects a finite number.");
+      atmosphereState.wetness = args[0];
+    }
+    for (const binding of liveAtmospheres) {
+      const controls = binding.controls as unknown as Record<string, (...values: unknown[]) => void>;
+      controls[call.slice("atmosphere.".length)]!(...args);
+    }
+  };
+  const applyAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (!canvas) throw new AuraWorkerError("Initialize the worker before calling app members.", "not-initialized", "recoverable");
+    if (call.startsWith("atmosphere.")) { applyAtmosphereCall(call, args); return; }
+    if (call.startsWith("effects.")) { effectsReplayer.apply(call, args); return; }
+    if (call.startsWith("lighting.")) { applyLightingCall(call, args); return; }
+    if (!postBridge || !outputBridge || !flagsModule) throw new AuraWorkerError(`app.${call}() needs the worker's post and output modules.`, "not-initialized", "recoverable");
+    if (call === "setOutput") {
+      const patch = args[0];
+      if (!patch || typeof patch !== "object" || Array.isArray(patch)) throw new Error("app.setOutput() expects an output options object.");
+      appOutput = { ...appOutput, ...(patch as Record<string, unknown>) };
+      postBridge.updateAuthoredPostOutput({ canvas } as unknown as AuraApp, patch as Record<string, unknown>);
+      applyOutput();
+      return;
+    }
+    // One post surface per worker canvas (the main-thread app has one per app): its runtime overrides are the store the
+    // compiler reads for this canvas, and custom passes register under its scope. Same flags as the worker renderer.
+    if (!postSurface) {
+      const flags = flagsModule!.qrFlagsWithAnimationMixer(flagsModule!.resolveQrFlags({ ...(renderFlags?.qualityRebuild === undefined ? {} : { options: renderFlags.qualityRebuild }), ...(renderFlags?.url === undefined ? {} : { url: renderFlags.url }) }), renderFlags?.animationMixer);
+      postSurface = new postBridge.Prd03PostSurface(flags, canvas as unknown as ConstructorParameters<typeof postBridge.Prd03PostSurface>[1]);
+    }
+    switch (call) {
+      case "post.setEffect": postSurface.setEffect(args[0] as string, args[1] as Record<string, number | string | boolean | number[]>); break;
+      case "post.setEffectEnabled": postSurface.setEffectEnabled(args[0] as string, args[1] as boolean); break;
+      case "post.setQualityTier": postSurface.setQualityTier(args[0] as Parameters<NonNullable<typeof postSurface>["setQualityTier"]>[0]); break;
+      case "post.setPassUniform": postSurface.setPassUniform?.(args[0] as string, args[1] as string, args[2] as number | readonly number[]); break;
+      case "post.addPostPass": {
+        const token = args[0] as number;
+        postPassReleases.get(token)?.();
+        postPassReleases.set(token, postSurface.addPostPass(args[1] as Parameters<NonNullable<typeof postSurface>["addPostPass"]>[0]));
+        break;
+      }
+      case "post.removePostPass": {
+        const token = args[0] as number;
+        const release = postPassReleases.get(token);
+        postPassReleases.delete(token);
+        release?.();
+        break;
+      }
+    }
+  };
   type SceneCommit = { verify: () => void; commit: () => void };
   const mount = async (next: AuraSceneSnapshot, signal: AbortSignal, beforeCommit?: (value: AuraSceneSnapshot, backend: AuraBackend) => Promise<SceneCommit>): Promise<void> => {
     if (!canvas) throw new AuraWorkerError("Initialize the worker before setting a scene.", "not-initialized");
     validateScene(next);
+    if (hasWorkerBatchedStates(next)) {
+      // The batched handler, geometry resolver and node seeder register on import (the page loads them with the engine entry).
+      await import("../nodes/batched.js");
+      next = registerWorkerBatchedStates(next);
+    }
     const hydrated = rehydrateWorkerScene(next, sceneTextures);
     if (closing || signal.aborted) { for (const handle of hydrated.created) handle.dispose(); throw cancelled(); }
     const target = canvas;
@@ -691,6 +876,8 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       renderer = mounted;
       scene = value;
       try {
+        // A remounted renderer starts from the scene's output; replay the host's setOutput calls.
+        applyOutput();
         if (mounted.onDeviceLost) subscriptions.push(mounted.onDeviceLost(() => {
           if (closing || renderer !== mounted) return;
           scheduler.pause();
@@ -867,7 +1054,8 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       const drawCalls = renderer.renderAsync ? await renderer.renderAsync(frame.time) : renderer.render(frame.time);
       if (suspended()) return;
       if (renderer.deviceLost?.()) throw new AuraWorkerError("Renderer device is lost; wait for restoration.", "device-lost", "recoverable");
-      lastFrame = { backend: renderer.backend, drawCalls, width: canvas.width, height: canvas.height, time: frame.time, deltaSeconds: frame.deltaSeconds, source: frame.source };
+      const texturedMaterials = sampleTexturedMaterials(renderer);
+      lastFrame = { backend: renderer.backend, drawCalls, width: canvas.width, height: canvas.height, time: frame.time, deltaSeconds: frame.deltaSeconds, source: frame.source, ...(texturedMaterials ? { texturedMaterials } : {}) };
       if (frame.source === "automatic") send({ type: "presented", id: 0, result: lastFrame });
     }
   });
@@ -944,6 +1132,8 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           renderFlags = message.flags;
           canvas = message.canvas; rendererOptions = message.renderer; runRequested = message.autoStart;
           syncLocalScenes = message.syncLocalScenes === true;
+          assetEvents = message.assetEvents === true;
+          installWorkerRendererGlobals(message.globals);
           resizeOffscreenCanvas(canvas, message.size);
           await mount(message.scene, controller.signal);
           sceneRevision = sceneSequence = 1;
@@ -979,10 +1169,14 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
         case "patch":
           // Serialize with automatic frames so a batch never lands inside an
           // asynchronous submission; the next frame sees all of it.
+          if (Array.isArray(message.ops) && message.ops.some((op) => op && typeof op === "object" && "app" in op)) await loadAppBridges();
           await scheduler.runExclusive(() => {
             const current = renderer;
             const nodes = current ? workerRendererNodes.get(current) ?? (current as { runtimeNodes?: AuraRuntimeNodeRegistry }).runtimeNodes : undefined;
-            applyWorkerNodePatch(nodes, scene, message.ops, (id) => findWorkerCanvasTexture(sceneTextures, id));
+            // 5.4: textures in call arguments (setMaterial) arrive as snapshots or ids of textures the worker holds.
+            const { args: ops, created } = Array.isArray(message.ops) ? hydrateWorkerPatchArgs(message.ops, sceneTextures) : { args: message.ops, created: new Set<TextureHandle>() };
+            if (created.size) sceneTextures = new Set([...sceneTextures, ...created]);
+            applyWorkerNodePatch(nodes, scene, ops, (id) => findWorkerCanvasTexture(sceneTextures, id), applyAppCall);
           });
           break;
         case "input": {
@@ -1168,8 +1362,43 @@ function maskTransferables(value: unknown, transfer: readonly Transferable[]): u
 }
 const WORKER_TEXTURE_KIND = "aura-worker-cpu-texture/2";
 const LEGACY_WORKER_TEXTURE_KIND = "aura-worker-rgba8-texture/1";
+/**
+ * 5.4: renderer switches a page sets on `globalThis` before creating its app (`__A3D_SHADOW_FIT__ = "current"`, read by the
+ * shadow fit; `__A3D_DENSE_SHADOWS__`, `__A3D_SHADOW_TAPS__`, ...). The worker realm has its own global object, so the host
+ * copies every `__A3D_*__` own property holding a string, finite number or boolean.
+ */
+const WORKER_RENDERER_GLOBAL = /^__A3D_[A-Z0-9_]+__$/;
+export function collectWorkerRendererGlobals(source: object = globalThis): Record<string, string | number | boolean> | undefined {
+  let globals: Record<string, string | number | boolean> | undefined;
+  for (const key of Object.getOwnPropertyNames(source)) {
+    if (!WORKER_RENDERER_GLOBAL.test(key)) continue;
+    let value: unknown;
+    try { value = (source as Record<string, unknown>)[key]; } catch { continue; }
+    if (typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) (globals ??= {})[key] = value;
+  }
+  return globals;
+}
+
+/** Worker side of {@link collectWorkerRendererGlobals}; a switch the worker already defines is left alone. */
+export function installWorkerRendererGlobals(globals: unknown, target: object = globalThis): void {
+  if (!globals || typeof globals !== "object") return;
+  for (const [key, value] of Object.entries(globals as Record<string, unknown>)) {
+    if (!WORKER_RENDERER_GLOBAL.test(key) || Object.hasOwn(target, key)) continue;
+    if (typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) (target as Record<string, unknown>)[key] = value;
+  }
+}
+
+/** Presented frames between reads of the worker renderer's textured-material status. */
+const TEXTURED_SAMPLE_FRAMES = 15;
+/** Per texture (every mip level counted). */
 const MAX_WORKER_TEXTURE_BYTES = 16 * 1024 * 1024;
+/**
+ * 5.4: per scene, all textures together. Games that paint their surfaces into canvases send every one of them
+ * (Gridlock Courier: 34 canvas textures, about 104 MiB).
+ */
+const MAX_WORKER_SCENE_TEXTURE_BYTES = 256 * 1024 * 1024;
 const MAX_WORKER_TEXTURE_COUNT = 128;
+/** Snapshot bytes held by unsettled scene requests: at least this, and at least two copies of the initial scene. */
 const MAX_IN_FLIGHT_WORKER_TEXTURE_BYTES = 32 * 1024 * 1024;
 type WorkerTextureFormat = "rgba8" | "rgba16f" | "rgba32f" | "r32f";
 type WorkerTextureMip = { readonly width: number; readonly height: number; readonly data: TexturePixelData };
@@ -1206,8 +1435,8 @@ type WorkerTextureSnapshot = {
   readonly canvasSource?: true;
 };
 
-function unsupportedWorkerTexture(): AuraWorkerError {
-  return new AuraWorkerError("Live texture handles cannot cross worker realms unless they have bounded CPU-backed 2D color pixels. Use a typed texture asset or create the handle in the worker.", "unsupported-worker-resource", "recoverable");
+function unsupportedWorkerTexture(detail?: string): AuraWorkerError {
+  return new AuraWorkerError(`Live texture handles cannot cross worker realms unless they have bounded CPU-backed 2D color pixels. Use a typed texture asset or create the handle in the worker.${detail ? ` (${detail})` : ""}`, "unsupported-worker-resource", "recoverable");
 }
 
 /** A live 2D image source whose pixels the host can read back (canvas, image, bitmap); never a video. */
@@ -1296,8 +1525,67 @@ function mapWorkerScene<T>(value: T, replace: (value: object) => unknown | undef
   return copy(value) as T;
 }
 
+/** Key of the batched-state copy a host attaches to `batched` nodes (`instances.mesh`, `batched.mesh`). */
+const WORKER_BATCHED_STATE_KEY = "workerBatchedState";
+
+/** Applies `visit` to every scene node (group children included), copying only the paths it changes. */
+function mapSceneNodes(scene: AuraSceneSnapshot, visit: (node: AuraSceneSnapshot["nodes"][number]) => AuraSceneSnapshot["nodes"][number]): AuraSceneSnapshot {
+  const walk = (nodes: AuraSceneSnapshot["nodes"]): AuraSceneSnapshot["nodes"] => {
+    let changed = false;
+    const next = nodes.map((node) => {
+      let result = visit(node);
+      const children = (result as { readonly children?: AuraSceneSnapshot["nodes"] }).children;
+      if (result.kind === "group" && Array.isArray(children)) {
+        const mapped = walk(children);
+        if (mapped !== children) result = { ...result, children: mapped } as typeof result;
+      }
+      if (result !== node) changed = true;
+      return result;
+    });
+    return changed ? next : nodes;
+  };
+  const nodes = Array.isArray(scene?.nodes) ? walk(scene.nodes) : scene?.nodes;
+  return nodes === scene?.nodes ? scene : { ...scene, nodes };
+}
+
+/**
+ * 5.4: a `batched` node built by `instances.mesh` / `batched.mesh` names a host-side state (geometry pool, matrices,
+ * colours) by `batchedId`; the worker has no such state. Attach a plain-data copy so the worker rebuilds it.
+ */
+function withWorkerBatchedStates(scene: AuraSceneSnapshot): AuraSceneSnapshot {
+  return mapSceneNodes(scene, (node) => {
+    if (node.kind !== "batched" || (node as unknown as Record<string, unknown>)[WORKER_BATCHED_STATE_KEY] !== undefined) return node;
+    const state = batchedStateFor((node as { readonly batchedId?: string }).batchedId ?? (node as { readonly runtime?: { readonly id?: string } }).runtime?.id);
+    if (!state) return node;
+    const snapshot = state.toWorkerSnapshot();
+    if (!snapshot) throw new AuraWorkerError("A batched node with live Geometry inputs cannot be copied to a render worker.", "worker-unsupported");
+    return { ...node, [WORKER_BATCHED_STATE_KEY]: snapshot } as typeof node;
+  });
+}
+
+/** Worker side of {@link withWorkerBatchedStates}: register the copied states (replacing older ones) and strip the copies. */
+function registerWorkerBatchedStates(scene: AuraSceneSnapshot): AuraSceneSnapshot {
+  return mapSceneNodes(scene, (node) => {
+    const snapshot = (node as unknown as Record<string, unknown>)[WORKER_BATCHED_STATE_KEY] as BatchedMeshStateSnapshot | undefined;
+    if (node.kind !== "batched" || snapshot?.kind !== "aura-worker-batched-state") return node;
+    const previous = batchedStateFor(snapshot.id);
+    registerBatchedState(BatchedMeshState.fromWorkerSnapshot(snapshot));
+    previous?.dispose();
+    const { [WORKER_BATCHED_STATE_KEY]: _copy, ...rest } = node as unknown as Record<string, unknown>;
+    return rest as unknown as typeof node;
+  });
+}
+
+/** True when a scene carries batched-state copies (the worker then loads the batched handler before compiling). */
+function hasWorkerBatchedStates(scene: AuraSceneSnapshot): boolean {
+  let found = false;
+  mapSceneNodes(scene, (node) => { if ((node as unknown as Record<string, unknown>)[WORKER_BATCHED_STATE_KEY] !== undefined) found = true; return node; });
+  return found;
+}
+
 /** Snapshot host pixels synchronously; neither the host handle nor its backing crosses realms. */
 function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly Transferable[], reserve: (size: number) => void, copyPixels = true): AuraSceneSnapshot {
+  scene = withWorkerBatchedStates(scene);
   const transferSet = new Set<unknown>(transfers);
   const backings = new Set<Texture>();
   let bytes = 0;
@@ -1311,7 +1599,7 @@ function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly
     if (texture && texture.source && isWorkerReadableImageTexture(texture) && !backings.has(texture)) {
       backings.add(texture);
       const pixels = readWorkerImageTexturePixels(texture);
-      if (!pixels) throw unsupportedWorkerTexture();
+      if (!pixels) throw unsupportedWorkerTexture(`texture ${ref.id}: its image source cannot be read back`);
       const snapshot: WorkerTextureSnapshot = {
         kind: WORKER_TEXTURE_KIND, id: ref.id, width: texture.width, height: texture.height, format: "rgba8",
         levels: [{ width: texture.width, height: texture.height, data: pixels }], suppliedMipCount: 0,
@@ -1321,7 +1609,7 @@ function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly
         rotation: ref.rotation, anisotropy: ref.anisotropy, minFilter: ref.minFilter, magFilter: ref.magFilter, canvasSource: true
       };
       const size = validateWorkerTextureSnapshot(snapshot);
-      if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += size) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
+      if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += size) > MAX_WORKER_SCENE_TEXTURE_BYTES) throw unsupportedWorkerTexture(`scene textures exceed ${MAX_WORKER_TEXTURE_COUNT} textures or ${MAX_WORKER_SCENE_TEXTURE_BYTES} bytes at ${ref.id}`);
       reserve(size);
       // The readback is already a private copy.
       return snapshot;
@@ -1332,10 +1620,10 @@ function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly
       || !Number.isSafeInteger(texture.mipLevelCount) || texture.mipLevelCount < 1
       || texture.mipLevelCount > Math.floor(Math.log2(Math.max(texture.width, texture.height))) + 1
       || texture.usage.includes("storage") || texture.usage.includes("render-attachment")
-      || !texture.usage.includes("sampled") || !texture.usage.includes("copy-dst")) throw unsupportedWorkerTexture();
+      || !texture.usage.includes("sampled") || !texture.usage.includes("copy-dst")) throw unsupportedWorkerTexture(`texture ${ref.id}: ${texture?.source ? "a shared or unreadable image source" : "not a CPU-backed sampled 2D texture"}`);
     // Two distinct handles can point at one mutable backing. Reconstructing
     // them independently would change their update and disposal semantics.
-    if (backings.has(texture)) throw unsupportedWorkerTexture();
+    if (backings.has(texture)) throw unsupportedWorkerTexture(`texture ${ref.id} shares its backing with another handle`);
     backings.add(texture);
     const levels = Array.from({ length: texture.mipLevelCount }, (_, index) => texture.getMipLevel(index));
     // Older arrays remain observable through the host after an override. Never
@@ -1353,7 +1641,7 @@ function snapshotTransferableScene(scene: AuraSceneSnapshot, transfers: readonly
       rotation: ref.rotation, anisotropy: ref.anisotropy, minFilter: ref.minFilter, magFilter: ref.magFilter
     };
     const size = validateWorkerTextureSnapshot(snapshot);
-    if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += size) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
+    if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += size) > MAX_WORKER_SCENE_TEXTURE_BYTES) throw unsupportedWorkerTexture(`scene textures exceed ${MAX_WORKER_TEXTURE_COUNT} textures or ${MAX_WORKER_SCENE_TEXTURE_BYTES} bytes at ${ref.id}`);
     // Reserve the sum of all levels before allocating any snapshot bytes.
     reserve(size);
     return copyPixels
@@ -1616,6 +1904,70 @@ function createWorkerCanvasTexture(snapshot: WorkerTextureSnapshot): TextureHand
   return handle;
 }
 
+/** Host texture id of every worker handle rebuilt from a host snapshot (canvas and data textures). */
+const workerTextureHostIds = new WeakMap<TextureHandle, string>();
+/** 5.4 patch args: a texture the worker already holds, named by its host id. */
+const WORKER_TEXTURE_ID_KIND = "aura-worker-texture-id";
+
+/** Ids of the texture refs a scene (or patch argument) carries; the worker rebuilds each under the same host id. */
+export function collectWorkerTextureIds(value: unknown, into: Set<string> = new Set()): Set<string> {
+  mapWorkerScene(value, (current) => {
+    if ((current as { kind?: unknown }).kind === "aura-texture-ref") { into.add((current as AuraTextureRef).id); return current; }
+    if ((current as { kind?: unknown }).kind === WORKER_TEXTURE_KIND) { into.add((current as WorkerTextureSnapshot).id); return current; }
+    return undefined;
+  });
+  return into;
+}
+
+/**
+ * 5.4 host side of a node patch whose arguments carry textures (`node.setMaterial(material.standard({ map }))`):
+ * a texture the worker already holds becomes an id placeholder; any other one is snapshotted like a scene texture
+ * (live canvases read back, data textures copied) and its id is added to `known`.
+ */
+export function snapshotWorkerPatchArgs<T>(args: T, known: Set<string>): T {
+  let textures = false;
+  const placeheld = mapWorkerScene(args, (value) => {
+    if ((value as { kind?: unknown }).kind !== "aura-texture-ref") return undefined;
+    textures = true;
+    const id = (value as AuraTextureRef).id;
+    // Unknown refs pass through uncopied (their backing is read by the snapshot below).
+    return known.has(id) ? { kind: WORKER_TEXTURE_ID_KIND, id } : value;
+  });
+  if (!textures) return args;
+  const snapshotted = snapshotTransferableScene(placeheld as unknown as AuraSceneSnapshot, [], () => undefined) as unknown as T;
+  collectWorkerTextureIds(snapshotted, known);
+  return snapshotted;
+}
+
+/**
+ * Worker side of {@link snapshotWorkerPatchArgs}: rebuilds snapshotted textures (returned in `created`; the caller owns
+ * them with the scene's textures) and resolves id placeholders to the handles of the mounted scene.
+ */
+export function hydrateWorkerPatchArgs<T>(args: T, owned: ReadonlySet<TextureHandle>): { readonly args: T; readonly created: Set<TextureHandle> } {
+  let textures = false;
+  mapWorkerScene(args, (value) => {
+    const kind = (value as { kind?: unknown }).kind;
+    if (kind === WORKER_TEXTURE_KIND || kind === WORKER_TEXTURE_ID_KIND) textures = true;
+    return kind === WORKER_TEXTURE_KIND || kind === WORKER_TEXTURE_ID_KIND ? value : undefined;
+  });
+  if (!textures) return { args, created: new Set() };
+  const hydrated = rehydrateWorkerScene(args as unknown as AuraSceneSnapshot, new Set());
+  try {
+    const resolved = mapWorkerScene(hydrated.scene as unknown as T, (value) => {
+      if ((value as { kind?: unknown }).kind !== WORKER_TEXTURE_ID_KIND) return undefined;
+      const id = (value as { id?: unknown }).id;
+      for (const handle of [...hydrated.created, ...owned]) {
+        if (workerTextureHostIds.get(handle) === id && !handle.texture.disposed) return handle;
+      }
+      throw new AuraWorkerError(`Worker texture ${String(id)} is not held by the render worker.`, "invalid-patch", "recoverable");
+    });
+    return { args: resolved, created: hydrated.created };
+  } catch (error) {
+    for (const handle of hydrated.created) handle.dispose();
+    throw error;
+  }
+}
+
 /** Resolve a host texture id to the worker's canvas texture among the scene's handles. */
 export function findWorkerCanvasTexture(handles: Iterable<TextureHandle>, hostId: string): WorkerCanvasTexture | undefined {
   for (const handle of handles) {
@@ -1644,7 +1996,7 @@ function rehydrateWorkerScene(scene: AuraSceneSnapshot, owned: ReadonlySet<Textu
         if (owned.has(ref)) {
           let length = 0;
           for (let index = 0; index < backing.mipLevelCount; index++) length += backing.getMipLevel(index)?.data.byteLength ?? 0;
-          if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += length) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
+          if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += length) > MAX_WORKER_SCENE_TEXTURE_BYTES) throw unsupportedWorkerTexture();
           retained.add(ref);
         }
         return ref;
@@ -1652,10 +2004,11 @@ function rehydrateWorkerScene(scene: AuraSceneSnapshot, owned: ReadonlySet<Textu
       if (kind !== WORKER_TEXTURE_KIND) return undefined;
       const snapshot = value as WorkerTextureSnapshot;
       const length = validateWorkerTextureSnapshot(snapshot);
-      if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += length) > MAX_WORKER_TEXTURE_BYTES) throw unsupportedWorkerTexture();
+      if (++count > MAX_WORKER_TEXTURE_COUNT || (bytes += length) > MAX_WORKER_SCENE_TEXTURE_BYTES) throw unsupportedWorkerTexture();
       if (snapshot.canvasSource) {
         const handle = createWorkerCanvasTexture(snapshot);
         created.add(handle);
+        workerTextureHostIds.set(handle, snapshot.id);
         handle.repeat = [...snapshot.repeat]; handle.offset = [...snapshot.offset]; handle.center = [...snapshot.center]; handle.rotation = snapshot.rotation;
         return handle;
       }
@@ -1678,6 +2031,7 @@ function rehydrateWorkerScene(scene: AuraSceneSnapshot, owned: ReadonlySet<Textu
           minFilter: snapshot.minFilter, magFilter: snapshot.magFilter });
       } catch (error) { backing.dispose(); throw error; }
       created.add(handle);
+      workerTextureHostIds.set(handle, snapshot.id);
       handle.repeat = [...snapshot.repeat]; handle.offset = [...snapshot.offset]; handle.center = [...snapshot.center]; handle.rotation = snapshot.rotation;
       return handle;
     });

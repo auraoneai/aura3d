@@ -58,6 +58,27 @@ export interface LabAppDefaults {
   readonly createWorker?: () => Worker;
 }
 
+/*
+ * Render-worker factory registered by a showcase app wrapper (`apps/showcase-port-shared/worker-lab.ts`). Examples stay
+ * free of the `@aura3d/engine/worker` import (their standalone Vite config emits classic workers): they pass
+ * `labRenderWorker` as `createWorker`, and the app route registers the bundled module worker before the example boots.
+ */
+let registeredWorkerFactory: (() => Worker) | undefined;
+
+/** Registers the factory `labRenderWorker` delegates to (`?worker=1`). `undefined` unregisters. */
+export function registerLabWorkerFactory(createWorker: (() => Worker) | undefined): void {
+  registeredWorkerFactory = createWorker;
+}
+
+/**
+ * `createWorker` for examples: constructs the registered render worker. Without a registration it throws, which the
+ * engine treats like any worker construction failure: `worker.fallback: "main-thread"` keeps the app on the main thread.
+ */
+export function labRenderWorker(): Worker {
+  if (!registeredWorkerFactory) throw new Error("No render worker registered for ?worker=1 (registerLabWorkerFactory).");
+  return registeredWorkerFactory();
+}
+
 export function parseLabFlags(search: string | URLSearchParams | undefined): LabFlags {
   const params = typeof search === "string" ? new URLSearchParams(search) : (search ?? new URLSearchParams());
   const ignored: string[] = [];

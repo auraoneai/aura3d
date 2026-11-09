@@ -32,5 +32,19 @@ const camera = result.camera;
 camera.aspect = innerWidth / innerHeight;
 if (result.cameraTarget) camera.lookAt(...result.cameraTarget);
 camera.updateProjectionMatrix();
+// ?t=<seconds>: pose every exported clip (looping) and the recipe's own clock at that time, so an animated pair is
+// compared at the instant the Aura3D side reported (capture.mjs PAIR_TIME=1).
+// ?clips=<json>: per-clip times (layers that started later than the base clip have their own clock).
+const t = Number(new URLSearchParams(location.search).get("t") ?? 0);
+const clipTimes = JSON.parse(new URLSearchParams(location.search).get("clips") ?? "{}");
+if (result.clips?.length) {
+  const mixer = new THREE.AnimationMixer(result.scene);
+  for (const clip of result.clips) {
+    const action = mixer.clipAction(clip).play();
+    action.time = clipTimes[clip.name] ?? t;
+  }
+  mixer.update(0);
+}
+result.update?.(t);
 renderer.render(result.scene, camera);
 requestAnimationFrame(() => { renderer.render(result.scene, camera); window.__BRIDGE_READY__ = true; });

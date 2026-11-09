@@ -63,7 +63,27 @@ interface ProbeEntry {
   cycleStartFrame: number;
   cycleRevision: number;
   slice: { faces: Float32Array[]; next: number } | null;
+  /** Re-captures of a `once` probe forced by a changed scene environment (see `environmentChanged`). */
+  environmentRecaptures: number;
+  /** System frame the probe was registered on; `once` settle passes count from it. */
+  registeredFrame: number;
+  /** Settle passes (`ONCE_SETTLE_FRAMES`) already scheduled. */
+  settlePasses: number;
 }
+
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export const ONCE_ENVIRONMENT_RECAPTURES = 3;
+
+/**
+ * Frames after registration at which a `once` probe captures again. Its first capture runs on the first frame, while
+ * the app is still placing its scene (lights, materials and game state set on the first ticks); these two passes take
+ * the settled scene. After the last one the probe is final until explicitly updated.
+ */
+const ONCE_SETTLE_FRAMES = [30, 120] as const;
 
 export class ReflectionProbeSystem {
   private readonly entries = new Map<string, ProbeEntry>();
@@ -96,7 +116,10 @@ export class ReflectionProbeSystem {
       nextCaptureFrame: 0,
       cycleStartFrame: 0,
       cycleRevision: 0,
-      slice: null
+      slice: null,
+      environmentRecaptures: 0,
+      registeredFrame: this.frame,
+      settlePasses: spec.update === "once" ? 0 : ONCE_SETTLE_FRAMES.length
     });
   }
 
@@ -111,6 +134,34 @@ export class ReflectionProbeSystem {
     this.assertAlive();
     const entry = this.entries.get(name);
     if (entry) { entry.dirty = true; entry.dirtyRevision += 1; }
+  }
+
+  /**
+   * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+   * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+   */
+  restartPartialCaptures(): void {
+    this.assertAlive();
+    for (const entry of this.entries.values()) entry.slice = null;
+  }
+
+  /**
+   * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+   * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+   * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+   */
+  environmentChanged(): void {
+    this.assertAlive();
+    for (const entry of this.entries.values()) {
+      if (entry.spec.update !== "once") continue;
+      if (entry.probe) {
+        if (entry.environmentRecaptures >= ONCE_ENVIRONMENT_RECAPTURES) continue;
+        entry.environmentRecaptures += 1;
+      }
+      // A capture in flight (async readback) finishes dirty and runs again against the new environment.
+      entry.dirty = true;
+      entry.dirtyRevision += 1;
+    }
   }
 
   probes(): readonly EnvironmentProbe[] {
@@ -188,6 +239,11 @@ export class ReflectionProbeSystem {
       const index = (this.nextEntry + offset) % entries.length;
       const [name, entry] = entries[index];
       if (!entry.dirty && entry.spec.update === "every-n-frames" && this.frame >= entry.nextCaptureFrame) entry.dirty = true;
+      const settle = ONCE_SETTLE_FRAMES[entry.settlePasses];
+      if (settle !== undefined && entry.probe && this.frame >= entry.registeredFrame + settle) {
+        entry.settlePasses += 1;
+        if (!entry.dirty) { entry.dirty = true; entry.dirtyRevision += 1; }
+      }
       if (!entry.dirty) continue;
       if (!entry.slice) { entry.cycleStartFrame = this.frame; entry.cycleRevision = entry.dirtyRevision; }
       selected.push([name, entry]);

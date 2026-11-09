@@ -202,14 +202,27 @@ export function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean
  * One `Prd02ShadowSystem` per device, shared by the bridge and the contributor;
  * recreated when the resolved config changes (map size / cascades / filter).
  */
-const shadowSystems = new WeakMap<RenderDevice, { config: ShadowSystemConfigInput; system: Prd02ShadowSystem }>();
+const shadowSystems = new WeakMap<RenderDevice, { config: ShadowSystemConfigInput; key: string; system: Prd02ShadowSystem }>();
+
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string {
+  return `${config.enabled}|${config.mapSize}|${config.cascades}|${config.maxDistance}|${config.splitLambda}|${config.filter}`;
+}
 
 export function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem {
   const existing = shadowSystems.get(device);
-  if (existing && JSON.stringify(existing.config) === JSON.stringify(config)) return existing.system;
+  const key = shadowSystemStructuralKey(config);
+  if (existing && existing.key === key) {
+    if (existing.config !== config) { existing.config = config; existing.system.retune(config); }
+    return existing.system;
+  }
   existing?.system.dispose();
   const system = new Prd02ShadowSystem(device, config);
-  shadowSystems.set(device, { config, system });
+  shadowSystems.set(device, { config, key, system });
   return system;
 }
 

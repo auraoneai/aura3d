@@ -92,7 +92,7 @@ export interface SceneRendererOptions {
   /** A1: boot progress (0..1) reported as the mount advances; drives the splash loading bar. */
   onBootProgress?: (fraction: number, label?: string) => void;
   /** A3/A10 lab flags (`?backend=`, `?gamut=p3`), default off: extra `createAuraApp` options merged over the defaults. */
-  appOptions?: { renderer?: { backend: "auto" | "webgpu"; allowFallback: true }; output?: { outputColorSpace: "display-p3" } };
+  appOptions?: { renderer?: { backend: "auto" | "webgpu"; allowFallback: true }; output?: { outputColorSpace: "display-p3" }; worker?: { fallback: "main-thread"; createWorker: () => Worker } };
   /** Reduced-motion probe for the hit shake (defaults to a cached `prefers-reduced-motion` media query). */
   reducedMotion?: () => boolean;
 }
@@ -344,6 +344,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" }, ...(options.appOptions?.renderer ?? {}) },
         ...(options.appOptions?.output ? { output: options.appOptions.output } : {}),
+        ...(options.appOptions?.worker ? { worker: options.appOptions.worker } : {}),
         qualityRebuild: QUALITY_REBUILD,
         // C2: the page sizes the canvas (portrait phones put it between the score band and the control band). The engine's own
         // resize fits the canvas to its parent, which ignored that layout: on a 390 x 844 phone the canvas stayed 844 px tall,

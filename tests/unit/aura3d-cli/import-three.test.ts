@@ -10,6 +10,8 @@ import { assignStableIds, retargetClipTracks } from "../../../packages/aura3d-cl
 import type { BridgeSceneData, CompatRow, ThreeObjectLike } from "../../../packages/aura3d-cli/src/import-three/contract";
 import { emitBridgeModule, emitNativeSceneModule } from "../../../packages/aura3d-cli/src/import-three/emit";
 import { encodePng, installHeadlessExportShims, seededRandom } from "../../../packages/aura3d-cli/src/import-three/headless";
+import { convertShaderMaterial } from "../../../packages/aura3d-cli/src/import-three/shader";
+import { material as auraMaterial } from "../../../packages/engine/src/agent-api/nodes/material";
 // plain .mjs helper shared with the paired three.js page
 import { seededRandom as browserSeededRandom } from "../../../tools/three-bridge/pages/seeded.mjs";
 
@@ -23,7 +25,7 @@ function node(name: string, children: ThreeObjectLike[] = [], userData: Record<s
 
 describe("import-three headless runtime", () => {
   it("seeded random is deterministic and matches the browser copy used by the three.js page", () => {
-    const a = seededRandom(7), b = seededRandom(7), c = (browserSeededRandom as (s: number) => () => number)(7);
+    const a = seededRandom(7), b = seededRandom(7), c = browserSeededRandom(7);
     const seq = Array.from({ length: 16 }, () => a());
     expect(Array.from({ length: 16 }, () => b())).toEqual(seq);
     expect(Array.from({ length: 16 }, () => c())).toEqual(seq);
@@ -103,6 +105,69 @@ describe("import-three packaging", () => {
   });
 });
 
+describe("import-three ShaderMaterial -> material.custom", () => {
+  const vec = (x: number, y: number, z?: number) => (z === undefined ? { x, y, isVector2: true } : { x, y, z, isVector3: true });
+  const shader = (fields: Record<string, unknown>) => ({ type: "ShaderMaterial", name: "glow", uuid: "u1", isShaderMaterial: true, ...fields }) as never;
+
+  it("passes GLSL 1 ShaderMaterial source through with three built-ins, lowered to GLSL 3, and a valid spec", () => {
+    const result = convertShaderMaterial(shader({
+      vertexShader: "uniform float time;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvoid main() {\n  vUv = uv;\n  vNormal = normalize(normalMatrix * normal);\n  vec3 p = position + normal * 0.05 * sin(time);\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);\n}",
+      fragmentShader: "uniform vec3 tint;\nuniform vec2 scale;\nuniform float time;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvoid main() {\n  float s = 0.5 + 0.5 * sin(vUv.x * scale.x + time);\n  gl_FragColor = vec4(tint * s, 1.0);\n}",
+      uniforms: { time: { value: 0 }, tint: { value: { r: 1, g: 0.5, b: 0.25, isColor: true } }, scale: { value: vec(12, 4) } },
+      side: 2, transparent: true, blending: 2, defines: { STEPS: 4, OFF: false }
+    }));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const { vertex, fragment } = result.spec.glsl;
+    expect(vertex).not.toMatch(/uniform float time|\bvarying\b|\btime\b/);
+    expect(vertex).toContain("out vec2 vUv;");
+    expect(vertex).toContain("sin(uTime)");
+    expect(vertex).toContain("projectionMatrix * modelViewMatrix * vec4(p, 1.0)");
+    // three's normalMatrix is view-space; the prelude's is world-space.
+    expect(vertex).toContain("#define a3dThreeNormalMatrix (mat3(viewMatrix) * normalMatrix)");
+    expect(vertex).toContain("normalize(a3dThreeNormalMatrix * normal)");
+    expect(fragment).toContain("out highp vec4 a3dThreeFragColor;");
+    expect(fragment).toContain("a3dThreeFragColor = vec4(tint * s, 1.0);");
+    // The author's main runs first, then the display decode (three writes ShaderMaterial colour to the canvas as-is).
+    expect(fragment).toContain("void a3dThreeMain()");
+    expect(fragment).toContain("a3dThreeFragColor.rgb = a3dThreeSrgbToLinear(max(a3dThreeFragColor.rgb, vec3(0.0)));");
+    expect(fragment).not.toMatch(/uniform vec3 tint|gl_FragColor/);
+    expect(result.spec.uniforms).toEqual({ tint: { type: "vec3", value: [1, 0.5, 0.25] }, scale: { type: "vec2", value: [12, 4] } });
+    expect(result.spec).toMatchObject({ defines: { STEPS: 4 }, side: "double", transparent: true, blending: "additive" });
+    expect(result.notes.join(" ")).toContain("Aura3D clock");
+    // The engine accepts the spec as-is (synchronous material.custom validation).
+    expect(auraMaterial.custom(result.spec as never).kind).toBe("custom");
+  });
+
+  it("drops a RawShaderMaterial's own built-in declarations so the prelude aliases bind", () => {
+    const result = convertShaderMaterial(shader({
+      type: "RawShaderMaterial", isRawShaderMaterial: true,
+      vertexShader: "precision highp float;\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nattribute vec3 position;\nvoid main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+      fragmentShader: "precision highp float;\nuniform float level;\nvoid main() { gl_FragColor = vec4(vec3(level), 1.0); }",
+      uniforms: { level: { value: 0.75 } }
+    }));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.spec.glsl.vertex).not.toMatch(/uniform mat4|attribute|\bin vec3 position/);
+    expect(result.spec.glsl.vertex).toContain("precision highp float;");
+    expect(result.spec.uniforms).toEqual({ level: { type: "f32", value: 0.75 } });
+    expect(auraMaterial.custom(result.spec as never).kind).toBe("custom");
+  });
+
+  it("refuses what it cannot carry exactly, with reasons", () => {
+    const refused = (fields: Record<string, unknown>) => {
+      const result = convertShaderMaterial(shader({ vertexShader: "void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }", fragmentShader: "void main() { gl_FragColor = vec4(1.0); }", ...fields }));
+      expect(result.ok).toBe(false);
+      return result.ok ? "" : result.reasons.join("; ");
+    };
+    expect(refused({ fragmentShader: "#include <common>\nvoid main() { gl_FragColor = vec4(1.0); }" })).toContain("#include");
+    expect(refused({ fragmentShader: "uniform sampler2D map;\nvarying vec2 vUv;\nvoid main() { gl_FragColor = texture2D(map, vUv); }", uniforms: { map: { value: null } } })).toContain("sampler2D");
+    expect(refused({ vertexShader: "attribute float offset;\nvoid main() { gl_Position = vec4(position * offset, 1.0); }" })).toContain('custom attribute "offset"');
+    expect(refused({ lights: true })).toContain("lights: true");
+    expect(refused({ fragmentShader: "uniform mat4 frame;\nvoid main() { gl_FragColor = frame[0]; }", uniforms: { frame: { value: { elements: [], isMatrix4: true } } } })).toContain('uniform "frame"');
+  });
+});
+
 describe("import-three emission", () => {
   const data: BridgeSceneData = {
     name: "city-block",
@@ -110,6 +175,7 @@ describe("import-three emission", () => {
     hiddenNodeNames: ["sign"],
     materials: ["asphalt"],
     clips: [],
+    customMaterials: [],
     lights: [{ kind: "directional", id: "sun", color: "#ffffff", intensity: 2.4, position: [-8, 14, 10], target: [0, 0, 0], shadow: true }],
     camera: { position: [14, 12, 18], target: [0, 1.5, 0], fov: 40, near: 0.1, far: 300 },
     background: "#b9c7d6",
@@ -128,6 +194,15 @@ describe("import-three emission", () => {
     expect(src).toContain('camera.perspective({ position: [14, 12, 18], target: [0, 1.5, 0], fov: 40, near: 0.1, far: 300 })');
     expect(src).toContain('{ toneMapping: "aces", exposure: 1 }');
     expect(emitBridgeModule({ ...data, name: "car" }, { assetKey: "car", assetsImport: "../aura-assets", regenerateCommand: "x" })).toContain("model(assets.car, {");
+    expect(src).not.toContain("materialOverrides: [");
+  });
+
+  it("installs carried shaders on their placeholder slots through materialOverrides", () => {
+    const spec = { glsl: { vertex: "void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }\n", fragment: "out highp vec4 c;\nvoid main() { c = vec4(1.0); }\n" } };
+    const src = emitBridgeModule({ ...data, customMaterials: [{ name: "neon", spec }] }, { assetKey: "city-block", assetsImport: "../aura-assets", regenerateCommand: "x" });
+    expect(src).toContain('import { camera, lights, model, material, type AuraMaterialSpec, type AuraModelMaterialOverride');
+    expect(src).toContain('"neon": material.custom({');
+    expect(src).toContain("materialOverrides: [...cityBlockMaterialOverrides, ...(options.materialOverrides ?? [])]");
   });
 
   it("emits a native scene module that only imports the bridge module", () => {
@@ -161,6 +236,9 @@ export default function createScene({ THREE, random, params }) {
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ name: "neon" }));
   sign.name = "sign";
   scene.add(sign);
+  const chunky = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ name: "chunks", fragmentShader: "#include <common>\\nvoid main() { gl_FragColor = vec4(1.0); }" }));
+  chunky.name = "chunky";
+  scene.add(chunky);
   const sun = new THREE.DirectionalLight("#ffffff", 2);
   sun.position.set(1, 3, 2);
   scene.add(sun);
@@ -183,9 +261,12 @@ export default function createScene({ THREE, random, params }) {
 `);
       const first = await importThree({ projectDir: dir, factory: "recipe.mjs", name: "blocks", seed: 3, threeDir: THREE_DIR });
       expect(first.admitted).toBe(true);
-      expect(first.data.hiddenNodeNames).toEqual(["spare", "sign"]);
+      // The default ShaderMaterial (three's built-in pass-through shaders) is carried as material.custom; the
+      // chunk-including one is refused and its mesh hidden.
+      expect(first.data.hiddenNodeNames).toEqual(["spare", "chunky"]);
       expect(first.data.clips).toEqual(["bob"]);
-      expect(first.rows.some((r) => r.status === "unsupported" && r.construct === "ShaderMaterial")).toBe(true);
+      expect(first.data.customMaterials.map((m) => m.name)).toEqual(["neon"]);
+      expect(first.rows.some((r) => r.status === "unsupported" && r.construct === "ShaderMaterial" && r.subject === "chunks")).toBe(true);
       // A hidden light is not emitted (three does not light with it); a light's child mesh still exports.
       expect(first.data.lights.map((l) => l.kind)).toEqual(["directional", "point"]);
       expect(first.data.hiddenNodeNames).not.toContain("off");
@@ -197,6 +278,7 @@ export default function createScene({ THREE, random, params }) {
       expect(json.nodes.map((n) => n.name)).not.toContain("sun");
       expect(json.nodes.map((n) => n.name)).toEqual(expect.arrayContaining(["lamp", "lamp__bulb"]));
       expect(json.nodes.map((n) => n.name)).not.toContain("off");
+      expect((json as { materials?: { name?: string }[] }).materials?.map((m) => m.name)).toContain("neon");
       expect(json.animations?.[0]?.channels.length).toBe(1);
 
       const sceneFile = first.sceneModule;
