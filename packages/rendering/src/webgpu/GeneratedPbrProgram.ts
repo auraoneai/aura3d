@@ -1700,6 +1700,54 @@ export function validateGeneratedPhotometricPacket(
   return { offsets, meta };
 }
 
+/**
+ * Uniforms that `packGeneratedPbrMaterialUniforms` copies straight into one place of the material block (f32 values,
+ * no other use): field, first f32 component, and the value length (-1 for a scalar, 0 for "same length as before").
+ */
+const GENERATED_PBR_DIRECT_UNIFORMS: ReadonlyMap<string, { readonly field: string; readonly component: number; readonly length: number }> = new Map([
+  ["u_modelMatrix", { field: "model", component: 0, length: 16 }],
+  ["u_geometryMatrix", { field: "geometry", component: 0, length: 16 }],
+  ["u_normalMatrix", { field: "normal", component: 0, length: 16 }],
+  ["u_shadowMapMatrix", { field: "shadowMatrix", component: 0, length: 16 }],
+  ["u_shadowMapNormalBias", { field: "shadowTexel", component: 2, length: -1 }],
+  ["u_baseColor", { field: "baseColor", component: 0, length: 4 }],
+  ["u_windDirStrength", { field: "windDirStrength", component: 0, length: 4 }],
+  // Read only through the prd07.fog fields, as a vec3 (only while u_fogMode is present).
+  ["u_cameraPosition", { field: "prd07FogCamera", component: 0, length: 3 }],
+  // Rows of vec4 from the start of `lights`; the photometric packet also validates them, so not with a profile.
+  ["u_lightData", { field: "lights", component: 0, length: 0 }]
+]);
+
+/**
+ * Rewrite one uniform's place in bytes that `packGeneratedPbrMaterialUniforms` produced, for a draw whose other read
+ * uniforms are unchanged and whose `name` value had `previousLength` values (-1: a number) in that pack. Returns false
+ * when the uniform is not a direct one or the value is not one the packer would accept with the same layout; the bytes
+ * may then be partly rewritten and must be packed again.
+ */
+export function patchGeneratedPbrMaterialUniform(bytes: Uint8Array, name: string, value: unknown, previousLength: number, photometricProfile: boolean): boolean {
+  const direct = GENERATED_PBR_DIRECT_UNIFORMS.get(name);
+  if (!direct || (photometricProfile && name === "u_lightData")) return false;
+  const offset = GENERATED_PBR_MATERIAL_OFFSETS[direct.field];
+  if (offset === undefined || bytes.byteLength !== GENERATED_PBR_MATERIAL_LAYOUT.size || bytes.byteOffset % 4 !== 0) return false;
+  const f32 = new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength >> 2);
+  const at = (offset >> 2) + direct.component;
+  if (direct.length === -1) {
+    if (previousLength !== -1 || typeof value !== "number") return false;
+    f32[at] = value;
+    return Number.isFinite(f32[at]!);
+  }
+  if (!Array.isArray(value) && (!ArrayBuffer.isView(value) || value instanceof DataView)) return false;
+  const values = value as ArrayLike<unknown>;
+  if (values.length !== previousLength || (direct.length > 0 && values.length !== direct.length)) return false;
+  for (let i = 0; i < values.length; i += 1) {
+    const item = values[i];
+    if (typeof item !== "number") return false;
+    f32[at + i] = item;
+    if (!Number.isFinite(f32[at + i]!)) return false;
+  }
+  return true;
+}
+
 /** Pack draw-owned scalar/matrix data; texture bindings are resolved by the device. */
 export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, UniformValue>, packedLoopColor = false, photometricProfile = false): Uint8Array {
   // The native wetness response has no puddle-noise binding (see wetness.wgsl).
