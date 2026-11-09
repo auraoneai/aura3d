@@ -30,6 +30,13 @@ Disallow: /src/
 Disallow: /*.map$
 Disallow: /*route-health.json$
 
+User-agent: Claude-User
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
 User-agent: Claude-Web
 Allow: /
 Disallow: /node_modules/
@@ -93,6 +100,13 @@ Disallow: /src/
 Disallow: /*.map$
 Disallow: /*route-health.json$
 
+User-agent: FacebookBot
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
 User-agent: cohere-ai
 Allow: /
 Disallow: /node_modules/
@@ -108,6 +122,13 @@ Disallow: /*.map$
 Disallow: /*route-health.json$
 
 User-agent: Bytespider
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: Bingbot
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
