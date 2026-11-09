@@ -11,7 +11,7 @@ export function systemPrompt(arm, condition = {}) {
     arm === "bridge"
       ? [
           "The app is built with Aura3D (`@aura3d/engine`, installed in node_modules). three.js 0.185.1 (`three`, `@types/three`) is also installed, for procedural asset generation only.",
-          "Read BRIDGE.md: you may write three.js scene factories under `src/bridge/` and run the `bridge_export` tool, which turns them into typed Aura3D assets. Behaviour, input, UI and the render loop stay native Aura3D.",
+          "Read BRIDGE.md first: author the scene content as three.js factories under `recipes/` (writable), turn them into Aura3D source and typed assets with the `import_three` tool, and keep behaviour, input, UI and per-frame logic native Aura3D in `src/`.",
           "Documentation entry points: `llms.txt` and `AGENTS.md` at the project root, then `docs/agents/`, and `.agents/skills/`. Package types are under `node_modules/@aura3d/` and `node_modules/three/`."
         ]
       : arm === "aura"
@@ -23,6 +23,11 @@ export function systemPrompt(arm, condition = {}) {
           "The library is three.js 0.185.1 (`three` and `@types/three`), already installed in node_modules. Examples and addons are under `node_modules/three/examples/jsm`."
         ];
   const extra = [];
+  if (arm !== "three" && condition.cliTools) {
+    extra.push(
+      "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, screenshots it in headless Chrome and returns diagnostics plus the screenshot, so you can see what you made."
+    );
+  }
   if (arm === "aura" && condition.lookup) {
     extra.push(
       "You also have `aura_lookup(query)`: one call returns the best-matching working recipe source, exact signatures and gotchas for a keyword query (for example `camera orbit autoRotate` or `custom shader water uniform`). Use it instead of reading or searching doc files one by one."
@@ -50,6 +55,28 @@ export const usageOf = (response) => {
     providerCostUsd: num(u.cost_usd) ?? num(u.cost?.total_usd) ?? num(u.cost?.total)
   };
 };
+
+/**
+ * Keep only the newest screenshot in the conversation: older image blocks inside tool results become a short note.
+ * Prism's Kiro route caps a request at 1.5 MB and a few images, and every `aura3d render` adds one; without this a
+ * render-heavy run would grow past the cap and end as an infra error. Returns the number of images replaced.
+ */
+export function pruneOldImages(messages) {
+  const holders = [];
+  for (const m of messages) {
+    if (m.role !== "user" || !Array.isArray(m.content)) continue;
+    for (const block of m.content) if (block?.type === "tool_result" && Array.isArray(block.content) && block.content.some((b) => b?.type === "image")) holders.push(block);
+  }
+  let replaced = 0;
+  for (const block of holders.slice(0, -1)) {
+    block.content = block.content.map((b) => {
+      if (b?.type !== "image") return b;
+      replaced += 1;
+      return { type: "text", text: "[earlier screenshot removed; only the latest render keeps its image]" };
+    });
+  }
+  return replaced;
+}
 
 const emptyUsage = () => ({
   input: 0, uncachedInput: 0, cacheRead: 0, cacheWrite: 0, output: 0, turns: 0, providerCredits: null, providerCostUsd: null,
@@ -125,7 +152,10 @@ export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, max
       usage.toolMs += toolMs;
       pu.toolMs += toolMs;
       messages.push({ role: "user", content: results });
-      transcript.push({ role: "user", turn, phase: name, content: results.map((r) => ({ ...r, content: String(r.content).slice(0, 1500) })) });
+      pruneOldImages(messages);
+      // Image blocks (aura3d render) are kept out of the transcript file; the text part is kept like any result.
+      const brief = (c) => (Array.isArray(c) ? c.map((b) => (b.type === "text" ? b.text : `[${b.type}]`)).join("\n") : String(c)).slice(0, 1500);
+      transcript.push({ role: "user", turn, phase: name, content: results.map((r) => ({ ...r, content: brief(r.content) })) });
       if (toolbox.state.finished) {
         endReason = "finished";
         break;

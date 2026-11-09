@@ -23,12 +23,19 @@ const CHROME = process.env.AGENT_EVAL_CHROME ?? "/Applications/Google Chrome.app
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export function distSizes(dist) {
-  const out = { totalKB: 0, jsKB: 0, jsGzipKB: 0, assetKB: 0, files: 0 };
+  const out = { totalKB: 0, jsKB: 0, jsGzipKB: 0, assetKB: 0, scaffoldKB: 0, files: 0 };
+  const dirKB = (d) => readdirSync(d, { withFileTypes: true }).reduce((a, e) => a + (e.isDirectory() ? dirKB(join(d, e.name)) : statSync(join(d, e.name)).size / 1024), 0);
   const walk = (d) => {
     for (const e of readdirSync(d, { withFileTypes: true })) {
       const f = join(d, e.name);
-      if (e.isDirectory()) walk(f);
-      else {
+      if (e.isDirectory()) {
+        // Scaffold-shipped look files (public/hdri, public/aura-environments) are counted apart: the app did not author them.
+        if (d === dist && (e.name === "hdri" || e.name === "aura-environments")) {
+          out.scaffoldKB += dirKB(f);
+          continue;
+        }
+        walk(f);
+      } else {
         const size = statSync(f).size;
         out.totalKB += size / 1024;
         out.files += 1;
@@ -40,7 +47,7 @@ export function distSizes(dist) {
     }
   };
   if (existsSync(dist)) walk(dist);
-  for (const k of ["totalKB", "jsKB", "jsGzipKB", "assetKB"]) out[k] = Math.round(out[k] * 10) / 10;
+  for (const k of ["totalKB", "jsKB", "jsGzipKB", "assetKB", "scaffoldKB"]) out[k] = Math.round(out[k] * 10) / 10;
   return out;
 }
 
@@ -125,7 +132,7 @@ function pageDriver(cdp) {
   const mouse = async (x, y) => {
     for (const type of ["mouseMoved", "mousePressed", "mouseReleased"]) await cdp.send("Input.dispatchMouseEvent", { type, x, y, button: type === "mouseMoved" ? "none" : "left", clickCount: 1 });
   };
-  const KEYS = { Space: [" ", 32], KeyR: ["r", 82], KeyP: ["p", 80], Digit1: ["1", 49], Digit2: ["2", 50], Digit3: ["3", 51], Enter: ["Enter", 13] };
+  const KEYS = { Space: [" ", 32], KeyR: ["r", 82], KeyP: ["p", 80], Digit1: ["1", 49], Digit2: ["2", 50], Digit3: ["3", 51], Enter: ["Enter", 13], Escape: ["Escape", 27] };
   return {
     eval: (e) => evaluate(e),
     state: async () => JSON.parse((await evaluate("JSON.stringify(window.__TASK_STATE__ ?? null)")) ?? "null"),
@@ -142,9 +149,12 @@ function pageDriver(cdp) {
       return true;
     },
     async clickText(re) {
-      const r = await evaluate(`(() => { const re = new RegExp(${JSON.stringify(re.source)}, ${JSON.stringify(re.flags)}); const els = [...document.querySelectorAll('button, [role=button], input[type=button], a, div, span')].filter((e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && re.test((e.innerText ?? e.value ?? '').trim()) && ![...e.children].some((c) => re.test((c.innerText ?? '').trim())); }); const e = els.find((x) => x.tagName === 'BUTTON') ?? els[0]; if (!e) return null; const b = e.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()`);
+      // The canvas fills the 640x360 viewport, so DOM UI placed after it is below the fold: scroll the element into view
+      // for a real mouse click, then scroll back so later frames show the same view.
+      const r = await evaluate(`(() => { const re = new RegExp(${JSON.stringify(re.source)}, ${JSON.stringify(re.flags)}); const els = [...document.querySelectorAll('button, [role=button], input[type=button], a, div, span')].filter((e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && re.test((e.innerText ?? e.value ?? '').trim()) && ![...e.children].some((c) => re.test((c.innerText ?? '').trim())); }); const e = els.find((x) => x.tagName === 'BUTTON') ?? els[0]; if (!e) return null; e.scrollIntoView({ block: 'center', inline: 'center' }); const b = e.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()`);
       if (!r) return false;
       await mouse(r[0], r[1]);
+      await evaluate("window.scrollTo(0, 0)");
       return true;
     },
     text: () => evaluate("document.body ? document.body.innerText : ''"),
@@ -277,7 +287,14 @@ async function main(argv) {
     }
   };
   try {
+    let browserStarted = Date.now();
     for (const id of ids) {
+      // The machine's process reaper kills headless Chrome older than 30 minutes; recycle ours well before that.
+      if (Date.now() - browserStarted > 20 * 60 * 1000) {
+        browser.stop();
+        browser = await startChrome(cdpPort);
+        browserStarted = Date.now();
+      }
       const run = JSON.parse(readFileSync(join(batchDir, "runs", id, "run.json"), "utf8"));
       const task = tasks[run.task];
       const entry = { runId: id, arm: run.arm, task: run.task, phases: {} };

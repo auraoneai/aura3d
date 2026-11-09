@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { constants as fsConstants, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { basename, join, relative, resolve, sep } from "node:path";
 import { listCandidateFiles } from "../../remote-acr/source5-files.mjs";
 
@@ -25,7 +25,7 @@ const ALLOWED_TOP_LEVEL = {
   common: ["index.html", "tsconfig.json", "package.json", "TASK.md", "src", "public", "node_modules"],
   aura: ["llms.txt", "AGENTS.md", "docs", ".agents"],
   three: [],
-  bridge: ["llms.txt", "AGENTS.md", "docs", ".agents", "BRIDGE.md"]
+  bridge: ["llms.txt", "AGENTS.md", "docs", ".agents", "BRIDGE.md", "recipes"]
 };
 
 export const TASK_ASSETS = {
@@ -140,8 +140,29 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docs
     }
   }
   if (arm !== "three" && condition.cheatsheet) applyCheatsheetEntry({ dir, docsRoot });
+  if (arm !== "three" && condition.scaffoldPublic) copyScaffoldPublic({ dir, baseDir });
   if (arm === "bridge" && condition.bridgeGuide) writeFileSync(join(dir, "BRIDGE.md"), condition.bridgeGuide);
   return { dir, docs: arm === "three" ? null : docSetFingerprint(dir) };
+}
+
+/**
+ * What `create-aura3d` puts in public/ for a project that uses a look: the HDRI set (public/hdri) and the optional
+ * environment presets (public/aura-environments), from the create-aura3d package installed beside @aura3d/cli in the arm
+ * base, so the version matches. Without them every look preset 404s its HDRI in a bare scaffold. APFS clones, no copies.
+ */
+export const SCAFFOLD_PUBLIC_DIRS = [
+  { from: "hdri", to: "public/hdri" },
+  { from: "aura-environments", to: "public/aura-environments" }
+];
+export function copyScaffoldPublic({ dir, baseDir }) {
+  const pkg = join(baseDir, "node_modules", "create-aura3d");
+  const copied = [];
+  for (const d of SCAFFOLD_PUBLIC_DIRS) {
+    if (!existsSync(join(pkg, d.from))) continue;
+    cpSync(join(pkg, d.from), join(dir, d.to), { recursive: true, mode: fsConstants.COPYFILE_FICLONE });
+    copied.push(d.to);
+  }
+  return copied;
 }
 
 function repoSourceIndex(repoRoot) {
@@ -177,7 +198,8 @@ export function findRepoSourceLeaks({ dir, arm, repoRoot, baseDir }) {
       const mine = hashFile(join(dir, file));
       for (const candidate of candidates) {
         const theirs = join(repoRoot, candidate);
-        if (existsSync(theirs) && hashFile(theirs) === mine && !file.startsWith("public/assets/")) violations.push(`${file} is identical to repo source ${candidate}`);
+        const shipped = file.startsWith("public/assets/") || SCAFFOLD_PUBLIC_DIRS.some((d) => file.startsWith(`${d.to}/`));
+        if (existsSync(theirs) && hashFile(theirs) === mine && !shipped) violations.push(`${file} is identical to repo source ${candidate}`);
       }
     }
     if (["index.html", "tsconfig.json", "package.json", "TASK.md"].includes(file) && readFileSync(join(dir, file), "utf8").includes(repoRoot)) {
@@ -196,7 +218,7 @@ export function assertNoRepoSourceLeak(args) {
 export function collectAuthored(dir) {
   const out = {};
   for (const file of walk(dir)) {
-    if (file.startsWith("src/") || file === "index.html" || file === "vite.config.ts" || file === "tsconfig.json") {
+    if (file.startsWith("src/") || file.startsWith("recipes/") || file === "index.html" || file === "vite.config.ts" || file === "tsconfig.json") {
       out[file] = readFileSync(join(dir, file), "utf8");
     }
   }
