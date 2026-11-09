@@ -3,6 +3,7 @@ import { runMotionGate } from "../../../packages/game/src/motion/index";
 import { IDLE, SplatTurfSim, type Input } from "../../../apps/showcase-splat-turf/src/sim";
 import { TurfAutopilot } from "../../../apps/showcase-splat-turf/src/autopilot";
 import { SNAP_DISTANCE, blendShown, createTurfPresenter, shownOf } from "../../../apps/showcase-splat-turf/src/presentation";
+import { ballSquash } from "../../../apps/showcase-splat-turf/src/art/ball";
 
 const START: Input = { ...IDLE, start: true };
 
@@ -74,5 +75,18 @@ describe("splat turf presentation", () => {
       expect(report.cv).toBeLessThan(0.35);
     }
     expect(gate(60, true, 0.0015).stillFraction).toBeLessThan(0.05);
+  });
+});
+describe("splat turf ball squash (presentation only)", () => {
+  it("is identity under reduced motion and at rest, volume-preserving and bounded while steering", () => {
+    expect(ballSquash(9, 30, true)).toEqual([1, 1, 1]);
+    expect(ballSquash(0, 16, false)).toEqual([1, 1, 1]);
+    for (const v of [-20, -4, 3, 9, 40]) {
+      const [sx, sy, sz] = ballSquash(v, 36, false);
+      expect(sx * sy * sz).toBeCloseTo(1, 9);
+      expect(sx).toBeGreaterThan(1);
+      expect(sx).toBeLessThanOrEqual(1.12 + 1e-9);
+      expect(sy).toBeLessThan(1);
+    }
   });
 });
