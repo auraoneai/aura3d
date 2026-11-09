@@ -1,0 +1,7 @@
+# Wonder World is an unlisted prototype preview (see DEPLOYMENT.md): it is not
+# publicly released and not linked from anywhere. Block all crawling at the
+# robots layer; index.html additionally carries <meta name="robots"
+# content="noindex"> and every response carries X-Robots-Tag: noindex, nofollow
+# via public/_headers.
+User-agent: *
+Disallow: /
