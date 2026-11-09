@@ -9,6 +9,11 @@ import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
+/** GD-16 waiting passenger (Meshy rigged): node id, the one clip it ships and its kerb facing (toward the avenue and the approaching car). */
+export const PASSENGER_NODE = "taxi-passenger";
+export const PASSENGER_CLIP = "wave";
+export const PASSENGER_YAW = -0.55;
+export const PASSENGER_HEIGHT = 1.72;
 export const HIDDEN_POS: Vec3 = [0, -90, 140];
 export const DASH_ROWS = 14;
 export const DASH_STRIDE_Z = 14;
@@ -534,9 +539,13 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     primitives.cylinder({ name: "taxi-beacon-disc", size: [1.85, 0.04, 1.85], material: beaconBeamMat }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
     primitives.cylinder({ name: "taxi-beacon-beam", size: [0.42, 34, 0.42], material: beaconBeamMat }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
     primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }) }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
-    primitives.cylinder({ name: "taxi-passenger-body", size: [0.44, 1.35, 0.34], material: material.pbr({ color: "#38bdf8", roughness: 0.55 }) }).position(11.35, 0.88, -38).runtime(game.runtimeNode("taxi-passenger-body")),
-    primitives.sphere({ name: "taxi-passenger-head", size: [0.34, 0.36, 0.34], material: material.pbr({ color: "#fde68a", roughness: 0.6 }) }).position(11.35, 1.76, -38).runtime(game.runtimeNode("taxi-passenger-head")),
-    primitives.box({ name: "taxi-passenger-arm", size: [0.14, 0.58, 0.14], material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.2 }) }).position(11.05, 1.55, -38).runtime(game.runtimeNode("taxi-passenger-arm"))
+    // meshy07 (GD-16): the waiting passenger is the Meshy rigged hooded commuter hailing with its `wave` loop (replaces the
+    // body/head/arm stand-in). Skinned, so it is created visible on screen and parked at HIDDEN_SCALE, never hidden.
+    model(assets.gridPassenger, { name: PASSENGER_NODE, role: "setDressing", scaleMode: "fit", targetHeight: PASSENGER_HEIGHT })
+      .position(11.35, 0, -38)
+      .rotation(0, PASSENGER_YAW, 0)
+      .animate({ clip: PASSENGER_CLIP, loop: true, speed: opts.motionOk === false ? 0 : 1 })
+      .runtime(game.runtimeNode(PASSENGER_NODE))
   ]);
 
   // 7. Five playable cars (one shown at a time). GD-14: the 12 instanced spark spheres are gone; collisions fire the

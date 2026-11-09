@@ -144,6 +144,16 @@ export const assets = defineAuraAssets({
     hash: "sha256-97f12454094a4a21acf67fbd4e7fad4ef3e7c46b9d27af8fb428d16d8acff67c",
     bounds: [1.9004, 0.3736, 0.7851]
   },
+  // meshy07 (GD-16): the kerbside passenger, Meshy rigged and animated (24-joint humanoid, `wave` clip only; the `idle` clip
+  // was dropped because its 95 deg thigh twist fails the skin check). Armature scale baked to metres, repair-skin
+  // (normalize, prune-distant, smooth-bridges x8, cut-stretch 1.6), simplified to 14.3k triangles, normal/ORM at 512 px.
+  gridPassenger: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchPassengerAnimR2.glb",
+    hash: "sha256-bca3eb1bdd8367585fe860341c897fb1eb095087870de175fa32def3c9e90941",
+    bounds: [1.46, 1.72, 0.36]
+  },
   gridBldgNew1: {
     type: "model",
     format: "glb",
@@ -207,6 +217,7 @@ export const CATALOG_IDS: Readonly<Record<GridAssetKey, string | null>> = {
   gridGlassTower: null,
   gridBridgeTower: null,
   gridBridgeDeck: null,
+  gridPassenger: null,
   gridBldgNew1: null,
   gridBldgNew2: null,
   gridBldgMidrise: "teleopBldg_midrise",
