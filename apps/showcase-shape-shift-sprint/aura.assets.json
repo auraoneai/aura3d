@@ -16,6 +16,312 @@
       "metadata": {
         "license": "GT Walsheim Bold, AuraOne licensed font library (see public/aura-assets/PROVENANCE.md)"
       }
+    },
+    {
+      "id": "toyCastleIsland",
+      "type": "model",
+      "format": "glb",
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "source": "public/aura-assets/toyCastleIsland.df8dcbc8.glb",
+      "outputPath": "public/aura-assets/toyCastleIsland.df8dcbc8.glb",
+      "url": "/aura-assets/toyCastleIsland.df8dcbc8.glb",
+      "hash": "sha256-df8dcbc80ded256382a934a394e85b12675951f73c7604e1f9b724bc21a36a61",
+      "sizeBytes": 871728,
+      "bounds": [
+        1.583,
+        1.899,
+        1.603
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.796,
+          -0.951,
+          -0.801
+        ],
+        "max": [
+          0.787,
+          0.949,
+          0.802
+        ],
+        "size": [
+          1.583,
+          1.899,
+          1.603
+        ],
+        "center": [
+          -0.005,
+          -0.001,
+          0.0
+        ],
+        "maxDimension": 1.899,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/toyCastleIsland.df8dcbc8.glb",
+        "licenseName": "Meshy generated asset (AuraOne account plan terms)",
+        "licenseRaw": "Generated 2026-11-09 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, shape-shift-sprint/sssFloatingIsland). Meshy plan terms at generation time; not CC0.",
+        "author": "AuraOne (Meshy)",
+        "evidence": [
+          "public/aura-assets/provenance/toyCastleIsland.rights.json"
+        ],
+        "checkedAt": "2026-11-09T14:30:00.000Z"
+      },
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/toyCastleIsland.thumb.svg",
+      "quality": "candidate",
+      "role": "backdrop",
+      "audio": {
+        "author": "AuraOne (Meshy)"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "integrity": {
+        "version": 1,
+        "digest": "sha256-df8dcbc80ded256382a934a394e85b12675951f73c7604e1f9b724bc21a36a61"
+      }
+    },
+    {
+      "id": "toyBlockTower",
+      "type": "model",
+      "format": "glb",
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "source": "public/aura-assets/toyBlockTower.7f6db496.glb",
+      "outputPath": "public/aura-assets/toyBlockTower.7f6db496.glb",
+      "url": "/aura-assets/toyBlockTower.7f6db496.glb",
+      "hash": "sha256-7f6db4963426a7b9d4a2ac54ee232fb306a094fa75e0945a9cf60c31a433e3d6",
+      "sizeBytes": 750972,
+      "bounds": [
+        0.626,
+        1.903,
+        0.635
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.314,
+          -0.952,
+          -0.318
+        ],
+        "max": [
+          0.313,
+          0.95,
+          0.317
+        ],
+        "size": [
+          0.626,
+          1.903,
+          0.635
+        ],
+        "center": [
+          -0.0,
+          -0.001,
+          -0.0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/toyBlockTower.7f6db496.glb",
+        "licenseName": "Meshy generated asset (AuraOne account plan terms)",
+        "licenseRaw": "Generated 2026-11-09 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, shape-shift-sprint/sssToyBlockTowerB). Meshy plan terms at generation time; not CC0.",
+        "author": "AuraOne (Meshy)",
+        "evidence": [
+          "public/aura-assets/provenance/toyBlockTower.rights.json"
+        ],
+        "checkedAt": "2026-11-09T14:30:00.000Z"
+      },
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/toyBlockTower.thumb.svg",
+      "quality": "candidate",
+      "role": "backdrop",
+      "audio": {
+        "author": "AuraOne (Meshy)"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "integrity": {
+        "version": 1,
+        "digest": "sha256-7f6db4963426a7b9d4a2ac54ee232fb306a094fa75e0945a9cf60c31a433e3d6"
+      }
     }
   ]
 }

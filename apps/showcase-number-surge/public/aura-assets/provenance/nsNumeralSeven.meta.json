@@ -1,0 +1,44 @@
+{
+  "resource": "text-to-3d",
+  "task": {
+    "id": "01a1c0a6-81a3-77ba-870a-ae5298d89f07",
+    "type": "text-to-3d-refine",
+    "status": "SUCCEEDED",
+    "progress": 100,
+    "preceding_tasks": 0,
+    "created_at": 1794233500659,
+    "started_at": 1794233500666,
+    "finished_at": 1794233526999,
+    "expires_at": 0,
+    "task_error": null,
+    "model_urls": {
+      "glb": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c0a6-81a3-77ba-870a-ae5298d89f07/output/model.glb?Expires=4947782400&Signature=FrA~Fa5cdFMysj0gT~hOMXdDytDNgAoucK7QmFvBXgJ-snaPetZbhBuJ52HBcm-iAgIMIGaCRossrrxqJKhXEeWA3GnvBahNUQWDA~RxupjKUs3xvc1lgb8Z0QYU9Y~EC8cdIyT~5ZZGMJIxVhkv~lQ4PNkVJOLZ~Y-I1VJBNB5WzDSGuNVZf8wK-uvECDRjl1Hq2sIfWIQ2H7cy~ptieGms2JOjC~c9FrutIjkP2hAUO7TTrIslfn07HTsoQWcd6WGcu0EwVrfOKcA7M6a0bc-CiztkTo6wy7WX2DDqPZBb9Vz0LlyvnGMwZw8QIUQUJpiptEVHe4EmegHRtt7pcg__&Key-Pair-Id=K1VGYTHIYLM9UM"
+    },
+    "texture_urls": [
+      {
+        "base_color": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c0a6-81a3-77ba-870a-ae5298d89f07/output/texture_0.png?Expires=4947782400&Signature=CDzTYASqSTlNBHuV1eOiWFyN59NzX5vvK0VKjrKccLPDRpoQGfm~GnboEEqSCVtQUPwzAApqptgIBO9W7t4jL4ZAW5BYxySxojydbVOo9boeNC3EsoJKy~aLLxYD5HVSyDjnLWrDhl1GBS-~SPHg2Q9EV63zv4nluKuyTaWrKzIbq0PKAkty5XrsjGTiTeD6-I5wXzLi6550l3TbZoctHOm9NMYPDo-OaxQsu3Etf1YSMt8h6W1zf06MBRb96D94IxiNwpF6AvKO65343TQ73A5~w2MIGi4emF9cV4pkHlN88iCJ6ZFr0TIQ3U5hTP-f1PmAm~TuhPFOTvRhqxA-7w__&Key-Pair-Id=K1VGYTHIYLM9UM",
+        "metallic": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c0a6-81a3-77ba-870a-ae5298d89f07/output/texture_0_metallic.png?Expires=4947782400&Signature=f6iR5kcf51ZBXYCGlTPdCNBOeJ6NVsM0S479eYR0y7eEvy-YTjh6hzAVtxhTUvuQi6GhcPaYm8jPeU-xUp5sESky5tgI6eNalnEScxnM-YWsMmoApSuR22mRq5vL-Rn5CIWx0hckAnK-veooTfbb3c0KK4Ke613oxisytoYFS1lR5-ZilrGvuWJxQKb54Q78CtF9sH3JUgiTWIhSxABhcbA9sLIJgXkTRf-FgFVPOnOJ2DimDpZMVXu96vStU4yEMhI3tGSSbACCUwRyqe-cQdoc5vXBRhq5nU~OKxPl-yE5ye8VL1RqtTHKw0bWvIAi9tiuG54prw1-hs5ikS-N7Q__&Key-Pair-Id=K1VGYTHIYLM9UM",
+        "normal": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c0a6-81a3-77ba-870a-ae5298d89f07/output/texture_0_normal.png?Expires=4947782400&Signature=fBZJh2ctgHlMPOyOCSwPMAq8jfWBkS0lI3z6sf6JforRgtQ7UfsZh~EHb6MijtZ5it4Jaz2U0FZ3SRqTpQP8gP00OG34lvOJjhiHmySys6q5vGK6xCdZ~spmzbglrzKxVXguCN7kzAzUtH8gYMHKs4XnGkZ3R2H7vCy-1Ib8DY1RSXZvAoWAioLmWKC0s3wr5KAQPdq7DOjI3D7WOIkws1G9LoafAA1Ew-kNepb-NOeilVFVoyRAvGBLPvvzaOU9ZzANsY~NXBpCEaY3rcPqDpEyuoQFk~nWIMYooHqhYcw8Tm50Q1i8Xxz3Fwd20ngnXyl7ysNW53jyLPNl7ZKKRA__&Key-Pair-Id=K1VGYTHIYLM9UM",
+        "roughness": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c0a6-81a3-77ba-870a-ae5298d89f07/output/texture_0_roughness.png?Expires=4947782400&Signature=dR~FXtMXw4q25Oevk8gBeg43UeCI0TUkOc3VgPvcYVrra84rjFej6~CZRYpCdPOKDZqpgB8ETrbVbpswKKOU4reRGfA1F-2gmKnMkhJExg~YxG9bXcpqwE96zI5dgmVfAhqLct6MX3LNksi2xejkxxBKdF~m7LMvl8is5fslEl4PG7nSOZ9upeIs6zvbw-qId79NJrPO96eaGGEWin7b1qhZyE-2gPZ0vWIKp4LQobn4w8S~T10uYw4DVvu6e4~EBDi5Kx9ECnobUGdcM7Fpcxj49c82F7EDbT0MZbKOe3p0NXOD4-Nmj5PrK4VQ0cle6E7WO-sB4pA-6~icmH2nJA__&Key-Pair-Id=K1VGYTHIYLM9UM"
+      }
+    ],
+    "thumbnail_url": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c0a6-81a3-77ba-870a-ae5298d89f07/output/preview.png?Expires=4947782400&Signature=MRykq9QMbPAGfIq2a04l79p5ZlpwCstzUWS~WWNc5D6wNYjqmrBPTbg1QmyW8Hh8s~KxOeIyYxCPdA7zhvdbeqh9zZ4HSn4S1kzaz1al5ow3sO~EUzPUWHTTMOci7p88H8cLB9kwTqqLyYDYwzBT6Wox9D9WrTGwLkTKcdWxy7MCrzeq2Cn8HLuD~n6OkjBnavTVO0ahDSw2HtOOOTJ3Omc46nTvaPzfXKJk3h5hCHWKtnzjpMMCgh5wW9JWLVE1ITMFjQAVG1q-x9W-JKJafxDZLRUi~5rbBzmNltT0Rb0jO0JwLfQpWQFJ7DRnIRH-9BH6nC4tJz8g-KEdqhaEHQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
+    "prompt": "giant glossy hot-pink plastic numeral seven sculpture standing on a round bright cyan base, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+    "texture_prompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave",
+    "texture_image_url": "",
+    "mode": "refine",
+    "name": "",
+    "model_type": "standard",
+    "seed": 2252213866,
+    "consumed_credits": 10
+  },
+  "saved_files": [
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsNumeralSeven/raw.part-85096-1794233537452/model.glb",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsNumeralSeven/raw.part-85096-1794233537452/thumbnail.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsNumeralSeven/raw.part-85096-1794233537452/texture_0_base_color.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsNumeralSeven/raw.part-85096-1794233537452/texture_0_metallic.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsNumeralSeven/raw.part-85096-1794233537452/texture_0_normal.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsNumeralSeven/raw.part-85096-1794233537452/texture_0_roughness.png"
+  ],
+  "downloaded_at": "2026-11-09T14:12:22.723Z"
+}

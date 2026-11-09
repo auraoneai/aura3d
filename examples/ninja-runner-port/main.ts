@@ -600,7 +600,7 @@ async function boot(): Promise<void> {
   const status = $("loading-status");
   // 5.0 A1: one monotonic bar over the real boot stages (runner models 0..0.6, village build, renderer mount, first frame).
   const loading = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
-  actors = await loadActors(canvas, (done, total) => { loading.set(0.6 * (done / Math.max(1, total))); status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
+  actors = await loadActors(canvas, (done, total) => { loading.set(0.6 * (done / Math.max(1, total))); status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; }, config.look);
   status.textContent = "Building the village…";
   loading.set(0.65);
   const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain });
