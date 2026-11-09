@@ -13,7 +13,7 @@ let checkedAssets = 0;
 const external = /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i;
 const htmlFiles = [
   resolve(marketingDir, "index.html"),
-  ...readdirSync(resolve(marketingDir, "docs"))
+  ...readdirSync(resolve(marketingDir, "docs"), { recursive: true })
     .filter((file) => file.endsWith(".html"))
     .map((file) => resolve(marketingDir, "docs", file))
 ];
@@ -26,7 +26,11 @@ function routeCandidates(pathname) {
   const clean = pathname.replace(/\/+$/, "");
   const candidates = [];
   if (pathname.startsWith("/docs/")) {
-    candidates.push(resolve(marketingDir, "docs", pathname.slice("/docs/".length)));
+    const rest = pathname.slice("/docs/".length);
+    candidates.push(resolve(marketingDir, "docs", rest));
+    // Cloudflare Pages serves docs/<name>.html at extensionless /docs/<name>
+    // (308-redirects the .html form), so internal links are extensionless.
+    if (!rest.endsWith(".html")) candidates.push(resolve(marketingDir, "docs", `${rest}.html`));
   }
   if (pathname.startsWith("/apps/")) {
     const appPath = pathname.slice(1);
@@ -153,7 +157,8 @@ for (const [property, expectedWidth, expectedHeight] of [
 }
 
 // Game-count truth: the inventory, the generated index page and every stated count must agree.
-for (const script of ["gen-game-inventory.mjs --check", "gen-showcase-index.mjs --check", "check-game-count.mjs"]) {
+// seo-meta-pass guards the per-route SEO/AEO block (canonical, OG/Twitter, JSON-LD, h1).
+for (const script of ["gen-game-inventory.mjs --check", "gen-showcase-index.mjs --check", "check-game-count.mjs", "seo-meta-pass.mjs --check"]) {
   const [file, ...args] = script.split(" ");
   const result = spawnSync(process.execPath, [resolve(repoRoot, "tools", "site", file), ...args], { encoding: "utf8" });
   if (result.status !== 0) failures.push(`${file}: ${(result.stderr || result.stdout).trim()}`);
@@ -166,8 +171,10 @@ for (const script of ["gen-game-inventory.mjs --check", "gen-showcase-index.mjs 
   const { loadDeprecatedNames, scanText } = await import(pathToFileURL(resolve(repoRoot, "tools", "site", "stale-rules.mjs")).href);
   const canonical = JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "utf8")).version;
   const deprecatedNames = loadDeprecatedNames(repoRoot);
+  // docs/migration/* is exempt from the stale-version rules by definition: a
+  // 4.x -> 5.x migration guide has to name the old versions it documents.
   const staleTargets = [
-    ...htmlFiles.map((file) => [file, "html"]),
+    ...htmlFiles.filter((file) => !file.includes(`${resolve(marketingDir, "docs")}/migration/`)).map((file) => [file, "html"]),
     ...["content/llms-core.txt", "public/llms.txt", "public/llms-full.txt"].map((file) => [resolve(marketingDir, file), "text"])
   ];
   for (const [file, kind] of staleTargets) {

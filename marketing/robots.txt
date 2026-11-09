@@ -7,90 +7,175 @@ Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: ClaudeBot
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: Claude-Web
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: anthropic-ai
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: Perplexity-User
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: Applebot-Extended
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: Amazonbot
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: Meta-ExternalAgent
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: cohere-ai
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: CCBot
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: Bytespider
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: Diffbot
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: ImagesiftBot
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: iaskspider
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: MistralAI-User
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: Timpibot
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: VelenPublicWebCrawler
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
+
+User-agent: YouBot
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+Disallow: /*route-health.json$
 
 User-agent: *
 Allow: /
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /*.map$
+Disallow: /*route-health.json$
 
 Host: https://aura3d.auraone.ai
 Sitemap: https://aura3d.auraone.ai/sitemap.xml

@@ -8,82 +8,88 @@
     <priority>1.00</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/agent-quickstart.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/agent-quickstart</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.86</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/agent-rules.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/agent-rules</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.84</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/api.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/api</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.88</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/assets.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/assets</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.86</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/templates.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/templates</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.86</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/prompt-recipes.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/prompt-recipes</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.88</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/deployment.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/deployment</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.82</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/claude.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/claude</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.78</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/cursor.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/cursor</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.78</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/evidence.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/evidence</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.78</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/claims.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/claims</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.78</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/aura3d-vs-threejs</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.82</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/docs/aura-clash-showcase.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/aura-clash-showcase</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.86</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/docs/migration/4-to-5</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.72</priority>
   </url>
   <url>
     <loc>https://aura3d.auraone.ai/apps/wow-concept-car-cinema/</loc>
@@ -165,7 +171,7 @@
   </url>
   <url>
     <loc>https://aura3d.auraone.ai/apps/showcase-bunker-zero/</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
   </url>
