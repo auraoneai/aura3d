@@ -2,7 +2,9 @@
  * Per-frame uniform arena for batched WebGPU draws (5.5.1, P1).
  *
  * Every batched draw's uniform block is staged into a CPU mirror of a few large GPU uniform buffers ("chunks") at an
- * aligned offset handed out in draw order, and is bound as `{ buffer, offset, size }`. Only words that differ from the
+ * aligned offset handed out in draw order, and is bound as `{ buffer, offset, size }`. Blocks of one size share a lane
+ * of chunks, so a frame with more or fewer blocks of one size does not move the blocks of other sizes (their
+ * offsets, and so their cached bind groups, stay put). Only words that differ from the
  * mirror are marked dirty; dirty runs closer than `mergeGap` bytes are coalesced, and `flush()` (called before each
  * batch submission) uploads them with one `writeBuffer` per run instead of one per draw. Offsets restart at 0 every
  * frame (`rewind`), so an unchanged draw finds its previous frame's bytes at the same offset (same bind group, no
@@ -47,6 +49,14 @@ export interface UniformArenaImageTag {
   readonly patch?: { readonly base: Uint8Array; readonly baseVersion: number; readonly start: number; readonly end: number };
 }
 
+interface Lane<B extends object> {
+  /** Aligned size of this lane's blocks (all of one byte length). */
+  readonly slot: number;
+  readonly chunks: Chunk<B>[];
+  chunk: number;
+  cursor: number;
+}
+
 interface Chunk<B extends object> {
   readonly buffer: B;
   readonly mirror: Uint8Array;
@@ -57,8 +67,6 @@ interface Chunk<B extends object> {
   /** The slot image and version each offset last received. */
   readonly images: Map<number, Uint8Array>;
   readonly versions: Map<number, number>;
-  /** Per alignment slot, the offset of the block staged over it last (-1: none), so a remembered image is trusted only while no other block overlapped it. */
-  readonly owners: Int32Array;
   /** Pending dirty byte runs as flat [start, end, start, end, ...], ascending within a frame. */
   dirty: number[];
 }
@@ -69,9 +77,9 @@ export class UniformArena<B extends object> {
   readonly #firstChunkSize: number;
   readonly #maxChunkSize: number;
   readonly #mergeGap: number;
+  /** Every chunk, in creation order. */
   readonly #chunks: Chunk<B>[] = [];
-  #chunk = 0;
-  #cursor = 0;
+  readonly #lanes = new Map<number, Lane<B>>();
   #broken = false;
   /** Writes issued and bytes uploaded since construction (diagnostics and tests). */
   writes = 0;
@@ -110,34 +118,33 @@ export class UniformArena<B extends object> {
   stage(bytes: Uint8Array, tag?: UniformArenaImageTag): UniformArenaRegion<B> | null {
     const size = bytes.byteLength;
     if (this.#broken || size === 0 || (size & 3) !== 0 || size > this.#maxChunkSize) return null;
-    let chunk = this.#chunks[this.#chunk];
-    let offset = alignUp(this.#cursor, this.#alignment);
+    // One lane per block size: draws of one shader layout share a lane, as they shared a buffer pool before.
+    let lane = this.#lanes.get(size);
+    if (!lane) { lane = { slot: alignUp(size, this.#alignment), chunks: [], chunk: 0, cursor: 0 }; this.#lanes.set(size, lane); }
+    const slotSize = lane.slot;
+    let chunk = lane.chunks[lane.chunk];
+    let offset = lane.cursor;
     if (!chunk || offset + size > chunk.size) {
-      // The rest of this chunk stays as it is; the block goes to the start of the next one.
-      if (chunk) { this.#chunk += 1; offset = 0; }
-      chunk = this.#chunks[this.#chunk] ?? this.#createChunk(size);
-      if (size > chunk.size) return null;
+      // The rest of this chunk stays as it is; the block goes to the start of the lane's next chunk.
+      if (chunk) lane.chunk += 1;
+      chunk = lane.chunks[lane.chunk] ?? this.#createChunk(lane);
       offset = 0;
     }
-    this.#cursor = offset + size;
+    lane.cursor = offset + slotSize;
     let region = chunk.regions.get(offset);
     if (!region || region.size !== size) {
       region = new UniformArenaRegion(chunk.buffer, offset, size);
       chunk.regions.set(offset, region);
     }
-    const align = this.#alignment;
-    const owners = chunk.owners;
-    let intact = true;
-    for (let slot = offset / align, end = Math.ceil((offset + size) / align); slot < end; slot += 1) {
-      if (owners[slot] !== offset) { intact = false; owners[slot] = offset; }
-    }
+    // Blocks of a lane sit at whole multiples of its slot size, so no other block ever overlaps this one's range: the
+    // image remembered at this offset is the last one written here.
     const last = chunk.images.get(offset);
     const lastVersion = chunk.versions.get(offset);
-    if (tag && intact && last === tag.image && lastVersion === tag.version && last.byteLength === size) return region;
+    if (tag && last === tag.image && lastVersion === tag.version && last.byteLength === size) return region;
     if (tag) { chunk.images.set(offset, tag.image); chunk.versions.set(offset, tag.version); }
     else if (last) chunk.images.delete(offset);
     const patch = tag?.patch;
-    if (patch && intact && last === patch.base && lastVersion === patch.baseVersion && last.byteLength === size
+    if (patch && last === patch.base && lastVersion === patch.baseVersion && last.byteLength === size
       && patch.start >= 0 && patch.end <= size && patch.start < patch.end) {
       // The region holds the base image: only the rewritten range can differ.
       const start = patch.start & ~3, end = (patch.end + 3) & ~3;
@@ -172,29 +179,29 @@ export class UniformArena<B extends object> {
   /** Start the next frame's allocations at offset 0 (pending runs are uploaded first). */
   rewind(): void {
     this.flush();
-    this.#chunk = 0;
-    this.#cursor = 0;
+    for (const lane of this.#lanes.values()) { lane.chunk = 0; lane.cursor = 0; }
   }
 
   /** Drop every chunk (device loss or disposal) and return their buffers for retirement. */
   reset(): B[] {
     const buffers = this.buffers.slice();
     this.#chunks.length = 0;
-    this.#chunk = 0;
-    this.#cursor = 0;
+    this.#lanes.clear();
     this.#broken = false;
     return buffers;
   }
 
-  #createChunk(minimum: number): Chunk<B> {
+  #createChunk(lane: Lane<B>): Chunk<B> {
     const index = this.#chunks.length;
-    let size = this.#firstChunkSize;
-    for (let step = 0; step < index && size < this.#maxChunkSize; step += 1) size *= 2;
-    size = Math.min(this.#maxChunkSize, Math.max(size, alignUp(minimum, this.#alignment)));
+    // A lane starts small (32 blocks, or the first-chunk size if smaller) and doubles up to the largest chunk size.
+    let size = Math.min(this.#maxChunkSize, Math.max(lane.slot, Math.min(this.#firstChunkSize, lane.slot * 32)));
+    for (let step = 0; step < lane.chunks.length && size * 2 <= this.#maxChunkSize; step += 1) size *= 2;
+    size = Math.max(size, lane.slot);
     const buffer = this.#host.createChunk(size, index);
     const mirror = new Uint8Array(size);
-    const chunk: Chunk<B> = { buffer, mirror, words: new Uint32Array(mirror.buffer), size, regions: new Map(), images: new Map(), versions: new Map(), owners: new Int32Array(Math.ceil(size / this.#alignment)).fill(-1), dirty: [] };
+    const chunk: Chunk<B> = { buffer, mirror, words: new Uint32Array(mirror.buffer), size, regions: new Map(), images: new Map(), versions: new Map(), dirty: [] };
     this.#chunks.push(chunk);
+    lane.chunks.push(chunk);
     return chunk;
   }
 

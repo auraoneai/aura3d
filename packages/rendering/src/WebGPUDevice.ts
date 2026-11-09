@@ -5011,7 +5011,14 @@ export class WebGPUDevice implements RenderDevice {
     this.assertOutsideMrtSubmission();
     if (this.#pointSubmissionActive) throw new RenderDeviceError("Point submission cannot be reentered", "WEBGPU_POINT_SUBMISSION_ACTIVE");
     let structured: string[] | null = null;
-    if (command.uniforms) for (const [name, value] of command.uniforms) if (!isLegacyUniformValue(value)) (structured ??= []).push(name);
+    // One pass over the uniforms: structured values, and the texture bindings (in uniform order) that the attachment
+    // feedback check and the batch access list read below.
+    let bindings: TextureBinding[] | null = null;
+    if (command.uniforms) for (const [name, value] of command.uniforms) {
+      if (typeof value === "number") continue;
+      if (!isLegacyUniformValue(value)) (structured ??= []).push(name);
+      if (isTextureBinding(value)) (bindings ??= []).push(value);
+    }
     if (structured) {
       const shader = command.shader ? this.requireShader(command.shader) : undefined;
       if (!shader || shader.nativeUniformLayout !== "portable") {
@@ -5036,14 +5043,15 @@ export class WebGPUDevice implements RenderDevice {
     // Inside a batch window the draw's own helper calls must not submit the draws recorded before it.
     if (outer && this.#drawBatchWindows > 0) this.#drawBatchDrawActive = true;
     try {
-      this.drawInternal(command as DrawCommand);
+      this.drawInternal(command as DrawCommand, undefined, bindings ?? NO_TEXTURE_BINDINGS);
       if (proof?.phase === "recording" && this.nativeSubmissions === before) throw new RenderDeviceError("Native depth-of-field draw was not submitted", "WEBGPU_DOF_FRAME_STALE");
     }
     catch (error) { if (proof) proof.phase = "invalid"; throw error; }
     finally { if (outer) this.#drawBatchDrawActive = false; }
   }
 
-  private drawInternal(command: DrawCommand, pointCheck?: () => void): void {
+  /** `bindings`: the command's texture-binding uniform values in order, when the caller already collected them. */
+  private drawInternal(command: DrawCommand, pointCheck?: () => void, bindings?: readonly TextureBinding[]): void {
     this.assertFrame();
     if (this.nativeForwardBundleActive) throw new RenderDeviceError("Native bundle submission cannot be reentered", "WEBGPU_BUNDLE_SUBMISSION_ACTIVE");
     if (this.vertexConversionCheck) throw new RenderDeviceError("Vertex conversion submission cannot be reentered", "WEBGPU_VERTEX_CONVERSION_ACTIVE");
@@ -5066,7 +5074,12 @@ export class WebGPUDevice implements RenderDevice {
     }
     // Sampled textures (in uniform order), collected once for the storage and attachment feedback checks below.
     let sampledList: (Texture | null)[] | null = null;
-    if (command.uniforms) for (const value of command.uniforms.values()) if (isTextureBinding(value)) (sampledList ??= []).push(value.texture);
+    if (!bindings) {
+      const collected: TextureBinding[] = [];
+      if (command.uniforms) for (const value of command.uniforms.values()) if (isTextureBinding(value)) collected.push(value);
+      bindings = collected;
+    }
+    for (const binding of bindings) (sampledList ??= []).push(binding.texture);
     const storageTextures = command.nativeStorageBindings?.length ? new Set<Texture>() : null;
     const storageBuffers = storageTextures ? new Set<RenderBuffer>() : null;
     for (const binding of command.nativeStorageBindings ?? []) {
@@ -5156,7 +5169,8 @@ export class WebGPUDevice implements RenderDevice {
       });
     }
     const submissionsBefore = this.nativeSubmissions;
-    this.withVertexConversionPins(command, () => this.submitNativeRenderPass(command, vertexBuffer, pointCheck));
+    const textureBindings = bindings;
+    this.withVertexConversionPins(command, () => this.submitNativeRenderPass(command, vertexBuffer, pointCheck, textureBindings));
     if (this.gaussianSplatBorrowedDepth && this.nativeSubmissions === submissionsBefore) {
       throw new RenderDeviceError("WebGPU Gaussian splat draw could not be submitted", "GAUSSIAN_SPLAT_NATIVE_UNAVAILABLE");
     }
@@ -9020,7 +9034,7 @@ export class WebGPUDevice implements RenderDevice {
     }
   }
 
-  private submitNativeRenderPass(command: DrawCommand, vertexBuffer: WebGPURenderBuffer, pointCheck?: () => void): void {
+  private submitNativeRenderPass(command: DrawCommand, vertexBuffer: WebGPURenderBuffer, pointCheck?: () => void, textureBindings?: readonly TextureBinding[]): void {
     const mrtTarget = this.activeRenderTarget?.nativeExtraColors.length ? this.activeRenderTarget : null;
     const mrtFrame = this.frameToken;
     const mrtNeedsClear = mrtTarget?.nativeNeedsClear;
@@ -9792,8 +9806,8 @@ export class WebGPUDevice implements RenderDevice {
         const resource = binding.kind === "storage-buffer" ? nativeBufferHandle(this.requireBuffer(binding.buffer)) : this.getNativeTexture(binding.texture);
         access(resource, "readwrite");
       }
-      for (const value of command.uniforms?.values() ?? []) {
-        if (!isTextureBinding(value) || !value.texture || value.texture.disposed) continue;
+      for (const value of textureBindings ?? [...(command.uniforms?.values() ?? [])].filter(isTextureBinding)) {
+        if (!value.texture || value.texture.disposed) continue;
         const texture = value.texture;
         const streaming = this.nativeStreamingLeases.get(texture);
         let native = (streaming ? (streaming.current ?? streaming.fallback).native : undefined) ?? this.nativeSampledTextures.get(texture)?.texture;
@@ -12450,6 +12464,8 @@ interface GeneratedPbrPackSlot {
   readonly packedLoopColor: boolean;
   readonly photometricProfile: boolean;
 }
+
+const NO_TEXTURE_BINDINGS: readonly TextureBinding[] = Object.freeze([]);
 
 /** A draw's uniform block: a pooled buffer of its own, or a range of the frame's uniform arena. */
 type TransientUniform = WebGPUBufferLike | UniformArenaRegion<WebGPUBufferLike>;
