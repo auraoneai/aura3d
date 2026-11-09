@@ -18,4 +18,4 @@ steps:
       - A3D_PLAN_GENERATED_AT={{.Values.PLAN_GENERATED_AT}}
       - SOURCE5_EXAMPLE_SHARDS={{.Values.EXAMPLE_SHARDS}}
       - AURA3D_ARTIFACTS_SAS={{.Values.ARTIFACTS_SAS}}
-    timeout: 1800
+    timeout: 3600
