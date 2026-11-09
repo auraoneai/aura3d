@@ -143,40 +143,6 @@
    "text": "window.__TASK_STATE__ exposes status, score, height as specified"
   }
  ],
- "105": [
-  {
-   "id": "c1",
-   "text": "Page loads under vite with a canvas with id #app and no console errors on first load with zero plants."
-  },
-  {
-   "id": "c2",
-   "text": "A click on the canvas plants a new plant at the ground position under the cursor (ray or plane intersection, not a fixed position)."
-  },
-  {
-   "id": "c3",
-   "text": "Plants grow over time from a small sprout to a larger mature form with a visibly different look, with growth running about 8 seconds, driven by elapsed time."
-  },
-  {
-   "id": "c4",
-   "text": "Each plant grows independently from its own plant time (later plants are smaller than earlier ones)."
-  },
-  {
-   "id": "c5",
-   "text": "Appearance varies between plants (colour or size variation)."
-  },
-  {
-   "id": "c6",
-   "text": "DOM overlay shows 'Plants: N' updating on every plant and on Clear, and the Clear button removes all plants."
-  },
-  {
-   "id": "c7",
-   "text": "window.__TASK_STATE__ exposes ready, plantCount and plants[{x,z,growth}] with growth in 0..1, and window.__plantAt(x,z) adds a plant."
-  },
-  {
-   "id": "c8",
-   "text": "Clicks that miss the ground are ignored, and 40+ plants render without obvious frame-rate collapse (instancing or reused geometry preferred)."
-  }
- ],
  "106": [
   {
    "id": "c1",
@@ -219,84 +185,118 @@
    "text": "window.__EVAL_READY__ is set after the first frame."
   }
  ],
- "107": [
+ "109": [
   {
    "id": "c1",
-   "text": "Page is a vite app with a canvas #app that renders a non-blank 3D frame with no console errors"
+   "text": "The body is built from procedural smooth geometry with enough segments to avoid visible faceting."
   },
   {
    "id": "c2",
-   "text": "Source builds the tower from tapered geometry (cone frustum, lathe, or scaled stacked segments) rather than a single cylinder"
+   "text": "The paint material has a base colour, metalness/roughness, and a separate clearcoat layer with low clearcoat roughness (or an equivalent two-layer implementation)."
   },
   {
    "id": "c3",
-   "text": "At least 3 tower bands with at least 2 distinct colours are defined in source"
+   "text": "A metallic flake effect is implemented, e.g. a procedural normal or sparkle texture or noise, with per-pixel variation."
   },
   {
    "id": "c4",
-   "text": "A gallery with railing (multiple posts or a ring) is present near the top"
+   "text": "An environment map with strip or softbox lights is generated procedurally and applied so reflections are visible."
   },
   {
    "id": "c5",
-   "text": "A lantern room with an emissive or bright lamp element and a roof with finial is present"
+   "text": "At least one chrome or metal trim part and one dark glass or black part contrast with the paint."
   },
   {
    "id": "c6",
-   "text": "At least 4 windows and one door are created"
+   "text": "Four wheel or equivalent dark rubber parts are present."
   },
   {
    "id": "c7",
-   "text": "At least 5 rock pieces with varied scale/rotation form the base, and a cottage exists"
+   "text": "The turntable platform exists, the object rotates on it continuously and the camera is fixed."
   },
   {
    "id": "c8",
-   "text": "window.__TASK_STATE__ is set after first render with ready === true, partCount >= 30 and bandCount >= 3"
+   "text": "window.__TASK_STATE__.turntableAngleDeg increases over time and paintFinish equals 'clearcoat'."
   },
   {
    "id": "c9",
-   "text": "No external asset files are fetched (network requests only for the app's own bundle)"
+   "text": "A faint reflection or mirrored floor, or a contact shadow, grounds the object."
   },
   {
    "id": "c10",
-   "text": "Camera orbits slowly: frames captured 2 seconds apart differ"
+   "text": "window.__EVAL_READY__ is set after the first frame."
   }
  ],
- "108": [
+ "110": [
   {
    "id": "c1",
-   "text": "index.html has canvas#app; vite dev and build succeed"
+   "text": "A canvas with id #app is the render target"
   },
   {
    "id": "c2",
-   "text": "Peg grid has at least 7 staggered rows (alternating 6/7 pegs) built as fixed/static colliders"
+   "text": "Clock case and face built from primitives, with 12 distinct hour marks"
   },
   {
    "id": "c3",
-   "text": "Seven bins with divider colliders and visible labels 1-7 exist"
+   "text": "Three hands (hour, minute, second) present as separate objects"
   },
   {
    "id": "c4",
-   "text": "'Drop 20 Balls' button spawns exactly 20 dynamic sphere bodies at a 0.25 s simulated interval with the specified deterministic x offset"
+   "text": "Hour and minute hands are driven by the current Date, not hard-coded angles"
   },
   {
    "id": "c5",
-   "text": "'Reset' button removes all balls and zeroes counts and returns phase to 'ready'"
+   "text": "Second hand ticks discretely, once per second, rather than sweeping continuously"
   },
   {
    "id": "c6",
-   "text": "Fixed timestep physics (source check)"
+   "text": "Pendulum rod and bob pivot about a point at the top of the rod"
   },
   {
    "id": "c7",
-   "text": "Live bin counts are rendered on screen (DOM or in-scene text) and match __TASK_STATE__.bins"
+   "text": "Pendulum angle follows a time-based sinusoid with a 2 s period and an amplitude between 5 and 20 degrees"
   },
   {
    "id": "c8",
-   "text": "window.__TASK_STATE__ exists with phase, spawned, bins (length 7), total, updated every frame"
+   "text": "Two hanging weights with slow vertical drift"
   },
   {
    "id": "c9",
-   "text": "After dropping, spawned === 20, total === 20 within 40 s, phase 'settled', sum(bins) === 20 and at least 3 different bins are non-empty; running Reset then Drop again yields the identical bins array"
+   "text": "Floor, wall and at least one light present; no external model assets; no console errors"
+  }
+ ],
+ "111": [
+  {
+   "id": "c1",
+   "text": "Page loads under vite with a canvas with id #app and no console errors; central star and at least 6 planets of different size and colour are visible."
+  },
+  {
+   "id": "c2",
+   "text": "Planets orbit at different angular speeds with inner planets faster, and also spin about their own axes."
+  },
+  {
+   "id": "c3",
+   "text": "Each planet has a visible orbit line, and at least one planet has a moon orbiting it and at least one has a ring."
+  },
+  {
+   "id": "c4",
+   "text": "Clicking a planet with the mouse focuses it (picking via ray or equivalent), with an eased camera transition of about 1.5 seconds that then follows the planet as it moves."
+  },
+  {
+   "id": "c5",
+   "text": "A DOM info panel shows planet name, orbital period in days and distance in million km on focus and is hidden when unfocused."
+  },
+  {
+   "id": "c6",
+   "text": "Clicking empty space or pressing Escape returns the camera to the overview; drag to orbit and scroll to zoom work in the overview with limits."
+  },
+  {
+   "id": "c7",
+   "text": "Pause/Play toggle button stops and resumes orbital motion and updates its label."
+  },
+  {
+   "id": "c8",
+   "text": "window.__TASK_STATE__ (ready, focused, paused, planets[{name,x,y,z}], cameraDistanceToFocus) and window.__focusPlanet / window.__unfocus work and agree with what is visible."
   }
  ]
 }
