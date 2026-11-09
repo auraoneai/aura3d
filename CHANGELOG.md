@@ -4,6 +4,13 @@ Version: 5.3.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## Unreleased (5.4.0)
+
+### WebGPU performance round 2
+
+- WebGPU per-draw and per-frame costs cut further: the PRD-02 shadow system is no longer rebuilt every frame (both backends), generated-PBR uniforms are packed in place, portable uniform writes use a typed f32 view, post-chain targets and uniform buffers are pooled, post passes keep validation error scopes only for their first uses, shadow-plan revalidation and the contact-shadow provider proof run once instead of several times, and the WebGPU device answers `drawCallCount()` without building diagnostics.
+- WebGPU is now the default backend (`backend: "auto"`, WebGL2 fallback kept, `?backend=webgl2` opts out) in six more games that render the same frame and run at >= 0.9x WebGL2 (paired medians, headless M4 Max): Shape Shift Sprint 0.96, Duneglide 0.95, Beat Hopper 0.95, Slingshot Siege 0.93, Polarity Orbs 0.93, Number Surge 0.92. Fps table in `docs/upgrade-5.0.0/README.md`; not a performance claim.
+
 ## 5.3.0 (2026-11-08)
 
 A minor release: WebGPU renders all 25 original showcase games correctly and is the default in 15 games where it keeps up with WebGL2, the WebGPU draw path is much cheaper per draw, worker rendering and Display-P3 output are opt-in in more games, reversed depth is the default in all 30 games, and the agent-authoring baseline (N1 to N7) makes a bare or guessed scene render well. It contains everything in 5.2.1. Unless stated otherwise, measurements are single-machine (Apple M4 Max, headless Chrome, ANGLE Metal for WebGL2, Dawn for WebGPU) and are not public performance claims.

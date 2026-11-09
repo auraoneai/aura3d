@@ -2518,7 +2518,7 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "c351dbdb7c0e1e6358156609f6c726a81043d855dbe8a5c2915cb9c40c6ff2b0"
+        "sha256": "8ae18d5ed219f89d2941db0f31c746726cac9b20c9320e04e580bd6eb13da9db"
       },
       "sourceDependencies": [
         {
@@ -6070,7 +6070,7 @@
       },
       "source": {
         "path": "examples/silt-and-signal-port/main.ts",
-        "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
+        "sha256": "006cc48445e2c08f2229656c88bae17b1d14b20f9e70be31b82ee137f44c8253"
       },
       "sourceDependencies": [
         {
@@ -6174,7 +6174,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/main.ts",
-          "sha256": "39023884d9f59e5bde40ba39b986d0e054d5bbe5fe1e4ebcdca81f291abd409f"
+          "sha256": "006cc48445e2c08f2229656c88bae17b1d14b20f9e70be31b82ee137f44c8253"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "f1e5cecfbc2862dd26611f4d23dcd692ced75d39a37dde146c6124647673db90"
+          "sha256": "6e920155187af2f3ee769069fc1324ac359864d2250298bc794efc28b3a4abba"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
@@ -9325,7 +9325,7 @@
       },
       "source": {
         "path": "apps/showcase-shape-shift-sprint/src/main.ts",
-        "sha256": "e0b2f2159dc92611f7d5c7b62c26f38c22c5452541cfa284a810db0d30731e10"
+        "sha256": "e81097fe97dc2f743e7a6622b450c622a652276b9ef4f16c308ec663c421b052"
       },
       "sourceDependencies": [
         {
@@ -9408,7 +9408,7 @@
       },
       "source": {
         "path": "apps/showcase-number-surge/src/main.ts",
-        "sha256": "d9b7c63c924d39985a4e2e287cddf0648eeaaa8205ce841be40758a146f6c229"
+        "sha256": "f64cde9786140cd3a7e09b917bb7dc0f7319a803facd4086606f34d31710b185"
       },
       "sourceDependencies": [
         {
@@ -9574,7 +9574,7 @@
       },
       "source": {
         "path": "apps/showcase-polarity-orbs/src/main.ts",
-        "sha256": "fb06f65853382df1f57a23f1a2db1f03f032333425e24653d3126f8a0fae4499"
+        "sha256": "9b1b6b564b9e4bc744d581b78da0f5b0c51fe114ef0ced9da63e57d840cd7fdd"
       },
       "sourceDependencies": [
         {
@@ -9674,7 +9674,7 @@
       },
       "source": {
         "path": "apps/showcase-beat-hopper/src/main.ts",
-        "sha256": "796137a63f58cdf847299fa751c15ef482ab096c2680b54d44bca986e9239166"
+        "sha256": "c38f55adf8f374154cc8171fb2205275ea09da97435938f7db66ddbf24ced9fb"
       },
       "sourceDependencies": [
         {
