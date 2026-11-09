@@ -186,6 +186,24 @@ describe("prd02 ReflectionProbeSystem (PRD-02 §6.6)", () => {
     expect(renders).toBe(12);
     device.dispose();
   });
+
+  it("settles a once probe on frames 30 and 120, then recaptures it only on explicit or bounded environment changes", () => {
+    const device = new MockRenderDevice();
+    let renders = 0;
+    const sys = new ReflectionProbeSystem(device, () => { renders += 1; });
+    sys.register(spec({ name: "once" }));
+    sys.register(spec({ name: "lazy", update: "on-demand" }));
+    const captures: string[] = [];
+    for (let frame = 1; frame <= 400; frame += 1) for (const name of sys.update(1)) captures.push(`${name}@${frame}`);
+    expect(captures).toEqual(["once@1", "once@30", "once@120"]);
+    // An environment that keeps changing (an animated sky) recaptures a once probe at most three times.
+    for (let i = 0; i < 6; i += 1) { sys.environmentChanged(); for (const name of sys.update(1)) captures.push(name); }
+    expect(captures.slice(3)).toEqual(["once", "once", "once"]);
+    sys.updateProbe("once");
+    expect(sys.update(1)).toEqual(["once"]);
+    expect(renders).toBe(6 * 7);
+    device.dispose();
+  });
 });
 
 describe("prd02 IrradianceVolumeSystem (PRD-02 §6.6)", () => {
@@ -504,6 +522,25 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     prd02BeforeFrame(renderer, source, flags, owner);
     expect(once()).toBe(12);
     restartPrd02PartialProbeCaptures(device, {});
+    disposePrd02Probes(device);
+    device.dispose();
+  });
+
+  it("recaptures a completed once probe when the source environment it was lit with changes", () => {
+    const device = new MockRenderDevice();
+    const owner = {};
+    const node = { kind: "probe", probe: "reflection", name: "board", options: { position: [0, 0, 0], resolution: 64, update: "once" } };
+    const flags = ctxFor(probeSource({ "prd02.probes.board": node })).flags;
+    let faces = 0;
+    const renderer = { device, renderProbeFace: () => { faces += 1; } };
+    const loading = {}, loaded = {};
+    prd02BeforeFrame(renderer, probeSource({ "prd02.probes.board": node, environmentProbe: loading }), flags, owner);
+    prd02BeforeFrame(renderer, probeSource({ "prd02.probes.board": node, environmentProbe: loading }), flags, owner);
+    expect(faces).toBe(6);
+    // The HDRI finished loading: a new environment probe identity re-lights the captured scene.
+    prd02BeforeFrame(renderer, probeSource({ "prd02.probes.board": node, environmentProbe: loaded }), flags, owner);
+    prd02BeforeFrame(renderer, probeSource({ "prd02.probes.board": node, environmentProbe: loaded }), flags, owner);
+    expect(faces).toBe(12);
     disposePrd02Probes(device);
     device.dispose();
   });
