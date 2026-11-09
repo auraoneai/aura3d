@@ -4913,7 +4913,7 @@
       },
       "source": {
         "path": "examples/drift-and-deliver-port/main.ts",
-        "sha256": "345a4cee09df2528f205b783fffac57f0bca2d07002ce9f6a05c0d68424ef6e1"
+        "sha256": "a1b21a62a3a5b10cebc2790a60cb34b105bc6ffbb99b56d7a885eb56abf15234"
       },
       "sourceDependencies": [
         {
@@ -5018,7 +5018,7 @@
         },
         {
           "path": "examples/drift-and-deliver-port/main.ts",
-          "sha256": "345a4cee09df2528f205b783fffac57f0bca2d07002ce9f6a05c0d68424ef6e1"
+          "sha256": "a1b21a62a3a5b10cebc2790a60cb34b105bc6ffbb99b56d7a885eb56abf15234"
         },
         {
           "path": "examples/drift-and-deliver-port/chase.ts",
@@ -5550,7 +5550,7 @@
       },
       "source": {
         "path": "examples/ninja-runner-port/main.ts",
-        "sha256": "6402672570983cd78b1c5637b95c47ed90cc0e4d38590e6c321add3d3fb6cada"
+        "sha256": "58d5821787f0f4730e003c2edab0f9bff92e544260e08be8ed75d1310a4fdfbe"
       },
       "sourceDependencies": [
         {
@@ -5679,7 +5679,7 @@
         },
         {
           "path": "examples/ninja-runner-port/main.ts",
-          "sha256": "6402672570983cd78b1c5637b95c47ed90cc0e4d38590e6c321add3d3fb6cada"
+          "sha256": "58d5821787f0f4730e003c2edab0f9bff92e544260e08be8ed75d1310a4fdfbe"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",

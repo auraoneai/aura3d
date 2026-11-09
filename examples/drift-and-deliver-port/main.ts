@@ -904,8 +904,8 @@ const progressTimer = setInterval(() => {
 
 /** A1: shared readiness helper; drives the loading panel's progress bar (`--aura3d-loading`, `aria-valuenow`) through the boot phases. */
 const loadingProgress = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
-/** Lab flags (`?backend=webgpu`, `?worker=1`, `?gamut=p3`): EXPERIMENTAL, all off by default, WebGL2/main-thread fallbacks kept. */
-const lab = labAppOptions(readLabFlags(), { createWorker: labRenderWorker });
+/** Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. `?worker=1` and `?gamut=p3` stay off by default (main-thread fallback kept). */
+const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
 
 async function boot(): Promise<void> {
   mark("module");
