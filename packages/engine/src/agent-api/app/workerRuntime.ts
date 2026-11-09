@@ -387,10 +387,12 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
       }
     });
   };
+  const rendererGlobals = collectWorkerRendererGlobals();
   const ready = send({ type: "init", canvas: offscreen, scene: initialScene, renderer: options.renderer, assets: assetOptions, size, autoStart: options.autoStart !== false,
     ...(options.flags ? { flags: options.flags } : {}),
     ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}),
-    ...(options.onAssetProgress || options.onAssetError ? { assetEvents: true } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
+    ...(options.onAssetProgress || options.onAssetError ? { assetEvents: true } : {}),
+    ...(rendererGlobals ? { globals: rendererGlobals } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
     if (options.prepareLocalScene && (response.syncLocalScenes !== true || response.sceneRevision !== 1)) {
       throw new AuraWorkerError("Worker does not support synchronized local scene replacement.", "scene-sync-unsupported");
     }
@@ -1058,6 +1060,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           canvas = message.canvas; rendererOptions = message.renderer; runRequested = message.autoStart;
           syncLocalScenes = message.syncLocalScenes === true;
           assetEvents = message.assetEvents === true;
+          installWorkerRendererGlobals(message.globals);
           resizeOffscreenCanvas(canvas, message.size);
           await mount(message.scene, controller.signal);
           sceneRevision = sceneSequence = 1;
@@ -1286,6 +1289,32 @@ function maskTransferables(value: unknown, transfer: readonly Transferable[]): u
 }
 const WORKER_TEXTURE_KIND = "aura-worker-cpu-texture/2";
 const LEGACY_WORKER_TEXTURE_KIND = "aura-worker-rgba8-texture/1";
+/**
+ * 5.4: renderer switches a page sets on `globalThis` before creating its app (`__A3D_SHADOW_FIT__ = "current"`, read by the
+ * shadow fit; `__A3D_DENSE_SHADOWS__`, `__A3D_SHADOW_TAPS__`, ...). The worker realm has its own global object, so the host
+ * copies every `__A3D_*__` own property holding a string, finite number or boolean.
+ */
+const WORKER_RENDERER_GLOBAL = /^__A3D_[A-Z0-9_]+__$/;
+export function collectWorkerRendererGlobals(source: object = globalThis): Record<string, string | number | boolean> | undefined {
+  let globals: Record<string, string | number | boolean> | undefined;
+  for (const key of Object.getOwnPropertyNames(source)) {
+    if (!WORKER_RENDERER_GLOBAL.test(key)) continue;
+    let value: unknown;
+    try { value = (source as Record<string, unknown>)[key]; } catch { continue; }
+    if (typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) (globals ??= {})[key] = value;
+  }
+  return globals;
+}
+
+/** Worker side of {@link collectWorkerRendererGlobals}; a switch the worker already defines is left alone. */
+export function installWorkerRendererGlobals(globals: unknown, target: object = globalThis): void {
+  if (!globals || typeof globals !== "object") return;
+  for (const [key, value] of Object.entries(globals as Record<string, unknown>)) {
+    if (!WORKER_RENDERER_GLOBAL.test(key) || Object.hasOwn(target, key)) continue;
+    if (typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) (target as Record<string, unknown>)[key] = value;
+  }
+}
+
 /** Presented frames between reads of the worker renderer's textured-material status. */
 const TEXTURED_SAMPLE_FRAMES = 15;
 /** Per texture (every mip level counted). */

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { forwardAuthoredCanvasSize } from "../../../packages/engine/src/agent-api/app/canvas.js";
-import { createWorkerRenderer, hydrateWorkerPatchArgs, installWorkerRenderer, snapshotWorkerPatchArgs } from "../../../packages/engine/src/agent-api/app/workerRuntime.js";
+import { collectWorkerRendererGlobals, createWorkerRenderer, hydrateWorkerPatchArgs, installWorkerRenderer, installWorkerRendererGlobals, snapshotWorkerPatchArgs } from "../../../packages/engine/src/agent-api/app/workerRuntime.js";
 import { texture } from "../../../packages/engine/src/agent-api/nodes/texture.js";
 import type { AuraWorkerEndpoint, AuraWorkerHostEndpoint, AuraWorkerRequest, AuraWorkerResponse } from "../../../packages/engine/src/agent-api/app/workerProtocol.js";
 import type { AuraSceneSnapshot, WebGLSceneRenderer } from "../../../packages/engine/src/agent-api/nodes/types.js";
@@ -262,5 +262,17 @@ describe("worker batched-state sync", () => {
     expect(Array.from(worker.getMatrixAt(1)).slice(12, 15)).toEqual([9, 8, 7]);
     mirror.dispose();
     worker.dispose();
+  });
+});
+
+describe("worker renderer globals", () => {
+  it("copies the page's __A3D_*__ switches into the worker global object", () => {
+    const page = { __A3D_SHADOW_FIT__: "current", __A3D_HDR_OUTPUT_PASS__: true, __A3D_SHADOW_TAPS__: 8, __A3D_OBJ__: {}, __A3D_NAN__: Number.NaN, other: "x" };
+    const globals = collectWorkerRendererGlobals(page);
+    expect(globals).toEqual({ __A3D_SHADOW_FIT__: "current", __A3D_HDR_OUTPUT_PASS__: true, __A3D_SHADOW_TAPS__: 8 });
+    expect(collectWorkerRendererGlobals({ other: 1 })).toBeUndefined();
+    const worker: Record<string, unknown> = { __A3D_SHADOW_TAPS__: 4 };
+    installWorkerRendererGlobals(structuredClone({ ...globals, evil: "x", __A3D_FN__: "ok" }), worker);
+    expect(worker).toEqual({ __A3D_SHADOW_FIT__: "current", __A3D_HDR_OUTPUT_PASS__: true, __A3D_SHADOW_TAPS__: 4, __A3D_FN__: "ok" });
   });
 });
