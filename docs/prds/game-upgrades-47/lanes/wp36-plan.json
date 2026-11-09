@@ -13879,6 +13879,118 @@
    "textureRes": "2k",
    "prompt": "neon DJ turntable deck on a slim stand, glossy black with glowing pink and cyan rings on two vinyl platters, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
    "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsPinkPalm",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "stylised palm tree made of glossy hot-pink plastic trunk and bright cyan plastic fronds, toy-like, on a small round black base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsNumeralSeven",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant glossy hot-pink plastic numeral seven sculpture standing on a round bright cyan base, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poMagnetRed",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "classic horseshoe magnet standing upright, bright glossy red painted body with shiny silver tips, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poMagnetBlue",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "classic horseshoe magnet standing upright, bright glossy blue painted body with shiny silver tips, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poCrystalBlue",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "cluster of tall bright sapphire blue crystals growing from a small pale stone base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poCrystalRed",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "cluster of tall bright ruby red crystals growing from a small pale stone base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssPinwheelC",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant toy pinwheel on a white pole, four vanes coloured bright red, sunny yellow, sky blue and red, glossy plastic, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
   }
  ]
 }
