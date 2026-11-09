@@ -5054,14 +5054,14 @@ export class WebGPUDevice implements RenderDevice {
     // Sampled textures (in uniform order), collected once for the storage and attachment feedback checks below.
     let sampledList: (Texture | null)[] | null = null;
     if (command.uniforms) for (const value of command.uniforms.values()) if (isTextureBinding(value)) (sampledList ??= []).push(value.texture);
-    const storageTextures = new Set<Texture>();
-    const storageBuffers = new Set<RenderBuffer>();
+    const storageTextures = command.nativeStorageBindings?.length ? new Set<Texture>() : null;
+    const storageBuffers = storageTextures ? new Set<RenderBuffer>() : null;
     for (const binding of command.nativeStorageBindings ?? []) {
       if (binding.kind === "storage-texture") {
-        if ((sampledList !== null && sampledList.includes(binding.texture)) || storageTextures.has(binding.texture)) {
+        if ((sampledList !== null && sampledList.includes(binding.texture)) || storageTextures!.has(binding.texture)) {
           throw new RenderDeviceError("A draw cannot bind the same writable texture more than once", "WEBGPU_STORAGE_FEEDBACK", { name: binding.name });
         }
-        storageTextures.add(binding.texture);
+        storageTextures!.add(binding.texture);
       } else {
         if (binding.buffer instanceof WebGPURenderBuffer) {
           this.#pointFrameWrites.delete(binding.buffer);
@@ -5071,16 +5071,17 @@ export class WebGPUDevice implements RenderDevice {
           // Conservatively invalidate even a rejected or read-only storage use.
           this.#pointBufferEpochs.set(binding.buffer, {});
         }
-        if (storageBuffers.has(binding.buffer) || binding.buffer === command.vertexBuffer || binding.buffer === command.indexBuffer ||
+        if (storageBuffers!.has(binding.buffer) || binding.buffer === command.vertexBuffer || binding.buffer === command.indexBuffer ||
           command.vertexBuffers?.includes(binding.buffer) || command.instanceAttributes?.some((attribute) => attribute.buffer === binding.buffer)) {
           throw new RenderDeviceError("A draw cannot combine writable storage and vertex or index access to the same buffer", "WEBGPU_STORAGE_FEEDBACK", { name: binding.name });
         }
-        storageBuffers.add(binding.buffer);
+        storageBuffers!.add(binding.buffer);
       }
     }
     if (this.activeRenderTarget) {
       const target = this.activeRenderTarget;
-      const writes = (texture: Texture | null): boolean => Boolean(texture && ((target.colorTextures ?? [target.colorTexture]).includes(texture) || texture === target.depthTexture || texture === target.multisampledDepthTexture));
+      const attached = target.colorTextures ?? [target.colorTexture];
+      const writes = (texture: Texture | null): boolean => Boolean(texture && (attached.includes(texture) || texture === target.depthTexture || texture === target.multisampledDepthTexture));
       if ((sampledList !== null && sampledList.some(writes))
         || (command.nativeStorageBindings ?? []).some((binding) => binding.kind === "storage-texture" && writes(binding.texture))) {
         throw new RenderDeviceError("A draw cannot sample a texture attached for writing in the same pass", "WEBGPU_ATTACHMENT_FEEDBACK", { label: command.label });
@@ -5545,7 +5546,7 @@ export class WebGPUDevice implements RenderDevice {
           Array.from({ length: 5 }, (_, level) => mips[level < mipCount ? level : 0]!), bloom);
         passes += 1;
       }
-      const composite = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
       pass("webgpu-bloom-v2-composite", WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT, "fs_bloom_composite",
         new Float32Array([request.intensity, 0, 0, 0]), [src, bloom], composite);
       passes += 1;
@@ -5652,7 +5653,7 @@ export class WebGPUDevice implements RenderDevice {
         level = mipTarget;
       }
       const weights = defaultWebGPUBloomWeights(normalized.mipCount);
-      const composite = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
       const mipViews = mips.map((mipTarget) => {
         const view = this.requireRenderTarget(mipTarget).nativeView;
         if (!view) throw new RenderDeviceError("WebGPU bloom mip has no native view", "NATIVE_POST_UNSUPPORTED", {});
@@ -5784,23 +5785,23 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("WebGPU SSR of rgba32f requires float32-filterable", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
     const depthView = dsrc.nativeDepthTexture.createView({ aspect: "depth-only" });
-    const trace = this.createRenderTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
+    const trace = this.transientPostTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
       format: "rgba16f", depth: false, label: "a3d-webgpu-ssr-trace" });
     let out: RenderTarget | undefined;
     try {
       this.runWebGPUFullscreenPass({ label: `webgpu-ssr-trace-${ssr.steps}${multisampled ? "-msaa" : ""}`, fragment: multisampled ? SSR_TRACE_MSAA_WGSL : SSR_TRACE_WGSL, entryPoint: "fs_ssr_trace",
         uniforms: webgpuSsrTraceUniforms(frame, ssr, src.width, src.height), views: [src.nativeView, depthView], target: trace });
-      out = this.createRenderTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-ssr" });
+      out = this.transientPostTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-ssr" });
       const traceView = this.requireRenderTarget(trace).nativeView;
       this.runWebGPUFullscreenPass({ label: "webgpu-ssr-composite", fragment: SSR_COMPOSITE_WGSL, entryPoint: "fs_ssr_composite",
         uniforms: webgpuSsrCompositeUniforms(ssr), views: [src.nativeView, traceView], target: out });
       this.nativeSsrPasses += 1;
       return out;
     } catch (error) {
-      out?.dispose();
+      if (out) this.releaseTransientPostTarget(out);
       throw error;
     } finally {
-      trace.dispose();
+      this.releaseTransientPostTarget(trace);
     }
   }
 
@@ -5942,11 +5943,13 @@ export class WebGPUDevice implements RenderDevice {
     const w = src.width, h = src.height, hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
     const scratch: RenderTarget[] = [];
     const scratchTarget = (width: number, height: number, format: "rgba32f" | "rgba8", label: string): WebGPURenderTarget => {
-      const target = this.createRenderTarget({ width, height, format, depth: false, label });
+      const target = this.transientPostTarget({ width, height, format, depth: false, label });
       scratch.push(target);
       return this.requireRenderTarget(target);
     };
-    const out = this.createRenderTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
+    // Inside a post chain the output and the scratch targets come from the chain's per-descriptor pool (every AO pass
+    // overwrites its whole target); outside one they are created and disposed as before.
+    const out = this.transientPostTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
     try {
       const linear = scratchTarget(w, h, "rgba32f", "a3d-webgpu-ao-linear-depth");
       this.runWebGPUFullscreenPass({ label: "webgpu-ao-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
@@ -5970,10 +5973,10 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeAmbientOcclusionPasses += 1;
       return out;
     } catch (error) {
-      out.dispose();
+      this.releaseTransientPostTarget(out);
       throw error;
     } finally {
-      for (const target of scratch) target.dispose();
+      for (const target of scratch) this.releaseTransientPostTarget(target);
     }
   }
 
@@ -7108,21 +7111,21 @@ export class WebGPUDevice implements RenderDevice {
     const depth = this.webgpuDepthStageDepth(depthSource);
     const width = color.width, height = color.height;
     const halfWidth = Math.max(1, width >> 1), halfHeight = Math.max(1, height >> 1);
-    const shafts = this.createRenderTarget({ width: halfWidth, height: halfHeight, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays-half" });
+    const shafts = this.transientPostTarget({ width: halfWidth, height: halfHeight, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays-half" });
     let out: RenderTarget | undefined;
     try {
       this.runWebGPUFullscreenPass({ label: depth.multisampled ? "webgpu-godrays-ms" : "webgpu-godrays", fragment: webgpuGodRaysFragment(depth.multisampled),
         entryPoint: "fs_godrays", uniforms: webgpuGodRaysUniforms(request, width, halfWidth, halfHeight), views: [color.nativeView, depth.view], target: shafts });
-      out = this.createRenderTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays" });
+      out = this.transientPostTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays" });
       this.runWebGPUFullscreenPass({ label: "webgpu-godrays-composite", fragment: WEBGPU_GODRAYS_COMPOSITE_FRAGMENT, entryPoint: "fs_godrays_composite",
         uniforms: new Float32Array([1 / width, 1 / height, 0, 0]), views: [color.nativeView, this.requireRenderTarget(shafts).nativeView], target: out });
       this.nativeDepthStagePasses += 2;
       return out;
     } catch (error) {
-      out?.dispose();
+      if (out) this.releaseTransientPostTarget(out);
       throw error;
     } finally {
-      shafts.dispose();
+      this.releaseTransientPostTarget(shafts);
     }
   }
 
