@@ -164,7 +164,7 @@ describe("checked WebGPU shadow publication", () => {
     if (kind === "webgpu") setRendererQrFlags(FLAGS_STRICT, f.device);
     try {
       f.device.beginFrame(4, 4); f.device.setRenderTarget(previous);
-      expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
+      expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(kind === "webgpu" ? /WebGPU clipped point depth requires/ : /Clipped point depth does not support/);
       expect(clear).not.toHaveBeenCalled();
       expect(allocate).not.toHaveBeenCalled();
       expect(f.attempts).toHaveLength(0);
@@ -183,7 +183,7 @@ describe("checked WebGPU shadow publication", () => {
     const clear = vi.spyOn(f.device, "clearRenderTarget");
     setRendererQrFlags(FLAGS_STRICT, f.device);
     try {
-      expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(/WebGPU point depth requires/);
+      expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(/WebGPU clipped point depth requires/);
       expect(f.device.activeFrameToken).toBeNull();
       expect(clear).not.toHaveBeenCalled();
       expect(f.attempts).toHaveLength(0);
@@ -321,7 +321,7 @@ describe("checked WebGPU shadow publication", () => {
         sun: { direction: [0, -1, -0.2] }, cameraPosition: EYE,
         casters: [item, { geometry: points, label: "late-clipped-points", instanceTransforms: [...IDENTITY], globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true } }],
         localLights: [{ shadowIndex: 0, kind: "point", position: [1, 2, 3], direction: [0, -1, 0], range: 20, size: 64 }],
-        flags: kind === "webgpu" ? FLAGS_STRICT : FLAGS_ON, tier: QUALITY_TIERS.high })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
+        flags: kind === "webgpu" ? FLAGS_STRICT : FLAGS_ON, tier: QUALITY_TIERS.high })).toThrow(kind === "webgpu" ? /WebGPU clipped point depth requires/ : /Clipped point depth does not support/);
       expect(clear).not.toHaveBeenCalled();
       expect(allocate).not.toHaveBeenCalled();
       expect(f.attempts).toHaveLength(0);
@@ -675,8 +675,8 @@ describe("checked WebGPU shadow publication", () => {
       expect(system.diagnostics()).toMatchObject({ cascadeCount: 0, tiles: 0, localLights: 0, casterVariants: [] });
       expect(f.device.getRenderTarget()).toBe(previous);
       const uniforms = system.update(frame);
-      expect(uniforms.cascadeTextures[0]?.format).toBe("rgba8");
-      expect(uniforms.atlasTexture?.format).toBe("rgba8");
+      expect(uniforms.cascadeTextures[0]?.format).toBe("rgba16f");
+      expect(uniforms.atlasTexture?.format).toBe("rgba16f");
       expect(f.attempts).toHaveLength(12);
       for (const command of f.attempts) expect(command.uniforms?.get("u_cameraPosition")).toEqual(EYE);
       expect(f.attempts.every((command) => command.uniforms?.get("u_time") === 12.5)).toBe(true);

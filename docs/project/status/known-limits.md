@@ -295,7 +295,7 @@ Each has its own row with a concrete reason, expiry 2027-01-31 and reviewer
 | `layering` → devtools/ | 1 | `sceneKitDiagnosticsCore.ts` reads the devtools budget table. |
 | `no-cycles` | 1 | 60-file agent-api SCC: exact snapshot, 8 members newer than the Phase-8 row. |
 | `max-file-lines` | 3 | `GameRuntimeCore.ts` (5,059), `nodes/types.ts` (3,158), `app/createAuraAppCore.ts` (2,654). |
-| `single-renderer` | 3 | WebGL2 context reads in the debug GPU probe, `compiler/renderer.ts`, and lane-01 output diagnostics. |
+| `single-renderer` | 4 | WebGL2 context reads in the debug GPU probe, `compiler/renderer.ts`, and lane-01 output diagnostics; since 5.3.0 also the plain look's one-time `EXT_color_buffer_float` probe in `looks/plainLook.ts` (moves behind RenderBackend capabilities). |
 | `glsl-location` | 14 | 12 renderer/pass modules with inline GLSL (paths referenced by ledger locators) and 2 false positives (`migrate-three/emit.ts`, `compiler/customMaterial.ts`). |
 | `no-evidence-in-runtime` | 9 | Published evidence/readiness names on `.` and `./renderer` (for example `collectAuraSceneEvidence`, `TypedGLBActorEvidence`). Removing them needs a deprecation cycle. The rule now accepts dated `{ rule, file, name }` rows. |
 | `unique-ownership` | 9 | `Vec3Like`, `ParticleBurst`, `earcut`, `shapeArea`, `isClockWise`, `triangulateShape`, `Shape` have different declarations in different packages; `ensurePhysics` and `physicsInitMode` are re-declared by `@aura3d/physics` over the optional `@aura3d/physics-rapier` solver so the backend-neutral contract never names the backend. |

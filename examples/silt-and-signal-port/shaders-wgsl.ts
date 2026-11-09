@@ -4,7 +4,7 @@
  * (default pixels unchanged). Authored uniform `foo` reads as `aura.u_foo`. The adapter's safe `pow` is `a3dPow`; GLSL
  * `atan(y, x)` is `atan2`. The canal draws with the portable water graph (water-graph.ts), which already has a WGSL half.
  */
-import { WGSL_CLIP, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, wgslStage } from "../shared/wgsl-twins";
 
 const POW = /* wgsl */ `
 fn a3dPow(x: f32, y: f32) -> f32 { return pow(max(abs(x), 1e-30), y); }

@@ -332,7 +332,8 @@ async function boot(): Promise<void> {
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "aces", dither: false, ...lab.output },
     // `?worker=1` (lab, default off; the showcase wrapper supplies createWorker): render in a worker, fallback kept.
-    ...(lab.worker ? { worker: lab.worker } : {}),
+    // A worker fragment without createWorker (no wrapper) stays on the main thread.
+    ...(lab.worker?.createWorker ? { worker: { fallback: lab.worker.fallback, createWorker: lab.worker.createWorker } } : {}),
     scene: world.scene
   });
   await app.ready();

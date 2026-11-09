@@ -8,8 +8,8 @@ const mainSource = readFileSync(resolve(__dirname, "../../../apps/showcase-roads
 
 describe("roadster-rush renderer quality (E1 handoff, RENDERER_QUALITY_STRING)", () => {
   it("asks for the auto tier, not a fixed tier string", () => {
-    // invariant: source must keep `renderer: { quality: "auto" }` — Roadster Rush picks its render tier per device instead of pinning a fixed quality string
-    expect(mainSource).toContain('renderer: { quality: "auto" }');
+    // invariant: source must keep `renderer: { quality: "auto"` (optionally followed by the lab `?backend=` merge, which only adds backend/allowFallback) — Roadster Rush picks its render tier per device instead of pinning a fixed quality string
+    expect(mainSource).toMatch(/renderer: \{ quality: "auto"(?: \}|, \.\.\.lab\.renderer \})/);
     expect(mainSource).not.toMatch(/quality:\s*"(low|medium|high|ultra)"/);
   });
 

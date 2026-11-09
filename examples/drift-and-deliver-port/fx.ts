@@ -11,7 +11,7 @@
  * the delivery flash at 0.3 peak.
  */
 import type { CustomSpec } from "./headlights";
-import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../shared/wgsl-twins";
 
 /** Courier teal, reserved for the car, the drop-off beacon and the minimap (WP-28 identity). */
 export const COURIER_TEAL = "#22c3c9";

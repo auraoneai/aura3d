@@ -635,7 +635,7 @@ describe("scene camera eye in shadow and outline depth passes", () => {
       expect(map!.localShadows?.slots.get(local)).toBe(0);
       const raw = map!.localShadows?.rawTexture;
       expect(raw?.name).toBe("u_localShadowAtlas");
-      expect(raw?.texture?.format).toBe(kind === "webgpu" ? "rgba8" : "depth24");
+      expect(raw?.texture?.format).toBe(kind === "webgpu" ? "rgba16f" : "depth24");
       expect(raw?.sampler.compare).toBeUndefined();
       expect(raw?.sampler.minFilter).toBe("nearest");
       if (kind === "webgpu") expect(map!.localShadows?.texture).toBeUndefined();
@@ -645,7 +645,7 @@ describe("scene camera eye in shadow and outline depth passes", () => {
       }
       if (includeSun) {
         expect(map!.cascades).toHaveLength(2);
-        expect(map!.texture.texture?.format).toBe(kind === "webgpu" ? "rgba8" : "depth24");
+        expect(map!.texture.texture?.format).toBe(kind === "webgpu" ? "rgba16f" : "depth24");
       } else {
         expect(map!.strength).toBe(0);
         expect(map!.texture.texture).toBe(raw?.texture);

@@ -43,7 +43,28 @@ export function plainLookEnabled(): boolean {
   } catch {
     /* no location/process: default on */
   }
-  return true;
+  return hdrTargetsAvailable();
+}
+
+let hdrProbe: boolean | undefined;
+
+/**
+ * The plain output tone-maps through an rgba16f postprocess target. A WebGL2 device without EXT_color_buffer_float
+ * cannot allocate one (HDR_POSTPROCESS_UNSUPPORTED), so such a device keeps the direct path it drew on before N3.
+ * Probed once on a throwaway canvas; environments without a DOM (unit tests, workers) keep the default.
+ */
+function hdrTargetsAvailable(): boolean {
+  if (hdrProbe !== undefined) return hdrProbe;
+  try {
+    if (typeof document === "undefined" || typeof document.createElement !== "function") return true;
+    const gl = document.createElement("canvas").getContext("webgl2") as WebGL2RenderingContext | null;
+    if (!gl) return (hdrProbe = true);
+    hdrProbe = gl.getExtension("EXT_color_buffer_float") !== null;
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+  } catch {
+    hdrProbe = true;
+  }
+  return hdrProbe;
 }
 
 export interface PlainLookAppOptions {

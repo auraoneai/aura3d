@@ -5313,7 +5313,7 @@
       },
       "source": {
         "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-        "sha256": "8ad4f2ba4f693852184f272fd19d1e6fdb925990bd66f005ef3913fc41f94ac1"
+        "sha256": "eb399ee9fb27752d650aff5c27ca2d8b41f054f2955af2440abeda907b4cf691"
       },
       "sourceDependencies": [
         {
@@ -5439,7 +5439,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
-          "sha256": "8ad4f2ba4f693852184f272fd19d1e6fdb925990bd66f005ef3913fc41f94ac1"
+          "sha256": "eb399ee9fb27752d650aff5c27ca2d8b41f054f2955af2440abeda907b4cf691"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
@@ -9756,7 +9756,7 @@
       },
       "source": {
         "path": "examples/auto-frame-bird/main.ts",
-        "sha256": "70dd8ffd3ec2db8ef9d42597b7de50dda788a1f099ec61704c8fdb3f8d36fc20"
+        "sha256": "5e1f3a1b067e0322aa8b638777f5ea3ef1df0160c51f6ec2008ad9939fe7b83a"
       },
       "sourceDependencies": [
         {

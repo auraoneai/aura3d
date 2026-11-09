@@ -534,7 +534,8 @@ export class RendererShadowOrchestrator {
         width: size * 3,
         height: size * 2,
         label: `${options.shadowOptions.label ?? "renderer-point-shadow"}-atlas`,
-        format: "rgba8",
+        // The GPU copy needs the face format: WebGPU faces hold light depth in rgba16f (ShadowPass).
+        format: copyColorRegion ? "rgba16f" : "rgba8",
         depth: false
       });
       options.ownedTargets.push(atlasTarget);

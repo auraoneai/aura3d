@@ -97,6 +97,12 @@ export interface FakeSceneOptions {
   readonly rotate?: string;
   /** Re-evaluate the engine (and with it every module-level memo and registry cache) before mounting: a cold process. */
   readonly freshModules?: boolean;
+  /**
+   * N3 plain look (5.3): a lit scene with no authored look or output takes the PBR Neutral output on the HDR target,
+   * which leaves the direct path. These budgets measure the direct path, and the fake context advertises no
+   * EXT_color_buffer_float, so the harness opts out unless a test asks for the plain path. Default false.
+   */
+  readonly plainLook?: boolean;
 }
 
 const cubeScene = ({ camera, lights, material, primitives, scene }: EngineModule): AuraScene => scene()
@@ -125,7 +131,7 @@ export async function mountFakeScene(options: FakeSceneOptions = {}) {
   const engine: EngineModule = await import("../../packages/engine/src");
   const rotateId = options.rotate ?? (options.build ? undefined : "cube");
   const app = engine.createAuraApp(new FakeCanvas() as unknown as HTMLCanvasElement, {
-    autoStart: false, resize: false, pixelRatio: 1, quality: options.quality ?? "auto",
+    autoStart: false, resize: false, pixelRatio: 1, quality: options.quality ?? "auto", plainLook: options.plainLook ?? false,
     scene: (options.build ?? cubeScene)(engine)
   });
   await app.ready();

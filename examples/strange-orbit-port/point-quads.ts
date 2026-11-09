@@ -7,7 +7,7 @@
  * round falloff the point sprite evaluates from `gl_PointCoord` (`d = dot(c, c)`, discard past 1, `smoothstep(1, 0, d)`).
  * The GLSL half draws the same quads if the request falls back to WebGL2. The corner/array helpers are in ../shared/sprite-quads.ts.
  */
-import { WGSL_CLIP, wgslStage } from "../../apps/showcase-port-shared/wgsl-twins";
+import { WGSL_CLIP, wgslStage } from "../shared/wgsl-twins";
 export { quadGeometryInput, quadUpdater } from "../shared/sprite-quads";
 
 const QUAD_VERTEX = /* glsl */ `

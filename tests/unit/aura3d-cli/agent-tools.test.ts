@@ -62,6 +62,7 @@ describe("colour check (engine C-06 grammar)", () => {
     expect(colorStringProblem("blurple")).toMatch(/not a hex value/);
   });
   test("named colour list matches the engine parser's table", () => {
+    // invariant: the CLI colour checker must accept exactly the names the engine's NAMED_COLORS table parses, or `aura3d validate` passes colours the engine rejects
     const src = readFileSync(new URL("../../../packages/engine/src/agent-api/color.ts", import.meta.url), "utf8");
     const block = src.slice(src.indexOf("const NAMED_COLORS"), src.indexOf("};", src.indexOf("const NAMED_COLORS")));
     const engineNames = [...block.matchAll(/([a-z]+):\s*0x/g)].map((m) => m[1]!);

@@ -159,14 +159,14 @@ export function verifyDownloadedArtifacts({ dir, root = process.cwd(), expected 
 // re-validates and restores from those exact files. In the image,
 // `stage-consumers` / `stage-examples` pack the kind's run directories into
 // <= CONSUMER_CHUNK_BYTES chunks plus `consumer-index.json` (per-file SHA-256,
-// offsets); source5-run.sh uploads one chunk per upload-artifacts.mjs call, so
+// offsets; identical files are stored once and share one chunk range); source5-run.sh uploads one chunk per upload-artifacts.mjs call, so
 // each call stays under its 512 MiB limit. On the Mac, `verify-consumers` /
 // `verify-examples` re-hash every chunk and file and extract the files under
 // their job paths into <run>/artifacts/consumers/ or <run>/artifacts/examples/.
 export const CONSUMERS_SCHEMA = 'aura3d.source5-consumers/1';
 export const CONSUMER_INDEX_NAME = 'consumer-index.json';
 export const CONSUMER_CHUNK_BYTES = 128 * 1024 * 1024;
-/** Total retained consumer bytes (each upload-artifacts.mjs call carries one <= 128 MiB chunk). */
+/** Total stored (deduplicated) consumer bytes (each upload-artifacts.mjs call carries one <= 128 MiB chunk). */
 export const CONSUMER_MAX_BYTES = 3 * 1024 * 1024 * 1024;
 export const CONSUMER_MAX_FILES = 50000;
 const RUN_ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
@@ -222,7 +222,12 @@ export function stageConsumers({ root, runId, outDir, kind = 'consumers', shard 
   if (files.length > CONSUMER_MAX_FILES) throw new Error(`consumer reports have ${files.length} files (limit ${CONSUMER_MAX_FILES})`);
   mkdirSync(outDir, { recursive: true });
   const chunks = [], entries = [];
-  let chunk = null, total = 0;
+  // Content-addressed: a file whose bytes were already stored (the same tarball, HDR or GLB retained
+  // by every scaffolded template, in both public/ and dist/) points at the first copy's chunk range
+  // instead of being stored again. The verifier already accepts any in-chunk range whose SHA-256
+  // matches, so the format is unchanged; `maxBytes` caps the stored (unique) bytes.
+  const stored = new Map();
+  let chunk = null, total = 0, storedBytes = 0;
   const closeChunk = () => {
     if (!chunk) return;
     const bytes = Buffer.concat(chunk.parts);
@@ -234,10 +239,14 @@ export function stageConsumers({ root, runId, outDir, kind = 'consumers', shard 
     const bytes = readFileSync(join(root, path));
     if (bytes.length > chunkBytes) throw new Error(`consumer file exceeds the chunk size: ${path}`);
     total += bytes.length;
-    if (total > maxBytes) throw new Error(`consumer reports exceed ${maxBytes} bytes`);
+    const digest = sha256(bytes), key = `${digest}:${bytes.length}`, copy = stored.get(key);
+    if (copy) { entries.push({ path, sha256: digest, size: bytes.length, chunk: copy.chunk, offset: copy.offset }); continue; }
+    storedBytes += bytes.length;
+    if (storedBytes > maxBytes) throw new Error(`consumer reports exceed ${maxBytes} bytes`);
     if (chunk && chunk.size + bytes.length > chunkBytes) closeChunk();
     if (!chunk) chunk = { name: `bundle-${String(chunks.length).padStart(3, '0')}.bin`, parts: [], size: 0 };
-    entries.push({ path, sha256: sha256(bytes), size: bytes.length, chunk: chunk.name, offset: chunk.size });
+    stored.set(key, { chunk: chunk.name, offset: chunk.size });
+    entries.push({ path, sha256: digest, size: bytes.length, chunk: chunk.name, offset: chunk.size });
     chunk.parts.push(bytes); chunk.size += bytes.length;
   }
   closeChunk();
@@ -245,7 +254,7 @@ export function stageConsumers({ root, runId, outDir, kind = 'consumers', shard 
   const index = {
     schema: CONSUMERS_SCHEMA, kind, runId, ...(shard ? { shard } : {}), roots: consumerRoots(runId, kind),
     reports: Object.fromEntries(Object.entries(reports).map(([field, path]) => [field, { path, sha256: byPath.get(path).sha256 }])),
-    chunks, files: entries, totalBytes: total
+    chunks, files: entries, totalBytes: total, storedBytes
   };
   writeFileSync(join(outDir, CONSUMER_INDEX_NAME), `${JSON.stringify(index, null, 2)}\n`, { flag: 'wx' });
   return index;
