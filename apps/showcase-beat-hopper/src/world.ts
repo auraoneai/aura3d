@@ -22,6 +22,7 @@ import {
 } from "./meshes";
 import { poseScale, type CameraPose, type Shown } from "./presentation";
 import { addStage, transformMesh } from "./stage";
+import { addDressing, bindDressing } from "./dressing";
 import { glowSpec, heroSpec, stageLitSpec, stageSkySpec, type Haze } from "./stage-shaders";
 
 type Scene = ReturnType<typeof scene>;
@@ -182,6 +183,9 @@ export function buildWorld(options: WorldOptions): World {
   }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
   for (const [id, children] of stageGroups) builder.add(group(id, children).runtime({ id }));
 
+  /* Meshy club dressing: speaker stacks and a floating DJ deck beside the track (presentation only) */
+  addDressing(builder);
+
   /* elevated track girder with a cyan under-glow strip (uniform along z, so it never scrolls) */
   const trackLen = CONFIG.POOL_SEGMENTS * SEGMENT_LENGTH;
   add("girder", translateBox(ROAD_WIDTH + 0.7, 0.55, trackLen, -0.6, 18 - trackLen / 2), stageLitSpec({ base: linear("#1a1038"), haze: HAZE, toneless: true }));
@@ -245,6 +249,7 @@ export function buildWorld(options: WorldOptions): World {
         return h;
       };
       const stageRt = stage.bind(node);
+      const dressingRt = bindDressing(node);
       let clock = 0;
       let lastWall = -1;
       const maybeController = app.camera;
@@ -352,6 +357,7 @@ export function buildWorld(options: WorldOptions): World {
         clock += lastWall < 0 ? 0 : Math.min(0.1, Math.max(0, wall - lastWall));
         lastWall = wall;
         stageRt.update(dist, t / CONFIG.BEAT, pulse, reduced ? 0 : clock, reduced);
+        dressingRt.update(dist, pulse);
         node("sky").setUniform?.("uClock", reduced ? 0 : clock);
         node("sky").setUniform?.("uPulse", pulse);
         node("underglow").setUniform?.("emissive", [linear("#23e6ff")[0] * (0.6 + gain), linear("#23e6ff")[1] * (0.6 + gain), linear("#23e6ff")[2] * (0.6 + gain)]);

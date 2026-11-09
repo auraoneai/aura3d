@@ -15,6 +15,7 @@ import { CONFIG, opLabel, type BossWall, type Gate, type NumberSurgeSim, type Po
 import { DIMS, ballMesh, ballLabelMesh, gateFrameMesh, gatePanelMesh, groundQuad, opLabelMesh, particleMesh, powerupMesh, roadDashMesh, roadEdgeMesh, roadSegmentMesh, shardMesh, shadowMesh, sphereMesh, wallLabelMesh, wallMesh } from "./meshes";
 import { LINEAR, LOOK, PALETTE, SKY_STOPS } from "./look";
 import type { Shown } from "./presentation";
+import { addRoadside } from "./roadside";
 import { addScenery, deckSpec, edgeGlowSpec, sceneryProgramSpecs, stripSpec, synthSkySpec } from "./scenery";
 import { LABEL_FRAGMENT_WGSL, UV_VERTEX_WGSL } from "./scenery-wgsl";
 
@@ -250,6 +251,8 @@ export function buildWorld(options: WorldOptions): World {
   add("underlay", groundQuad(240, 480, 0, -15, -120), toonSpec(hexToLinear("#141133")));
 
   const scenery = addScenery(builder);
+  // Meshy roadside dressing (palms, neon sevens, dice), all off the lanes.
+  const roadside = addRoadside(builder);
 
   // Post: a cool grade and a violet vignette (the bloom pass is skipped on this fused-LDR output path, so glows are
   // painted in the sky, edge-glow and halo shaders instead). Tone mapping stays "none" (main.ts).
@@ -271,6 +274,7 @@ export function buildWorld(options: WorldOptions): World {
       const controller: NonNullable<typeof maybeController> = maybeController;
 
       const sceneryRuntime = scenery.bind(app, node);
+      const roadsideRuntime = roadside.bind(node);
       const gateSlots = new Slots<Gate>(CONFIG.GATES);
       const wallSlots = new Slots<BossWall>(CONFIG.WALLS);
       const powerupSlots = new Slots<Powerup>(CONFIG.POWERUPS);
@@ -308,6 +312,7 @@ export function buildWorld(options: WorldOptions): World {
         const time = view.shown?.time ?? o.time;
 
         sceneryRuntime.update(travelled, time);
+        roadsideRuntime.update(travelled, time);
 
         /* road ring: segment j sits at run-space z = j * SEGMENT_LENGTH (world z = runZ - scroll, so ahead of the ball is
          * runZ < scroll), slot = j mod SEGMENTS; the ring keeps 10 segments behind the camera and the rest ahead. */

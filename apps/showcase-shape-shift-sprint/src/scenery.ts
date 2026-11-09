@@ -602,6 +602,52 @@ export function pieceZ(p: ScenePiece, t: number): number {
   return ((((p.z0 + t * DRIFT_SPEED * k) % span) + span) % span) + far;
 }
 
+/* ------------------------------------------------------------------ Meshy backdrop dressing */
+
+/**
+ * Meshy toy models (typed `model(assets.x)`, mounted in world.ts) drifting with the island layers: toy castle
+ * islands just outside the near layer's procedural islands, and tall toy block towers rising out of the cloud sea
+ * in the mid layer. All sit at |x| >= 24, far outside the road (half width 3.7), and never cast shadows.
+ */
+export interface MeshyPiece {
+  readonly id: string;
+  readonly kind: "toyCastleIsland" | "toyBlockTower";
+  readonly layer: 0 | 1;
+  readonly x: number;
+  readonly y: number;
+  readonly z0: number;
+  /** `targetMaxDimension` of the model. */
+  readonly size: number;
+  readonly yaw: number;
+  /** Idle yaw spin (rad/s) and bob amplitude; both off under reduced motion. */
+  readonly spin: number;
+  readonly bob: number;
+}
+
+export const MESHY_PIECES: readonly MeshyPiece[] = [
+  { id: "meshy-castle-0", kind: "toyCastleIsland", layer: 0, x: -25, y: -1.2, z0: 34, size: 9.5, yaw: 0.6, spin: 0.05, bob: 0.4 },
+  { id: "meshy-castle-1", kind: "toyCastleIsland", layer: 0, x: 26, y: -0.6, z0: 99, size: 10, yaw: -0.9, spin: -0.04, bob: 0.4 },
+  { id: "meshy-castle-2", kind: "toyCastleIsland", layer: 0, x: -27, y: -0.2, z0: 162, size: 10.5, yaw: 2.2, spin: 0.05, bob: 0.4 },
+  { id: "meshy-tower-0", kind: "toyBlockTower", layer: 1, x: 40, y: -8, z0: 22, size: 26, yaw: 0.4, spin: 0, bob: 0 },
+  { id: "meshy-tower-1", kind: "toyBlockTower", layer: 1, x: -44, y: -7, z0: 104, size: 28, yaw: -0.5, spin: 0, bob: 0 },
+  { id: "meshy-tower-2", kind: "toyBlockTower", layer: 1, x: 47, y: -9, z0: 181, size: 24, yaw: 1.1, spin: 0, bob: 0 }
+];
+
+/** Pose of a Meshy piece at clock `t`: same wrap and far-end grow-in as the GPU drift program, CPU side. */
+export function meshyPose(p: MeshyPiece, t: number, reduced: boolean) {
+  const { k, span, near } = LAYERS[p.layer];
+  const far = near - span;
+  const z = ((((p.z0 + t * DRIFT_SPEED * k) % span) + span) % span) + far;
+  const g = Math.min(1, Math.max(0, (z - far) / 24));
+  const idle = reduced ? 0 : t;
+  return {
+    x: p.x, y: p.y + Math.sin(idle * 0.7 + p.z0) * p.bob, z,
+    yaw: p.yaw + idle * p.spin,
+    // Parked at a tiny positive scale (never hidden) while it grows in at the far end.
+    scale: Math.max(0.001, g * g * (3 - 2 * g))
+  };
+}
+
 /**
  * Drift vertex program: every piece of a layer lives in one static mesh (no runtime node, so nothing is snapshotted or
  * uploaded per frame). Per-vertex `drift` = (z0, speed, span, far) and `anchor` = (x, y, bob phase, bob amplitude); the

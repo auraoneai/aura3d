@@ -49,6 +49,9 @@ import {
   GRID_DISPATCH_RENDERER,
   HIDDEN_POS,
   HIDDEN_SCALE,
+  PASSENGER_CLIP,
+  PASSENGER_NODE,
+  PASSENGER_YAW,
   INTERSECTION_COUNT,
   LAMP_PAIRS,
   LAMP_STRIDE_Z,
@@ -194,9 +197,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     beaconDisc: req("taxi-beacon-disc"),
     beaconBeam: req("taxi-beacon-beam"),
     beaconCore: req("taxi-beacon-core"),
-    passengerBody: req("taxi-passenger-body"),
-    passengerHead: req("taxi-passenger-head"),
-    passengerArm: req("taxi-passenger-arm"),
+    passenger: req(PASSENGER_NODE),
     users: [...Array.from({ length: TRAFFIC_COUNT }, (_, i) => req(`traffic-${i}`)), ...RIVALS.map((_, k) => req(`rival-car-${k}`))]
   };
   return nodes;
@@ -239,6 +240,8 @@ async function bootGridDispatch(): Promise<void> {
   bootProgress(38);
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp, weather);
+  // GD-16: the passenger clip speed the mounted scene was built with (1, or 0 under reduced motion); remounts reset it.
+  let passengerWaveSpeed = motionOk() ? 1 : 0;
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
   const sensor = installSensorPass(auraApp, SKY_LOOKS[weather]);
   /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
@@ -511,6 +514,7 @@ async function bootGridDispatch(): Promise<void> {
     auraApp.setScene(buildGridDispatchScene(next, { motionOk: motionOk() }));
     applySkyOutput();
     N = bindNodes(auraApp, next);
+    passengerWaveSpeed = motionOk() ? 1 : 0;
     appliedCar = null;
     lastSignalPhase = -1;
     signalShown = "";
@@ -817,14 +821,16 @@ async function bootGridDispatch(): Promise<void> {
     if (showPassenger) {
       const walk = r.state === "boarding" ? clamp(r.timer / 1.5, 0, 1) : 0;
       const pvX = rx(lerp(11.35, CURB_BEACON_X + 0.85, walk));
-      const wave = motionOk() ? Math.sin(t * 8.5) * 0.45 : 0;
-      N.passengerBody.setPosition(pvX, ry(0.88), bz).setScale([1, 1, 1]).setVisible(true);
-      N.passengerHead.setPosition(pvX, ry(1.76), bz).setScale([1, 1, 1]).setVisible(true);
-      N.passengerArm.setPosition(pvX - 0.28, ry(1.55), bz).setRotation(0, 0, 0.55 + wave).setScale([1, 1, 1]).setVisible(true);
+      // GD-16: the rigged passenger loops its `wave` clip (hailing); reduced motion holds the clip still.
+      N.passenger.setPosition(pvX, ry(0), bz).setRotation(0, PASSENGER_YAW, 0).setScale([1, 1, 1]).setVisible(true);
+      const waveSpeed = motionOk() ? 1 : 0;
+      if (waveSpeed !== passengerWaveSpeed) {
+        passengerWaveSpeed = waveSpeed;
+        N.passenger.setAnimation?.({ clip: PASSENGER_CLIP, loop: true, speed: waveSpeed });
+      }
     } else {
-      N.passengerBody.setScale(HIDDEN_SCALE).setVisible(false);
-      N.passengerHead.setScale(HIDDEN_SCALE).setVisible(false);
-      N.passengerArm.setScale(HIDDEN_SCALE).setVisible(false);
+      // Skinned model: parked at HIDDEN_SCALE and kept visible (a hidden skinned mesh may never draw again once shown).
+      N.passenger.setScale(HIDDEN_SCALE);
     }
     const dzBeacon = pose.pz - r.beaconZ;
     const targetX = r.state === "ride" || r.state === "offer" ? (dzBeacon < 58 ? KERB_STOP_X : S.player.holdLane) : S.player.holdLane;

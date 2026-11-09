@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { MESHY_MANIFEST } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
-import { SLOT_MODEL } from "../../../examples/ninja-runner-port/models";
+import { CHARACTER_URLS, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL } from "../../../examples/ninja-runner-port/models";
 import { buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
 
 const DIR = "examples/ninja-runner-port/assets/meshy/";
@@ -35,6 +35,30 @@ describe("generated model assets", () => {
     expect(SLOT_MODEL[0]).toBe("hero");
     expect(SLOT_MODEL[12]).toBe("sage");
     expect(SLOT_MODEL.slice(10, 12)).toEqual(["brute", "brute"]);
+  });
+
+  it("evening (meshy07) appends three caster and three scout slots and keeps the 4.6.2 slots as they are", () => {
+    expect(EVENING_SLOT_MODEL.slice(0, 13)).toEqual(SLOT_MODEL);
+    expect(EVENING_SLOT_MODEL.slice(13)).toEqual(["caster", "caster", "caster", "scout", "scout", "scout"]);
+    expect(SLOT_MODEL).not.toContain("caster");
+    expect(SLOT_MODEL).not.toContain("scout");
+    expect(MESHY07_ENEMY_CLIPS.caster).toEqual({ attack: "cast", death: "death" });
+    expect(MESHY07_ENEMY_CLIPS.scout).toEqual({ attack: "throw", death: "death" });
+  });
+
+  it("ships the meshy07 enemy rigs under the GLB and triangle budgets with rights and task metadata", () => {
+    for (const row of ["ninjaCasterAnimR2", "ninjaScoutAnimR2"]) {
+      const file = `examples/ninja-runner-port/assets/models/ninja_runner_port_${row}.glb`;
+      expect(statSync(file).size, row).toBeLessThanOrEqual(1.5 * 1024 * 1024);
+      const json = JSON.parse(readFileSync(file).subarray(20, 20 + readFileSync(file).readUInt32LE(12)).toString("utf8")) as { accessors: { count: number }[]; meshes: { primitives: { indices: number }[] }[]; skins: unknown[]; animations: { name: string }[] };
+      const tris = json.meshes.flatMap((m) => m.primitives).reduce((n, p) => n + json.accessors[p.indices]!.count / 3, 0);
+      expect(tris, row).toBeLessThan(15000);
+      expect(json.skins.length, row).toBe(1);
+      expect(json.animations.map((a) => a.name), row).toEqual(expect.arrayContaining(["idle", "run", "hit", "death", row.startsWith("ninjaCaster") ? "cast" : "throw"]));
+      for (const kind of ["rights", "meta"]) expect(statSync(`examples/ninja-runner-port/assets/provenance/ninja_runner_port_${row}.${kind}.json`).size, `${row} ${kind}`).toBeGreaterThan(0);
+    }
+    expect(CHARACTER_URLS.caster).toContain("ninja_runner_port_ninjaCasterAnimR2.glb");
+    expect(CHARACTER_URLS.scout).toContain("ninja_runner_port_ninjaScoutAnimR2.glb");
   });
 });
 

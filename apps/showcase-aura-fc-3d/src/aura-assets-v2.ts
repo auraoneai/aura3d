@@ -197,6 +197,30 @@ export const assets = defineAuraAssets({
     hash: "sha256-a5d607e86c4c2fa7391e21af3fe453b35b542c0291d2393689a922cea9b4fe22",
     bounds: [1.674, 0.795, 1.901]
   },
+  // Meshy-07 (FC47-AN1): three rigged front-row fans (plan keys pitchFanAAnim, pitchFanBAnimM07, pitchFanCAnim; Meshy
+  // animate, clips idle / cheer / pump on a 24-joint skin), welded and simplified to 5k triangles with 512 px maps.
+  // Rights and metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcPitchFan{A,B,C}Meshy.{rights,metadata}.json.
+  fcPitchFanAMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcPitchFanAMeshy.b0a352c1.glb",
+    hash: "sha256-b0a352c1917c3267b362fc3db6cce3aa5a498d642972aa4b25fadaba1965e1d3",
+    bounds: [1.504, 1.799, 0.385]
+  },
+  fcPitchFanBMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcPitchFanBMeshy.b8377118.glb",
+    hash: "sha256-b8377118a26dbc54c978c0f3f5d7cc64cc85af12b5f8c3d2cff2d298463a3a92",
+    bounds: [1.578, 1.8, 0.32]
+  },
+  fcPitchFanCMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcPitchFanCMeshy.c47efdd8.glb",
+    hash: "sha256-c47efdd8d68447246643fd8f79d9785396fe7100b5b1cc623a664056023c82b1",
+    bounds: [1.448, 1.759, 0.349]
+  },
   // GU47 phase 9 (D2): referee whistle, keeper save, crowd bed and goal swell, synthesised by tools/aura-fc/synth-sfx.mjs
   // (original, CC0-1.0), replacing the cues borrowed from the bank-shot, basketball and baseball games.
   fcWhistleSfx: {
