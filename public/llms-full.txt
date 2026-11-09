@@ -33,7 +33,6 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
 - [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims): Current Aura3D 5.4.0 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
 - [Why Aura3D over three.js: everything three.js leaves to you, built in](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.
-- [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 - [Migrate from Aura3D 4.x to 5.0.1](https://aura3d.auraone.ai/docs/migration/4-to-5): Upgrade guide from Aura3D 4.x to 5.0.1: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs.
 
 ### Showcase
