@@ -182,6 +182,12 @@ export interface AuraWorkerFrameResult {
   readonly deltaSeconds?: number;
   readonly source?: "automatic" | "manual";
   /**
+   * 5.5.1: the worker's `performance.now()` (ms) when the frame finished presenting. The host feeds it to the same 1 s
+   * frame-rate window the main-thread renderer uses, so `diagnostics().fps` reads the worker's presentation rate.
+   * Absent from older workers; the host then samples its own clock on arrival.
+   */
+  readonly presentedAt?: number;
+  /**
    * 5.4: the worker renderer's per-material textured status (`diagnostics().renderer.runtime.texturedMaterials`),
    * sent on a presented frame only when it changed since the last one sent.
    */
