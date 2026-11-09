@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 5.4.0
+Version: 5.5.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## Unreleased (5.5.0)
+## 5.5.0 (2026-11-09)
 
 ### WebGPU performance round 3
 
