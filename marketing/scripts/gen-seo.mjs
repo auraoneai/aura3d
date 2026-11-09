@@ -18,8 +18,8 @@
  *       (showcase-turbo-drift-circuit, showcase-skyline-runner) were still
  *       listed in sitemap.xml after their sources were retired;
  *     * the docs family must match marketing/docs/*.html exactly, minus the
- *       declared canonicalized duplicates (aura-clash.html canonicalizes to
- *       aura-clash-showcase.html);
+ *       declared canonicalized duplicates (docs/index.html canonicalizes
+ *       and 301-redirects to /);
  *     * --check mode additionally verifies every route exists in dist/ after
  *       a build (wired into `npm run build`).
  * - llms.txt: standard LLM-crawler map (honest frozen summary, Facts,
@@ -113,7 +113,6 @@ const MANIFEST = {
   "/docs/evidence": { source: "marketing/docs/evidence.html", freq: "weekly", priority: "0.78" },
   "/docs/claims": { source: "marketing/docs/claims.html", freq: "weekly", priority: "0.78" },
   "/docs/aura3d-vs-threejs": { source: "marketing/docs/aura3d-vs-threejs.html", freq: "weekly", priority: "0.82" },
-  "/docs/aura-clash-showcase": { source: "marketing/docs/aura-clash-showcase.html", freq: "weekly", priority: "0.86" },
   "/docs/migration/4-to-5": { source: "marketing/docs/migration/4-to-5.html", freq: "monthly", priority: "0.72" },
   "/apps/wow-concept-car-cinema/": { source: "apps/wow-concept-car-cinema/index.html", freq: "weekly", priority: "0.76" },
   "/apps/wow-damaged-helmet-pbr-detail/": { source: "apps/wow-damaged-helmet-pbr-detail/index.html", freq: "weekly", priority: "0.72" },
@@ -152,10 +151,8 @@ const MANIFEST = {
 
 // Docs pages that exist as files but are not sitemap entries:
 //  - docs/index.html 301-redirects to / (marketing/public/_redirects) and
-//    canonicalizes to /;
-//  - aura-clash.html canonicalizes onto aura-clash-showcase
-//    (duplicate-content consolidation).
-const NON_SITEMAP_DOCS = ["index", "aura-clash"];
+//    canonicalizes to /.
+const NON_SITEMAP_DOCS = ["index"];
 
 function fail(message) {
   console.error(`gen-seo: ${message}`);
