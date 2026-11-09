@@ -57,6 +57,12 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "aura_hoops_3d_blacktopContainer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   /** GU47 wave 3 WP-36 blacktopBleacherR2: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopBleacherR2.*). */
   readonly "aura_hoops_3d_blacktopBleacherR2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** Meshy-07 blacktopFanAPoses: Meshy rig + animate (sitCheer, sitClap, sitPump), decimated with skin kept, 512 px maps (assets/provenance/aura_hoops_3d_blacktopFanAPoses.*). */
+  readonly "aura_hoops_3d_blacktopFanAPoses": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** Meshy-07 blacktopFanCPoses: Meshy rig + animate (sitCheer, sitClap, sitPump), decimated with skin kept, 512 px maps (assets/provenance/aura_hoops_3d_blacktopFanCPoses.*). */
+  readonly "aura_hoops_3d_blacktopFanCPoses": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** Meshy-07 blacktopFanDPoses: Meshy rig + animate (sitCheer, sitClap, sitPump), decimated with skin kept, 512 px maps (assets/provenance/aura_hoops_3d_blacktopFanDPoses.*). */
+  readonly "aura_hoops_3d_blacktopFanDPoses": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -421,6 +427,30 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-716d8377a0185e4cc1051ad36e75842105eb97d1b77ed85ec10d26fee5186bea",
     bounds: [1.9,0.541,0.484],
     sizeBytes: 1493996,
+  },
+  "aura_hoops_3d_blacktopFanAPoses": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopFanAPoses.591b3f62.glb",
+    hash: "sha256-591b3f62d01028ea473878c11609dbeee16ccb01116b2ed76f227a57be1fe130",
+    bounds: [1.711,1.78,0.411],
+    sizeBytes: 647640,
+  },
+  "aura_hoops_3d_blacktopFanCPoses": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopFanCPoses.67b07936.glb",
+    hash: "sha256-67b079366af3c36e91c3bd8bc8d2aa0ad004a8fe602a5666e2ee3e65ebe0cc01",
+    bounds: [1.398,1.85,0.407],
+    sizeBytes: 649440,
+  },
+  "aura_hoops_3d_blacktopFanDPoses": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopFanDPoses.b65f1f35.glb",
+    hash: "sha256-b65f1f35ee6b37b9975f5ca4dd9a575cda565a0c1d4624c7a4741e45681c34d5",
+    bounds: [1.498,1.66,0.369],
+    sizeBytes: 665880,
   },
 } as const);
 
