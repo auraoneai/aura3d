@@ -7,13 +7,20 @@ import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } fr
 import { groups } from "../nodes/groups.js";
 import { normalizeSceneSnapshot } from "../sceneMath.js";
 import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
-import { applyWorkerCanvasCssDefaults, isOffscreenCanvas, resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
+import { applyWorkerCanvasCssDefaults, forwardAuthoredCanvasSize, isOffscreenCanvas, resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { computeRuntimeAlpha } from "./frameAlpha.js";
 import { AURA_APP_CANVAS } from "./screenshot.js";
 import { normalizeCreateAppRendererOptions, resolveBackendOptions, resolveDrawingPathOptions } from "./rendererOptions.js";
 import { AuraWorkerError, createWorkerRenderer, measureWorkerCanvas, supportsWorkerRendering, validateWorkerSceneGroups, workerCanvasTransferAttempted } from "./workerRuntime.js";
-import type { AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerRenderFlags } from "./workerProtocol.js";
+import type { AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerRenderFlags } from "./workerProtocol.js";
+import type { AuraWorkerAppCall } from "./workerPatch.js";
+import { normalizeOutputToneMapping } from "./toneMappingNames.js";
+import type { AuraPostSurface } from "../../contracts/post.js";
+import { StubAppAtmosphere, type AuraAppAtmosphere } from "../../contracts/atmosphere.js";
+import { StubLightingRuntime, type AuraLightingRuntime } from "../../contracts/lighting.js";
+import { createWorkerHostEffects } from "./workerEffects.js";
+import { builtInEffectPresets } from "../vfx/effects-api.js";
 import { createWorkerNodeMirror, type AuraWorkerNodeMirror } from "./workerNodes.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
@@ -77,13 +84,16 @@ function validateWorkerOptions(options: AuraCreateAppOptions): void {
     throw new AuraWorkerError("worker.disposeTimeoutMs must be within the timer range.", "invalid-worker-option");
   }
   // qualityRebuild flags and the animation mixer are mirrored to the worker
-  // renderer; camera runs host-side (K3). The rest stays main-thread only.
+  // renderer; camera runs host-side (K3); onAssetProgress/onAssetError are
+  // forwarded from the worker (5.4). The rest stays main-thread only.
   const unsupportedOptions = [
     "physics", "performanceQuality", "quality", "preserveDrawingBuffer",
     "lighting", "formatRegistry", "accessibility", "strict",
-    "onDegradation", "compat", "loop", "onAssetProgress", "onAssetError"
+    "onDegradation", "compat", "loop"
   ] as const;
   for (const key of unsupportedOptions) {
+    // quality: "auto" is the default pipeline selection, which the worker renderer already uses.
+    if (key === "quality" && options.quality === "auto") continue;
     if (options[key] !== undefined) unsupported(`options.${key}`, "Use the main-thread renderer for this option.");
   }
   const diagnosticsOption = options.diagnostics as unknown;
@@ -273,7 +283,11 @@ export function createWorkerRootApp(
       publishTermination({ ...actual, revision }, true);
     }
   };
+  // 5.4: the worker sends its textured-material status when it changes (games wait on it before hiding a loader). Kept
+  // even from frames presented while the host still settles the mount, since the worker sends each change once.
+  let workerTexturedMaterials: AuraWorkerFrameResult["texturedMaterials"];
   const present = (result: AuraWorkerFrameResult, advanceRuntime = true) => {
+    if (!disposed && Array.isArray(result?.texturedMaterials)) workerTexturedMaterials = result.texturedMaterials;
     if (disposed || mounting || lost || failure) return;
     const actual = backendOf(result?.backend);
     if (!result || typeof result !== "object" || !actual || backendOf(backend) !== actual
@@ -407,6 +421,8 @@ export function createWorkerRootApp(
         if (deviceLost) onDevice("lost");
         else reportFailure(error, error.severity === "terminal");
       },
+      ...(options.onAssetProgress ? { onAssetProgress: options.onAssetProgress } : {}),
+      ...(options.onAssetError ? { onAssetError: options.onAssetError } : {}),
       onInput: (input) => {
         if (!disposed) inputSnapshot = { pointers: input.pointers.map((pointer) => ({ ...pointer })), keys: [...input.keys], timestamp: input.timestamp };
       }
@@ -416,6 +432,16 @@ export function createWorkerRootApp(
     if (!workerCanvasTransferAttempted(canvas)) return fallback(error);
     throw error;
   }
+  // `resize: false`: the author sizes the backing store by assigning canvas.width/height, as on the main thread
+  // (authoredBackingResize). The transferred page canvas would throw on those writes; forward them to the worker.
+  const releaseAuthoredSize = options.resize === false && !isOffscreenCanvas(canvas) && workerCanvasTransferAttempted(canvas)
+    ? forwardAuthoredCanvasSize(canvas as HTMLCanvasElement, (size) => {
+        if (disposed) return;
+        void worker.resize({ ...size, pixelRatio: 1 }).catch((error: unknown) => {
+          if (!disposed && (error as AuraWorkerError)?.code !== "disposed") appendError(errorDetails(error).message);
+        });
+      })
+    : undefined;
 
   const markReady = (serial: number) => {
     if (disposed || serial !== sceneSerial) return;
@@ -476,12 +502,21 @@ export function createWorkerRootApp(
   // the replacement settles; posted earlier they would land on the old
   // registry (and be lost with it, or fail on unknown ids).
   let sceneReplacementsPending = 0;
+  // 5.4: app-level calls (setOutput, post.setEffect/setEffectEnabled) ride the patch stream after the node ops.
+  // They are not scene-scoped, so a scene replacement keeps them.
+  let appOps: AuraWorkerNodePatchOp[] = [];
+  const queueAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
+    if (disposed) return;
+    appOps.push({ app: call, args: structuredClone(args) });
+    flushPatches();
+  };
   const flushPatches = (force = false): Promise<void> | undefined => {
     if (disposed) return undefined;
     const camera = JSON.stringify(mirror.scene.camera ?? null);
     if (camera !== sentCamera) { sentCamera = camera; mirror.setCamera(mirror.scene.camera); }
-    if (mirror.pending === 0 || sceneReplacementsPending > 0 || (!force && patchesInFlight > 0)) return undefined;
+    if ((mirror.pending === 0 && appOps.length === 0) || sceneReplacementsPending > 0 || (!force && patchesInFlight > 0)) return undefined;
     const ops = mirror.drain();
+    if (appOps.length) { ops.push(...appOps); appOps = []; }
     // Posted now (not when the queue reaches it) so ops always precede any
     // later scene replacement; earlier replacements are awaited above.
     // createWorkerRenderer always provides patch (optional only in the public interface type).
@@ -649,6 +684,12 @@ export function createWorkerRootApp(
       });
     },
     setPerformanceQuality(): never { return unsupported("app.setPerformanceQuality", "Select renderer options before creating the worker."); },
+    // 5.4: output and runtime post controls are replayed in the worker (between frames, like node patches).
+    setOutput(output) {
+      const patch = { ...normalizeOutputToneMapping(output, "app.setOutput") };
+      for (const key of Object.keys(patch) as (keyof typeof patch)[]) if (patch[key] === undefined) delete patch[key];
+      queueAppCall("setOutput", [patch]);
+    },
     // Callbacks run on the main thread; node changes they make reach the
     // worker as one patch per frame.
     onFrame(callback) {
@@ -767,7 +808,9 @@ export function createWorkerRootApp(
         requireRenderer();
       }).finally(() => { pendingSteps -= 1; });
     },
-    diagnostics: () => snapshotDiagnostics(diagnostics, shaderFailures),
+    diagnostics: () => snapshotDiagnostics(workerTexturedMaterials && diagnostics.renderer
+      ? { ...diagnostics, renderer: { ...diagnostics.renderer, runtime: { ...diagnostics.renderer.runtime, texturedMaterials: workerTexturedMaterials } } }
+      : diagnostics, shaderFailures),
     // Runtime and node evidence come from the host mirror; render evidence stays in the worker.
     evidence(evidenceOptions = {}) {
       return collectGameRuntimeEvidence({ runtime: app.runtime, nodes: mirror.registry }, evidenceOptions);
@@ -799,6 +842,7 @@ export function createWorkerRootApp(
       if (disposed) return;
       disposed = true;
       stopHostLoop();
+      releaseAuthoredSize?.();
       frameCallbacks.clear();
       for (const release of extensionDisposers.splice(0)) { try { release(); } catch (error) { cleanupFailures.push(error); } }
       mirror.dispose();
@@ -824,6 +868,63 @@ export function createWorkerRootApp(
       await shutdown;
     }
   };
+  // 5.4: `app.post` (runtime effect overrides, custom passes, uniforms) is replayed in the worker's post surface.
+  let postPassToken = 0;
+  const post: AuraPostSurface = {
+    setEffect(name, patch) { queueAppCall("post.setEffect", [name, patch]); },
+    setEffectEnabled(name, enabled) { queueAppCall("post.setEffectEnabled", [name, enabled]); },
+    setQualityTier(tier) { queueAppCall("post.setQualityTier", [tier]); },
+    setPassUniform(passName, key, value) { queueAppCall("post.setPassUniform", [passName, key, value]); },
+    addPostPass(pass) {
+      const token = ++postPassToken;
+      queueAppCall("post.addPostPass", [token, pass]);
+      let released = false;
+      return () => { if (!released) { released = true; queueAppCall("post.removePostPass", [token]); } };
+    }
+  };
+  (app as unknown as Record<string, unknown>).post = post;
+  // 5.4: `app.atmosphere` (setFog / setSky / setWetness) is replayed in the worker's PRD-07 atmosphere. Without it a
+  // worker app had no atmosphere member, so `app.atmosphere?.setFog(...)` was skipped (Craterline GP's sector haze).
+  // state() answers from the host copy of the last values set.
+  const atmosphereMirror = new StubAppAtmosphere();
+  const atmosphere: AuraAppAtmosphere = {
+    setFog(spec, o) { atmosphereMirror.setFog(spec, o); queueAppCall("atmosphere.setFog", o === undefined ? [spec] : [spec, o]); },
+    setSky(spec, o) { atmosphereMirror.setSky(spec, o); queueAppCall("atmosphere.setSky", o === undefined ? [spec] : [spec, o]); },
+    setWetness(value, o) { atmosphereMirror.setWetness(value, o); queueAppCall("atmosphere.setWetness", o === undefined ? [value] : [value, o]); },
+    state: () => atmosphereMirror.state()
+  };
+  (app as unknown as Record<string, unknown>).atmosphere = atmosphere;
+  // 5.4: `app.lighting` environment controls and probe refreshes run on the worker's PRD-02 lighting runtime (Gridlock
+  // Courier's daylight and Shadowstep Gauntlet's district looks scale the environment term). Caller-owned GPU data
+  // (attachIndirect, attachLightmap) cannot cross to the worker; diagnostics() answers from the host copy.
+  const lightingMirror = new StubLightingRuntime();
+  const finite = (value: number, what: string, min = -Infinity): void => {
+    if (!Number.isFinite(value) || value < min) throw new RangeError(`${what} expects a finite number${min === 0 ? " >= 0" : ""}, got ${String(value)}.`);
+  };
+  const workerOnly = (what: string): never => {
+    throw new AuraWorkerError(`app.lighting.${what}() needs caller-owned GPU data, which cannot be sent to the render worker; create the app without a worker to use it.`, "worker-unsupported");
+  };
+  const lighting = {
+    setEnvironmentIntensity(value: number) { finite(value, "setEnvironmentIntensity", 0); lightingMirror.setEnvironmentIntensity(value); queueAppCall("lighting.setEnvironmentIntensity", [value]); },
+    setEnvironmentRotation(radians: number) { finite(radians, "setEnvironmentRotation"); lightingMirror.setEnvironmentRotation(radians); queueAppCall("lighting.setEnvironmentRotation", [radians]); },
+    setEnvironment(texture, opts) { lightingMirror.setEnvironment(texture, opts); queueAppCall("lighting.setEnvironment", opts === undefined ? [texture] : [texture, opts]); },
+    updateProbe(name: string) {
+      if (typeof name !== "string" || !name.trim()) throw new RangeError("probe name must be nonempty");
+      queueAppCall("lighting.updateProbe", [name]);
+      return Promise.resolve();
+    },
+    rebakeIrradiance(name?: string) {
+      if (name !== undefined && (typeof name !== "string" || !name.trim())) throw new RangeError("irradiance volume name must be nonempty");
+      queueAppCall("lighting.rebakeIrradiance", name === undefined ? [] : [name]);
+      return Promise.resolve();
+    },
+    attachIndirect: () => workerOnly("attachIndirect"),
+    attachLightmap: () => workerOnly("attachLightmap"),
+    diagnostics: () => lightingMirror.diagnostics()
+  } as AuraLightingRuntime;
+  (app as unknown as Record<string, unknown>).lighting = lighting;
+  // 5.4: `app.effects` (bursts, looping specs, trails, decals, presets) is replayed on the worker's effects.
+  (app as unknown as Record<string, unknown>).effects = createWorkerHostEffects(queueAppCall, builtInEffectPresets);
   // K3: camera (and time) extensions only need app.onFrame/nodes/scene, which
   // a worker app now provides host-side; the camera spec they write reaches
   // the worker through flushPatches.

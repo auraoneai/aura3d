@@ -9,7 +9,7 @@
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";
@@ -529,7 +529,7 @@ function sizeCanvas(): void {
 const loadingProgress = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
 /* W-8: experimental lab flags (?backend=, ?worker=, ?gamut=) are parsed here; all off by default, so `lab` is `{}` without a query. */
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
-const lab = labAppOptions(readLabFlags(), { backend: "auto" });
+const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
 
 async function boot(): Promise<void> {
   loadingProgress.set(0.1);
@@ -545,6 +545,7 @@ async function boot(): Promise<void> {
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     output: { toneMapping: "aces", dither: false, ...(lab.output ?? {}) },
     ...(lab.renderer ? { renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer } } : {}),
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   loadingProgress.set(0.6);

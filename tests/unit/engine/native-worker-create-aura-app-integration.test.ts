@@ -250,6 +250,32 @@ describe("createAuraApp worker integration", () => {
     }
   });
 
+  it("forwards app.atmosphere, app.effects and app.lighting calls to the worker as app ops", async () => {
+    const f = fixture();
+    const app = createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
+      scene: makeScene("app-members"), autoStart: false, diagnostics: false,
+      worker: { createWorker: f.createWorker }
+    });
+    try {
+      await app.readyStrict();
+      app.atmosphere.setFog({ color: "#334455", density: 0.01 }, { transitionSeconds: 1 });
+      const trail = app.effects.trail("rider", { width: 0.3, life: 0.5 });
+      app.lighting.setEnvironmentIntensity(0.8);
+      expect(() => app.lighting.setEnvironmentIntensity(-1)).toThrow(RangeError);
+      expect(() => app.lighting.attachLightmap("floor", {} as never, {} as never)).toThrow(/cannot be sent to the render worker/);
+      expect(app.atmosphere.state().fog).toMatchObject({ density: 0.01 });
+      expect(trail.alive).toBe(true);
+      await app.stepAsync(1 / 60);
+      await flush();
+      const appOps = f.host.sent.filter((message) => message.type === "patch").flatMap((message) => (message as { ops: { app?: string; args?: unknown[] }[] }).ops).filter((op) => op.app);
+      expect(appOps.map((op) => op.app)).toEqual(["atmosphere.setFog", "effects.trail", "lighting.setEnvironmentIntensity"]);
+      expect(appOps[1]!.args).toEqual([1, "rider", { width: 0.3, life: 0.5 }]);
+    } finally {
+      await app.disposeAsync();
+      await f.stop();
+    }
+  });
+
   it("uses a worker for the root app and settles first-frame readiness only after a submission", async () => {
     const f = fixture();
     const app = createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
@@ -365,9 +391,10 @@ describe("createAuraApp worker integration", () => {
   it("rejects unsupported host callbacks before constructing or transferring a worker", async () => {
     const f = fixture();
     expect(() => createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
-      scene: makeScene("callback"), onAssetProgress: () => {},
+      // onAssetProgress/onAssetError are forwarded from the worker since 5.4; onDegradation stays main-thread only.
+      scene: makeScene("callback"), onDegradation: () => {},
       worker: { createWorker: f.createWorker }
-    })).toThrow(/onAssetProgress.*worker/i);
+    })).toThrow(/onDegradation.*worker/i);
     expect(f.createWorker).not.toHaveBeenCalled();
     expect(f.canvas.transfer).not.toHaveBeenCalled();
     await f.stop();

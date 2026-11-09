@@ -22,11 +22,11 @@ import { MODEL_ASSETS } from "./model-assets";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { PAPER_PASS_NAME, paperPass, paperScale } from "./paper-pass";
 
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 
 const params = new URLSearchParams(location.search);
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
-const lab = labAppOptions(readLabFlags(), { backend: "auto" });
+const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
 const manual = params.get("manual") === "1";
 const lowQuality = params.get("quality") === "low";
 /** `?found=0..3|bell|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). The game boots the
@@ -450,6 +450,7 @@ async function boot(): Promise<void> {
     // lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with none present these spreads add nothing
     renderer: { ...(originalLook ? { mode: "production" as const, qualityProfile: "production" as const, fallback: "safe-basic" as const } : { mode: "production" as const, quality: lowQuality ? "low" as const : "high" as const, fallback: "safe-basic" as const }), ...lab.renderer },
     output: { toneMapping: "aces", exposure: originalLook ? 1.25 : 1.18, dither: false, ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await app.ready();

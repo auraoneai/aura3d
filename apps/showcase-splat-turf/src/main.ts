@@ -10,6 +10,7 @@ import { warmPrograms } from "@aura3d/engine/game";
 import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { CONFIG, IDLE, SplatTurfSim, TRACE_COLUMNS, coverageGrade, expandScript, parseScript, replay, type Input, type Phase } from "./sim";
 import { ChaseCamera, createTurfPresenter } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -227,13 +228,14 @@ async function boot(): Promise<void> {
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
   // WebGPU by default (backend "auto", WebGL2 fallback kept): real-GPU check 2026-11-08 rendered the same frame with the
   // WGSL twins and kept >= 0.9x the WebGL2 frame rate in play. `?backend=webgl2` forces WebGL2.
-  const lab = labAppOptions(readLabFlags(), { backend: "auto" });
+  const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "none", dither: false, ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await loading.track(app.ready(), 1);

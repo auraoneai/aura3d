@@ -13,7 +13,7 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import type { GameSessionState } from "@aura3d/engine";
-import { labAppOptions, parseLabFlags } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, parseLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { createOrbitAudio } from "./audio";
 import { installOrbitUi } from "./ui";
@@ -627,14 +627,15 @@ async function boot(): Promise<void> {
   const loadingBar = createLoadingProgress({ element: $("loading-bar") });
   loadingBar.set(0.08, "Building the course");
   const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion, look: config.look });
-  // The port has no render worker, so `?worker=1` is ignored here.
-  const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined));
+  // `?worker=1` renders in the worker the showcase route registers (labRenderWorker); main-thread fallback kept.
+  const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined), { createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     // Lab flags (?backend=webgpu, ?worker=1, ?gamut=p3) are all off by default; the custom shaders carry WGSL twins (shaders-wgsl.ts) for WebGPU.
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
+    ...(lab.worker ? { worker: lab.worker } : {}),
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
     output: { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false, ...lab.output },

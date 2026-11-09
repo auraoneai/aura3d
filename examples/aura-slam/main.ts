@@ -9,6 +9,7 @@ import { createSceneRenderer, type SceneRendererHandle, type SceneRendererOption
 import { createAthletePose } from "./view/pose";
 import { createPoseRig } from "./view/poseRig";
 import type { ActorState, BallState } from "./contract/sim";
+import { labRenderWorker } from "../shared/lab-flags";
 
 export { createSceneRenderer } from "./view/renderer";
 export type { SceneRendererHandle, SceneRendererOptions } from "./view/renderer";
@@ -21,11 +22,11 @@ export interface NativeRenderer extends SlamRenderer {
 }
 
 /**
- * A3/A10 lab flags: `?backend=auto|webgpu|webgl2` (WebGL2 fallback kept; the game passes "auto" as its default) and `?gamut=p3`
- * (falls back to sRGB).
+ * A3/A10 lab flags: `?backend=auto|webgpu|webgl2` (WebGL2 fallback kept; the game passes "auto" as its default), `?gamut=p3`
+ * (falls back to sRGB) and `?worker=1` (renders in the worker `createWorker` returns; main-thread fallback kept).
  * Same mapping as apps/showcase-port-shared/lab-flags.ts, kept local so the example stays self-contained. EXPERIMENTAL.
  */
-export function labAppOptions(search: string, defaultBackend?: "auto" | "webgpu"): { appOptions?: NonNullable<SceneRendererOptions["appOptions"]> } {
+export function labAppOptions(search: string, defaultBackend?: "auto" | "webgpu", createWorker?: () => Worker): { appOptions?: NonNullable<SceneRendererOptions["appOptions"]> } {
   const params = new URLSearchParams(search);
   const raw = params.get("backend")?.trim().toLowerCase();
   // `?backend=webgl2` forces WebGL2 (the opt-out when `defaultBackend` is set); unknown values fall back to the default.
@@ -33,7 +34,8 @@ export function labAppOptions(search: string, defaultBackend?: "auto" | "webgpu"
   const gamut = params.get("gamut")?.trim().toLowerCase();
   const renderer = backend === "auto" || backend === "webgpu" ? { backend, allowFallback: true as const } : undefined;
   const output = gamut === "p3" ? { outputColorSpace: "display-p3" as const } : undefined;
-  return renderer || output ? { appOptions: { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}) } } : {};
+  const worker = createWorker && params.get("worker")?.trim() === "1" ? { fallback: "main-thread" as const, createWorker } : undefined;
+  return renderer || output || worker ? { appOptions: { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}), ...(worker ? { worker } : {}) } } : {};
 }
 
 /** The scene renderer (M-RENDER) with the M-POSE athlete rig and the native outfit resolver, in the shape the shell expects. */
@@ -46,7 +48,8 @@ export function createNativeRenderer(options: { safety?: boolean; search?: strin
     ...(options.search !== undefined ? { search: options.search } : {}),
     ...(options.onBootProgress ? { onBootProgress: options.onBootProgress } : {}),
     // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
-    ...labAppOptions(options.search ?? (typeof window !== "undefined" ? window.location.search : ""), "auto")
+    // `?worker=1`: the showcase route registers the render worker (labRenderWorker); without one the app stays on the main thread.
+    ...labAppOptions(options.search ?? (typeof window !== "undefined" ? window.location.search : ""), "auto", labRenderWorker)
   });
   return {
     handle,

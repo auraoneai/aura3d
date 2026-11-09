@@ -36,7 +36,7 @@ import { INTRO, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, si
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { carModel } from "./models";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
@@ -905,7 +905,7 @@ const progressTimer = setInterval(() => {
 /** A1: shared readiness helper; drives the loading panel's progress bar (`--aura3d-loading`, `aria-valuenow`) through the boot phases. */
 const loadingProgress = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
 /** Lab flags (`?backend=webgpu`, `?worker=1`, `?gamut=p3`): EXPERIMENTAL, all off by default, WebGL2/main-thread fallbacks kept. */
-const lab = labAppOptions(readLabFlags());
+const lab = labAppOptions(readLabFlags(), { createWorker: labRenderWorker });
 
 async function boot(): Promise<void> {
   mark("module");
@@ -917,6 +917,7 @@ async function boot(): Promise<void> {
     pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
     output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false, ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: buildScene()
   });
   loadingProgress.set(0.2);

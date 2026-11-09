@@ -20,7 +20,7 @@ import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
 import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { labAppOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
+import { labAppOptions, labRenderWorker, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import "./enamel.css";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
@@ -542,7 +542,7 @@ async function boot(): Promise<void> {
   const world = buildWorld(data);
   mark("scene built");
   /* Lab flags (W-8): EXPERIMENTAL, default OFF. `?backend=auto|webgpu` and `?gamut=p3` only; worker/depth are not wired for this port. */
-  const lab = labAppOptions(readLabFlags());
+  const lab = labAppOptions(readLabFlags(), { createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
@@ -555,6 +555,7 @@ async function boot(): Promise<void> {
     // both paths: agx rendered band A at mean luma 31 against 105 with none and 86 for the 4.6.2 frame (software WebGL2,
     // A/B capture g21p2a), so `?tm=agx` is opt-in only.
     output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands", ...lab.output },
+    ...(lab.worker ? { worker: lab.worker } : {}),
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });
   mark("app created");
