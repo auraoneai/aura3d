@@ -372,7 +372,12 @@ export const PROBES = {
   }
 };
 
-/** Run a named probe; a thrown driver error becomes an `error` field with every check false. */
+/**
+ * Run a named probe; a thrown driver error becomes an `error` field with every check false.
+ * @param {string} name
+ * @param {object} page
+ * @returns {Promise<{ name: string, checks: Record<string, boolean>, notes: Record<string, unknown>, passed: number, total: number | null, error?: string }>}
+ */
 export async function runProbe(name, page) {
   const probe = PROBES[name];
   if (!probe) throw new Error(`unknown probe ${name}`);

@@ -218,7 +218,10 @@ async function onPageClock<T>(page: { now: () => number }, fn: () => Promise<T>)
     Date.now = realNow;
   }
 }
-const probeOn = (name: string, page: ReturnType<typeof solarPage>) => onPageClock(page, () => runProbe(name, page));
+/** The shape runProbe resolves to (tools/agent-eval/c1/probes.mjs is untyped through modules.d.ts). */
+type ProbeResult = { name: string; checks: Record<string, boolean>; notes: Record<string, unknown>; passed: number; total: number | null; error?: string };
+const probe = (name: string, page: object) => runProbe(name, page) as Promise<ProbeResult>;
+const probeOn = (name: string, page: ReturnType<typeof solarPage>) => onPageClock(page, () => probe(name, page));
 
 describe("C1 functional probes", () => {
   it("passes every solar check against a correct page and flags a broken Escape", async () => {
@@ -248,9 +251,9 @@ describe("C1 functional probes", () => {
     const realNow = Date.now;
     Date.now = () => clock;
     try {
-      const main = await runProbe("product", page);
+      const main = await probe("product", page);
       expect(main.checks).toMatchObject({ clearcoatState: true, turntableTurns: true, turntableRate: true });
-      const fu = await runProbe("product-followup", page);
+      const fu = await probe("product-followup", page);
       expect(fu.passed).toBe(fu.total);
     } finally {
       Date.now = realNow;
