@@ -50,6 +50,8 @@ interface ProbesState {
   renderer: { current: ReflectionFaceRenderer };
   nextIrradiance: number;
   capturedPreFrame: boolean;
+  /** Identities of the environment the captures light the scene with (see `captureEnvironmentKey`). */
+  environmentKey: readonly unknown[] | null;
 }
 
 const systems = new WeakMap<RenderDevice, Map<object, ProbesState>>();
@@ -128,7 +130,8 @@ function stateFor(device: RenderDevice, owner: object, renderer: ReflectionFaceR
       irradiance: new Map(),
       renderer: slot,
       nextIrradiance: 0,
-      capturedPreFrame: false
+      capturedPreFrame: false,
+      environmentKey: null
     };
     byOwner.set(owner, state);
   } else {
@@ -158,6 +161,19 @@ export function disposePrd02Probes(device: RenderDevice, owner?: object): void {
     activeOwners.set(device, byOwner.keys().next().value!);
   }
   if (owner === undefined || owner === device) pendingUpdates.delete(device);
+}
+
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void {
+  const state = systems.get(device)?.get(owner);
+  if (!state) return;
+  state.reflections.restartPartialCaptures();
+  for (const volume of state.irradiance.values()) volume.restartPartialCapture();
 }
 
 /** Captures currently owned by this device; callers do not own their textures. */
@@ -298,8 +314,31 @@ function prepareProbeFrame(renderer: Prd02ProbeCaptureRenderer, source: RenderSo
     if (holder.source) renderer.renderProbeFace(holder.source, face, target, viewProjection);
   });
   registerProbeNodes(state, nodes, renderer.device);
+  trackCaptureEnvironment(state, source);
   const finishRequests = applyPendingUpdates(state, nodes, owner);
   return { state, finishRequests };
+}
+
+/**
+ * The environment a capture lights the scene with, by identity: the bound C-09 probe and the legacy environment
+ * textures. Identities, not values, so per-frame lighting objects rebuilt around the same textures do not count.
+ */
+function captureEnvironmentKey(source: RenderSource): readonly unknown[] {
+  const s = source as RenderSource & { readonly environmentProbe?: unknown };
+  const lighting = s.environmentLighting;
+  if (lighting === false) return [false];
+  return [s.environmentProbe ?? null, lighting?.environmentProbe ?? null, lighting?.environmentMapTexture?.texture ?? null,
+    lighting?.environmentCubeMapTexture?.texture ?? null, lighting?.proceduralMap ? true : null];
+}
+
+/** `once` captures re-capture when their environment changes (an HDRI that loads after mount); see `ONCE_ENVIRONMENT_RECAPTURES`. */
+function trackCaptureEnvironment(state: ProbesState, source: RenderSource): void {
+  const key = captureEnvironmentKey(source);
+  const previous = state.environmentKey;
+  state.environmentKey = key;
+  if (!previous || (previous.length === key.length && previous.every((value, i) => value === key[i]))) return;
+  state.reflections.environmentChanged();
+  for (const volume of state.irradiance.values()) volume.environmentChanged();
 }
 
 /** Sync capture is available for devices with synchronous readback. */
