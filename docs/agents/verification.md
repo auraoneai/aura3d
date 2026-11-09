@@ -1,6 +1,6 @@
 # Verification
 
-Version: 5.3.0
+Version: 5.4.0
 
 What to run before calling work done, in order of cost. Claim labels and what each claim needs are in [claims-and-boundaries.md](claims-and-boundaries.md) and [rendering-proof-required.md](rendering-proof-required.md). If a gate cannot run, label the work `blocked` or `prototype` and name the gate; never substitute a weaker check.
 
