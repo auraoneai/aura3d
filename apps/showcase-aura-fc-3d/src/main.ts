@@ -830,8 +830,11 @@ function boot(): void {
           "fcMatchBallMeshy", "fcSoccerStrikerMeshy", "fcGoalkeeperMeshy", "fcSoccerGoalNetMeshy",
           "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
           "fcGlacierDomeMeshy", "fcHeroTrophyMeshy",
-          "fcStandModuleMeshy", "fcPlayerTunnelMeshy"
+          "fcStandModuleMeshy", "fcPlayerTunnelMeshy",
+          "fcPitchFanAMeshy", "fcPitchFanBMeshy", "fcPitchFanCMeshy"
         ],
+        // Meshy-07 (FC47-AN1): the clip each mounted front-row fan plays (idle; cheer / pump during a goal)
+        pitchFanClips: [...(world?.fanClips ?? [])],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,
         clubs: ["aurora", "kings", "iron", "waves", "kites", "stars", "giants", "storm"],
