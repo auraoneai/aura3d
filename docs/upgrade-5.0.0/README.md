@@ -132,7 +132,7 @@ Method as in round 2 (production marketing build of `exp/55-wgpu-perf3`, 1280x72
 | Pip's Big Leap | 19.5 | 17.0 | 0.81 | 0.87 (n=12, 0.77 to 1.15) | WebGL2 |
 | Lamplight Line (30 s settle) | 28.1 | 21.8 | 0.84 | 0.75 (n=7, 0.25 to 0.96) | WebGL2 |
 
-REVIEW_PLACEHOLDER
+Self-review re-measure (fresh sweep of the final lane build with the switches in place, same tools and load gate, kept pairs only; median WebGPU/WebGL2): Thermal Drift 1.06 (n=6), Aura Links 3D 1.00 (n=7), Roadster Rush 0.97 (n=6), Craterline GP 0.96 (n=8), Gridlock Courier 0.95 (n=7), Shadowstep Gauntlet 0.93 (n=8), Number Surge 0.92 (n=10, 0.88 to 0.94). All seven hold the >= 0.9x rule, so none was reverted; Number Surge is the closest to the line.
 
 Rendering: reduced-motion captures (960x540) of the seven switched games on the final lane build report the WebGPU backend on the default page with 0 errors. Default (WebGPU) vs `?backend=webgl2`: mean abs diff 0.38 to 0.73/255 (Craterline GP 1.55 to 1.71, against its own WebGL2 run-to-run 1.37), under 0.6% of pixels over 16; WebGL2 run-to-run on the same build 0.12 to 0.51 (Craterline GP 1.37). That cross-backend difference is the one the 5.4.0 base build already has: its WebGPU frames match the lane's within WebGL2 run-to-run noise (0.11 to 0.51; one of three Gridlock Courier WebGPU captures caught its intro camera at another phase, 2.6), and the lane's WebGL2 frames match the base build's (0.11 to 0.51, Number Surge 0.49 against 0.33 run-to-run on its animated title). Absolute rates are headless and loaded; they are not a performance claim.
 
