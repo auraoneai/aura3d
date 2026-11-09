@@ -7,6 +7,14 @@
 /apps /apps/showcase-index/ 301
 /apps/ /apps/showcase-index/ 301
 
+# Aura Clash docs pages removed (dead product): consolidate on the homepage.
+/docs/aura-clash / 301
+/docs/aura-clash/ / 301
+/docs/aura-clash/* / 301
+/docs/aura-clash-showcase / 301
+/docs/aura-clash-showcase/ / 301
+/docs/aura-clash-showcase/* / 301
+
 # Lifted to the top: these rules were not honored when placed mid-file (Pages quirk).
 /apps/controls-trackball /apps/showcase-index/ 301
 /apps/controls-trackball/ /apps/showcase-index/ 301
