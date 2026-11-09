@@ -184,6 +184,34 @@ describe("WebGPU per-draw overhead", () => {
     f.device.endFrame(); f.device.dispose(); f.finish();
   });
 
+  it("rebinds a batched draw's range when its textures change and reuses the group when they match again (5.5.1 memo)", async () => {
+    const f = await fixture(true);
+    const first = f.device.createRenderTarget({ width: 2, height: 2, depth: false });
+    const second = f.device.createRenderTarget({ width: 2, height: 2, depth: false });
+    const target = f.device.createRenderTarget({ width: 2, height: 2, depth: false });
+    const vertices = f.device.createBuffer("vertex", 24);
+    const bound: unknown[] = [];
+    const frame = (source: typeof first) => {
+      f.device.beginFrame(2, 2); f.device.setRenderTarget(source); f.device.setRenderTarget(target);
+      f.device.beginDrawBatch();
+      f.device.drawChecked({ label: "memo", topology: "triangles" as const, vertexBuffer: vertices, vertexCount: 3, shader: f.shader,
+        uniforms: new Map([["u_source", new TextureBinding({ name: "u_source", texture: source.colorTexture })]]) });
+      f.device.endDrawBatch(); f.device.endFrame();
+      const group = f.groups.at(-1)!;
+      bound.push(group.entries.find(entry => entry.binding === 2)?.resource);
+      return f.groups.length;
+    };
+    const one = frame(first);
+    // Same range, other texture: a new group binding the other view.
+    const two = frame(second);
+    expect(two).toBe(one + 1);
+    expect(bound[1]).not.toBe(bound[0]);
+    // Back to the first texture, then unchanged: no new group.
+    expect(frame(first)).toBe(two);
+    expect(frame(first)).toBe(two);
+    f.device.dispose(); f.finish();
+  });
+
   it("submits recorded draws before any other device operation, retirement or target change, keeping queue order", async () => {
     const f = await fixture(true);
     const source = f.device.createRenderTarget({ width: 2, height: 2, depth: false });

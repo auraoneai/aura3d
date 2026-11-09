@@ -1684,6 +1684,8 @@ export class WebGPUDevice implements RenderDevice {
   readonly #nativeDofPipelineKeys = new Map<string, Map<string, string>>();
   /** Depth-only views by native depth texture. */
   readonly #depthOnlyViews = new WeakMap<WebGPUTextureLike, unknown>();
+  /** The last material bind group per arena range, with the entries it was created from (see `cachedBindGroup`). */
+  readonly #bindGroupMemo = new WeakMap<object, { readonly layout: unknown; readonly entries: readonly WebGPUBindGroupEntryLike[]; readonly group: WebGPUBindGroupLike }>();
   /** The attachments of the last batched draw and their pass key (object ids are stable per object). */
   #batchPassKey: { readonly nativeView: unknown; readonly resolveView: unknown; readonly depthView: unknown; readonly sampleCount: number;
     readonly hasDepthStencil: boolean; readonly depthSlice: number | undefined; readonly key: string } | null = null;
@@ -9730,7 +9732,7 @@ export class WebGPUDevice implements RenderDevice {
                 { binding: 18, resource: materialTextures.spotShadow.view }
               ] : [])
             ]
-          })
+          }, arenaMemoKey(portableResources?.buffer ?? uniformBuffer))
         : null;
       if ((shader.nativeUniformLayout === "generated-program-ambient-pbr" || shader.nativeUniformLayout === "generated-program-pbr" || shader.nativeUniformLayout === "generated-program-unlit") && !bindGroup) {
         throw new RenderDeviceError("Generated program cannot bind its material", "WEBGPU_MATERIAL_BINDING_UNAVAILABLE");
@@ -10327,7 +10329,17 @@ export class WebGPUDevice implements RenderDevice {
    * `createBindGroup`, reusing an earlier group with the same layout and the same resource objects. Buffer resources are
    * keyed by handle, offset and size; anything that is not a plain object reference makes the group uncacheable.
    */
-  private cachedBindGroup(descriptor: WebGPUBindGroupDescriptorLike): WebGPUBindGroupLike {
+  private cachedBindGroup(descriptor: WebGPUBindGroupDescriptorLike, memoKey?: object): WebGPUBindGroupLike {
+    // A draw's material group usually binds exactly what the same uniform range bound last frame: compare the entries
+    // with that group's (same layout, bindings and resource objects, buffer offsets and sizes) before building a key.
+    const memo = memoKey ? this.#bindGroupMemo.get(memoKey) : undefined;
+    if (memo && memo.layout === descriptor.layout && sameBindGroupEntries(memo.entries, descriptor.entries)) return memo.group;
+    const group = this.cachedBindGroupByKey(descriptor);
+    if (memoKey) this.#bindGroupMemo.set(memoKey, { layout: descriptor.layout, entries: descriptor.entries, group });
+    return group;
+  }
+
+  private cachedBindGroupByKey(descriptor: WebGPUBindGroupDescriptorLike): WebGPUBindGroupLike {
     let key = `${this.bindGroupObjectId(descriptor.layout)}`;
     for (const entry of descriptor.entries) {
       const resource = entry.resource as { readonly buffer?: unknown; readonly offset?: unknown; readonly size?: unknown } | null;
@@ -12555,6 +12567,31 @@ interface NativeDofPassArgs {
 
 /** A draw's uniform block: a pooled buffer of its own, or a range of the frame's uniform arena. */
 type TransientUniform = WebGPUBufferLike | UniformArenaRegion<WebGPUBufferLike>;
+
+/** An arena range (stable per offset and size across frames) as a bind-group memo key; pooled buffers are shared, so none. */
+function arenaMemoKey(uniform: TransientUniform | null | undefined): object | undefined {
+  return uniform instanceof UniformArenaRegion ? uniform : undefined;
+}
+
+/** Bind-group entries with the same bindings and the same resource objects (buffer bindings: same buffer, offset, size). */
+function sameBindGroupEntries(a: readonly WebGPUBindGroupEntryLike[], b: readonly WebGPUBindGroupEntryLike[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) {
+    const x = a[index]!, y = b[index]!;
+    if (x.binding !== y.binding) return false;
+    // Only object resources, as the keyed cache (anything else is never cached there).
+    if (x.resource === y.resource) { if (!isObjectLike(x.resource)) return false; continue; }
+    const p = x.resource as { readonly buffer?: unknown; readonly offset?: unknown; readonly size?: unknown } | null;
+    const q = y.resource as { readonly buffer?: unknown; readonly offset?: unknown; readonly size?: unknown } | null;
+    if (!p || !q || typeof p !== "object" || typeof q !== "object" || !("buffer" in p) || !("buffer" in q)
+      || p.buffer !== q.buffer || p.offset !== q.offset || p.size !== q.size || !isObjectLike(p.buffer)) return false;
+  }
+  return true;
+}
+
+function isObjectLike(value: unknown): boolean {
+  return (typeof value === "object" && value !== null) || typeof value === "function";
+}
 
 /** The bind-group resource for a draw's uniform block (an arena range binds its offset and size). */
 function uniformResource(uniform: TransientUniform): { readonly buffer: WebGPUBufferLike; readonly offset?: number; readonly size?: number } {
