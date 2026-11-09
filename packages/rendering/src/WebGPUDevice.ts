@@ -1678,6 +1678,12 @@ export class WebGPUDevice implements RenderDevice {
   #uniformArena: UniformArena<WebGPUBufferLike> | null = null;
   /** The draw being prepared records into the open batch inside a frame: its uniform blocks go to the arena. */
   #arenaDraw = false;
+  /** Native DoF pass uniform buffers by pass label and size (kept across frames). */
+  readonly #nativeDofUniforms = new Map<string, WebGPUBufferLike>();
+  /** Native DoF pipeline keys by fragment source, then by the rest of the key. */
+  readonly #nativeDofPipelineKeys = new Map<string, Map<string, string>>();
+  /** Depth-only views by native depth texture. */
+  readonly #depthOnlyViews = new WeakMap<WebGPUTextureLike, unknown>();
   /** The attachments of the last batched draw and their pass key (object ids are stable per object). */
   #batchPassKey: { readonly nativeView: unknown; readonly resolveView: unknown; readonly depthView: unknown; readonly sampleCount: number;
     readonly hasDepthStencil: boolean; readonly depthSlice: number | undefined; readonly key: string } | null = null;
@@ -3839,7 +3845,7 @@ export class WebGPUDevice implements RenderDevice {
     const coverage = producer.nativeExtraColors[0]!;
     const reversed = this.depthConvention.mode === "reversed";
     const clearDepth = this.depthConvention.clearValue;
-    const depthView = producer.nativeDepthTexture!.createView({ aspect: "depth-only" });
+    const depthView = this.depthOnlyView(producer.nativeDepthTexture!);
     const layoutEntries: WebGPUBindGroupLayoutEntryLike[] = [
       { binding: 0, visibility: 2, texture: { sampleType: "unfilterable-float", viewDimension: "2d" } },
       { binding: 1, visibility: 2, texture: { sampleType: "unfilterable-float", viewDimension: "2d" } },
@@ -4230,7 +4236,7 @@ export class WebGPUDevice implements RenderDevice {
     const resources = [owned.nativeTexture, owned.nativeDepthTexture, ...(owned.nativeMultisampleTexture ? [owned.nativeMultisampleTexture] : [])];
     for (const resource of resources) this.resourceInterop.assertUsable(resource);
     const colorView = owned.nativeMultisampleView ?? owned.nativeView;
-    const depthSampleView = owned.nativeDepthTexture.createView({ aspect: "depth-only" });
+    const depthSampleView = this.depthOnlyView(owned.nativeDepthTexture);
     const clearColor = [...owned.nativeClearColor] as [number, number, number, number];
     const needsClear = owned.nativeNeedsClear;
     const epoch = this.nativeFrameEpoch, serial = this.resourceInterop.submissionSerial;
@@ -5811,7 +5817,7 @@ export class WebGPUDevice implements RenderDevice {
     if (format === "rgba32f" && !this.device.features?.has("float32-filterable")) {
       throw new RenderDeviceError("WebGPU SSR of rgba32f requires float32-filterable", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
-    const depthView = dsrc.nativeDepthTexture.createView({ aspect: "depth-only" });
+    const depthView = this.depthOnlyView(dsrc.nativeDepthTexture);
     const trace = this.transientPostTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
       format: "rgba16f", depth: false, label: "a3d-webgpu-ssr-trace" });
     let out: RenderTarget | undefined;
@@ -5877,7 +5883,7 @@ export class WebGPUDevice implements RenderDevice {
     if (mode !== "standard" && mode !== "reversed") {
       throw new RenderDeviceError(`Native WebGPU ${pass} does not decode ${mode} depth`, "WEBGPU_AO_DEPTH_ENCODING_UNSUPPORTED", { pass, mode });
     }
-    return { view: target.nativeDepthTexture.createView({ aspect: "depth-only" }), reversed: mode === "reversed", multisampled };
+    return { view: this.depthOnlyView(target.nativeDepthTexture), reversed: mode === "reversed", multisampled };
   }
 
   /** The fused-chain `ssao` pass (WGSL twin of the WebGL2 kernel) on display-space color. */
@@ -6497,6 +6503,9 @@ export class WebGPUDevice implements RenderDevice {
           draw: pass => this.executeNativeLinearDepthPass(pass, assertCurrent), deviceGeneration: generation, isDeviceLost: isLost });
         linearResult = linearDriver.execute({ source, coverage: frame.coverage, projection: frame.projection,
           maxGeometryDepthMeters: frame.maxGeometryDepthMeters, skyDepthMeters: frame.skyDepthMeters });
+        // Batched DoF passes are submitted here, so the depth stage is reported (and marked submitted) only after its
+        // submission returns, as before.
+        this.flushDrawBatch();
         assertCurrent();
         proof.depthSubmitted = true;
         if (diagnosticToken) recordPostStage("S1:depth-prep", diagnosticToken);
@@ -6506,6 +6515,7 @@ export class WebGPUDevice implements RenderDevice {
         dofResult = dofDriver.execute({ color: current, alpha: frame.alpha, depthModel: frame.depthModel,
           linearDepth: linearResult.target, depthEncoding: "linear-view-metres", maxGeometryDepthMeters: frame.maxGeometryDepthMeters,
           skyDepthMeters: frame.skyDepthMeters, options: options.nativeDepthOfField.options });
+        this.flushDrawBatch();
         assertCurrent();
         proof.effectSubmitted = true;
         if (diagnosticToken) recordPostStage("S6:dof", diagnosticToken);
@@ -6754,12 +6764,19 @@ export class WebGPUDevice implements RenderDevice {
     return owned;
   }
 
-  private submitNativeDofPass(args: {
-    readonly label: string; readonly fragment: string; readonly entryPoint: string; readonly target: RenderTarget;
-    readonly inputs: readonly { readonly binding: number; readonly native: WebGPUTextureLike; readonly view: unknown; readonly sampleType: "depth" | "float" | "unfilterable-float" }[];
-    readonly uniforms?: Uint8Array; readonly sampler?: boolean; readonly constants?: Readonly<Record<string, number>>;
-  }, assertCurrent: () => void): void {
-    this.assertAlive();
+  private submitNativeDofPass(args: NativeDofPassArgs, assertCurrent: () => void): void {
+    // Inside a frame the pass records into the open batch encoder: its own checks (and the caller's currency check, which
+    // asserts the device) must not submit the passes recorded before it, as a batched draw's helpers do not.
+    const batchable = this.#drawBatchingEnabled && this.frameActive && !this.#drawBatchRecording && !this.#drawBatchDrawActive;
+    if (!batchable) { this.submitNativeDofPassNow(args, assertCurrent, false); return; }
+    this.assertUsableKeepingDrawBatch();
+    this.#drawBatchDrawActive = true;
+    try { this.submitNativeDofPassNow(args, assertCurrent, true); }
+    finally { this.#drawBatchDrawActive = false; }
+  }
+
+  private submitNativeDofPassNow(args: NativeDofPassArgs, assertCurrent: () => void, batchable: boolean): void {
+    if (!batchable) this.assertAlive();
     if (!this.device.createBindGroupLayout || !this.device.createPipelineLayout || !this.device.createShaderModule ||
         !this.device.createRenderPipeline || !this.device.createCommandEncoder || !this.device.createBindGroup ||
         (args.sampler && !this.device.createSampler)) throw new RenderDeviceError("Native depth-of-field layouts are unavailable", "WEBGPU_DOF_HOST_UNAVAILABLE");
@@ -6778,8 +6795,17 @@ export class WebGPUDevice implements RenderDevice {
       ...args.inputs.map(input => ({ binding: input.binding, visibility: 2, texture: { sampleType: input.sampleType, viewDimension: "2d" as const } })),
       ...(args.sampler ? [{ binding: 4, visibility: 2, sampler: { type: "filtering" as const } }] : [])
     ];
-    const key = JSON.stringify(["native-dof", args.label, args.entryPoint, webgpuTextureFormat(target.colorTexture.format),
-      layoutEntries, args.constants ?? null, args.fragment]);
+    // Keyed per fragment source (a Map key that hashes once per string) plus a small JSON of the rest, instead of a JSON
+    // of the whole shader source every pass of every frame.
+    let byFragment = this.#nativeDofPipelineKeys.get(args.fragment);
+    if (!byFragment) { byFragment = new Map(); this.#nativeDofPipelineKeys.set(args.fragment, byFragment); }
+    const smallKey = JSON.stringify([args.label, args.entryPoint, webgpuTextureFormat(target.colorTexture.format), layoutEntries, args.constants ?? null]);
+    let key = byFragment.get(smallKey);
+    if (key === undefined) {
+      key = JSON.stringify(["native-dof", args.label, args.entryPoint, webgpuTextureFormat(target.colorTexture.format),
+        layoutEntries, args.constants ?? null, args.fragment]);
+      byFragment.set(smallKey, key);
+    }
     let pipeline = this.webgpuPostPipelines.get(key);
     if (!pipeline) {
       const bindLayout = this.device.createBindGroupLayout({ label: `${args.label}-bind-layout`, entries: layoutEntries });
@@ -6796,13 +6822,26 @@ export class WebGPUDevice implements RenderDevice {
     check();
     let uniform: WebGPUBufferLike | undefined;
     let registered = false;
+    let kept = false;
     try {
       if (args.uniforms) {
-        uniform = this.device.createBuffer({ label: `${args.label}-uniforms`, size: args.uniforms.byteLength, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
+        // One uniform buffer per pass label and size, kept across frames (each pass submits before it returns, and a
+        // queue write is ordered after earlier submissions), instead of a buffer created and retired every frame.
+        const uniformKey = `${args.label}:${args.uniforms.byteLength}`;
+        const known = this.#nativeDofUniforms.get(uniformKey);
+        if (known && this.resourceInterop.owns(known)) {
+          uniform = known;
+          registered = true;
+        } else {
+          if (known) this.#nativeDofUniforms.delete(uniformKey);
+          uniform = this.device.createBuffer({ label: `${args.label}-uniforms`, size: args.uniforms.byteLength, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
+          this.registerNativeCleanup(uniform, []);
+          registered = true;
+        }
         const buffer = uniform;
-        this.registerNativeCleanup(buffer, []);
-        registered = true;
         if (this.#mrtSubmissionActive) throw new RenderDeviceError("Native depth-of-field upload cannot be reentered", "WEBGPU_MRT_SUBMISSION_ACTIVE");
+        // A recorded pass that reads this (kept) buffer must see its earlier bytes: submit it before the queue write.
+        if (this.#drawBatch?.accesses.has(buffer)) this.flushDrawBatch();
         this.#mrtSubmissionActive = true;
         this.#mrtPinnedHandles.add(buffer);
         try { this.device.queue.writeBuffer(buffer, 0, args.uniforms); }
@@ -6817,12 +6856,43 @@ export class WebGPUDevice implements RenderDevice {
       check();
       const bindLayout = pipeline.getBindGroupLayout?.(0);
       if (!bindLayout) throw new RenderDeviceError("Native depth-of-field bind layout is unavailable", "WEBGPU_DOF_HOST_UNAVAILABLE");
-      const sampler = args.sampler ? this.device.createSampler!({ minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }) : undefined;
-      const group = this.device.createBindGroup({ label: `${args.label}-bind`, layout: bindLayout,
+      const sampler = args.sampler ? this.nativeSampler({ minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }) : undefined;
+      const group = this.cachedBindGroup({ label: `${args.label}-bind`, layout: bindLayout,
         entries: [...(uniform ? [{ binding: 0, resource: { buffer: uniform } }] : []),
           ...args.inputs.map(input => ({ binding: input.binding, resource: input.view })), ...(sampler ? [{ binding: 4, resource: sampler }] : [])] });
+      const passDescriptor = (): WebGPURenderPassDescriptorLike => ({ label: `${args.label}-pass`,
+        colorAttachments: [{ view: target.nativeView, clearValue: [0, 0, 0, 0], loadOp: "clear", storeOp: "store" }] });
+      // Inside a frame the pass records into the open batch encoder (its own render pass; no later draw joins it) and is
+      // submitted, with its accesses, by the batch flush, instead of an encoder and a queue submission of its own.
+      if (batchable) {
+        if (uniform && this.#drawBatch?.accesses.get(uniform) === "write") this.flushDrawBatch();
+        const batchPass = this.drawBatchPass("post", true, passDescriptor);
+        const batch = this.#drawBatch!;
+        batch.passKey = null;
+        try {
+          if (!batchPass.setBindGroup) throw new RenderDeviceError("Native depth-of-field pass cannot bind resources", "WEBGPU_DOF_HOST_UNAVAILABLE");
+          batchPass.setPipeline(pipeline); batchPass.setBindGroup(0, group); batchPass.draw(3, 1, 0);
+        } catch (error) {
+          this.closeDrawBatchPass();
+          throw error;
+        }
+        batch.postPasses += 1;
+        const access = (resource: object, mode: "read" | "write"): void => {
+          const previous = batch.accesses.get(resource);
+          batch.accesses.set(resource, previous === undefined || previous === mode ? mode : "readwrite");
+        };
+        for (const input of args.inputs) access(input.native, "read");
+        access(output, "write");
+        if (uniform) access(uniform, "read");
+        check();
+        target.nativeNeedsClear = false;
+        this.nativeRenderPasses += 1;
+        this.nativeSubmissions += 1;
+        if (uniform) { this.#nativeDofUniforms.set(`${args.label}:${args.uniforms!.byteLength}`, uniform); kept = true; }
+        return;
+      }
       const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
-      const pass = encoder.beginRenderPass({ label: `${args.label}-pass`, colorAttachments: [{ view: target.nativeView, clearValue: [0, 0, 0, 0], loadOp: "clear", storeOp: "store" }] });
+      const pass = encoder.beginRenderPass(passDescriptor());
       if (!pass.setBindGroup) throw new RenderDeviceError("Native depth-of-field pass cannot bind resources", "WEBGPU_DOF_HOST_UNAVAILABLE");
       pass.setPipeline(pipeline); pass.setBindGroup(0, group); pass.draw(3, 1, 0); pass.end();
       const finished = encoder.finish();
@@ -6832,19 +6902,29 @@ export class WebGPUDevice implements RenderDevice {
       target.nativeNeedsClear = false;
       this.nativeRenderPasses += 1;
       this.nativeSubmissions += 1;
+      if (uniform) { this.#nativeDofUniforms.set(`${args.label}:${args.uniforms!.byteLength}`, uniform); kept = true; }
     } finally {
-      if (uniform) {
+      // A pass that failed retires its buffer (a kept one is forgotten first), as every pass did before.
+      if (uniform && !kept) {
+        for (const [key, value] of this.#nativeDofUniforms) if (value === uniform) this.#nativeDofUniforms.delete(key);
         if (registered) this.retireNative(uniform);
         else this.retireUnregisteredNative(uniform);
       }
     }
   }
 
+  /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
+  private depthOnlyView(texture: WebGPUTextureLike): unknown {
+    let view = this.#depthOnlyViews.get(texture);
+    if (view === undefined) { view = texture.createView({ aspect: "depth-only" }); this.#depthOnlyViews.set(texture, view); }
+    return view;
+  }
+
   private executeNativeLinearDepthPass(pass: WebGPULinearDepthDraw, assertCurrent: () => void): void {
     const source = this.assertNativeDofTarget(pass.source), target = this.assertNativeDofTarget(pass.target);
     const depth = source.nativeDepthTexture;
     if (!depth || !source.depthTexture || pass.sourceAspect !== "depth-only") throw new RenderDeviceError("Native depth-of-field source has no depth attachment", "WEBGPU_DOF_TARGET_UNSUPPORTED");
-    const depthView = depth.createView({ aspect: "depth-only" });
+    const depthView = this.depthOnlyView(depth);
     const inputs: Array<{ binding: number; native: WebGPUTextureLike; view: unknown; sampleType: "depth" | "float" | "unfilterable-float" }> = [
       { binding: 1, native: depth, view: depthView, sampleType: "depth" }
     ];
@@ -7120,7 +7200,7 @@ export class WebGPUDevice implements RenderDevice {
     const depth = owned.nativeDepthTexture;
     if (!depth) throw new RenderDeviceError("Native depth post stages need the source depth attachment", "WEBGPU_DEPTH_STAGE_DEPTH_UNAVAILABLE", { label: owned.label });
     this.resourceInterop.assertUsable(depth);
-    return { view: depth.createView({ aspect: "depth-only" }), multisampled: (owned.sampleCount ?? 1) > 1 };
+    return { view: this.depthOnlyView(depth), multisampled: (owned.sampleCount ?? 1) > 1 };
   }
 
   private webgpuDepthStageColor(current: RenderTarget, format: "rgba16f" | "rgba8", stage: string): WebGPURenderTarget {
@@ -11471,7 +11551,7 @@ export class WebGPUDevice implements RenderDevice {
           this.resourceInterop.assertUsable(target.nativeDepthTexture);
           if (target.nativeNeedsClear) this.flushNativeRenderTargetClear(target);
           if (target.nativeNeedsClear) throw new RenderDeviceError("Sampleable depth target could not be initialized", "WEBGPU_DEPTH_BINDING_REQUIRED", { binding: descriptor.name });
-          entries.push({ binding: bindingIndex++, resource: target.nativeDepthTexture.createView({ aspect: "depth-only" }) });
+          entries.push({ binding: bindingIndex++, resource: this.depthOnlyView(target.nativeDepthTexture) });
           actualTextureCount += 1;
           continue;
         }
@@ -12466,6 +12546,12 @@ interface GeneratedPbrPackSlot {
 }
 
 const NO_TEXTURE_BINDINGS: readonly TextureBinding[] = Object.freeze([]);
+
+interface NativeDofPassArgs {
+  readonly label: string; readonly fragment: string; readonly entryPoint: string; readonly target: RenderTarget;
+  readonly inputs: readonly { readonly binding: number; readonly native: WebGPUTextureLike; readonly view: unknown; readonly sampleType: "depth" | "float" | "unfilterable-float" }[];
+  readonly uniforms?: Uint8Array; readonly sampler?: boolean; readonly constants?: Readonly<Record<string, number>>;
+}
 
 /** A draw's uniform block: a pooled buffer of its own, or a range of the frame's uniform arena. */
 type TransientUniform = WebGPUBufferLike | UniformArenaRegion<WebGPUBufferLike>;

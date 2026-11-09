@@ -292,7 +292,8 @@ describe("WebGPU device depth stages", () => {
       // Each stage binds uniform, sampler and its textures; the depth reads come from the forward depth attachment.
       expect(f.groups.find(group => group.label.startsWith("webgpu-godrays") && !group.label.includes("composite"))!.bindings).toEqual([0, 1, 2, 3]);
       expect(f.groups.find(group => group.label.startsWith("webgpu-motion-reconstruct"))!.bindings).toEqual([0, 1, 2, 3, 4]);
-      expect(f.views.filter(view => view.label === "forward-depth" && (view.descriptor as { aspect?: string } | undefined)?.aspect === "depth-only").length).toBe(2);
+      // 5.5.1: both stages bind the one depth-only view of the forward depth attachment (created once per texture).
+      expect(f.views.filter(view => view.label === "forward-depth" && (view.descriptor as { aspect?: string } | undefined)?.aspect === "depth-only").length).toBe(1);
       expect(f.modules.some(code => code.includes(sampleCount === 4 ? "texture_depth_multisampled_2d" : "var depthTex: texture_depth_2d"))).toBe(true);
       expect(postStagesRan(token)).toEqual(expect.arrayContaining(["S4:god-rays-32", "S7:motion-blur-12x16"]));
       expect(f.device.captureState().get("nativeDepthStagePasses")).toBe(6);

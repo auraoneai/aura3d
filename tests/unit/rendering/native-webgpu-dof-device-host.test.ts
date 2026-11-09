@@ -17,7 +17,7 @@ type GroupRecord = { readonly entries: readonly { readonly binding: number; read
 type PipelineRecord = { readonly descriptor: WebGPURenderPipelineDescriptorLike; getBindGroupLayout(index: number): object };
 type PassRecord = { readonly descriptor: WebGPURenderPassDescriptorLike; pipeline?: PipelineRecord; group?: GroupRecord; draws: number };
 
-async function fixture(options: { readonly missingLayout?: boolean; readonly missingFence?: boolean } = {}) {
+async function fixture(options: { readonly missingLayout?: boolean; readonly missingFence?: boolean; readonly batching?: boolean } = {}) {
   const textures: TextureRecord[] = [];
   const layouts: WebGPUBindGroupLayoutDescriptorLike[] = [];
   const pipelines: PipelineRecord[] = [];
@@ -85,7 +85,7 @@ async function fixture(options: { readonly missingLayout?: boolean; readonly mis
     },
     destroy() {}
   } as unknown as WebGPUDeviceLike;
-  const device = await WebGPUDevice.create({ adapter: { requestDevice: async () => native }, device: native });
+  const device = await WebGPUDevice.create({ adapter: { requestDevice: async () => native }, device: native, ...(options.batching ? { nativeDrawBatching: true } : {}) });
   const finishFences = async () => { for (const resolve of fences.splice(0)) resolve(); await Promise.resolve(); await Promise.resolve(); };
   return { device, native, textures, layouts, pipelines, passes, events, writes, finishFences, lose,
     onSubmit(callback?: typeof onSubmit) { onSubmit = callback; }, onDraw(callback?: typeof onDraw) { onDraw = callback; },
@@ -452,3 +452,79 @@ describe("native WebGPU depth-of-field device host", () => {
     }
   });
 });
+
+describe("native WebGPU depth-of-field device host with draw batching (5.5.1)", () => {
+  it("records the depth pass and the six DoF passes into two batch submissions, each reported only after it returns", async () => {
+    const f = await fixture({ batching: true });
+    try {
+      const scene = createScene(f.device), frame = begin(scene); seal(scene, frame);
+      const token = postDiagnostics.begin(scene.descriptor.scopeId, scene.descriptor.viewId, scene.descriptor.frameId);
+      const submissions: Array<{ readonly entries: readonly string[]; readonly stages: readonly string[] }> = [];
+      f.onSubmit((passes) => {
+        const entries = passes.map(fragmentEntry).filter((entry): entry is string => entry === "fs_linear_depth" || Boolean(entry?.startsWith("fs_dof_")));
+        if (entries.length) submissions.push({ entries, stages: [...postStagesRan(token)] });
+      });
+      present(scene, frame, {}, token);
+      expect(submissions).toHaveLength(2);
+      expect(submissions[0]).toEqual({ entries: ["fs_linear_depth"], stages: [] });
+      expect(submissions[1]!.entries).toHaveLength(6);
+      expect(submissions[1]!.stages).toEqual(["S1:depth-prep"]);
+      expect(postStagesRan(token)).toEqual(["S1:depth-prep", "S6:dof"]);
+      // Every DoF pass still clears and draws once into its own render pass.
+      const dofPasses = f.passes.filter((pass) => fragmentEntry(pass)?.startsWith("fs_dof_"));
+      expect(dofPasses).toHaveLength(6);
+      for (const pass of dofPasses) {
+        expect(pass.draws).toBe(1);
+        expect(pass.descriptor.colorAttachments[0]).toMatchObject({ loadOp: "clear" });
+      }
+      scene.source.dispose(); scene.output.dispose();
+      postDiagnostics.resetScope(scene.descriptor.scopeId);
+    } finally { await f.close(); }
+  });
+
+  it("does not record a stage whose batch submission fails, and keeps uniform bytes per pass across frames", async () => {
+    for (const failureEntry of ["fs_linear_depth", "fs_dof_composite"] as const) {
+      const f = await fixture({ batching: true });
+      try {
+        const scene = createScene(f.device), frame = begin(scene); seal(scene, frame);
+        const token = postDiagnostics.begin(scene.descriptor.scopeId, scene.descriptor.viewId, scene.descriptor.frameId);
+        f.onSubmit((passes) => {
+          if (passes.some((pass) => fragmentEntry(pass) === failureEntry)) throw new Error(`injected ${failureEntry} failure`);
+        });
+        // The batch holding the failing pass is submitted when the driver releases its intermediates, so the failure can
+        // arrive wrapped with that cleanup; either way it is thrown and the stage is not reported.
+        let thrown: unknown;
+        try { present(scene, frame, {}, token); } catch (error) { thrown = error; }
+        const messages = (error: unknown): string[] => error instanceof AggregateError
+          ? [error.message, ...error.errors.flatMap(messages)] : [error instanceof Error ? error.message : String(error)];
+        expect(messages(thrown)).toContain(`injected ${failureEntry} failure`);
+        expect(postStagesRan(token)).toEqual(failureEntry === "fs_linear_depth" ? [] : ["S1:depth-prep"]);
+        f.onSubmit(undefined);
+        scene.source.dispose(); scene.output.dispose();
+        postDiagnostics.resetScope(scene.descriptor.scopeId);
+      } finally { await f.close(); }
+    }
+    // Two frames: each pass's uniform buffer is bound with that frame's bytes (one buffer per pass, rewritten).
+    const f = await fixture({ batching: true });
+    try {
+      for (let frameIndex = 0; frameIndex < 2; frameIndex += 1) {
+        const scene = createScene(f.device), frame = begin(scene); seal(scene, frame);
+        const uniforms = new Map<object, Uint8Array>();
+        f.onSubmit((passes) => {
+          for (const pass of passes) {
+            const resource = binding(pass, 0) as { buffer?: object } | undefined;
+            if (resource?.buffer && fragmentEntry(pass)?.startsWith("fs_dof_")) uniforms.set(resource.buffer, f.writes.get(resource.buffer)!);
+          }
+        });
+        present(scene, frame, { focusDistance: 2 + frameIndex }, undefined);
+        expect(uniforms.size).toBeGreaterThan(0);
+        for (const bytes of uniforms.values()) expect(bytes).toBeDefined();
+        f.onSubmit(undefined);
+        scene.renderDevice.endFrame();
+        scene.source.dispose(); scene.output.dispose();
+        postDiagnostics.resetScope(scene.descriptor.scopeId);
+      }
+    } finally { await f.close(); }
+  });
+});
+
