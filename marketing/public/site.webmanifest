@@ -1,0 +1,24 @@
+{
+  "name": "Aura3D",
+  "short_name": "Aura3D",
+  "description": "Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy checks in one TypeScript 3D engine for the browser.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#fbfbf8",
+  "theme_color": "#fbfbf8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
