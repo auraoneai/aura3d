@@ -3364,7 +3364,8 @@ function boot(): void {
   // 5.0 lab flags (EXPERIMENTAL, default OFF): ?backend=, ?gamut=p3 and ?worker=1 (worker rendering, main-thread fallback kept) are wired; ?depth is ignored here (?depth fails the contact-shadow mount: CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED).
   // With no flag in the URL both fragments are empty and the options are exactly the 4.x/5.0.1 ones.
   const lab = readLabFlags();
-  const labFragment = labAppOptions(lab, createWorkerRendererWorker);
+  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
+  const labFragment = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
   const labOptions: Record<string, unknown> = {};
   if (labFragment.renderer || labFragment.output) {
     const base = looks.appOptions(state.course.look) as Record<string, any>;

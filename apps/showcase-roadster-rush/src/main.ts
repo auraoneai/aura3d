@@ -810,7 +810,8 @@ function paintBootProgress(fraction: number): void {
  * and `?gamut=p3` (output), and `?worker=1` (worker rendering; the game loop stays on the main thread, fallback kept).
  */
 function labRendererAndOutput(): Pick<ReturnType<typeof labAppOptions>, "renderer" | "output"> & { worker?: { fallback: "main-thread"; createWorker: () => Worker } } {
-  const { renderer, output, worker } = labAppOptions(readLabFlags(), createWorkerRendererWorker);
+  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
+  const { renderer, output, worker } = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
   return { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}), ...(worker ? { worker } : {}) };
 }
 
