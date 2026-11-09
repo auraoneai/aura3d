@@ -366,7 +366,9 @@ export async function prd02BeforeFrameAsync(renderer: Prd02ProbeCaptureRenderer,
   if (!prepared) return [];
   const { state, finishRequests } = prepared;
   finishRequests();
-  const changed = await state.reflections.updateAsync(1);
+  // WebGPU: reflection faces are rendered and their readbacks started here, and a probe is published by the first frame
+  // after its readbacks complete, so a frame never waits on a GPU round trip (or on pipeline compiles queued before it).
+  const changed = renderer.device.kind === "webgpu" ? state.reflections.updateDeferred(1) : await state.reflections.updateAsync(1);
   if (stateAt(renderer.device, owner) !== state) return [];
   await advanceIrradianceAsync(state, renderer.device, owner);
   if (stateAt(renderer.device, owner) !== state) return [];
