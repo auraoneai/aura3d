@@ -106,9 +106,10 @@ describe("WebGPU perf round 3: render-state memo", () => {
     const changed = memo.resolve(mutable);
     expect(changed.pipelineKey).not.toBe(resolved.pipelineKey);
     expect(changed).toEqual(resolveNativeRenderState(mutable));
-    const layouts = input().vertexLayouts as { attributes: { format: string }[] }[];
+    const layouts = input().vertexLayouts as unknown as { attributes: { format: string }[] }[];
     layouts[0]!.attributes[1]!.format = "float32x2";
-    expect(memo.resolve(input({ vertexLayouts: layouts })).pipelineKey).toBe(resolveNativeRenderState(input({ vertexLayouts: layouts })).pipelineKey);
+    const updatedLayouts = layouts as unknown as NonNullable<ReturnType<typeof input>["vertexLayouts"]>;
+    expect(memo.resolve(input({ vertexLayouts: updatedLayouts })).pipelineKey).toBe(resolveNativeRenderState(input({ vertexLayouts: updatedLayouts })).pipelineKey);
     expect(memo.resolve(input({ targetWidth: 128 }))).toEqual(resolveNativeRenderState(input({ targetWidth: 128 })));
   });
 
