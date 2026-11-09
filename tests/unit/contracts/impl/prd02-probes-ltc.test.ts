@@ -230,6 +230,25 @@ describe("prd02 IrradianceVolumeSystem (PRD-02 §6.6)", () => {
     device.dispose();
   });
 
+  it("re-bakes a once volume on a changed environment at most three times, so a per-frame change cannot starve the bake", () => {
+    const device = new MockRenderDevice();
+    const system = new IrradianceVolumeSystem(device, flatRenderer);
+    system.configure({ name: "grid", min: [0, 0, 0], max: [2, 2, 2], resolution: [2, 2, 2], captureFaceSize: 1 });
+    system.environmentChanged(); // nothing started yet: free
+    let completed = false;
+    for (let frame = 0; frame < 20 && !completed; frame += 1) {
+      system.environmentChanged(); // an animated sky changes every frame
+      completed = system.step(2).completed;
+    }
+    expect(completed).toBe(true);
+    const first = system.get();
+    system.environmentChanged();
+    expect(system.step(8).work).toBe(0);
+    expect(system.get()).toBe(first);
+    system.dispose();
+    device.dispose();
+  });
+
   it("enforces reported device texture limits and bounded per-frame updates", () => {
     const device = new MockRenderDevice();
     Object.defineProperty(device, "kind", { value: "webgpu" });

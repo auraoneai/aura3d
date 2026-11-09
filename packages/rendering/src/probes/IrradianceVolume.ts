@@ -100,10 +100,12 @@ export class IrradianceVolumeSystem {
   environmentChanged(): void {
     this.assertAlive();
     if (!this.pending || this.pending.update !== "once") return;
-    if (this.volume) {
-      if (this.environmentRebakes >= ONCE_ENVIRONMENT_RECAPTURES) return;
-      this.environmentRebakes += 1;
-    }
+    // A first bake not started yet simply sees the new environment.
+    if (!this.volume && !this.job) return;
+    // Restarting a first bake in progress counts too, so an environment that changes every frame cannot keep a
+    // cell-budgeted bake from ever completing.
+    if (this.environmentRebakes >= ONCE_ENVIRONMENT_RECAPTURES) return;
+    this.environmentRebakes += 1;
     this.job = null;
     this.updateProbe();
   }
