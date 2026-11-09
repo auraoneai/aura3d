@@ -117,7 +117,8 @@ async function boot(): Promise<void> {
   const loading = createLoadingProgress({ ...(document.getElementById("boot") ? { element: document.getElementById("boot") as HTMLElement } : {}) });
   // W-8 lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu, ?gamut=p3 and ?worker=1 (worker rendering, main-thread fallback kept). The depth flag is not wired here.
   const lab = readLabFlags();
-  const labOptions = labAppOptions(lab, createWorkerRendererWorker);
+  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
+  const labOptions = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
     // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
@@ -127,9 +128,9 @@ async function boot(): Promise<void> {
     ...(labOptions.renderer ? { renderer: { quality: { tier: "auto" as const }, ...labOptions.renderer } } : {}),
     ...(labOptions.output ? { output: labOptions.output } : {}),
     // A WebGPU backend (?backend=webgpu, or ?backend=auto when it resolves to WebGPU) cannot capture the pit-lane reflection
-    // probe on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so either flag also asks for async
-    // frames. Absent the flag: unchanged.
-    ...(resolveLabBackend(lab) ? { frameMode: "async" as const } : {}),
+    // probe on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so WebGPU (the default since WebGPU
+    // perf round 3) also asks for async frames; ?backend=webgl2 keeps synchronous frames.
+    ...(resolveLabBackend(lab, "auto") ? { frameMode: "async" as const } : {}),
     ...(labOptions.worker ? { worker: labOptions.worker } : {}),
     qualityRebuild: { flags: ["game"] },
     ...(labClustered ? { lighting: { clustered: { enabled: true, fallback: "forward" as const } } } : {}),
