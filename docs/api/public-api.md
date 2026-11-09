@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.4.0` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.4.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.4.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.4.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.4.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.4.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.4.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.4.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.4.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.4.0` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.4.0` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.4.0` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.4.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.4.0` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.4.0` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.4.0` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.4.0` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.4.0` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.4.0` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.4.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.4.0` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.4.0` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.4.0` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.4.0` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.4.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.4.0` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.4.0` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.4.0` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.4.0` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.4.0` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.4.0` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.4.0` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.4.0` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.4.0` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.4.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.4.0` | `./dist/engine/public/index.d.ts` | 11093 |
-| `@aura3d/engine/animation` | `5.4.0` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.4.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.4.0` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.4.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.4.0` | `./dist/engine/public/devtools.d.ts` | 10770 |
-| `@aura3d/engine/ecs` | `5.4.0` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.4.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.4.0` | `./dist/game/index.d.ts` | 11522 |
-| `@aura3d/engine/game/art` | `5.4.0` | `./dist/game/art/index.d.ts` | 333 |
-| `@aura3d/engine/game/capture` | `5.4.0` | `./dist/game/capture/index.d.ts` | 11051 |
-| `@aura3d/engine/game/styles.css` | `5.4.0` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.4.0` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.4.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.4.0` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.4.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.4.0` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.4.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.4.0` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.4.0` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.4.0` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.4.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.4.0` | `./dist/engine/public/renderer.d.ts` | 11029 |
-| `@aura3d/engine/scatter` | `5.4.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.4.0` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.4.0` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.4.0` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.4.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.4.0` | `./dist/engine/public/v5.d.ts` | 8529 |
-| `@aura3d/engine/v5/context` | `5.4.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.4.0` | `./dist/game/v5.d.ts` | 11518 |
-| `@aura3d/engine/v5/internal` | `5.4.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.4.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.4.0` | `./dist/engine/public/worker.d.ts` | 85 |
-| `@aura3d/engine/workflows` | `5.4.0` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.4.0` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.4.0` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.4.0` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.4.0` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.4.0` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.4.0` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.4.0` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.4.0` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.4.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.4.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.4.0` | `./dist/index.d.ts` | 4318 |
-| `@aura3d/rendering/contracts` | `5.4.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.4.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.4.0` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.4.0` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.4.0` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.4.0` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.4.0` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.4.0` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.4.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.4.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.4.0` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.4.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.4.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.4.0` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.4.0` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.4.0` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.4.0` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.4.0` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.4.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.4.0` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.4.0` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.4.0` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.4.0` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.4.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.4.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.4.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.4.0` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.4.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.4.0` | `./dist/lanes/index.d.ts` | 1026 |
-| `@aura3d/rendering/lighting` | `5.4.0` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.4.0` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.4.0` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.4.0` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.4.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.4.0` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.4.0` | `./dist/webgpu.d.ts` | 214 |
-| `@aura3d/rendering/world` | `5.4.0` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.4.0` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.4.0` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.4.0` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.4.0` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.5.0` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.5.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.5.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.5.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.5.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.5.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.5.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.5.0` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.5.0` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.5.0` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.5.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.5.0` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.5.0` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.5.0` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.5.0` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.5.0` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.5.0` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.5.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.5.0` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.5.0` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.5.0` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.5.0` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.5.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.5.0` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.5.0` | `./dist/index.d.ts` | 309 |
+| `@aura3d/cli` | `5.5.0` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.5.0` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.5.0` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.5.0` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.5.0` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.5.0` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.5.0` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.5.0` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.5.0` | `./dist/engine/public/index.d.ts` | 11093 |
+| `@aura3d/engine/animation` | `5.5.0` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.5.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.5.0` | `./dist/audio/index.d.ts` | 309 |
+| `@aura3d/engine/controls` | `5.5.0` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.5.0` | `./dist/engine/public/devtools.d.ts` | 10770 |
+| `@aura3d/engine/ecs` | `5.5.0` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.5.0` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.5.0` | `./dist/game/index.d.ts` | 11522 |
+| `@aura3d/engine/game/art` | `5.5.0` | `./dist/game/art/index.d.ts` | 333 |
+| `@aura3d/engine/game/capture` | `5.5.0` | `./dist/game/capture/index.d.ts` | 11051 |
+| `@aura3d/engine/game/styles.css` | `5.5.0` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.5.0` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.5.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.5.0` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.5.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.5.0` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.5.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.5.0` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.5.0` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.5.0` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.5.0` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.5.0` | `./dist/engine/public/renderer.d.ts` | 11029 |
+| `@aura3d/engine/scatter` | `5.5.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.5.0` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.5.0` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.5.0` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.5.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.5.0` | `./dist/engine/public/v5.d.ts` | 8529 |
+| `@aura3d/engine/v5/context` | `5.5.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.5.0` | `./dist/game/v5.d.ts` | 11518 |
+| `@aura3d/engine/v5/internal` | `5.5.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.5.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.5.0` | `./dist/engine/public/worker.d.ts` | 85 |
+| `@aura3d/engine/workflows` | `5.5.0` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.5.0` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.5.0` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.5.0` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.5.0` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.5.0` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.5.0` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.5.0` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.5.0` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.5.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.5.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.5.0` | `./dist/index.d.ts` | 4318 |
+| `@aura3d/rendering/contracts` | `5.5.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.5.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.5.0` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.5.0` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.5.0` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.5.0` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.5.0` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.5.0` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.5.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.5.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.5.0` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.5.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.5.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.5.0` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.5.0` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.5.0` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.5.0` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.5.0` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.5.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.5.0` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.5.0` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.5.0` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.5.0` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.5.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.5.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.5.0` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.5.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.5.0` | `./dist/lanes/index.d.ts` | 1026 |
+| `@aura3d/rendering/lighting` | `5.5.0` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.5.0` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.5.0` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.5.0` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.5.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.5.0` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.5.0` | `./dist/webgpu.d.ts` | 214 |
+| `@aura3d/rendering/world` | `5.5.0` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.5.0` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.5.0` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.5.0` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.5.0` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/addons@5.5.0#sha256=e03f20f6c8370906e73dfc9abe3f6afac15d2f77c66c7445dc888c883cf4d8e9`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/animation@5.5.0#sha256=a1967ecb32f0dae6b35f1edaf441bc7abef356a2644379b0cb96e7d10d435cae`
 
 ### Export conditions
 
@@ -5386,8 +5386,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/animation@5.5.0#sha256=a1967ecb32f0dae6b35f1edaf441bc7abef356a2644379b0cb96e7d10d435cae`
 
 ### Export conditions
 
@@ -5433,8 +5433,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/animation@5.5.0#sha256=a1967ecb32f0dae6b35f1edaf441bc7abef356a2644379b0cb96e7d10d435cae`
 
 ### Export conditions
 
@@ -7207,8 +7207,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/animation@5.5.0#sha256=a1967ecb32f0dae6b35f1edaf441bc7abef356a2644379b0cb96e7d10d435cae`
 
 ### Export conditions
 
@@ -7247,8 +7247,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/apps@5.4.0#sha256=fdf1d65fb52b79c5c1a12f7f42cc4f46e448fceaaa0b9aba122c8375b303d258`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/apps@5.5.0#sha256=6f75278e26836cae721ca210fcbd75f346965d5be3daa8c7ec51fbd1cad49210`
 
 ### Export conditions
 
@@ -7312,8 +7312,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/asset-index@5.4.0#sha256=a45e7276a5b880f532c143d5a08c5c969483c6811e897cfcd83baac6408a4551`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/asset-index@5.5.0#sha256=bc8e09bedfbdf55bd7bddf1eb1c9426a7b0d25e8f25c15c511246b747406797e`
 
 ### Export conditions
 
@@ -8050,8 +8050,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -13775,8 +13775,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -18478,8 +18478,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -19387,8 +19387,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -21822,8 +21822,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -23582,8 +23582,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -23868,8 +23868,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/assets@5.5.0#sha256=64fa3330932549028dbc3e1844f73a8bef7e218c64b7d842933b541f5101a7ee`
 
 ### Export conditions
 
@@ -23888,8 +23888,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/audio@5.4.0#sha256=5a6e2e07a03e87bdb5c64ef0ca982fd2502065c7b5e26590a8e38fe5fb4f3dc8`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/audio@5.5.0#sha256=c85ae2c4df4c1b5d35d3d55fde75db449f569c1b49180aba8ff43353cd48dd71`
 
 ### Export conditions
 
@@ -26514,8 +26514,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/cli@5.4.0#sha256=04ad6433b2c016a47ec90e4d3ea25f1f25ef614a80326aca371956d54d8a2a1a`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/cli@5.5.0#sha256=9e009c9bb4085d3e52dd19e2e128a7274a9e401679e607c9da86cb4b166c6244`
 
 ### Export conditions
 
@@ -28685,8 +28685,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/controls@5.4.0#sha256=446b51b6cd744d4283d24c8db7267614a8b8f61485ac639a4519eb7c9af18711`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/controls@5.5.0#sha256=10e4139c6cf9461a4b1aac7ffa15207b4723ef68e45af8ff5f7878b0a51d506b`
 
 ### Export conditions
 
@@ -30488,8 +30488,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/core@5.4.0#sha256=82f56a07e431ae8d9c8c394c6d0419a417548079ef3c1de43b8bb4812b7e7988`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/core@5.5.0#sha256=91351f2a244dc7f4551e3034b0b7f82b41912a29c39f76014b62df3d8a37bc88`
 
 ### Export conditions
 
@@ -31003,8 +31003,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.4.0`
-- Packed identity: `archive:create-aura3d@5.4.0#sha256=f9e8696caa8bd5adc6078856ec18843be2e2da3f86786ff3ed4708c5e512db7b`
+- Version: `5.5.0`
+- Packed identity: `archive:create-aura3d@5.5.0#sha256=28aeb5f9a6e6da9893936c1063795b8ea186dd589012b0a4bb52bdf9f612efe6`
 
 ### Export conditions
 
@@ -31773,8 +31773,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/debug@5.4.0#sha256=8059cfc672ae9c5636061d81ec3a72cc0757d45a569cde9534d707948600d081`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/debug@5.5.0#sha256=fc3fea078949ea00eeb152fb739939a240fd5ee5c9b54af3bf35225f2f786350`
 
 ### Export conditions
 
@@ -33153,8 +33153,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/debug@5.4.0#sha256=8059cfc672ae9c5636061d81ec3a72cc0757d45a569cde9534d707948600d081`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/debug@5.5.0#sha256=fc3fea078949ea00eeb152fb739939a240fd5ee5c9b54af3bf35225f2f786350`
 
 ### Export conditions
 
@@ -33361,8 +33361,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/ecs@5.4.0#sha256=42b90ae308526961ed3499f62a633511c5c2c4453a23ff704649b3e6d9d727cd`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/ecs@5.5.0#sha256=aecd0ddda91358183c15b55080d6b516b2f398027fbf00dc47c0582f62f9168e`
 
 ### Export conditions
 
@@ -34029,8 +34029,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.4.0#sha256=d9037cc291415758b32ba3672032e99183781a6dd3ad0f7a20951fd2cf40340f`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.5.0#sha256=5e2649e3f06175ba311d5ddcbe3df111622c160926440d15de4924bfa1fd8483`
 
 ### Export conditions
 
@@ -36612,8 +36612,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -59673,6 +59673,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -59758,6 +59760,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -59836,6 +59842,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -81532,6 +81559,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -122728,8 +122763,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -125599,8 +125634,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -131325,8 +131360,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -133950,8 +133985,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -135752,8 +135787,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -158757,6 +158792,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -158842,6 +158879,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -158920,6 +158961,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -180616,6 +180678,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -219350,8 +219420,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -220017,8 +220087,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -222599,8 +222669,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -227018,6 +227088,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -227103,6 +227175,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -227181,6 +227257,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -248877,6 +248974,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -311017,8 +311122,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -314187,8 +314292,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -318394,6 +318499,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -318479,6 +318586,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -318557,6 +318668,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -340253,6 +340385,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -399243,8 +399383,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -399254,8 +399394,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -399280,8 +399420,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -400007,8 +400147,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -401248,8 +401388,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -401887,8 +402027,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -403877,8 +404017,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -404502,8 +404642,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -407174,8 +407314,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -408426,8 +408566,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -408689,8 +408829,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -408986,8 +409126,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -412570,6 +412710,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -412655,6 +412797,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -412733,6 +412879,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -434429,6 +434596,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -494512,8 +494687,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -494645,8 +494820,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -495770,8 +495945,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -495854,8 +496029,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -497034,8 +497209,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -501337,8 +501512,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -507520,6 +507695,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -507605,6 +507782,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -507683,6 +507864,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -529379,6 +529581,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -569961,8 +570171,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -570207,8 +570417,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -574499,6 +574709,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -574584,6 +574796,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -574662,6 +574878,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -596358,6 +596595,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -658597,8 +658842,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -663929,8 +664174,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -664117,8 +664362,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -664812,8 +665057,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/engine@5.5.0#sha256=4c2e407a068e31da16d1b32570ce3b430d03bb2286e32bf6fe7048ad1667b240`
 
 ### Export conditions
 
@@ -665270,8 +665515,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/input@5.4.0#sha256=d2b193a89fed5a1cf88359ace9ccc71e880058fd8e414c9d83c213d70e2b0817`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/input@5.5.0#sha256=45afcd1f333716e9d9aad6c1cc642aa7c58b2b80ec533c410385d4eea451926c`
 
 ### Export conditions
 
@@ -666512,8 +666757,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/math@5.4.0#sha256=c6cc16ebb1225b477f170af3d041b2d0b6c6ab48742e74894be4456cb06944d3`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/math@5.5.0#sha256=0dbd893faff412c3b32f06fd8bff799578011a03dea322ed668dca8ca2039390`
 
 ### Export conditions
 
@@ -668499,8 +668744,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/math@5.4.0#sha256=c6cc16ebb1225b477f170af3d041b2d0b6c6ab48742e74894be4456cb06944d3`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/math@5.5.0#sha256=0dbd893faff412c3b32f06fd8bff799578011a03dea322ed668dca8ca2039390`
 
 ### Export conditions
 
@@ -669747,8 +669992,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.4.0#sha256=26c6c0c001b6e7e6e90898911e0ea1cd94ac28f38ca4f6ae7f1bf89c51a1f4ba`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.5.0#sha256=c93489d66beaa074424cd1a8c371b42a007187c1f3760461ebd56374fb8dd9aa`
 
 ### Export conditions
 
@@ -669878,8 +670123,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/physics@5.4.0#sha256=15052daed065b1bc38d4f219fe4e451418dff8c9a9df0b8499ce9d8815c37dd0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/physics@5.5.0#sha256=7e2ee95350345e1560f5f27af6486d543ccc1121eb09d60419f3d8edf85a36a1`
 
 ### Export conditions
 
@@ -672102,8 +672347,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.4.0#sha256=604784566026010aa8330419efa2df31a306aa6dc82c1813bfd64b82e696aa0f`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.5.0#sha256=62be7689f1461b40f3c62c92f78b5e6e6d808bddd96079eb0f510b4d2b584605`
 
 ### Export conditions
 
@@ -672561,8 +672806,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/physics@5.4.0#sha256=15052daed065b1bc38d4f219fe4e451418dff8c9a9df0b8499ce9d8815c37dd0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/physics@5.5.0#sha256=7e2ee95350345e1560f5f27af6486d543ccc1121eb09d60419f3d8edf85a36a1`
 
 ### Export conditions
 
@@ -673814,8 +674059,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/physics@5.4.0#sha256=15052daed065b1bc38d4f219fe4e451418dff8c9a9df0b8499ce9d8815c37dd0`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/physics@5.5.0#sha256=7e2ee95350345e1560f5f27af6486d543ccc1121eb09d60419f3d8edf85a36a1`
 
 ### Export conditions
 
@@ -674078,8 +674323,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/product-studio@5.4.0#sha256=d056a906e695888ef436e123dc51863b15c4daa0f0e6535613ea2004ccdfcd7a`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/product-studio@5.5.0#sha256=db9ce8143db31c666a20accaba800d9c6f65477ba57560109ba719abb193fa03`
 
 ### Export conditions
 
@@ -674360,8 +674605,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/react@5.4.0#sha256=193b21d04c4167843a62eeb98325e4f2d1e97d1633464900185eb6f478fce266`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/react@5.5.0#sha256=50aeb980a7760faf41a82201a7b4e5d0817cfb737100da0bd34f1f1df18cceb2`
 
 ### Export conditions
 
@@ -674762,8 +675007,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -678306,6 +678551,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -678391,6 +678638,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -678469,6 +678720,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -700165,6 +700437,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -706856,8 +707136,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708458,8 +708738,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708503,8 +708783,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708548,8 +708828,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708618,8 +708898,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708671,8 +708951,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708757,8 +709037,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708827,8 +709107,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -708857,8 +709137,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -709001,8 +709281,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -709059,8 +709339,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -709107,8 +709387,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -710709,8 +710989,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -710769,8 +711049,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -710854,8 +711134,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -710911,8 +711191,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711019,8 +711299,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711225,8 +711505,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711354,8 +711634,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711414,8 +711694,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711532,8 +711812,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711628,8 +711908,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711689,8 +711969,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711765,8 +712045,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711803,8 +712083,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711836,8 +712116,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711869,8 +712149,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711941,8 +712221,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -711982,8 +712262,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -713838,6 +714118,14 @@ export declare class ReflectionProbeSystem {
     update(maxProbes?: number): readonly string[];
     /** Advance captures with asynchronous float readback (including native WebGPU). */
     updateAsync(maxProbes?: number): Promise<readonly string[]>;
+    /**
+     * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+     * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+     * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+     * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+     */
+    updateDeferred(maxProbes?: number): readonly string[];
+    private startFaceDeferred;
     private scheduledEntries;
     private captureFace;
     private captureFaceAsync;
@@ -718955,8 +719243,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -719594,8 +719882,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -723108,8 +723396,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -723841,8 +724129,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -723976,8 +724264,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -724219,8 +724507,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -724775,8 +725063,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -725994,6 +726282,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private releaseNativeEffectHistory;
     dispose(): void;
     private assertAlive;
+    /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+    private assertUsableKeepingDrawBatch;
     private assertFrame;
     private readonly temporalLossListeners;
     onDeviceLost(listener: () => void): () => void;
@@ -726079,6 +726369,10 @@ export declare class WebGPUDevice implements RenderDevice {
     private acquireTransientUniform;
     /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
     private releaseTransientUniform;
+    /** The first live render target with `texture` as a color attachment. */
+    private liveTargetWithColor;
+    /** `nativeSampler(webgpuSamplerDescriptor(sampler))`, keyed directly on the sampler fields that descriptor reads. */
+    private nativeSamplerFor;
     /** One immutable sampler per descriptor for this device. */
     private nativeSampler;
     /** The pipeline's (stable) bind group layout for `group`. */
@@ -726157,6 +726451,27 @@ export declare class WebGPUDevice implements RenderDevice {
     private createBudgetedNativeFallback;
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
+    /**
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
+     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
+     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
+     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
+     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     */
+    private packGeneratedPbrForSlot;
+    /**
+     * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+     * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+     * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+     */
+    private writeFastPortableForSlot;
+    /**
+     * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+     * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+     */
+    private renderTargetOwning;
+    /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+    private bumpSlotImage;
     private createNativeGeneratedUnlitUniformBuffer;
     /** Snapshot the legacy uniform morph contract independently of PBR/skinning. */
     private prepareNativeMorphUniforms;
@@ -727664,8 +727979,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/rendering@5.5.0#sha256=52cfde11bea5fdb0e53ee3c3dc5d5855f9b8d3b9822dc1b4edd71d7d59a588d5`
 
 ### Export conditions
 
@@ -728778,8 +729093,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/scene@5.4.0#sha256=753d67e231c48353c278d826673930fb1780eda7adbd155c7e9fcd880ca13778`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/scene@5.5.0#sha256=432b3d81c928ceb3075e59ae0ff1aedfe4ba3edf7e0949e4005acd0ad2dc653b`
 
 ### Export conditions
 
@@ -729904,8 +730219,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/scene@5.4.0#sha256=753d67e231c48353c278d826673930fb1780eda7adbd155c7e9fcd880ca13778`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/scene@5.5.0#sha256=432b3d81c928ceb3075e59ae0ff1aedfe4ba3edf7e0949e4005acd0ad2dc653b`
 
 ### Export conditions
 
@@ -729989,8 +730304,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/scripting@5.4.0#sha256=34bba9f1c0ba941d19367f67b4e8541b3794e217734658adb23ab16005517686`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/scripting@5.5.0#sha256=ca87f3dc8ed51b33329a045f2fcf97feb093f7c7743e07760c04cbc05602a080`
 
 ### Export conditions
 
@@ -731170,8 +731485,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.4.0`
-- Packed identity: `archive:@aura3d/workflows@5.4.0#sha256=c8d34c07c905049f16e9a39a80ea70f736e4250fb3e8cce45396d23a66bde2c9`
+- Version: `5.5.0`
+- Packed identity: `archive:@aura3d/workflows@5.5.0#sha256=88965314fa288eecfc9c4b0002554716edf9811e3ce6b15095a9edf852ff4144`
 
 ### Export conditions
 
