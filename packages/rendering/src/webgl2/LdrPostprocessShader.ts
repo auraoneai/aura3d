@@ -11,7 +11,10 @@
 
 export interface LdrProgramVariant {
   readonly toneMapping: boolean;
-  /** `toneMappingOperatorId` value (0 clamp, 1 reinhard, 2 aces, 3 filmic, 4 uncharted2, 5 agx, other neutral). */
+  /**
+   * `toneMappingOperatorId` value (0 clamp, 1 reinhard, 2 aces, 3 filmic, 4 uncharted2, 5 agx, 6 legacy per-channel
+   * neutral, 7 Khronos PBR Neutral as the output pass computes it).
+   */
   readonly operator: number;
   readonly inputSrgb: boolean;
   readonly outputSrgb: boolean;
@@ -24,13 +27,13 @@ export interface LdrProgramVariant {
 }
 
 export function ldrVariantKey(variant: LdrProgramVariant): string {
-  const op = variant.toneMapping ? Math.min(6, Math.max(0, Math.floor(variant.operator))) : 0;
+  const op = variant.toneMapping ? Math.min(7, Math.max(0, Math.floor(variant.operator))) : 0;
   const base = [variant.toneMapping ? 1 : 0, op, variant.inputSrgb ? 1 : 0, variant.outputSrgb ? 1 : 0, variant.grade ? 1 : 0, variant.grade && variant.sharpening ? 1 : 0, variant.fxaa ? 1 : 0].join("");
   return variant.toneMapping && variant.vignette ? `${base}v` : base;
 }
 
 export function ldrFragmentSource(variant: LdrProgramVariant): string {
-  const op = variant.toneMapping ? Math.min(6, Math.max(0, Math.floor(variant.operator))) : 0;
+  const op = variant.toneMapping ? Math.min(7, Math.max(0, Math.floor(variant.operator))) : 0;
   return `#version 300 es
 precision highp float;
 #define LDR_TONE ${variant.toneMapping ? 1 : 0}
@@ -177,7 +180,27 @@ float neutral(float value) {
   return min(1.0, (x * (1.0 + x / 7.5)) / (1.0 + x));
 }
 
-#if LDR_TONE && LDR_OP != 2 && LDR_OP != 5
+#if LDR_TONE && LDR_OP == 7
+// Khronos PBR Neutral, the same coupled transform as the output pass (output/ToneMappingOperators.glsl.ts,
+// NeutralToneMapping): identity below the 0.76 knee apart from the dark offset, hue-preserving highlight shoulder. The
+// N3 plain look selects it (output/neutralToneCurve.ts); operator 6 keeps the per-channel curve every other app had.
+vec3 pbrNeutralToneMap(vec3 color) {
+  color = max(color, vec3(0.0));
+  float minimum = min(color.r, min(color.g, color.b));
+  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;
+  vec3 shifted = color - offset;
+  float peak = max(shifted.r, max(shifted.g, shifted.b));
+  float knee = 0.76;
+  if (peak < knee) return shifted;
+  float shoulder = 1.0 - knee;
+  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);
+  vec3 scaled = shifted * (compressed / peak);
+  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));
+  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;
+}
+#endif
+
+#if LDR_TONE && LDR_OP != 2 && LDR_OP != 5 && LDR_OP != 7
 float toneMapChannel(float value) {
   float exposed = max(0.0, value * u_exposure) / max(0.0001, u_whitePoint);
 #if LDR_OP == 0
@@ -215,6 +238,8 @@ vec3 applyToneMapping(vec3 color, vec2 uv) {
   vec3 mapped = acesFilmic(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint));
 #elif LDR_OP == 5
   vec3 mapped = agxToneMap(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint));
+#elif LDR_OP == 7
+  vec3 mapped = pbrNeutralToneMap(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint));
 #else
   vec3 mapped = vec3(toneMapChannel(decoded.r), toneMapChannel(decoded.g), toneMapChannel(decoded.b));
 #endif

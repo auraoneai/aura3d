@@ -2,7 +2,7 @@
 
 import { webgpuCustomShaderGap } from "./webgpuCustomShaderGap.js";
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraMaterialSpec, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
-import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba, colorToNeutralInputClearColor } from "../colorUtils.js";
 import { configureBloomFusionDevice, decodedModelDirectPathBlockers, isDirectRenderPath, isFusedBloomPasses, recordDecodedDirectPathBlockers, type BloomFusionDevice } from "../app/renderPath.js";
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
@@ -65,7 +65,7 @@ import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import type { ProjectedSpotResource as RendererProjectedSpotResource } from "@aura3d/rendering";
 import { disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
-import { rendererQrFlags, setDirectMultiscatterModel, setRendererQrFlags } from "@aura3d/rendering";
+import { rendererQrFlags, setDirectMultiscatterModel, setNeutralToneCurve, setRendererQrFlags } from "@aura3d/rendering";
 import { isPlainDefaultOutput } from "../looks/plainLook.js";
 import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginPrd07RendererOperation, bindPrd07RendererAuthority,
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
@@ -639,10 +639,19 @@ export async function createProductionRuntimeSceneRenderer(
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     // Direct path: nothing tone-maps the clear (the canvas is written as-is), so the authored display colour is the clear.
-    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas) ? colorToClearColor(snapshot.background ?? "#070b12") : colorToAcesInputClearColor(snapshot.background ?? "#070b12")),
+    // N3 plain look: the output is PBR Neutral, so the clear pre-inverts that curve instead.
+    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas)
+      ? colorToClearColor(snapshot.background ?? "#070b12")
+      : isPlainDefaultOutput(requestedOutput)
+        ? colorToNeutralInputClearColor(snapshot.background ?? "#070b12")
+        : colorToAcesInputClearColor(snapshot.background ?? "#070b12")),
     // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
     // background; alpha carries `background(c, { toneMapped })` coverage.
-    outputClearColor: withPrd01ColorParsing(runtimeOwner, () => outputClearColor(snapshot)),
+    // Plain look: a tone-mapped clear (alpha 1) goes through PBR Neutral in the output pass, so it pre-inverts that
+    // curve; `background(c, { toneMapped: false })` (alpha 0) is written unmapped and keeps the linear colour.
+    outputClearColor: withPrd01ColorParsing(runtimeOwner, () => isPlainDefaultOutput(requestedOutput) && snapshot.backgroundToneMapped !== false
+      ? [...colorToNeutralInputClearColor(snapshot.background ?? "#070b12").slice(0, 3), 1] as unknown as readonly [number, number, number, number]
+      : outputClearColor(snapshot)),
     // T0-28: the app's resolved flags bind to this renderer's device, so two
     // apps on one page never read each other's flags through FrameGraph.
     qrFlags: flags
@@ -656,6 +665,9 @@ export async function createProductionRuntimeSceneRenderer(
   // colour, so rough dielectrics under a lone directional light are not lifted toward white. Every other app keeps the
   // single-mean-Fresnel lobe it always had.
   setDirectMultiscatterModel(productionRenderer.device, isPlainDefaultOutput(requestedOutput) ? "kulla-conty" : "single-fresnel");
+  // The same plain apps present "neutral" through Khronos PBR Neutral on the fused WebGL2 LDR route (the output pass
+  // already does); the legacy per-channel curve mapped scene white to sRGB ~198 and greyed mid tones.
+  setNeutralToneCurve(productionRenderer.device, isPlainDefaultOutput(requestedOutput) ? "khronos" : "legacy");
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.

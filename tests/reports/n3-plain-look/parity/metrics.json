@@ -1,0 +1,248 @@
+{
+  "run": "exp/54b-plain-parity on release/5.3.0 f89233d2e, 2026-11-08, headless Chrome ANGLE Metal (Apple GPU), 640x360 canvas in a 960x540 page; examples served from source by the root Vite dev server; games built with AURA3D_ONLY_ROUTE",
+  "cause": "the plain output asks for toneMapping neutral, but the fused WebGL2 LDR present (LegacyPost operator 6) ran it as a per-channel x (1 + x / 7.5) / (1 + x) curve: emissive white -> sRGB 198, #c0c0c0 -> 164, #808080 -> 118. Khronos PBR Neutral (the output pass curve, now operator 7 for plain apps): 240, 185, 116. The implicit neutral room's diffuse contributed 0.0 mean abs difference to the garden frame when zeroed, so ambient/IBL stacking was not the cause; multiscatter was already Kulla-Conty on the plain path.",
+  "examplesSheet": "examples-before-after.png: rows bare, garden, spider, stacker, forms, materials-glass-steel; left = f89233d2e, right = this branch",
+  "bareCrateFront": {
+    "authored": [
+      181,
+      83,
+      47
+    ],
+    "aces(?a3d-plain-look=0)": [
+      213,
+      118,
+      82
+    ],
+    "before": [
+      169,
+      94,
+      66
+    ],
+    "after": [
+      196,
+      84,
+      39
+    ],
+    "afterEuclideanErrorPct": 8.3
+  },
+  "bareBall": {
+    "authored": [
+      47,
+      111,
+      181
+    ],
+    "before": [
+      80,
+      131,
+      177
+    ],
+    "after": [
+      60,
+      135,
+      209
+    ]
+  },
+  "gardenGround": {
+    "authored": [
+      106,
+      138,
+      60
+    ],
+    "three.jsFrame": {
+      "rgb": [
+        86,
+        141,
+        54
+      ],
+      "S": 0.645
+    },
+    "before": {
+      "rgb": [
+        103,
+        129,
+        67
+      ],
+      "S": 0.481
+    },
+    "after": {
+      "rgb": [
+        95,
+        132,
+        41
+      ],
+      "S": 0.69
+    }
+  },
+  "frameLumaAndSat": {
+    "spider": {
+      "three.js": [
+        196.1,
+        0.045
+      ],
+      "before": [
+        182.7,
+        0.036
+      ],
+      "after": [
+        217.9,
+        0.061
+      ],
+      "groundAfter": [
+        229,
+        231,
+        236
+      ],
+      "groundAuthored": [
+        233,
+        234,
+        237
+      ]
+    },
+    "garden": {
+      "three.js": [
+        147.4,
+        0.547
+      ],
+      "before": [
+        106.6,
+        0.204
+      ],
+      "after": [
+        100.1,
+        0.3
+      ]
+    },
+    "stacker": {
+      "before": [
+        79.6,
+        0.181
+      ],
+      "after": [
+        66.0,
+        0.293
+      ]
+    },
+    "forms": {
+      "before": [
+        95.6,
+        0.266
+      ],
+      "after": [
+        91.6,
+        0.546
+      ]
+    },
+    "materials-glass-steel": {
+      "before": [
+        198.0,
+        0.028
+      ],
+      "after": [
+        230.9,
+        0.046
+      ]
+    }
+  },
+  "backgroundClear": {
+    "stacker #0f1424": {
+      "before": [
+        33,
+        38,
+        53
+      ],
+      "after": [
+        15,
+        20,
+        36
+      ]
+    },
+    "bare #20232b": {
+      "before": [
+        48,
+        51,
+        58
+      ],
+      "after": [
+        32,
+        35,
+        43
+      ]
+    }
+  },
+  "gamesHeadVsLive meanAbsDiff (0-255)": {
+    "showcase-top-tennis": 1.08,
+    "showcase-iron-crown": 1.42,
+    "showcase-slingshot-siege": "0.0 was invalid: both frames were the loading screen",
+    "showcase-aura-hoops-3d": "2.16 static region (10.1 full frame: player animation timing)",
+    "showcase-aura-links-3d": 0.35,
+    "showcase-pips-big-leap": 1.24
+  },
+  "review": {
+    "commit": "8991ff71b (HEAD of exp/54b-plain-parity), re-captured 2026-11-08 by the independent reviewer, same tools (census.mjs, ANGLE Metal, 960x540 page, 640x360 example canvas); examples from the root Vite dev server, games rebuilt with AURA3D_ONLY_ROUTE and served from marketing/dist + public",
+    "bareCrateFront": [
+      196,
+      84,
+      39
+    ],
+    "bareCrateFrontEuclideanErrorPct": 8.3,
+    "bareAces": [
+      214,
+      118,
+      82
+    ],
+    "gardenGround": {
+      "rgb": [
+        95,
+        132,
+        40
+      ],
+      "S": 0.695
+    },
+    "frameLumaAndSat": {
+      "bare": [
+        77.4,
+        0.215
+      ],
+      "garden": [
+        97.6,
+        0.3
+      ],
+      "spider": [
+        217.3,
+        0.05
+      ],
+      "stacker": [
+        65.4,
+        0.287
+      ],
+      "forms": [
+        92.8,
+        0.546
+      ],
+      "materials-glass-steel": [
+        231.0,
+        0.046
+      ]
+    },
+    "backgroundClear": {
+      "stacker #0f1424": [
+        15,
+        20,
+        36
+      ],
+      "bare #20232b": [
+        32,
+        35,
+        43
+      ]
+    },
+    "gamesHeadVsLive meanAbsDiff (0-255), full 960x540 frame": {
+      "showcase-iron-crown (11 s)": 1.99,
+      "showcase-aura-links-3d (11 s)": 0.35,
+      "showcase-pips-big-leap (11 s)": 1.84,
+      "showcase-top-tennis (30 s; at 11 s the intro camera is at different points)": 0.91,
+      "showcase-aura-hoops-3d (30 s, animated players)": 2.49,
+      "showcase-slingshot-siege (30 s, animated water/HUD; frames visually identical)": 3.4
+    }
+  }
+}

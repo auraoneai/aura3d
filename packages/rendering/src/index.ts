@@ -1336,6 +1336,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 // #179: PRD 11 Phase 3 batching (planner, pools, multi-draw). Named list, not
 // `export *`: batching's `MAX_GPU_INSTANCES` is a separate const from the
 // ForwardPass one already exported above.
