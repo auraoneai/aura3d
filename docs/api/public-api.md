@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.3.0` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.3.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.3.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.3.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.3.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.3.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.3.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.3.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.3.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.3.0` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.3.0` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.3.0` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.3.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.3.0` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.3.0` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.3.0` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.3.0` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.3.0` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.3.0` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.3.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.3.0` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.3.0` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.3.0` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.3.0` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.3.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.3.0` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.3.0` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.3.0` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.3.0` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.3.0` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.3.0` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.3.0` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.3.0` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.3.0` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.3.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.3.0` | `./dist/engine/public/index.d.ts` | 11078 |
-| `@aura3d/engine/animation` | `5.3.0` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.3.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.3.0` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.3.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.3.0` | `./dist/engine/public/devtools.d.ts` | 10755 |
-| `@aura3d/engine/ecs` | `5.3.0` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.3.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.3.0` | `./dist/game/index.d.ts` | 11507 |
-| `@aura3d/engine/game/art` | `5.3.0` | `./dist/game/art/index.d.ts` | 333 |
-| `@aura3d/engine/game/capture` | `5.3.0` | `./dist/game/capture/index.d.ts` | 11036 |
-| `@aura3d/engine/game/styles.css` | `5.3.0` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.3.0` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.3.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.3.0` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.3.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.3.0` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.3.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.3.0` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.3.0` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.3.0` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.3.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.3.0` | `./dist/engine/public/renderer.d.ts` | 11014 |
-| `@aura3d/engine/scatter` | `5.3.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.3.0` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.3.0` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.3.0` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.3.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 318 |
-| `@aura3d/engine/v5` | `5.3.0` | `./dist/engine/public/v5.d.ts` | 8518 |
-| `@aura3d/engine/v5/context` | `5.3.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.3.0` | `./dist/game/v5.d.ts` | 11503 |
-| `@aura3d/engine/v5/internal` | `5.3.0` | `./dist/engine/public/v5-internal.d.ts` | 434 |
-| `@aura3d/engine/v5/math/hull` | `5.3.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.3.0` | `./dist/engine/public/worker.d.ts` | 77 |
-| `@aura3d/engine/workflows` | `5.3.0` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.3.0` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.3.0` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.3.0` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.3.0` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.3.0` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.3.0` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.3.0` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.3.0` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.3.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.3.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.3.0` | `./dist/index.d.ts` | 4310 |
-| `@aura3d/rendering/contracts` | `5.3.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.3.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.3.0` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.3.0` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.3.0` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.3.0` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.3.0` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.3.0` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.3.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.3.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.3.0` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.3.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.3.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.3.0` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.3.0` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.3.0` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.3.0` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.3.0` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.3.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.3.0` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.3.0` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.3.0` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.3.0` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.3.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.3.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.3.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.3.0` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.3.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.3.0` | `./dist/lanes/index.d.ts` | 1023 |
-| `@aura3d/rendering/lighting` | `5.3.0` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.3.0` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.3.0` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.3.0` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.3.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.3.0` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.3.0` | `./dist/webgpu.d.ts` | 214 |
-| `@aura3d/rendering/world` | `5.3.0` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.3.0` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.3.0` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.3.0` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.3.0` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.4.0` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.4.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.4.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.4.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.4.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.4.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.4.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.4.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.4.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.4.0` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.4.0` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.4.0` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.4.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.4.0` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.4.0` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.4.0` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.4.0` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.4.0` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.4.0` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.4.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.4.0` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.4.0` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.4.0` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.4.0` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.4.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.4.0` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.4.0` | `./dist/index.d.ts` | 309 |
+| `@aura3d/cli` | `5.4.0` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.4.0` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.4.0` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.4.0` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.4.0` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.4.0` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.4.0` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.4.0` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.4.0` | `./dist/engine/public/index.d.ts` | 11093 |
+| `@aura3d/engine/animation` | `5.4.0` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.4.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.4.0` | `./dist/audio/index.d.ts` | 309 |
+| `@aura3d/engine/controls` | `5.4.0` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.4.0` | `./dist/engine/public/devtools.d.ts` | 10770 |
+| `@aura3d/engine/ecs` | `5.4.0` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.4.0` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.4.0` | `./dist/game/index.d.ts` | 11522 |
+| `@aura3d/engine/game/art` | `5.4.0` | `./dist/game/art/index.d.ts` | 333 |
+| `@aura3d/engine/game/capture` | `5.4.0` | `./dist/game/capture/index.d.ts` | 11051 |
+| `@aura3d/engine/game/styles.css` | `5.4.0` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.4.0` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.4.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.4.0` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.4.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.4.0` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.4.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.4.0` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.4.0` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.4.0` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.4.0` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.4.0` | `./dist/engine/public/renderer.d.ts` | 11029 |
+| `@aura3d/engine/scatter` | `5.4.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.4.0` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.4.0` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.4.0` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.4.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.4.0` | `./dist/engine/public/v5.d.ts` | 8529 |
+| `@aura3d/engine/v5/context` | `5.4.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.4.0` | `./dist/game/v5.d.ts` | 11518 |
+| `@aura3d/engine/v5/internal` | `5.4.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.4.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.4.0` | `./dist/engine/public/worker.d.ts` | 85 |
+| `@aura3d/engine/workflows` | `5.4.0` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.4.0` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.4.0` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.4.0` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.4.0` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.4.0` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.4.0` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.4.0` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.4.0` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.4.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.4.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.4.0` | `./dist/index.d.ts` | 4318 |
+| `@aura3d/rendering/contracts` | `5.4.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.4.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.4.0` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.4.0` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.4.0` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.4.0` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.4.0` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.4.0` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.4.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.4.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.4.0` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.4.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.4.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.4.0` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.4.0` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.4.0` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.4.0` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.4.0` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.4.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.4.0` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.4.0` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.4.0` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.4.0` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.4.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.4.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.4.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.4.0` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.4.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.4.0` | `./dist/lanes/index.d.ts` | 1026 |
+| `@aura3d/rendering/lighting` | `5.4.0` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.4.0` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.4.0` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.4.0` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.4.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.4.0` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.4.0` | `./dist/webgpu.d.ts` | 214 |
+| `@aura3d/rendering/world` | `5.4.0` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.4.0` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.4.0` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.4.0` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.4.0` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/addons@5.3.0#sha256=2a1341673d31fd0798d624ff8c94f7ff13a84449a95af281ac178254170718d0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/addons@5.4.0#sha256=d0c4eced0f242c0a4678501db9a0e2dd213e6796a45b3ca8ccef75079f3bdca0`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
 
 ### Export conditions
 
@@ -5386,8 +5386,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
 
 ### Export conditions
 
@@ -5433,8 +5433,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
 
 ### Export conditions
 
@@ -7207,8 +7207,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/animation@5.3.0#sha256=194e63f93a964874d6bf2116f3ca4a8a509333bce44731a96de04c10c23414a4`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/animation@5.4.0#sha256=a399b9900b147fec3ee0ee4672a4802e810bbc0d855fe37b032aaa0d23f576f0`
 
 ### Export conditions
 
@@ -7247,8 +7247,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/apps@5.3.0#sha256=32161a87c7990ffdc84d142f7bb3e8d097cae0252ca3b93f02f5125d6589afe0`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/apps@5.4.0#sha256=fdf1d65fb52b79c5c1a12f7f42cc4f46e448fceaaa0b9aba122c8375b303d258`
 
 ### Export conditions
 
@@ -7312,8 +7312,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/asset-index@5.3.0#sha256=3b67566927b2a19d647608684e0740be18244b0414656a7929c273f33e7ef8d3`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/asset-index@5.4.0#sha256=a45e7276a5b880f532c143d5a08c5c969483c6811e897cfcd83baac6408a4551`
 
 ### Export conditions
 
@@ -8050,8 +8050,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -13775,8 +13775,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -18478,8 +18478,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -19387,8 +19387,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -21822,8 +21822,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -23582,8 +23582,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -23868,8 +23868,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/assets@5.3.0#sha256=22c2f539dac193eaac110026033ba2e09422cda3f973f6d72e3a4ad877bf9a66`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/assets@5.4.0#sha256=034d6cccbdbe1f3d81c611d797bd890fe3ebbd10f0200915cb0cecf8041f8bf1`
 
 ### Export conditions
 
@@ -23888,8 +23888,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/audio@5.3.0#sha256=3b32fa94bc0feb214795d33bfe01f65a7a77be094a3d4766b8a79b38a7a01079`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/audio@5.4.0#sha256=5a6e2e07a03e87bdb5c64ef0ca982fd2502065c7b5e26590a8e38fe5fb4f3dc8`
 
 ### Export conditions
 
@@ -26514,8 +26514,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/cli@5.3.0#sha256=90e073c318a13ac7fe8ceb3f03404f404fb0a01f19f74d48a50136159b04b77c`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/cli@5.4.0#sha256=04ad6433b2c016a47ec90e4d3ea25f1f25ef614a80326aca371956d54d8a2a1a`
 
 ### Export conditions
 
@@ -28685,8 +28685,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/controls@5.3.0#sha256=9ef135cd90b5139a23cc304b97435fa3ce4b7c58c961df4a9a705d24a792e0bd`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/controls@5.4.0#sha256=446b51b6cd744d4283d24c8db7267614a8b8f61485ac639a4519eb7c9af18711`
 
 ### Export conditions
 
@@ -30488,8 +30488,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/core@5.3.0#sha256=ec3c851bcf3069a59a79b4c3d9220d6f7c7bd1ce773c75d254354a35c691a617`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/core@5.4.0#sha256=82f56a07e431ae8d9c8c394c6d0419a417548079ef3c1de43b8bb4812b7e7988`
 
 ### Export conditions
 
@@ -31003,8 +31003,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.3.0`
-- Packed identity: `archive:create-aura3d@5.3.0#sha256=9de1ab75e110f42637e6987ae50424f9ed2e5f822806d942e008a84aff1d7142`
+- Version: `5.4.0`
+- Packed identity: `archive:create-aura3d@5.4.0#sha256=f9e8696caa8bd5adc6078856ec18843be2e2da3f86786ff3ed4708c5e512db7b`
 
 ### Export conditions
 
@@ -31773,8 +31773,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/debug@5.3.0#sha256=31dfcc6dfae4fec63c6c594a2869dfac53afc21b2653962a1977f58f28e1ba4f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/debug@5.4.0#sha256=8059cfc672ae9c5636061d81ec3a72cc0757d45a569cde9534d707948600d081`
 
 ### Export conditions
 
@@ -33153,8 +33153,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/debug@5.3.0#sha256=31dfcc6dfae4fec63c6c594a2869dfac53afc21b2653962a1977f58f28e1ba4f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/debug@5.4.0#sha256=8059cfc672ae9c5636061d81ec3a72cc0757d45a569cde9534d707948600d081`
 
 ### Export conditions
 
@@ -33361,8 +33361,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/ecs@5.3.0#sha256=75bf878c3f9345dc2bd3490a8f6c6588c5c2d02743ef62bdeb0437b9185d5f50`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/ecs@5.4.0#sha256=42b90ae308526961ed3499f62a633511c5c2c4453a23ff704649b3e6d9d727cd`
 
 ### Export conditions
 
@@ -34029,8 +34029,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.3.0#sha256=cbf64d44795b2f53d19ccbc989cd078b14eaffaecb447ee46edc985c8564e0f5`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.4.0#sha256=d9037cc291415758b32ba3672032e99183781a6dd3ad0f7a20951fd2cf40340f`
 
 ### Export conditions
 
@@ -36612,8 +36612,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -36839,7 +36839,7 @@ export { texture, TextureHandle } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraModelNodeTransform, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
 export { water } from "./nodes/water.js";
@@ -41352,6 +41352,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly height: number;
 };
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
@@ -42568,6 +42579,14 @@ export declare function colorToRgba(color: AuraColor): readonly [number, number,
 export declare function colorToClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number];
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export declare function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number];
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export declare function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgb(color: AuraColor): readonly [number, number, number];
 export declare function colorWithAlpha(color: AuraColor, alpha: number): string;
 //# sourceMappingURL=colorUtils.d.ts.map
@@ -49160,7 +49179,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -49207,6 +49226,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -51698,6 +51723,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -52068,6 +52099,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -52371,6 +52408,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -54839,13 +54877,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -56467,6 +56512,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -57671,6 +57717,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -59094,12 +59155,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -59441,6 +59501,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -59547,6 +59609,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -59593,8 +59667,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -61674,9 +61748,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -62065,6 +62142,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -62097,6 +62181,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -79726,7 +79811,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -80524,6 +80609,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -80932,6 +81019,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -81399,6 +81492,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -81415,6 +81514,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -81492,10 +81602,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -81565,6 +81683,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -86003,6 +86128,27 @@ export declare function directMultiscatterModel(device?: object | null): DirectM
 /** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
 export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
 //# sourceMappingURL=directMultiscatter.d.ts.map
+```
+
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -102312,7 +102458,7 @@ export declare function collectAtmosphereSection(app: AuraApp): ReturnType<impor
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -102322,6 +102468,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -102544,7 +102695,7 @@ export declare function registerPrd04MaterialDiagnostics(): () => void;
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index.js";
-import type { AuraOutputSurface } from "../../contracts/output.js";
+import type { AuraOutputOptions, AuraOutputSurface } from "../../contracts/output.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import type { AuraToneMappingOperator } from "../../contracts/output.js";
 /**
@@ -102558,6 +102709,16 @@ export declare function readAura3dTonemapQuery(search?: string): {
     readonly exposure?: number;
 };
 export declare const PRD01_OUTPUT_DISPOSE: unique symbol;
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+export declare function toRendererOutput(output: Partial<AuraOutputOptions>): {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
+};
 export declare function createPrd01OutputSurface(app: AuraApp, ctx: {
     readonly flags: QrFlags;
     readonly options: AuraCreateAppOptions;
@@ -119148,6 +119309,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -119315,6 +119493,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -122537,8 +122728,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -125408,8 +125599,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -131134,8 +131325,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -133759,8 +133950,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -135561,8 +135752,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -135732,7 +135923,7 @@ export { texture, TextureHandle } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraModelNodeTransform, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
 export { water } from "./nodes/water.js";
@@ -140245,6 +140436,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly height: number;
 };
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
@@ -141461,6 +141663,14 @@ export declare function colorToRgba(color: AuraColor): readonly [number, number,
 export declare function colorToClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number];
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export declare function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number];
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export declare function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgb(color: AuraColor): readonly [number, number, number];
 export declare function colorWithAlpha(color: AuraColor, alpha: number): string;
 //# sourceMappingURL=colorUtils.d.ts.map
@@ -148053,7 +148263,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -148100,6 +148310,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -150591,6 +150807,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -150961,6 +151183,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -151264,6 +151492,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -153732,13 +153961,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -155360,6 +155596,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -156564,6 +156801,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -157987,12 +158239,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -158334,6 +158585,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -158440,6 +158693,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -158486,8 +158751,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -160567,9 +160832,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -160958,6 +161226,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -160990,6 +161265,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -178619,7 +178895,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -179417,6 +179693,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -179825,6 +180103,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -180292,6 +180576,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -180308,6 +180598,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -180385,10 +180686,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -180458,6 +180767,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -184896,6 +185212,27 @@ export declare function directMultiscatterModel(device?: object | null): DirectM
 /** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
 export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
 //# sourceMappingURL=directMultiscatter.d.ts.map
+```
+
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -201162,7 +201499,7 @@ export declare function collectAtmosphereSection(app: AuraApp): ReturnType<impor
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -201172,6 +201509,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -201394,7 +201736,7 @@ export declare function registerPrd04MaterialDiagnostics(): () => void;
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index.js";
-import type { AuraOutputSurface } from "../../contracts/output.js";
+import type { AuraOutputOptions, AuraOutputSurface } from "../../contracts/output.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import type { AuraToneMappingOperator } from "../../contracts/output.js";
 /**
@@ -201408,6 +201750,16 @@ export declare function readAura3dTonemapQuery(search?: string): {
     readonly exposure?: number;
 };
 export declare const PRD01_OUTPUT_DISPOSE: unique symbol;
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+export declare function toRendererOutput(output: Partial<AuraOutputOptions>): {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
+};
 export declare function createPrd01OutputSurface(app: AuraApp, ctx: {
     readonly flags: QrFlags;
     readonly options: AuraCreateAppOptions;
@@ -217998,6 +218350,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -218165,6 +218534,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -218968,8 +219350,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -219635,8 +220017,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -222217,8 +222599,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -223475,6 +223857,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -224679,6 +225062,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -226102,12 +226500,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -226449,6 +226846,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -226555,6 +226954,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -226601,8 +227012,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -228682,9 +229093,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -229073,6 +229487,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -229105,6 +229526,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -246734,7 +247156,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -247532,6 +247954,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -247940,6 +248364,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -248407,6 +248837,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -248423,6 +248859,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -248500,10 +248947,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -248573,6 +249028,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -253011,6 +253473,27 @@ export declare function directMultiscatterModel(device?: object | null): DirectM
 /** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
 export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
 //# sourceMappingURL=directMultiscatter.d.ts.map
+```
+
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -261858,7 +262341,7 @@ export { texture, TextureHandle } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraModelNodeTransform, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
 export { water } from "./nodes/water.js";
@@ -266371,6 +266854,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly height: number;
 };
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
@@ -267587,6 +268081,14 @@ export declare function colorToRgba(color: AuraColor): readonly [number, number,
 export declare function colorToClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number];
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export declare function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number];
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export declare function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgb(color: AuraColor): readonly [number, number, number];
 export declare function colorWithAlpha(color: AuraColor, alpha: number): string;
 //# sourceMappingURL=colorUtils.d.ts.map
@@ -274179,7 +274681,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -274226,6 +274728,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -276717,6 +277225,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -277087,6 +277601,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -277390,6 +277910,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -279858,13 +280379,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -289748,7 +290276,7 @@ export declare function collectAtmosphereSection(app: AuraApp): ReturnType<impor
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -289758,6 +290286,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -289980,7 +290513,7 @@ export declare function registerPrd04MaterialDiagnostics(): () => void;
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index.js";
-import type { AuraOutputSurface } from "../../contracts/output.js";
+import type { AuraOutputOptions, AuraOutputSurface } from "../../contracts/output.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import type { AuraToneMappingOperator } from "../../contracts/output.js";
 /**
@@ -289994,6 +290527,16 @@ export declare function readAura3dTonemapQuery(search?: string): {
     readonly exposure?: number;
 };
 export declare const PRD01_OUTPUT_DISPOSE: unique symbol;
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+export declare function toRendererOutput(output: Partial<AuraOutputOptions>): {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
+};
 export declare function createPrd01OutputSurface(app: AuraApp, ctx: {
     readonly flags: QrFlags;
     readonly options: AuraCreateAppOptions;
@@ -306079,6 +306622,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -306246,6 +306806,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -310444,8 +311017,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -313614,8 +314187,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -314660,6 +315233,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -315864,6 +316438,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -317287,12 +317876,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -317634,6 +318222,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -317740,6 +318330,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -317786,8 +318388,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -319867,9 +320469,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -320258,6 +320863,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -320290,6 +320902,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -337919,7 +338532,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -338717,6 +339330,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -339125,6 +339740,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -339592,6 +340213,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -339608,6 +340235,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -339685,10 +340323,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -339758,6 +340404,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -344196,6 +344849,27 @@ export declare function directMultiscatterModel(device?: object | null): DirectM
 /** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
 export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
 //# sourceMappingURL=directMultiscatter.d.ts.map
+```
+
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -353043,7 +353717,7 @@ export { texture, TextureHandle } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraModelNodeTransform, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
 export { water } from "./nodes/water.js";
@@ -357556,6 +358230,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly height: number;
 };
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
@@ -358772,6 +359457,14 @@ export declare function colorToRgba(color: AuraColor): readonly [number, number,
 export declare function colorToClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number];
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export declare function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number];
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export declare function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgb(color: AuraColor): readonly [number, number, number];
 export declare function colorWithAlpha(color: AuraColor, alpha: number): string;
 //# sourceMappingURL=colorUtils.d.ts.map
@@ -365364,7 +366057,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -365411,6 +366104,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -367902,6 +368601,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -368272,6 +368977,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -368575,6 +369286,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -371043,13 +371755,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -380933,7 +381652,7 @@ export declare function collectAtmosphereSection(app: AuraApp): ReturnType<impor
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -380943,6 +381662,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -381165,7 +381889,7 @@ export declare function registerPrd04MaterialDiagnostics(): () => void;
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index.js";
-import type { AuraOutputSurface } from "../../contracts/output.js";
+import type { AuraOutputOptions, AuraOutputSurface } from "../../contracts/output.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import type { AuraToneMappingOperator } from "../../contracts/output.js";
 /**
@@ -381179,6 +381903,16 @@ export declare function readAura3dTonemapQuery(search?: string): {
     readonly exposure?: number;
 };
 export declare const PRD01_OUTPUT_DISPOSE: unique symbol;
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+export declare function toRendererOutput(output: Partial<AuraOutputOptions>): {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
+};
 export declare function createPrd01OutputSurface(app: AuraApp, ctx: {
     readonly flags: QrFlags;
     readonly options: AuraCreateAppOptions;
@@ -397264,6 +397998,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -397431,6 +398182,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -398479,8 +399243,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -398490,8 +399254,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -398516,8 +399280,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -399243,8 +400007,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -400484,8 +401248,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -401123,8 +401887,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -403113,8 +403877,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -403738,8 +404502,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -406410,8 +407174,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -407662,8 +408426,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -407925,8 +408689,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -408222,8 +408986,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -408645,6 +409409,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -409849,6 +410614,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -411272,12 +412052,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -411619,6 +412398,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -411725,6 +412506,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -411771,8 +412564,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -413852,9 +414645,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -414243,6 +415039,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -414275,6 +415078,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -431904,7 +432708,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -432702,6 +433506,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -433110,6 +433916,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -433577,6 +434389,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -433593,6 +434411,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -433670,10 +434499,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -433743,6 +434580,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -438183,6 +439027,27 @@ export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty"
 //# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
+```
+
 ### `./dist/rendering/batching/index.d.ts`
 
 ```ts
@@ -441515,7 +442380,7 @@ export { texture, TextureHandle } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraModelNodeTransform, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
 export { water } from "./nodes/water.js";
@@ -446028,6 +446893,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly height: number;
 };
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
@@ -447244,6 +448120,14 @@ export declare function colorToRgba(color: AuraColor): readonly [number, number,
 export declare function colorToClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number];
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export declare function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number];
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export declare function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgb(color: AuraColor): readonly [number, number, number];
 export declare function colorWithAlpha(color: AuraColor, alpha: number): string;
 //# sourceMappingURL=colorUtils.d.ts.map
@@ -453836,7 +454720,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -453883,6 +454767,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -456374,6 +457264,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -456744,6 +457640,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -457047,6 +457949,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -459515,13 +460418,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -475005,7 +475915,7 @@ export declare function collectAtmosphereSection(app: AuraApp): ReturnType<impor
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -475015,6 +475925,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -475237,7 +476152,7 @@ export declare function registerPrd04MaterialDiagnostics(): () => void;
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index.js";
-import type { AuraOutputSurface } from "../../contracts/output.js";
+import type { AuraOutputOptions, AuraOutputSurface } from "../../contracts/output.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import type { AuraToneMappingOperator } from "../../contracts/output.js";
 /**
@@ -475251,6 +476166,16 @@ export declare function readAura3dTonemapQuery(search?: string): {
     readonly exposure?: number;
 };
 export declare const PRD01_OUTPUT_DISPOSE: unique symbol;
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+export declare function toRendererOutput(output: Partial<AuraOutputOptions>): {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
+};
 export declare function createPrd01OutputSurface(app: AuraApp, ctx: {
     readonly flags: QrFlags;
     readonly options: AuraCreateAppOptions;
@@ -491841,6 +492766,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -492008,6 +492950,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -493557,8 +494512,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -493690,8 +494645,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -494815,8 +495770,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -494899,8 +495854,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -496079,8 +497034,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -496333,6 +497288,12 @@ export interface AuraAssetDefinition {
     readonly lods?: readonly import("../../contracts/assets.js").AuraAssetLodLevel[];
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
+}
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
 }
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
@@ -496704,6 +497665,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -497007,6 +497974,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -499475,13 +500443,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -500362,8 +501337,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -502729,6 +503704,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -502896,6 +503888,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -503354,6 +504359,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -504558,6 +505564,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -505981,12 +507002,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -506328,6 +507348,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -506434,6 +507456,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -506480,8 +507514,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -508561,9 +509595,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -508952,6 +509989,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -508984,6 +510028,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -526613,7 +527658,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -527411,6 +528456,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -527819,6 +528866,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -528286,6 +529339,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -528302,6 +529361,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -528379,10 +529449,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -528452,6 +529530,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -532890,6 +533975,27 @@ export declare function directMultiscatterModel(device?: object | null): DirectM
 /** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
 export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
 //# sourceMappingURL=directMultiscatter.d.ts.map
+```
+
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -542368,13 +543474,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -553444,7 +554557,7 @@ export declare const atmosphere: {
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -553454,6 +554567,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -562511,6 +563629,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -562881,6 +564005,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -563184,6 +564314,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -567237,7 +568368,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -567284,6 +568415,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -568824,8 +569961,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -569070,8 +570207,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -570201,6 +571338,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -571405,6 +572543,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -572828,12 +573981,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -573175,6 +574327,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -573281,6 +574435,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -573327,8 +574493,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -575408,9 +576574,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -575799,6 +576968,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -575831,6 +577007,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -593460,7 +594637,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -594258,6 +595435,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -594666,6 +595845,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -595133,6 +596318,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -595149,6 +596340,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -595226,10 +596428,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -595299,6 +596509,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -599737,6 +600954,27 @@ export declare function directMultiscatterModel(device?: object | null): DirectM
 /** Uniform the `brdf` chunk reads (1 = Kulla-Conty / Fdez-Aguera colour, 0 = single mean Fresnel; WebGL defaults omitted floats to 0). */
 export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty";
 //# sourceMappingURL=directMultiscatter.d.ts.map
+```
+
+### `./dist/rendering/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
 ```
 
 ### `./dist/rendering/batching/index.d.ts`
@@ -608584,7 +609822,7 @@ export { texture, TextureHandle } from "./nodes/texture.js";
 export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetRefIdentity, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraModelNodeTransform, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
 export { water } from "./nodes/water.js";
@@ -613097,6 +614335,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly height: number;
 };
 /**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
+/**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
  * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
@@ -614313,6 +615562,14 @@ export declare function colorToRgba(color: AuraColor): readonly [number, number,
 export declare function colorToClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number];
+/**
+ * Inverse of Khronos PBR Neutral (the N3 plain look's output): the linear clear colour that the output's neutral tone
+ * map presents as the authored display colour. Exact for every display colour the curve can produce; channels the curve
+ * cannot reach (below the dark offset of the others) clamp to zero.
+ */
+export declare function neutralToneMapInverse(display: readonly [number, number, number]): [number, number, number];
+/** `colorToAcesInputClearColor` for the plain look's PBR Neutral output. */
+export declare function colorToNeutralInputClearColor(color: AuraColor): readonly [number, number, number, number];
 export declare function colorToLinearRgb(color: AuraColor): readonly [number, number, number];
 export declare function colorWithAlpha(color: AuraColor, alpha: number): string;
 //# sourceMappingURL=colorUtils.d.ts.map
@@ -620905,7 +622162,7 @@ import { loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, t
 import { type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "../../assets/browser-index.js";
 import type { AuraPlayLayerOptions } from "../contracts/animation.js";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets.js";
-import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index.js";
 import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials.js";
 import { type TypedGLBActorMaterialOverride } from "./ModelMaterialOverrides.js";
@@ -620952,6 +622209,12 @@ export interface TypedGLBActorOptions {
     readonly deduplicateIdenticalMaterials?: boolean;
     /** Exact imported glTF node names that should not contribute renderables. */
     readonly hiddenNodeNames?: readonly string[];
+    /** Local transform edits for exact imported glTF node names (`model({ nodeTransforms })`). */
+    readonly nodeTransforms?: Readonly<Record<string, {
+        readonly position?: AuraVec3;
+        readonly rotation?: AuraVec3;
+        readonly scale?: number | AuraVec3;
+    }>>;
     /**
      * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
      * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
@@ -623443,6 +624706,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -623813,6 +625082,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -624116,6 +625391,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -626584,13 +627860,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -636474,7 +637757,7 @@ export declare function collectAtmosphereSection(app: AuraApp): ReturnType<impor
 
 ```ts
 import type { AuraApp, AuraCreateAppOptions } from "../index.js";
-import type { AuraVfxGenreVariant } from "../../contracts/effects.js";
+import type { AuraVfxEffectSpec, AuraVfxGenreVariant } from "../../contracts/effects.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem.js";
 import { type Prd07MountAuthority } from "./bridge.js";
@@ -636484,6 +637767,11 @@ export interface AuraEffectsExtensionContext {
 }
 /** GU47 E-F: the genre variant names, in table order. */
 export declare const AURA_VFX_GENRE_VARIANTS: readonly AuraVfxGenreVariant[];
+/**
+ * §6.4 impact library: every AuraVfxKind resolves to a preset carrying the emitter parameters BURST_PRESETS encodes.
+ * 5.4: also the host-side `effects.presets` of a worker app.
+ */
+export declare function builtInEffectPresets(): Map<string, AuraVfxEffectSpec>;
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export declare function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects.js").AuraAppEffects;
 interface PendingGameEffects {
@@ -636706,7 +637994,7 @@ export declare function registerPrd04MaterialDiagnostics(): () => void;
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index.js";
-import type { AuraOutputSurface } from "../../contracts/output.js";
+import type { AuraOutputOptions, AuraOutputSurface } from "../../contracts/output.js";
 import type { QrFlags } from "../../../rendering/contracts/index.js";
 import type { AuraToneMappingOperator } from "../../contracts/output.js";
 /**
@@ -636720,6 +638008,16 @@ export declare function readAura3dTonemapQuery(search?: string): {
     readonly exposure?: number;
 };
 export declare const PRD01_OUTPUT_DISPOSE: unique symbol;
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+export declare function toRendererOutput(output: Partial<AuraOutputOptions>): {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
+};
 export declare function createPrd01OutputSurface(app: AuraApp, ctx: {
     readonly flags: QrFlags;
     readonly options: AuraCreateAppOptions;
@@ -652805,6 +654103,23 @@ import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCustomGeometrySpec;
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
+/** 5.4: plain-data copy of a `BatchedMeshState` sent to a render worker (see `BatchedMeshState.toWorkerSnapshot`). */
+export interface BatchedMeshStateSnapshot {
+    readonly kind: "aura-worker-batched-state";
+    readonly id: string;
+    readonly capacity: number;
+    readonly instanced: boolean;
+    readonly mode: AuraBatchedMeshMode;
+    readonly maxVertices?: number;
+    readonly maxIndices?: number;
+    readonly geometries: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+    readonly matrices: Float32Array;
+    readonly colors: Float32Array;
+    readonly geometryIds: Int32Array;
+    readonly alive: Uint8Array;
+    readonly visible: Uint8Array;
+    readonly count: number;
+}
 /**
  * Member identity has two layers (5.0 contract, BatchedMesh parity):
  * - A numeric target is the dense public instance index returned by
@@ -652972,6 +654287,19 @@ export declare class BatchedMeshState {
         readonly maxVertices?: number;
         readonly maxIndices?: number;
     });
+    /**
+     * 5.4 worker transfer: a plain-data copy of this state (geometry inputs, slot liveness, matrices, colours, visibility),
+     * so a render worker can rebuild the same instances. `undefined` when a geometry input is a live `Geometry` (GPU-side
+     * buffers do not cross realms) or the state is disposed.
+     */
+    toWorkerSnapshot(): BatchedMeshStateSnapshot | undefined;
+    /** Rebuilds a state from {@link toWorkerSnapshot} (same id, slots, matrices, colours and visibility). */
+    static fromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): BatchedMeshState;
+    /**
+     * 5.4 worker sync: applies a host state copy in place (new geometries, slot liveness, geometry ids, matrices, colours,
+     * visibility, instanced count), so a render worker follows host-side `setMatrixAt` / `addInstance` / `setCount` writes.
+     */
+    syncFromWorkerSnapshot(snapshot: BatchedMeshStateSnapshot): void;
     /** Slot count the node draws: `liveCount` for batched, `instancedCount` for instances.mesh. */
     get count(): number;
     get poolRevision(): number;
@@ -657269,8 +658597,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -659107,13 +660435,20 @@ export interface AuraApp {
      *
      * ```ts
      * const app = createAuraApp(canvas, { scene, autoStart: false });
-     * await app.ready();
-     * app.step(1 / 60);           // now renders
+     * void app.ready().then(() => {
+     *   app.step(1 / 60);         // now renders
+     * });
      * ```
+     *
+     * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+     * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+     * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+     * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+     * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
      *
      * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
      * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+     * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
      */
     ready(): Promise<void>;
     /** Wait for an explicit mount outcome without converting failure to success. */
@@ -659739,6 +661074,12 @@ export interface AuraAssetDefinition {
     readonly colliderUrl?: string;
     readonly budget?: import("../../contracts/assets.js").AuraAssetBudget;
 }
+/** `model({ nodeTransforms })` entry: a named node's local position, Euler XYZ rotation (radians) and scale. */
+export interface AuraModelNodeTransform {
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: number | AuraVec3;
+}
 export interface AuraAssetBoundsMetadata {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -660109,6 +661450,12 @@ export interface AuraModelOptions extends AuraTransformSpec {
     readonly physics?: AuraNodePhysicsSpec;
     /** Exact glTF node names to suppress when composing a typed model into a route. */
     readonly hiddenNodeNames?: readonly string[];
+    /**
+     * Local transform edits for named nodes inside the model, keyed by exact glTF node name (for a bridged three.js
+     * asset, its stable id). Each set field replaces that node's authored local value; unset fields keep it. Applied
+     * once at load, so an animation channel that drives the same property still wins while its clip plays.
+     */
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     /** C-15 (PR 0a, PRD 04): material override table. */
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     /** C-15 (PR 0a, PRD 04): named material variant. */
@@ -660412,6 +661759,7 @@ export interface AuraModelNode extends AuraTransformSpec {
     readonly interaction?: AuraInteractionSpec;
     readonly physics?: AuraNodePhysicsSpec;
     readonly hiddenNodeNames?: readonly string[];
+    readonly nodeTransforms?: Readonly<Record<string, AuraModelNodeTransform>>;
     readonly materialOverrides?: readonly import("../../contracts/materials.js").AuraModelMaterialOverride[];
     readonly variant?: string;
     readonly runtime?: AuraRuntimeNodeSpec;
@@ -662581,8 +663929,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -662769,8 +664117,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -662802,6 +664150,7 @@ import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint,
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import { Texture } from "../../../rendering/index.js";
 import { TextureHandle } from "../nodes/texture.js";
+import type { AuraAssetErrorEvent, AuraAssetProgressEvent } from "../nodes/types/runtime.js";
 import { AuraWorkerError } from "./workerError.js";
 export { AuraWorkerError } from "./workerError.js";
 export interface AuraWorkerRendererOptions {
@@ -662835,6 +664184,10 @@ export interface AuraWorkerRendererOptions {
     readonly onCaptureFrame?: (frame: AuraWorkerFrameResult) => void;
     readonly onError?: (error: AuraWorkerError) => void;
     readonly onInput?: (input: AuraWorkerInput) => void;
+    /** 5.4: asset progress of the worker renderer (the `createAuraApp` `onAssetProgress` event, sanitized in the worker). */
+    readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
+    /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
+    readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
     /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
     readonly disposeTimeoutMs?: number;
 }
@@ -662910,6 +664263,9 @@ export interface AuraWorkerRuntimeOptions {
 export declare function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerRequest, AuraWorkerResponse>, options?: AuraWorkerRuntimeOptions): () => Promise<void>;
 /** Root diagnostics flatten group nodes and cannot safely traverse cyclic groups. */
 export declare function validateWorkerSceneGroups(scene: AuraSceneSnapshot): void;
+export declare function collectWorkerRendererGlobals(source?: object): Record<string, string | number | boolean> | undefined;
+/** Worker side of {@link collectWorkerRendererGlobals}; a switch the worker already defines is left alone. */
+export declare function installWorkerRendererGlobals(globals: unknown, target?: object): void;
 /** A live 2D image source whose pixels the host can read back (canvas, image, bitmap); never a video. */
 export declare function isWorkerReadableImageTexture(texture: Texture): boolean;
 /**
@@ -662926,6 +664282,22 @@ interface WorkerCanvasTexture {
     readonly height: number;
     write(data: Uint8ClampedArray | Uint8Array): void;
 }
+/** Ids of the texture refs a scene (or patch argument) carries; the worker rebuilds each under the same host id. */
+export declare function collectWorkerTextureIds(value: unknown, into?: Set<string>): Set<string>;
+/**
+ * 5.4 host side of a node patch whose arguments carry textures (`node.setMaterial(material.standard({ map }))`):
+ * a texture the worker already holds becomes an id placeholder; any other one is snapshotted like a scene texture
+ * (live canvases read back, data textures copied) and its id is added to `known`.
+ */
+export declare function snapshotWorkerPatchArgs<T>(args: T, known: Set<string>): T;
+/**
+ * Worker side of {@link snapshotWorkerPatchArgs}: rebuilds snapshotted textures (returned in `created`; the caller owns
+ * them with the scene's textures) and resolves id placeholders to the handles of the mounted scene.
+ */
+export declare function hydrateWorkerPatchArgs<T>(args: T, owned: ReadonlySet<TextureHandle>): {
+    readonly args: T;
+    readonly created: Set<TextureHandle>;
+};
 /** Resolve a host texture id to the worker's canvas texture among the scene's handles. */
 export declare function findWorkerCanvasTexture(handles: Iterable<TextureHandle>, hostId: string): WorkerCanvasTexture | undefined;
 export declare function measureWorkerCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): OffscreenCanvasSize;
@@ -662962,10 +664334,11 @@ export { workerRendererUrl } from "./workerRuntime.js";
 ### `./dist/engine/agent-api/app/workerProtocol.d.ts`
 
 ```ts
-import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraBackend, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraSceneSnapshot } from "../nodes/types.js";
 import type { OffscreenCanvasSize } from "./canvas.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import type { AuraWorkerNodePatchOp } from "./workerPatch.js";
+import type { AuraAssetProgressEvent } from "../nodes/types/runtime.js";
 export type { AuraWorkerNodePatchOp } from "./workerPatch.js";
 /** Renderer-side quality-rebuild flags and animation mixer mirrored from the host app options. */
 export interface AuraWorkerRenderFlags {
@@ -663057,7 +664430,9 @@ export type AuraWorkerRequest = {
     readonly size: OffscreenCanvasSize;
     readonly autoStart: boolean;
     readonly syncLocalScenes?: boolean;
-    readonly flags?: AuraWorkerRenderFlags;
+    readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */
+    readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */
+    readonly globals?: Readonly<Record<string, string | number | boolean>>;
 } | {
     readonly type: "scene";
     readonly id: number;
@@ -663121,6 +664496,11 @@ export interface AuraWorkerFrameResult {
     readonly time: number;
     readonly deltaSeconds?: number;
     readonly source?: "automatic" | "manual";
+    /**
+     * 5.4: the worker renderer's per-material textured status (`diagnostics().renderer.runtime.texturedMaterials`),
+     * sent on a presented frame only when it changed since the last one sent.
+     */
+    readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
 }
 export interface AuraWorkerScreenshotPayload {
     readonly blob: Blob;
@@ -663169,6 +664549,20 @@ export type AuraWorkerResponse = {
     readonly type: "capture-presented";
     readonly id: 0;
     readonly result: AuraWorkerFrameResult;
+}
+/** 5.4: sanitized asset events of the worker renderer, sent only when `init.assetEvents` is set. */
+ | {
+    readonly type: "asset-progress";
+    readonly id: 0;
+    readonly event: AuraAssetProgressEvent;
+} | {
+    readonly type: "asset-error";
+    readonly id: 0;
+    readonly event: {
+        readonly url?: string;
+        readonly assetId?: string;
+        readonly message: string;
+    };
 };
 /** The deliberately small portion of Worker / DedicatedWorkerGlobalScope used by the bridge. */
 export interface AuraWorkerEndpoint<Incoming, Outgoing> {
@@ -663195,6 +664589,7 @@ export interface AuraWorkerHostEndpoint {
  * worker. Kept free of registry/query imports so the worker entry stays small.
  */
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
+import { type BatchedMeshStateSnapshot } from "../nodes/batchedState.js";
 /**
  * Function-valued node-handle extension members (for example prd09
  * `setInstanceTransforms`, prd08 `teleport`, prd07 `setFog`). Their whole call
@@ -663225,7 +664620,23 @@ export type AuraWorkerNodePatchOp = {
     readonly width: number;
     readonly height: number;
     readonly data: Uint8ClampedArray | Uint8Array;
+}
+/** 5.4: the host's current copy of a batched / instanced mesh state (`setMatrixAt`, `addInstance`, `setCount` writes). */
+ | {
+    readonly batched: string;
+    readonly state: BatchedMeshStateSnapshot;
+}
+/** 5.4: an app-level runtime control replayed in the worker (see {@link WORKER_APP_CALLS}). */
+ | {
+    readonly app: AuraWorkerAppCall;
+    readonly args: readonly unknown[];
 };
+/**
+ * 5.4: app members a worker app forwards to the render worker: the output (tone mapping, exposure), the runtime
+ * post-effect overrides, custom post passes, the atmosphere (fog, sky, wetness), runtime effects and the lighting environment. They apply to the worker renderer between frames, like node patches.
+ */
+export declare const WORKER_APP_CALLS: readonly ["setOutput", "post.setEffect", "post.setEffectEnabled", "post.setQualityTier", "post.setPassUniform", "post.addPostPass", "post.removePostPass", "atmosphere.setFog", "atmosphere.setSky", "atmosphere.setWetness", "effects.burst", "effects.spawn", "effects.trail", "effects.decal", "effects.handle", "effects.registerPreset", "effects.setRuntime", "effects.clear", "lighting.setEnvironmentIntensity", "lighting.setEnvironmentRotation", "lighting.setEnvironment", "lighting.updateProbe", "lighting.rebakeIrradiance"];
+export type AuraWorkerAppCall = (typeof WORKER_APP_CALLS)[number];
 /** Worker-side target of a `texture` op (see workerRuntime.ts). */
 export interface AuraWorkerPatchTextureTarget {
     readonly width: number;
@@ -663243,7 +664654,7 @@ export declare function coalesceKey(op: AuraWorkerNodePatchOp): string | undefin
  * attempted; the first failure is rethrown (recoverable) after the rest ran,
  * so one stale id does not drop a whole frame of movement.
  */
-export declare function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefined, scene: AuraSceneSnapshot | undefined, ops: readonly AuraWorkerNodePatchOp[], textures?: (id: string) => AuraWorkerPatchTextureTarget | undefined): number;
+export declare function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefined, scene: AuraSceneSnapshot | undefined, ops: readonly AuraWorkerNodePatchOp[], textures?: (id: string) => AuraWorkerPatchTextureTarget | undefined, appCall?: (call: AuraWorkerAppCall, args: readonly unknown[]) => void): number;
 //# sourceMappingURL=workerPatch.d.ts.map
 ```
 
@@ -663290,6 +664701,17 @@ export declare function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: Off
     readonly width: number;
     readonly height: number;
 };
+/**
+ * Worker counterpart of `authoredBackingResize`. After `transferControlToOffscreen()` the page canvas rejects
+ * `width`/`height` writes (InvalidStateError), yet a `resize: false` author sizes the backing store by assigning them.
+ * This installs instance accessors on the transferred page canvas: writes record the authored backing size and are
+ * forwarded (coalesced to one call per task) through `forward`; reads return the authored size. The returned function
+ * removes the accessors.
+ */
+export declare function forwardAuthoredCanvasSize(canvas: HTMLCanvasElement, forward: (size: {
+    readonly width: number;
+    readonly height: number;
+}) => void): () => void;
 /**
  * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
  * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
@@ -663390,8 +664812,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/engine@5.3.0#sha256=5e93055922e34660c4fcc5762b8499a54869061277ae45cf80178131f2ddf006`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/engine@5.4.0#sha256=7a9e968da02b3aa6bfb16aede40c455e2868bd77e75338767b638373564c1368`
 
 ### Export conditions
 
@@ -663848,8 +665270,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/input@5.3.0#sha256=2f1c231891ddcd56cbb1a630d073dd3b396503c4b4fd739cb580cd29e04ee86e`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/input@5.4.0#sha256=d2b193a89fed5a1cf88359ace9ccc71e880058fd8e414c9d83c213d70e2b0817`
 
 ### Export conditions
 
@@ -665090,8 +666512,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/math@5.3.0#sha256=952d2617d0952ae620962e80f4d62ded68762906f8bdcb05c2e7fefe925a4f7f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/math@5.4.0#sha256=c6cc16ebb1225b477f170af3d041b2d0b6c6ab48742e74894be4456cb06944d3`
 
 ### Export conditions
 
@@ -667077,8 +668499,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/math@5.3.0#sha256=952d2617d0952ae620962e80f4d62ded68762906f8bdcb05c2e7fefe925a4f7f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/math@5.4.0#sha256=c6cc16ebb1225b477f170af3d041b2d0b6c6ab48742e74894be4456cb06944d3`
 
 ### Export conditions
 
@@ -668325,8 +669747,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.3.0#sha256=fcde7d994a732d4dd7cd2fb4fb0c6fc3f275d6468cfe6184fe54169290f05f7f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.4.0#sha256=26c6c0c001b6e7e6e90898911e0ea1cd94ac28f38ca4f6ae7f1bf89c51a1f4ba`
 
 ### Export conditions
 
@@ -668456,8 +669878,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/physics@5.3.0#sha256=4a51fc1bfbe528ab6d9879fc80cf6e836eaa2eb18bf9dcd26f7b1ec14586b052`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/physics@5.4.0#sha256=15052daed065b1bc38d4f219fe4e451418dff8c9a9df0b8499ce9d8815c37dd0`
 
 ### Export conditions
 
@@ -670680,8 +672102,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.3.0#sha256=a51e558caa21c4b66cd24b0a6aecffa304f3cb3a8694acc56434db66994b40f4`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.4.0#sha256=604784566026010aa8330419efa2df31a306aa6dc82c1813bfd64b82e696aa0f`
 
 ### Export conditions
 
@@ -671139,8 +672561,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/physics@5.3.0#sha256=4a51fc1bfbe528ab6d9879fc80cf6e836eaa2eb18bf9dcd26f7b1ec14586b052`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/physics@5.4.0#sha256=15052daed065b1bc38d4f219fe4e451418dff8c9a9df0b8499ce9d8815c37dd0`
 
 ### Export conditions
 
@@ -672392,8 +673814,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/physics@5.3.0#sha256=4a51fc1bfbe528ab6d9879fc80cf6e836eaa2eb18bf9dcd26f7b1ec14586b052`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/physics@5.4.0#sha256=15052daed065b1bc38d4f219fe4e451418dff8c9a9df0b8499ce9d8815c37dd0`
 
 ### Export conditions
 
@@ -672656,8 +674078,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/product-studio@5.3.0#sha256=f9956084df068b8fc0255ccb2104a1e7b528dd851513a244b1059c3d0e30087f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/product-studio@5.4.0#sha256=d056a906e695888ef436e123dc51863b15c4daa0f0e6535613ea2004ccdfcd7a`
 
 ### Export conditions
 
@@ -672938,8 +674360,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/react@5.3.0#sha256=4197de875d35d9b4f8dab9c0705508a3091bcc3cffc414b175ee112c8f833b80`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/react@5.4.0#sha256=193b21d04c4167843a62eeb98325e4f2d1e97d1633464900185eb6f478fce266`
 
 ### Export conditions
 
@@ -673340,8 +674762,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -673723,6 +675145,7 @@ export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentPar
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
 export { DIRECT_MULTISCATTER_UNIFORM, directMultiscatterModel, setDirectMultiscatterModel, type DirectMultiscatterModel } from "./program/directMultiscatter.js";
+export { neutralToneCurve, setNeutralToneCurve, type NeutralToneCurve } from "./output/neutralToneCurve.js";
 export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, BatchPlanBuildError, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
@@ -674927,6 +676350,21 @@ export declare class ShaderDataLayoutError extends Error {
 }
 /** Derive a complete layout for GLSL std140/std430 or WGSL uniform/storage. */
 export declare function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataTarget): ShaderDataLayout;
+/**
+ * Internal (not exported from the package): an array of `length` f32 vectors or matrices read from one flat
+ * sequence, `width` values per element (columns * rows for a matrix, column-major), zero past the end of `source`.
+ * `writeShaderData` reads it in place, so packers need not slice a flat uniform into one array per element. The
+ * caller validates `source` (finite numbers); the writer still rejects values outside the finite f32 range, with
+ * the same paths as the equivalent nested arrays.
+ */
+export declare class ShaderDataRows {
+    readonly source: ArrayLike<number>;
+    readonly length: number;
+    readonly width: number;
+    constructor(source: ArrayLike<number>, length: number, width: number);
+    at(index: number): number;
+    row(element: number): number[];
+}
 /**
  * Validate and write a value into a byte-owned staging image. Arrays and matrices
  * use logical values without padding; structs use objects keyed by field name.
@@ -676350,12 +677788,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -676697,6 +678134,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -676803,6 +678242,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -676849,8 +678300,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -678930,9 +680381,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean;
-/** Common plain-item and geometry portion for graph-specific contact proofs. */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+/**
+ * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
+ * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
+ */
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -679321,6 +680775,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private frameHeight;
     private spriteFrameCamera;
     private contactMaskScope;
+    /**
+     * The contact provider proof for this pass execution. A contact frame runs no user code between draws (a draw
+     * callback throws, draw hooks and unverified features veto the proof), so the proof taken once holds for every draw
+     * of the pass; it is re-taken if the effective flags change. Before this memo the full prototype-descriptor scan ran
+     * three times per draw (about 3,000 scans per frame on a 1,000-draw scene).
+     */
+    private contactProvidersProof;
     constructor(options: ForwardPassOptions);
     /** Preflight both the item contract and generated shader before any weighted draw. */
     canDrawWeighted(device: RenderDevice): boolean;
@@ -679353,6 +680814,7 @@ export declare class ForwardPass extends BaseRenderPass {
      * No draw, draw callback, or feature binder is invoked here.
      */
     prepareSelectiveBloom(device: RenderDevice): string | null;
+    private contactProvidersSafe;
     private drawItem;
     private submitNativePoint;
     /**
@@ -696982,7 +698444,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -697780,6 +699242,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -698188,6 +699652,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -698655,6 +700125,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -698671,6 +700147,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -698748,10 +700235,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -698821,6 +700316,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -703261,6 +704763,27 @@ export declare const DIRECT_MULTISCATTER_UNIFORM = "u_a3dMultiscatterKullaConty"
 //# sourceMappingURL=directMultiscatter.d.ts.map
 ```
 
+### `./dist/output/neutralToneCurve.d.ts`
+
+```ts
+/**
+ * Which curve the WebGL2 fused LDR present runs for `toneMapping: "neutral"`.
+ *
+ * - `"legacy"` (default): the per-channel `x (1 + x / 7.5) / (1 + x)` curve this route always ran. It is not Khronos PBR
+ *   Neutral: scene white lands at 0.57 linear (sRGB ~198) and every channel is compressed on its own, which darkens and
+ *   greys mid tones.
+ * - `"khronos"`: Khronos PBR Neutral, the coupled curve the output pass (`NeutralToneMapping`), the WGSL output and the
+ *   CPU reference (`neutralToneMapping`) compute: identity below the 0.76 knee apart from the dark offset.
+ *
+ * Per device, so one app's choice never reaches another canvas. The engine selects `"khronos"` for apps on the N3 plain
+ * look path (no authored look or output); every other app keeps `"legacy"` and renders as before.
+ */
+export type NeutralToneCurve = "legacy" | "khronos";
+export declare function setNeutralToneCurve(device: object, curve: NeutralToneCurve): void;
+export declare function neutralToneCurve(device?: object | null): NeutralToneCurve;
+//# sourceMappingURL=neutralToneCurve.d.ts.map
+```
+
 ### `./dist/batching/index.d.ts`
 
 ```ts
@@ -705333,8 +706856,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -706935,8 +708458,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -706980,8 +708503,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707025,8 +708548,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707095,8 +708618,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707148,8 +708671,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707234,8 +708757,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707304,8 +708827,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707334,8 +708857,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707478,8 +709001,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707536,8 +709059,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -707584,8 +709107,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709186,8 +710709,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709246,8 +710769,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709331,8 +710854,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709388,8 +710911,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709496,8 +711019,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709702,8 +711225,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709831,8 +711354,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -709891,8 +711414,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710009,8 +711532,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710105,8 +711628,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710166,8 +711689,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710242,8 +711765,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710280,8 +711803,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710313,8 +711836,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710346,8 +711869,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710418,8 +711941,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710459,8 +711982,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -710545,7 +712068,7 @@ export { a3dDistanceFalloff, a3dHemisphereIrradiance } from "../shaders/chunks/l
 export { CONTACT_SHADOW_CHUNK_ID } from "../shaders/chunks/contact_shadow.glsl.js";
 export { ReflectionProbeSystem, boxWeight, type ReflectionProbeSpec, type ProbeSelection, type ProbeAssignment, type ReflectionFaceRenderer } from "../probes/ReflectionProbeSystem.js";
 export { IrradianceVolumeSystem, type IrradianceVolumeSpec, type IrradianceVolume } from "../probes/IrradianceVolume.js";
-export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
+export { PROBES_SUB_FLAG, PROBE_SELECTION_BLACKBOARD_KEY, IRRADIANCE_VOLUME_BLACKBOARD_KEY, PROBE_RENDER_FACE_KEY, ENV_SPECULAR_BLACKBOARD_KEY, ROUGHNESS_TO_LOD_BLACKBOARD_KEY, createPrd02ProbesContributor, installPrd02ProbeRenderer, probeNodesFromSource, prd02BeforeFrame, prd02BeforeFrameAsync, queuePrd02ProbeUpdate, withPrd02ProbeFrameLock, disposePrd02Probes, restartPrd02PartialProbeCaptures, applyProbeEnvironmentCubes, PROBE_BINDINGS_BLACKBOARD_KEY, type Prd02ProbeCaptureRenderer } from "../probes/Prd02ProbesContributor.js";
 export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
 export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
 export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
@@ -711392,6 +712915,8 @@ export declare class Prd02ShadowSystem {
         mean: number;
         covered: number;
     }[];
+    /** Adopt a config that differs only in receiver sampling values (see `shadowSystemForDevice`); targets and programs stay. */
+    retune(config: ShadowSystemConfigInput): void;
     dispose(): void;
     /**
      * WebGL uses depth-only targets when depth textures are available, saving
@@ -711800,6 +713325,12 @@ export declare function prd02LocalShadowLights(source: SourceLike): readonly Prd
 export declare function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null;
 /** True when a forward program samples the prd02 lookup chunk (C-02 generator path). */
 export declare function prd02LookupConsumerExists(items: readonly RenderItem[]): boolean;
+/**
+ * The config fields that shape the system's targets, fits and depth programs. Receiver-side sampling values
+ * (strength, bias, normalBias, PCF tap tier) only reach the forward shader, and normalBias follows the camera every
+ * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
+ */
+export declare function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string;
 export declare function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
 /** A frame the bridge already rendered; the contributor publishes it instead of re-rendering. */
 export interface Prd02BridgedShadowFrame {
@@ -712267,6 +713798,12 @@ export interface ProbeAssignment {
     readonly globalWeight: number;
 }
 export type ReflectionFaceRenderer = (face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array) => void;
+/**
+ * A `once` probe follows its scene's environment while it settles: an HDRI that finishes loading a few frames after
+ * mount swaps the environment the first capture lit the scene with. Bounded so an environment that changes every
+ * frame (an animated sky) never turns `once` into a per-frame capture.
+ */
+export declare const ONCE_ENVIRONMENT_RECAPTURES = 3;
 export declare class ReflectionProbeSystem {
     private readonly device;
     private readonly renderFace;
@@ -712283,6 +713820,17 @@ export declare class ReflectionProbeSystem {
     unregister(name: string): void;
     /** `app.lighting.updateProbe(name)` — flags an on-demand probe dirty. */
     updateProbe(name: string): void;
+    /**
+     * Drop partially captured (time-sliced) cubes so they restart from face 0; completed probes stay published and
+     * clean. Used when the scene the faces render changes mid-cycle, so a cube never mixes two scene states.
+     */
+    restartPartialCaptures(): void;
+    /**
+     * The environment that lights the captured scene changed (for example an HDRI finished loading). `once` probes
+     * re-capture, up to `ONCE_ENVIRONMENT_RECAPTURES` times per registration; a first capture not yet taken simply
+     * sees the new environment. `on-demand` and `every-n-frames` probes keep their own schedule.
+     */
+    environmentChanged(): void;
     probes(): readonly EnvironmentProbe[];
     count(): number;
     /** Advance captures: whole 6 faces for once/on-demand; 1 face per call for
@@ -712360,10 +713908,18 @@ export declare class IrradianceVolumeSystem {
     private disposed;
     private updating;
     private job;
+    private environmentRebakes;
     constructor(device: RenderDevice, renderFace: ReflectionFaceRenderer);
     configure(spec: IrradianceVolumeSpec): void;
     private pending;
     updateProbe(): void;
+    /**
+     * The environment lighting the baked scene changed: a `once` volume re-bakes (the last completed volume stays live
+     * meanwhile), at most `ONCE_ENVIRONMENT_RECAPTURES` times per configuration. `on-demand` volumes wait for a request.
+     */
+    environmentChanged(): void;
+    /** Drop a bake in progress so it restarts from cell 0; the last completed volume stays live. */
+    restartPartialCapture(): void;
     get(): IrradianceVolume | null;
     get maxUpdatesPerFrame(): number;
     /** Bake: capture each cell's 6 faces at 32 px → SH-project → pack. */
@@ -712433,6 +713989,13 @@ export declare function withPrd02ProbeFrameLock<T>(device: RenderDevice, action:
 export declare function installPrd02ProbeRenderer(fn: ReflectionFaceRenderer | null): void;
 /** Release capture resources belonging to a disposed renderer. */
 export declare function disposePrd02Probes(device: RenderDevice, owner?: object): void;
+/**
+ * The scene the captures render changed (for example a new atmosphere snapshot). Completed captures stay published:
+ * `update: "once"` probes and volumes capture once and re-capture only on explicit invalidation
+ * (`queuePrd02ProbeUpdate` / `app.lighting.updateProbe`). Only captures in progress across frames (time-sliced
+ * `everyNFrames` cubes, cell-budgeted irradiance bakes) restart, so no capture mixes two scene states.
+ */
+export declare function restartPrd02PartialProbeCaptures(device: RenderDevice, owner: object): void;
 /** Captures currently owned by this device; callers do not own their textures. */
 export declare function prd02IrradianceVolumes(device: RenderDevice, owner?: object): readonly IrradianceVolume[];
 interface AuraProbeNodeLike {
@@ -717392,8 +718955,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -718031,8 +719594,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -721545,8 +723108,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -722278,8 +723841,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -722413,8 +723976,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -722656,8 +724219,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -723212,8 +724775,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -723913,12 +725476,11 @@ export declare class WebGPUDevice implements RenderDevice {
      * of the next post run — after any intervening readback fence — or on
      * dispose.
      */
-    private webgpuPostRetiredUniformBuffers;
-    private readonly webgpuPostUniformRetirementsInFlight;
     private readonly webgpuPostErrorScopePending;
     private readonly webgpuPostErrors;
     private webgpuPostOtherErrors;
     /** Exposure passes use queue-ordered writes, so one buffer per payload size is sufficient. */
+    /** Post uniforms by byte size (exposure chain) or by pass label and size (other fullscreen passes). */
     private readonly webgpuExposureUniformBuffers;
     private webgpuAutoExposure;
     private webgpuAutoExposureReleasing;
@@ -724260,6 +725822,8 @@ export declare class WebGPUDevice implements RenderDevice {
     endFrame(): void;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
+    /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+    drawCallCount(): number;
     getDiagnostics(): RenderDeviceDiagnostics;
     /**
      * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
@@ -724366,6 +725930,18 @@ export declare class WebGPUDevice implements RenderDevice {
     executeWebGPUNativeEffects(source: RenderTarget, effects: readonly NativePostEffect[], frame?: WebGPUNativePostFrame): RenderTarget;
     private executeWebGPUNativeEffectsTransaction;
     private getNativeEffectTexture;
+    /**
+     * A full-overwrite stage target inside the native post chain. The chain disposes its stage outputs when the frame's
+     * presentation ends; recreating them allocated and fenced two or more textures per stage per frame. Inside a chain the
+     * target comes from a per-descriptor pool instead (each fullscreen pass overwrites every texel, and later writes are
+     * ordered after earlier submissions on the queue), is never handed out twice in one chain, and goes back to the
+     * pool when the chain ends. Outside a chain (direct callers own the result) this is `createRenderTarget`.
+     */
+    private transientPostTarget;
+    /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
+    private releaseTransientPostTarget;
+    private beginPostTargetTransaction;
+    private endPostTargetTransaction;
     private createNativePostTarget;
     private releaseNativePostTarget;
     /** A history acquisition or exposure resize may synchronously release targets. */
@@ -724412,8 +725988,8 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
-    private retireWebGPUPostUniform;
-    private reclaimWebGPUPostUniformBuffers;
+    /** Pop a post validation scope; an error is counted in `drainWebGPUPostErrors`, keeps its pass scoped and runs `validationFailure`. */
+    private popWebGPUPostScope;
     private releaseWebGPUAutoExposure;
     private releaseNativeEffectHistory;
     dispose(): void;
@@ -726088,8 +727664,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/rendering@5.3.0#sha256=91382a0a34764f316f1eebbae6ac1f07ce7a8f31369e611f6c2778ea201ade59`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/rendering@5.4.0#sha256=a2bfa07139527c734bb61f856603f359332f78062f6551f97d279e2dfc2b9595`
 
 ### Export conditions
 
@@ -727202,8 +728778,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/scene@5.3.0#sha256=57cd354689e1ca4fee3c1eae0fdd1df1c7b4fea22a08e9881a75814cfba41b3f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/scene@5.4.0#sha256=753d67e231c48353c278d826673930fb1780eda7adbd155c7e9fcd880ca13778`
 
 ### Export conditions
 
@@ -728328,8 +729904,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/scene@5.3.0#sha256=57cd354689e1ca4fee3c1eae0fdd1df1c7b4fea22a08e9881a75814cfba41b3f`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/scene@5.4.0#sha256=753d67e231c48353c278d826673930fb1780eda7adbd155c7e9fcd880ca13778`
 
 ### Export conditions
 
@@ -728413,8 +729989,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/scripting@5.3.0#sha256=fda318cd67cef203a5fa4ad4f173d683b0df89dcc1add0bc9dc2abff02886096`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/scripting@5.4.0#sha256=34bba9f1c0ba941d19367f67b4e8541b3794e217734658adb23ab16005517686`
 
 ### Export conditions
 
@@ -729594,8 +731170,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.3.0`
-- Packed identity: `archive:@aura3d/workflows@5.3.0#sha256=ec6196e0ffa12c3a232cbdfb3a99835a94b5db477bfde359395f00b7b7f07b17`
+- Version: `5.4.0`
+- Packed identity: `archive:@aura3d/workflows@5.4.0#sha256=c8d34c07c905049f16e9a39a80ea70f736e4250fb3e8cce45396d23a66bde2c9`
 
 ### Export conditions
 
