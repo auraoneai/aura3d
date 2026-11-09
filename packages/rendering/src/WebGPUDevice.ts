@@ -1589,6 +1589,10 @@ export class WebGPUDevice implements RenderDevice {
   readonly #pbrPackSlots = new WeakMap<WebGPUShaderProgram, (GeneratedPbrPackSlot | undefined)[]>();
   readonly #pbrPackOrdinals = new Map<WebGPUShaderProgram, number>();
   #pbrPackFrame: object | null = null;
+  /** The same per-slot reuse for fast portable uniform blocks (shadow casters, post and custom portable shaders). */
+  readonly #portableSlots = new WeakMap<readonly PortableShaderBinding[], (PortableUniformSlot | undefined)[]>();
+  readonly #portableSlotOrdinals = new Map<readonly PortableShaderBinding[], number>();
+  #portableSlotFrame: object | null = null;
   /** Samplers are immutable and never destroyed, so one per descriptor serves every draw on this device. */
   readonly #nativeSamplers = new Map<string, WebGPUSamplerLike>();
   readonly #nativeSamplersBySampler = new Map<string, WebGPUSamplerLike>();
@@ -9078,7 +9082,7 @@ export class WebGPUDevice implements RenderDevice {
       const skinning = shader.generatedPbr?.skinning ?? null;
       const jointLocations = skinning === 8 ? [5, 8] : skinning ? [5] : [];
       if (required.some(location => !attributes.some(attribute => attribute.shaderLocation === location && (jointLocations.includes(location) || !attribute.integer)
-        && attribute.components === ([3, 4, 5, 6, 8, 9].includes(location) ? 4 : location === 2 || location === 7 ? 2 : 3)
+        && attribute.components === (GENERATED_PBR_VEC4_LOCATIONS.has(location) ? 4 : location === 2 || location === 7 ? 2 : 3)
         && command.vertexFormat?.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "vertex")))) {
         throw new RenderDeviceError(shader.generatedPbr ? "Generated PBR requires its declared position, normal and UV attributes, and any selected color or deformation attributes" : "Generated PBR requires position at location 0 and UV at location 2", "WEBGPU_VERTEX_LOCATION_MISSING", { required });
       }
@@ -10909,6 +10913,46 @@ export class WebGPUDevice implements RenderDevice {
     return bytes;
   }
 
+  /**
+   * `writeFastPortableUniforms` for the nth draw of a portable binding list in this frame, reusing the bytes that slot
+   * wrote last frame: unchanged members are kept and changed ones are rewritten (every fast member is a direct copy).
+   * A declined value drops the slot and returns the full writer's null, so the validating path reports it.
+   */
+  private writeFastPortableForSlot(bindings: readonly PortableShaderBinding[], size: number, plan: readonly FastPortableMember[], uniforms: ReadonlyMap<string, unknown> | undefined): Uint8Array | null {
+    if (!uniforms || !this.frameToken || size % 4 !== 0) return writeFastPortableUniforms(size, plan, uniforms);
+    if (this.#portableSlotFrame !== this.frameToken) { this.#portableSlotFrame = this.frameToken; this.#portableSlotOrdinals.clear(); }
+    const ordinal = this.#portableSlotOrdinals.get(bindings) ?? 0;
+    this.#portableSlotOrdinals.set(bindings, ordinal + 1);
+    let slots = this.#portableSlots.get(bindings);
+    if (!slots) { slots = []; this.#portableSlots.set(bindings, slots); }
+    const slot = slots[ordinal];
+    if (slot && slot.plan === plan && slot.bytes.byteLength === size) {
+      const differing = diffUniformSnapshot(slot.snapshot, uniforms, PORTABLE_REWRITE_LIMIT);
+      if (differing === null) return slot.bytes;
+      if (differing) {
+        const bytes = slot.spare ?? new Uint8Array(size);
+        bytes.set(slot.bytes);
+        const floats = new Float32Array(bytes.buffer, bytes.byteOffset, size >> 2);
+        let rewritten = true;
+        for (const index of differing) {
+          const name = slot.snapshot.names[index]!, member = slot.members.get(name);
+          if (!member || !writeFastPortableMember(floats, member, uniforms.get(name), true)) { rewritten = false; break; }
+        }
+        if (rewritten) {
+          for (const index of differing) {
+            if (!updateUniformSnapshotEntry(slot.snapshot, index, uniforms.get(slot.snapshot.names[index]!))) { rewritten = false; break; }
+          }
+        }
+        if (rewritten) { slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+      }
+      slots[ordinal] = undefined;
+    }
+    if (ordinal >= GENERATED_PBR_PACK_SLOTS) return writeFastPortableUniforms(size, plan, uniforms);
+    const { result: bytes, snapshot } = recordUniformReads(uniforms, (recorded) => writeFastPortableUniforms(size, plan, recorded));
+    if (bytes && snapshot) slots[ordinal] = { snapshot, bytes, spare: null, plan, members: portablePlanMembers(plan) };
+    return bytes;
+  }
+
   private createNativeGeneratedUnlitUniformBuffer(command: DrawCommand): WebGPUBufferLike {
     const data = packGeneratedUnlitMaterialUniforms(command.uniforms ?? new Map(), Boolean(command.shader && this.requireShader(command.shader).generatedUnlit?.packedLoopColor));
     return this.acquireTransientUniform(`${command.label ?? "draw"}-generated-unlit-material`, data);
@@ -11151,7 +11195,7 @@ export class WebGPUDevice implements RenderDevice {
     }
     // Float-only blocks with well-formed values take the direct writer; anything else (and every invalid value, so
     // that it reports the same error) goes through portableUniformValue and the validating layout writer.
-    let bytes: Uint8Array | null = prepared.fast ? writeFastPortableUniforms(layout.size, prepared.fast, command.uniforms) : null;
+    let bytes: Uint8Array | null = prepared.fast ? this.writeFastPortableForSlot(bindings, layout.size, prepared.fast, command.uniforms) : null;
     if (!bytes) {
       const values: Record<string, ShaderDataValue> = Object.create(null);
       if (!numericBindings.length) values.a3d_dummy = 0;
@@ -12146,6 +12190,31 @@ function snapshotPortableBindings(bindings: readonly PortableShaderBinding[]): r
   });
 }
 
+/** More differing members than this rewrite the whole portable block. */
+const PORTABLE_REWRITE_LIMIT = 8;
+interface PortableUniformSlot {
+  readonly snapshot: UniformSnapshot;
+  bytes: Uint8Array;
+  spare: Uint8Array | null;
+  readonly plan: readonly FastPortableMember[];
+  readonly members: ReadonlyMap<string, FastPortableMember>;
+}
+const portablePlanMemberMaps = new WeakMap<readonly FastPortableMember[], ReadonlyMap<string, FastPortableMember>>();
+function portablePlanMembers(plan: readonly FastPortableMember[]): ReadonlyMap<string, FastPortableMember> {
+  let members = portablePlanMemberMaps.get(plan);
+  if (!members) {
+    const map = new Map<string, FastPortableMember>();
+    // A name listed twice is never rewritten member by member (the slot repacks instead).
+    for (const member of plan) map.set(member.name, map.has(member.name) ? (null as unknown as FastPortableMember) : member);
+    for (const [name, member] of map) if (member === null) map.delete(name);
+    members = map;
+    portablePlanMemberMaps.set(plan, members);
+  }
+  return members;
+}
+
+/** Generated-PBR vertex locations that take four components. */
+const GENERATED_PBR_VEC4_LOCATIONS: ReadonlySet<number> = new Set([3, 4, 5, 6, 8, 9]);
 /** Draw slots per generated-PBR shader whose packed material bytes are kept between frames. */
 const GENERATED_PBR_PACK_SLOTS = 4096;
 /** More differing uniforms than this repack the slot instead of rewriting each one. */
@@ -12249,35 +12318,46 @@ export function writeFastPortableUniforms(size: number, plan: readonly FastPorta
   for (const member of plan) {
     const value = uniforms?.get(member.name);
     if (value === undefined) continue;
-    const expected = member.count * member.elements;
-    let source: ArrayLike<unknown>;
-    if (typeof value === "number") {
-      if (expected !== 1) return null;
-      source = [value];
-    } else if (Array.isArray(value) || value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array) {
-      source = value as ArrayLike<unknown>;
-    } else return null;
-    const length = source.length;
-    if (length !== expected && !(member.array && length <= expected && length % member.count === 0)) return null;
-    // Element-major, then column, then row: the same slots as index -> (element, column, row), without a division per value.
-    const rows = member.rows, columns = member.count / rows, elements = length / member.count;
-    let index = 0;
-    for (let element = 0; element < elements; element += 1) {
-      const elementBase = member.offset + element * member.elementStride;
-      for (let column = 0; column < columns; column += 1) {
-        const columnBase = elementBase + column * member.columnStride;
-        for (let row = 0; row < rows; row += 1, index += 1) {
-          const component = source[index];
-          if (typeof component !== "number") return null;
-          const slot = (columnBase + row * 4) >> 2;
-          floats[slot] = component;
-          // A finite double whose f32 is finite (the same check as Number.isFinite(Math.fround(v)) && Number.isFinite(v)).
-          if (!Number.isFinite(floats[slot]!) || !Number.isFinite(component)) return null;
-        }
+    if (!writeFastPortableMember(floats, member, value, false)) return null;
+  }
+  return bytes;
+}
+
+/**
+ * Write one member's value as `writeFastPortableUniforms` does (false for a value it declines). With `clear`, every
+ * slot of the member is written, zero past the supplied values, so a member can be rewritten in an earlier image.
+ */
+function writeFastPortableMember(floats: Float32Array, member: FastPortableMember, value: unknown, clear: boolean): boolean {
+  const expected = member.count * member.elements;
+  let source: ArrayLike<unknown>;
+  if (value === undefined) source = [];
+  else if (typeof value === "number") {
+    if (expected !== 1) return false;
+    source = [value];
+  } else if (Array.isArray(value) || value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array) {
+    source = value as ArrayLike<unknown>;
+  } else return false;
+  const length = source.length;
+  if (value !== undefined && length !== expected && !(member.array && length <= expected && length % member.count === 0)) return false;
+  // Element-major, then column, then row: the same slots as index -> (element, column, row), without a division per value.
+  const rows = member.rows, columns = member.count / rows, elements = clear ? member.elements : length / member.count;
+  let index = 0;
+  for (let element = 0; element < elements; element += 1) {
+    const elementBase = member.offset + element * member.elementStride;
+    for (let column = 0; column < columns; column += 1) {
+      const columnBase = elementBase + column * member.columnStride;
+      for (let row = 0; row < rows; row += 1, index += 1) {
+        const slot = (columnBase + row * 4) >> 2;
+        if (index >= length) { floats[slot] = 0; continue; }
+        const component = source[index];
+        if (typeof component !== "number") return false;
+        floats[slot] = component;
+        // A finite double whose f32 is finite (the same check as Number.isFinite(Math.fround(v)) && Number.isFinite(v)).
+        if (!Number.isFinite(floats[slot]!) || !Number.isFinite(component)) return false;
       }
     }
   }
-  return bytes;
+  return true;
 }
 
 function portableUniformBlock(bindings: readonly PortableShaderBinding[]): UniformBlockLayout {
@@ -12995,7 +13075,15 @@ function nativeFormatStreamLayout(format: VertexFormat, stream: VertexFormat["st
   return { attributes, stride: stream.stride };
 }
 
+const nativeVertexFormatSizes = new Map<string, number>();
 function nativeVertexFormatSize(format: string): number {
+  const known = nativeVertexFormatSizes.get(format);
+  if (known !== undefined) return known;
+  const size = parseNativeVertexFormatSize(format);
+  if (typeof format === "string" && nativeVertexFormatSizes.size < 64) nativeVertexFormatSizes.set(format, size);
+  return size;
+}
+function parseNativeVertexFormatSize(format: string): number {
   const match = /^(float32|uint32|sint32)(?:x([234]))?$|^(uint8|sint8|unorm8|snorm8|uint16|sint16|unorm16|snorm16)(?:x([24]))?$/.exec(format);
   if (!match) throw new RenderDeviceError("Unsupported native vertex format", "WEBGPU_VERTEX_FORMAT_UNSUPPORTED", { format });
   return match[1] ? 4 * Number(match[2] ?? 1) : (match[3]!.endsWith("8") ? 1 : 2) * Number(match[4] ?? 1);

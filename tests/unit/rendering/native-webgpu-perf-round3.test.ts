@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { QrFlags } from "../../../packages/rendering/src/contracts/core";
 import type { UniformValue } from "../../../packages/rendering/src/RenderDevice";
 import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
+import { ShaderLibrary } from "../../../packages/rendering/src/ShaderLibraryCore";
+import { ShaderModule } from "../../../packages/rendering/src/ShaderModule";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "../../../packages/rendering/src/program/ProgramGenerator";
 import { normalizeProgramFeatures } from "../../../packages/rendering/src/program/ProgramFeatures";
@@ -202,6 +204,80 @@ describe("WebGPU perf round 3: generated-PBR material slots on the device", () =
     const again = lit(); again.set("u_baseColor", [1, 1, 1, 1]);
     f.drawFrame(again);
     expect(f.materialImage()).toEqual([pack(again)]);
+    f.device.dispose();
+  });
+});
+
+describe("WebGPU perf round 3: portable uniform slots on the device", () => {
+  async function fixture() {
+    const contents = new Map<object, Uint8Array>();
+    const native = {
+      queue: {
+        submit() {}, onSubmittedWorkDone: async () => {}, writeTexture() {},
+        writeBuffer(buffer: { size: number }, offset: number, data: ArrayBuffer | ArrayBufferView) {
+          const view = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+          let image = contents.get(buffer);
+          if (!image) { image = new Uint8Array(buffer.size); contents.set(buffer, image); }
+          image.set(view, offset);
+        }
+      },
+      createBuffer: ({ label, size }: { readonly label?: string; readonly size: number }) => ({ label, size, destroy() {} }),
+      createTexture: () => ({ createView: () => ({}), destroy() {} }),
+      createSampler: () => ({}),
+      createShaderModule: (descriptor: unknown) => ({ descriptor }),
+      createRenderPipeline: () => ({ getBindGroupLayout: () => ({}) }),
+      createBindGroup: () => ({}),
+      createCommandEncoder: () => ({ beginRenderPass: () => ({ setPipeline() {}, setBindGroup() {}, setVertexBuffer() {}, setViewport() {}, setScissorRect() {}, draw() {}, end() {} }), finish: () => ({}) }),
+      destroy() {}
+    };
+    const device = await WebGPUDevice.create({ adapter: { requestDevice: async () => native as unknown as WebGPUDeviceLike }, nativeDrawBatching: true });
+    const library = new ShaderLibrary();
+    library.register({ name: "slot-portable", marker: "slot-portable",
+      vertex: "// slot-portable\nlayout(location=0) in vec3 a_position; uniform mat4 u_m[4]; uniform vec4 u_color; uniform float u_scale; void main() { gl_Position = u_m[0] * vec4(a_position * u_scale, 1.0); }",
+      fragment: "// slot-portable\nout vec4 o; uniform vec4 u_color; void main() { o = u_color; }",
+      portableBindings: [{ name: "u_m", kind: "mat4", arrayLength: 4 }, { name: "u_color", kind: "vec4" }, { name: "u_scale", kind: "float" }],
+      webgpu: {
+        vertex: "// slot-portable\n/* @aura3d-bindings */\n@vertex fn vs_main(@location(0) p: vec3<f32>) -> @builtin(position) vec4<f32> { return aura.u_m[0] * vec4<f32>(p * aura.u_scale, 1.0); }",
+        fragment: "// slot-portable\n/* @aura3d-bindings */\n@fragment fn fs_main() -> @location(0) vec4<f32> { return aura.u_color; }"
+      } });
+    const shader = ShaderModule.fromLibrary(library, "slot-portable").compile(device);
+    const vertices = device.createBuffer("vertex", 36);
+    const target = device.createRenderTarget({ width: 2, height: 2, depth: false });
+    const drawFrame = (uniforms: Map<string, UniformValue>) => {
+      device.beginFrame(2, 2); device.setRenderTarget(target);
+      try { device.draw({ label: "slot", topology: "triangles", vertexBuffer: vertices, vertexFormat: VertexFormat.P3, vertexCount: 3, shader, uniforms: new Map(uniforms) }); }
+      finally { device.endFrame(); }
+    };
+    const image = () => [...contents].filter(([buffer]) => (buffer as { label?: string }).label?.endsWith("-portable-uniforms")).map(([, bytes]) => bytes);
+    return { device, drawFrame, image };
+  }
+  const values = (matrices: number, color: number[], scale?: number) => new Map<string, UniformValue>([
+    ["u_m", Float32Array.from({ length: matrices * 16 }, (_, index) => index + 1)], ["u_color", color],
+    ...(scale === undefined ? [] : [["u_scale", scale] as [string, UniformValue]])
+  ]);
+  const fresh = async (uniforms: Map<string, UniformValue>) => { const f = await fixture(); f.drawFrame(uniforms); const bytes = f.image(); f.device.dispose(); return bytes; };
+
+  it("rewrites changed members to the bytes a first upload of the same values has, including shorter prefixes and removed values", async () => {
+    const f = await fixture();
+    const frames = [values(4, [1, 0, 0, 1], 2), values(4, [0, 1, 0, 1], 2), values(1, [0, 1, 0, 1], 2), values(2, [0, 1, 0, 1]), values(2, [0, 1, 0, 1])];
+    for (const uniforms of frames) {
+      f.drawFrame(uniforms);
+      expect(f.image()).toEqual(await fresh(uniforms));
+    }
+    f.device.dispose();
+  });
+
+  it("still rejects a malformed value after the slot was cached, then recovers", async () => {
+    const f = await fixture();
+    f.drawFrame(values(4, [1, 0, 0, 1], 2));
+    f.drawFrame(values(4, [1, 0, 0, 1], 2));
+    const broken = values(4, [1, 0, 0, 1], 2); broken.set("u_m", new Float32Array(20));
+    expect(() => f.drawFrame(broken)).toThrow(/wrong number or kind of components/);
+    const nan = values(4, [1, 0, 0, 1], 2); nan.set("u_scale", Number.NaN);
+    expect(() => f.drawFrame(nan)).toThrow();
+    const ok = values(3, [1, 1, 0, 1], 3);
+    f.drawFrame(ok);
+    expect(f.image()).toEqual(await fresh(ok));
     f.device.dispose();
   });
 });
