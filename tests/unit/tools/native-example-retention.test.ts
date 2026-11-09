@@ -364,6 +364,16 @@ describe("packed example harness fixes from the first full ACR examples run", ()
     expect(withBuildTools(root, { dependencies: {} }, [["tsc", "-p", "tsconfig.json"]]).devDependencies).toEqual({ typescript: "^5.8.3" });
     expect(withBuildTools(root, { devDependencies: { typescript: "^5", vite: "^7" } }, [["tsc"], ["vite", "build"]]).devDependencies).toEqual({ typescript: "^5", vite: "^7" });
   });
+  it("does not read a base64 integrity hash ending in ...SIg== as a sig= credential (rollup 4.68.2 lockfiles, run 097)", () => {
+    const ok = scratch();
+    put(ok, "package-lock.json", '{"packages":{"node_modules/@rollup/rollup-linux-x64-gnu":{"integrity":"sha512-oWxQGo5WECbJbImIf2w33uCHJNLv4o/FQtSyeYDed7AC6zx84NsEcGYccoI2geDEYkrxUXcsYK/6EhwVSIg==","cpu":["x64"]}}}');
+    expect(() => collectExampleRetainedFiles(ok)).not.toThrow();
+    for (const [name, text] of [["a.json", '{"sig":"abcdef123456"}'], ["b.txt", "sas=abcdef123456"], ["c.txt", "clientSecret=abcdef123456"]] as const) {
+      const bad = scratch();
+      put(bad, name, text);
+      expect(() => collectExampleRetainedFiles(bad), name).toThrow(/credential-like text/);
+    }
+  });
   it("treats public provenance and funding links as text, template literals as code, and signed URLs as credentials", () => {
     const ok = scratch();
     put(ok, "package-lock.json", '{"funding":{"url":"https://github.com/vitejs/vite?sponsor=1"}}');
