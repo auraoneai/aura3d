@@ -88,6 +88,7 @@ import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, typ
 import { createUniformDataWriter, deriveUniformDataLayout, emitWgslStruct, type UniformBlockLayout, type UniformDataWriter } from "./program/UniformLayout";
 import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts, NativeRenderStateMemo } from "./webgpu/NativeRenderState";
 import { MembershipVersionedSet, TextureOwnerMemo } from "./webgpu/TextureOwnerMemo";
+import { UniformArena, UniformArenaRegion } from "./webgpu/UniformArena";
 import { warmNativePipelineVariants, type NativePipelineWarmupJob, type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup";
 import { PostViewHistory, type PostHistoryLease } from "./post/PostGraph";
 import { WebGPUAutoExposure, normalizeWebGPUAutoExposure, type WebGPUExposureDraw, type WebGPUExposureResult } from "./post/WebGPUAutoExposure";
@@ -105,7 +106,7 @@ import { normalizeWebGPUGtaoOptions, normalizeWebGPUSsaoOptions, packWebGPUAoApp
   WEBGPU_AO_MINMAX_HALF_FRAGMENT, WEBGPU_SSAO_FRAGMENT } from "./webgpu/WebGPUAmbientOcclusion";
 import { generateProgramImpl, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
 import { diffUniformSnapshot, recordUniformReads, uniformSnapshotEntry, updateUniformSnapshotEntry, type UniformSnapshot } from "./webgpu/UniformMapSnapshot";
-import { createGeneratedPbrProgram, packGeneratedPbrMaterialUniforms, patchGeneratedPbrMaterialUniform, validateGeneratedPbrTarget, validateGeneratedPhotometricPacket, type GeneratedPbrProgram } from "./webgpu/GeneratedPbrProgram";
+import { createGeneratedPbrProgram, generatedPbrPatchByteRange, packGeneratedPbrMaterialUniforms, patchGeneratedPbrMaterialUniform, validateGeneratedPbrTarget, validateGeneratedPhotometricPacket, type GeneratedPbrProgram } from "./webgpu/GeneratedPbrProgram";
 import { createGeneratedUnlitProgram, packGeneratedUnlitMaterialUniforms, GENERATED_UNLIT_MATERIAL_OFFSETS, type GeneratedUnlitProgram } from "./webgpu/GeneratedUnlitProgram";
 import { assertNativePointQuadSubmission, withNativePointQuadLease, type NativePointQuadSubmission } from "./webgpu/NativePointQuads";
 import { validateNativePointRasterInputs } from "./webgpu/NativePointShader";
@@ -591,7 +592,7 @@ interface WebGPUDrawBatch {
   /** Fullscreen post passes recorded into this batch (see `runWebGPUFullscreenPass`). */
   postPasses: number;
   readonly accesses: Map<object, "read" | "write" | "readwrite">;
-  readonly releaseUniforms: WebGPUBufferLike[];
+  readonly releaseUniforms: TransientUniform[];
   readonly retirements: { destroy(): void }[];
   draws: number;
 }
@@ -1602,7 +1603,7 @@ export class WebGPUDevice implements RenderDevice {
    * Uniform buffers of submitted batches, returned to the pool at `endFrame` in reverse so the next frame's draws take
    * the same buffers in the same order (and so mostly find their own previous bytes).
    */
-  #frameUniformReleases: WebGPUBufferLike[] = [];
+  #frameUniformReleases: TransientUniform[] = [];
   /**
    * Draw-slot uniform images (generated-PBR and fast portable slot bytes) and how often each was rewritten in place. A
    * slot rewrites its images only through `packGeneratedPbrForSlot` / `writeFastPortableForSlot`, which bump the version.
@@ -1613,6 +1614,8 @@ export class WebGPUDevice implements RenderDevice {
    * at the same version to that buffer finds its bytes already there and skips the word compare and the queue write.
    */
   readonly #transientUniformImages = new WeakMap<WebGPUBufferLike, { readonly image: Uint8Array; readonly version: number }>();
+  /** A rewritten generated-PBR slot image: the image it was copied from (at that version) and the byte range rewritten. */
+  readonly #slotImagePatches = new WeakMap<Uint8Array, { readonly base: Uint8Array; readonly baseVersion: number; readonly start: number; readonly end: number }>();
   /** Forward draws resolve the same render states and vertex layouts every frame; remember the pure results. */
   readonly #renderStateMemo = new NativeRenderStateMemo();
   /**
@@ -1668,6 +1671,13 @@ export class WebGPUDevice implements RenderDevice {
   private readonly renderTargets = new MembershipVersionedSet<WebGPURenderTarget>();
   /** The first render target (in set order) that owns a texture, found by `renderTargetOwning`; rechecked on every use. */
   readonly #textureOwners = new TextureOwnerMemo<Texture, WebGPURenderTarget>();
+  /**
+   * Batched draws' uniform blocks (5.5.1): staged at per-frame offsets in a few large uniform buffers and uploaded with one
+   * write per dirty run when the batch is submitted, instead of a pooled buffer and a `writeBuffer` per draw.
+   */
+  #uniformArena: UniformArena<WebGPUBufferLike> | null = null;
+  /** The draw being prepared records into the open batch inside a frame: its uniform blocks go to the arena. */
+  #arenaDraw = false;
   /** The attachments of the last batched draw and their pass key (object ids are stable per object). */
   #batchPassKey: { readonly nativeView: unknown; readonly resolveView: unknown; readonly depthView: unknown; readonly sampleCount: number;
     readonly hasDepthStencil: boolean; readonly depthSlice: number | undefined; readonly key: string } | null = null;
@@ -3706,6 +3716,8 @@ export class WebGPUDevice implements RenderDevice {
         claimRenderTargetTextureOwner(color.texture, this);
       }
       target.installExtraColors(pending);
+      // The target now owns its extra colors: owner lookups remembered as missing must look again.
+      this.renderTargets.version += 1;
       return target;
     } catch (error) {
       target?.dispose();
@@ -4814,6 +4826,7 @@ export class WebGPUDevice implements RenderDevice {
       this.scissorTestOn = false;
       this.viewStateTarget = null;
       this.releaseDisposedNativeSampledTextures();
+      this.rewindUniformArena();
       this.ensureCanvasDepthAttachment(width, height);
       this.assertAlive();
       // The identity is the contract; allocating a new object does not rely on
@@ -9262,6 +9275,8 @@ export class WebGPUDevice implements RenderDevice {
       && !generatedCoverage && !dofProof && !checkDofDraw && !checkP3Draw && !this.gaussianSplatBorrowedDepth && !this.forwardPassProfiler
       && !this.activeRenderTarget?.nativeExtraColors.length && !(command.nativeStorageBindings?.length) && !this.vertexConversionCheck;
     if (!batchable) this.flushDrawBatch();
+    // Every uniform block below is acquired after this point of this call; batched draws in a frame take arena ranges.
+    this.#arenaDraw = batchable && this.frameActive;
     const encoder = batchable ? null : this.device.createCommandEncoder({ label: `${command.label ?? "draw"}-encoder` });
     const portableResources = shader.nativeUniformLayout === "portable"
       ? this.createNativePortableBindings(command, shader.portableBindings, explicitLayout !== null)
@@ -9586,7 +9601,7 @@ export class WebGPUDevice implements RenderDevice {
             label: `${command.label ?? "draw"}-draw-bind-group`,
             layout: this.pipelineGroupLayout(pipeline, 0),
             entries: portableResources?.entries ?? [
-              { binding: 0, resource: { buffer: uniformBuffer! } },
+              { binding: 0, resource: uniformResource(uniformBuffer!) },
               ...generatedTextures.flatMap(resource => [
                 ...("samplerBinding" in resource ? [{ binding: resource.samplerBinding, resource: resource.sampler }] : []),
                 { binding: resource.textureBinding, resource: resource.view }
@@ -9805,9 +9820,9 @@ export class WebGPUDevice implements RenderDevice {
         // Recorded into the open batch: submitted, with these accesses (merged above), by the next flush.
         const batch = this.#drawBatch!;
         batch.draws += 1;
-        if (uniformBuffer) batch.releaseUniforms.push(uniformBuffer);
-        if (atlasResources) batch.releaseUniforms.push(atlasResources.buffer);
-        if (portableResources) batch.releaseUniforms.push(portableResources.buffer);
+        if (uniformBuffer && !(uniformBuffer instanceof UniformArenaRegion)) batch.releaseUniforms.push(uniformBuffer);
+        if (atlasResources && !(atlasResources.buffer instanceof UniformArenaRegion)) batch.releaseUniforms.push(atlasResources.buffer);
+        if (portableResources && !(portableResources.buffer instanceof UniformArenaRegion)) batch.releaseUniforms.push(portableResources.buffer);
       }
       const finished = encoder ? encoder.finish() : null;
       if (pointCheck) {
@@ -10002,6 +10017,8 @@ export class WebGPUDevice implements RenderDevice {
   flushDrawBatch(): void {
     const batch = this.#drawBatch;
     if (!batch || this.#drawBatchFlushing) return;
+    // Staged arena uniforms reach the queue before the batch that reads them.
+    if (this.#uniformArena?.pending) this.flushUniformArena();
     if (this.#drawBatchRecording) throw new RenderDeviceError("A draw batch cannot be submitted while a draw records into it", "WEBGPU_DRAW_BATCH_ACTIVE");
     this.#drawBatchFlushing = true;
     this.#drawBatch = null;
@@ -10045,8 +10062,66 @@ export class WebGPUDevice implements RenderDevice {
     try { batch.pass.end(); } finally { batch.pass = null; batch.passKey = null; batch.bound = emptyBatchPassBindings(); }
   }
 
+  /** The arena, created on first use (chunk alignment from `minUniformBufferOffsetAlignment`). */
+  private uniformArena(): UniformArena<WebGPUBufferLike> {
+    if (this.#uniformArena) return this.#uniformArena;
+    const limit = this.device.limits?.minUniformBufferOffsetAlignment;
+    const alignment = typeof limit === "number" && Number.isSafeInteger(limit) && limit >= 4 && (limit & (limit - 1)) === 0 ? limit : 256;
+    const maxBuffer = this.device.limits?.maxBufferSize;
+    const maxChunkSize = typeof maxBuffer === "number" && maxBuffer > 0 ? Math.min(4 * 1024 * 1024, maxBuffer) : 4 * 1024 * 1024;
+    this.#uniformArena = new UniformArena<WebGPUBufferLike>({
+      createChunk: (size, index) => {
+        const buffer = this.device.createBuffer({ label: `aura3d-uniform-arena-${index}`, size, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
+        this.registerNativeCleanup(buffer, []);
+        return buffer;
+      },
+      write: (buffer, offset, bytes) => this.device.queue.writeBuffer(buffer, offset, bytes)
+    }, { alignment, maxChunkSize, firstChunkSize: Math.min(256 * 1024, maxChunkSize) });
+    return this.#uniformArena;
+  }
+
+  /** Stage a batched draw's uniform block in the arena, or null when it does not fit (the draw takes a pooled buffer). */
+  private stageArenaUniform(data: ArrayBufferView): UniformArenaRegion<WebGPUBufferLike> | null {
+    const arena = this.uniformArena();
+    if (arena.broken) return null;
+    const bytes = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    const version = data instanceof Uint8Array ? this.#slotImageVersions.get(data) : undefined;
+    if (version === undefined) return arena.stage(bytes);
+    const patch = this.#slotImagePatches.get(bytes);
+    return arena.stage(bytes, patch ? { image: bytes, version, patch } : { image: bytes, version });
+  }
+
+  /** Upload the arena's pending runs; a failed upload drops the arena so later draws use pooled buffers until the next frame. */
+  private flushUniformArena(): void {
+    const arena = this.#uniformArena;
+    if (!arena) return;
+    try { arena.flush(); }
+    catch (error) {
+      this.#uniformArena = null;
+      for (const buffer of arena.reset()) this.retireNative(buffer);
+      throw error;
+    }
+  }
+
+  /** Frame start: upload anything still pending, then hand out offsets from the start again (a lost chunk drops the arena). */
+  private rewindUniformArena(): void {
+    const arena = this.#uniformArena;
+    if (!arena) return;
+    if (arena.broken || arena.buffers.some((buffer) => !this.resourceInterop.owns(buffer))) {
+      this.#uniformArena = null;
+      for (const buffer of arena.reset()) this.retireNative(buffer);
+      return;
+    }
+    this.flushUniformArena();
+    arena.rewind();
+  }
+
   /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
-  private acquireTransientUniform(label: string, data: ArrayBufferView): WebGPUBufferLike {
+  private acquireTransientUniform(label: string, data: ArrayBufferView): TransientUniform {
+    if (this.#arenaDraw) {
+      const region = this.stageArenaUniform(data);
+      if (region) return region;
+    }
     const size = data.byteLength;
     let buffer = this.#transientUniformFree.get(size)?.pop();
     if (buffer && !this.resourceInterop.owns(buffer)) { this.#transientUniformOwned.delete(buffer); buffer = undefined; }
@@ -10095,7 +10170,9 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   /** Return a per-draw uniform buffer once its draw has been submitted (or abandoned); foreign buffers are retired. */
-  private releaseTransientUniform(buffer: WebGPUBufferLike): void {
+  private releaseTransientUniform(buffer: TransientUniform): void {
+    // Arena ranges belong to the frame's arena; nothing to return.
+    if (buffer instanceof UniformArenaRegion) return;
     if (!this.#transientUniformOwned.has(buffer) || this.disposed || this.contextLost || !this.resourceInterop.owns(buffer)) {
       this.#transientUniformOwned.delete(buffer);
       this.retireNative(buffer);
@@ -10957,7 +11034,7 @@ export class WebGPUDevice implements RenderDevice {
     }
   }
 
-  private createNativeGeneratedAmbientUniformBuffer(command: DrawCommand): WebGPUBufferLike {
+  private createNativeGeneratedAmbientUniformBuffer(command: DrawCommand): TransientUniform {
     // Matches GeneratedAmbientMaterial in nativeGeneratedAmbientPbrShader.
     const data = new Float32Array(48);
     data.set(uniformMat4(command.uniforms?.get("u_modelMatrix")) ?? identityMatrix(), 0);
@@ -10972,7 +11049,7 @@ export class WebGPUDevice implements RenderDevice {
     return this.acquireTransientUniform(`${command.label ?? "draw"}-generated-material`, data);
   }
 
-  private createNativeGeneratedPbrUniformBuffer(command: DrawCommand): WebGPUBufferLike {
+  private createNativeGeneratedPbrUniformBuffer(command: DrawCommand): TransientUniform {
     const program = command.shader ? this.requireShader(command.shader).generatedPbr : undefined;
     // Copy the uniform map only when this draw adds the transmission viewport to it.
     let uniforms: NonNullable<DrawCommand["uniforms"]> = command.uniforms ?? new Map();
@@ -11010,16 +11087,26 @@ export class WebGPUDevice implements RenderDevice {
         const bytes = slot.spare ?? new Uint8Array(slot.bytes.byteLength);
         bytes.set(slot.bytes);
         let patched = true;
+        let start = bytes.byteLength, end = 0;
         for (const index of differing) {
           const { name, length } = uniformSnapshotEntry(slot.snapshot, index);
           if (!patchGeneratedPbrMaterialUniform(bytes, name, uniforms.get(name), length, photometricProfile)) { patched = false; break; }
+          const range = generatedPbrPatchByteRange(name, length);
+          if (range) { start = Math.min(start, range[0]); end = Math.max(end, range[1]); }
+          else { start = 0; end = bytes.byteLength; }
         }
         if (patched) {
           for (const index of differing) {
             if (!updateUniformSnapshotEntry(slot.snapshot, index, uniforms.get(slot.snapshot.names[index]!))) { patched = false; break; }
           }
         }
-        if (patched) { this.bumpSlotImage(bytes); slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+        if (patched) {
+          const base = slot.bytes, baseVersion = this.#slotImageVersions.get(base);
+          this.bumpSlotImage(bytes);
+          if (baseVersion !== undefined && start < end) this.#slotImagePatches.set(bytes, { base, baseVersion, start, end });
+          else this.#slotImagePatches.delete(bytes);
+          slot.spare = slot.bytes; slot.bytes = bytes; return bytes;
+        }
         // The spare was overwritten: a buffer that still holds its last image must not be taken as current.
         this.bumpSlotImage(bytes);
       }
@@ -11077,15 +11164,19 @@ export class WebGPUDevice implements RenderDevice {
    * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
    */
   private renderTargetOwning(texture: Texture): WebGPURenderTarget | undefined {
-    return this.#textureOwners.find(this.renderTargets, texture, renderTargetOwnsTexture);
+    // Targets never gain a texture while in the set (attachments are fixed at creation; the one late install bumps the
+    // version), so a texture no target owns stays unowned until the membership changes.
+    return this.#textureOwners.find(this.renderTargets, texture, renderTargetOwnsTexture, true);
   }
 
   /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
   private bumpSlotImage(image: Uint8Array): void {
     this.#slotImageVersions.set(image, (this.#slotImageVersions.get(image) ?? 0) + 1);
+    // Any patch record describes an earlier version of this image.
+    this.#slotImagePatches.delete(image);
   }
 
-  private createNativeGeneratedUnlitUniformBuffer(command: DrawCommand): WebGPUBufferLike {
+  private createNativeGeneratedUnlitUniformBuffer(command: DrawCommand): TransientUniform {
     const data = packGeneratedUnlitMaterialUniforms(command.uniforms ?? new Map(), Boolean(command.shader && this.requireShader(command.shader).generatedUnlit?.packedLoopColor));
     return this.acquireTransientUniform(`${command.label ?? "draw"}-generated-unlit-material`, data);
   }
@@ -11170,11 +11261,11 @@ export class WebGPUDevice implements RenderDevice {
     return { data, check };
   }
 
-  private createNativeMorphUniformBuffer(label: string | undefined, data: Float32Array): WebGPUBufferLike {
+  private createNativeMorphUniformBuffer(label: string | undefined, data: Float32Array): TransientUniform {
     return this.acquireTransientUniform(`${label ?? "draw"}-morph-uniforms`, data);
   }
 
-  private createNativeDrawUniformBuffer(command: DrawCommand): WebGPUBufferLike | null {
+  private createNativeDrawUniformBuffer(command: DrawCommand): TransientUniform | null {
     if (!this.device.createBindGroup) return null;
     // 188 floats for the scalar/matrix fields + 96 joint matrices (16 floats each) appended at 188
     // + J2 native shadow projections (312 floats at 1724: directional matrix/params/PCF, then spot)
@@ -11274,7 +11365,7 @@ export class WebGPUDevice implements RenderDevice {
     return this.acquireTransientUniform(`${command.label ?? "draw"}-draw-uniforms`, data);
   }
 
-  private createNativeAtlasBindings(command: DrawCommand): { buffer: WebGPUBufferLike; entries: WebGPUBindGroupEntryLike[]; actualTextureCount: number } | null {
+  private createNativeAtlasBindings(command: DrawCommand): { buffer: TransientUniform; entries: WebGPUBindGroupEntryLike[]; actualTextureCount: number } | null {
     const definitions = [
       ["u_extensionScalarAtlas", 20, 0, "linear"],
       ["u_clearcoatNormalTexture", 22, 21, "linear"],
@@ -11296,7 +11387,7 @@ export class WebGPUDevice implements RenderDevice {
     }
     const data = webgpuExtensionAtlasUniforms(command.uniforms);
     const buffer = this.acquireTransientUniform("extension-atlas-uniforms", data);
-    entries.push({ binding: 19, resource: { buffer } });
+    entries.push({ binding: 19, resource: uniformResource(buffer) });
     return { buffer, entries, actualTextureCount };
   }
 
@@ -11305,7 +11396,7 @@ export class WebGPUDevice implements RenderDevice {
     bindings: readonly PortableShaderBinding[],
     allowUnfilterable = false
   ): {
-    readonly buffer: WebGPUBufferLike;
+    readonly buffer: TransientUniform;
     readonly entries: readonly WebGPUBindGroupEntryLike[];
     readonly actualTextureCount: number;
   } | null {
@@ -11346,7 +11437,7 @@ export class WebGPUDevice implements RenderDevice {
     }
     const buffer = this.acquireTransientUniform(`${command.label ?? "draw"}-portable-uniforms`, bytes);
     try {
-      const entries: WebGPUBindGroupEntryLike[] = [{ binding: 0, resource: { buffer } }];
+      const entries: WebGPUBindGroupEntryLike[] = [{ binding: 0, resource: uniformResource(buffer) }];
       let bindingIndex = 1;
       let actualTextureCount = 0;
       for (const descriptor of bindings) {
@@ -12358,6 +12449,14 @@ interface GeneratedPbrPackSlot {
   spare: Uint8Array | null;
   readonly packedLoopColor: boolean;
   readonly photometricProfile: boolean;
+}
+
+/** A draw's uniform block: a pooled buffer of its own, or a range of the frame's uniform arena. */
+type TransientUniform = WebGPUBufferLike | UniformArenaRegion<WebGPUBufferLike>;
+
+/** The bind-group resource for a draw's uniform block (an arena range binds its offset and size). */
+function uniformResource(uniform: TransientUniform): { readonly buffer: WebGPUBufferLike; readonly offset?: number; readonly size?: number } {
+  return uniform instanceof UniformArenaRegion ? uniform : { buffer: uniform };
 }
 
 /**

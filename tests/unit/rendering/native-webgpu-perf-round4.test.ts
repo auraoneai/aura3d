@@ -19,7 +19,8 @@ const pack = (uniforms: ReadonlyMap<string, UniformValue>) => packGeneratedPbrMa
 async function nativeFixture() {
   const contents = new Map<object, Uint8Array>();
   const events: string[] = [];
-  const bound: object[] = [];
+  /** Each draw's material binding: a whole buffer, or an arena range (offset and size). */
+  const bound: { buffer: object; offset?: number; size?: number }[] = [];
   const native = {
     queue: {
       submit(buffers: readonly unknown[]) { events.push(`submit:${buffers.length}`); },
@@ -52,8 +53,8 @@ async function nativeFixture() {
               events.push(`setBindGroup:${index}`);
               if (index !== 0) return;
               const entry = group.descriptor?.entries.find((candidate) => candidate.binding === 0);
-              const buffer = (entry?.resource as { buffer?: object } | undefined)?.buffer;
-              if (buffer) bound.push(buffer);
+              const resource = entry?.resource as { buffer?: object; offset?: number; size?: number } | undefined;
+              if (resource?.buffer) bound.push({ buffer: resource.buffer, offset: resource.offset, size: resource.size });
             }
           };
         },
@@ -69,7 +70,12 @@ async function nativeFixture() {
     vertex: generated.vertex, fragment: generated.fragment, generatedProgram: generated.descriptor! });
   const frame = device.createBuffer("uniform", 304, new Float32Array(76));
   const target = device.createRenderTarget({ width: 2, height: 2, format: "rgba16f", depth: false });
-  return { device, native, contents, events, bound, shader, frame, target, generated };
+  /** The bytes a draw's material binding holds. */
+  const boundBytes = (binding: { buffer: object; offset?: number; size?: number }) => {
+    const image = contents.get(binding.buffer) ?? new Uint8Array((binding.buffer as { size: number }).size);
+    return binding.offset === undefined ? image : image.slice(binding.offset, binding.offset + binding.size!);
+  };
+  return { device, native, contents, events, bound, boundBytes, shader, frame, target, generated };
 }
 
 describe("WebGPU perf round 4: slot images skip the compare only when the buffer holds them", () => {
@@ -94,7 +100,7 @@ describe("WebGPU perf round 4: slot images skip the compare only when the buffer
         }
       } finally { f.device.endDrawBatch(); f.device.endFrame(); }
       expect(f.bound).toHaveLength(list.length);
-      for (const [index, [, uniforms]] of list.entries()) expect(f.contents.get(f.bound[index]!)).toEqual(pack(uniforms));
+      for (const [index, [, uniforms]] of list.entries()) expect(f.boundBytes(f.bound[index]!)).toEqual(pack(uniforms));
     };
     // A second program's draw taken first moves the first program's slot to another pooled buffer, which keeps an older
     // image of that slot: when the slot rewrites that image and hands it back to the buffer, the bytes must be written.
@@ -116,7 +122,7 @@ describe("WebGPU perf round 4: slot images skip the compare only when the buffer
     runFrame(steady);
     const before = f.events.length;
     runFrame(steady);
-    expect(f.events.slice(before).filter((event) => event.endsWith("-generated-pbr-material"))).toEqual([]);
+    expect(f.events.slice(before).filter((event) => event.endsWith("-generated-pbr-material") || event.includes("uniform-arena"))).toEqual([]);
     // A refused value still reaches the validating packer, and the slot recovers to exact bytes afterwards.
     const broken = lit(1); broken.set("u_modelMatrix", [...matrix(4).slice(0, 15), Number.NaN]);
     expect(() => runFrame([broken])).toThrow(/u_modelMatrix/);
@@ -147,7 +153,8 @@ describe("WebGPU perf round 4: buffer updates inside an open draw batch", () => 
       const marker = f.events.length;
       f.device.updateBuffer(read, 0, new Float32Array(18).fill(3));
       expect(f.device.pendingBatchedDraws).toBe(0);
-      const after = f.events.slice(marker).filter((event) => /^(submit|write)/.test(event));
+      // Arena uniform uploads (staged by the recorded draws) go to the queue just before their batch is submitted.
+      const after = f.events.slice(marker).filter((event) => /^(submit|write)/.test(event) && !event.includes("uniform-arena"));
       expect(after[0]).toMatch(/^submit/);
       expect(after.slice(1).some((event) => event.startsWith("write"))).toBe(true);
       expect(f.events.filter((event) => event.startsWith("submit")).length).toBe(submitted + 1);
@@ -190,7 +197,7 @@ describe("WebGPU perf round 4: batched draws and post passes", () => {
     ]);
     // Every draw still has its own material bytes.
     expect(f.bound).toHaveLength(5);
-    for (const [index, buffer] of f.bound.entries()) expect(f.contents.get(buffer)).toEqual(pack(uniforms(index + 1)));
+    for (const [index, binding] of f.bound.entries()) expect(f.boundBytes(binding)).toEqual(pack(uniforms(index + 1)));
     f.device.dispose();
   });
 
