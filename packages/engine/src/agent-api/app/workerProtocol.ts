@@ -1,4 +1,4 @@
-import type { AuraBackend, AuraCreateAppRendererOptions, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraBackend, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraSceneSnapshot } from "../nodes/types.js";
 import type { OffscreenCanvasSize } from "./canvas.js";
 import type { AuraAssetsOption } from "../../contracts/assets.js";
 import type { AuraWorkerNodePatchOp } from "./workerPatch.js";
@@ -181,6 +181,11 @@ export interface AuraWorkerFrameResult {
   readonly time: number;
   readonly deltaSeconds?: number;
   readonly source?: "automatic" | "manual";
+  /**
+   * 5.4: the worker renderer's per-material textured status (`diagnostics().renderer.runtime.texturedMaterials`),
+   * sent on a presented frame only when it changed since the last one sent.
+   */
+  readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
 }
 
 export interface AuraWorkerScreenshotPayload {

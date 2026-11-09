@@ -279,7 +279,11 @@ export function createWorkerRootApp(
       publishTermination({ ...actual, revision }, true);
     }
   };
+  // 5.4: the worker sends its textured-material status when it changes (games wait on it before hiding a loader). Kept
+  // even from frames presented while the host still settles the mount, since the worker sends each change once.
+  let workerTexturedMaterials: AuraWorkerFrameResult["texturedMaterials"];
   const present = (result: AuraWorkerFrameResult, advanceRuntime = true) => {
+    if (!disposed && Array.isArray(result?.texturedMaterials)) workerTexturedMaterials = result.texturedMaterials;
     if (disposed || mounting || lost || failure) return;
     const actual = backendOf(result?.backend);
     if (!result || typeof result !== "object" || !actual || backendOf(backend) !== actual
@@ -800,7 +804,9 @@ export function createWorkerRootApp(
         requireRenderer();
       }).finally(() => { pendingSteps -= 1; });
     },
-    diagnostics: () => snapshotDiagnostics(diagnostics, shaderFailures),
+    diagnostics: () => snapshotDiagnostics(workerTexturedMaterials && diagnostics.renderer
+      ? { ...diagnostics, renderer: { ...diagnostics.renderer, runtime: { ...diagnostics.renderer.runtime, texturedMaterials: workerTexturedMaterials } } }
+      : diagnostics, shaderFailures),
     // Runtime and node evidence come from the host mirror; render evidence stays in the worker.
     evidence(evidenceOptions = {}) {
       return collectGameRuntimeEvidence({ runtime: app.runtime, nodes: mirror.registry }, evidenceOptions);

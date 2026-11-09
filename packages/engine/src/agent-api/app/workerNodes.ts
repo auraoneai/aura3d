@@ -19,7 +19,7 @@ import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { createViewProjection } from "../sceneMath.js";
 import { raycast, type SceneQueryHit } from "../SceneQueries.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { AuraWorkerError, isWorkerReadableImageTexture, readWorkerImageTexturePixels } from "./workerRuntime.js";
+import { AuraWorkerError, collectWorkerTextureIds, isWorkerReadableImageTexture, readWorkerImageTexturePixels, snapshotWorkerPatchArgs } from "./workerRuntime.js";
 import { auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";
 import type { Texture } from "@aura3d/rendering";
@@ -65,10 +65,10 @@ export interface AuraWorkerPickOptions {
 interface LiveImageTexture { readonly id: string; readonly texture: Texture; revision: number }
 
 /** Live image textures (`texture.canvas`, images, bitmaps) the scene references; their repaints become `texture` ops. */
-function collectLiveImageTextures(scene: AuraSceneSnapshot): LiveImageTexture[] {
+function collectLiveImageTextures(root: unknown): LiveImageTexture[] {
   const found = new Map<Texture, LiveImageTexture>();
   const seen = new Set<object>();
-  const stack: unknown[] = [scene.nodes];
+  const stack: unknown[] = [root];
   while (stack.length) {
     const value = stack.pop();
     if (!value || typeof value !== "object" || seen.has(value) || ArrayBuffer.isView(value) || value instanceof ArrayBuffer) continue;
@@ -106,11 +106,27 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
   const proxies = new WeakMap<AuraRuntimeNodeHandle, AuraRuntimeNodeHandle>();
   // The host never uploads these textures; acknowledging the dirty flag lets
   // every later `needsUpdate = true` record a new revision to forward.
-  const liveTextures = collectLiveImageTextures(scene);
+  const liveTextures = collectLiveImageTextures(scene.nodes);
   for (const entry of liveTextures) {
     if (entry.texture.needsUpdate) entry.texture.needsUpdate = false;
     entry.revision = entry.texture.revision;
   }
+  // 5.4: textures the worker holds (by host id). Patch arguments name these by id and snapshot any other one.
+  const knownTextures = collectWorkerTextureIds(scene.nodes);
+  const sendable = <T>(value: T, what: string): T => {
+    const before = knownTextures.size;
+    const sent = cloneArgs(snapshotWorkerPatchArgs(value, knownTextures), what);
+    if (knownTextures.size !== before) {
+      // Repaints of a newly sent live canvas reach the worker like those of the scene's own canvases.
+      for (const entry of collectLiveImageTextures(value)) {
+        if (liveTextures.some((known) => known.texture === entry.texture)) continue;
+        if (entry.texture.needsUpdate) entry.texture.needsUpdate = false;
+        entry.revision = entry.texture.revision;
+        liveTextures.push(entry);
+      }
+    }
+    return sent;
+  };
   const dirtyTextures = (): LiveImageTexture[] => active
     ? liveTextures.filter((entry) => !entry.texture.disposed && entry.texture.revision !== entry.revision)
     : [];
@@ -139,7 +155,7 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
           return (...args: unknown[]) => {
             // morphInfluence(name) is a read.
             if (key === "morphInfluence" && args.length < 2) return method.apply(target, args);
-            const sent = cloneArgs(args, `node.${key}()`);
+            const sent = sendable(args, `node.${key}()`);
             const result = method.apply(target, args);
             // The host mirror never renders, so nothing drains the attribute
             // writes it queues for the next frame; keep only the worker's copy.
@@ -161,7 +177,7 @@ export function createWorkerNodeMirror(scene: AuraSceneSnapshot, flags?: QrFlags
       },
       set(target, key, value) {
         if (typeof key === "string" && PROPERTIES.has(key)) {
-          const sent = cloneArgs(value, `node.${key}`);
+          const sent = sendable(value, `node.${key}`);
           Reflect.set(target, key, value, target);
           record({ id, set: key as AuraWorkerPatchProperty, value: sent });
           return true;
