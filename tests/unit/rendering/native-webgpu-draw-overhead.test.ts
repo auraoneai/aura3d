@@ -66,7 +66,8 @@ async function fixture(batching = false) {
     webgpu: { vertex: TRANSMISSION_COPY_WGSL_VERTEX, fragment: TRANSMISSION_COPY_WGSL_FRAGMENT },
     portableBindings: [{ name: "u_source", kind: "texture2d", required: true }] });
   const uniformBuffers = () => buffers.filter(buffer => buffer.descriptorLabel?.endsWith("-portable-uniforms"));
-  return { device, native, events, buffers, uniformBuffers, groups, passes, textures, createSampler, submit, shader, finish };
+  const arenaBuffers = () => buffers.filter(buffer => buffer.descriptorLabel?.startsWith("aura3d-uniform-arena-"));
+  return { device, native, events, buffers, uniformBuffers, arenaBuffers, groups, passes, textures, createSampler, submit, shader, finish };
 }
 
 const flush = async () => { for (let i = 0; i < 8; i += 1) await Promise.resolve(); };
@@ -130,7 +131,7 @@ describe("WebGPU per-draw overhead", () => {
     f.device.endDrawBatch(); f.device.endFrame(); f.device.dispose(); f.finish();
   });
 
-  it("records batched draws into one pass and one submission, with one uniform buffer per recorded draw", async () => {
+  it("records batched draws into one pass and one submission, each with its own range of the frame's uniform arena", async () => {
     const f = await fixture(true);
     const source = f.device.createRenderTarget({ width: 2, height: 2, depth: false });
     const target = f.device.createRenderTarget({ width: 2, height: 2, depth: false });
@@ -145,19 +146,26 @@ describe("WebGPU per-draw overhead", () => {
     expect(f.submit.mock.calls.length).toBe(submits);
     expect(f.passes.length - passes).toBe(1);
     expect(f.passes.at(-1)!.draws).toBe(3);
-    // A recorded draw keeps its uniform buffer until the batch is submitted.
-    expect(f.uniformBuffers()).toHaveLength(3);
+    // Recorded draws take ranges of one arena buffer (no pooled buffer each), every range its own.
+    const ranges = () => f.groups.map(group => group.entries.find(entry => entry.binding === 0)?.resource as { buffer: unknown; offset?: number; size?: number } | undefined)
+      .filter(resource => resource?.offset !== undefined);
+    expect(f.uniformBuffers()).toHaveLength(0);
+    expect(f.arenaBuffers()).toHaveLength(1);
+    expect(new Set(ranges().map(range => range!.offset)).size).toBe(3);
+    expect(ranges().every(range => range!.buffer === f.arenaBuffers()[0])).toBe(true);
     f.device.endDrawBatch();
     expect(f.device.pendingBatchedDraws).toBe(0);
     expect(f.submit.mock.calls.length).toBe(submits + 1);
     expect(f.events.at(-1)).toBe("submit:1");
-    // A second batch in the same frame takes further buffers: batched buffers return to the pool at endFrame.
+    // A second batch in the same frame takes further ranges of the same buffer.
     f.device.beginDrawBatch();
     for (let i = 0; i < 3; i += 1) f.device.drawChecked(draw);
     f.device.endDrawBatch();
-    expect(f.uniformBuffers()).toHaveLength(6);
+    expect(f.uniformBuffers()).toHaveLength(0);
+    expect(f.arenaBuffers()).toHaveLength(1);
+    expect(new Set(ranges().map(range => range!.offset)).size).toBe(6);
     f.device.endFrame();
-    // The next frame's draws take the same buffers in the same order, reuse their cached bind groups, and skip
+    // The next frame's draws take the same ranges in the same order, reuse their cached bind groups, and skip
     // rewriting unchanged bytes.
     f.device.beginFrame(2, 2); f.device.setRenderTarget(target);
     const groups = f.groups.length;
@@ -168,9 +176,10 @@ describe("WebGPU per-draw overhead", () => {
     f.device.beginDrawBatch();
     for (let i = 0; i < 3; i += 1) f.device.drawChecked(draw);
     f.device.endDrawBatch();
-    expect(f.uniformBuffers()).toHaveLength(6);
+    expect(f.uniformBuffers()).toHaveLength(0);
+    expect(f.arenaBuffers()).toHaveLength(1);
     expect(f.groups.length).toBe(groups);
-    expect(f.events.filter(event => event.endsWith("-portable-uniforms"))).toEqual([]);
+    expect(f.events.filter(event => event.startsWith("write:"))).toEqual([]);
     expect(f.events).toEqual(["submit:1", "submit:1"]);
     f.device.endFrame(); f.device.dispose(); f.finish();
   });
