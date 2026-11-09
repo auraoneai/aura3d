@@ -132,7 +132,7 @@ Release integrity rules:
 ## More
 
 - Full agent guide, genre recipes, guardrails and the page and example map: {{ORIGIN}}/llms-full.txt
-- Docs: {{ORIGIN}}/docs/api.html, {{ORIGIN}}/docs/agent-quickstart.html, {{ORIGIN}}/docs/claims.html
+- Docs: {{ORIGIN}}/docs/api, {{ORIGIN}}/docs/agent-quickstart, {{ORIGIN}}/docs/claims
 - Showcase ({{GAME_COUNT}} playable games): {{ORIGIN}}/apps/showcase-index/
 - Sitemap: {{ORIGIN}}/sitemap.xml; crawl policy: {{ORIGIN}}/robots.txt
 - Last updated: {{LASTMOD}}
