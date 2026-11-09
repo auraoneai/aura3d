@@ -604,8 +604,8 @@ async function boot(): Promise<void> {
   status.textContent = "Building the village…";
   loading.set(0.65);
   const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain });
-  // EXPERIMENTAL lab flags (?backend=, ?gamut=): default OFF, WebGL2 stays the default; worker/depth are not wired for this port.
-  const lab = labAppOptions(readLabFlags(), { createWorker: labRenderWorker });
+  // Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. ?gamut= stays off by default; depth is not wired for this port.
+  const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

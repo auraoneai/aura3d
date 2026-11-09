@@ -260,7 +260,7 @@ describe("legacy LDR postprocess shader is compiled per feature variant", () => 
       ldrVariantKey({ ...toneOnly, fxaa: true }), ldrVariantKey({ ...toneOnly, inputSrgb: true }), ldrVariantKey({ ...toneOnly, outputSrgb: false }), ldrVariantKey({ ...toneOnly, toneMapping: false })
     ]);
     expect(keys.size).toBe(8);
-    expect(ldrVariantKey({ ...toneOnly, operator: 99 })).toBe(ldrVariantKey({ ...toneOnly, operator: 6 }));
+    expect(ldrVariantKey({ ...toneOnly, operator: 99 })).toBe(ldrVariantKey({ ...toneOnly, operator: 7 }));
     expect(ldrVariantKey({ ...toneOnly, sharpening: true })).toBe(ldrVariantKey(toneOnly));
   });
 });

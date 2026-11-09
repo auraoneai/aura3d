@@ -1098,12 +1098,14 @@ describe("native WebGPU display effects", () => {
     };
     const firstToken = await render(1, false);
     expect(postStagesRan(firstToken)).toEqual(expect.arrayContaining(["native:pixelation", "native:afterimage"]));
+    // WebGPU perf round 2 pools post uniform buffers, so read each frame's afterimage history flag when it is written.
+    const historyFlag = (): number => params(groups.filter(group => group.label === "webgpu-native-effect-1-afterimage-bind").at(-1)!).getUint32(44, true);
+    const firstHistory = historyFlag();
     expect(postStagesRan(otherToken)).toEqual([]);
     expect(passes.filter(label => label.includes("native-effect-")).slice(-2)).toEqual(["webgpu-native-effect-0-pixelation-pass", "webgpu-native-effect-1-afterimage-pass"]);
     const secondToken = await render(2, { operator: "linear" });
     expect(postStagesRan(secondToken)).toEqual(expect.arrayContaining(["native:pixelation", "native:afterimage"]));
-    const histories = groups.filter(group => group.label === "webgpu-native-effect-1-afterimage-bind");
-    expect(histories.map(group => params(group).getUint32(44, true))).toEqual([0, 1]);
+    expect([firstHistory, historyFlag()]).toEqual([0, 1]);
     const present = groups.filter(group => group.label === "webgpu-post-present-bind").at(-1)!;
     const uniform = present.entries.find(entry => entry.binding === 0)!.resource.buffer;
     const bytes = uniformBytes.get(uniform)!;

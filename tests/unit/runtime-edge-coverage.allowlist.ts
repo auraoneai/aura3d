@@ -652,6 +652,8 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "if (selection.mode !== \"production\") throw new AuraWorkerError(`Renderer mode \"${selection.mode}\" is unavailable. Use the production renderer.`, \"backend-fallback\");",
       "if (typeof canvas.convertToBlob !== \"function\") throw new AuraWorkerError(\"OffscreenCanvas PNG capture is unavailable.\", \"screenshot-unavailable\", \"recoverable\");",
       "if (transferSet.has(current)) { const placeholder = {}; seen.set(current, placeholder); return placeholder; }",
+      "* a texture the worker already holds becomes an id placeholder; any other one is snapshotted like a scene texture",
+      "* them with the scene's textures) and resolves id placeholders to the handles of the mounted scene.",
     ]
   },
   {
@@ -3308,6 +3310,16 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "for (const child of children) placeholder.add(child);",
       "parent.children[index] = placeholder;",
       "placeholder.parent = parent;",
+      "/** ShaderMaterial uuid -> named placeholder exported in its slot (GLTFExporter writes no material for a shader). */",
+      "const placeholders = new Map<string, unknown>();",
+      "placeholders.set(material.uuid, new MeshBasicMaterial({ name: material.name, color: 0xff00ff }));",
+      "note: `carried as material.custom (GLSL pass-through; three built-ins map to the Aura3D prelude aliases) on a placeholder slot of the same name${converted.notes.length > 0 ? `; ${converted.notes.join(\"; \")}` : \"\"}`,",
+      "if (object.isMesh && materials.some((m) => placeholders.has(m.uuid))) {",
+      "? original.map((m: ThreeMaterialLike) => placeholders.get(m.uuid) ?? m)",
+      ": placeholders.get((original as ThreeMaterialLike).uuid);",
+      "const Object3D = THREE.Object3D as (new () => PlaceholderLike) | undefined;",
+      "const holder = light as unknown as PlaceholderLike;",
+      "type PlaceholderLike = ThreeObjectLike & { position: TransformPartLike; quaternion: TransformPartLike; scale: TransformPartLike; parent: ThreeObjectLike | null };",
     ]
   },
   {
@@ -3398,6 +3410,50 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
     reviewer: "agent (5.3.0 candidate, 2026-11-08)",
     markers: [
       "* renderer chunk does not import the deferred v2 module).",
+    ]
+  },
+  {
+    file: "packages/aura3d-cli/src/import-three/contract.ts",
+    reason: "three.js bridge wording: 'placeholder slot' is the named glTF material slot the bridge installs a carried ShaderMaterial on (a real material, not a stub)",
+    expires: EXPIRES,
+    reviewer: REVIEWER,
+    markers: [
+      "/** ShaderMaterials carried as `material.custom` on the placeholder slot of the same name. */",
+    ]
+  },
+  {
+    file: "packages/aura3d-cli/src/import-three/emit.ts",
+    reason: "three.js bridge wording: 'placeholder slot' is the named glTF material slot the bridge installs a carried ShaderMaterial on (a real material, not a stub)",
+    expires: EXPIRES,
+    reviewer: REVIEWER,
+    markers: [
+      "`/** Installs each carried shader on its placeholder slot. */`,",
+    ]
+  },
+  {
+    file: "packages/aura3d-cli/src/import-three/shader.ts",
+    reason: "three.js bridge wording: 'placeholder slot' is the named glTF material slot the bridge installs a carried ShaderMaterial on (a real material, not a stub)",
+    expires: EXPIRES,
+    reviewer: REVIEWER,
+    markers: [
+      "* placeholder slot and the emitted source installs `material.custom(spec)` on it through `model({ materialOverrides })`.",
+    ]
+  },
+  {
+    file: "packages/rendering/src/probes/ReflectionProbeSystem.ts",
+    reason: "WebGPU probe capture wording: 'deferred' names captures whose GPU readbacks complete on a later frame (5.5.0 non-blocking probe readback), not postponed or missing work",
+    expires: EXPIRES,
+    reviewer: REVIEWER,
+    markers: [
+      "// `updateDeferred` starts captures without waiting for their readbacks (the",
+      "/** Faces rendered (and, for deferred captures, whose readback was started). */",
+      "/** Deferred captures: readbacks started and not yet settled. */",
+      "/** Deferred captures: the first readback failure, rethrown by the next `updateDeferred`. */",
+      "// A deferred cube whose six faces were rendered in one call already shows one scene state; it only awaits readbacks.",
+      "updateDeferred(maxProbes = Number.MAX_SAFE_INTEGER): readonly string[] {",
+      "this.startFaceDeferred(entry, slice, slice.next as 0 | 1 | 2 | 3 | 4 | 5);",
+      "private startFaceDeferred(entry: ProbeEntry, slice: CaptureSlice, face: 0 | 1 | 2 | 3 | 4 | 5): void {",
+      "// A deferred capture with every face started waits for its readbacks (see `updateDeferred`).",
     ]
   },
 ];

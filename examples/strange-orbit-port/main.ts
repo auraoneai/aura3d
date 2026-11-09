@@ -628,12 +628,13 @@ async function boot(): Promise<void> {
   loadingBar.set(0.08, "Building the course");
   const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion, look: config.look });
   // `?worker=1` renders in the worker the showcase route registers (labRenderWorker); main-thread fallback kept.
-  const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined), { createWorker: labRenderWorker });
+  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
+  const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined), { backend: "auto", createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    // Lab flags (?backend=webgpu, ?worker=1, ?gamut=p3) are all off by default; the custom shaders carry WGSL twins (shaders-wgsl.ts) for WebGPU.
+    // Lab flags: WebGPU by default (?backend=webgl2 opts out); ?worker=1 and ?gamut=p3 are off by default. The custom shaders carry WGSL twins (shaders-wgsl.ts) for WebGPU.
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
     ...(lab.worker ? { worker: lab.worker } : {}),
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
