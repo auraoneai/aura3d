@@ -85,7 +85,7 @@ import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
 import { SprayTags } from "./sprayTags";
-import { courtCrowdNodes } from "./crowd";
+import { LIVE_FAN_IDLE, LIVE_FAN_IDS, courtCrowdNodes } from "./crowd";
 import { courtSetPieceNodes } from "./setPieces";
 import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
 import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
@@ -813,7 +813,12 @@ function buildCrowd(v: VenueSpec): any[] {
   // GU47 wave 2 (H47-A1): standing Meshy fans on those bleachers, two instanced draws, new look only.
   const fans = LOOK_ORIGINAL || !rig.bleachers
     ? []
-    : courtCrowdNodes(v.id, rig.bleachers.seat, { fanB: assets.aura_hoops_3d_blacktopFanB, fanC: assets.aura_hoops_3d_blacktopFanC });
+    : courtCrowdNodes(v.id, rig.bleachers.seat, {
+      fanB: assets.aura_hoops_3d_blacktopFanB,
+      fanC: assets.aura_hoops_3d_blacktopFanC,
+      // Meshy-07: six seated, animated fans in the front rows the live cameras face.
+      live: [assets.aura_hoops_3d_blacktopFanAPoses, assets.aura_hoops_3d_blacktopFanCPoses, assets.aura_hoops_3d_blacktopFanDPoses]
+    });
   return [...courtBleacherNodes(rig), ...fans];
 }
 
@@ -1094,6 +1099,10 @@ let waverNodes: AnyHandle[] = [];
 
 const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
 const lastClipByActor = new Map<string, string>();
+/** Meshy-07: the seated live fans fist-pump (`sitPump`) for this long after any make, then go back to their idle loop. */
+const LIVE_FAN_CHEER_SECONDS = 2.6;
+let liveFansCheerUntil = -1;
+const liveFanClip = new Map<string, string>();
 const lastSpeedByActor = new Map<string, number>();
 const dribblePoseOn = new Set<string>();
 const livePoseOn = new Set<string>();
@@ -1229,6 +1238,10 @@ function setNodeClip(id: string, handle: AnyHandle, clip: string, speed = 1.0): 
 
 function resolveHandles(): void {
   lastClipByActor.clear();
+  // the live fans mount on their idle clip (crowd.ts); a court rebuild starts them there again
+  liveFanClip.clear();
+  LIVE_FAN_IDS.forEach((id, i) => liveFanClip.set(id, LIVE_FAN_IDLE[i]!.clip));
+  liveFansCheerUntil = -1;
   lastSpeedByActor.clear();
   dribblePoseOn.clear();
   livePoseOn.clear();
@@ -1856,8 +1869,24 @@ function enterLive(): void {
   pushEvent("phase", "ball is live", "info");
 }
 
+/** Visual only: swaps the live fans' clip on a make (cross-faded); no sim, RNG or input reads. */
+function updateLiveFans(): void {
+  if (LOOK_ORIGINAL) return;
+  const cheering = game_.time < liveFansCheerUntil && liveFansCheerUntil - game_.time <= LIVE_FAN_CHEER_SECONDS;
+  LIVE_FAN_IDS.forEach((id, i) => {
+    const idle = LIVE_FAN_IDLE[i]!;
+    const clip = cheering ? "sitPump" : idle.clip;
+    if (liveFanClip.get(id) === clip) return;
+    const handle = auraApp.nodes.get(id) as AnyHandle;
+    if (!handle || typeof handle.setAnimation !== "function") return;
+    liveFanClip.set(id, clip);
+    try { handle.setAnimation({ clip, loop: true, speed: cheering ? 0.92 + 0.04 * (i % 3) : idle.speed, crossFade: 0.3 }); } catch { /* best-effort */ }
+  });
+}
+
 function awardPoints(team: TeamId, pts: number, label: string): void {
   game_.lastShotLabel = label;
+  liveFansCheerUntil = game_.time + LIVE_FAN_CHEER_SECONDS;
   if (game_.mode === "dunklab" || game_.mode === "handleslab") {
     // Labs don't run a match score — buckets feed style score + streak.
     game_.lab.score += pts;
@@ -3624,6 +3653,7 @@ function frame(dtRaw: number): void {
   if (netPulse > 0) netPulse -= dt * 3;
   rimShake = decayRimShake(rimShake, dt);
   if (!LOOK_ORIGINAL) sprayTags.prune(game_.time);
+  updateLiveFans();
   if (crowdLevel > 1) {
     crowdLevel = Math.max(1, crowdLevel - dt * 0.6);
     if (framesRendered % 12 === 0 || crowdLevel === 1) { try { (audio as any)?.setCueLevel?.("crowd", { volume: crowdLevel }, 200); } catch { /* best-effort */ } }
