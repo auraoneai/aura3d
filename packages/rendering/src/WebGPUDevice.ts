@@ -5309,6 +5309,11 @@ export class WebGPUDevice implements RenderDevice {
     return [...live];
   }
 
+  /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads, as on WebGL2). */
+  drawCallCount(): number {
+    return this.drawCalls;
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     const liveRenderTargets = [...this.renderTargets].filter((target) => !target.disposed);
     const bufferBytes = [...this.buffers].filter((buffer) => !buffer.disposed).reduce((total, buffer) => total + buffer.byteLength, 0);

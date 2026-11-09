@@ -2863,6 +2863,7 @@ describe("Renderer", () => {
     device.endFrame();
 
     expect(device.getDiagnostics().nativeSubmissions).toBe(1);
+    expect((device as unknown as { drawCallCount(): number }).drawCallCount()).toBe(device.getDiagnostics().drawCalls);
     expect(native.device.shaderModules.map((module) => module.code)).toEqual([
       passthroughWgsl().webgpu.vertex,
       passthroughWgsl().webgpu.fragment
