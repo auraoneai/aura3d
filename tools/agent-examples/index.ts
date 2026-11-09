@@ -1296,10 +1296,11 @@ async function produceSource(root: string, runId: string, candidatePath: string,
         // Recheck a failed run's retained tree too, so an unsafe copy is
         // removed even when there is no successful project report to bind it.
         collectExampleRetainedFiles(retainedWrapper, { rejectEmptyDirectories: true });
-      } catch {
+      } catch (stageError) {
         rmSync(retainedWrapper, { recursive: true, force: true });
         projectRecord = undefined;
-        checks.push(failed(root, logs, "retained-identity", "Retained example could not be safely staged"));
+        // The thrown messages are fixed strings that never carry paths or file contents, so they are safe to log.
+        checks.push(failed(root, logs, "retained-identity", `Retained example could not be safely staged: ${stageError instanceof Error ? stageError.message.slice(0, 240) : "unknown"}`));
       } finally { rmSync(wrapper, { recursive: true, force: true }); }
     }
     if (projectRecord) {
