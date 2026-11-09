@@ -4471,7 +4471,7 @@
       },
       "source": {
         "path": "apps/showcase-teleoperator/src/main.ts",
-        "sha256": "13382b65e24c506232f46a782751890904c7cbcf7b82713ce04725d565fb7f07"
+        "sha256": "b8cdeebef5ce5c6ca03d77063cab03c861387f2150844bf3d945ecb0b8718932"
       },
       "sourceDependencies": [
         {

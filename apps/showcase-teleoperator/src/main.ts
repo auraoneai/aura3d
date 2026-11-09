@@ -2,7 +2,7 @@ import { camera, createAuraApp, createFixedStepLoop, installQaHooks, material, t
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
 import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { labAppOptions, readLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createGridAudio } from "./audio";
 import { createTrafficContacts } from "./collision";
 import { createHud, drawMinimap, formatClock } from "./hud";
@@ -225,10 +225,11 @@ async function bootGridDispatch(): Promise<void> {
   await probeBuildingModels();
   bootProgress(22);
   // 5.0.2: `qualityRebuild.flags` accepts the record form (QrFlagInput), so the old `as unknown as readonly string[]` cast is gone.
-  // Lab flags (default OFF, EXPERIMENTAL, decision D1): `?backend=auto|webgpu` and `?gamut=p3` only; the game keeps its own
-  // renderer quality tier and merges the requested backend into it. `?worker=1` renders in a worker (main-thread fallback kept); `?depth` is not wired (not stable for this game).
+  // Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 4:
+  // same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. The game keeps its own renderer quality tier and merges the
+  // backend into it. `?gamut=p3` stays off by default; `?worker=1` renders in a worker (main-thread fallback kept); `?depth` is not wired (not stable for this game).
   const lab = readLabFlags();
-  const labOpts = labAppOptions(lab, createWorkerRendererWorker);
+  const labOpts = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
   const auraApp = createAuraApp(canvas, {
     scene: buildGridDispatchScene(weather, { motionOk: motionOk() }),
     renderer: { ...GRID_DISPATCH_RENDERER, ...(labOpts.renderer ?? {}) },
@@ -1193,7 +1194,7 @@ async function bootGridDispatch(): Promise<void> {
   presenter.reset();
   $("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
-  if (lab.backend || lab.gamut) void publishBackendReport(auraApp, legacy as unknown as Record<string, unknown>).catch(() => undefined);
+  if (resolveLabBackend(lab, "auto") || lab.gamut) void publishBackendReport(auraApp, legacy as unknown as Record<string, unknown>).catch(() => undefined);
   canvas.dataset.ready = "true";
   auraApp.resume();
   if (autoplay) setAutopilotLevel("L5");
