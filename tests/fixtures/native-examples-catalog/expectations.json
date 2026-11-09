@@ -6567,7 +6567,7 @@
       },
       "source": {
         "path": "examples/strange-orbit-port/main.ts",
-        "sha256": "e34d03c3a3e7c4d14f34ab15157394317241597e8dc1efb05c5e5201d7cd738d"
+        "sha256": "d2d9c12ef6887f6543156d4b7431c77d77f3ccaa1b41d50a17ce2f8c66b254ef"
       },
       "sourceDependencies": [
         {
@@ -6659,7 +6659,7 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/main.ts",
-          "sha256": "e34d03c3a3e7c4d14f34ab15157394317241597e8dc1efb05c5e5201d7cd738d"
+          "sha256": "d2d9c12ef6887f6543156d4b7431c77d77f3ccaa1b41d50a17ce2f8c66b254ef"
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
