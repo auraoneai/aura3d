@@ -39,18 +39,27 @@ async function nativeFixture() {
     createSampler: () => ({}),
     createRenderPipeline: () => ({ getBindGroupLayout: (index: number) => ({ index }) }),
     createBindGroup: (descriptor: { entries: readonly { binding: number; resource: unknown }[] }) => ({ descriptor }),
-    createCommandEncoder: () => ({
-      beginRenderPass: () => ({
-        setPipeline() {}, setVertexBuffer() {}, setViewport() {}, setScissorRect() {}, draw() {}, end() {},
-        setBindGroup(index: number, group: { descriptor?: { entries: readonly { binding: number; resource: unknown }[] } }) {
-          if (index !== 0) return;
-          const entry = group.descriptor?.entries.find((candidate) => candidate.binding === 0);
-          const buffer = (entry?.resource as { buffer?: object } | undefined)?.buffer;
-          if (buffer) bound.push(buffer);
-        }
-      }),
-      finish: () => ({})
-    }),
+    createCommandEncoder: (encoder?: { readonly label?: string }) => {
+      events.push(`encoder:${encoder?.label ?? ""}`);
+      return {
+        beginRenderPass: (pass?: { readonly label?: string }) => {
+          events.push(`pass:${pass?.label ?? ""}`);
+          return {
+            setPipeline() { events.push("setPipeline"); }, setVertexBuffer(slot: number) { events.push(`setVertexBuffer:${slot}`); },
+            setIndexBuffer() { events.push("setIndexBuffer"); }, setViewport() {}, setScissorRect() {},
+            draw() { events.push("draw"); }, drawIndexed() { events.push("draw"); }, end() { events.push("end"); },
+            setBindGroup(index: number, group: { descriptor?: { entries: readonly { binding: number; resource: unknown }[] } }) {
+              events.push(`setBindGroup:${index}`);
+              if (index !== 0) return;
+              const entry = group.descriptor?.entries.find((candidate) => candidate.binding === 0);
+              const buffer = (entry?.resource as { buffer?: object } | undefined)?.buffer;
+              if (buffer) bound.push(buffer);
+            }
+          };
+        },
+        finish: () => ({})
+      };
+    },
     destroy() {}
   };
   const device = await WebGPUDevice.create({ adapter: { requestDevice: async () => native as unknown as WebGPUDeviceLike }, nativeDrawBatching: true });
@@ -138,7 +147,7 @@ describe("WebGPU perf round 4: buffer updates inside an open draw batch", () => 
       const marker = f.events.length;
       f.device.updateBuffer(read, 0, new Float32Array(18).fill(3));
       expect(f.device.pendingBatchedDraws).toBe(0);
-      const after = f.events.slice(marker);
+      const after = f.events.slice(marker).filter((event) => /^(submit|write)/.test(event));
       expect(after[0]).toMatch(/^submit/);
       expect(after.slice(1).some((event) => event.startsWith("write"))).toBe(true);
       expect(f.events.filter((event) => event.startsWith("submit")).length).toBe(submitted + 1);
@@ -152,6 +161,74 @@ describe("WebGPU perf round 4: buffer updates inside an open draw batch", () => 
     } finally { f.device.endDrawBatch(); f.device.endFrame(); }
     f.device.dispose();
     expect(() => f.device.updateBuffer(other, 0, new Float32Array(1))).toThrow();
+  });
+});
+
+describe("WebGPU perf round 4: batched draws and post passes", () => {
+  const uniforms = (seed: number) => new Map<string, UniformValue>([["u_modelMatrix", matrix(seed)], ["u_normalMatrix", matrix(2)], ["u_baseColor", [1, 1, 1, 1]]]);
+
+  it("binds the pipeline, vertex buffer and frame group once per batch pass and again in a new pass", async () => {
+    const f = await nativeFixture();
+    const vertices = f.device.createBuffer("vertex", 72);
+    const other = f.device.createRenderTarget({ width: 2, height: 2, format: "rgba16f", depth: false });
+    const draw = (seed: number) => f.device.draw({ label: `d${seed}`, topology: "triangles", vertexBuffer: vertices, vertexFormat: VertexFormat.P3N3, vertexCount: 3, shader: f.shader, uniforms: uniforms(seed) });
+    f.device.beginFrame(2, 2); f.device.bindUniformBuffer(f.frame, 0);
+    const start = f.events.length;
+    f.device.beginDrawBatch();
+    try {
+      f.device.setRenderTarget(f.target);
+      draw(1); draw(2); draw(3);
+      f.device.setRenderTarget(other);
+      draw(4); draw(5);
+    } finally { f.device.endDrawBatch(); f.device.endFrame(); }
+    const recorded = f.events.slice(start).filter((event) => !event.startsWith("write"));
+    const passes = recorded.join(" ").split(/ pass:/).slice(1).map((pass) => pass.split(" ").filter((event) => /^(setPipeline|setVertexBuffer|setBindGroup|draw)/.test(event)));
+    // setRenderTarget submits the open batch, so each target is its own batch and pass.
+    expect(passes).toEqual([
+      ["setPipeline", "setVertexBuffer:0", "setBindGroup:0", "setBindGroup:1", "draw", "setBindGroup:0", "draw", "setBindGroup:0", "draw"],
+      ["setPipeline", "setVertexBuffer:0", "setBindGroup:0", "setBindGroup:1", "draw", "setBindGroup:0", "draw"]
+    ]);
+    // Every draw still has its own material bytes.
+    expect(f.bound).toHaveLength(5);
+    for (const [index, buffer] of f.bound.entries()) expect(f.contents.get(buffer)).toEqual(pack(uniforms(index + 1)));
+    f.device.dispose();
+  });
+
+  it("records post passes of a frame into the batch encoder, submitting first when a pass rewrites a buffer the batch reads", async () => {
+    const f = await nativeFixture();
+    const source = f.device.createRenderTarget({ width: 4, height: 4, format: "rgba8", depth: false, label: "source" });
+    const output = f.device.createRenderTarget({ width: 4, height: 4, format: "rgba8", depth: false, label: "output" });
+    const present = () => f.device.presentLdrPostprocess(source, { outputTarget: output, passes: [] });
+    // Outside a frame every pass has its own encoder and submission.
+    let start = f.events.length;
+    present();
+    let events = f.events.slice(start);
+    const postEncoders = (list: readonly string[]) => list.filter((event) => /^encoder:(webgpu-post|aura3d-draw-batch)/.test(event));
+    expect(postEncoders(events)).toEqual(["encoder:webgpu-post-present-encoder"]);
+    expect(events.filter((event) => event.startsWith("submit")).length).toBeGreaterThan(0);
+    // In a frame the chain records into one batch encoder. Its two FXAA passes write the same uniform buffer, so the
+    // batch holding the first one is submitted before the second write lands; the frame end submits the rest.
+    f.device.beginFrame(4, 4);
+    start = f.events.length;
+    f.device.presentLdrPostprocess(source, { outputTarget: output, passes: [{ name: "fxaa", options: {} }, { name: "fxaa", options: {} }] });
+    f.device.endFrame();
+    events = f.events.slice(start);
+    expect(postEncoders(events).every((event) => event === "encoder:aura3d-draw-batch-encoder")).toBe(true);
+    const fxaaPasses = events.map((event, index) => [event, index] as const).filter(([event]) => event === "pass:webgpu-fxaa-pass").map(([, index]) => index);
+    const fxaaWrites = events.map((event, index) => [event, index] as const).filter(([event]) => event.startsWith("write:webgpu-fxaa")).map(([, index]) => index);
+    expect(fxaaPasses).toHaveLength(2);
+    expect(fxaaWrites).toHaveLength(2);
+    // The second write comes after a submission that follows the first FXAA pass, and before the second pass.
+    expect(events.slice(fxaaPasses[0]!, fxaaWrites[1]!).some((event) => event.startsWith("submit"))).toBe(true);
+    expect(fxaaWrites[1]!).toBeLessThan(fxaaPasses[1]!);
+    expect(events.slice(fxaaPasses[1]!).some((event) => event.startsWith("submit"))).toBe(true);
+    // Fewer submissions than passes: the chain shares command buffers.
+    expect(events.filter((event) => event.startsWith("submit") && event !== "submit:0").length).toBeLessThan(events.filter((event) => event.startsWith("pass:")).length);
+    // A failing post pass still throws (and leaves no recorded pass behind).
+    f.device.beginFrame(4, 4);
+    try { expect(() => f.device.presentLdrPostprocess(source, { outputTarget: source, passes: [] })).toThrow(); }
+    finally { f.device.endFrame(); }
+    f.device.dispose();
   });
 });
 

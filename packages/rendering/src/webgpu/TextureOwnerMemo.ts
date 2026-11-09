@@ -27,11 +27,11 @@ export class MembershipVersionedSet<T> extends Set<T> {
 export class TextureOwnerMemo<K extends object, T> {
   readonly #owners = new WeakMap<K, { readonly owner: T; readonly version: number }>();
 
-  find(set: MembershipVersionedSet<T>, key: K, owns: (candidate: T) => boolean): T | undefined {
+  find(set: MembershipVersionedSet<T>, key: K, owns: (candidate: T, key: K) => boolean): T | undefined {
     const memo = this.#owners.get(key);
-    if (memo && memo.version === set.version && owns(memo.owner)) return memo.owner;
+    if (memo && memo.version === set.version && owns(memo.owner, key)) return memo.owner;
     for (const candidate of set) {
-      if (owns(candidate)) {
+      if (owns(candidate, key)) {
         this.#owners.set(key, { owner: candidate, version: set.version });
         return candidate;
       }
