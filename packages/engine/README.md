@@ -54,6 +54,34 @@ Read [`llms.txt`](https://github.com/auraoneai/aura3d/blob/main/llms.txt) (one s
 
 Kit documentation: [`docs/api/game-kit.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-kit.md), [`qa-kit.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/qa-kit.md), [`safety-net.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/safety-net.md), [`audio-synth.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/audio-synth.md), [`model-loader.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/model-loader.md), [`glsl-chunks.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/glsl-chunks.md), [`scatter-merge.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/scatter-merge.md), [`cli-asset-tools.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-asset-tools.md), [`toon.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/toon.md).
 
+## Readiness and top-level await
+
+`app.ready()` resolves once the renderer mount settles, so a frame can be drawn. It also resolves, rather than rejects, if the mount fails (the failure is in `app.diagnostics().errors`; use `readyStrict()` to get a rejection). Wait for it inside a function or chain on it; never `await` it at module top level:
+
+```ts
+import { createAuraApp, scene } from "@aura3d/engine";
+
+const app = createAuraApp("#app", { scene: scene(), autoStart: false });
+void app.ready().then(() => {
+  app.step(1 / 60);
+});
+```
+
+Or inside an async function:
+
+```ts
+import { createAuraApp, scene } from "@aura3d/engine";
+
+async function main(): Promise<void> {
+  const app = createAuraApp("#app", { scene: scene(), autoStart: false });
+  await app.ready();
+  app.step(1 / 60);
+}
+void main();
+```
+
+A module-level `await app.ready()` (or `readyStrict()`, `readiness()`, `precompile()`, `game.ready()`, `warmPrograms(app)`) deadlocks a default Vite production build. Vite puts the engine modules the app imports into the entry chunk, and the lazily loaded engine chunks (renderer, environment, decoders) import that entry back. An entry suspended on the await never finishes evaluating, so those chunks never run, the mount never settles and the page stays black with no console error. `vite dev` serves separate modules and hides it. `aura3d validate` reports it as `LINT_TOP_LEVEL_AWAIT_READY`; details in [`evidence/n4-frame/integration/README.md`](https://github.com/auraoneai/aura3d/blob/main/evidence/n4-frame/integration/README.md).
+
 ## Built with it
 
 The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 30 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with a deterministic replay gate), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). Each page states its limits; the games are independent work, not affiliated with any other game or studio. Games are checked on software WebGL2 in remote runs; real-GPU confirmation is partial and tracked in [`evidence/`](https://github.com/auraoneai/aura3d/blob/main/evidence/).

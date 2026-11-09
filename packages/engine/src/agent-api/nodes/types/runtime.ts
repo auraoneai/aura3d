@@ -439,13 +439,20 @@ export interface AuraApp {
    *
    * ```ts
    * const app = createAuraApp(canvas, { scene, autoStart: false });
-   * await app.ready();
-   * app.step(1 / 60);           // now renders
+   * void app.ready().then(() => {
+   *   app.step(1 / 60);         // now renders
+   * });
    * ```
+   *
+   * Or await it inside a function: `async function main() { ...; await app.ready(); app.step(1 / 60); } void main();`.
+   * Never `await app.ready()` at module top level: a default Vite production build puts the engine
+   * modules in the entry chunk and the lazily loaded engine chunks import that entry back, so an entry
+   * suspended on the await never finishes evaluating, the mount never settles and the page stays black
+   * (`vite dev` hides it). `aura3d validate` reports this as `LINT_TOP_LEVEL_AWAIT_READY`.
    *
    * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
    * the mount fails, because the failure is already reported through `diagnostics().errors` and a
-   * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+   * rejection here would make the common `await app.ready()` call throw for a diagnosable condition.
    */
   ready(): Promise<void>;
   /** Wait for an explicit mount outcome without converting failure to success. */
