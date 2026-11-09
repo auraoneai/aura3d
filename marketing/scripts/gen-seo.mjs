@@ -54,17 +54,27 @@ const AI_CRAWLERS = [
   "PerplexityBot",
   "Perplexity-User",
   "Google-Extended",
+  "GoogleOther",
   "Applebot-Extended",
   "Amazonbot",
   "Meta-ExternalAgent",
   "cohere-ai",
   "CCBot",
+  "Bytespider",
+  "Diffbot",
+  "DuckAssistBot",
+  "ImagesiftBot",
+  "iaskspider",
+  "MistralAI-User",
+  "Timpibot",
+  "VelenPublicWebCrawler",
+  "YouBot",
 ];
 
 // Real defensive disallows for this static origin (never crawlable build
-// internals / source maps). Everything else — marketing home, docs, the
-// Aura Clash showcase, and the example apps — is public content.
-const PRIVATE_PATHS = ["/node_modules/", "/src/", "/*.map$"];
+// internals / source maps / per-route health JSON). Everything else —
+// marketing home, docs, and the example apps — is public content.
+const PRIVATE_PATHS = ["/node_modules/", "/src/", "/*.map$", "/*route-health.json$"];
 
 /**
  * Curated public route manifest.
@@ -85,21 +95,26 @@ const PRIVATE_PATHS = ["/node_modules/", "/src/", "/*.map$"];
  * or not produced by the current build (owner follow-up if any should
  * return as real content).
  */
+// Cloudflare Pages serves docs/migration/4-to-5.html at /docs/migration/4-to-5 and
+// 308-redirects every /docs/*.html URL to its extensionless form, so extensionless
+// is the canonical route family here — the same convention gen-migration-doc.mjs
+// already uses for ROUTE.
 const MANIFEST = {
   "/": { source: "marketing/index.html", freq: "weekly", priority: "1.00" },
-  "/docs/agent-quickstart.html": { source: "marketing/docs/agent-quickstart.html", freq: "weekly", priority: "0.86" },
-  "/docs/agent-rules.html": { source: "marketing/docs/agent-rules.html", freq: "weekly", priority: "0.84" },
-  "/docs/api.html": { source: "marketing/docs/api.html", freq: "weekly", priority: "0.88" },
-  "/docs/assets.html": { source: "marketing/docs/assets.html", freq: "weekly", priority: "0.86" },
-  "/docs/templates.html": { source: "marketing/docs/templates.html", freq: "weekly", priority: "0.86" },
-  "/docs/prompt-recipes.html": { source: "marketing/docs/prompt-recipes.html", freq: "weekly", priority: "0.88" },
-  "/docs/deployment.html": { source: "marketing/docs/deployment.html", freq: "monthly", priority: "0.82" },
-  "/docs/claude.html": { source: "marketing/docs/claude.html", freq: "weekly", priority: "0.78" },
-  "/docs/cursor.html": { source: "marketing/docs/cursor.html", freq: "weekly", priority: "0.78" },
-  "/docs/evidence.html": { source: "marketing/docs/evidence.html", freq: "weekly", priority: "0.78" },
-  "/docs/claims.html": { source: "marketing/docs/claims.html", freq: "weekly", priority: "0.78" },
-  "/docs/aura3d-vs-threejs.html": { source: "marketing/docs/aura3d-vs-threejs.html", freq: "weekly", priority: "0.82" },
-  "/docs/aura-clash-showcase.html": { source: "marketing/docs/aura-clash-showcase.html", freq: "weekly", priority: "0.86" },
+  "/docs/agent-quickstart": { source: "marketing/docs/agent-quickstart.html", freq: "weekly", priority: "0.86" },
+  "/docs/agent-rules": { source: "marketing/docs/agent-rules.html", freq: "weekly", priority: "0.84" },
+  "/docs/api": { source: "marketing/docs/api.html", freq: "weekly", priority: "0.88" },
+  "/docs/assets": { source: "marketing/docs/assets.html", freq: "weekly", priority: "0.86" },
+  "/docs/templates": { source: "marketing/docs/templates.html", freq: "weekly", priority: "0.86" },
+  "/docs/prompt-recipes": { source: "marketing/docs/prompt-recipes.html", freq: "weekly", priority: "0.88" },
+  "/docs/deployment": { source: "marketing/docs/deployment.html", freq: "monthly", priority: "0.82" },
+  "/docs/claude": { source: "marketing/docs/claude.html", freq: "weekly", priority: "0.78" },
+  "/docs/cursor": { source: "marketing/docs/cursor.html", freq: "weekly", priority: "0.78" },
+  "/docs/evidence": { source: "marketing/docs/evidence.html", freq: "weekly", priority: "0.78" },
+  "/docs/claims": { source: "marketing/docs/claims.html", freq: "weekly", priority: "0.78" },
+  "/docs/aura3d-vs-threejs": { source: "marketing/docs/aura3d-vs-threejs.html", freq: "weekly", priority: "0.82" },
+  "/docs/aura-clash-showcase": { source: "marketing/docs/aura-clash-showcase.html", freq: "weekly", priority: "0.86" },
+  "/docs/migration/4-to-5": { source: "marketing/docs/migration/4-to-5.html", freq: "monthly", priority: "0.72" },
   "/apps/wow-concept-car-cinema/": { source: "apps/wow-concept-car-cinema/index.html", freq: "weekly", priority: "0.76" },
   "/apps/wow-damaged-helmet-pbr-detail/": { source: "apps/wow-damaged-helmet-pbr-detail/index.html", freq: "weekly", priority: "0.72" },
   "/apps/showcase-index/": { source: "apps/showcase-index/index.html", freq: "weekly", priority: "0.80" },
@@ -136,11 +151,11 @@ const MANIFEST = {
 };
 
 // Docs pages that exist as files but are not sitemap entries:
-//  - docs/index.html permanently redirects to / (marketing/vercel.json) and
+//  - docs/index.html 301-redirects to / (marketing/public/_redirects) and
 //    canonicalizes to /;
-//  - aura-clash.html canonicalizes onto aura-clash-showcase.html
+//  - aura-clash.html canonicalizes onto aura-clash-showcase
 //    (duplicate-content consolidation).
-const NON_SITEMAP_DOCS = ["index.html", "aura-clash.html"];
+const NON_SITEMAP_DOCS = ["index", "aura-clash"];
 
 function fail(message) {
   console.error(`gen-seo: ${message}`);
@@ -156,9 +171,9 @@ if (missingSources.length > 0) {
   fail(`manifest routes with missing sources (retired route left in the sitemap?):\n  ${missingSources.join("\n  ")}`);
 }
 
-const docsOnDisk = readdirSync(join(marketingDir, "docs"))
+const docsOnDisk = readdirSync(join(marketingDir, "docs"), { recursive: true })
   .filter((f) => f.endsWith(".html"))
-  .map((f) => `/docs/${f}`);
+  .map((f) => `/docs/${f.replace(/\.html$/, "")}`);
 const manifestDocs = Object.keys(MANIFEST).filter((r) => r.startsWith("/docs/"));
 const missingDocs = docsOnDisk.filter(
   (r) => !manifestDocs.includes(r) && !NON_SITEMAP_DOCS.includes(r.slice("/docs/".length)),
@@ -178,7 +193,7 @@ if (CHECK) {
   const distPathFor = (rawRoute) => {
     const route = rewriteTo.get(rawRoute) ?? rawRoute;
     if (route === "/") return join(distDir, "index.html");
-    if (route.startsWith("/docs/")) return join(distDir, route.slice(1));
+    if (route.startsWith("/docs/")) return join(distDir, `${route.slice(1)}.html`);
     return join(distDir, route.slice(1), "index.html");
   };
   const missingDist = Object.keys(MANIFEST)
@@ -249,6 +264,7 @@ function pageMeta(sourceRepoRelative) {
 }
 
 const version = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")).version;
+const gameInventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows", "game-inventory.json"), "utf8"));
 const link = (route) => {
   const { title, description } = pageMeta(MANIFEST[route].source);
   const label = title ?? route;
@@ -282,8 +298,8 @@ ${esc(pageMeta(MANIFEST["/"].source).description ?? "")}
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: ${ORIGIN}
 - Current release: Aura3D ${version} (per the repo manifest — the same source the build's version guard uses)
-- Docs: ${ORIGIN}/docs/api.html
-- Showcase game: ${ORIGIN}/showcase/aura-clash/
+- Docs: ${ORIGIN}/docs/api
+- Showcase gallery: ${ORIGIN}/apps/showcase-index/ (${gameInventory.liveGameCount} playable games)
 - Sitemap: ${ORIGIN}/sitemap.xml
 - Crawl policy: ${ORIGIN}/robots.txt (public content allow-all; build internals and source maps disallowed)
 - Last updated: ${LASTMOD_MAX.slice(0, 10)}
@@ -312,7 +328,6 @@ ${GUIDE_MARKER}
 ${guideBodyTrimmed}
 `;
 
-const gameInventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows", "game-inventory.json"), "utf8"));
 const llms = readFileSync(join(marketingDir, "content", "llms-core.txt"), "utf8")
   .replaceAll("{{FIRST_SCREEN}}", readFileSync(join(repoRoot, "docs", "agents", "first-screen.md"), "utf8").trimEnd())
   .replaceAll("{{VERSION}}", version)
@@ -333,6 +348,7 @@ const outputs = [
   [join(repoRoot, "llms-full.txt"), llmsFull],
   [join(repoRoot, "public", "llms.txt"), llms],
   [join(repoRoot, "public", "llms-full.txt"), llmsFull],
+  [join(repoRoot, "public", "robots.txt"), robots],
 ];
 for (const [path, body] of outputs) writeFileSync(path, body, "utf8");
 

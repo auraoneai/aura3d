@@ -15,3 +15,10 @@
 
 /showcase/aura-clash/aura-assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Keep build-health artifacts and preview source plates out of the index.
+/apps/*/route-health.json
+  X-Robots-Tag: noindex
+
+/previews/source/*
+  X-Robots-Tag: noindex
