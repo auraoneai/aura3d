@@ -4,6 +4,13 @@ Version: 5.3.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## Unreleased (5.5.0)
+
+### WebGPU performance round 3
+
+- WebGPU per-draw CPU cost cut again (WebGL2 unchanged; same bytes, same errors): generated-PBR material bytes and fast portable uniform blocks are kept per draw slot and reused or partly rewritten when only directly copied uniforms (matrices, light rows, ...) changed, pooled uniform buffers upload only the changed range, render-state resolution and vertex-layout validation are remembered for equal inputs, and several per-draw allocations and scans are gone. Pip's Big Leap: WebGPU device draw path 22.5 -> about 10 ms per frame.
+- WebGPU is now the default backend (`backend: "auto"`, WebGL2 fallback kept, `?backend=webgl2` opts out) in seven more games that render the same frame and run at >= 0.92x WebGL2 (load-gated paired medians, headless M4 Max): Thermal Drift 1.06, Roadster Rush 0.98, Aura Links 3D 0.97, Number Surge 0.94, Craterline GP 0.94, Gridlock Courier 0.93, Shadowstep Gauntlet 0.93. Thermal Drift requests async frames whenever WebGPU is active, now by default. Teleoperator (0.91), Pip's Big Leap (0.87) and Lamplight Line (0.75) stay on WebGL2. Numbers and method: `docs/upgrade-5.0.0/README.md`, "WebGPU perf round 3". Not performance claims.
+
 ## 5.4.0 (2026-11-09)
 
 ### WebGPU performance round 2
