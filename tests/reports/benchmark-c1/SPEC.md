@@ -48,6 +48,16 @@ factory under `recipes/`, imports it with `import_three`, and writes behaviour (
 native Aura3D code in `src/`. 505's "cheat sheet" condition (A) swapped `llms.txt` for a separate sheet; in 5.5.0
 `llms.txt` is that sheet, so C1 runs the plain doc set (condition `base`).
 
+Two harness details, fixed during the dry run and before any model run:
+
+- The Aura3D arms' `public/` holds what `create-aura3d` ships for looks (`hdri/`, `aura-environments/`, from the
+  installed `create-aura3d` of the same version). The 5.5.0 docs tell the agent scaffolds ship these files; without
+  them every look preset 404s, which is a page error. Their bytes are reported apart from the app's dist size.
+- `typecheck` runs the sandbox's own TypeScript 5.9.3 through its API in the run's worker thread (same diagnostics as
+  `tsc --noEmit`). This Mac's process governor throttles `tsc` subprocesses, which would put its waits into tool and
+  wall time. Only the newest `render` screenshot stays in the conversation; older ones become a one-line note, which
+  keeps requests under Prism's 1.5 MB cap.
+
 ## 3. Model and route
 
 Same route as benchmark 505, so the two are comparable: Kiro Prism, Anthropic-compatible Messages API
