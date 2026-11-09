@@ -6,6 +6,8 @@
 // `blendDistance`; the global environment fills the remainder.
 // Update modes: `once` (default), `on-demand` via `updateProbe(name)`,
 // `every-n-frames` time-sliced at 1 face per frame.
+// `updateDeferred` starts captures without waiting for their readbacks (the
+// WebGPU frame host uses it so a frame never stalls on a probe readback).
 
 import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import type { EnvironmentProbe } from "../contracts/environment";
@@ -54,6 +56,18 @@ export type ReflectionFaceRenderer = (
   viewProjection: Float32Array
 ) => void;
 
+interface CaptureSlice {
+  faces: Float32Array[];
+  /** Faces rendered (and, for deferred captures, whose readback was started). */
+  next: number;
+  /** Deferred captures: readbacks started and not yet settled. */
+  outstanding?: number;
+  /** Deferred captures: the first readback failure, rethrown by the next `updateDeferred`. */
+  failure?: { readonly error: unknown };
+  /** All six faces were rendered in one call (one scene state): only their readbacks are outstanding. */
+  atomic?: boolean;
+}
+
 interface ProbeEntry {
   spec: ReflectionProbeSpec;
   probe: EnvironmentProbe | null;
@@ -62,7 +76,7 @@ interface ProbeEntry {
   nextCaptureFrame: number;
   cycleStartFrame: number;
   cycleRevision: number;
-  slice: { faces: Float32Array[]; next: number } | null;
+  slice: CaptureSlice | null;
   /** Re-captures of a `once` probe forced by a changed scene environment (see `environmentChanged`). */
   environmentRecaptures: number;
   /** System frame the probe was registered on; `once` settle passes count from it. */
@@ -142,7 +156,8 @@ export class ReflectionProbeSystem {
    */
   restartPartialCaptures(): void {
     this.assertAlive();
-    for (const entry of this.entries.values()) entry.slice = null;
+    // A deferred cube whose six faces were rendered in one call already shows one scene state; it only awaits readbacks.
+    for (const entry of this.entries.values()) if (!entry.slice?.atomic) entry.slice = null;
   }
 
   /**
@@ -231,6 +246,82 @@ export class ReflectionProbeSystem {
     }
   }
 
+  /**
+   * Advance captures without waiting for readbacks: faces are rendered and their readbacks started now (whole 6 faces
+   * for once/on-demand, 1 face per call for `every-n-frames`, as in `update`), and a probe is published by the first
+   * call after all of its readbacks have completed. Returns the names published by this call. A readback failure
+   * restarts that probe's capture and is thrown by the next call. Synchronous devices complete each face immediately.
+   */
+  updateDeferred(maxProbes = Number.MAX_SAFE_INTEGER): readonly string[] {
+    this.assertAlive();
+    validateProbeBudget(maxProbes);
+    if (this.updating) throw new Error("probe capture is already in progress");
+    this.updating = true;
+    const changed: string[] = [];
+    try {
+      let failure: { readonly error: unknown } | undefined;
+      for (const [name, entry] of this.entries) {
+        const slice = entry.slice;
+        if (!slice || (slice.outstanding ?? 0) > 0) continue;
+        if (slice.failure) {
+          failure ??= slice.failure;
+          entry.slice = null;
+          continue;
+        }
+        if (slice.next < 6) continue;
+        this.finish(entry, entry.cycleRevision);
+        changed.push(name);
+      }
+      if (failure) throw failure.error;
+      for (const [name, entry] of this.scheduledEntries(maxProbes)) {
+        entry.slice ??= { faces: [], next: 0, outstanding: 0 };
+        const slice = entry.slice;
+        const last = entry.spec.update === "every-n-frames" ? slice.next + 1 : 6;
+        const whole = slice.next === 0 && last === 6;
+        while (slice.next < last && entry.slice === slice && this.entries.get(name) === entry && !this.disposed) {
+          this.startFaceDeferred(entry, slice, slice.next as 0 | 1 | 2 | 3 | 4 | 5);
+          slice.next += 1;
+        }
+        if (whole && slice.next >= 6) slice.atomic = true;
+        if (slice.next >= 6 && (slice.outstanding ?? 0) === 0 && !slice.failure && entry.slice === slice && this.entries.get(name) === entry && !this.disposed) {
+          this.finish(entry, entry.cycleRevision);
+          changed.push(name);
+        }
+      }
+      return changed;
+    } finally {
+      this.updating = false;
+    }
+  }
+
+  private startFaceDeferred(entry: ProbeEntry, slice: CaptureSlice, face: 0 | 1 | 2 | 3 | 4 | 5): void {
+    const size = entry.spec.resolution ?? this.options.defaultFaceSize ?? 128;
+    const target = this.device.createRenderTarget({ width: size, height: size, format: "rgba16f", label: `probe-${entry.spec.name}-f${face}` });
+    const prevTarget = this.device.getRenderTarget?.() ?? null;
+    let readback: Promise<Float32Array> | Float32Array;
+    try {
+      this.device.setRenderTarget(target);
+      this.renderFace(face, target, cubeFaceViewProjection(face, entry.spec.position, entry.spec.near, entry.spec.far));
+      // The device copies the face out when the readback is requested; the target may be released before it completes.
+      readback = this.device.readFloatPixelsAsync
+        ? this.device.readFloatPixelsAsync(0, 0, size, size)
+        : this.device.readFloatPixels(0, 0, size, size);
+    } finally {
+      try { this.device.setRenderTarget(prevTarget); } finally { target.dispose(); }
+    }
+    const flip = (raw: Float32Array): Float32Array => this.device.kind === "webgl2" || this.device.kind === "webgpu" ? flipRows(raw, size, size) : raw;
+    if (!(readback instanceof Promise)) { slice.faces[face] = flip(readback); return; }
+    slice.outstanding = (slice.outstanding ?? 0) + 1;
+    readback.then((raw) => {
+      slice.outstanding = (slice.outstanding ?? 1) - 1;
+      if (slice.failure) return;
+      try { slice.faces[face] = flip(raw); } catch (error) { slice.failure = { error }; }
+    }, (error: unknown) => {
+      slice.outstanding = (slice.outstanding ?? 1) - 1;
+      slice.failure ??= { error };
+    });
+  }
+
   private scheduledEntries(maxProbes: number): [string, ProbeEntry][] {
     this.frame += 1;
     const entries = [...this.entries.entries()];
@@ -245,6 +336,8 @@ export class ReflectionProbeSystem {
         if (!entry.dirty) { entry.dirty = true; entry.dirtyRevision += 1; }
       }
       if (!entry.dirty) continue;
+      // A deferred capture with every face started waits for its readbacks (see `updateDeferred`).
+      if (entry.slice && entry.slice.next >= 6) continue;
       if (!entry.slice) { entry.cycleStartFrame = this.frame; entry.cycleRevision = entry.dirtyRevision; }
       selected.push([name, entry]);
     }

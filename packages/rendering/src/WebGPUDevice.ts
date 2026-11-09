@@ -87,6 +87,7 @@ import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention, 
 import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "./webgpu/ShaderDataLayout";
 import { createUniformDataWriter, deriveUniformDataLayout, emitWgslStruct, type UniformBlockLayout, type UniformDataWriter } from "./program/UniformLayout";
 import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts, NativeRenderStateMemo } from "./webgpu/NativeRenderState";
+import { MembershipVersionedSet, TextureOwnerMemo } from "./webgpu/TextureOwnerMemo";
 import { warmNativePipelineVariants, type NativePipelineWarmupJob, type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup";
 import { PostViewHistory, type PostHistoryLease } from "./post/PostGraph";
 import { WebGPUAutoExposure, normalizeWebGPUAutoExposure, type WebGPUExposureDraw, type WebGPUExposureResult } from "./post/WebGPUAutoExposure";
@@ -585,10 +586,26 @@ interface WebGPUDrawBatch {
   readonly encoder: WebGPUCommandEncoderLike;
   pass: WebGPURenderPassEncoderLike | null;
   passKey: string | null;
+  /** What the open pass has bound; a new pass starts empty. WebGPU keeps all of it across draws and pipeline changes. */
+  bound: WebGPUBatchPassBindings;
+  /** Fullscreen post passes recorded into this batch (see `runWebGPUFullscreenPass`). */
+  postPasses: number;
   readonly accesses: Map<object, "read" | "write" | "readwrite">;
   readonly releaseUniforms: WebGPUBufferLike[];
   readonly retirements: { destroy(): void }[];
   draws: number;
+}
+
+interface WebGPUBatchPassBindings {
+  pipeline: unknown;
+  readonly groups: Map<number, WebGPUBindGroupLike>;
+  readonly vertexBuffers: Map<number, WebGPUBufferLike>;
+  indexBuffer: WebGPUBufferLike | null;
+  indexFormat: string | null;
+}
+
+function emptyBatchPassBindings(): WebGPUBatchPassBindings {
+  return { pipeline: null, groups: new Map(), vertexBuffers: new Map(), indexBuffer: null, indexFormat: null };
 }
 
 export interface WebGPURenderPipelineLike {
@@ -1032,6 +1049,12 @@ interface NativeDofFrameProof {
 }
 
 /** Color-attachment subresource fields: a 3d target view renders exactly one depth slice per pass. */
+/** A live render target whose color, extra color, depth or multisampled depth texture is `texture`. */
+function renderTargetOwnsTexture(candidate: WebGPURenderTarget, texture: Texture): boolean {
+  return !candidate.disposed
+    && (candidate.nativeColorFor(texture) !== undefined || candidate.depthTexture === texture || candidate.multisampledDepthTexture === texture);
+}
+
 function nativeColorSlice(target: WebGPURenderTarget | null | undefined): { readonly depthSlice?: number } {
   return target?.nativeDepthSlice === undefined ? {} : { depthSlice: target.nativeDepthSlice };
 }
@@ -1580,6 +1603,16 @@ export class WebGPUDevice implements RenderDevice {
    * the same buffers in the same order (and so mostly find their own previous bytes).
    */
   #frameUniformReleases: WebGPUBufferLike[] = [];
+  /**
+   * Draw-slot uniform images (generated-PBR and fast portable slot bytes) and how often each was rewritten in place. A
+   * slot rewrites its images only through `packGeneratedPbrForSlot` / `writeFastPortableForSlot`, which bump the version.
+   */
+  readonly #slotImageVersions = new WeakMap<Uint8Array, number>();
+  /**
+   * The slot image (and its version) whose bytes a pooled uniform buffer last received. A draw that brings the same image
+   * at the same version to that buffer finds its bytes already there and skips the word compare and the queue write.
+   */
+  readonly #transientUniformImages = new WeakMap<WebGPUBufferLike, { readonly image: Uint8Array; readonly version: number }>();
   /** Forward draws resolve the same render states and vertex layouts every frame; remember the pure results. */
   readonly #renderStateMemo = new NativeRenderStateMemo();
   /**
@@ -1632,7 +1665,12 @@ export class WebGPUDevice implements RenderDevice {
   private readonly uniformBufferBindings = new Map<number, WebGPURenderBuffer>();
   private readonly shaders = new Set<WebGPUShaderProgram>();
   private readonly pendingShaderDisposals = new Set<WebGPUShaderProgram>();
-  private readonly renderTargets = new Set<WebGPURenderTarget>();
+  private readonly renderTargets = new MembershipVersionedSet<WebGPURenderTarget>();
+  /** The first render target (in set order) that owns a texture, found by `renderTargetOwning`; rechecked on every use. */
+  readonly #textureOwners = new TextureOwnerMemo<Texture, WebGPURenderTarget>();
+  /** The attachments of the last batched draw and their pass key (object ids are stable per object). */
+  #batchPassKey: { readonly nativeView: unknown; readonly resolveView: unknown; readonly depthView: unknown; readonly sampleCount: number;
+    readonly hasDepthStencil: boolean; readonly depthSlice: number | undefined; readonly key: string } | null = null;
   private readonly pendingRenderTargetDisposals = new Set<WebGPURenderTarget>();
   private readonly activeTargetDisposals = new Set<WebGPURenderTarget>();
   /** Identities of the color resolve pair allocated for each native target. */
@@ -3016,8 +3054,14 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   updateBuffer(buffer: RenderBuffer, byteOffset: number, data: ArrayBufferView): void {
-    this.assertAlive();
+    this.assertUsableKeepingDrawBatch();
     const webgpuBuffer = this.requireBuffer(buffer);
+    // The queue write lands before the open batch is submitted, so only a batch whose recorded draws read this buffer is
+    // submitted first; recorded draws that do not read it are unaffected, and later draws record after the write. (Draws
+    // that read a converted copy of this buffer are submitted when the conversion is retired below.)
+    if (this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording && this.#drawBatch.accesses.has(nativeBufferHandle(webgpuBuffer))) {
+      this.flushDrawBatch();
+    }
     this.assertVertexConversionUnpinned(webgpuBuffer);
     if (this.vertexWritesActive.has(webgpuBuffer)) throw new RenderDeviceError("A buffer write is already in progress", "WEBGPU_BUFFER_WRITE_ACTIVE", { bufferId: buffer.id });
     if (this.#pointPinnedHandles.has(nativeBufferHandle(webgpuBuffer))) throw new RenderDeviceError("Point submission resources cannot be written while pinned", "WEBGPU_POINT_SUBMISSION_ACTIVE");
@@ -5010,14 +5054,14 @@ export class WebGPUDevice implements RenderDevice {
     // Sampled textures (in uniform order), collected once for the storage and attachment feedback checks below.
     let sampledList: (Texture | null)[] | null = null;
     if (command.uniforms) for (const value of command.uniforms.values()) if (isTextureBinding(value)) (sampledList ??= []).push(value.texture);
-    const storageTextures = new Set<Texture>();
-    const storageBuffers = new Set<RenderBuffer>();
+    const storageTextures = command.nativeStorageBindings?.length ? new Set<Texture>() : null;
+    const storageBuffers = storageTextures ? new Set<RenderBuffer>() : null;
     for (const binding of command.nativeStorageBindings ?? []) {
       if (binding.kind === "storage-texture") {
-        if ((sampledList !== null && sampledList.includes(binding.texture)) || storageTextures.has(binding.texture)) {
+        if ((sampledList !== null && sampledList.includes(binding.texture)) || storageTextures!.has(binding.texture)) {
           throw new RenderDeviceError("A draw cannot bind the same writable texture more than once", "WEBGPU_STORAGE_FEEDBACK", { name: binding.name });
         }
-        storageTextures.add(binding.texture);
+        storageTextures!.add(binding.texture);
       } else {
         if (binding.buffer instanceof WebGPURenderBuffer) {
           this.#pointFrameWrites.delete(binding.buffer);
@@ -5027,16 +5071,17 @@ export class WebGPUDevice implements RenderDevice {
           // Conservatively invalidate even a rejected or read-only storage use.
           this.#pointBufferEpochs.set(binding.buffer, {});
         }
-        if (storageBuffers.has(binding.buffer) || binding.buffer === command.vertexBuffer || binding.buffer === command.indexBuffer ||
+        if (storageBuffers!.has(binding.buffer) || binding.buffer === command.vertexBuffer || binding.buffer === command.indexBuffer ||
           command.vertexBuffers?.includes(binding.buffer) || command.instanceAttributes?.some((attribute) => attribute.buffer === binding.buffer)) {
           throw new RenderDeviceError("A draw cannot combine writable storage and vertex or index access to the same buffer", "WEBGPU_STORAGE_FEEDBACK", { name: binding.name });
         }
-        storageBuffers.add(binding.buffer);
+        storageBuffers!.add(binding.buffer);
       }
     }
     if (this.activeRenderTarget) {
       const target = this.activeRenderTarget;
-      const writes = (texture: Texture | null): boolean => Boolean(texture && ((target.colorTextures ?? [target.colorTexture]).includes(texture) || texture === target.depthTexture || texture === target.multisampledDepthTexture));
+      const attached = target.colorTextures ?? [target.colorTexture];
+      const writes = (texture: Texture | null): boolean => Boolean(texture && (attached.includes(texture) || texture === target.depthTexture || texture === target.multisampledDepthTexture));
       if ((sampledList !== null && sampledList.some(writes))
         || (command.nativeStorageBindings ?? []).some((binding) => binding.kind === "storage-texture" && writes(binding.texture))) {
         throw new RenderDeviceError("A draw cannot sample a texture attached for writing in the same pass", "WEBGPU_ATTACHMENT_FEEDBACK", { label: command.label });
@@ -5501,7 +5546,7 @@ export class WebGPUDevice implements RenderDevice {
           Array.from({ length: 5 }, (_, level) => mips[level < mipCount ? level : 0]!), bloom);
         passes += 1;
       }
-      const composite = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
       pass("webgpu-bloom-v2-composite", WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT, "fs_bloom_composite",
         new Float32Array([request.intensity, 0, 0, 0]), [src, bloom], composite);
       passes += 1;
@@ -5608,7 +5653,7 @@ export class WebGPUDevice implements RenderDevice {
         level = mipTarget;
       }
       const weights = defaultWebGPUBloomWeights(normalized.mipCount);
-      const composite = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
       const mipViews = mips.map((mipTarget) => {
         const view = this.requireRenderTarget(mipTarget).nativeView;
         if (!view) throw new RenderDeviceError("WebGPU bloom mip has no native view", "NATIVE_POST_UNSUPPORTED", {});
@@ -5740,23 +5785,23 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("WebGPU SSR of rgba32f requires float32-filterable", "WEBGPU_FLOAT32_FILTERABLE_REQUIRED");
     }
     const depthView = dsrc.nativeDepthTexture.createView({ aspect: "depth-only" });
-    const trace = this.createRenderTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
+    const trace = this.transientPostTarget({ width: Math.max(1, Math.ceil(src.width / 2)), height: Math.max(1, Math.ceil(src.height / 2)),
       format: "rgba16f", depth: false, label: "a3d-webgpu-ssr-trace" });
     let out: RenderTarget | undefined;
     try {
       this.runWebGPUFullscreenPass({ label: `webgpu-ssr-trace-${ssr.steps}${multisampled ? "-msaa" : ""}`, fragment: multisampled ? SSR_TRACE_MSAA_WGSL : SSR_TRACE_WGSL, entryPoint: "fs_ssr_trace",
         uniforms: webgpuSsrTraceUniforms(frame, ssr, src.width, src.height), views: [src.nativeView, depthView], target: trace });
-      out = this.createRenderTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-ssr" });
+      out = this.transientPostTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-ssr" });
       const traceView = this.requireRenderTarget(trace).nativeView;
       this.runWebGPUFullscreenPass({ label: "webgpu-ssr-composite", fragment: SSR_COMPOSITE_WGSL, entryPoint: "fs_ssr_composite",
         uniforms: webgpuSsrCompositeUniforms(ssr), views: [src.nativeView, traceView], target: out });
       this.nativeSsrPasses += 1;
       return out;
     } catch (error) {
-      out?.dispose();
+      if (out) this.releaseTransientPostTarget(out);
       throw error;
     } finally {
-      trace.dispose();
+      this.releaseTransientPostTarget(trace);
     }
   }
 
@@ -5898,11 +5943,13 @@ export class WebGPUDevice implements RenderDevice {
     const w = src.width, h = src.height, hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
     const scratch: RenderTarget[] = [];
     const scratchTarget = (width: number, height: number, format: "rgba32f" | "rgba8", label: string): WebGPURenderTarget => {
-      const target = this.createRenderTarget({ width, height, format, depth: false, label });
+      const target = this.transientPostTarget({ width, height, format, depth: false, label });
       scratch.push(target);
       return this.requireRenderTarget(target);
     };
-    const out = this.createRenderTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
+    // Inside a post chain the output and the scratch targets come from the chain's per-descriptor pool (every AO pass
+    // overwrites its whole target); outside one they are created and disposed as before.
+    const out = this.transientPostTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
     try {
       const linear = scratchTarget(w, h, "rgba32f", "a3d-webgpu-ao-linear-depth");
       this.runWebGPUFullscreenPass({ label: "webgpu-ao-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
@@ -5926,10 +5973,10 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeAmbientOcclusionPasses += 1;
       return out;
     } catch (error) {
-      out.dispose();
+      this.releaseTransientPostTarget(out);
       throw error;
     } finally {
-      for (const target of scratch) target.dispose();
+      for (const target of scratch) this.releaseTransientPostTarget(target);
     }
   }
 
@@ -7064,21 +7111,21 @@ export class WebGPUDevice implements RenderDevice {
     const depth = this.webgpuDepthStageDepth(depthSource);
     const width = color.width, height = color.height;
     const halfWidth = Math.max(1, width >> 1), halfHeight = Math.max(1, height >> 1);
-    const shafts = this.createRenderTarget({ width: halfWidth, height: halfHeight, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays-half" });
+    const shafts = this.transientPostTarget({ width: halfWidth, height: halfHeight, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays-half" });
     let out: RenderTarget | undefined;
     try {
       this.runWebGPUFullscreenPass({ label: depth.multisampled ? "webgpu-godrays-ms" : "webgpu-godrays", fragment: webgpuGodRaysFragment(depth.multisampled),
         entryPoint: "fs_godrays", uniforms: webgpuGodRaysUniforms(request, width, halfWidth, halfHeight), views: [color.nativeView, depth.view], target: shafts });
-      out = this.createRenderTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays" });
+      out = this.transientPostTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-godrays" });
       this.runWebGPUFullscreenPass({ label: "webgpu-godrays-composite", fragment: WEBGPU_GODRAYS_COMPOSITE_FRAGMENT, entryPoint: "fs_godrays_composite",
         uniforms: new Float32Array([1 / width, 1 / height, 0, 0]), views: [color.nativeView, this.requireRenderTarget(shafts).nativeView], target: out });
       this.nativeDepthStagePasses += 2;
       return out;
     } catch (error) {
-      out?.dispose();
+      if (out) this.releaseTransientPostTarget(out);
       throw error;
     } finally {
-      shafts.dispose();
+      this.releaseTransientPostTarget(shafts);
     }
   }
 
@@ -7329,9 +7376,10 @@ export class WebGPUDevice implements RenderDevice {
     readonly protectedSubmission?: boolean;
     readonly beforeSubmit?: () => void;
   }): void {
-    // These target-to-target passes have their own encoders and may run after
-    // the renderer frame has closed.
-    this.assertAlive();
+    // These target-to-target passes may run after the renderer frame has closed. Inside a frame, a pass that needs no
+    // validation scope or custom submission records into the open batch encoder (one command buffer for the chain);
+    // every other pass submits the open batch first and its own encoder at once, as before.
+    this.assertUsableKeepingDrawBatch();
     const target = args.target ? this.requireRenderTarget(args.target) : null;
     if (target?.nativeExtraColors.length) throw new RenderDeviceError("This post pass supports only a single color attachment", "WEBGPU_MRT_SURFACE_UNSUPPORTED");
     const targetView = args.targetViewOverride ?? (target ? target.nativeView : this.canvasContext?.getCurrentTexture().createView());
@@ -7362,6 +7410,9 @@ export class WebGPUDevice implements RenderDevice {
     const scopeUses = this.#webgpuPostScopeUses.get(scopeKey) ?? 0;
     const scopedErrors = Boolean(scopeDevice.pushErrorScope && scopeDevice.popErrorScope) && scopeUses < WEBGPU_POST_SCOPED_USES;
     if (scopeUses < WEBGPU_POST_SCOPED_USES) this.#webgpuPostScopeUses.set(scopeKey, scopeUses + 1);
+    const batched = this.#drawBatchingEnabled && this.frameActive && !scopedErrors && validationFailure === null
+      && !args.beforeSubmit && !args.protectedSubmission && args.accesses === undefined && !this.#drawBatchRecording && !this.#drawBatchDrawActive;
+    if (!batched && this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording) this.flushDrawBatch();
     if (scopedErrors) scopeDevice.pushErrorScope?.("validation");
     try {
       const format = target ? webgpuTextureFormat(target.colorTexture.format) : this.presentationFormat;
@@ -7409,6 +7460,8 @@ export class WebGPUDevice implements RenderDevice {
         uniformBuffer = created;
         this.webgpuExposureUniformBuffers.set(uniformKey, created);
       }
+      // A recorded pass that reads this buffer must see its earlier bytes: submit it before the queue write.
+      if (batched && this.#drawBatch?.accesses.has(uniformBuffer)) this.flushDrawBatch();
       this.device.queue.writeBuffer(uniformBuffer, 0, args.uniforms);
       if (!pipeline.getBindGroupLayout) throw new RenderDeviceError("WebGPU post pipeline has no bind-group layout", "NATIVE_POST_UNSUPPORTED", { label: args.label });
       const layout = this.pipelineGroupLayout(pipeline, 0);
@@ -7425,9 +7478,29 @@ export class WebGPUDevice implements RenderDevice {
               ...args.views.map((view, index) => ({ binding: 2 + index, resource: view }))]
       };
       const group = args.exposureBindings ? this.device.createBindGroup(groupDescriptor) : this.cachedBindGroup(groupDescriptor);
-      const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
-      const pass = encoder.beginRenderPass({ label: `${args.label}-pass`, colorAttachments: [{ view: targetView,
+      const passDescriptor = (): WebGPURenderPassDescriptorLike => ({ label: `${args.label}-pass`, colorAttachments: [{ view: targetView,
         ...(args.targetViewOverride === undefined ? nativeColorSlice(target) : {}), loadOp: "load", storeOp: "store" }] });
+      if (batched) {
+        // Its own render pass in the batch encoder (`clear` forces a new pass); no later draw may join it.
+        const batchPass = this.drawBatchPass("post", true, passDescriptor);
+        const batch = this.#drawBatch!;
+        batch.passKey = null;
+        try {
+          batchPass.setPipeline(pipeline);
+          batchPass.setBindGroup?.(0, group);
+          batchPass.draw(3, 1, 0);
+        } catch (error) {
+          this.closeDrawBatchPass();
+          throw error;
+        }
+        batch.postPasses += 1;
+        const previous = batch.accesses.get(uniformBuffer);
+        batch.accesses.set(uniformBuffer, previous === undefined || previous === "read" ? "read" : "readwrite");
+        if (target) target.nativeNeedsClear = false;
+        return;
+      }
+      const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
+      const pass = encoder.beginRenderPass(passDescriptor());
       pass.setPipeline(pipeline);
       pass.setBindGroup?.(0, group);
       pass.draw(3, 1, 0);
@@ -7714,6 +7787,13 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   private assertAlive(): void {
+    this.assertUsableKeepingDrawBatch();
+    // Every device operation other than the batched draw itself sees the recorded draws already submitted.
+    if (this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording) this.flushDrawBatch();
+  }
+
+  /** `assertAlive` without submitting the open draw batch (for operations that submit it only when they must). */
+  private assertUsableKeepingDrawBatch(): void {
     if (this.disposed || this.deviceDisposing) {
       this.#drawBatch = null;
       throw new RenderDeviceError("Render device is disposed", "DISPOSED_DEVICE");
@@ -7722,8 +7802,6 @@ export class WebGPUDevice implements RenderDevice {
       this.#drawBatch = null;
       throw new RenderDeviceError("Render context is lost", "CONTEXT_LOST");
     }
-    // Every device operation other than the batched draw itself sees the recorded draws already submitted.
-    if (this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording) this.flushDrawBatch();
   }
 
   private assertFrame(): void {
@@ -7902,7 +7980,8 @@ export class WebGPUDevice implements RenderDevice {
   /** A reentrant disposal must not fence a texture before its current queue write returns. */
   private performNativeTextureUpload(native: WebGPUTextureLike, upload: () => void): void {
     // A queue write lands before unsubmitted draws; submit the ones that sample the old contents first.
-    if (this.#drawBatch?.accesses.has(native) && !this.#drawBatchRecording) this.flushDrawBatch();
+    // Recorded post passes sample views whose textures the batch does not list: submit them before any upload.
+    if (this.#drawBatch && (this.#drawBatch.accesses.has(native) || this.#drawBatch.postPasses > 0) && !this.#drawBatchRecording) this.flushDrawBatch();
     if (this.#textureUploadPinnedHandles.has(native)) throw new RenderDeviceError("Texture upload cannot be reentered", "WEBGPU_TEXTURE_UPLOAD_ACTIVE");
     this.#textureUploadPinnedHandles.add(native);
     try { upload(); }
@@ -9603,8 +9682,15 @@ export class WebGPUDevice implements RenderDevice {
         pass = encoder.beginRenderPass(passDescriptor());
         this.nativeRenderPasses += 1;
       } else {
-        const passKey = [nativeView, resolveView, depthView].map(value => this.bindGroupObjectId(value)).join(":")
-          + `:${sampleCount}:${hasDepthStencil ? 1 : 0}:${JSON.stringify(nativeColorSlice(this.activeRenderTarget))}`;
+        const depthSlice = this.activeRenderTarget?.nativeDepthSlice;
+        let memo = this.#batchPassKey;
+        if (!memo || memo.nativeView !== nativeView || memo.resolveView !== resolveView || memo.depthView !== depthView
+          || memo.sampleCount !== sampleCount || memo.hasDepthStencil !== hasDepthStencil || memo.depthSlice !== depthSlice) {
+          memo = this.#batchPassKey = { nativeView, resolveView, depthView, sampleCount, hasDepthStencil, depthSlice,
+            key: [nativeView, resolveView, depthView].map(value => this.bindGroupObjectId(value)).join(":")
+              + `:${sampleCount}:${hasDepthStencil ? 1 : 0}:${JSON.stringify(nativeColorSlice(this.activeRenderTarget))}` };
+        }
+        const passKey = memo.key;
         pass = this.drawBatchPass(passKey, shouldClear, passDescriptor);
         this.#drawBatchRecording = true;
       }
@@ -9612,8 +9698,10 @@ export class WebGPUDevice implements RenderDevice {
         if (encoder) pass.end();
         else { this.#drawBatchRecording = false; this.closeDrawBatchPass(); }
       };
+      // A batched draw skips binding what the open batch pass already has bound (same objects, same slots).
+      const bound = encoder ? null : this.#drawBatch!.bound;
       try {
-      pass.setPipeline(pipeline);
+      if (!bound || bound.pipeline !== pipeline) { pass.setPipeline(pipeline); if (bound) bound.pipeline = pipeline; }
       if (pointCheck) {
         const viewport = this.getNativePointViewport();
         const customViewport = viewport.x !== 0 || viewport.y !== 0 || viewport.width !== viewport.targetWidth || viewport.height !== viewport.targetHeight;
@@ -9632,10 +9720,19 @@ export class WebGPUDevice implements RenderDevice {
       }
       this.applyViewStateToPass(pass);
       applyNativeRenderDynamicState(pass, resolvedState.dynamic);
-      for (const [slot, buffer] of streams.buffers) pass.setVertexBuffer(slot, buffer);
-      if (bindGroup) pass.setBindGroup?.(0, bindGroup);
-      if (frameGroup) pass.setBindGroup?.(1, frameGroup);
-      for (const [group, binding] of storageGroups) pass.setBindGroup?.(group, binding);
+      for (const [slot, buffer] of streams.buffers) {
+        if (bound?.vertexBuffers.get(slot) === buffer) continue;
+        pass.setVertexBuffer(slot, buffer);
+        bound?.vertexBuffers.set(slot, buffer);
+      }
+      const setGroup = (index: number, group: WebGPUBindGroupLike): void => {
+        if (bound?.groups.get(index) === group) return;
+        pass.setBindGroup?.(index, group);
+        bound?.groups.set(index, group);
+      };
+      if (bindGroup) setGroup(0, bindGroup);
+      if (frameGroup) setGroup(1, frameGroup);
+      for (const [group, binding] of storageGroups) setGroup(group, binding);
       if (command.indexBuffer) {
         if (!pass.setIndexBuffer || !pass.drawIndexed) {
           endPass();
@@ -9647,7 +9744,11 @@ export class WebGPUDevice implements RenderDevice {
           return;
         }
         const indexBuffer = this.requireBuffer(command.indexBuffer);
-        pass.setIndexBuffer(nativeBufferHandle(indexBuffer), command.indexType ?? "uint16");
+        const indexHandle = nativeBufferHandle(indexBuffer), indexFormat = command.indexType ?? "uint16";
+        if (!bound || bound.indexBuffer !== indexHandle || bound.indexFormat !== indexFormat) {
+          pass.setIndexBuffer(indexHandle, indexFormat);
+          if (bound) { bound.indexBuffer = indexHandle; bound.indexFormat = indexFormat; }
+        }
         pass.drawIndexed(command.indexCount ?? this.indicesFor(command).length, command.instanceCount ?? 1, command.firstIndex ?? 0);
       } else {
         pass.draw(command.vertexCount, command.instanceCount ?? 1, command.firstVertex ?? 0);
@@ -9661,13 +9762,20 @@ export class WebGPUDevice implements RenderDevice {
         passTimer?.end(encoder);
       }
       this.#drawBatchRecording = false;
+      // A batched draw merges its accesses straight into the batch's (submitted with them by the next flush).
+      const batchAccesses = encoder ? null : this.#drawBatch!.accesses;
       const accesses: { resource: object; mode: "read" | "write" | "readwrite" }[] = [];
-      for (const buffer of streams.buffers.values()) accesses.push({ resource: buffer, mode: "read" });
-      if (frameBuffer) accesses.push({ resource: nativeBufferHandle(frameBuffer), mode: "read" });
-      if (command.indexBuffer) accesses.push({ resource: nativeBufferHandle(this.requireBuffer(command.indexBuffer)), mode: "read" });
+      const access = (resource: object, mode: "read" | "write" | "readwrite"): void => {
+        if (!batchAccesses) { accesses.push({ resource, mode }); return; }
+        const previous = batchAccesses.get(resource);
+        batchAccesses.set(resource, previous === undefined || previous === mode ? mode : "readwrite");
+      };
+      for (const buffer of streams.buffers.values()) access(buffer, "read");
+      if (frameBuffer) access(nativeBufferHandle(frameBuffer), "read");
+      if (command.indexBuffer) access(nativeBufferHandle(this.requireBuffer(command.indexBuffer)), "read");
       for (const binding of command.nativeStorageBindings ?? []) {
         const resource = binding.kind === "storage-buffer" ? nativeBufferHandle(this.requireBuffer(binding.buffer)) : this.getNativeTexture(binding.texture);
-        accesses.push({ resource, mode: "readwrite" });
+        access(resource, "readwrite");
       }
       for (const value of command.uniforms?.values() ?? []) {
         if (!isTextureBinding(value) || !value.texture || value.texture.disposed) continue;
@@ -9675,29 +9783,27 @@ export class WebGPUDevice implements RenderDevice {
         const streaming = this.nativeStreamingLeases.get(texture);
         let native = (streaming ? (streaming.current ?? streaming.fallback).native : undefined) ?? this.nativeSampledTextures.get(texture)?.texture;
         if (!native) {
-          let target: WebGPURenderTarget | undefined;
-          for (const candidate of this.renderTargets) {
-            if (!candidate.disposed && (candidate.nativeColorFor(texture) !== undefined || candidate.depthTexture === texture || candidate.multisampledDepthTexture === texture)) { target = candidate; break; }
-          }
+          const target = this.renderTargetOwning(texture);
           native = target?.nativeColorFor(texture) ?? target?.nativeDepthTexture ?? undefined;
         }
-        if (native) accesses.push({ resource: native, mode: "read" });
+        if (native) access(native, "read");
       }
-      for (const resource of generatedTextures) if (resource.native) accesses.push({ resource: resource.native, mode: "read" });
-      for (const resource of generatedUnlitTextures) accesses.push({ resource: resource.native, mode: "read" });
-      if (this.activeRenderTarget) {
-        for (const resource of [this.activeRenderTarget.nativeTexture, ...this.activeRenderTarget.nativeExtraColors.flatMap((color) => [color.native, color.multisampleNative]), this.activeRenderTarget.nativeMultisampleTexture, this.activeRenderTarget.nativeDepthTexture]) {
-          if (resource) accesses.push({ resource, mode: "write" });
+      for (const resource of generatedTextures) if (resource.native) access(resource.native, "read");
+      for (const resource of generatedUnlitTextures) access(resource.native, "read");
+      const written = this.activeRenderTarget;
+      if (written) {
+        if (written.nativeTexture) access(written.nativeTexture, "write");
+        for (const color of written.nativeExtraColors) {
+          if (color.native) access(color.native, "write");
+          if (color.multisampleNative) access(color.multisampleNative, "write");
         }
-      } else if (this.canvasDepthTexture) accesses.push({ resource: this.canvasDepthTexture, mode: "write" });
-      if (this.gaussianSplatBorrowedDepth?.nativeDepthTexture) accesses.push({ resource: this.gaussianSplatBorrowedDepth.nativeDepthTexture, mode: "read" });
+        if (written.nativeMultisampleTexture) access(written.nativeMultisampleTexture, "write");
+        if (written.nativeDepthTexture) access(written.nativeDepthTexture, "write");
+      } else if (this.canvasDepthTexture) access(this.canvasDepthTexture, "write");
+      if (this.gaussianSplatBorrowedDepth?.nativeDepthTexture) access(this.gaussianSplatBorrowedDepth.nativeDepthTexture, "read");
       if (!encoder) {
-        // Recorded into the open batch: submitted, with these accesses, by the next flush.
+        // Recorded into the open batch: submitted, with these accesses (merged above), by the next flush.
         const batch = this.#drawBatch!;
-        for (const { resource, mode } of accesses) {
-          const previous = batch.accesses.get(resource);
-          batch.accesses.set(resource, previous === undefined || previous === mode ? mode : "readwrite");
-        }
         batch.draws += 1;
         if (uniformBuffer) batch.releaseUniforms.push(uniformBuffer);
         if (atlasResources) batch.releaseUniforms.push(atlasResources.buffer);
@@ -9919,12 +10025,13 @@ export class WebGPUDevice implements RenderDevice {
     let batch = this.#drawBatch;
     if (!batch) {
       batch = { encoder: this.device.createCommandEncoder!({ label: "aura3d-draw-batch-encoder" }), pass: null, passKey: null,
-        accesses: new Map(), releaseUniforms: [], retirements: [], draws: 0 };
+        bound: emptyBatchPassBindings(), postPasses: 0, accesses: new Map(), releaseUniforms: [], retirements: [], draws: 0 };
       this.#drawBatch = batch;
     }
     if (batch.pass && batch.passKey === key && !clear) return batch.pass;
     batch.pass?.end();
     batch.pass = null;
+    batch.bound = emptyBatchPassBindings();
     batch.pass = batch.encoder.beginRenderPass(descriptor());
     batch.passKey = key;
     this.nativeRenderPasses += 1;
@@ -9935,7 +10042,7 @@ export class WebGPUDevice implements RenderDevice {
   private closeDrawBatchPass(): void {
     const batch = this.#drawBatch;
     if (!batch?.pass) return;
-    try { batch.pass.end(); } finally { batch.pass = null; batch.passKey = null; }
+    try { batch.pass.end(); } finally { batch.pass = null; batch.passKey = null; batch.bound = emptyBatchPassBindings(); }
   }
 
   /** A pooled per-draw uniform buffer holding `data`; give it back with `releaseTransientUniform` after the draw's submit. */
@@ -9955,6 +10062,14 @@ export class WebGPUDevice implements RenderDevice {
       if (this.#drawBatchingEnabled) {
         const bytes = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
         const previous = this.#transientUniformContents.get(buffer);
+        const version = data instanceof Uint8Array ? this.#slotImageVersions.get(data) : undefined;
+        if (version !== undefined && previous) {
+          // The same slot image, not rewritten since it was written to this buffer: its bytes are already there.
+          const last = this.#transientUniformImages.get(buffer);
+          if (last && last.image === data && last.version === version) return buffer;
+        }
+        if (version !== undefined) this.#transientUniformImages.set(buffer, { image: data as Uint8Array, version });
+        else this.#transientUniformImages.delete(buffer);
         if (previous) {
           // Only the changed words go to the queue (usually a matrix or two of an 8 KB material block).
           const range = changedWordRange(previous, bytes);
@@ -9972,6 +10087,7 @@ export class WebGPUDevice implements RenderDevice {
       return buffer;
     } catch (error) {
       this.#transientUniformContents.delete(buffer);
+      this.#transientUniformImages.delete(buffer);
       this.#transientUniformOwned.delete(buffer);
       this.retireNative(buffer);
       throw error;
@@ -10903,13 +11019,15 @@ export class WebGPUDevice implements RenderDevice {
             if (!updateUniformSnapshotEntry(slot.snapshot, index, uniforms.get(slot.snapshot.names[index]!))) { patched = false; break; }
           }
         }
-        if (patched) { slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+        if (patched) { this.bumpSlotImage(bytes); slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+        // The spare was overwritten: a buffer that still holds its last image must not be taken as current.
+        this.bumpSlotImage(bytes);
       }
       slots[ordinal] = undefined;
     }
     if (ordinal >= GENERATED_PBR_PACK_SLOTS) return packGeneratedPbrMaterialUniforms(uniforms, packedLoopColor, photometricProfile);
     const { result: bytes, snapshot } = recordUniformReads(uniforms, (recorded) => packGeneratedPbrMaterialUniforms(recorded, packedLoopColor, photometricProfile));
-    if (snapshot) slots[ordinal] = { snapshot, bytes, spare: null, packedLoopColor, photometricProfile };
+    if (snapshot) { slots[ordinal] = { snapshot, bytes, spare: null, packedLoopColor, photometricProfile }; this.bumpSlotImage(bytes); }
     return bytes;
   }
 
@@ -10943,14 +11061,28 @@ export class WebGPUDevice implements RenderDevice {
             if (!updateUniformSnapshotEntry(slot.snapshot, index, uniforms.get(slot.snapshot.names[index]!))) { rewritten = false; break; }
           }
         }
-        if (rewritten) { slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+        if (rewritten) { this.bumpSlotImage(bytes); slot.spare = slot.bytes; slot.bytes = bytes; return bytes; }
+        this.bumpSlotImage(bytes);
       }
       slots[ordinal] = undefined;
     }
     if (ordinal >= GENERATED_PBR_PACK_SLOTS) return writeFastPortableUniforms(size, plan, uniforms);
     const { result: bytes, snapshot } = recordUniformReads(uniforms, (recorded) => writeFastPortableUniforms(size, plan, recorded));
-    if (bytes && snapshot) slots[ordinal] = { snapshot, bytes, spare: null, plan, members: portablePlanMembers(plan) };
+    if (bytes && snapshot) { slots[ordinal] = { snapshot, bytes, spare: null, plan, members: portablePlanMembers(plan) }; this.bumpSlotImage(bytes); }
     return bytes;
+  }
+
+  /**
+   * The first live render target (in set order) whose color, extra color, depth or multisampled depth texture is
+   * `texture`, as a scan of `renderTargets` finds it (`TextureOwnerMemo`).
+   */
+  private renderTargetOwning(texture: Texture): WebGPURenderTarget | undefined {
+    return this.#textureOwners.find(this.renderTargets, texture, renderTargetOwnsTexture);
+  }
+
+  /** A slot image was (re)written: buffers that received an earlier version of it no longer hold its bytes. */
+  private bumpSlotImage(image: Uint8Array): void {
+    this.#slotImageVersions.set(image, (this.#slotImageVersions.get(image) ?? 0) + 1);
   }
 
   private createNativeGeneratedUnlitUniformBuffer(command: DrawCommand): WebGPUBufferLike {
