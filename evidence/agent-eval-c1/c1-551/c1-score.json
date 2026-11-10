@@ -6047,5 +6047,242 @@
         }
       }
     }
+  },
+  "c1-551-t106-bridge-r2": {
+    "runId": "c1-551-t106-bridge-r2",
+    "arm": "bridge",
+    "task": 106,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4450,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 11028.3,
+          "jsKB": 7016.6,
+          "jsGzipKB": 2217.6,
+          "assetKB": 4006.9,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 236,
+        "blank": false,
+        "frame": {
+          "lit": 0.998,
+          "meanLuma": 187.5,
+          "stdLuma": 50.3,
+          "motion": 0.97
+        },
+        "loaded": {
+          "totalKB": 7723.1,
+          "jsKB": 5949.4,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4902,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 11036.6,
+          "jsKB": 7023.5,
+          "jsGzipKB": 2218.4,
+          "assetKB": 4008.3,
+          "scaffoldKB": 40165.4,
+          "files": 93
+        },
+        "ready": true,
+        "loadMs": 250,
+        "blank": false,
+        "frame": {
+          "lit": 0.998,
+          "meanLuma": 187.5,
+          "stdLuma": 50.3,
+          "motion": 1.18
+        },
+        "loaded": {
+          "totalKB": 7731.1,
+          "jsKB": 5956.4,
+          "requests": 68
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "materials-followup": {
+            "name": "materials-followup",
+            "checks": {
+              "nullBeforeKey": false,
+              "key2SelectsMetal": true,
+              "key3SelectsFabric": true,
+              "key1SelectsGlass": true
+            },
+            "notes": {},
+            "passed": 3,
+            "total": 4
+          },
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t110-aura-r3": {
+    "runId": "c1-551-t110-aura-r3",
+    "arm": "aura",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4829,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10140.8,
+          "jsKB": 7016.2,
+          "jsGzipKB": 2217.3,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 172,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 85.3,
+          "stdLuma": 31,
+          "motion": 0.11
+        },
+        "loaded": {
+          "totalKB": 5825.2,
+          "jsKB": 5825.2,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.1754933449074074
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4750,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10141.9,
+          "jsKB": 7017.3,
+          "jsGzipKB": 2217.7,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 180,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 84.9,
+          "stdLuma": 31.3,
+          "motion": 0.17
+        },
+        "loaded": {
+          "totalKB": 5826.3,
+          "jsKB": 5826.3,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 86.98684080732333,
+              "dim": 32.74965199653408,
+              "relit": 87.8079049479463,
+              "angleRange": [
+                -7.2995424228101005,
+                8.461706828577297
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.19451533564814816
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      }
+    }
   }
 }
