@@ -6,7 +6,7 @@ Aura3D is the TypeScript 3D engine that ships the whole stack: a typed, declarat
 
 1. **New AI agent:** read [`llms.txt`](../llms.txt) (fast path, one screen), then [`agents/agent-quickstart.md`](./agents/agent-quickstart.md) and [`agents/claims-and-boundaries.md`](./agents/claims-and-boundaries.md). The index of all agent docs is [`agents/README.md`](./agents/README.md).
 2. **New human developer:** [`quickstart.md`](./quickstart.md) scaffolds a project with `npx create-aura3d@latest my-app --template product-viewer`, then `npm install` and `npm run dev`.
-3. **Coming from three.js:** [Why Aura3D over three.js](./aura3d-vs-threejs.md), then the [porting guide](./migration/from-threejs.md). `aura3d migrate three` maps 245 three.js constructs and writes your port worklist.
+3. **Coming from three.js:** [Why Aura3D over three.js](./aura3d-vs-threejs.md), then the [porting guide](./migration/from-threejs.md). `aura3d migrate three` maps 245 three.js constructs and writes your port worklist. For procedural three.js content, `aura3d import-three` brings a scene factory across as a typed asset plus an editable Aura3D scene ([three.js bridge](./agents/three-bridge.md), prototype).
 
 ## What is measured, and what is not
 
