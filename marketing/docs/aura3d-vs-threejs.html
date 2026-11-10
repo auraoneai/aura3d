@@ -50,9 +50,31 @@
 <main class="compare-page">
   <header class="compare-hero">
     <div class="wrap">
+      <div class="compare-hero-grid">
+        <div class="compare-hero-copy">
       <h1>Everything three.js leaves to you, built in.</h1>
       <p class="compare-hero-lede">three.js gives you a renderer. Everything after that is your job: loaders, environment lighting, shadows, post-processing, controls, the game loop, the HUD, audio, asset handling, licensing and the deploy checks. Aura3D ships all of that as one engine and one toolchain, with its own renderer (WebGPU with a WebGL2 fallback, optionally in a worker), a typed declarative scene and an asset pipeline that will not let an unverified model reach production. It is built from the start to be written by AI coding agents.</p>
       <div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart">Start building</a><a class="btn btn-ghost" href="/apps/showcase-index/">Play the games</a></div>
+        </div>
+        <figure class="compare-hero-visual" aria-label="Aura Hoops 3D, a live Aura3D game rendering on WebGPU">
+          <a class="compare-hero-shot" href="/apps/showcase-aura-hoops-3d/"><img src="/previews/showcase-index/aura-hoops-3d.webp" srcset="/previews/showcase-index/aura-hoops-3d.webp 720w, /previews/showcase-index/aura-hoops-3d@2x.webp 1440w" sizes="(max-width: 980px) 100vw, 640px" width="1440" height="900" alt="Aura Hoops 3D: a street-basketball court at golden hour, rendered by Aura3D" fetchpriority="high" /></a>
+          <div class="compare-hero-code" aria-label="The complete Aura3D product viewer scene">
+            <div class="compare-hero-code-head"><span>hero.ts</span><span>the whole app · 10 lines</span></div>
+            <pre><code>import { camera, createAuraApp, interactions, looks, model, scene } from &quot;@aura3d/engine&quot;;
+import { assets } from &quot;./aura-assets&quot;;
+
+createAuraApp(&quot;#app&quot;, {
+  scene: scene()
+    .add(looks.preset(&quot;product-studio&quot;))
+    .add(model(assets.product, { name: &quot;product&quot;, targetHeight: 1.6, castShadow: true }))
+    .add(interactions.orbit({ target: &quot;product&quot; }))
+    .camera(camera.frameAsset(assets.product, { targetHeight: 1.6 })),
+  ...looks.appOptions(&quot;product-studio&quot;)
+});</code></pre>
+          </div>
+          <figcaption><a href="/apps/showcase-aura-hoops-3d/">Aura Hoops 3D</a>, one of 30 playable games built with Aura3D. Rendered with WebGPU by default, WebGL2 as the fallback.</figcaption>
+        </figure>
+      </div>
       <div class="compare-facts">
         <div><strong>24 vs 49</strong><span>scene lines for a PBR viewer with HDR lighting, shadow, bloom and orbit controls (Aura3D benchmark, five scenes)</span></div>
         <div><strong>1 vs 8</strong><span>import modules for the same viewer</span></div>
