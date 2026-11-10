@@ -148,7 +148,8 @@ describe("weighted transparency resource and submission contract", () => {
     expect(clear).toBeGreaterThanOrEqual(0);
     expect(clear).toBeLessThan(passes.findIndex((label) => label.includes("depth-consumer")));
     const depthViews = views.filter((view) => view.label.includes("opaque-scene-depth") && view.aspect === "depth-only");
-    expect(depthViews).toHaveLength(2);
+    // 5.5.1: one depth-only view per depth texture, created once and bound by both depth consumers.
+    expect(depthViews).toHaveLength(1);
     expect(groups.filter((group) => group.entries.some((entry) => depthViews.includes(entry.resource as typeof depthViews[number])))).toHaveLength(2);
     expect(fragments.some((source) => source.includes("var u_depthTexture: texture_depth_2d;") && source.includes("textureLoad(u_depthTexture"))).toBe(true);
     pass.dispose();

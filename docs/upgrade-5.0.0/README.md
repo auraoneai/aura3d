@@ -163,7 +163,12 @@ What is left: Pip's Big Leap (0.89) still pays ~6 ms more per frame in the WebGP
 
 ### WebGPU draw path 5.5.1 (after 5.5.0, 2026-11-09)
 
-Engine work for the two games still on WebGL2 after round 4 (Pip's Big Leap 0.89x, Lamplight Line 0.89x): a per-frame uniform arena for batched draws (one `writeBuffer` per dirty run instead of one per draw), bind groups remembered per arena range, one pass over a draw's uniforms, native depth-of-field passes recorded into the frame's batch encoder, and unchanged Lamplight quad-sprite updates skipped. WebGL2 output unchanged. Per-game ratios and the default backend for these two games are added here when the fresh-session re-measure is done; a game switches only at >= 0.92x. See `CHANGELOG.md` "Unreleased (5.5.1)".
+| Game | WebGL2 fps (median, kept) | WebGPU fps (median, kept) | Round 4 | 5.5.1 lane (kept pairs, ratios) | Pairs dropped (load >= 10) | Frame: WebGPU vs WebGL2 / WebGL2 run-to-run (mean abs /255) | Default |
+|---|---|---|---|---|---|---|---|
+| Pip's Big Leap | 14.6 | 14.7 | 0.89 (n=10) | n=1: 1.01 | 10 (the five below load 20: 1.04, 0.97, 0.96, 1.04, 2.21) | 2.77 and 2.41 / 1.80 (5.5.0 base: 2.03 / 1.16); 0 errors | WebGL2 (fewer than 10 kept pairs) |
+| Lamplight Line (30 s settle) | 28.3 | 27.5 | 0.89 (n=11) | n=3: 0.98, 0.97, 0.86 (median 0.97) | 7 (the two below load 20: 0.93, 0.85) | 1.49 / 0.73 (5.5.0 base: 1.49 / 0.73); 0 errors | WebGL2 (fewer than 10 kept pairs) |
+
+Method as in round 4 (production marketing build of `exp/551-wgpu5` with the switches applied, 1280x720, title screen, engine fps over 3 s, backend order alternated, a pair starts at a 1-minute load below 9 and is kept only when the load stayed below 10 through both runs). The machine ran other agents' builds, tests and a 30-game worker fps sweep throughout (load 8 to 80, another headless Chrome on the GPU during every kept pair), so only 4 of 21 pairs were kept and Pip's kept fps are below round 4's; neither game reached 10 kept pairs, so both stay on WebGL2 (`labAppOptions` unchanged). Frames: reduced-motion 960x540 captures of the same build; the lane's WebGPU and WebGL2 frames match the 5.5.0 base's within run-to-run (Pip 1.18 and 1.21 to 1.64, Lamplight 0.72 and 0.73). P2: native draw calls per frame already match (Pip's Big Leap 1,138 WebGPU vs 1,138 WebGL2, no multi-draw calls on either; WebGL2's combined-draw path is not active in these scenes).
 
 ## Shared helpers added in Wave 0
 

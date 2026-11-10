@@ -128,23 +128,28 @@ describe("5.5.1 uniform arena: uploaded bytes", () => {
     expect(wide.writes).toHaveLength(3);
   });
 
-  it("trusts a remembered image only while no other block overlapped its range", () => {
+  it("keeps each block size in its own lane, so a changing count of one size moves no block of another", () => {
     const f = arenaFixture();
     const image = block(512, 3);
     const tag = { image, version: 1 };
-    const region = f.arena.stage(image, tag)!;
-    f.arena.flush();
-    // Next frame a smaller block takes offset 0 and a larger one covers the rest of the image's old range.
     f.arena.rewind();
-    f.arena.stage(block(64, 9));
-    f.arena.stage(block(512, 10));
+    f.arena.stage(block(64, 1));
+    const first = f.arena.stage(image, tag)!;
+    f.arena.stage(block(64, 2));
     f.arena.flush();
-    // The image comes back at offset 0 with the same tag: its bytes were overwritten, so they are written again.
+    const writes = f.writes.length;
+    // Next frame without the small blocks: the image keeps its region and uploads nothing.
     f.arena.rewind();
-    const back = f.arena.stage(image, tag)!;
+    const again = f.arena.stage(image, tag)!;
     f.arena.flush();
-    expect(back.offset).toBe(region.offset);
-    expect(f.gpuBytes(back)).toEqual(image);
+    expect(again).toBe(first);
+    expect(f.writes.length).toBe(writes);
+    // More small blocks than before: still the same region.
+    f.arena.rewind();
+    for (let index = 0; index < 5; index += 1) f.arena.stage(block(64, 10 + index));
+    expect(f.arena.stage(image, tag)).toBe(first);
+    f.arena.flush();
+    expect(f.gpuBytes(first)).toEqual(image);
   });
 
   it("refuses blocks it cannot place, and stops staging after a failed upload until reset", () => {

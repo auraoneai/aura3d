@@ -5118,7 +5118,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "b01c47d7cd8b014d8a03c530994f80afb4faf4af645b44ba3e6ecded2e361680"
+          "sha256": "9e442976491cdf0e609524974dbe5d96fdfbbb1d598946f41029360cfc90a104"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5222,7 +5222,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "b01c47d7cd8b014d8a03c530994f80afb4faf4af645b44ba3e6ecded2e361680"
+          "sha256": "9e442976491cdf0e609524974dbe5d96fdfbbb1d598946f41029360cfc90a104"
         },
         {
           "path": "examples/last-train-port/sim.ts",
