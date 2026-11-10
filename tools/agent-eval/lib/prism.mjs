@@ -17,7 +17,10 @@ export function createPrismClient({
   fetchImpl = fetch,
   clientId = "aura3d-agent-eval",
   maxRetries = 6,
-  sleep = sleepMs
+  sleep = sleepMs,
+  // A request with no response after this long is abandoned and retried (C1 phase 2, 2026-11-09: three task-103 runs
+  // sat >20 min on one open request each, with no timeout to end them). 8192 output tokens stream in well under this.
+  requestTimeoutMs = Number(process.env.AGENT_EVAL_REQUEST_TIMEOUT_MS ?? 420000)
 } = {}) {
   if (!key) throw new Error("Prism key missing");
   async function messages(body, { session, jobType = "agent-eval" } = {}) {
@@ -34,7 +37,8 @@ export function createPrismClient({
             "X-Prism-Job-Type": jobType,
             ...(session ? { "X-Prism-Session": session } : {})
           },
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
+          ...(requestTimeoutMs > 0 && typeof AbortSignal?.timeout === "function" ? { signal: AbortSignal.timeout(requestTimeoutMs) } : {})
         });
         if (response.ok) return await response.json();
         const text = (await response.text()).slice(0, 300);
