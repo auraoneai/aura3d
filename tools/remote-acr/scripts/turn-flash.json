@@ -1,0 +1,38 @@
+{
+  "name": "turn-flash",
+  "description": "Rapid alternating left/right turns in Lamplight Line and Duneglide. Fails when the world canvas is a single colour for 3 or more consecutive samples after the game has started.",
+  "durationMs": 20000,
+  "games": [
+    { "slug": "lamplight-line", "app": "apps/showcase-last-train-port", "query": "?start=1", "leftKeys": ["KeyA", "ArrowLeft"], "rightKeys": ["KeyD", "ArrowRight"], "throttleKey": "KeyW" },
+    { "slug": "duneglide", "app": "apps/showcase-silt-and-signal-port", "query": "?start=1", "leftKeys": ["KeyA", "ArrowLeft"], "rightKeys": ["KeyD", "ArrowRight"], "throttleKey": "KeyW" }
+  ],
+  "backends": ["webgl2", "webgpu"],
+  "backendQuery": { "webgl2": "&backend=webgl2", "webgpu": "&backend=webgpu" },
+  "events": [
+    { "atMs": 500, "type": "keydown", "key": "$throttle" },
+    { "atMs": 2000, "type": "tapSequence", "repeat": 60, "everyMs": 280, "pattern": [
+      { "type": "keydown", "key": "$left", "holdMs": 140 },
+      { "type": "keydown", "key": "$right", "holdMs": 140 }
+    ] },
+    { "atMs": 19000, "type": "keyup", "key": "$throttle" }
+  ],
+  "variants": [
+    { "name": "taps-140ms", "tapHoldMs": 140 },
+    { "name": "taps-60ms", "tapHoldMs": 60, "everyMs": 120 },
+    { "name": "hold-left-then-right", "pattern": [ { "type": "keydown", "key": "$left", "holdMs": 700 }, { "type": "keydown", "key": "$right", "holdMs": 700 } ] }
+  ],
+  "sampling": {
+    "everyMs": 50,
+    "target": "largest canvas (the world canvas)",
+    "grid": [48, 32],
+    "method": "drawImage the canvas into a 48x32 2D canvas (nearest neighbour; for WebGL2 sample inside the same rAF as the draw or use preserveDrawingBuffer) and read the RGBA data; a frame is SOLID when every texel is within 3 per channel of the first texel",
+    "record": ["t", "solid", "meanRgb", "firstTexelRgb", "cameraEye", "cameraTarget", "cameraFov", "drawCalls", "paused"],
+    "cameraSource": "window.__lamplight / window.__duneglide QA hooks (look().camera, qa camera) if present, otherwise app.camera.presented()"
+  },
+  "assert": {
+    "maxConsecutiveSolidSamples": 2,
+    "ignoreFirstMs": 3000,
+    "onFailure": "save the 5 frames before and after the first solid sample plus the camera pose log, then repeat the same run with ?portable=0, ?depth=standard and (Lamplight) ?fx=nobloom,nodof to bisect"
+  },
+  "bisectFlags": ["portable=0", "depth=standard", "backend=webgl2", "worker=0", "fx=nobloom,nodof,novignette,nograde", "camclear=0"]
+}

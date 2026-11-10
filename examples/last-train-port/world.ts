@@ -24,6 +24,7 @@ import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
+import { guardPose, type GuardPose } from "../shared/camera-guard";
 import { quadGeometryInput, quadUpdater, skipUnchangedUpdates } from "./point-quads";
 
 type Scene = ReturnType<typeof scene>;
@@ -769,6 +770,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   /* GU47 LT-16: arrival rail, departure trackside, finale crane (band look only; ?shots=0 turns them off) */
   const shots = new ShotDirector(look === "bands" && QUERY.get("shots") !== "0");
   /* QA crops (E-I capture): the camera pose on screen, the pool town and the headlamp of the last update */
+  /** Last pose that passed `guardPose` (a non-finite frame repeats it). */
+  let lastGoodPose: GuardPose | null = null;
   let shownPose: QaCameraPose = { eye: [0, 30, 60], target: [0, 20, 0], fov: 58 };
   let cropTown = 0;
   let cropHeadlamp: V3 = [0, 0, 0];
@@ -953,8 +956,10 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
       if (cut) chase.reset();
     }
     const pose = chase.step({ wantEye, wantLook, fovTarget, ...(shakeOffset ? { shakeOffset } : {}) }, dt);
-    cam.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut });
-    shownPose = { eye: [...pose.eye], target: [...pose.look], fov: pose.fov };
+    const safe = guardPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, lastGoodPose, { position: [here.x, here.y + 6.2, here.z + 17], target: [here.x, here.y + 2.2, here.z], up: [0, 1, 0], fov: 56 });
+    lastGoodPose = safe;
+    cam.setPose({ position: [...safe.position], target: [...safe.target], up: [...safe.up], fov: safe.fov }, { cut });
+    shownPose = { eye: [...safe.position], target: [...safe.target], fov: safe.fov };
     cropTown = poolTown(data, sim.leg, sim.distance, sim.phase);
     cropHeadlamp = headlampPose(here, f).position;
 

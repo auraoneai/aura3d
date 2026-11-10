@@ -27,6 +27,7 @@ import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type Si
 import { buildArchitecture, farDuneRings, farDunes, orchardTerrainColors, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+import { guardPose, limitLookLag, type GuardPose } from "../shared/camera-guard";
 
 type Scene = ReturnType<typeof scene>;
 export type Rgb = readonly [number, number, number];
@@ -789,6 +790,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       const clearance = createChaseClearance();
       const scenery = sceneryColumns(props);
       let lastEye: { eye: readonly [number, number, number]; blocked: boolean } | null = null;
+      /** Last pose that passed `guardPose`: a bad frame during a hard turn repeats it instead of showing the clear colour. */
+      let lastGoodPose: GuardPose | null = null;
       let lastPoint = -1, lastObjective = -1;
       let ringsKey = "";
       let shakeLeft = 0, shakeStrength = 0;
@@ -935,6 +938,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
+          // A hard turn swings the wanted target around the rider faster than the 5/s smoothing follows; bound the lag (and recover from a non-finite state)
+          [lookX, lookY, lookZ] = limitLookLag([lookX, lookY, lookZ], [tx, ty, tz], framing.lookAhead * 0.75);
           let kick = flight.boosting && !options.reducedMotion ? 6 : 0;
           let up: [number, number, number] = [0, 1, 0];
           if (inked) {
@@ -959,7 +964,11 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             const a = SHAKE_METRES * shakeStrength * (shakeLeft / SHAKE_SECONDS);
             shown = [eye[0] + a * Math.sin(time * 61), eye[1] + a * Math.sin(time * 47 + 1.3), eye[2] + a * Math.sin(time * 53 + 2.1)];
           }
-          cameraController.setPose({ position: shown, target: [lookX, lookY, lookZ], up, fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut });
+          const baseFov = aspect < 0.85 ? 78 : 62;
+          const safe = guardPose({ position: shown, target: [lookX, lookY, lookZ], up, fov: baseFov + kick }, lastGoodPose, { position: [sim.state.x, sim.state.y + 5, sim.state.z + 13], target: [sim.state.x, sim.state.y + 1.5, sim.state.z], up: [0, 1, 0], fov: baseFov });
+          lastGoodPose = safe;
+          if (safe.target[0] !== lookX || safe.target[1] !== lookY || safe.target[2] !== lookZ) { lookX = safe.target[0]; lookY = safe.target[1]; lookZ = safe.target[2]; }
+          cameraController.setPose({ position: [...safe.position], target: [...safe.target], up: [...safe.up], fov: safe.fov }, { cut });
         },
         get nodeCount() { return handles.size; },
         fxStats: () => siltFx?.stats() ?? null,
