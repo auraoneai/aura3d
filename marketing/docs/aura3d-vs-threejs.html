@@ -188,7 +188,10 @@ scene().add(model(assets.robot, { targetHeight: 1.8 }))</code></pre>
 
 createAuraApp(&quot;#app&quot;, {
   scene,
-  worker: { createWorker: createWorkerRendererWorker, fallback: &quot;main-thread&quot; }
+  worker: {
+    createWorker: createWorkerRendererWorker,
+    fallback: &quot;main-thread&quot;
+  }
 });</code></pre>
           <p class="compare-small">All {{GAME_COUNT}} showcase games render in a worker with <code>?worker=1</code>. Opt-in; physics and DOM labels stay with main-thread apps; no speed claim against the main thread. <code>CHANGELOG.md</code> 5.3.0, 5.5.0, 5.5.1</p>
         </article>
@@ -198,7 +201,10 @@ createAuraApp(&quot;#app&quot;, {
           <pre class="code"><code>scene()
   .add(lights.key())                      // shadow on by default
   .add(primitives.plane({ name: &quot;floor&quot;, size: [8, 1, 8] }))
-  .add(primitives.sphere({ name: &quot;steel&quot;, material: material.pbr({ metallic: 1, roughness: 0.2 }) }))
+  .add(primitives.sphere({
+    name: &quot;steel&quot;,
+    material: material.pbr({ metallic: 1, roughness: 0.2 })
+  }))
   .camera(camera.auto({ subject: &quot;steel&quot;, fill: 0.6 }))</code></pre>
           <p class="compare-small">A requested fill of 0.8 measured 0.800 on a real GPU. <code>CHANGELOG.md</code> 5.3.0 (N1 to N4), <code>evidence/n4-frame/</code></p>
         </article>
