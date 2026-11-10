@@ -1,0 +1,755 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t104-bridge-r1",
+  "batch": "c1-551",
+  "arm": "bridge",
+  "task": 104,
+  "slug": "stacker",
+  "idx": 1,
+  "order": 22,
+  "seed": 20261108022,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:45:02.381Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Add pause: pressing P pauses the game (the slab stops moving and Space or clicks do not drop it) and pressing P again resumes. Show 'Paused' in the HUD while paused and add paused: boolean to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 450770,
+  "usage": {
+    "input": 1034586,
+    "uncachedInput": 1034586,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 8369,
+    "turns": 24,
+    "providerCredits": 6.187158,
+    "providerCostUsd": null,
+    "modelMs": 384531,
+    "toolMs": 66239,
+    "perTurnInput": [
+      4258,
+      5979,
+      14766,
+      24499,
+      32372,
+      32475,
+      33515,
+      35443,
+      36407,
+      47376,
+      48086,
+      48634,
+      48781,
+      48940,
+      51413,
+      51604,
+      53519,
+      54637,
+      55935,
+      57777,
+      59379,
+      61317,
+      63441,
+      64033
+    ],
+    "perTurnOutput": [
+      13,
+      24,
+      64,
+      132,
+      476,
+      13,
+      32,
+      69,
+      23,
+      4381,
+      241,
+      142,
+      6,
+      5,
+      368,
+      23,
+      312,
+      5,
+      87,
+      292,
+      183,
+      486,
+      856,
+      136
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 434645,
+      "input": 907112,
+      "uncachedInput": 907112,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 7377,
+      "turns": 22,
+      "providerCredits": 5.53352,
+      "providerCostUsd": null,
+      "modelMs": 368837,
+      "toolMs": 65808,
+      "perTurnInput": [
+        4258,
+        5979,
+        14766,
+        24499,
+        32372,
+        32475,
+        33515,
+        35443,
+        36407,
+        47376,
+        48086,
+        48634,
+        48781,
+        48940,
+        51413,
+        51604,
+        53519,
+        54637,
+        55935,
+        57777,
+        59379,
+        61317
+      ],
+      "perTurnOutput": [
+        13,
+        24,
+        64,
+        132,
+        476,
+        13,
+        32,
+        69,
+        23,
+        4381,
+        241,
+        142,
+        6,
+        5,
+        368,
+        23,
+        312,
+        5,
+        87,
+        292,
+        183,
+        486
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 1.887994,
+        "listUsd": 1.887994,
+        "providerUsd": null,
+        "providerCredits": 5.53352,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 16125,
+      "input": 127474,
+      "uncachedInput": 127474,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 992,
+      "turns": 2,
+      "providerCredits": 0.653638,
+      "providerCostUsd": null,
+      "modelMs": 15694,
+      "toolMs": 431,
+      "perTurnInput": [
+        63441,
+        64033
+      ],
+      "perTurnOutput": [
+        856,
+        136
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.264868,
+        "listUsd": 0.264868,
+        "providerUsd": null,
+        "providerCredits": 0.653638,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 2.152862,
+    "listUsd": 2.152862,
+    "providerUsd": null,
+    "providerCredits": 6.187158,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2065,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 21
+    },
+    {
+      "i": 1,
+      "t": 2065,
+      "type": "read",
+      "path": "BRIDGE.md",
+      "lines": 21
+    },
+    {
+      "i": 2,
+      "t": 4715,
+      "type": "read",
+      "path": "docs/agents/three-bridge.md",
+      "lines": 121
+    },
+    {
+      "i": 3,
+      "t": 4715,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 4,
+      "t": 4715,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 8763,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 6,
+      "t": 9187,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 424
+    },
+    {
+      "i": 7,
+      "t": 9187,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 18322,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1003
+    },
+    {
+      "i": 9,
+      "t": 18366,
+      "type": "search",
+      "pattern": "setInstances|setScale|setColor|setVisible"
+    },
+    {
+      "i": 10,
+      "t": 26860,
+      "type": "write",
+      "tool": "write_file",
+      "path": "recipes/stage.mjs",
+      "bytes": 976
+    },
+    {
+      "i": 11,
+      "t": 29565,
+      "type": "bridge",
+      "name": "stage",
+      "pass": true,
+      "ms": 561
+    },
+    {
+      "i": 12,
+      "t": 32626,
+      "type": "read",
+      "path": "src/three-bridge/stage.scene.ts",
+      "lines": 16
+    },
+    {
+      "i": 13,
+      "t": 32626,
+      "type": "read",
+      "path": "src/three-bridge/stage.bridge.ts",
+      "lines": 43
+    },
+    {
+      "i": 14,
+      "t": 32626,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 15,
+      "t": 38504,
+      "type": "search",
+      "pattern": "setPose\\(|interface AuraCameraPose|type AuraCameraPose"
+    },
+    {
+      "i": 16,
+      "t": 40535,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 150
+    },
+    {
+      "i": 17,
+      "t": 101240,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 9633
+    },
+    {
+      "i": 18,
+      "t": 110603,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 19,
+      "t": 110604,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 20,
+      "t": 110605,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 21,
+      "t": 111215,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 22,
+      "t": 117992,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 23,
+      "t": 117992,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 24,
+      "t": 163111,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 25,
+      "t": 164025,
+      "type": "aura3d",
+      "command": "validate",
+      "exit": 0,
+      "ms": 914
+    },
+    {
+      "i": 26,
+      "t": 180071,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11453
+    },
+    {
+      "i": 27,
+      "t": 329615,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 28,
+      "t": 329616,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 29,
+      "t": 329616,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 30,
+      "t": 343597,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10703
+    },
+    {
+      "i": 31,
+      "t": 359295,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/stage.mjs"
+    },
+    {
+      "i": 32,
+      "t": 359295,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 33,
+      "t": 359296,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 34,
+      "t": 359296,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 35,
+      "t": 359296,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 36,
+      "t": 359726,
+      "type": "bridge",
+      "name": "stage",
+      "pass": true,
+      "ms": 430
+    },
+    {
+      "i": 37,
+      "t": 375702,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9714
+    },
+    {
+      "i": 38,
+      "t": 383302,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 39,
+      "t": 392548,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9246
+    },
+    {
+      "i": 40,
+      "t": 402097,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 41,
+      "t": 402097,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 42,
+      "t": 402680,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 43,
+      "t": 412288,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9608
+    },
+    {
+      "i": 44,
+      "t": 417696,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 45,
+      "t": 417696,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 46,
+      "t": 417697,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 47,
+      "t": 427715,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10018
+    },
+    {
+      "i": 48,
+      "t": 434645,
+      "type": "finish"
+    },
+    {
+      "i": 49,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 50,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 51,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 52,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 53,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 54,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 55,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 56,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 57,
+      "t": 447712,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 58,
+      "t": 448142,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 59,
+      "t": 451277,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [
+    {
+      "name": "stage",
+      "pass": true,
+      "ms": 561
+    },
+    {
+      "name": "stage",
+      "pass": true,
+      "ms": 430
+    }
+  ],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 424
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1003
+    },
+    {
+      "command": "validate",
+      "exit": 0,
+      "ms": 914
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11453
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10703
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9714
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9246
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9608
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10018
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/three-bridge.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Added pause in `src/main.ts`. P toggles it while the game is `playing`; P is ignored after a win or loss. While paused, the sliding slab and falling pieces stay frozen, and Space and clicks do nothing, so they cannot drop a slab or restart. The HUD status reads `playing (Paused)` and the message area says \"Paused - press P to resume\". `window.__TASK_STATE__` now includes `paused: boolean`, and `status` stays `playing` while paused. Restarting with R clears the pause. Typecheck passes, but I have not run the game in a browser to try the pause key."
+}

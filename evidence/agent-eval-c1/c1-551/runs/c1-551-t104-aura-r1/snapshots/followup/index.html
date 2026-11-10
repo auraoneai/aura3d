@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eval app</title>
+    <style>
+      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }
+      #app { display: block; width: 640px; height: 360px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="app" width="640" height="360"></canvas>
+    <div id="hud" style="width:640px;display:flex;justify-content:space-between;padding:6px 10px;box-sizing:border-box;font-weight:600">
+      <span>Score: <span id="hud-score">0</span></span>
+      <span>Best: <span id="hud-best">0</span></span>
+      <span>Status: <span id="hud-status">playing</span></span>
+      <span id="hud-paused" style="display:none;color:#ffd166">Paused</span>
+      <span style="opacity:.6;font-weight:400">Space / click: drop &middot; P: pause &middot; R: restart</span>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

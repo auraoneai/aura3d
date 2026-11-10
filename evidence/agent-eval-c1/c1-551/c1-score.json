@@ -5521,5 +5521,390 @@
         }
       }
     }
+  },
+  "c1-551-t104-aura-r1": {
+    "runId": "c1-551-t104-aura-r1",
+    "arm": "aura",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4860,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10139.3,
+          "jsKB": 7014.3,
+          "jsGzipKB": 2217,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 206,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 78.4,
+          "stdLuma": 54.9,
+          "motion": 8.13
+        },
+        "loaded": {
+          "totalKB": 8645.9,
+          "jsKB": 5698.9,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 2,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 5083,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10139.5,
+          "jsKB": 7014.5,
+          "jsGzipKB": 2217,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 284,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 73.5,
+          "stdLuma": 53.6,
+          "motion": 7.39
+        },
+        "loaded": {
+          "totalKB": 8646.1,
+          "jsKB": 5699.1,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": true,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0.0017578125
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 2,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t104-bridge-r1": {
+    "runId": "c1-551-t104-bridge-r1",
+    "arm": "bridge",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4827,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10166.8,
+          "jsKB": 7019,
+          "jsGzipKB": 2218.8,
+          "assetKB": 3143.1,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 242,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 25.9,
+          "stdLuma": 31.3,
+          "motion": 0.07
+        },
+        "loaded": {
+          "totalKB": 5895.7,
+          "jsKB": 5849.7,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 4,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4740,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10167,
+          "jsKB": 7019.1,
+          "jsGzipKB": 2218.8,
+          "assetKB": 3143.1,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 232,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 25.9,
+          "stdLuma": 31.3,
+          "motion": 0.08
+        },
+        "loaded": {
+          "totalKB": 5895.8,
+          "jsKB": 5849.8,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": true,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 3,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t111-aura-r1": {
+    "runId": "c1-551-t111-aura-r1",
+    "arm": "aura",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4590,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10186,
+          "jsKB": 7061.4,
+          "jsGzipKB": 2233.8,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 253,
+        "blank": true,
+        "frame": {
+          "lit": 0.059,
+          "meanLuma": 8,
+          "stdLuma": 22.9,
+          "motion": 0.6
+        },
+        "loaded": {
+          "totalKB": 5870.4,
+          "jsKB": 5870.4,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                137.7410031103044,
+                6.175,
+                6.175
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4636,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10186.9,
+          "jsKB": 7062.3,
+          "jsGzipKB": 2234,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 254,
+        "blank": true,
+        "frame": {
+          "lit": 0.059,
+          "meanLuma": 8,
+          "stdLuma": 22.9,
+          "motion": 0.59
+        },
+        "loaded": {
+          "totalKB": 5871.3,
+          "jsKB": 5871.3,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                137.7410146848769,
+                6.175,
+                6.174999999999999
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
   }
 }
