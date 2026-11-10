@@ -1,0 +1,33 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "operation": "animate",
+    "tasks": {
+      "anim-idle": {
+        "taskId": "01a1c0ac-2119-74a8-9d1c-5c77b41b7168",
+        "finishedAt": "2026-11-09T14:18:04.623Z",
+        "consumedCredits": 3
+      },
+      "anim-cheer": {
+        "taskId": "01a1c0ac-6b2a-7414-b60f-c9a1878e199c",
+        "finishedAt": "2026-11-09T14:18:24.028Z",
+        "consumedCredits": 3
+      },
+      "anim-pump": {
+        "taskId": "01a1c0ac-b690-74ae-b619-757b38f66de9",
+        "finishedAt": "2026-11-09T14:18:43.115Z",
+        "consumedCredits": 3
+      }
+    },
+    "consumedCredits": 9
+  },
+  "meshy07": {
+    "planKey": "pitchFanBAnimM07",
+    "usedBy": [
+      "FC47-AN1"
+    ],
+    "importedAs": "fcPitchFanBMeshy",
+    "postProcess": "merged rig (24 joints, clips idle/cheer/pump, 1 mesh, 1 material) -> drop normal map and tangents, gltf-transform weld + meshopt simplify (5,000 triangles), resample, prune, dedup, maps 512 px JPEG q78 (sharp)",
+    "sha256": "b8377118a26dbc54c978c0f3f5d7cc64cc85af12b5f8c3d2cff2d298463a3a92"
+  }
+}

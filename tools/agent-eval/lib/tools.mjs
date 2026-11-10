@@ -67,7 +67,9 @@ const MAX_READ_CHARS = 14000;
 
 const norm = (p) => p.replaceAll("\\", "/").replace(/^\.\//, "");
 
-export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTsc, lookup = false }) {
+export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTsc, lookup = false, extraWritable = [] }) {
+  const writable = [...WRITABLE, ...extraWritable.map((w) => w.re)];
+  const writableLabel = ["src/**", "index.html", "vite.config.ts", ...extraWritable.map((w) => w.label)].join(", ");
   const lookupFn = lookup ? createLookup(dir) : null;
   const started = now();
   const events = [];
@@ -140,7 +142,7 @@ export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTs
     },
     write_file({ path, content }) {
       const rel = norm(String(path));
-      if (!WRITABLE.some((re) => re.test(rel))) throw new Error(`${rel} is not writable (writable: src/**, index.html, vite.config.ts)`);
+      if (!writable.some((re) => re.test(rel))) throw new Error(`${rel} is not writable (writable: ${writableLabel})`);
       const full = resolveInside(dir, rel);
       mkdirSync(dirname(full), { recursive: true });
       writeFileSync(full, String(content));
@@ -149,7 +151,7 @@ export function createToolbox({ dir, snapshotRoot, now = () => Date.now(), runTs
     },
     edit_file({ path, old_string, new_string }) {
       const rel = norm(String(path));
-      if (!WRITABLE.some((re) => re.test(rel))) throw new Error(`${rel} is not writable (writable: src/**, index.html, vite.config.ts)`);
+      if (!writable.some((re) => re.test(rel))) throw new Error(`${rel} is not writable (writable: ${writableLabel})`);
       const full = resolveInside(dir, rel);
       if (!existsSync(full)) throw new Error(`${rel} does not exist`);
       const text = readFileSync(full, "utf8");

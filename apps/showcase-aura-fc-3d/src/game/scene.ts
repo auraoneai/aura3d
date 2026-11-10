@@ -795,6 +795,36 @@ export const STAND_MODULE_SCALE = 10.5;
 /** Wave-2 players' tunnel (GLB 1.674 x 0.795 x 1.901 m, mouth toward +Z): fitted depth and far-side x. */
 const PLAYER_TUNNEL_DEPTH = 5.1;
 const PLAYER_TUNNEL_X = -13;
+/**
+ * Meshy-07 (FC47-AN1): six rigged fans (three Meshy models, two each, 5k triangles, one skinned draw apiece) standing
+ * at the far rail just behind the sponsor hoardings, where the broadcast frame sees them over the boards. They idle
+ * and, while the crowd cheers (goal phase, won final), alternate the cheer and fist-pump clips along the row. They are
+ * mounted visible at full scale and never hidden (a skinned model created hidden may never draw once shown); venues
+ * without a bowl simply do not mount them. Presentation only: nothing collides with them.
+ */
+export const PITCH_FANS: readonly { readonly x: number; readonly yaw: number; readonly model: 0 | 1 | 2 }[] = [
+  { x: -8.2, yaw: 0.22, model: 0 }, { x: -5.0, yaw: 0.08, model: 1 }, { x: -1.7, yaw: -0.12, model: 2 },
+  { x: 2.2, yaw: 0.15, model: 0 }, { x: 5.3, yaw: -0.06, model: 2 }, { x: 8.7, yaw: -0.2, model: 1 }
+];
+/** Fan stand line: 0.6 m behind the far hoarding (z = -(PITCH_HZ + 2.4)), in front of the first stand tier. */
+export const PITCH_FAN_Z = -(PITCH_HZ + 3.0);
+/** Fitted fan height: between the capsule crowd and the 2.22 m athletes, so the row reads as people at the rail. */
+export const PITCH_FAN_HEIGHT = 2.0;
+const PITCH_FAN_ASSETS = [assets.fcPitchFanAMeshy, assets.fcPitchFanBMeshy, assets.fcPitchFanCMeshy] as const;
+export function pitchFanNodes(): any[] {
+  return PITCH_FANS.map((f, i) =>
+    model(PITCH_FAN_ASSETS[f.model], { name: `fc-fan-${i}`, targetHeight: PITCH_FAN_HEIGHT, castShadow: false } as any)
+      .position(f.x, 0, PITCH_FAN_Z)
+      .rotate(0, f.yaw, 0)
+      .animate({ clip: "idle", loop: true })
+      .runtime(gameRuntime(`fc-fan-${i}`))
+  );
+}
+/** The clip fan `i` plays: idle, or cheer / fist pump alternating along the row while the crowd cheers. */
+export function pitchFanClip(i: number, cheering: boolean): "idle" | "cheer" | "pump" {
+  return cheering ? (i % 2 === 0 ? "cheer" : "pump") : "idle";
+}
+
 export function standModuleTransforms(v: VenueSpec): { position: [number, number, number]; scale: [number, number, number] }[] {
   const s = STAND_MODULE_SCALE;
   const topTier = Math.max(0, v.standCount - 1);
@@ -887,6 +917,9 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       transforms: waverTransforms(0, false), colors: Array.from({ length: WAVERS }, (_, i) => cols[i % cols.length])
     }).runtime(gameRuntime("fc-wavers")));
   }
+
+  /* ---- Meshy-07 (FC47-AN1): rigged front-row fans at the far rail (bowl venues; the original look keeps 4.6.2) ---- */
+  if (v.standCount > 0 && (mode ?? fcLookMode(v.id)) !== "original") nodes.push(...pitchFanNodes());
 
   /* ---- Floodlight towers: one real flood, a light-pool batch for the rest, cones (FC47-L2, S2) ---- */
   nodes.push(...floodNodes(v, gates, mode));
@@ -1095,6 +1128,9 @@ export interface WorldHandles {
   nets: any[];
   dome: any;
   referee: any;
+  /** Meshy-07 rigged front-row fans (empty on venues without a bowl) and the clip each one is playing. */
+  fans: any[];
+  fanClips: string[];
   auroras: any[];
   wavers: any;
   confetti: any;
@@ -1121,6 +1157,8 @@ export function resolveWorld(app: any): WorldHandles {
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
     dome: tryReq(app, "fc-dome"),
     referee: tryReq(app, "fc-referee"),
+    fans: PITCH_FANS.map((_, i) => tryReq(app, `fc-fan-${i}`)).filter((n) => n !== null),
+    fanClips: [],
     auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-ribbon-${i}`)),
     wavers: tryReq(app, "fc-wavers"),
     confetti: tryReq(app, "fc-confetti"),
@@ -1176,6 +1214,13 @@ export function tickWorld(h: WorldHandles, t: number, opts: { cheering: boolean;
   h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
 
   h.wavers?.setInstances?.(waverTransforms(t, cheer));
+  // Meshy-07 (FC47-AN1): fans switch clip only on a change (staggered start so the row never moves in lockstep)
+  for (let i = 0; i < (h.fans?.length ?? 0); i++) {
+    const clip = pitchFanClip(i, cheer);
+    if (h.fanClips[i] === clip) continue;
+    h.fanClips[i] = clip;
+    h.fans[i]?.setAnimation?.({ clip, loop: true, startTime: t - i * 0.41, crossFade: 0.25 });
+  }
   // FC47-V2: the aurora ribbons animate themselves (sway, shimmer); nothing to drive per frame
   if (opts.ripple > 0) {
     const k = 1 + Math.sin(opts.ripple * 22) * 0.06 * Math.min(1, opts.ripple);

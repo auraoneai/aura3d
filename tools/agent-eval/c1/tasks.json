@@ -1,7 +1,7 @@
 {
- "schema": "aura3d.agent-eval.c1-tasks/1",
- "frozenAt": "2026-11-08",
- "note": "Chosen before any C1 result exists (see c1/README.md, 'Task choice'). Task text is copied verbatim from the benchmark-505 lane branches; ids 101-108 avoid the clashing per-lane numbering. Do not edit after the first paid run.",
+ "schema": "aura3d.agent-eval.c1-tasks/2",
+ "frozenAt": "2026-11-09",
+ "note": "Frozen 2026-11-09 before any C1 model run (only stub dry runs exist). Supersedes the 2026-11-08 draft: 105 garden, 107 lighthouse and 108 plinko were replaced by 109 product viewer, 110 interior and 111 animated presentation so the set covers the eight categories the 5.5.1 C1 lane names (product viewer, outdoor, interior, small game, animated presentation, metal/glass materials, character/animation, shader/effect). Task text is copied verbatim from the benchmark-505 lane branches. Do not edit after the first paid run. Spec: tests/reports/benchmark-c1/SPEC.md.",
  "runsPerArm": 3,
  "arms": [
   "aura",
@@ -14,6 +14,7 @@
   {
    "id": 101,
    "slug": "spider",
+   "coverage": "character / animation",
    "category": "animation",
    "source": "origin/bench/505-animation:tools/agent-eval/tasks/10-walking-spider.md",
    "bench505": {
@@ -32,11 +33,13 @@
    "followUp": {
     "text": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
     "probe": "spider-followup"
-   }
+   },
+   "assetHeavy": true
   },
   {
    "id": 102,
    "slug": "portal",
+   "coverage": "shader / effect",
    "category": "effects",
    "source": "origin/bench/505-effects:tools/agent-eval/tasks/11-effects-portal.md",
    "bench505": {
@@ -53,11 +56,13 @@
    "followUp": {
     "text": "Add a DOM button labelled 'Close portal' outside the canvas. Clicking it closes the portal: the energy disc and all particles disappear, window.__TASK_STATE__.portalActive becomes false, particleCount becomes 0 and the label changes to 'Open portal'. Clicking it again reopens the portal.",
     "probe": "portal-followup"
-   }
+   },
+   "assetHeavy": false
   },
   {
    "id": 103,
    "slug": "canyon",
+   "coverage": "outdoor",
    "category": "environments",
    "source": "origin/bench/505-environments:tools/agent-eval/tasks/10-desert-canyon.md",
    "bench505": {
@@ -76,11 +81,13 @@
    "followUp": {
     "text": "Add a DOM button labelled 'Pause flythrough' outside the canvas that stops the camera where it is (the scene keeps rendering) and, clicked again (label 'Resume flythrough'), continues the flythrough. Expose window.__TASK_STATE__ = { flying: boolean, cameraX: number, cameraY: number, cameraZ: number } with the current camera position, updated every frame.",
     "probe": "canyon-followup"
-   }
+   },
+   "assetHeavy": false
   },
   {
    "id": 104,
    "slug": "stacker",
+   "coverage": "small game",
    "category": "games",
    "source": "origin/bench/505-games:tools/agent-eval/tasks/12-games-2.md",
    "bench505": {
@@ -98,33 +105,13 @@
    "followUp": {
     "text": "Add pause: pressing P pauses the game (the slab stops moving and Space or clicks do not drop it) and pressing P again resumes. Show 'Paused' in the HUD while paused and add paused: boolean to window.__TASK_STATE__.",
     "probe": "stacker-followup"
-   }
-  },
-  {
-   "id": 105,
-   "slug": "garden",
-   "category": "interactive",
-   "source": "origin/bench/505-interactive:tools/agent-eval/tasks/10-interactive-garden.md",
-   "bench505": {
-    "medianTurns": {
-     "aura": 25,
-     "auraSheet": 15,
-     "three": 4
-    }
    },
-   "causes": [
-    "A look/lighting",
-    "C shadows"
-   ],
-   "probe": "garden",
-   "followUp": {
-    "text": "Add an 'Undo' DOM button next to 'Clear' that removes the most recently planted plant (repeated clicks keep removing the newest remaining plant). The 'Plants: N' overlay and window.__TASK_STATE__ must update.",
-    "probe": "garden-followup"
-   }
+   "assetHeavy": false
   },
   {
    "id": 106,
    "slug": "materials",
+   "coverage": "materials (metal / glass)",
    "category": "materials",
    "source": "origin/bench/505-materials:tools/agent-eval/tasks/10-materials-1.md",
    "bench505": {
@@ -142,52 +129,82 @@
    "followUp": {
     "text": "Keys 1, 2 and 3 select the glass, metal and fabric sphere; the selected sphere slowly spins about its vertical axis and the others stay still. Add selected: 'glass' | 'metal' | 'fabric' | null (null before any key) to window.__TASK_STATE__.",
     "probe": "materials-followup"
-   }
+   },
+   "assetHeavy": false
   },
   {
-   "id": 107,
-   "slug": "lighthouse",
-   "category": "models",
-   "source": "origin/bench/505-models:tools/agent-eval/tasks/10-models-1-lighthouse.md",
+   "id": 109,
+   "slug": "product",
+   "coverage": "product viewer",
+   "category": "materials",
+   "source": "origin/bench/505-materials:tools/agent-eval/tasks/11-materials-2.md",
    "bench505": {
     "medianTurns": {
-     "aura": 26,
-     "auraSheet": 10,
-     "three": 5
+     "aura": 33,
+     "auraSheet": 13,
+     "three": 6
     }
    },
    "causes": [
-    "H missing helper (beam)",
-    "A look",
-    "procedural asset (bridge candidate)"
+    "B clearcoat / metal against a uniform environment",
+    "A look"
    ],
-   "probe": "lighthouse",
+   "probe": "product",
    "followUp": {
-    "text": "Make the lantern lamp blink: on for 1 second, off for 1 second, repeating (the lamp is visibly dark when off). Add lampOn: boolean to window.__TASK_STATE__ and keep it current every frame.",
-    "probe": "lighthouse-followup"
-   }
+    "text": "Add three DOM buttons outside the canvas labelled 'Red', 'Blue' and 'Black' that repaint the car body (base paint colour only; the clear coat, flakes, chrome and glass stay) in candy red, deep metallic blue and gloss black. Red is the starting colour. Add paintColor: 'red' | 'blue' | 'black' to window.__TASK_STATE__.",
+    "probe": "product-followup"
+   },
+   "assetHeavy": true
   },
   {
-   "id": 108,
-   "slug": "plinko",
-   "category": "physics",
-   "source": "origin/bench/505-physics:tools/agent-eval/tasks/12-physics-plinko.md",
+   "id": 110,
+   "slug": "clock",
+   "coverage": "interior",
+   "category": "animation",
+   "source": "origin/bench/505-animation:tools/agent-eval/tasks/11-pendulum-clock.md",
    "bench505": {
     "medianTurns": {
-     "aura": 17,
-     "auraSheet": 8,
+     "aura": 13,
+     "auraSheet": 7,
      "three": 4
     }
    },
    "causes": [
-    "control: Aura3D won 2 of 3 judged pairs in both arms in benchmark 505",
-    "K physics peer (runtime)"
+    "A warm interior look",
+    "E framing",
+    "C shadows"
    ],
-   "probe": "plinko",
+   "probe": "clock",
    "followUp": {
-    "text": "Add a 'Drop 1 Ball' DOM button that drops one more ball from the top centre using the next ball index in the same offset formula. It lands in the bins and is counted in bins, spawned and total like the others.",
-    "probe": "plinko-followup"
-   }
+    "text": "Add a DOM button labelled 'Lights off' outside the canvas. Clicking it switches the room to a dim night look (the clock face stays readable) and relabels the button 'Lights on'; clicking it again restores the warm lighting. Expose window.__TASK_STATE__ = { lightsOn: boolean, pendulumAngleDeg: number } updated every frame (the pendulum's current angle from vertical, signed).",
+    "probe": "clock-followup"
+   },
+   "assetHeavy": true
+  },
+  {
+   "id": 111,
+   "slug": "solar",
+   "coverage": "animated presentation",
+   "category": "interactive",
+   "source": "origin/bench/505-interactive:tools/agent-eval/tasks/11-interactive-solar.md",
+   "bench505": {
+    "medianTurns": {
+     "aura": 37,
+     "auraSheet": 24,
+     "three": 4
+    }
+   },
+   "causes": [
+    "A look",
+    "E framing on a moving subject",
+    "camera transitions"
+   ],
+   "probe": "solar",
+   "followUp": {
+    "text": "Add a DOM button labelled 'Tour' outside the canvas that starts a guided tour: the camera focuses on each planet in turn from the innermost outwards, about 3 seconds per planet (with the info panel), then returns to the overview. While touring the button reads 'Stop tour'; clicking it ends the tour and returns to the overview. Add touring: boolean to window.__TASK_STATE__.",
+    "probe": "solar-followup"
+   },
+   "assetHeavy": false
   }
  ]
 }

@@ -71,6 +71,11 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "fcTeamBench", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // GU47 wave 2 (FC47-A1): inflatable players' tunnel on the far touchline; the simplifier stops at 13.0k on UV seams
     { role: "set-dressing", assetKey: "fcPlayerTunnelMeshy", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // Meshy-07 (FC47-AN1): rigged front-row fans (idle / cheer / pump), crowd dressing: six skinned draws at the far rail; normal maps
+    // dropped at that distance
+    { role: "set-dressing", assetKey: "fcPitchFanAMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
+    { role: "set-dressing", assetKey: "fcPitchFanBMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
+    { role: "set-dressing", assetKey: "fcPitchFanCMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
     { role: "set-dressing", assetKey: "fcBallCrate", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [

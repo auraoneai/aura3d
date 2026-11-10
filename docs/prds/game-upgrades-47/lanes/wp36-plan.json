@@ -161,6 +161,30 @@
    "prefix": "cumulus",
    "style": "storm-washed sky plateau mid-morning after rain, cobalt, wet terracotta sandstone and sage moss with amber accents, wet sandstone, weathered timber, moss and soft cloud",
    "texturePrompt": "rain-washed PBR: wet sandstone, weathered timber, moss, soft cloud; cobalt #2f6fb8, wet sandstone #b5643c, sage moss #6f8f4a, sky-pearl amber #ffb347 accents"
+  },
+  "shape-shift-sprint": {
+   "lane": "M07-SSS",
+   "prefix": "sss",
+   "style": "bright toy-shop daylight, glossy primary red, sunny yellow and sky blue lacquer on warm cream, rounded chunky shapes",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  "number-surge": {
+   "lane": "M07-NS",
+   "prefix": "ns",
+   "style": "neon arcade synthwave dusk, magenta, cyan and gold neon on dark glossy chrome",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  "polarity-orbs": {
+   "lane": "M07-PO",
+   "prefix": "po",
+   "style": "dusk sky above a cloud sea, split warm red and cool blue, polished silver and soft stone",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  "beat-hopper": {
+   "lane": "M07-BH",
+   "prefix": "bh",
+   "style": "night club rhythm stage, purple and magenta neon with cyan accents, glossy black",
+   "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon"
   }
  },
  "summary": {
@@ -4312,8 +4336,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "blacktopFanA",
-   "heightMeters": 1.78
+   "heightMeters": 1.78,
+   "sourceDep": "blacktopFanA",
+   "source": "artifacts/gu47-meshy/aura-hoops-3d/blacktopFanA/opt/model.glb"
   },
   {
    "slug": "aura-hoops-3d",
@@ -4328,8 +4353,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "blacktopFanB",
-   "heightMeters": 1.7
+   "heightMeters": 1.7,
+   "sourceDep": "blacktopFanB",
+   "source": "artifacts/gu47-meshy/aura-hoops-3d/blacktopFanB/opt/model.glb"
   },
   {
    "slug": "aura-hoops-3d",
@@ -4344,8 +4370,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "blacktopFanC",
-   "heightMeters": 1.85
+   "heightMeters": 1.85,
+   "sourceDep": "blacktopFanC",
+   "source": "artifacts/gu47-meshy/aura-hoops-3d/blacktopFanC/opt/model.glb"
   },
   {
    "slug": "aura-hoops-3d",
@@ -4360,8 +4387,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "blacktopFanD",
-   "heightMeters": 1.66
+   "heightMeters": 1.66,
+   "sourceDep": "blacktopFanD",
+   "source": "artifacts/gu47-meshy/aura-hoops-3d/blacktopFanD/opt/model.glb"
   },
   {
    "slug": "aura-hoops-3d",
@@ -5519,8 +5547,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "pitchFanA",
-   "heightMeters": 1.8
+   "heightMeters": 1.8,
+   "sourceDep": "pitchFanA",
+   "source": "artifacts/gu47-meshy/aura-fc-3d/pitchFanA/opt/model.glb"
   },
   {
    "slug": "aura-fc-3d",
@@ -5551,8 +5580,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "pitchFanC",
-   "heightMeters": 1.76
+   "heightMeters": 1.76,
+   "sourceDep": "pitchFanC",
+   "source": "artifacts/gu47-meshy/aura-fc-3d/pitchFanC/opt/model.glb"
   },
   {
    "slug": "aura-fc-3d",
@@ -13147,8 +13177,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "ninjaCasterR2",
-   "heightMeters": 1.75
+   "heightMeters": 1.75,
+   "sourceDep": "ninjaCasterR2",
+   "source": "artifacts/gu47-meshy/ninja-runner-port/ninjaCasterR2/opt/model.glb"
   },
   {
    "slug": "ninja-runner-port",
@@ -13213,8 +13244,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "ninjaScoutR2",
-   "heightMeters": 1.7
+   "heightMeters": 1.7,
+   "sourceDep": "ninjaScoutR2",
+   "source": "artifacts/gu47-meshy/ninja-runner-port/ninjaScoutR2/opt/model.glb"
   },
   {
    "slug": "ninja-runner-port",
@@ -13280,8 +13312,9 @@
    "role": "character",
    "importRole": "character",
    "textureRes": "2k",
-   "dependsOn": "dispatchPassengerR2",
-   "heightMeters": 1.72
+   "heightMeters": 1.72,
+   "sourceDep": "dispatchPassengerR2",
+   "source": "artifacts/gu47-meshy/teleoperator/dispatchPassengerR2/opt/model.glb"
   },
   {
    "slug": "teleoperator",
@@ -13430,6 +13463,577 @@
     },
     {
      "clip": "cheer",
+     "actionId": 59
+    }
+   ]
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssToyBlockTower",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "tall stacked wooden toy building blocks tower, chunky cubes, cylinders, arches and triangle blocks in glossy red, sunny yellow and sky blue lacquer, rounded edges, playful, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssToyBlockTowerB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "toy building block castle tower, stacked glossy red, yellow and blue blocks with a cone roof on top, rounded edges, playful toy-shop look, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssPinwheel",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant toy pinwheel windmill on a white and red striped pole, four curved vanes in glossy red, yellow and blue plastic, playful, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssPinwheelB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant playground pinwheel on a tall cream pole, six curved glossy vanes alternating red, yellow and blue, round yellow hub, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssFloatingIsland",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "small floating grassy island with a little toy castle of colourful glossy blocks on top, cream rock underside, playful, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsNeonPalm",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "synthwave neon palm tree, slim trunk with glowing magenta rings, fronds outlined in glowing cyan neon tubes, dark chrome base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsNeonPalmB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "retro arcade neon palm tree sculpture, dark glossy trunk, fronds made of glowing magenta and cyan neon light tubes, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsArcadeTower",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "tall slim arcade tower made of stacked giant glowing number digits in neon pink, cyan and gold, dark glossy chrome frame, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsArcadeTowerB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "retro arcade cabinet shaped skyscraper with a glowing screen of big neon numbers, dark chrome body with magenta and cyan neon trim, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsFloatingDice",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "pair of giant neon dice, dark smoked glass cubes with glowing cyan pips and magenta glowing edges, arcade style, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poMagnet",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant horseshoe magnet monument standing upright on a stone plinth, one arm glossy warm red and the other glossy cool blue, polished silver tips, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poMagnetB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "tall horseshoe magnet sculpture, left half bright red, right half bright blue, shiny silver pole tips, simple round pedestal, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poCrystalIsland",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "small floating rock island with tall glowing crystals, half ruby red crystals and half sapphire blue crystals, pale stone, cloud wisps underneath, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poCrystalIslandB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "floating pale stone islet crowned with clusters of red crystals on one side and blue crystals on the other side, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poTeslaCoil",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "tesla coil tower with copper coil rings and a polished silver sphere on top, base painted with one red and one blue stripe, sci-fi, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhHopper",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "prompt": "full body, standing in an A-pose with arms slightly away from the body and feet apart, cute chibi rhythm mascot character with a big round head, oversized glossy magenta headphones, purple hoodie, black shorts, white chunky sneakers, big friendly eyes, symmetrical, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon",
+   "poseMode": "a-pose"
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhHopperRig",
+   "op": "rig",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "bhHopper",
+   "heightMeters": 1.2
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhHopperAnim",
+   "op": "animate",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "bhHopperRig",
+   "clips": [
+    {
+     "clip": "idle",
+     "actionId": 0
+    },
+    {
+     "clip": "cheer",
+     "actionId": 59
+    },
+    {
+     "clip": "pump",
+     "actionId": 49
+    }
+   ]
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhHopperB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "prompt": "full body, standing in an A-pose with arms slightly away from the body and feet apart, cute stylised dancer mascot, round head, big cyan and magenta headphones, glowing purple jacket, white sneakers, toy proportions, symmetrical, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon",
+   "poseMode": "a-pose"
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhHopperBRig",
+   "op": "rig",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "heightMeters": 1.2,
+   "sourceDep": "bhHopperB",
+   "source": "artifacts/gu47-meshy/beat-hopper/bhHopperB/opt/model.glb"
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhHopperBAnim",
+   "op": "animate",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "bhHopperBRig",
+   "clips": [
+    {
+     "clip": "idle",
+     "actionId": 0
+    },
+    {
+     "clip": "cheer",
+     "actionId": 59
+    },
+    {
+     "clip": "pump",
+     "actionId": 49
+    }
+   ]
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhSpeakerStack",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "tall stack of three giant concert loudspeaker cabinets, glossy black with glowing magenta and cyan rings around the woofers, chrome corners, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon"
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhSpeakerStackB",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "big club subwoofer tower, two stacked black speaker cabinets with large glowing magenta ring-lit cones and cyan trim, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon"
+  },
+  {
+   "slug": "beat-hopper",
+   "lane": "M07-BH",
+   "key": "bhTurntable",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "neon DJ turntable deck on a slim stand, glossy black with glowing pink and cyan rings on two vinyl platters, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "club stage PBR: glossy black, emissive magenta and cyan, deep purple; vivid neon"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsPinkPalm",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "stylised palm tree made of glossy hot-pink plastic trunk and bright cyan plastic fronds, toy-like, on a small round black base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "number-surge",
+   "lane": "M07-NS",
+   "key": "nsNumeralSeven",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant glossy hot-pink plastic numeral seven sculpture standing on a round bright cyan base, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poMagnetRed",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "classic horseshoe magnet standing upright, bright glossy red painted body with shiny silver tips, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poMagnetBlue",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "classic horseshoe magnet standing upright, bright glossy blue painted body with shiny silver tips, toy-like, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poCrystalBlue",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "cluster of tall bright sapphire blue crystals growing from a small pale stone base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "polarity-orbs",
+   "lane": "M07-PO",
+   "key": "poCrystalRed",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "cluster of tall bright ruby red crystals growing from a small pale stone base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "dual-tone PBR: glossy warm red, glossy cool blue, polished silver, pale stone; soft dusk light"
+  },
+  {
+   "slug": "shape-shift-sprint",
+   "lane": "M07-SSS",
+   "key": "sssPinwheelC",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "environment",
+   "role": "background",
+   "importRole": "environment",
+   "textureRes": "2k",
+   "prompt": "giant toy pinwheel on a white pole, four vanes coloured bright red, sunny yellow, sky blue and red, glossy plastic, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+   "texturePrompt": "glossy toy lacquer PBR: primary red, sunny yellow, sky blue, warm cream; clean, bright, playful"
+  },
+  {
+   "slug": "aura-fc-3d",
+   "lane": "G09",
+   "key": "pitchFanBRigM07",
+   "op": "rig",
+   "priority": "P2",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "heightMeters": 1.8,
+   "sourceDep": "pitchFanB",
+   "source": "artifacts/gu47-meshy/aura-fc-3d/pitchFanB/opt/model.glb"
+  },
+  {
+   "slug": "aura-fc-3d",
+   "lane": "G09",
+   "key": "pitchFanBAnimM07",
+   "op": "animate",
+   "priority": "P2",
+   "usedBy": [
+    "M07"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "pitchFanBRigM07",
+   "clips": [
+    {
+     "clip": "idle",
+     "actionId": 11
+    },
+    {
+     "clip": "cheer",
+     "actionId": 303
+    },
+    {
+     "clip": "pump",
      "actionId": 59
     }
    ]

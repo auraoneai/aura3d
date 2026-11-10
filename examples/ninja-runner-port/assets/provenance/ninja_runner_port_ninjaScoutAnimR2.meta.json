@@ -1,0 +1,69 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a1c0a1-655f-74ce-a7ca-60cf070d2f78",
+    "operation": "animate",
+    "createdAt": "2026-11-04T10:43:47.137Z",
+    "finishedAt": "2026-11-09T14:06:21.284Z",
+    "consumedCredits": 47,
+    "pipeline": [
+      {
+        "row": "ninjaScoutR2",
+        "step": "preview",
+        "taskId": "01a1a627-81ec-709c-b55e-1a6b8f01b3d7",
+        "operation": "preview",
+        "finishedAt": "2026-11-04T10:43:47.137Z",
+        "consumedCredits": 20
+      },
+      {
+        "row": "ninjaScoutR2",
+        "step": "refine",
+        "taskId": "01a1a628-64d7-7118-9454-ff6e08bb013b",
+        "operation": "refine",
+        "finishedAt": "2026-11-04T10:45:04.743Z",
+        "consumedCredits": 10
+      },
+      {
+        "row": "ninjaScoutRigR2",
+        "step": "rig",
+        "taskId": "01a1c09d-421d-70ae-bed7-d5b14c2d721c",
+        "operation": "rigging",
+        "finishedAt": "2026-11-09T14:02:20.232Z",
+        "consumedCredits": 5
+      },
+      {
+        "row": "ninjaScoutAnimR2",
+        "step": "anim-idle",
+        "taskId": "01a1c0a0-6a16-74e9-86ae-dea46e6d96ba",
+        "operation": "animate",
+        "finishedAt": "2026-11-09T14:05:16.974Z",
+        "consumedCredits": 3
+      },
+      {
+        "row": "ninjaScoutAnimR2",
+        "step": "anim-throw",
+        "taskId": "01a1c0a0-bc67-7327-94ef-543569387e21",
+        "operation": "animate",
+        "finishedAt": "2026-11-09T14:05:38.482Z",
+        "consumedCredits": 3
+      },
+      {
+        "row": "ninjaScoutAnimR2",
+        "step": "anim-hit",
+        "taskId": "01a1c0a1-1a06-74b0-8cb2-507cbe8a3680",
+        "operation": "animate",
+        "finishedAt": "2026-11-09T14:06:02.744Z",
+        "consumedCredits": 3
+      },
+      {
+        "row": "ninjaScoutAnimR2",
+        "step": "anim-death",
+        "taskId": "01a1c0a1-655f-74ce-a7ca-60cf070d2f78",
+        "operation": "animate",
+        "finishedAt": "2026-11-09T14:06:21.284Z",
+        "consumedCredits": 3
+      }
+    ],
+    "postProcess": "ninjaScoutAnimR2 merged clips plus the run clip of ninjaScoutRigR2 (same 24-joint skeleton, copied by node name); dedup, weld, meshopt simplify to 12k triangles keeping the skin; textures 512 px; GU47 meshy07 2026-11-09"
+  }
+}

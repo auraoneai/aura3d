@@ -11,6 +11,33 @@ import { WGSL_CLIP, WGSL_COLOR, wgslStage } from "../shared/wgsl-twins";
 
 export { quadGeometryInput, quadUpdater } from "../shared/sprite-quads";
 
+type PointUpdate = { array: Float32Array; offset: number };
+interface PointUpdatable { updateAttribute?: (name: string, update: PointUpdate) => void }
+
+/**
+ * Quad sprites only (5.5.1): drops a point update whose array and offset equal the last ones this name passed on, since
+ * the geometry already holds those values (snow size and fade are constant while it snows, mote size changes only with
+ * the night level). Each quad update rewrites four corners and the live query geometry, so a skipped one is real work.
+ */
+export function skipUnchangedUpdates<T extends PointUpdatable>(target: T): PointUpdatable {
+  const last = new Map<string, { array: Float32Array; offset: number }>();
+  return {
+    updateAttribute(name, update) {
+      const previous = last.get(name);
+      const array = update.array;
+      if (previous && previous.offset === update.offset && previous.array.length === array.length) {
+        let same = true;
+        for (let i = 0; i < array.length; i++) if (!Object.is(previous.array[i], array[i])) { same = false; break; }
+        if (same) return;
+      }
+      target.updateAttribute?.(name, update);
+      // Remembered only once the update went through (a throwing update is retried next time).
+      if (previous && previous.array.length === array.length) { previous.array.set(array); previous.offset = update.offset; }
+      else last.set(name, { array: array.slice(), offset: update.offset });
+    }
+  };
+}
+
 const QUAD_VERTEX = /* glsl */ `
 attribute float size;
 attribute float fade;

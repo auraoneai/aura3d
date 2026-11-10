@@ -24,7 +24,7 @@ import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
-import { quadGeometryInput, quadUpdater } from "./point-quads";
+import { quadGeometryInput, quadUpdater, skipUnchangedUpdates } from "./point-quads";
 
 type Scene = ReturnType<typeof scene>;
 
@@ -293,10 +293,10 @@ const FORCE_RAIN = FX.has("forcerain");
 export const PINNED_BAND = parseBand(QUERY.get("band"));
 export const LOOK = parseLook(QUERY.get("look"));
 /**
- * Weather and mote sprites: `gl_PointSize` points by default; with a lab backend requested (`?backend=webgpu|auto`) the
- * same sprites as screen-aligned quads (point-quads.ts), since WebGPU has no point size. The default scene is unchanged.
+ * Weather and mote sprites: screen-aligned quads (point-quads.ts) whenever the backend may be WebGPU (the default `auto`, or
+ * `?backend=webgpu`), since WebGPU has no point size; `?backend=webgl2` keeps the `gl_PointSize` points.
  */
-const SPRITE_QUADS = resolveLabBackend(readLabFlags()) !== undefined;
+const SPRITE_QUADS = resolveLabBackend(readLabFlags(), "auto") !== undefined;
 const spriteGeometry = (input: Parameters<typeof geometry.dynamic>[0] & { positions: Float32Array; attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> }) =>
   SPRITE_QUADS ? geometry.dynamic(quadGeometryInput(input.positions, input.attributes)) : geometry.dynamic(input);
 const spriteMaterial = (tint: readonly [number, number, number]) => material.custom(SPRITE_QUADS ? pointQuadSpec(tint) : pointsSpec(tint));
@@ -739,8 +739,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const moteSeeds = Array.from({ length: MOTE_COUNT }, () => [rand(), rand(), rand(), rand()] as const);
   const wpos = new Float32Array(WEATHER_COUNT * 3), wfade = new Float32Array(WEATHER_COUNT), wsize = new Float32Array(WEATHER_COUNT);
   const mpos = new Float32Array(MOTE_COUNT * 3), mfade = new Float32Array(MOTE_COUNT), msize = new Float32Array(MOTE_COUNT);
-  /** With sprite quads, the point arrays written below land on the four corners of each quad. */
-  const spriteHandle = (h: Handle) => SPRITE_QUADS ? quadUpdater(h, { position: 3, size: 1, fade: 1 }) : h;
+  /** With sprite quads, the point arrays written below land on the four corners of each quad (unchanged arrays are not rewritten). */
+  const spriteHandle = (h: Handle) => SPRITE_QUADS ? skipUnchangedUpdates(quadUpdater(h, { position: 3, size: 1, fade: 1 })) : h;
   const sky = node("sky"), clouds = node("cloud-sea"), weather = spriteHandle(node("weather")), motes = spriteHandle(node("motes")), rain = node("rain");
   const rpos = new Float32Array(RAIN_COUNT * 12), rfade = new Float32Array(RAIN_COUNT * 4), ruv = new Float32Array(RAIN_COUNT * 8);
   let shownNight = startNight ? 1 : 0;

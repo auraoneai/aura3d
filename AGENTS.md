@@ -29,6 +29,19 @@ npm run build && npx @aura3d/cli@latest check-deploy --dist dist
 
 Inside this monorepo, browsers, Playwright and heavy builds run on the remote runner (`tools/remote-acr/run.sh`); never local Docker or local Playwright.
 
+## Shipping rules (owner directive, 2026-11-09 — these override any slower habit)
+
+The owner lost most of 2026-11-08/09 to release-process overhead: full ACR passes rerun for changes that never needed them, release worktrees deleted mid-pass, outside commits pushed onto a candidate under test, and new version numbers for small changes. These rules exist so that never happens again.
+
+1. **Live changes to games, the site and docs ship site-only.** Anything under `apps/`, `examples/`, `marketing/`, `public/`, game assets or docs goes: merge to `main` → real-GPU check of the touched games (headless Chrome over loopback CDP; all 30 if shared code moved) → `pnpm build && pnpm --dir marketing build` → Cloudflare Pages preview → prod (`--branch main`) → prod check → push `main`. About 30 minutes. **No ACR pass, no npm release, no new version number.**
+2. **Engine fixes the owner wants live now also ship site-only.** The site builds the engine from the workspace, so a verified engine change (for example a game switching to WebGPU) goes live on the site the same way as rule 1, after a real-GPU check that the affected games render with 0 errors. The npm packages pick it up in the next batched release; do not cut a release just for it.
+3. **The full ACR source pass is only for publishing npm packages.** Batch every package change into one candidate. Never restart a pass that is running because of a site, docs, SEO or game-content change; those go out through rule 1 instead.
+4. **A release branch under test belongs to the release session.** No other agent or session pushes to `release/*` or edits a `release/*` worktree while a pass is running. Put site/SEO/content work on `main` (rule 1); the release session merges `main` into the site tree when it deploys.
+5. **Never delete, prune or force-remove a locked worktree.** `aura3d-cand*`, `aura3d-site*` and lane worktrees are locked while in use; a locked worktree is in use. Cleanups skip locked worktrees.
+6. **No new version numbers without an explicit owner ask.** Work that misses a release waits for the next one the owner asks for; it does not create a new version on its own. Record follow-ups in `docs/project/future-engine-work.md`.
+7. **Generated copies are regenerated, never hand-edited.** After editing `llms.txt`, run `pnpm skills:sync`; after editing a showcase-port wrapper page, put the change in the example page and run `node tools/showcase-port-pages/sync.mjs`; after any app/example edit, run `node tools/agent-examples/refresh-catalog-digests.mjs`. Then `node tools/site/seo-meta-pass.mjs --check`.
+8. **Status answers are a short numbered list with one ETA.** No essays.
+
 ## Repo rules
 
 - **Canonical Production Hosting (Cloudflare Pages ONLY — Do Not Deploy to Vercel):**

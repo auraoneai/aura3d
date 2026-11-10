@@ -23,7 +23,7 @@ import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
 import { NO_MOTION, bodyMotion, followDrive } from "./gait-motion";
 import { STRIDE_SPEED, footstepCell } from "./locomotion";
-import { KITE_FLIGHT, KITE_HEIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
+import { KITE_FLIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
 import { SEA_LEVEL, STREAM_POINTS, blobOcclusion, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
@@ -693,12 +693,6 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         const upwindYaw = Math.atan2(-WIND_DIR[0], -WIND_DIR[1]);
         const yawK = upwindYaw + Math.sign(-upwindYaw) * (KITE_FLIGHT.towardViewDeg * Math.PI) / 180 + 0.1 * m * Math.sin(t * 0.9);
         node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(-0.35 - 0.06 * m * Math.sin(t * 1.7), yawK, 0.14 * m * Math.sin(t * 1.1 + 0.4 * g));
-        // the string: hand to the kite's bridle (a little below its centre)
-        const ax = hx + KITE_FLIGHT.hand[0], ay = hy + KITE_FLIGHT.hand[1], az = hz + KITE_FLIGHT.hand[2];
-        const bx = kitePos.x, by = kitePos.y - 0.15 * KITE_HEIGHT, bz = kitePos.z;
-        const dx = bx - ax, dy = by - ay, dz = bz - az, len = Math.max(0.01, Math.hypot(dx, dy, dz));
-        node("kite-string").setPosition((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2)
-          .setRotation(-Math.asin(dy / len), Math.atan2(dx, dz), 0).setScale([0.028, 0.028, len]);
       };
       const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream", "terrain"];
       // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys

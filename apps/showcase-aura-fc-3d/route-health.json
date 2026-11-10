@@ -70,6 +70,21 @@
       "role": "setDressing"
     },
     {
+      "typedRef": "assets.fcPitchFanAMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.fcPitchFanBMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.fcPitchFanCMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
       "typedRef": "assets.fcBallCrate",
       "quality": "candidate",
       "role": "setDressing"

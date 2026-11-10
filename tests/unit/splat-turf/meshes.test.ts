@@ -47,16 +47,16 @@ describe("splat turf mesh dimensions and vertex counts", () => {
     expect(maxX).toBeCloseTo(0.28, 9);
   });
 
-  it("ball: r 0.45, 25 x 17 = 425 verts", () => {
+  it("ball: r 0.45, 49 x 33 = 1617 verts", () => {
     const m = ballMesh();
-    expect(m.positions.length / 3).toBe(425);
+    expect(m.positions.length / 3).toBe(1617);
     expect(extent(m, 1)).toEqual([-BALL_RADIUS, BALL_RADIUS]);
   });
 
-  it("paint cell: 0.96 x 0.96 inset quad", () => {
+  it("paint cell: 1 x 1 quad (the paint program draws the streak edges)", () => {
     const m = cellMesh();
-    expect(extent(m, 0)).toEqual([-0.48, 0.48]);
-    expect(extent(m, 2)).toEqual([-0.48, 0.48]);
+    expect(extent(m, 0)).toEqual([-0.5, 0.5]);
+    expect(extent(m, 2)).toEqual([-0.5, 0.5]);
   });
 
   it("solvent strip: one lane wide, exactly 10 m long", () => {

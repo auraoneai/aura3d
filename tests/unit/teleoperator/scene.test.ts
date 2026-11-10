@@ -9,7 +9,7 @@ const NODES = [
   ...PLAYABLE_IDS.map((id) => `player-car-${id}`),
   ...ROAD_STRIPS.map((s) => s.id),
   ...INSTANCED,
-  "taxi-beacon-ring", "taxi-beacon-disc", "taxi-beacon-beam", "taxi-beacon-core", "taxi-passenger-body", "taxi-passenger-head", "taxi-passenger-arm",
+  "taxi-beacon-ring", "taxi-beacon-disc", "taxi-beacon-beam", "taxi-beacon-core", "taxi-passenger",
   ...Array.from({ length: 8 }, (_, i) => [`sf-bldg-l-${i}`, `sf-bldg-r-${i}`]).flat(),
   ...Array.from({ length: TRAFFIC_COUNT }, (_, i) => `traffic-${i}`),
   ...RIVALS.map((_, k) => `rival-car-${k}`)

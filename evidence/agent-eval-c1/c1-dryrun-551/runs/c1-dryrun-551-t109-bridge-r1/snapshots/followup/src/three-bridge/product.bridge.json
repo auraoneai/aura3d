@@ -1,0 +1,49 @@
+{
+  "bridgeVersion": 1,
+  "name": "product",
+  "generator": {
+    "path": "recipes/product.mjs",
+    "sha256": "068fb022f046651554869e780b45b06da277a5d9c78543d01f57f60df8271759",
+    "export": "default"
+  },
+  "seed": 7,
+  "params": {
+    "paint": "#b0121b"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/product.glb",
+    "sha256": "c407dd81c98ebd8767f1088fb4e12a77789a722110f1e3ed2eb3ae97322fdd2c",
+    "bytes": 137800
+  },
+  "nodeIds": [
+    "car",
+    "car__body",
+    "car__cabin",
+    "car__trim",
+    "car__wheel0",
+    "car__wheel1",
+    "car__wheel2",
+    "car__wheel3",
+    "turntable",
+    "key"
+  ],
+  "materials": [
+    "paint",
+    "glass",
+    "chrome",
+    "rubber",
+    "rubber",
+    "rubber",
+    "rubber",
+    "table"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 11,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}
