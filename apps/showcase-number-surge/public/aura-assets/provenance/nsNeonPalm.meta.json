@@ -12,17 +12,17 @@
     "expires_at": 0,
     "task_error": null,
     "model_urls": {
-      "glb": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/model.glb?Expires=4947782400&Signature=aJkTi1TvRJSqItmu~rJ8SunZbpTv9HBA1~YYLLA4amx8LfXKs21ywGRUDCSQg62zMFOfXx4xpOlEpq7C-Wi8gPkylSu6w5uT3Yx4qyVVRByN~AXPVvNPOxbncEGqUAN3xKa15z5qyRhgod1VzggAWJR~OA8YskwtxjkYI6i7cSbC1w~8Qj2zdf4Ej2i9UaL~~N9CULEyf1PgpZ0AzjpZlFSjO47EnMxhapI0OK0iVoLMJfdzTe9kSX64lOMPbAb4K5Uurr0w20oIZgIjjIrRa0smFmYtjDDkSSZAqItKh43JWEXn6hJwlwEtnP6I2A7o2TFfwCnvvYtYOxDZiYzFpg__&Key-Pair-Id=K1VGYTHIYLM9UM"
+      "glb": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/model.glb"
     },
     "texture_urls": [
       {
-        "base_color": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0.png?Expires=4947782400&Signature=FlqBzwqP48zOMrXkmz7eeyXgXzyklq037BEVKjumBjqA8Vkgk26TKr07ZJcOsOz0TLWh-1uxicynm208ulllPG9qyP~8PyCYG-gu~ciwF~jLp3rW8d9fUUZBzjYKr5UsW9Sn-mG-hYHeSzJmUKsZmG06ky9k7Rx-PFJn~fvsYFG8BneikFR2G4kFFBxuSo4gnZ7gYj~22WZCqosPxjTfrta8OyKzsZUH5CJlaliYcxnMUuxStqJGeTSJxSMzl9T0XUnAapBu2P-jQCith~FYmh987CK-DmnHrb5GtmVkhsVXsyO8f8fYnJ8Zjq2JP9JM7dkan-bBlgo2dYiSDWukcA__&Key-Pair-Id=K1VGYTHIYLM9UM",
-        "metallic": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0_metallic.png?Expires=4947782400&Signature=JUUQOSa71caWyVXkQ8wjcYb8uzbzO1V6w-Jnz99v307YbkWGkXNF1iuniwKdQuTjNf9hlT~xsEwAcW-6l2SlNnytBL7USyWvzoTvPWX4gIDXG0XknIbrHZ0OEjFvwLDROws6LxtHQKXPyeLtBFuT9p-xYdOMET7Hu75ku-ESQyL2UzJuVmK1o7dmjKz7u08GU3mNypFAf2CNFo8kHRQq9Wg2eNf~KpGIJIWAW0Ox8lWFlqh8-cx1x9DeNFSYoCFRGGHRiBDRdwq-87GmwZohwbdrxLaTlTpMEf92DFQKMDT2TElHxU1E8rlLAi~GlGLxZeNzGIgkdUeX4PRf0mslJA__&Key-Pair-Id=K1VGYTHIYLM9UM",
-        "normal": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0_normal.png?Expires=4947782400&Signature=eGcVgk3T24YwRVlAuQMZlbHouNchg5M5~-sbxcPfzci9UlTNLXP53DsdkqCcTUqUA~F0HdjsZe9XsGrkwXVE6FVxAmj-4CktEmrCuAlpi8xaRwEb0DSxtzztwoXFLsWzOy~7yNyg480TSLEvnj1DAj~7-e5Obr1Sr2yIIOct8vzdvntgz0pwj~RI45Pvj96ocVAVFJCa4kJJfhXPLMayKp-gysg3FyOVdmut~6D9Bho3tRwPfytxp-qLnRlaYQx96yPILJQIMv43QRARjCcwLk9SrBx3AIofVs-ZXzSqzPmQaPvVyOC2YBQH-VkY2KfgjlcqFkPdQbQi38TMrNLKvw__&Key-Pair-Id=K1VGYTHIYLM9UM",
-        "roughness": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0_roughness.png?Expires=4947782400&Signature=hRQlJBYIlzlcQqeKc~qhGd8IpX~gjHaikPP28KGz5flXngRPXhrBw-o1dNj08j2L9VbZu8Syy8lDU0AIYYVakRMPtVdleQG9ZieoK~fO4sABKzD2mbP9~3lPSThvsXVkStG6Ptn-FDFUyjyXi9C3vUF1pEy7yJJ3LWFyS85YdxEi9AfMOhD5nDDiG7CSeddXzHSdttuZkBM5jXxq51IbN~Ni6Whrnkb3DoxPF7CDe2QiLBxerVXnds9QZGpA-HmA1lXAvamoDtsHk9Dd6pKQ3ubEcJBgEWxjtXJM0sJlnnNOMTueIdELQP2EHiLGANjT~OG8WF3bIa774dwKSrMZsQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
+        "base_color": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0.png",
+        "metallic": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0_metallic.png",
+        "normal": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0_normal.png",
+        "roughness": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/texture_0_roughness.png"
       }
     ],
-    "thumbnail_url": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/preview.png?Expires=4947782400&Signature=Usrgzscv8H-kRIkMbqyPhQO4l8DSSQrPHUN231gZcIK9nuCrVAgpFgm9cNgd0QvK9MsDLeamhXH-wmP8cr~Dvy8~10K9ZcjKp7wF7RkJUsb1z3cEe-tCKOx-cRiem49fXUhp67Qp2IIoNJb2YAn1Y9uA-YXlw8aFGFylhvExHF~uPM0ELY9AdOb-MGBT~bNT1DBe0F9hEofZSq7IolVZlw1jZVlTQjva5962uUH542sLrLTB0ebXygFDcoov1md8BDkbl2EXVkno6f5xjHp6YXFtymZfD4HIcGyFmwCYQVhZ0aosMedLbHO-a6aXd8v0yQ1urek8~l6kdtyETJ3DOQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
+    "thumbnail_url": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c08f-8ad6-7353-8f51-30fb1e280af8/output/preview.png",
     "prompt": "synthwave neon palm tree, slim trunk with glowing magenta rings, fronds outlined in glowing cyan neon tubes, dark chrome base, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
     "texture_prompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave",
     "texture_image_url": "",

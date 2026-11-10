@@ -1,9 +1,8 @@
 # 301 Permanent Redirects
-# Docs index consolidates on the homepage (replaces the dead vercel.json redirects).
-/docs / 301
-/docs/ / 301
-/docs/index / 301
-/docs/index.html / 301
+# The docs hub lives at /docs/ (the header Docs link points there); old index URLs land on it.
+/docs /docs/ 301
+/docs/index /docs/ 301
+/docs/index.html /docs/ 301
 /apps /apps/showcase-index/ 301
 /apps/ /apps/showcase-index/ 301
 

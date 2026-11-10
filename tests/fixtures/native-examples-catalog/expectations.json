@@ -9500,7 +9500,7 @@
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
-          "sha256": "9dc42619f52947340ee12ba0453c8f3e53b30b1ab7ddb4062db1a0ffbdcd2d2f"
+          "sha256": "13f26b561e768f81b93c9243de8cba48bfdf5ad58cd6150dc19ef35b8a052869"
         },
         {
           "path": "apps/showcase-splat-turf/src/look.ts",
