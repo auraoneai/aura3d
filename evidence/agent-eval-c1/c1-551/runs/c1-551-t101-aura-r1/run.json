@@ -1,0 +1,481 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t101-aura-r1",
+  "batch": "c1-551",
+  "arm": "aura",
+  "task": 101,
+  "slug": "spider",
+  "idx": 1,
+  "order": 9,
+  "seed": 20261108009,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:29:56.711Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 201517,
+  "usage": {
+    "input": 730745,
+    "uncachedInput": 730745,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 6176,
+    "turns": 20,
+    "providerCredits": 4.598160999999999,
+    "providerCostUsd": null,
+    "modelMs": 150878,
+    "toolMs": 50638,
+    "perTurnInput": [
+      3732,
+      9550,
+      20016,
+      23842,
+      24070,
+      25891,
+      35101,
+      35307,
+      37366,
+      39042,
+      41776,
+      44765,
+      44921,
+      47916,
+      48072,
+      49073,
+      49604,
+      50117,
+      50157,
+      50427
+    ],
+    "perTurnOutput": [
+      13,
+      20,
+      32,
+      102,
+      17,
+      23,
+      3691,
+      58,
+      56,
+      93,
+      54,
+      446,
+      5,
+      806,
+      5,
+      57,
+      331,
+      206,
+      1,
+      160
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 189820,
+      "input": 580044,
+      "uncachedInput": 580044,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 5809,
+      "turns": 17,
+      "providerCredits": 4.160264999999999,
+      "providerCostUsd": null,
+      "modelMs": 139587,
+      "toolMs": 50232,
+      "perTurnInput": [
+        3732,
+        9550,
+        20016,
+        23842,
+        24070,
+        25891,
+        35101,
+        35307,
+        37366,
+        39042,
+        41776,
+        44765,
+        44921,
+        47916,
+        48072,
+        49073,
+        49604
+      ],
+      "perTurnOutput": [
+        13,
+        20,
+        32,
+        102,
+        17,
+        23,
+        3691,
+        58,
+        56,
+        93,
+        54,
+        446,
+        5,
+        806,
+        5,
+        57,
+        331
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 1.218178,
+        "listUsd": 1.218178,
+        "providerUsd": null,
+        "providerCredits": 4.160265,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 11697,
+      "input": 150701,
+      "uncachedInput": 150701,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 367,
+      "turns": 3,
+      "providerCredits": 0.437896,
+      "providerCostUsd": null,
+      "modelMs": 11291,
+      "toolMs": 406,
+      "perTurnInput": [
+        50117,
+        50157,
+        50427
+      ],
+      "perTurnOutput": [
+        206,
+        1,
+        160
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.305072,
+        "listUsd": 0.305072,
+        "providerUsd": null,
+        "providerCredits": 0.437896,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 1.52325,
+    "listUsd": 1.52325,
+    "providerUsd": null,
+    "providerCredits": 4.598161,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2069,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2070,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 2,
+      "t": 5821,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 3,
+      "t": 6206,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 385
+    },
+    {
+      "i": 4,
+      "t": 10680,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 844
+    },
+    {
+      "i": 5,
+      "t": 10680,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 6,
+      "t": 15490,
+      "type": "search",
+      "pattern": "orientCylinderBetween|setRotation\\("
+    },
+    {
+      "i": 7,
+      "t": 15493,
+      "type": "search",
+      "pattern": "setRotation|rotation"
+    },
+    {
+      "i": 8,
+      "t": 18847,
+      "type": "search",
+      "pattern": "orientCylinderBetween"
+    },
+    {
+      "i": 9,
+      "t": 20630,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/game-kits/racketGeometry.js",
+      "lines": 73
+    },
+    {
+      "i": 10,
+      "t": 76936,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 7046
+    },
+    {
+      "i": 11,
+      "t": 93278,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11429
+    },
+    {
+      "i": 12,
+      "t": 99100,
+      "type": "search",
+      "pattern": "setRotation|\\.rotation\\(|euler|degrees"
+    },
+    {
+      "i": 13,
+      "t": 103555,
+      "type": "search",
+      "pattern": "ZYX|setQuaternion|setRotationQuat|setScale"
+    },
+    {
+      "i": 14,
+      "t": 103575,
+      "type": "search",
+      "pattern": "setRotation\\(.{0,120}"
+    },
+    {
+      "i": 15,
+      "t": 106617,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+      "lines": 90
+    },
+    {
+      "i": 16,
+      "t": 106668,
+      "type": "search",
+      "pattern": "rotationOrder"
+    },
+    {
+      "i": 17,
+      "t": 124104,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 18,
+      "t": 124104,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 19,
+      "t": 124105,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 20,
+      "t": 144149,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 17609
+    },
+    {
+      "i": 21,
+      "t": 157563,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 22,
+      "t": 157563,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 23,
+      "t": 157563,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 24,
+      "t": 178375,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 18795
+    },
+    {
+      "i": 25,
+      "t": 184246,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 26,
+      "t": 189820,
+      "type": "finish"
+    },
+    {
+      "i": 27,
+      "t": 195393,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 28,
+      "t": 198065,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 29,
+      "t": 202037,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 385
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 844
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11429
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 17609
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 18795
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/game-kits/racketGeometry.js"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Space now toggles the spider between walking and paused, and `window.__TASK_STATE__ = { walking: boolean }` tracks the current state, starting as `true`. Typecheck passes. I did not render or press Space in a browser, so the pause and resume are untested.\n\nThe gait now runs off its own clock that only advances while walking. When paused, the legs and body hold their pose, and resuming continues from the same point in the cycle. Holding the key down does not repeat the toggle, and the page's default Space action (scrolling) is suppressed. The change is in `src/main.ts`."
+}

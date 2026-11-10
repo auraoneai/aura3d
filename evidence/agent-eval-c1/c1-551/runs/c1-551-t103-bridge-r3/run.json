@@ -1,0 +1,810 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t103-bridge-r3",
+  "batch": "c1-551",
+  "arm": "bridge",
+  "task": 103,
+  "slug": "canyon",
+  "idx": 3,
+  "order": 43,
+  "seed": 20261108043,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T08:04:01.670Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Add a DOM button labelled 'Pause flythrough' outside the canvas that stops the camera where it is (the scene keeps rendering) and, clicked again (label 'Resume flythrough'), continues the flythrough. Expose window.__TASK_STATE__ = { flying: boolean, cameraX: number, cameraY: number, cameraZ: number } with the current camera position, updated every frame.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 332407,
+  "usage": {
+    "input": 1974436,
+    "uncachedInput": 1974436,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 9819,
+    "turns": 35,
+    "providerCredits": 9.151076999999999,
+    "providerCostUsd": null,
+    "modelMs": 256048,
+    "toolMs": 76354,
+    "perTurnInput": [
+      4258,
+      5676,
+      14452,
+      23520,
+      28957,
+      29163,
+      35632,
+      39218,
+      39832,
+      39975,
+      40522,
+      46943,
+      48064,
+      58032,
+      58138,
+      61503,
+      62228,
+      63235,
+      64511,
+      66194,
+      68736,
+      68783,
+      68847,
+      71200,
+      74524,
+      75919,
+      76257,
+      76729,
+      78072,
+      79275,
+      79885,
+      80258,
+      81456,
+      81646,
+      82796
+    ],
+    "perTurnOutput": [
+      13,
+      24,
+      57,
+      103,
+      455,
+      11,
+      46,
+      27,
+      39,
+      41,
+      47,
+      592,
+      27,
+      5077,
+      16,
+      85,
+      18,
+      54,
+      18,
+      148,
+      1200,
+      1,
+      5,
+      170,
+      45,
+      157,
+      75,
+      44,
+      173,
+      69,
+      334,
+      71,
+      375,
+      28,
+      174
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 294088,
+      "input": 1648280,
+      "uncachedInput": 1648280,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 9171,
+      "turns": 31,
+      "providerCredits": 8.116033999999999,
+      "providerCostUsd": null,
+      "modelMs": 237243,
+      "toolMs": 56841,
+      "perTurnInput": [
+        4258,
+        5676,
+        14452,
+        23520,
+        28957,
+        29163,
+        35632,
+        39218,
+        39832,
+        39975,
+        40522,
+        46943,
+        48064,
+        58032,
+        58138,
+        61503,
+        62228,
+        63235,
+        64511,
+        66194,
+        68736,
+        68783,
+        68847,
+        71200,
+        74524,
+        75919,
+        76257,
+        76729,
+        78072,
+        79275,
+        79885
+      ],
+      "perTurnOutput": [
+        13,
+        24,
+        57,
+        103,
+        455,
+        11,
+        46,
+        27,
+        39,
+        41,
+        47,
+        592,
+        27,
+        5077,
+        16,
+        85,
+        18,
+        54,
+        18,
+        148,
+        1200,
+        1,
+        5,
+        170,
+        45,
+        157,
+        75,
+        44,
+        173,
+        69,
+        334
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 3.38827,
+        "listUsd": 3.38827,
+        "providerUsd": null,
+        "providerCredits": 8.116034,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 38318,
+      "input": 326156,
+      "uncachedInput": 326156,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 648,
+      "turns": 4,
+      "providerCredits": 1.035043,
+      "providerCostUsd": null,
+      "modelMs": 18805,
+      "toolMs": 19513,
+      "perTurnInput": [
+        80258,
+        81456,
+        81646,
+        82796
+      ],
+      "perTurnOutput": [
+        71,
+        375,
+        28,
+        174
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.658792,
+        "listUsd": 0.658792,
+        "providerUsd": null,
+        "providerCredits": 1.035043,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 4.047062,
+    "listUsd": 4.047062,
+    "providerUsd": null,
+    "providerCredits": 9.151077,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2416,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 2416,
+      "type": "read",
+      "path": "BRIDGE.md",
+      "lines": 21
+    },
+    {
+      "i": 2,
+      "t": 4509,
+      "type": "read",
+      "path": "docs/agents/three-bridge.md",
+      "lines": 121
+    },
+    {
+      "i": 3,
+      "t": 4509,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 4,
+      "t": 4510,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 8352,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 6,
+      "t": 8352,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 7,
+      "t": 9190,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 838
+    },
+    {
+      "i": 8,
+      "t": 16301,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1134
+    },
+    {
+      "i": 9,
+      "t": 17944,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1643
+    },
+    {
+      "i": 10,
+      "t": 17959,
+      "type": "search",
+      "pattern": "vertex colo|COLOR_0|vertexColors"
+    },
+    {
+      "i": 11,
+      "t": 38649,
+      "type": "search",
+      "pattern": "shadow|fog|preetham|gradient|atmosphere"
+    },
+    {
+      "i": 12,
+      "t": 41613,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 111
+    },
+    {
+      "i": 13,
+      "t": 48248,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 2485
+    },
+    {
+      "i": 14,
+      "t": 52334,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1961
+    },
+    {
+      "i": 15,
+      "t": 54313,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1979
+    },
+    {
+      "i": 16,
+      "t": 56383,
+      "type": "search",
+      "pattern": "interface (AuraDirectionalShadowOptions|AuraSkyGradientOptions|AuraSkySunSpec|Au"
+    },
+    {
+      "i": 17,
+      "t": 59284,
+      "type": "search",
+      "pattern": "(interface|type) (AuraDirectionalShadowOptions|AuraSkyGradientOptions|AuraSkySun"
+    },
+    {
+      "i": 18,
+      "t": 61661,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 120
+    },
+    {
+      "i": 19,
+      "t": 61661,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts",
+      "lines": 90
+    },
+    {
+      "i": 20,
+      "t": 87552,
+      "type": "search",
+      "pattern": "interface AuraCameraController\\b|interface AuraFramePose\\b"
+    },
+    {
+      "i": 21,
+      "t": 88833,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1281
+    },
+    {
+      "i": 22,
+      "t": 90873,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 23,
+      "t": 155679,
+      "type": "write",
+      "tool": "write_file",
+      "path": "recipes/canyon.mjs",
+      "bytes": 10555
+    },
+    {
+      "i": 24,
+      "t": 161154,
+      "type": "bridge",
+      "name": "canyon",
+      "pass": true,
+      "ms": 518
+    },
+    {
+      "i": 25,
+      "t": 164854,
+      "type": "read",
+      "path": "src/three-bridge/canyon.scene.ts",
+      "lines": 16
+    },
+    {
+      "i": 26,
+      "t": 164859,
+      "type": "search",
+      "pattern": "export "
+    },
+    {
+      "i": 27,
+      "t": 164864,
+      "type": "search",
+      "pattern": "approx|unsupported|vertex|COLOR|terrain"
+    },
+    {
+      "i": 28,
+      "t": 166972,
+      "type": "read",
+      "path": "src/three-bridge/canyon.bridge.ts",
+      "lines": 34
+    },
+    {
+      "i": 29,
+      "t": 173093,
+      "type": "search",
+      "pattern": "azimuthDeg"
+    },
+    {
+      "i": 30,
+      "t": 175299,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 25
+    },
+    {
+      "i": 31,
+      "t": 184693,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 32,
+      "t": 197102,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 2966
+    },
+    {
+      "i": 33,
+      "t": 200041,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 34,
+      "t": 211174,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9467
+    },
+    {
+      "i": 35,
+      "t": 221270,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/canyon.mjs"
+    },
+    {
+      "i": 36,
+      "t": 221746,
+      "type": "bridge",
+      "name": "canyon",
+      "pass": true,
+      "ms": 476
+    },
+    {
+      "i": 37,
+      "t": 225933,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 38,
+      "t": 235297,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9364
+    },
+    {
+      "i": 39,
+      "t": 242184,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 40,
+      "t": 242185,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 41,
+      "t": 245911,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 42,
+      "t": 245911,
+      "type": "read",
+      "path": "src/main.ts",
+      "lines": 10
+    },
+    {
+      "i": 43,
+      "t": 260689,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9384
+    },
+    {
+      "i": 44,
+      "t": 267399,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 45,
+      "t": 282327,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 14928
+    },
+    {
+      "i": 46,
+      "t": 287856,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 47,
+      "t": 288304,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 48,
+      "t": 294089,
+      "type": "finish"
+    },
+    {
+      "i": 49,
+      "t": 298997,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 50,
+      "t": 298997,
+      "type": "read",
+      "path": "src/main.ts",
+      "lines": 15
+    },
+    {
+      "i": 51,
+      "t": 305365,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "index.html"
+    },
+    {
+      "i": 52,
+      "t": 305365,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 53,
+      "t": 306135,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 54,
+      "t": 329091,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 18741
+    },
+    {
+      "i": 55,
+      "t": 332886,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [
+    {
+      "name": "canyon",
+      "pass": true,
+      "ms": 518
+    },
+    {
+      "name": "canyon",
+      "pass": true,
+      "ms": 476
+    }
+  ],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 838
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1134
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1643
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 2485
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1961
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1979
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1281
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9467
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9364
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9384
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 14928
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 18741
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes.md",
+    "docs/agents/three-bridge.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/lighting.d.ts"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "I added a \"Pause flythrough\" button below the canvas. Clicking it stops the camera in place while the scene keeps rendering. The label then becomes \"Resume flythrough\", and clicking again continues from the same spot. Typecheck passes and the render shows no errors. I only checked the button's initial state in the render and did not click it, so the pause and resume behaviour itself is untested.\n\n`window.__TASK_STATE__` is now `{ flying, cameraX, cameraY, cameraZ }` and is updated every frame. I removed the earlier `time`, `z` and `loopSeconds` fields from it. The button is in `index.html` and the logic is in `src/main.ts`. The camera clock only advances while flying, so the small up-and-down bob also freezes on pause."
+}

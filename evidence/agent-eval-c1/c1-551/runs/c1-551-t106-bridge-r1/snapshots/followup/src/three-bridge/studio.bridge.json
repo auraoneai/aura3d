@@ -1,0 +1,35 @@
+{
+  "bridgeVersion": 1,
+  "name": "studio",
+  "generator": {
+    "path": "recipes/studio.mjs",
+    "sha256": "e6c3821e49d05f4caff1ace0b9cded67d7d461464f4a63f9510aede9007548ad",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 0.8,
+    "spacing": 2.1,
+    "part": "cyc"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/studio.glb",
+    "sha256": "95c0c32f3b2a50bf6850c39daa232239bb0fdbe913e66f5a90d4ea724d8706f8",
+    "bytes": 9980
+  },
+  "nodeIds": [
+    "cyclorama"
+  ],
+  "materials": [
+    "cyc"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 3,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

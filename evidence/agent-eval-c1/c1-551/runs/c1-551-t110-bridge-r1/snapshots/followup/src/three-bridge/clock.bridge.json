@@ -1,0 +1,72 @@
+{
+  "bridgeVersion": 1,
+  "name": "clock",
+  "generator": {
+    "path": "recipes/clock.mjs",
+    "sha256": "c08c060b79bd7bf36559cb391e978c53e02b41dda901429ade80a326823d3dca",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {},
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/clock.glb",
+    "sha256": "885055dbe343f2517d5a8aaefc5fb9b8b054bd25828a5cad3bb0e07c499bc9af",
+    "bytes": 83280
+  },
+  "nodeIds": [
+    "wall",
+    "floor",
+    "baseboard",
+    "clock",
+    "clock__base",
+    "clock__base_top",
+    "clock__side_left",
+    "clock__side_right",
+    "clock__back_panel",
+    "clock__rail_top",
+    "clock__rail_bottom",
+    "clock__glass",
+    "clock__hood",
+    "clock__cap",
+    "clock__pediment",
+    "clock__finial",
+    "clock__face_rim",
+    "clock__face",
+    "clock__hour_mark_1",
+    "clock__hour_mark_2",
+    "clock__hour_mark_3",
+    "clock__hour_mark_4",
+    "clock__hour_mark_5",
+    "clock__hour_mark_6",
+    "clock__hour_mark_7",
+    "clock__hour_mark_8",
+    "clock__hour_mark_9",
+    "clock__hour_mark_10",
+    "clock__hour_mark_11",
+    "clock__hour_mark_12",
+    "interior_lamp",
+    "room_lamp",
+    "fill_lamp"
+  ],
+  "materials": [
+    "clock_meshstandard_0",
+    "clock_meshstandard_1",
+    "clock_meshstandard_2",
+    "clock_meshstandard_3",
+    "clock_meshstandard_4",
+    "clock_meshstandard_5",
+    "clock_meshstandard_6",
+    "clock_meshstandard_7",
+    "clock_meshstandard_8",
+    "clock_meshstandard_9"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 16,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

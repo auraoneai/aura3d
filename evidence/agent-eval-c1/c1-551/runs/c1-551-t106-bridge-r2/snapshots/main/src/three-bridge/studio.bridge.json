@@ -1,0 +1,40 @@
+{
+  "bridgeVersion": 1,
+  "name": "studio",
+  "generator": {
+    "path": "recipes/studio.mjs",
+    "sha256": "f3fe32f769eca06467ae66c39f4dd36e3fa8680cefa5cfa499cce343f0b2ec29",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 0.62,
+    "spacing": 1.65
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/studio.glb",
+    "sha256": "a654d8f7bf09a1d2f225a381fb4ee63335499596ca557cba2f68f0bade1d3918",
+    "bytes": 908092
+  },
+  "nodeIds": [
+    "floor",
+    "glass",
+    "metal",
+    "fabric"
+  ],
+  "materials": [
+    "floor",
+    "glass",
+    "metal",
+    "fabric"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 9,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

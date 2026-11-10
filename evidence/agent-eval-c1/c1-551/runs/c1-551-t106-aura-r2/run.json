@@ -1,0 +1,673 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t106-aura-r2",
+  "batch": "c1-551",
+  "arm": "aura",
+  "task": 106,
+  "slug": "materials",
+  "idx": 2,
+  "order": 20,
+  "seed": 20261108020,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:42:53.818Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Keys 1, 2 and 3 select the glass, metal and fabric sphere; the selected sphere slowly spins about its vertical axis and the others stay still. Add selected: 'glass' | 'metal' | 'fabric' | null (null before any key) to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 216467,
+  "usage": {
+    "input": 1484369,
+    "uncachedInput": 1484369,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 7318,
+    "turns": 26,
+    "providerCredits": 7.246462,
+    "providerCostUsd": null,
+    "modelMs": 159104,
+    "toolMs": 57362,
+    "perTurnInput": [
+      3732,
+      9900,
+      16984,
+      25874,
+      34515,
+      41981,
+      42525,
+      45035,
+      50474,
+      51042,
+      52592,
+      58338,
+      58469,
+      61463,
+      63321,
+      67993,
+      71624,
+      76614,
+      77665,
+      77960,
+      79315,
+      81070,
+      81502,
+      84146,
+      84497,
+      85738
+    ],
+    "perTurnOutput": [
+      13,
+      19,
+      25,
+      69,
+      69,
+      65,
+      31,
+      28,
+      73,
+      34,
+      30,
+      2289,
+      5,
+      102,
+      22,
+      105,
+      30,
+      2285,
+      395,
+      5,
+      201,
+      478,
+      66,
+      646,
+      32,
+      201
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 170995,
+      "input": 1148486,
+      "uncachedInput": 1148486,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 6373,
+      "turns": 22,
+      "providerCredits": 6.003393,
+      "providerCostUsd": null,
+      "modelMs": 130787,
+      "toolMs": 40207,
+      "perTurnInput": [
+        3732,
+        9900,
+        16984,
+        25874,
+        34515,
+        41981,
+        42525,
+        45035,
+        50474,
+        51042,
+        52592,
+        58338,
+        58469,
+        61463,
+        63321,
+        67993,
+        71624,
+        76614,
+        77665,
+        77960,
+        79315,
+        81070
+      ],
+      "perTurnOutput": [
+        13,
+        19,
+        25,
+        69,
+        69,
+        65,
+        31,
+        28,
+        73,
+        34,
+        30,
+        2289,
+        5,
+        102,
+        22,
+        105,
+        30,
+        2285,
+        395,
+        5,
+        201,
+        478
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 2.360702,
+        "listUsd": 2.360702,
+        "providerUsd": null,
+        "providerCredits": 6.003393,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 45472,
+      "input": 335883,
+      "uncachedInput": 335883,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 945,
+      "turns": 4,
+      "providerCredits": 1.243069,
+      "providerCostUsd": null,
+      "modelMs": 28317,
+      "toolMs": 17155,
+      "perTurnInput": [
+        81502,
+        84146,
+        84497,
+        85738
+      ],
+      "perTurnOutput": [
+        66,
+        646,
+        32,
+        201
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.681216,
+        "listUsd": 0.681216,
+        "providerUsd": null,
+        "providerCredits": 1.243069,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 3.041918,
+    "listUsd": 3.041918,
+    "providerUsd": null,
+    "providerCredits": 7.246462,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1974,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1974,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 2,
+      "t": 5957,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 3,
+      "t": 5957,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 5957,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 8027,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 111
+    },
+    {
+      "i": 6,
+      "t": 9315,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1288
+    },
+    {
+      "i": 7,
+      "t": 15183,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 96
+    },
+    {
+      "i": 8,
+      "t": 15630,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 447
+    },
+    {
+      "i": 9,
+      "t": 19278,
+      "type": "search",
+      "pattern": "CanvasTexture|dataTexture|textures\\.|AuraTextureRef"
+    },
+    {
+      "i": 10,
+      "t": 19278,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 102
+    },
+    {
+      "i": 11,
+      "t": 22936,
+      "type": "search",
+      "pattern": "AuraProceduralTextureKind ="
+    },
+    {
+      "i": 12,
+      "t": 22946,
+      "type": "search",
+      "pattern": "proceduralTexture|material\\.fabric|brushedMetal|studioGlass"
+    },
+    {
+      "i": 13,
+      "t": 25145,
+      "type": "search",
+      "pattern": "fabric-normal|function fabric|brushedMetal|studioGlass"
+    },
+    {
+      "i": 14,
+      "t": 28396,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+      "lines": 210
+    },
+    {
+      "i": 15,
+      "t": 35845,
+      "type": "search",
+      "pattern": "setLight|heroStage"
+    },
+    {
+      "i": 16,
+      "t": 38240,
+      "type": "search",
+      "pattern": "setLight\\??\\(|AuraLightPatch =|interface AuraLightPatch"
+    },
+    {
+      "i": 17,
+      "t": 40571,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 90
+    },
+    {
+      "i": 18,
+      "t": 62166,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 5595
+    },
+    {
+      "i": 19,
+      "t": 62885,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 20,
+      "t": 80133,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 14322
+    },
+    {
+      "i": 21,
+      "t": 87840,
+      "type": "search",
+      "pattern": "AuraTextureRef\\b"
+    },
+    {
+      "i": 22,
+      "t": 87871,
+      "type": "search",
+      "pattern": "export declare const textures|textures\\.(canvas|data|procedural|fromCanvas)"
+    },
+    {
+      "i": 23,
+      "t": 89893,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/texture.d.ts",
+      "lines": 189
+    },
+    {
+      "i": 24,
+      "t": 94454,
+      "type": "search",
+      "pattern": "interface AuraTextureDataOptions"
+    },
+    {
+      "i": 25,
+      "t": 94490,
+      "type": "search",
+      "pattern": "\\btexture,|\\btexture\\b.*from \"\\./engine/agent-api/nodes/texture"
+    },
+    {
+      "i": 26,
+      "t": 96724,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 27,
+      "t": 120840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 28,
+      "t": 120841,
+      "type": "error",
+      "tool": "edit_file"
+    },
+    {
+      "i": 29,
+      "t": 127662,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 30,
+      "t": 127662,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 31,
+      "t": 127662,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 32,
+      "t": 127662,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 33,
+      "t": 127662,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 34,
+      "t": 127663,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 35,
+      "t": 128133,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 36,
+      "t": 139632,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9430
+    },
+    {
+      "i": 37,
+      "t": 149585,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 38,
+      "t": 162925,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 13340
+    },
+    {
+      "i": 39,
+      "t": 170995,
+      "type": "finish"
+    },
+    {
+      "i": 40,
+      "t": 175895,
+      "type": "read",
+      "path": "src/main.ts",
+      "lines": 60
+    },
+    {
+      "i": 41,
+      "t": 175895,
+      "type": "read",
+      "path": "src/main.ts",
+      "lines": 16
+    },
+    {
+      "i": 42,
+      "t": 184104,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 43,
+      "t": 184104,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 44,
+      "t": 184105,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 45,
+      "t": 184105,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 46,
+      "t": 184105,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 47,
+      "t": 184105,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 48,
+      "t": 184978,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 49,
+      "t": 190309,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 50,
+      "t": 205950,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 15641
+    },
+    {
+      "i": 51,
+      "t": 216921,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1288
+    },
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 447
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 14322
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9430
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 13340
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 15641
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/texture.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Keys 1, 2 and 3 now select the glass, metal and fabric sphere. Only the selected sphere spins, at 0.6 rad/s about its vertical axis, and the other two keep their current angle. `window.__TASK_STATE__` has a new `selected` field typed `'glass' | 'metal' | 'fabric' | null`, which is `null` until a key is pressed. I changed `src/main.ts`, and typecheck passes. The final render still draws the same scene with no errors. I didn't press the keys in a browser, so the key handling and spin are untested.\n\nThe keydown handler matches on `e.code` (Digit1–3) and falls back to `e.key`. The three sphere nodes are now registered with `mutable: true` so their rotation can be set each frame. The glass sphere is uniform, so its spin shows only in the moving highlights and refraction."
+}

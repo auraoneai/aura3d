@@ -1,0 +1,383 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t101-aura-r3",
+  "batch": "c1-551",
+  "arm": "aura",
+  "task": 101,
+  "slug": "spider",
+  "idx": 3,
+  "order": 21,
+  "seed": 20261108021,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:44:00.026Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 256346,
+  "usage": {
+    "input": 370438,
+    "uncachedInput": 370438,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 4490,
+    "turns": 14,
+    "providerCredits": 2.9270140000000002,
+    "providerCostUsd": null,
+    "modelMs": 218235,
+    "toolMs": 38110,
+    "perTurnInput": [
+      3732,
+      9513,
+      16186,
+      19495,
+      19763,
+      30442,
+      30535,
+      30694,
+      32594,
+      33611,
+      35136,
+      35761,
+      35930,
+      37046
+    ],
+    "perTurnOutput": [
+      13,
+      12,
+      37,
+      78,
+      26,
+      3264,
+      6,
+      5,
+      59,
+      197,
+      335,
+      261,
+      40,
+      157
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 229274,
+      "input": 261701,
+      "uncachedInput": 261701,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 4032,
+      "turns": 11,
+      "providerCredits": 2.4586740000000002,
+      "providerCostUsd": null,
+      "modelMs": 203509,
+      "toolMs": 25765,
+      "perTurnInput": [
+        3732,
+        9513,
+        16186,
+        19495,
+        19763,
+        30442,
+        30535,
+        30694,
+        32594,
+        33611,
+        35136
+      ],
+      "perTurnOutput": [
+        13,
+        12,
+        37,
+        78,
+        26,
+        3264,
+        6,
+        5,
+        59,
+        197,
+        335
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.563722,
+        "listUsd": 0.563722,
+        "providerUsd": null,
+        "providerCredits": 2.458674,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 27071,
+      "input": 108737,
+      "uncachedInput": 108737,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 458,
+      "turns": 3,
+      "providerCredits": 0.46834000000000003,
+      "providerCostUsd": null,
+      "modelMs": 14726,
+      "toolMs": 12345,
+      "perTurnInput": [
+        35761,
+        35930,
+        37046
+      ],
+      "perTurnOutput": [
+        261,
+        40,
+        157
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.222054,
+        "listUsd": 0.222054,
+        "providerUsd": null,
+        "providerCredits": 0.46834,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.785776,
+    "listUsd": 0.785776,
+    "providerUsd": null,
+    "providerCredits": 2.927014,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1918,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1918,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 2,
+      "t": 28058,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 3,
+      "t": 28058,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 31847,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 459
+    },
+    {
+      "i": 5,
+      "t": 120556,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 2064
+    },
+    {
+      "i": 6,
+      "t": 120564,
+      "type": "search",
+      "pattern": "rotation\\(|rotate\\(|setRotation"
+    },
+    {
+      "i": 7,
+      "t": 123099,
+      "type": "search",
+      "pattern": "rotation\\??\\(|setRotation\\(|interface AuraTransformSpec"
+    },
+    {
+      "i": 8,
+      "t": 171770,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 6866
+    },
+    {
+      "i": 9,
+      "t": 175947,
+      "type": "aura3d",
+      "command": "validate",
+      "exit": 0,
+      "ms": 831
+    },
+    {
+      "i": 10,
+      "t": 176543,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 11,
+      "t": 194021,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10729
+    },
+    {
+      "i": 12,
+      "t": 201070,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 13,
+      "t": 211447,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 14,
+      "t": 222432,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10985
+    },
+    {
+      "i": 15,
+      "t": 229275,
+      "type": "finish"
+    },
+    {
+      "i": 16,
+      "t": 234287,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 17,
+      "t": 234949,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 18,
+      "t": 250431,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11682
+    },
+    {
+      "i": 19,
+      "t": 256899,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 459
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 2064
+    },
+    {
+      "command": "validate",
+      "exit": 0,
+      "ms": 831
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10729
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10985
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11682
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Space now toggles the spider between walking and paused, and `window.__TASK_STATE__ = { walking: boolean }` tracks the state. It starts as walking. I confirmed it passes `typecheck` and that the app builds and renders, with no errors in the render report. I did not press Space in a browser, so the toggle itself is untested. The render's single frame matches the earlier one.\n\nThe gait now runs from its own clock, which advances only while walking. Pausing therefore freezes the legs and body in their current pose, and resuming continues from that pose without a jump. Held-key repeats are ignored, so holding Space doesn't flicker the state. The change is in `src/main.ts`."
+}

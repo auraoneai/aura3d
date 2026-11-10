@@ -1,0 +1,724 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t101-bridge-r1",
+  "batch": "c1-551",
+  "arm": "bridge",
+  "task": 101,
+  "slug": "spider",
+  "idx": 1,
+  "order": 3,
+  "seed": 20261108003,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:25:40.185Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "max_turns",
+  "wallMs": 234696,
+  "usage": {
+    "input": 1678743,
+    "uncachedInput": 1678743,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 6265,
+    "turns": 33,
+    "providerCredits": 7.668580000000001,
+    "providerCostUsd": null,
+    "modelMs": 193981,
+    "toolMs": 40713,
+    "perTurnInput": [
+      4258,
+      5617,
+      14303,
+      28761,
+      28891,
+      32871,
+      33692,
+      36446,
+      36645,
+      40645,
+      42123,
+      42284,
+      46209,
+      47837,
+      47998,
+      51921,
+      52934,
+      53459,
+      53717,
+      54671,
+      56642,
+      59085,
+      62763,
+      66933,
+      69029,
+      69748,
+      69915,
+      73976,
+      74444,
+      78053,
+      79384,
+      81487,
+      82002
+    ],
+    "perTurnOutput": [
+      13,
+      24,
+      40,
+      3613,
+      38,
+      18,
+      192,
+      187,
+      14,
+      44,
+      119,
+      14,
+      5,
+      156,
+      14,
+      5,
+      41,
+      309,
+      47,
+      27,
+      96,
+      49,
+      77,
+      99,
+      52,
+      90,
+      18,
+      122,
+      33,
+      115,
+      22,
+      443,
+      129
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 166531,
+      "input": 646894,
+      "uncachedInput": 646894,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 4846,
+      "turns": 18,
+      "providerCredits": 4.361103,
+      "providerCostUsd": null,
+      "modelMs": 126732,
+      "toolMs": 39797,
+      "perTurnInput": [
+        4258,
+        5617,
+        14303,
+        28761,
+        28891,
+        32871,
+        33692,
+        36446,
+        36645,
+        40645,
+        42123,
+        42284,
+        46209,
+        47837,
+        47998,
+        51921,
+        52934,
+        53459
+      ],
+      "perTurnOutput": [
+        13,
+        24,
+        40,
+        3613,
+        38,
+        18,
+        192,
+        187,
+        14,
+        44,
+        119,
+        14,
+        5,
+        156,
+        14,
+        5,
+        41,
+        309
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 1.342248,
+        "listUsd": 1.342248,
+        "providerUsd": null,
+        "providerCredits": 4.361103,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "max_turns",
+      "wallMs": 68165,
+      "input": 1031849,
+      "uncachedInput": 1031849,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 1419,
+      "turns": 15,
+      "providerCredits": 3.3074769999999996,
+      "providerCostUsd": null,
+      "modelMs": 67249,
+      "toolMs": 916,
+      "perTurnInput": [
+        53717,
+        54671,
+        56642,
+        59085,
+        62763,
+        66933,
+        69029,
+        69748,
+        69915,
+        73976,
+        74444,
+        78053,
+        79384,
+        81487,
+        82002
+      ],
+      "perTurnOutput": [
+        47,
+        27,
+        96,
+        49,
+        77,
+        99,
+        52,
+        90,
+        18,
+        122,
+        33,
+        115,
+        22,
+        443,
+        129
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 2.077888,
+        "listUsd": 2.077888,
+        "providerUsd": null,
+        "providerCredits": 3.307477,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 3.420136,
+    "listUsd": 3.420136,
+    "providerUsd": null,
+    "providerCredits": 7.66858,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2133,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2133,
+      "type": "read",
+      "path": "BRIDGE.md",
+      "lines": 21
+    },
+    {
+      "i": 2,
+      "t": 4525,
+      "type": "read",
+      "path": "docs/agents/three-bridge.md",
+      "lines": 121
+    },
+    {
+      "i": 3,
+      "t": 4525,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 4,
+      "t": 4526,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 8857,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 6,
+      "t": 8857,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 7,
+      "t": 65493,
+      "type": "write",
+      "tool": "write_file",
+      "path": "recipes/spider.mjs",
+      "bytes": 7636
+    },
+    {
+      "i": 8,
+      "t": 70615,
+      "type": "bridge",
+      "name": "spider",
+      "pass": true,
+      "ms": 399
+    },
+    {
+      "i": 9,
+      "t": 72922,
+      "type": "read",
+      "path": "src/three-bridge/spider.scene.ts",
+      "lines": 16
+    },
+    {
+      "i": 10,
+      "t": 72922,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 11,
+      "t": 78267,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 401
+    },
+    {
+      "i": 12,
+      "t": 87435,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9167
+    },
+    {
+      "i": 13,
+      "t": 95764,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 14,
+      "t": 95764,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 15,
+      "t": 95764,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 16,
+      "t": 98957,
+      "type": "bridge",
+      "name": "spider",
+      "pass": true,
+      "ms": 397
+    },
+    {
+      "i": 17,
+      "t": 112286,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9404
+    },
+    {
+      "i": 18,
+      "t": 112927,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 19,
+      "t": 118579,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 20,
+      "t": 118579,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 21,
+      "t": 120991,
+      "type": "bridge",
+      "name": "spider",
+      "pass": true,
+      "ms": 461
+    },
+    {
+      "i": 22,
+      "t": 132238,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9180
+    },
+    {
+      "i": 23,
+      "t": 138083,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 24,
+      "t": 138083,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 25,
+      "t": 141379,
+      "type": "bridge",
+      "name": "spider",
+      "pass": true,
+      "ms": 425
+    },
+    {
+      "i": 26,
+      "t": 154608,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9289
+    },
+    {
+      "i": 27,
+      "t": 159907,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 28,
+      "t": 166531,
+      "type": "finish"
+    },
+    {
+      "i": 29,
+      "t": 177852,
+      "type": "search",
+      "pattern": "AuraActorAnimationApi"
+    },
+    {
+      "i": 30,
+      "t": 180239,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/animation.d.ts",
+      "lines": 90
+    },
+    {
+      "i": 31,
+      "t": 183842,
+      "type": "search",
+      "pattern": "pause|timeScale|setSpeed|animationSpeed|setTime|seek"
+    },
+    {
+      "i": 32,
+      "t": 183851,
+      "type": "search",
+      "pattern": "timeScale|pauseAnimation|setAnimationSpeed|\\bpause\\("
+    },
+    {
+      "i": 33,
+      "t": 186571,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/runtimeNodes.d.ts",
+      "lines": 42
+    },
+    {
+      "i": 34,
+      "t": 186571,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/actorAnimationHandle.js",
+      "lines": 110
+    },
+    {
+      "i": 35,
+      "t": 190335,
+      "type": "search",
+      "pattern": "timeScale\\??:|set timeScale|\\.timeScale =|setPlaybackSpeed|playbackRate|\\bspeed\\"
+    },
+    {
+      "i": 36,
+      "t": 194323,
+      "type": "search",
+      "pattern": "timeScale|animation|pause|play\\("
+    },
+    {
+      "i": 37,
+      "t": 194323,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/time/TimeController.js",
+      "lines": 100
+    },
+    {
+      "i": 38,
+      "t": 197997,
+      "type": "search",
+      "pattern": "\\.timeScale"
+    },
+    {
+      "i": 39,
+      "t": 202219,
+      "type": "search",
+      "pattern": "timeScale|  play\\(|  pause|  stop\\(|setAnimationSpeed|animationSpeed|setSpeed"
+    },
+    {
+      "i": 40,
+      "t": 204294,
+      "type": "search",
+      "pattern": "timeScale"
+    },
+    {
+      "i": 41,
+      "t": 209253,
+      "type": "search",
+      "pattern": "time"
+    },
+    {
+      "i": 42,
+      "t": 209257,
+      "type": "search",
+      "pattern": "readonly time\\b|time: |AuraTimeApi|setScale|scaleTo"
+    },
+    {
+      "i": 43,
+      "t": 211631,
+      "type": "search",
+      "pattern": "readonly time\\??: |slowMo\\(|hitStop\\("
+    },
+    {
+      "i": 44,
+      "t": 219244,
+      "type": "search",
+      "pattern": "time: |AuraTimeController"
+    },
+    {
+      "i": 45,
+      "t": 221460,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/time.d.ts",
+      "lines": 85
+    },
+    {
+      "i": 46,
+      "t": 228408,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 925
+    },
+    {
+      "i": 47,
+      "t": 228814,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 48,
+      "t": 234780,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 49,
+      "t": 234780,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 50,
+      "t": 235172,
+      "type": "typecheck",
+      "pass": true
+    }
+  ],
+  "bridgeExports": [
+    {
+      "name": "spider",
+      "pass": true,
+      "ms": 399
+    },
+    {
+      "name": "spider",
+      "pass": true,
+      "ms": 397
+    },
+    {
+      "name": "spider",
+      "pass": true,
+      "ms": 461
+    },
+    {
+      "name": "spider",
+      "pass": true,
+      "ms": 425
+    }
+  ],
+  "cliCalls": [
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9167
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9404
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9180
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9289
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/three-bridge.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/actorAnimationHandle.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/time/TimeController.js",
+    "node_modules/@aura3d/engine/dist/engine/contracts/animation.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/runtimeNodes.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/time.d.ts"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "The spider is built in `recipes/spider.mjs` and imported through the bridge. `typecheck` passes and the render shows the whole spider framed from a three-quarter view with soft shadows. The render also reports motion between frames. I only looked at one still frame, so I haven't confirmed the gait visually or that the loop is seamless.\n\n- **Body:** a thorax sphere, an abdomen sphere, an abdomen marking, eyes and fangs.\n- **Legs:** eight, each with an upper segment, a knee joint and a lower segment, plus a foot.\n- **Gait:** one 2-second `walk` clip loops. Opposite-diagonal legs step together, half a cycle apart. Each leg lifts, swings forward and plants. The last key equals the first, so it should loop cleanly.\n- **Body bob:** two small up-and-down bobs per cycle, one per step, with a slight rock.\n- **Backdrop:** a large grey floor on a matching background, lit by a soft hemisphere fill and a shadow-casting key light.\n- **`src/main.ts`:** mounts the scene and sets `window.__EVAL_READY__` on the second frame. It also writes the elapsed time to `window.__TASK_STATE__`.\n\nThe legs look fairly straight and stick-like from this camera, though the knee joints are visible. Planted feet slide backward slightly during stance, because the body stays in place."
+}

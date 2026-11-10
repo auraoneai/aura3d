@@ -1,0 +1,79 @@
+{
+  "bridgeVersion": 1,
+  "name": "clockcase",
+  "generator": {
+    "path": "recipes/clockcase.mjs",
+    "sha256": "3f24813690643be90ba72ddbab33662d41e530459690f9f95c5645b27057ef6d",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "wood": "#6b3a1e",
+    "woodDark": "#3f2111",
+    "dial": "#f1e6c8",
+    "brass": "#c9962b"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/clockcase.glb",
+    "sha256": "1d3f1d41ac419dfa34dc826a06217d24e6b7f37fc2dc85a9cde4614e5457a661",
+    "bytes": 112004
+  },
+  "nodeIds": [
+    "room",
+    "room__wall",
+    "room__floor",
+    "room__skirting",
+    "clock",
+    "clock__plinth",
+    "clock__trunk_back",
+    "clock__trunk_left",
+    "clock__trunk_right",
+    "clock__post_left",
+    "clock__post_right",
+    "clock__rail_top",
+    "clock__rail_bottom",
+    "clock__trim_bottom",
+    "clock__glass",
+    "clock__hood",
+    "clock__hood_base",
+    "clock__cornice",
+    "clock__crown",
+    "clock__dial",
+    "clock__dial__dial_disc",
+    "clock__dial__bezel",
+    "clock__dial__hour_mark_0",
+    "clock__dial__hour_mark_1",
+    "clock__dial__hour_mark_2",
+    "clock__dial__hour_mark_3",
+    "clock__dial__hour_mark_4",
+    "clock__dial__hour_mark_5",
+    "clock__dial__hour_mark_6",
+    "clock__dial__hour_mark_7",
+    "clock__dial__hour_mark_8",
+    "clock__dial__hour_mark_9",
+    "clock__dial__hour_mark_10",
+    "clock__dial__hour_mark_11",
+    "clock__hood_plate"
+  ],
+  "materials": [
+    "clockcase_meshstandard_0",
+    "clockcase_meshstandard_1",
+    "clockcase_meshstandard_2",
+    "clockcase_meshstandard_3",
+    "clockcase_meshstandard_4",
+    "clockcase_meshstandard_5",
+    "clockcase_meshstandard_6",
+    "clockcase_meshstandard_7",
+    "clockcase_meshstandard_8",
+    "clockcase_meshstandard_9"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 13,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}
