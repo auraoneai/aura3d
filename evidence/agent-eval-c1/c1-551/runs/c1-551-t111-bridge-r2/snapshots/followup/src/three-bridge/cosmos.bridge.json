@@ -1,0 +1,61 @@
+{
+  "bridgeVersion": 1,
+  "name": "cosmos",
+  "generator": {
+    "path": "recipes/cosmos.mjs",
+    "sha256": "9072c2a6848102b2a4a335a37ead4ac1fcc86dcd9b323e8c4792bd73e49fc799",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "stars": 450,
+    "shell": 230,
+    "orbits": [
+      5,
+      7.4,
+      9.8,
+      12.4,
+      17,
+      22,
+      26.5,
+      30.5
+    ],
+    "lineWidth": 0.1
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/cosmos.glb",
+    "sha256": "b9279605b9d79e85e43571cbb4f53c65724182020b6a9744919f9f29c7dab837",
+    "bytes": 257584
+  },
+  "nodeIds": [
+    "stars",
+    "orbit0",
+    "orbit1",
+    "orbit2",
+    "orbit3",
+    "orbit4",
+    "orbit5",
+    "orbit6",
+    "orbit7"
+  ],
+  "materials": [
+    "cosmos_meshbasic_0",
+    "cosmos_meshbasic_1",
+    "cosmos_meshbasic_2",
+    "cosmos_meshbasic_3",
+    "cosmos_meshbasic_4",
+    "cosmos_meshbasic_5",
+    "cosmos_meshbasic_6",
+    "cosmos_meshbasic_7",
+    "cosmos_meshbasic_8"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 2,
+    "approximated": 9,
+    "unsupported": 0
+  }
+}

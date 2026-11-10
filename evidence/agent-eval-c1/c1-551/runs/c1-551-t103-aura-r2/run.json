@@ -1,0 +1,705 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t103-aura-r2",
+  "batch": "c1-551",
+  "arm": "aura",
+  "task": 103,
+  "slug": "canyon",
+  "idx": 2,
+  "order": 37,
+  "seed": 20261108037,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:58:30.081Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Add a DOM button labelled 'Pause flythrough' outside the canvas that stops the camera where it is (the scene keeps rendering) and, clicked again (label 'Resume flythrough'), continues the flythrough. Expose window.__TASK_STATE__ = { flying: boolean, cameraX: number, cameraY: number, cameraZ: number } with the current camera position, updated every frame.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 279841,
+  "usage": {
+    "input": 1494723,
+    "uncachedInput": 1494723,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 9045,
+    "turns": 29,
+    "providerCredits": 7.592897000000001,
+    "providerCostUsd": null,
+    "modelMs": 205489,
+    "toolMs": 74350,
+    "perTurnInput": [
+      3732,
+      9572,
+      16312,
+      24907,
+      31446,
+      31570,
+      36862,
+      40730,
+      41336,
+      43112,
+      45626,
+      46026,
+      48600,
+      51549,
+      54138,
+      54320,
+      58563,
+      65073,
+      65141,
+      68039,
+      68351,
+      70710,
+      70968,
+      72656,
+      72836,
+      74382,
+      75612,
+      75737,
+      76817
+    ],
+    "perTurnOutput": [
+      13,
+      12,
+      25,
+      19,
+      21,
+      19,
+      62,
+      56,
+      57,
+      23,
+      497,
+      46,
+      103,
+      16,
+      184,
+      29,
+      656,
+      4645,
+      5,
+      499,
+      27,
+      596,
+      5,
+      310,
+      6,
+      391,
+      585,
+      5,
+      133
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 253662,
+      "input": 1266557,
+      "uncachedInput": 1266557,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 8322,
+      "turns": 26,
+      "providerCredits": 6.7884210000000005,
+      "providerCostUsd": null,
+      "modelMs": 191537,
+      "toolMs": 62123,
+      "perTurnInput": [
+        3732,
+        9572,
+        16312,
+        24907,
+        31446,
+        31570,
+        36862,
+        40730,
+        41336,
+        43112,
+        45626,
+        46026,
+        48600,
+        51549,
+        54138,
+        54320,
+        58563,
+        65073,
+        65141,
+        68039,
+        68351,
+        70710,
+        70968,
+        72656,
+        72836,
+        74382
+      ],
+      "perTurnOutput": [
+        13,
+        12,
+        25,
+        19,
+        21,
+        19,
+        62,
+        56,
+        57,
+        23,
+        497,
+        46,
+        103,
+        16,
+        184,
+        29,
+        656,
+        4645,
+        5,
+        499,
+        27,
+        596,
+        5,
+        310,
+        6,
+        391
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 2.616334,
+        "listUsd": 2.616334,
+        "providerUsd": null,
+        "providerCredits": 6.788421,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 26179,
+      "input": 228166,
+      "uncachedInput": 228166,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 723,
+      "turns": 3,
+      "providerCredits": 0.804476,
+      "providerCostUsd": null,
+      "modelMs": 13952,
+      "toolMs": 12227,
+      "perTurnInput": [
+        75612,
+        75737,
+        76817
+      ],
+      "perTurnOutput": [
+        585,
+        5,
+        133
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.463562,
+        "listUsd": 0.463562,
+        "providerUsd": null,
+        "providerCredits": 0.804476,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 3.079896,
+    "listUsd": 3.079896,
+    "providerUsd": null,
+    "providerCredits": 7.592897,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2711,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 2711,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 2,
+      "t": 5110,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 3,
+      "t": 5111,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 4,
+      "t": 7943,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 407
+    },
+    {
+      "i": 5,
+      "t": 7944,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 111
+    },
+    {
+      "i": 6,
+      "t": 10300,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 95
+    },
+    {
+      "i": 7,
+      "t": 12801,
+      "type": "search",
+      "pattern": "^## `(sky|effects)`"
+    },
+    {
+      "i": 8,
+      "t": 15015,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 75
+    },
+    {
+      "i": 9,
+      "t": 19102,
+      "type": "search",
+      "pattern": "effects\\.fog|setPose\\("
+    },
+    {
+      "i": 10,
+      "t": 19927,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 825
+    },
+    {
+      "i": 11,
+      "t": 23404,
+      "type": "search",
+      "pattern": "interface AuraCameraController|interface AuraFramePose|type AuraFramePose"
+    },
+    {
+      "i": 12,
+      "t": 26463,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 13,
+      "t": 26463,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/frameSubject.d.ts",
+      "lines": 20
+    },
+    {
+      "i": 14,
+      "t": 28607,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 15,
+      "t": 49424,
+      "type": "search",
+      "pattern": "interface AuraSkySunSpec|interface AuraSkyBand|interface AuraSkyGradientOptions"
+    },
+    {
+      "i": 16,
+      "t": 52103,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 17,
+      "t": 52103,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/rendering/atmosphere/GradientSky.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 18,
+      "t": 56901,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+      "lines": 87
+    },
+    {
+      "i": 19,
+      "t": 56909,
+      "type": "search",
+      "pattern": "azimuth"
+    },
+    {
+      "i": 20,
+      "t": 58825,
+      "type": "read",
+      "path": "docs/agents/recipes-src/sky-day-night/main.ts",
+      "lines": 52
+    },
+    {
+      "i": 21,
+      "t": 72733,
+      "type": "search",
+      "pattern": "interface AuraTransformSpec"
+    },
+    {
+      "i": 22,
+      "t": 74807,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 25
+    },
+    {
+      "i": 23,
+      "t": 110605,
+      "type": "search",
+      "pattern": "AuraQuat\\b"
+    },
+    {
+      "i": 24,
+      "t": 110606,
+      "type": "error",
+      "tool": "read_file"
+    },
+    {
+      "i": 25,
+      "t": 110606,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 26,
+      "t": 147271,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 11067
+    },
+    {
+      "i": 27,
+      "t": 158997,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 9902
+    },
+    {
+      "i": 28,
+      "t": 169255,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 29,
+      "t": 169255,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 30,
+      "t": 169256,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 31,
+      "t": 169256,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 32,
+      "t": 169256,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 33,
+      "t": 169256,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 34,
+      "t": 187500,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 14572
+    },
+    {
+      "i": 35,
+      "t": 198905,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 36,
+      "t": 198905,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 37,
+      "t": 198906,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 38,
+      "t": 198906,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 39,
+      "t": 198906,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 40,
+      "t": 198906,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 41,
+      "t": 220038,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 18298
+    },
+    {
+      "i": 42,
+      "t": 226826,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 43,
+      "t": 226826,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 44,
+      "t": 226833,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 45,
+      "t": 245813,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 17018
+    },
+    {
+      "i": 46,
+      "t": 246757,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 47,
+      "t": 253662,
+      "type": "finish"
+    },
+    {
+      "i": 48,
+      "t": 261821,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 49,
+      "t": 262695,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 50,
+      "t": 276383,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11352
+    },
+    {
+      "i": 51,
+      "t": 280694,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 407
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 825
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 9902
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 14572
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 18298
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 17018
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11352
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes-src/sky-day-night/main.ts",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/frameSubject.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/atmosphere.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/rendering/atmosphere/GradientSky.d.ts"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "I added a \"Pause flythrough\" button below the canvas. Clicking it freezes the camera, including the small vertical bob, while the scene keeps rendering. The label changes to \"Resume flythrough\", and clicking again carries on from the same spot. `window.__TASK_STATE__` holds `{ flying, cameraX, cameraY, cameraZ }` and is updated every frame. The change is in `src/main.ts`. Typecheck passes, and the render shows the button under the canvas, the scene drawing, and no errors. I did not click the button in a browser, so the pause and resume behaviour is untested."
+}

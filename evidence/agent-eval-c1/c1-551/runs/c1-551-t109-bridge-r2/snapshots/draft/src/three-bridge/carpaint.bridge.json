@@ -1,0 +1,88 @@
+{
+  "bridgeVersion": 1,
+  "name": "carpaint",
+  "generator": {
+    "path": "recipes/carpaint.mjs",
+    "sha256": "ee08a877b4ecb93500f3b838579eea2c0c6125cd9c553c3865d2c1ba58517f13",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "paint": "#9a000e",
+    "length": 1.7
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/carpaint.glb",
+    "sha256": "52fc2d19fb66d7e6daa4ad045d0dc51e8634a3410511dc697b6248361c33314a",
+    "bytes": 1319492
+  },
+  "nodeIds": [
+    "turntable",
+    "turntable__platform",
+    "turntable__edge_trim",
+    "turntable__ring_light",
+    "turntable__tick_0",
+    "turntable__tick_1",
+    "turntable__tick_2",
+    "turntable__tick_3",
+    "turntable__tick_4",
+    "turntable__tick_5",
+    "turntable__tick_6",
+    "turntable__tick_7",
+    "turntable__tick_8",
+    "turntable__tick_9",
+    "turntable__tick_10",
+    "turntable__tick_11",
+    "turntable__tick_12",
+    "turntable__tick_13",
+    "turntable__tick_14",
+    "turntable__tick_15",
+    "turntable__tick_16",
+    "turntable__tick_17",
+    "turntable__tick_18",
+    "turntable__tick_19",
+    "turntable__tick_20",
+    "turntable__tick_21",
+    "turntable__tick_22",
+    "turntable__tick_23",
+    "turntable__car",
+    "turntable__car__body",
+    "turntable__car__cabin_glass",
+    "turntable__car__roof",
+    "turntable__car__chrome_belt",
+    "turntable__car__chrome_window_trim",
+    "turntable__car__wheel_0",
+    "turntable__car__wheel_0__tire_0",
+    "turntable__car__wheel_0__hub_0",
+    "turntable__car__wheel_0__rim_0",
+    "turntable__car__wheel_1",
+    "turntable__car__wheel_1__tire_1",
+    "turntable__car__wheel_1__hub_1",
+    "turntable__car__wheel_1__rim_1",
+    "turntable__car__wheel_2",
+    "turntable__car__wheel_2__tire_2",
+    "turntable__car__wheel_2__hub_2",
+    "turntable__car__wheel_2__rim_2",
+    "turntable__car__wheel_3",
+    "turntable__car__wheel_3__tire_3",
+    "turntable__car__wheel_3__hub_3",
+    "turntable__car__wheel_3__rim_3"
+  ],
+  "materials": [
+    "platform",
+    "chrome",
+    "ring_light",
+    "candy_paint",
+    "dark_glass",
+    "rubber"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 9,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

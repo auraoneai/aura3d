@@ -6637,5 +6637,384 @@
         }
       }
     }
+  },
+  "c1-551-t102-bridge-r3": {
+    "runId": "c1-551-t102-bridge-r3",
+    "arm": "bridge",
+    "task": 102,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 7297,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10627.6,
+          "jsKB": 7061.3,
+          "jsGzipKB": 2232.9,
+          "assetKB": 3561.6,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 704,
+        "blank": false,
+        "frame": {
+          "lit": 0.774,
+          "meanLuma": 34.5,
+          "stdLuma": 45.5,
+          "motion": 8.21
+        },
+        "loaded": {
+          "totalKB": 6775,
+          "jsKB": 5892,
+          "requests": 63
+        },
+        "fps": 38.5,
+        "p95FrameMs": 33.4,
+        "pageErrors": [],
+        "probes": {
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 310,
+              "diff": 4.912488425925926
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 6391,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10628.5,
+          "jsKB": 7062.2,
+          "jsGzipKB": 2233.3,
+          "assetKB": 3561.6,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 608,
+        "blank": false,
+        "frame": {
+          "lit": 0.773,
+          "meanLuma": 34.5,
+          "stdLuma": 45.5,
+          "motion": 8.18
+        },
+        "loaded": {
+          "totalKB": 6775.9,
+          "jsKB": 5892.9,
+          "requests": 62
+        },
+        "fps": 37.1,
+        "p95FrameMs": 33.4,
+        "pageErrors": [],
+        "probes": {
+          "portal-followup": {
+            "name": "portal-followup",
+            "checks": {
+              "closeButton": true,
+              "closes": true,
+              "labelSwitches": true,
+              "reopens": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 310,
+              "diff": 5.2809765625
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t109-aura-r2": {
+    "runId": "c1-551-t109-aura-r2",
+    "arm": "aura",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 10466,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10181.8,
+          "jsKB": 7057.2,
+          "jsGzipKB": 2231.8,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 639,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 59.3,
+          "stdLuma": 62.7,
+          "motion": 15.55
+        },
+        "loaded": {
+          "totalKB": 5968.4,
+          "jsKB": 5968.4,
+          "requests": 59
+        },
+        "fps": 59,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20,
+              "diff": 9.612790798611112
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 11415,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10182.9,
+          "jsKB": 7058.3,
+          "jsGzipKB": 2232.3,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 725,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 59.3,
+          "stdLuma": 62.7,
+          "motion": 15.41
+        },
+        "loaded": {
+          "totalKB": 5969.5,
+          "jsKB": 5969.5,
+          "requests": 58
+        },
+        "fps": 58,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": true,
+              "blueButton": true,
+              "frameShiftsBlue": true,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": 2.419396701388889,
+              "blueMinusRedAfter": 17.456636284722222
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20.2,
+              "diff": 9.57544704861111
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t111-bridge-r2": {
+    "runId": "c1-551-t111-bridge-r2",
+    "arm": "bridge",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 7147,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10401.7,
+          "jsKB": 7025.3,
+          "jsGzipKB": 2221.2,
+          "assetKB": 3371.7,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 352,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 17.7,
+          "stdLuma": 20.1,
+          "motion": 0.92
+        },
+        "loaded": {
+          "totalKB": 6359.1,
+          "jsKB": 5856,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                81.08672398577724,
+                3.8890000000000002,
+                3.8889999999999993
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 8013,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10402.3,
+          "jsKB": 7025.9,
+          "jsGzipKB": 2221.4,
+          "assetKB": 3371.7,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 261,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 17.7,
+          "stdLuma": 20.1,
+          "motion": 0.91
+        },
+        "loaded": {
+          "totalKB": 6359.7,
+          "jsKB": 5856.6,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                81.02614542591132,
+                3.8890000000000002,
+                3.8890000000000007
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
   }
 }
