@@ -1,0 +1,10 @@
+# Tiny Chromium capture image for tools/remote-acr/capture.sh.
+# Same Playwright base as Dockerfile.playwright; carries NO repo source (it only
+# visits deployed URLs). Built from a 2-file context, tagged by content hash.
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+WORKDIR /app
+RUN npm init -y >/dev/null && npm install --no-audit --no-fund playwright@1.59.1 >/dev/null
+COPY capture-runner.mjs ./
+# Exec-form: `az acr run` executes the image as-is; config arrives via CAPTURE_CONFIG_B64.
+ENTRYPOINT ["node", "/app/capture-runner.mjs"]

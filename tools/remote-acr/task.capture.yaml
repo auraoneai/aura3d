@@ -1,0 +1,8 @@
+version: v1.1.0
+# One shard of tools/remote-acr/capture.sh. All --set values are nonsecret.
+steps:
+  - id: capture
+    cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}}
+    env:
+      - CAPTURE_CONFIG_B64={{.Values.CONFIG_B64}}
+    timeout: 1500
