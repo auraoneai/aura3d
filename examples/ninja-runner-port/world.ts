@@ -177,7 +177,7 @@ export function spiritPickups(entities: readonly Entity[]): SpiritPickup[] {
   });
 }
 
-interface Tint { readonly base: readonly [number, number, number, number]; readonly emissive?: Rgb; readonly strength?: number }
+interface Tint { readonly base: readonly [number, number, number, number]; readonly emissive?: Rgb; readonly strength?: number; readonly roughness?: number; readonly metallic?: number }
 const FORM_TINT: Record<string, Tint> = {
   base: { base: [1, 1, 1, 1], emissive: [0.03, 0.02, 0], strength: 0.1 },
   sage: { base: [1, 1, 1, 1], emissive: [1, 0.5, 0.12], strength: 0.16 },
@@ -187,14 +187,22 @@ const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> =
   scout: [1, 0.8, 0.72, 1], swordsman: [0.8, 0.86, 1, 1], caster: [0.92, 0.8, 1, 1], heavy: [1, 1, 1, 1]
 };
 /**
+ * `TypedGLBActor.setTint` (legacy path) defaults the emissive colour to the tint's base colour at strength 0.28, and the surface to
+ * roughness 0.38 / metallic 0.16. An enemy tinted with only a `base` (heavy was [1,1,1]) therefore glowed white over its whole
+ * atlas, which is what bleached the Boar guardian (brute) and the casters to a flat pale grey. Enemies pass an explicit
+ * no-glow tint with a rougher, less metallic surface so the authored atlas shows and the armour stops mirroring the sky probe.
+ */
+const enemyTint = (base: readonly [number, number, number, number]): Tint => ({ base, emissive: [0, 0, 0], strength: 0, roughness: 0.9, metallic: 0.2 });
+
+/**
  * The two meshy07 enemy rigs (owl caster, fox scout) ship a pale beige-grey base-colour atlas (mean saturation 0.22, value 0.53 to
  * 0.60, against 0.57 saturation on the hero), so under the evening key and the sky probe they bleached to a ghostly grey-white.
  * A multiply over that atlas gives them their robe and fur colours: deep violet for the caster, russet for the scout. The 4.6.2
  * soldier, brute and sage atlases are dark and keep the mild `ENEMY_TINT`.
  */
 const MESHY07_TINT: Partial<Record<CharacterId, readonly [number, number, number, number]>> = {
-  caster: [0.3, 0.22, 0.55, 1],
-  scout: [0.65, 0.26, 0.1, 1]
+  caster: [0.5, 0.38, 0.85, 1],
+  scout: [0.95, 0.5, 0.22, 1]
 };
 const CLONE_TINT: Tint = { base: [0.6, 0.85, 1, 1], emissive: [0.18, 0.45, 1], strength: 0.55 };
 const FLASH_TINT: Tint = { base: [1, 1, 1, 1], emissive: [1, 1, 1], strength: 1.4 };
@@ -726,7 +734,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const setTint = (slot: number, key: string, tint: Tint): void => {
     if (tints[slot] === key) return;
     tints[slot] = key;
-    actors[slot]!.setTint({ baseColor: tint.base, ...(tint.emissive ? { emissiveColor: tint.emissive } : {}), ...(tint.strength !== undefined ? { emissiveStrength: tint.strength } : {}) });
+    actors[slot]!.setTint({ baseColor: tint.base, ...(tint.emissive ? { emissiveColor: tint.emissive } : {}), ...(tint.strength !== undefined ? { emissiveStrength: tint.strength } : {}), ...(tint.roughness !== undefined ? { roughness: tint.roughness } : {}), ...(tint.metallic !== undefined ? { metallic: tint.metallic } : {}) });
   };
 
   const place = (slot: number, entity: { s: number; x: number; y: number }, yawExtra: number, scale: number, anim: Anim, dt: number, show: boolean): void => {
@@ -904,7 +912,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         } else if (e.stagger > 0) ea = { clip: CLIPS.hit, t: 0.1 };
         else ea = e.approachSpeed > 0 ? { clip: CLIPS.run, rate: 1.25 } : { clip: CLIPS.idle, rate: 0.9 };
         const rigTint = MESHY07_TINT[slotModels[slot]!];
-        setTint(slot, rigTint ? `${kind}-rig` : kind, { base: rigTint ?? ENEMY_TINT[kind] });
+        setTint(slot, rigTint ? `${kind}-rig` : kind, enemyTint(rigTint ?? ENEMY_TINT[kind]));
         place(slot, { s: e.s, x: e.lane * laneOffset(e.s), y: e.y + (dead ? (1 - pop) * 1.6 : 0) }, Math.PI, (kind === "heavy" ? 1.3 : 1) * (0.4 + 0.6 * pop), ea, dt, pop > 0.02);
         hideWeapons(w);
         if (pop > 0.5) {
