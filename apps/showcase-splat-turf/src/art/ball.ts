@@ -11,7 +11,9 @@
  * - `paintStreakFragment`: patches a toon-tone fragment so a painted cell reads as a wet paint streak with wobbly edges,
  *   bulges and droplets instead of a flat rectangle; outside the mask it fades to white, which matches the road beneath.
  */
-import { TOON_TONE_VERTEX, hexToLinear, type CustomSpec, type Rgb } from "../../../../examples/shared/runner-kit/index";
+import {
+  SHADOW_VERTEX_WGSL, TOON_TONE_VERTEX, WGSL_CLIP, WGSL_POW, WGSL_SHOULDER, hexToLinear, wgslStage, type CustomSpec, type Rgb
+} from "../../../../examples/shared/runner-kit/index";
 
 /** The kit key light (every toon program in the game lights from here). */
 const KEY_DIR = [6, 12, 6] as const;
@@ -87,6 +89,71 @@ void main() {
   outColor = vec4(shoulder(c) + crKey * hot * 0.9 + emissive, alpha);
 }`;
 
+/** WGSL twin of `BALL_VERTEX`, line for line (A3/W6: `?backend=webgpu`; WebGL2 keeps drawing the GLSL). */
+export const BALL_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct BallVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vLocal: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>) -> BallVarying {
+  var out: BallVarying;
+  out.vLocal = a_position;
+  var w = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  let centre = (aura.u_modelMatrix * vec4<f32>(0.0, 0.0, 0.0, 1.0)).xyz;
+  let pivot = centre - vec3<f32>(0.0, aura.u_crSquash.w, 0.0);
+  let s = max(aura.u_crSquash.xyz, vec3<f32>(0.05));
+  w = pivot + (w - pivot) * s;
+  out.vWorld = w;
+  out.vNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal) / s);
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * vec4<f32>(w, 1.0));
+  return out;
+}`);
+
+const BAND_WGSL = /* wgsl */ `
+fn band(x: f32, e: f32) -> f32 {
+  let fw = fwidth(x) * 0.75 + 1e-4;
+  return smoothstep(e - fw, e + fw, x);
+}`;
+
+/** WGSL twin of `BALL_FRAGMENT`, line for line (`pow` is `a3dPow`, as the GLSL adapter wraps it). */
+export const BALL_FRAGMENT_WGSL = wgslStage([WGSL_POW, WGSL_SHOULDER], /* wgsl */ `${BAND_WGSL}
+fn splotch(p: vec3<f32>, dir: vec3<f32>, edge: f32) -> f32 { return band(dot(p, normalize(dir)), edge); }
+@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vLocal: vec3<f32>) -> @location(0) vec4<f32> {
+  var N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  if (dot(N, V) < 0.0) { N = -N; }
+  let p = normalize(vLocal);
+  var s = splotch(p, vec3<f32>(0.8, 0.5, 0.3), 0.94);
+  s = max(s, splotch(p, vec3<f32>(-0.6, 0.2, 0.75), 0.95));
+  s = max(s, splotch(p, vec3<f32>(-0.3, -0.85, -0.4), 0.93));
+  s = max(s, splotch(p, vec3<f32>(0.2, -0.3, -0.95), 0.96));
+  s = max(s, splotch(p, vec3<f32>(-0.9, 0.35, -0.3), 0.96));
+  s = max(s, splotch(p, vec3<f32>(0.45, 0.85, -0.3), 0.97));
+  let base = mix(aura.u_baseColor, aura.u_baseColor * 1.25 + vec3<f32>(0.08, 0.05, 0.08), 0.55 * s);
+  let L = normalize(aura.u_crKeyDir);
+  let d = dot(N, L);
+  let lit = band(d, 0.3) * 0.62 + band(d, 0.72) * 0.38;
+  let hemi = mix(aura.u_crGround, aura.u_crSky, 0.5 * N.y + 0.5);
+  var c = base * (hemi * 0.6 + aura.u_crKey * lit);
+  let fres = 1.0 - max(dot(N, V), 0.0);
+  c = c + aura.u_crRim * band(fres, 0.6) * (0.35 + 0.65 * clamp(d + 0.6, 0.0, 1.0));
+  let R = reflect(-V, N);
+  let win = band(R.y, 0.3) * (1.0 - band(fres, 0.74));
+  let horizonLine = (band(R.y, -0.05) - band(R.y, 0.06)) * band(fres, 0.3);
+  c = mix(c, aura.u_crSkyWindow, win * aura.u_crGloss.y);
+  c = c + aura.u_crRim * horizonLine * 0.5;
+  let H = normalize(L + V);
+  let nh = max(dot(N, H), 0.0);
+  let spec = band(a3dPow(nh, aura.u_crGloss.x), 0.5);
+  let hot = band(a3dPow(nh, aura.u_crGloss.x * 5.0), 0.55);
+  c = c + aura.u_crKey * spec * 0.85;
+  c = c * (1.0 - aura.u_crContact.y * (1.0 - smoothstep(0.0, aura.u_crContact.x, vWorld.y)));
+  c = mix(c, aura.u_crInk, band(fres, 0.9) * 0.85);
+  return vec4<f32>(shoulder(c) + aura.u_crKey * hot * 0.9 + aura.u_emissive, aura.u_alpha);
+}`);
+
 export interface GlossyBall {
   /** Team colour (sRGB hex). */
   readonly color: string;
@@ -104,6 +171,7 @@ export function glossyBallSpec(look: GlossyBall): CustomSpec {
   const l = Math.hypot(...KEY_DIR);
   return {
     glsl: { vertex: BALL_VERTEX, fragment: BALL_FRAGMENT },
+    wgsl: { vertex: BALL_VERTEX_WGSL, fragment: BALL_FRAGMENT_WGSL },
     uniforms: {
       baseColor: { type: "color3", value: [...hexToLinear(look.color)] },
       emissive: { type: "color3", value: [0, 0, 0] },
@@ -144,9 +212,20 @@ void main() {
   outColor = vec4(baseColor, alpha * max(core, pen));
 }`;
 
+/** WGSL twin of `CONTACT_SHADOW_FRAGMENT`, line for line; the vertex twin is the kit's `SHADOW_VERTEX_WGSL` (uv only). */
+export const CONTACT_SHADOW_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let d = length(vUv - vec2<f32>(0.5)) * 2.0;
+  let fw = fwidth(d) + 1e-3;
+  let core = 1.0 - smoothstep(0.8 - fw, 0.8 + fw, d);
+  let pen = (1.0 - smoothstep(0.8, 1.0, d)) * 0.35;
+  return vec4<f32>(aura.u_baseColor, aura.u_alpha * max(core, pen));
+}`);
+
 /** Tight plum contact shadow: a crisp dark core (80% of the quad radius, about the ball radius) and a short soft penumbra. */
 export const contactShadowSpec = (): CustomSpec => ({
   glsl: { vertex: CONTACT_SHADOW_VERTEX, fragment: CONTACT_SHADOW_FRAGMENT },
+  wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: CONTACT_SHADOW_FRAGMENT_WGSL },
   uniforms: { baseColor: { type: "color3", value: [0.05, 0.015, 0.07] }, alpha: { type: "f32", value: 0.9 } },
   transparent: true,
   depthWrite: false,
