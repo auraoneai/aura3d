@@ -134,10 +134,6 @@ The 4.x legacy subpaths (`@aura3d/engine/production-runtime`, `/advanced-runtime
 - **Additional asset formats — `prototype`.** Supported variants, codecs and device formats are limited. A parser or recognized extension alone does not prove that a typed asset renders; see [native asset formats](https://github.com/auraoneai/aura3d/blob/main/docs/api/native-formats.md).
 - **Capability breadth and release checks — `roadmap`.** Renderer, asset, animation, interaction and distribution work remains open in the [native capability roadmap](https://github.com/auraoneai/aura3d/blob/main/docs/prds/aura3d-native-capability-roadmap.md). Source tests do not replace packed-consumer, browser, visual or device checks, and evidence from an earlier candidate does not certify a changed build.
 
-## Claims and verification
-
-Every public claim follows [`docs/agents/claims-and-boundaries.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md): label the capability, and claim only what a judged capture or retained evidence shows. Published gates include route health, typed provenance, public-API surface checks, package-size checks and `check-deploy`. Release notes are in [`CHANGELOG.md`](https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md).
-
 ## Documentation
 
 - [`docs/index.md`](https://github.com/auraoneai/aura3d/blob/main/docs/index.md): hub for humans and agents
