@@ -6785,7 +6785,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/index.html",
-          "sha256": "113706dc1e5ba4baafc5f5e4c7a2342a998eb874deebe4216d2542e88a846f48"
+          "sha256": "8b4ca602f3cb65d72b316a1ec0884710963878b4c574a62a67156f0298d44931"
         }
       ],
       "regions": [
@@ -6879,7 +6879,7 @@
         },
         {
           "path": "apps/showcase-where-the-wind-wanders-port/index.html",
-          "sha256": "06da92c1e1f0ed6ec033cb4f6d3907c6735acaee1f32a8caf3443bff7d647925"
+          "sha256": "ac4600b7696b427b040bef2ff75ac974a6b0ed5919d33790ea44f4bfd23feddb"
         }
       ],
       "regions": [
