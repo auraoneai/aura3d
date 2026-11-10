@@ -6,7 +6,9 @@ import { createWindPresenter, viewOf } from "../../../examples/where-the-wind-wa
 import { CLIP_SECONDS } from "../../../examples/where-the-wind-wanders-port/locomotion";
 import { VIRTUAL_STEP_MS, createState, stepFrame } from "../../../examples/where-the-wind-wanders-port/sim";
 
-interface Call { clip: string; captureTime?: number; crossFade?: number | false }
+interface Call { clip: string; captureTime?: number; metadata?: { playbackId?: string } }
+/** Crossfades the engine controller started: each one opens a new playback id. */
+const fadeCount = (calls: readonly Call[]): number => new Set(calls.map((c) => c.metadata?.playbackId).filter((id) => id !== undefined)).size;
 
 /** Runs main.ts's real pipeline (fixed-step loop, presenter, animator) at a display refresh rate with timestamp jitter. */
 function run(hz: number, jitter: number, seconds: number, walkFrom = 0.5, walkTo = seconds - 0.5) {
@@ -57,7 +59,7 @@ describe("hero gait with stepped (un-interpolated) positions on a faster display
       if (t > 1.5) phases.push(calls.at(-1)!.captureTime!);
     }
     expect(calls.at(-1)!.clip).toBe("Walk");
-    expect(calls.filter((c) => c.crossFade !== false).length).toBeLessThanOrEqual(2);
+    expect(fadeCount(calls)).toBeLessThanOrEqual(2);
     let stalls = 0;
     for (let i = 1; i < phases.length; i++) { let d = phases[i]! - phases[i - 1]!; if (d < 0) d += CLIP_SECONDS.Walk; if (d < 1e-6) stalls++; }
     expect(stalls).toBe(0);
@@ -69,7 +71,7 @@ describe("hero gait at display refresh rates (sliding regression)", () => {
     it(`${hz} Hz with jittered frame times: one Idle to Walk switch and a continuous cycle`, () => {
       const { calls, frames } = run(hz, 0.25, 6);
       const switches = calls.filter((c, i) => i > 0 && c.clip !== calls[i - 1]!.clip).length;
-      const fades = calls.filter((c) => c.crossFade !== false).length;
+      const fades = fadeCount(calls);
       const walking = frames.filter((f) => f.walking);
       const clips = new Set(walking.map((f) => f.clip));
       console.log(hz, "switches", switches, "fades", fades, [...clips].join());

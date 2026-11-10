@@ -2,7 +2,7 @@
  * Meshy-generated model layer (text prompts only; prompts and task ids in assets/ATTRIBUTION.md).
  * Replaces the procedural cottages, trees, traveller, wisp and boat when the matching GLB is present.
  */
-import { instances, material, model, primitives, type AuraApp, type scene } from "@aura3d/engine";
+import { createAnimationController, instances, model, type AuraApp, type scene } from "@aura3d/engine";
 import { createLocomotion } from "@aura3d/engine/game";
 
 type Scene = ReturnType<typeof scene>;
@@ -102,9 +102,10 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
   if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { ...mo("letter"), name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
   if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", rotationOrder: "YXZ", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
   if (set.kite) {
-    // WW47-A1: the paper kite (WP-36 bellKite) on a cream string from the traveller's hand; posed every frame by world.ts
+    // WW47-A1: the paper kite (WP-36 bellKite) riding the wind above the traveller; posed every frame by world.ts. It has no
+    // string: the 2.8 cm cream box from a world-fixed hand offset to the kite read as a stray white line from the walker to
+    // whatever roof the kite flew over (owner report, 2026-11-09), so it was removed.
     builder.add(model(MODEL_ASSETS.kite, { name: "kite", targetHeight: KITE_HEIGHT, rotationOrder: "YXZ", castShadow, receiveShadow: false, collider: false, materialOverrides: [{ roughness: 0.78, metallic: 0, rim: { color: "#fff4dc", power: 2.4, intensity: 0.45 } }] }).runtime({ id: "kite" }));
-    builder.add(primitives.box({ name: "kite-string", size: [1, 1, 1], rotationOrder: "YXZ", material: material.pbr({ color: "#f3ead2", roughness: 0.9, metallic: 0 }), castShadow: false, receiveShadow: false }).runtime({ id: "kite-string" }));
   } else if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
   if (set.boat) builder.add(model(MODEL_ASSETS.boat, { ...mo("boat"), name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
 }
@@ -122,28 +123,51 @@ export interface HeroAnimator {
   readonly cycle: number;
   /** Low-passed ground speed in world units per second. */
   readonly speed: number;
+  /** Clip time (seconds) of the stride phase: where the playing clip is (the engine controller's local time). */
+  readonly phaseSeconds: number;
+  /** Playback rate of the current gait's clip (ground speed over its planted-foot speed, clamped). */
+  readonly rate: number;
 }
+/** The hero.glb clips as the engine animation controller registers them (all loop; durations from the GLB). */
+const HERO_CLIPS: readonly Gait[] = ["Idle", "Walk", "Run"];
 /**
  * Drives the traveller's walk, run and idle clips with the library's `createLocomotion`, fed the real ground speed once
- * per sim step (the stepped QA path calls `update` twice per step, so a zero time delta is skipped). The dominant gait's
- * stride phase is pinned each frame (`loop: false` plus `captureTime`), so a planted foot moves at ground speed whatever
- * the frame rate. `play` only gets a crossfade on a gait change: re-issuing a fresh crossfade on every frame restarts
- * the blend, and a looped clip with a moving `captureTime` also runs on the engine's own clock.
+ * per sim step (the stepped QA path calls `update` twice per step, so a zero time delta is skipped).
+ *
+ * The clips play through the engine's `createAnimationController` bound to the hero node, advanced by the game's own
+ * clock times the dominant gait's rate (ground speed over the clip's planted-foot speed), so a planted foot keeps pace
+ * with the ground and the controller's clip time is exactly the stride phase `cycle` (the body bob uses the same
+ * phase). The controller publishes explicit clip samples (clip, time, weight) that the renderer applies as given.
+ *
+ * Why not `hero.play(...)`: the game renders with `app.step(0)` (its own fixed-step clock), so the engine's per-actor
+ * mixer never advances. The old pinned pose (`loop: false` plus a moving `captureTime`) set the mixer clock to 0 and
+ * read the captureTime only on a clip change, and the Idle-to-Walk crossfade never progressed: the walker stayed in
+ * the first Idle frame and slid (owner report, 2026-11-09).
  */
 export function createHeroAnimator(app: AuraApp): HeroAnimator {
   const hero = app.nodes.require("hero");
+  const controller = createAnimationController<Gait>({
+    id: "hero-animation",
+    clipRegistry: { kind: "aura3d-embedded-glb-animation-registry", clips: HERO_CLIPS.map((id) => ({ id, name: id, duration: CLIP_SECONDS[id], loop: true })) },
+    requiredClips: [...HERO_CLIPS],
+    suppressRootMotion: true
+  });
+  const binding = controller.bindRuntimeNode(hero, { id: "hero-binding", defaultClipId: "Idle" });
   const loco = createLocomotion({ gaits: HERO_GAITS, minRate: 0.6, maxRate: 1.7 });
   let gait: Gait = "Idle", issued: Gait | "" = "", lastX = 0, lastZ = 0, lastTime = 0, phaseSeconds = 0, primed = false;
   // stride phase (0..1) of the moving gaits, kept here so a held gait never jumps when the library's dominant gait flickers
-  let cycle = 0, candidate: Gait = "Idle", candidateFor = 0, speedSmooth = 0;
+  let cycle = 0, candidate: Gait = "Idle", candidateFor = 0, speedSmooth = 0, rate = 1;
   return {
     get gait() { return gait; },
     get cycle() { return cycle; },
     get speed() { return speedSmooth; },
-    reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; cycle = 0; candidate = "Idle"; candidateFor = 0; speedSmooth = 0; primed = true; },
+    get phaseSeconds() { return phaseSeconds; },
+    get rate() { return rate; },
+    reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; cycle = 0; candidate = "Idle"; candidateFor = 0; speedSmooth = 0; rate = 1; primed = true; },
     update({ x, z, airborne, onBoat, time }) {
       if (!primed) { lastX = x; lastZ = z; lastTime = time; primed = true; }
       const dt = time - lastTime;
+      let clipStep = 0;
       if (dt > 0) {
         const raw = airborne ? STRIDE_SPEED.Run : onBoat ? 0 : Math.hypot(x - lastX, z - lastZ) / dt;
         // a very short frame (coalesced timestamps on a 120 to 240 Hz display) makes the per-frame delta noisy: low-pass the
@@ -155,13 +179,22 @@ export function createHeroAnimator(app: AuraApp): HeroAnimator {
         const dominant = frame.dominant as Gait;
         if (dominant === gait) candidateFor = 0;
         else { if (dominant !== candidate) candidateFor = 0; candidate = dominant; candidateFor += dt; if (candidateFor >= GAIT_DWELL_SECONDS) { gait = dominant; candidateFor = 0; } }
-        if (gait !== "Idle") cycle = (cycle + (dt * (frame.rates[gait] ?? 1)) / CLIP_SECONDS[gait]) % 1;
+        rate = frame.rates[gait] ?? 1;
+        clipStep = dt * rate;
+        if (gait !== "Idle") cycle = (cycle + clipStep / CLIP_SECONDS[gait]) % 1;
         phaseSeconds = gait === "Idle" ? time % CLIP_SECONDS.Idle : cycle * CLIP_SECONDS[gait];
         lastTime = time;
         lastX = x; lastZ = z;
       }
-      hero.play(gait, { loop: false, captureTime: phaseSeconds, crossFade: issued !== gait ? 0.15 : false });
-      issued = gait;
+      if (issued !== gait) {
+        // the new clip starts where the stride phase is (one clip step back: the update below adds it), crossfading over 0.15 s
+        const d = CLIP_SECONDS[gait];
+        controller.crossFade(gait, issued === "" ? 0 : 0.15, { loop: true, startTime: (((phaseSeconds - clipStep) % d) + d) % d });
+        issued = gait;
+        // a gait change on a zero-length frame (reset, the stepped QA path) still reaches the node
+        if (clipStep === 0) binding.update();
+      }
+      if (clipStep > 0) controller.update(clipStep);
       return gait;
     }
   };

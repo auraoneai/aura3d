@@ -7,7 +7,7 @@ import { CLIP_SECONDS, STRIDE_SPEED } from "../../../examples/where-the-wind-wan
 import { WALK_SPEED } from "../../../examples/where-the-wind-wanders-port/sim";
 import { glbStride } from "./glb-stride";
 
-interface Call { clip: string; loop?: boolean; captureTime?: number; crossFade?: number | false }
+interface Call { clip: string; loop?: boolean; speed?: number; captureTime?: number; metadata?: { playbackId?: string } }
 function fakeApp(calls: Call[]): AuraApp {
   const hero = { play(clip: string, o: Omit<Call, "clip">) { calls.push({ clip, ...o }); return hero; } };
   return { nodes: { require: () => hero } } as unknown as AuraApp;
@@ -46,11 +46,13 @@ describe("hero animator on the library locomotion", () => {
     expect(b.clip).toBe(a.clip);
     expect(b.captureTime).toBeCloseTo(a.captureTime!, 6);
   });
-  it("pins the pose and only crossfades on a gait change", () => {
+  it("loops the clip on the controller and starts a new playback (crossfade) only on a gait change", () => {
+    // the engine controller publishes the clip time as captureTime; a new playbackId is a crossFade
     const { calls } = walk(120, false);
-    expect(calls.every((c) => c.loop === false)).toBe(true);
-    const fades = calls.map((c, i) => (c.crossFade !== false ? i : -1)).filter((i) => i >= 0);
-    const changes = calls.map((c, i) => (i === 0 || c.clip !== calls[i - 1]!.clip ? i : -1)).filter((i) => i >= 0);
+    const played = calls.filter((c) => c.metadata?.playbackId !== undefined);
+    expect(played.every((c) => c.loop === true)).toBe(true);
+    const fades = played.map((c, i) => (i === 0 || c.metadata!.playbackId !== played[i - 1]!.metadata!.playbackId ? i : -1)).filter((i) => i >= 0);
+    const changes = played.map((c, i) => (i === 0 || c.clip !== played[i - 1]!.clip ? i : -1)).filter((i) => i >= 0);
     expect(fades).toEqual(changes);
   });
   it("idles on the sim clock, runs while airborne and ignores boat motion", () => {
