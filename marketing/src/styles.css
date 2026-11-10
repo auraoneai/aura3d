@@ -3086,3 +3086,33 @@ a.tape-item:hover {
   box-shadow: 0 8px 24px rgba(26, 30, 38, 0.18);
 }
 
+/* ── Docs hub polish (2026-11-09) ───────────────────────────
+   The wide proof card shows its 16:10 poster whole (both players in frame), and the
+   docs index cards use the full container: aligned titles, links pinned to the bottom,
+   no clipped hover lift. */
+.visual-proof-card-wide .visual-proof-stage { aspect-ratio: 16 / 10; }
+.visual-proof-card-wide .visual-proof-poster img { object-position: 50% 50%; }
+.doc-card-grid.docs-index-grid {
+  max-width: none;
+  overflow: visible;
+  gap: 16px;
+  background: none;
+  box-shadow: none;
+}
+.docs-index-grid .doc-card {
+  min-height: 0;
+  justify-content: flex-start;
+  box-shadow: none;
+  background: var(--bg-1);
+  padding: 24px 24px 22px;
+}
+.docs-index-grid .doc-card h3 { margin: 12px 0 8px; }
+.docs-index-grid .doc-card p { flex: 1 1 auto; }
+.docs-index-grid .doc-card-link {
+  margin-top: 20px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.docs-index-grid .doc-card-link::after { content: "→"; transition: transform .18s ease; }
+.docs-index-grid .doc-card:hover .doc-card-link::after { transform: translateX(3px); }
+
