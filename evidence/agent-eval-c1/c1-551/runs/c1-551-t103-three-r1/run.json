@@ -1,0 +1,310 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t103-three-r1",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 103,
+  "slug": "canyon",
+  "idx": 1,
+  "order": 2,
+  "seed": 20261108002,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:53:28.069Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Add a DOM button labelled 'Pause flythrough' outside the canvas that stops the camera where it is (the scene keeps rendering) and, clicked again (label 'Resume flythrough'), continues the flythrough. Expose window.__TASK_STATE__ = { flying: boolean, cameraX: number, cameraY: number, cameraZ: number } with the current camera position, updated every frame.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 409750,
+  "usage": {
+    "input": 433183,
+    "uncachedInput": 433183,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 21559,
+    "turns": 10,
+    "providerCredits": 9.449832,
+    "providerCostUsd": null,
+    "modelMs": 406360,
+    "toolMs": 3388,
+    "perTurnInput": [
+      3226,
+      4069,
+      41264,
+      45227,
+      48920,
+      53553,
+      57068,
+      59013,
+      60230,
+      60613
+    ],
+    "perTurnOutput": [
+      11,
+      23,
+      8501,
+      2943,
+      2665,
+      3394,
+      2573,
+      629,
+      634,
+      186
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 395450,
+      "input": 312340,
+      "uncachedInput": 312340,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 20739,
+      "turns": 8,
+      "providerCredits": 8.940266,
+      "providerCostUsd": null,
+      "modelMs": 392781,
+      "toolMs": 2667,
+      "perTurnInput": [
+        3226,
+        4069,
+        41264,
+        45227,
+        48920,
+        53553,
+        57068,
+        59013
+      ],
+      "perTurnOutput": [
+        11,
+        23,
+        8501,
+        2943,
+        2665,
+        3394,
+        2573,
+        629
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.83207,
+        "listUsd": 0.83207,
+        "providerUsd": null,
+        "providerCredits": 8.940266,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 14300,
+      "input": 120843,
+      "uncachedInput": 120843,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 820,
+      "turns": 2,
+      "providerCredits": 0.509566,
+      "providerCostUsd": null,
+      "modelMs": 13579,
+      "toolMs": 721,
+      "perTurnInput": [
+        60230,
+        60613
+      ],
+      "perTurnOutput": [
+        634,
+        186
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.249886,
+        "listUsd": 0.249886,
+        "providerUsd": null,
+        "providerCredits": 0.509566,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 1.081956,
+    "listUsd": 1.081956,
+    "providerUsd": null,
+    "providerCredits": 9.449832,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1344,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1344,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2977,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2977,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2977,
+      "type": "list",
+      "path": "public"
+    },
+    {
+      "i": 5,
+      "t": 2977,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 6,
+      "t": 300579,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/terrain.ts",
+      "bytes": 6966
+    },
+    {
+      "i": 7,
+      "t": 321000,
+      "type": "error",
+      "tool": "write_file"
+    },
+    {
+      "i": 8,
+      "t": 321004,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/camera.ts",
+      "bytes": 724
+    },
+    {
+      "i": 9,
+      "t": 337801,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/scatter.ts",
+      "bytes": 6795
+    },
+    {
+      "i": 10,
+      "t": 361096,
+      "type": "error",
+      "tool": "write_file"
+    },
+    {
+      "i": 11,
+      "t": 361096,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 2457
+    },
+    {
+      "i": 12,
+      "t": 362220,
+      "type": "typecheck",
+      "pass": false
+    },
+    {
+      "i": 13,
+      "t": 378162,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/shaders.ts",
+      "bytes": 5045
+    },
+    {
+      "i": 14,
+      "t": 379685,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 15,
+      "t": 395450,
+      "type": "finish"
+    },
+    {
+      "i": 16,
+      "t": 403876,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 17,
+      "t": 404597,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 18,
+      "t": 410125,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "I added a \"Pause flythrough\" button in `src/main.ts`, created in the DOM below the canvas. Clicking it stops the camera in place while the scene keeps rendering, and the label changes to \"Resume flythrough\". Clicking again continues from the same spot. `window.__TASK_STATE__` is set every frame with `{ flying, cameraX, cameraY, cameraZ }`, using the camera's current position. `typecheck` passes. I haven't run it in a browser, so the button and state object are untested.\n\nThe camera now advances on its own flight clock that only runs while flying. That stops the small bob and roll along with the movement. The sky clouds keep drifting on real time while paused. The time step per frame is capped at 0.1 s, so a long stall in the tab doesn't make the camera jump."
+}

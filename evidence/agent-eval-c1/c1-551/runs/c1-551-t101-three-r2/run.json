@@ -1,0 +1,250 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t101-three-r2",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 101,
+  "slug": "spider",
+  "idx": 2,
+  "order": 6,
+  "seed": 20261108006,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:13:52.622Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 84250,
+  "usage": {
+    "input": 75943,
+    "uncachedInput": 75943,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 4952,
+    "turns": 7,
+    "providerCredits": 1.741463,
+    "providerCostUsd": null,
+    "modelMs": 80080,
+    "toolMs": 4170,
+    "perTurnInput": [
+      3226,
+      3965,
+      12712,
+      13087,
+      13731,
+      14457,
+      14765
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      4062,
+      109,
+      361,
+      289,
+      102
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 74462,
+      "input": 46721,
+      "uncachedInput": 46721,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 4561,
+      "turns": 5,
+      "providerCredits": 1.541043,
+      "providerCostUsd": null,
+      "modelMs": 73651,
+      "toolMs": 811,
+      "perTurnInput": [
+        3226,
+        3965,
+        12712,
+        13087,
+        13731
+      ],
+      "perTurnOutput": [
+        11,
+        18,
+        4062,
+        109,
+        361
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.139052,
+        "listUsd": 0.139052,
+        "providerUsd": null,
+        "providerCredits": 1.541043,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 9788,
+      "input": 29222,
+      "uncachedInput": 29222,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 391,
+      "turns": 2,
+      "providerCredits": 0.20042,
+      "providerCostUsd": null,
+      "modelMs": 6429,
+      "toolMs": 3359,
+      "perTurnInput": [
+        14457,
+        14765
+      ],
+      "perTurnOutput": [
+        289,
+        102
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.062354,
+        "listUsd": 0.062354,
+        "providerUsd": null,
+        "providerCredits": 0.20042,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.201406,
+    "listUsd": 0.201406,
+    "providerUsd": null,
+    "providerCredits": 1.741463,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1330,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 1330,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2968,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2968,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2968,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 62720,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 8983
+    },
+    {
+      "i": 6,
+      "t": 68464,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 7,
+      "t": 69272,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 74463,
+      "type": "finish"
+    },
+    {
+      "i": 9,
+      "t": 78975,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 10,
+      "t": 78977,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 11,
+      "t": 82331,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 12,
+      "t": 84681,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Space now toggles the spider between walking and paused, and `window.__TASK_STATE__ = { walking }` is set at startup and updated on each toggle. `typecheck` passes. I haven't run it in a browser. The animation clock only advances while walking. Pausing therefore freezes the legs, body bob and scrolling ground in their current pose, and resuming continues from that pose without a jump. The keydown handler calls `preventDefault` and ignores key repeat."
+}

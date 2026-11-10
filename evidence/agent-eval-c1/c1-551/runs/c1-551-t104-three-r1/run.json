@@ -1,0 +1,299 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t104-three-r1",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 104,
+  "slug": "stacker",
+  "idx": 1,
+  "order": 17,
+  "seed": 20261108017,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:20:36.967Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Add pause: pressing P pauses the game (the slab stops moving and Space or clicks do not drop it) and pressing P again resumes. Show 'Paused' in the HUD while paused and add paused: boolean to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 59203,
+  "usage": {
+    "input": 63302,
+    "uncachedInput": 63302,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 4060,
+    "turns": 7,
+    "providerCredits": 1.3519389999999998,
+    "providerCostUsd": null,
+    "modelMs": 58530,
+    "toolMs": 673,
+    "perTurnInput": [
+      3226,
+      4327,
+      9709,
+      10099,
+      10731,
+      12335,
+      12875
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      2828,
+      132,
+      358,
+      589,
+      124
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 48033,
+      "input": 38092,
+      "uncachedInput": 38092,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 3347,
+      "turns": 5,
+      "providerCredits": 1.0120369999999999,
+      "providerCostUsd": null,
+      "modelMs": 47583,
+      "toolMs": 450,
+      "perTurnInput": [
+        3226,
+        4327,
+        9709,
+        10099,
+        10731
+      ],
+      "perTurnOutput": [
+        11,
+        18,
+        2828,
+        132,
+        358
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.109654,
+        "listUsd": 0.109654,
+        "providerUsd": null,
+        "providerCredits": 1.012037,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 11170,
+      "input": 25210,
+      "uncachedInput": 25210,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 713,
+      "turns": 2,
+      "providerCredits": 0.339902,
+      "providerCostUsd": null,
+      "modelMs": 10947,
+      "toolMs": 223,
+      "perTurnInput": [
+        12335,
+        12875
+      ],
+      "perTurnOutput": [
+        589,
+        124
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.05755,
+        "listUsd": 0.05755,
+        "providerUsd": null,
+        "providerCredits": 0.339902,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.167204,
+    "listUsd": 0.167204,
+    "providerUsd": null,
+    "providerCredits": 1.351939,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 3248,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 21
+    },
+    {
+      "i": 1,
+      "t": 3248,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 6004,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 6004,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 6004,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 37999,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 7021
+    },
+    {
+      "i": 6,
+      "t": 41075,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 7,
+      "t": 41075,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 8,
+      "t": 41524,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 9,
+      "t": 48034,
+      "type": "finish"
+    },
+    {
+      "i": 10,
+      "t": 56348,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 11,
+      "t": 56348,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 12,
+      "t": 56348,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 13,
+      "t": 56349,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 14,
+      "t": 56349,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 15,
+      "t": 56349,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 16,
+      "t": 56349,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 17,
+      "t": 56349,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 18,
+      "t": 56571,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 19,
+      "t": 59420,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Added pause to src/main.ts, and it typechecks. I haven't run it in a browser. P toggles pause while the status is `playing`. While paused, the slab, falling pieces and camera freeze, and Space and canvas clicks do nothing. This includes the click-to-restart, which is also ignored while paused. The HUD status reads \"Status: playing (Paused)\" while paused. `window.__TASK_STATE__` now includes `paused: boolean`. R still restarts and clears the pause. P does nothing once the game is `won` or `lost`."
+}

@@ -1,0 +1,290 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t106-three-r2",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 106,
+  "slug": "materials",
+  "idx": 2,
+  "order": 14,
+  "seed": 20261108014,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:18:26.095Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Keys 1, 2 and 3 select the glass, metal and fabric sphere; the selected sphere slowly spins about its vertical axis and the others stay still. Add selected: 'glass' | 'metal' | 'fabric' | null (null before any key) to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 126884,
+  "usage": {
+    "input": 132016,
+    "uncachedInput": 132016,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 7155,
+    "turns": 9,
+    "providerCredits": 2.9299419999999996,
+    "providerCostUsd": null,
+    "modelMs": 125778,
+    "toolMs": 1106,
+    "perTurnInput": [
+      3226,
+      4308,
+      8246,
+      8478,
+      20286,
+      20605,
+      21285,
+      22582,
+      23000
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      799,
+      24,
+      5150,
+      77,
+      357,
+      569,
+      150
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 116792,
+      "input": 86434,
+      "uncachedInput": 86434,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 6436,
+      "turns": 7,
+      "providerCredits": 2.590001,
+      "providerCostUsd": null,
+      "modelMs": 115997,
+      "toolMs": 795,
+      "perTurnInput": [
+        3226,
+        4308,
+        8246,
+        8478,
+        20286,
+        20605,
+        21285
+      ],
+      "perTurnOutput": [
+        11,
+        18,
+        799,
+        24,
+        5150,
+        77,
+        357
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.237228,
+        "listUsd": 0.237228,
+        "providerUsd": null,
+        "providerCredits": 2.590001,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 10092,
+      "input": 45582,
+      "uncachedInput": 45582,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 719,
+      "turns": 2,
+      "providerCredits": 0.339941,
+      "providerCostUsd": null,
+      "modelMs": 9781,
+      "toolMs": 311,
+      "perTurnInput": [
+        22582,
+        23000
+      ],
+      "perTurnOutput": [
+        569,
+        150
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.098354,
+        "listUsd": 0.098354,
+        "providerUsd": null,
+        "providerCredits": 0.339941,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.335582,
+    "listUsd": 0.335582,
+    "providerUsd": null,
+    "providerCredits": 2.929942,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1343,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1343,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2837,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2837,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2837,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 34926,
+      "type": "search",
+      "pattern": "fromScene\\(|size = 256|anisotropyRotation"
+    },
+    {
+      "i": 6,
+      "t": 36255,
+      "type": "read",
+      "path": "node_modules/three/src/extras/PMREMGenerator.js",
+      "lines": 60
+    },
+    {
+      "i": 7,
+      "t": 107696,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 11196
+    },
+    {
+      "i": 8,
+      "t": 108096,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 9,
+      "t": 111594,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 10,
+      "t": 111951,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 11,
+      "t": 116792,
+      "type": "finish"
+    },
+    {
+      "i": 12,
+      "t": 124128,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 13,
+      "t": 124128,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 14,
+      "t": 124128,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 15,
+      "t": 124439,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 16,
+      "t": 127096,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [
+    "node_modules/three/src/extras/PMREMGenerator.js"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Keys 1, 2 and 3 now select the glass, metal and fabric sphere. The selected sphere spins about its vertical axis at 0.8 rad/s, and the other two stay still. `window.__TASK_STATE__.selected` is `'glass' | 'metal' | 'fabric' | null` and starts as `null` until a key is pressed. The spin is frame-rate independent. I ran the typecheck, which passed, but I haven't run it in a browser. The change is in src/main.ts. The glass and the brushed metal look nearly identical while spinning, because their rings and reflections are symmetric about the vertical axis. The fabric's weave pattern makes its spin clearly visible."
+}

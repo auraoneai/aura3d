@@ -1,0 +1,399 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01GXEdbz15RBLtJFEEDqh3v4",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_011NCgx7fYyXpf5EYmUjoJaB",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01GXEdbz15RBLtJFEEDqh3v4",
+    "content": "1\t# Task 11: Polished car-paint object with clearcoat on a turntable\n2\t\n3\tFramework: three.js 0.185.1 (`three` and `@types/three`, already installed in node_modules).\n4\t\n5\tBuild a single-page browser app with the provided framework, served by vite, drawing into the existing canvas with id #app. Show a glossy, candy-red, car-paint finished object on a slowly rotating turntable in a dark showroom. Since no model files are provided, construct the object procedurally from smooth shapes, for example a rounded, streamlined capsule or bean body with a separate smooth cabin bump and four dark rubber wheel discs, or any other smooth body with clearly curved, large reflective panels. The paint must look like automotive paint: a deep coloured base layer with fine metallic flake sparkle, topped by a glossy clear coat that mirrors a studio environment (long soft-box strip reflections that bend over the curved panels). Add chrome trim, such as a thin ring or strip, and a dark glass or black cabin panel for contrast. The turntable is a circular platform with a subtle ring light or reflective floor on which the object is mirrored faintly. Use a dark background with two or three long strip lights above and to the sides, plus a faint cool rim light, so the reflections read as soft-box highlights. The platform rotates the object at about 20 degrees per second while the camera stays still at a low, slightly front-three-quarter angle with the whole object in frame. Expose window.__TASK_STATE__ = "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_011NCgx7fYyXpf5EYmUjoJaB",
+    "content": "TASK.md\nindex.html\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01HKzfWiBRXsPW2oAiG2fRsu",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PnQpLanhAtDZ3XNPaXTAwA",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FDSpoE2WbeS1RiJmywX2mM",
+    "name": "read_file",
+    "input": {
+     "path": "tsconfig.json"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01HKzfWiBRXsPW2oAiG2fRsu",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PnQpLanhAtDZ3XNPaXTAwA",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FDSpoE2WbeS1RiJmywX2mM",
+    "content": "1\t{\n2\t  \"compilerOptions\": {\n3\t    \"target\": \"ES2022\",\n4\t    \"module\": \"ESNext\",\n5\t    \"moduleResolution\": \"bundler\",\n6\t    \"lib\": [\"ES2022\", \"DOM\", \"DOM.Iterable\"],\n7\t    \"strict\": true,\n8\t    \"noEmit\": true,\n9\t    \"skipLibCheck\": true,\n10\t    \"types\": []\n11\t  },\n12\t  \"include\": [\"src\"]\n13\t}\n14\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm planning the environment setup with emissive strip lights baked into a PMREM-generated reflection map, plus a dark background, and sketching the body shape as a scaled ellipsoid for a smooth capsule-like form.\n\nI'm working out proportions for the cabin, wheels, and wheel arches, calculating body width at the wheel positions so they poke out naturally and partially embed into the sides.\n\nFor the paint I'm planning a physical material with deep red color, moderate metalness, clearcoat, and a flake effect using a noise-based normal map on the base layer to simulate metallic sparkle, keeping the clearcoat itself smooth and separate.\n\nFor the floor, I'm considering a glossy dark platform with a mirrored reflection effect, either using a Reflector or a manually duplicated car clone flipped on the y-axis beneath a semi-transparent dark floor surface, thinking through draw order and transparency so the reflection blends convincingly.\n\nI'll make the top disc transparent glossy dark with a faint emissive rim ring, and add an opaque near-black disc far below at y=-0.9 so it reads as dark through the transparency, plus a solid side wall cylinder connecting them to hide the mirrored geometry underneath.\n\nFor the mirror effect, I'll group the car and clone it with a y-scale of -1 so it reflects at the platform surface, sharing materials, with both nested inside the turntable rotation group so they spin together. Then I'll position the camera low at a front three-quarter angle to capture the car against the 3.2-radius platform.\n\nI'm checking that the camera distance and fov keep the full rotating car in frame at every angle, then sketching out the dark room environment with emissive strip lights for the HDRI-style lighting setup.\n\nI'll bump the environment cubemap size to 512 for sharper reflections, and add a few real lights—a cool low-intensity directional from behind for rim lighting plus the environment's own glow—rather than visible strip meshes in frame, since reflections alone should sell the effect. I'll also set the scene background to a dark near-black color for the base atmosphere.\n\nFor the actual background I'll build a canvas texture with a vertical gradient and subtle glow instead, using sRGB color space. I'm also sorting out renderer settings—ACES tone mapping, fixed canvas size at 640x360, pixel ratio 1—and reworking the car body as a scaled, flattened sphere positioned so it sits just above the wheels.\n\nNow I'm figuring out the cabin geometry: a scaled sphere positioned to create a bump above the body, with separate painted roof and glass sections built from slightly different ellipsoid dimensions so the glass band sits lower and the roof wraps over the top.\n\nChecking the width comparison at y=1.2 confirms the roof stays narrower than the glass there, so the glass remains visible at the sides while the roof shows at top — the geometry works out reasonably well, including the windshield visibility in x. Now I'm thinking about adding a thin chrome belt ring around the body, shaped as a scaled torus to match the elliptical cross-section.\n\nI realize the non-uniform scale will stretch the tube thickness unevenly along x versus z, so I need to think through how rotation order affects which local axis becomes the tube-thickness direction in world space.\n\nThen I'm adding details to the car: chrome headlight bezels with emissive bulbs on the nose, red taillights at the rear, and wheels built from cylinders rotated so their axis runs along z, with chrome hub caps at the centers.\n\nI'm checking that the wheel geometry (tire torus plus hub cylinder) fits properly within the body's wheel arches without clipping, adjusting radii and positions so the tires sit correctly relative to the body's width and ground clearance.\n\nFor the paint finish, I'm generating a procedural flake normal map on a canvas (random perturbed pixels), then tiling it across the body sphere's UVs to create a metallic shimmer effect under the lighting.\n\nNow I'm setting up the turntable rotation using a clock-based angle for consistent speed, plus rim and fill lighting with a cool blue directional light and subtle emissive rings for accent. I'm also defining the platform's top disc geometry with a dark, semi-metallic physical material for a reflective finish.\n\nFor the mirror effect, I'm considering drawing order so opaque objects render before the transparent floor, and placing a flipped clone of the car beneath the surface to simulate a reflection visible through the transparent top disc while hiding unwanted side and bottom faces.\n\nI should drop the opaque base disc since it would clip the mirror car's lower wheels, and let the dark background handle that instead. Rays outside the disc footprint just travel straight to the mirror car geometry beneath the platform, so it stays visible beyond the disc edge too—which is fine since it's all just geometry regardless of the disc.\n\nThat's right at the edge, so I need a bigger margin. I'm considering adding an opaque dark pedestal cylinder beneath the plane to block stray rays from reaching the mirror car outside the disc's safe zone, though I need to make sure its top cap doesn't interfere with legitimate reflection rays coming through the disc itself.\n\nI could add a subtle rim light at the platform's top edge to help the shape read against the dark background, and adjust the pedestal's height and wall depth so the backface-culled wall doesn't accidentally reveal the mirrored car's lower geometry. Settling on a wall depth of about 3 with a dark, glossy finish should keep things coherent.\n\nSince I can't preview the render, I'm keeping the approach moderate-risk: a dark metallic wall material, and a mirrored object handled through negative scale on an Object3D. For visual interest I'm adding two concentric emissive rings on the platform's top surface — a brighter outer ring near the edge and a fainter inner one — using basic materials with a cool blue-white glow.\n\nNow I'm working out the camera framing: positioning it at a front three-quarter angle around (6.5, 1.5, 4.5) looking toward (0, 0.7, 0), roughly 8 units away, and checking the math on field of view versus platform size so the 3.2-radius platform and the car's ~2.2 bounding radius both fit comfortably in frame without clipping at the near edge.\n\nI'm also setting up the environment lighting scene for the PMREM reflections, placing wide rectangular light strips above the car (one warm-toned strip around y=7, z=-2, another dimmer one at z=3.5) and starting to add tall vertical soft-box strips along the sides to give the car body realistic studio-style highlights.\n\nI'll add a warm directional key light from above-front and a cooler rim directional from behind, so the body's red base only catches highlights where these lights hit, keeping the environment dim otherwise for contrast.\n\nFor the flake texture, I'm generating a bump-map where each pixel gets a randomly perturbed normal to simulate metallic flake sparkle, tiling it across the sphere's UV coordinates while accounting for pinching near the poles.\n\nTo avoid pinching artifacts, I'll rotate the geometry so the poles align with the nose/tail axis instead of the roof, keeping flake density more uniform across the visible surface. I'm also calculating texel density versus pixel resolution to make sure flakes don't get washed out by mipmapping — I need to size them larger so they stay visible at render resolution.\n\nRather than relying on mipmap smoothing, I'll disable mipmaps on the flake normal map and use linear filtering without mip levels, letting the natural aliasing create a shimmering sparkle effect as the car rotates.\n\nFor the base coat, I'm tuning metalness lower (around 0.35) with a deep candy red so it doesn't go too dark, while a mirror-smooth clearcoat layer sits on top letting the sparkly base reflection show through. I also want to double-check the PMREMGenerator's fromScene signature for proper typing.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013psELZQobbf1tHhwwvxPYh",
+    "name": "search",
+    "input": {
+     "pattern": "fromScene",
+     "path": "node_modules/@types/three/src/extras/PMREMGenerator.d.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013psELZQobbf1tHhwwvxPYh",
+    "content": "54:    fromScene(\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01EZy5vVac2zSj2tNToJCRXZ",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@types/three/src/extras/PMREMGenerator.d.ts",
+     "offset": 1,
+     "limit": 70
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01EZy5vVac2zSj2tNToJCRXZ",
+    "content": "1\timport { Vector3 } from \"../math/Vector3.js\";\n2\timport { WebGLRenderer } from \"../renderers/WebGLRenderer.js\";\n3\timport { WebGLRenderTarget } from \"../renderers/WebGLRenderTarget.js\";\n4\timport { Scene } from \"../scenes/Scene.js\";\n5\timport { CubeTexture } from \"../textures/CubeTexture.js\";\n6\timport { Texture } from \"../textures/Texture.js\";\n7\t\n8\texport interface PMREMGeneratorOptions {\n9\t    size?: number | undefined;\n10\t    position?: Vector3 | undefined;\n11\t}\n12\t\n13\t/**\n14\t * This class generates a Prefiltered, Mipmapped Radiance Environment Map (PMREM) from a cubeMap environment texture.\n15\t * @remarks\n16\t * This allows different levels of blur to be quickly accessed based on material roughness\n17\t * Unlike a traditional mipmap chain, it only goes down to the LOD_MIN level (above), and then creates extra even more filtered 'mips' at the same LOD_MIN resolution,\n18\t * associated with higher roughness levels\n19\t * In this way we maintain resolution to smoothly interpolate diffuse lighting while limiting sampling computation.\n20\t * @remarks\n21\t * Note: The minimum {@link THREE.MeshStandardMaterial | MeshStandardMaterial}'s roughness depends on the size of the provided texture\n22\t * If your render has small dimensions or the shiny parts have a lot of curvature, you may still be able to get away with a smaller texture size.\n23\t *\n24\t * | texture size | minimum roughness  |\n25\t * |--------------|--------------------|\n26\t * | 16           | 0.21               |\n27\t * | 32       "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm setting up an environment box with light strips placed at a distance from the origin camera, and giving each strip a layered look by pairing a bright core box with a larger, dimmer halo box to simulate soft-box glow.\n\n",
+    "signature": "CAQSrQcKEggTEAEYAjgBQgh0aGlua2luZxIM9zV0G+d3XcvFqepAGgwlFHSySCdA3ITkjs4iMBls1PmC3363PL5MItKo80TC4/Qft+vlojSxWUoX7nwWSNn9doPC4D246ZlnuZLTTSrIBlRSR2CaVsNSDT7l0LiEbrAbwlZg3O5Q6Aj8rOiRyKafiCIfcvNxeSw44WW/T031PYNsbdOhLeG5cp+BaIBXrtvRIS+ttzZMQW3YPUZBNrHN5KYauQv+R4m0fTVJGpTWs5Ob0ubvO4+CjD+095AaelvGHJDW0nqSgk9Eyn5lwGlr9m/4un+n3+CoJVxg5FoPvxLXFuGh7isWrwdeKN8pHWhW0q0EEnAeIrYNBDifAF0INrGW/Wc8RqjgsY6DMpLjTf1yFNOKpQGI6AaRSRW0TLGm85sHJ7XyteLACHAuT+8JA+NHfJOOinNm/gFE9SWBC4+THwcFNGg9jkmIMIwMgnI+zVIJvLY5WeR0mCmBC2EPHYntOf6ruR9wdjxCFZ36HvXKbgC9z1DWEL2gcwBzUQAAMsUkgQEK++c7SfXkUb5rG+nnrnfUZWgwJugVi2KZDxE395xUZdI9/0YhgeodMIPN0KWOzty7uVeiKiI7/6Ghfc4/MscW7NN58HAEsnvU1/OBAqi0muzO3QEkjeyhyrbL10J5ie5o4HU26tRFW7dc5c0CRlsqAltpxU4CHFNgRV1ZdqPo4lHTxclVbvUltjGFqaAj/cNJP5YArmKPxwqTcIoH9wh/4sMTw+8ulOlVtpkt65Va/iR2zVdlW9o4qcGFq1rlIaWVXe3EIN6Ht0iKSCwBCtCN6hPAzAPWRbE2W9S0ruJRk0isy1IxwS4hOkTIMbNr+/ox0ScyhacgSkLelWWe4YAIpINDpkmTm3+jhOwavramkdI93t9LtSGD8kN+RvzmRjNNyiJUK4viWbGZE3LIY2JVku/9Qd0fPQ8k53kjfYP0CfqSKgEzIxy5tTN+mHdQb7EK5k41VkCIK+/mjJ010HLmA1B547ViQ31RA8XXFtJSOe4mbgt1h2RCDRLeaYSRI1TlUyiTyudnujk26Ep/fpM5lNcEUkjtDCGk8auSt9EGeRPYeyDwONC+O3dlafi1kXbNpRQoqqNyR+/ixGjUFd9L3aVQt7bjWffC73/mJrZSc5Nl/1qlS1aXid23J2taIsPJqlgALc7hjuKZTJJn1TIPH751CjZoQRHfgZyvgusYl9s/AZyaIUcMdxRWc1E5f/xu7hgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017MgKxmRqAzjJdUWxJBaFJE",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import * as THREE from 'three';\n\ndeclare global {\n  interface Window {\n    __TASK_STATE__: { turntableAngleDeg: number; paintFinish: string };\n    __EVAL_READY__?: boolean;\n  }\n}\n\nconst canvas = document.getElementById('app') as HTMLCanvasElement;\nconst renderer = new THREE.WebGLRenderer({ canvas, antialias: true });\nrenderer.setPixelRatio(1);\nrenderer.setSize(640, 360, false);\nrenderer.toneMapping = THREE.ACESFilmicToneMapping;\nrenderer.toneMappingExposure = 1.0;\nrenderer.outputColorSpace = THREE.SRGBColorSpace;\n\nconst scene = new THREE.Scene();\n\n// ---------- background: dark showroom gradient ----------\n{\n  const c = document.createElement('canvas');\n  c.width = 4;\n  c.height = 256;\n  const g = c.getContext('2d')!;\n  const grad = g.createLinearGradient(0, 0, 0, 256);\n  grad.addColorStop(0, '#05060a');\n  grad.addColorStop(0.55, '#0d1018');\n  grad.addColorStop(0.75, '#0a0c12');\n  grad.addColorStop(1, '#030305');\n  g.fillStyle = grad;\n  g.fillRect(0, 0, 4, 256);\n  const bg = new THREE.CanvasTexture(c);\n  bg.colorSpace = THREE.SRGBColorSpace;\n  scene.background = bg;\n}\n\n// ---------- studio environment (soft-box strips) ----------\nfunction buildStudio(): THREE.Scene {\n  const env = new THREE.Scene();\n  const room = new THREE.Mesh(\n    new THREE.BoxGeometry(60, 40, 60),\n    new THREE.MeshBasicMaterial({ color: new THREE.Color(0.012, 0.013, 0.018), side: THREE.BackSide }),\n  );\n  room.position.y = 8;\n  env.add(room);\n\n  // dim overhead diffuser for body-colour fill\n  const ceiling = new THREE.Mesh(\n    new THREE.BoxGeometry(26, 0.2, 26),\n    new THREE.MeshBasicMaterial({ color: new THREE.Color(0.22, 0.22, 0.25) }),\n  );\n  ceiling.position.set(0, 12, 0);\n  env.add(ceiling);\n\n  // floor glow\n  const floor = new THREE.Mesh(\n    new THREE.BoxGeometry(40, 0.2, 40),\n    new THREE.MeshBasicMaterial({ color: new THREE.Color(0.03, 0.03, 0.035) }),\n  );\n  floor.position.y = -3;\n  env.add(floor);\n\n  const strip = (\n    size: [number, number, number],\n    pos: [number, number, number],\n    rgb: [number, number, number],\n  ) => {\n    const core = new THREE.Mesh(\n      new THREE.BoxGeometry(...size),\n      new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb) }),\n    );\n    core.position.set(...pos);\n    env.add(core);\n    // dimmer halo makes the edges of the soft box fall off gradually\n    const halo = new THREE.Mesh(\n      new THREE.BoxGeometry(size[0] * 1.0 + (size[0] > size[2] ? 0 : 0.5), size[1] + 0.3, size[2] + (size[0] > size[2] ? 0.7 : 0)),\n      new THREE.MeshBasicMaterial({ color: new THREE.Color(rgb[0] * 0.18, rgb[1] * 0.18, rgb[2] * 0.18) }),\n    );\n    halo.position.set(pos[0], pos[1] - 0.05, pos[2]);\n    env.add(halo);\n  };\n\n  // two long overhead strips\n  strip([16, 0.3, 1.3], [0, 7, -2.5], [14, 13.5, 13]);\n  strip([16, 0.3, 1.0], [0, 7, 3.5], [9, 9, 9]);\n  // tall side strips\n  strip([0.3, 9, 1.4], [-8, 3, 0], [9, 9, 9.5]);\n  strip([0.3, 7, 1.0], [8, 3, 2.5], [6, 6, 6.5]);\n  // faint cool rim strip behind\n  strip([12, 0.3, 0.5], [0, 3, -10], [1.5, 3.0, 7.0]);\n\n  return env;\n}\n\nconst pmrem = new THREE.PMREMGenerator(renderer);\nconst envRT = pmrem.fromScene(buildStudio(), 0, 0.1, 100, { size: 512 });\nscene.environment = envRT.texture;\nscene.environmentIntensity = 1.0;\npmrem.dispose();\n\n// ---------- procedural textures ----------\nfunction rand(seed: number): () => number {\n  let s = seed >>> 0;\n  return () => {\n    s = (s + 0x6d2b79f5) >>> 0;\n    let t = s;\n    t = Math.imul(t ^ (t >>> 15), t | 1);\n    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);\n    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;\n  };\n}\n\nconst FLAKE_SIZE = 256;\nfunction makeFlakeTextures(): { normal: THREE.CanvasTexture; color: THREE.CanvasTexture } {\n  const r = rand(1234);\n  const nc = document.createElement('canvas');\n  nc.width = nc.height = FLAKE_SIZE;\n  const cc = document.createElement('canvas');\n  cc.width = cc.height = FLAKE_SIZE;\n  const nctx = nc.getContext('2d')!;\n  const cctx = cc.getContext('2d')!;\n  const nd = nctx.createImageData(FLAKE_SIZE, FLAKE_SIZE);\n  const cd = cctx.createImageData(FLAKE_SIZE, FLAKE_SIZE);\n  // flakes are 2x2 texel cells with a random facet orientation\n  const cell = 2;\n  const cells = FLAKE_SIZE / cell;\n  for (let cy = 0; cy < cells; cy++) {\n    for (let cx = 0; cx < cells; cx++) {\n      const a = r() * Math.PI * 2;\n      const tilt = Math.pow(r(), 0.6) * 0.9;\n      let nx = Math.cos(a) * tilt;\n      let ny = Math.sin(a) * tilt;\n      let nz = 1;\n      const len = Math.hypot(nx, ny, nz);\n      nx /= len;\n      ny /= len;\n      nz /= len;\n      const bright = r() < 0.35 ? 0.6 + r() * 0.4 : 0.55 + r() * 0.1;\n      for (let dy = 0; dy < cell; dy++) {\n        for (let dx = 0; dx < cell; dx++) {\n          const i = ((cy * cell + dy) * FLAKE_SIZE + cx * cell + dx) * 4;\n          nd.data[i] = Math.round((nx * 0.5 + 0.5) * 255);\n          nd.data[i + 1] = Math.round((ny * 0.5 + 0.5) * 255);\n          nd.data[i + 2] = Math.round((nz * 0.5 + 0.5) * 255);\n          nd.data[i + 3] = 255;\n          const v = Math.round(bright * 255);\n          cd.data[i] = v;\n          cd.data[i + 1] = Math.round(v * 0.96);\n          cd.data[i + 2] = Math.round(v * 0.92);\n          cd.data[i + 3] = 255;\n        }\n      }\n    }\n  }\n  nctx.putImageData(nd, 0, 0);\n  cctx.putImageData(cd, 0, 0);\n  const setup = (t: THREE.CanvasTexture) => {\n    t.wrapS = t.wrapT = THREE.RepeatWrapping;\n    t.repeat.set(2, 2);\n    t.generateMipmaps = false;\n    t.minFilter = THREE.LinearFilter;\n    t.magFilter = THREE.NearestFilter;\n    t.anisotropy = 1;\n  };\n  const normal = new THREE.CanvasTexture(nc);\n  normal.colorSpace = THREE.NoColorSpace;\n  setup(normal);\n  const color = new THREE.CanvasTexture(cc);\n  color.colorSpace = THREE.SRGBColorSpace;\n  setup(color);\n  return { normal, color };\n}\nconst flake = makeFlakeTextures();\n\n// ---------- materials ----------\nconst paint = new THREE.MeshPhysicalMaterial({\n  color: new THREE.Color(0xd0001a),\n  map: flake.color,\n  metalness: 0.45,\n  roughness: 0.38,\n  normalMap: flake.normal,\n  normalScale: new THREE.Vector2(0.9, 0.9),\n  clearcoat: 1.0,\n  clearcoatRoughness: 0.03,\n  envMapIntensity: 1.0,\n});\n\nconst chrome = new THREE.MeshStandardMaterial({ color: 0xf2f4f8, metalness: 1.0, roughness: 0.06 });\nconst glass = new THREE.MeshPhysicalMaterial({\n  color: 0x020204,\n  metalness: 0.0,\n  roughness: 0.04,\n  clearcoat: 1.0,\n  clearcoatRoughness: 0.02,\n  envMapIntensity: 1.2,\n});\nconst rubber = new THREE.MeshStandardMaterial({ color: 0x0c0c0d, metalness: 0.0, roughness: 0.75 });\nconst headlight = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.2, 2.0) });\nconst taillight = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.05, 0.03) });\n\n// ---------- the car ----------\nconst car = new THREE.Group();\n\nconst sphereGeo = (): THREE.SphereGeometry => {\n  const g = new THREE.SphereGeometry(1, 128, 96);\n  g.rotateZ(Math.PI / 2); // poles at nose/tail so the roof is not pinched\n  return g;\n};\n\nconst bodyCenterY = 0.82;\nconst bodyScale = new THREE.Vector3(2.1, 0.55, 0.95);\nconst body = new THREE.Mesh(sphereGeo(), paint);\nbody.scale.copy(bodyScale);\nbody.position.y = bodyCenterY;\ncar.add(body);\n\nconst glassMesh = new THREE.Mesh(sphereGeo(), glass);\nglassMesh.scale.set(1.1, 0.5, 0.74);\nglassMesh.position.set(-0.2, 1.2, 0);\ncar.add(glassMesh);\n\nconst roof = new THREE.Mesh(sphereGeo(), paint);\nroof.scale.set(0.95, 0.42, 0.72);\nroof.position.set(-0.2, 1.3, 0);\ncar.add(roof);\n\n// chrome beltline trim around the body\n{\n  const belt = new THREE.Mesh(new THREE.TorusGeometry(1, 0.011, 12, 256), chrome);\n  belt.rotation.x = Math.PI / 2;\n  belt.scale.set(bodyScale.x * 1.003, bodyScale.z * 1.003, 1);\n  belt.position.y = bodyCenterY - 0.04;\n  car.add(belt);\n}\n\n// chrome cross-section rings (front and rear bumper accents)\nfor (const x of [1.45, -1.55]) {\n  const f = Math.sqrt(1 - (x / bodyScale.x) ** 2);\n  const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.012, 12, 192), chrome);\n  ring.rotation.y = Math.PI / 2;\n  ring.scale.set(bodyScale.z * f * 1.004, bodyScale.y * f * 1.004, 1);\n  ring.position.set(x, bodyCenterY, 0);\n  car.add(ring);\n}\n\n// chrome window surround\n{\n  const surround = new THREE.Mesh(new THREE.TorusGeometry(1, 0.012, 12, 256), chrome);\n  surround.rotation.x = Math.PI / 2;\n  surround.scale.set(1.0, 0.725, 1);\n  surround.position.set(-0.2, 1.1, 0);\n  car.add(surround);\n}\n\n// head and tail lights with chrome bezels\nfor (const side of [-1, 1]) {\n  const hx = 1.86;\n  const hy = bodyCenterY + 0.03;\n  const hz = side * 0.42;\n  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.1, 24, 16), headlight);\n  lamp.position.set(hx + 0.02, hy, hz);\n  lamp.scale.set(0.6, 1, 1);\n  car.add(lamp);\n  const bezel = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.017, 12, 48), chrome);\n  bezel.position.set(hx + 0.015, hy, hz);\n  bezel.rotation.y = Math.PI / 2 - 0.35 * side * 0.0 - 0.38;\n  bezel.rotation.y = Math.PI / 2 - Math.atan2(0.42 * side * 0 + 0.3, 1) * 0 - 0.35;\n  car.add(bezel);\n\n  const tx = -1.9;\n  const tail = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 16), taillight);\n  tail.position.set(tx - 0.005, hy, hz * 0.95);\n  tail.scale.set(0.5, 0.8, 1.3);\n  car.add(tail);\n}\n\n// wheels\nconst wheelX = [1.18, -1.18];\nconst wheelZ = [0.86, -0.86];\nfor (const wx of wheelX) {\n  for (const wz of wheelZ) {\n    const w = new THREE.Group();\n    const tire = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.12, 24, 48), rubber);\n    w.add(tire);\n    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.2, 40), chrome);\n    hub.rotation.x = Math.PI / 2;\n    w.add(hub);\n    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.23, 24), rubber);\n    cap.rotation.x = Math.PI / 2;\n    w.add(cap);\n    const sideFace = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.22, 40), rubber);\n    sideFace.rotation.x = Math.PI / 2;\n    sideFace.scale.set(1, 1, 1);\n    w.add(sideFace);\n    // chrome hub disc sits slightly proud of the tyre face\n    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.26, 40), chrome);\n    disc.rotation.x = Math.PI / 2;\n    w.add(disc);\n    w.position.set(wx, 0.44, wz);\n    car.add(w);\n  }\n}\n\n// ---------- turntable ----------\nconst turntable = new THREE.Group();\nscene.add(turntable);\nturntable.add(car);\n\n// mirrored copy beneath the glossy floor\nconst mirror = car.clone();\nmirror.scale.y = -1;\nturntable.add(mirror);\n\nconst PLATFORM_R = 3.2;\nconst floorMat = new THREE.MeshPhysicalMaterial({\n  color: 0x040405,\n  metalness: 0.5,\n  roughness: 0.14,\n  transparent: true,\n  opacity: 0.8,\n  clearcoat: 1.0,\n  clearcoatRoughness: 0.05,\n  envMapIntensity: 0.8,\n});\nconst platform = new THREE.Mesh(new THREE.CylinderGeometry(PLATFORM_R, PLATFORM_R, 0.1, 128), floorMat);\nplatform.position.y = -0.05;\nplatform.renderOrder = 1;\nscene.add(platform);\n\n// opaque skirt: hides the mirrored copy when seen from outside the platform\nconst skirt = new THREE.Mesh(\n  new THREE.CylinderGeometry(PLATFORM_R, PLATFORM_R, 4, 128, 1, true),\n  new THREE.MeshStandardMaterial({ color: 0x050506, metalness: 0.8, roughness: 0.4 }),\n);\nskirt.position.y = -0.1 - 2;\nscene.add(skirt);\n\n// ring lights on the platform\nconst ringMatOuter = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.25, 0.5, 1.2) });\nconst ringOuter = new THREE.Mesh(new THREE.TorusGeometry(PLATFORM_R - 0.06, 0.03, 12, 192), ringMatOuter);\nringOuter.rotation.x = Math.PI / 2;\nringOuter.position.y = 0.005;\nscene.add(ringOuter);\n\nconst ringInner = new THREE.Mesh(\n  new THREE.TorusGeometry(2.6, 0.012, 8, 192),\n  new THREE.MeshBasicMaterial({ color: new THREE.Color(0.1, 0.18, 0.4) }),\n);\nringInner.rotation.x = Math.PI / 2;\nringInner.position.y = 0.003;\nscene.add(ringInner);\n\n// ---------- lights ----------\nconst key = new THREE.DirectionalLight(0xffffff, 0.8);\nkey.position.set(3, 7, 4);\nscene.add(key);\nconst rim = new THREE.DirectionalLight(0x7aa8ff, 2.0);\nrim.position.set(-5, 3, -6);\nscene.add(rim);\nconst rim2 = new THREE.DirectionalLight(0x6a98ff, 1.0);\nrim2.position.set(6, 2, -5);\nscene.add(rim2);\n\n// ---------- camera ----------\nconst camera = new THREE.PerspectiveCamera(32, 640 / 360, 0.1, 100);\ncamera.position.set(6.4, 1.55, 5.6);\ncamera.lookAt(0, 0.62, 0);\n\n// ---------- loop ----------\nwindow.__TASK_STATE__ = { turntableAngleDeg: 0, paintFinish: 'clearcoat' };\n\nconst DEG_PER_SEC = 20;\nconst t0 = performance.now();\nlet first = true;\n\nfunction frame(now: number): void {\n  const angle = ((now - t0) / 1000) * DEG_PER_SEC;\n  turntable.rotation.y = THREE.MathUtils.degToRad(angle);\n  window.__TASK_STATE__.turntableAngleDeg = angle;\n  window.__TASK_STATE__.paintFinish = 'clearcoat';\n  renderer.render(scene, camera);\n  if (first) {\n    first = false;\n    window.__EVAL_READY__ = true;\n  }\n  requestAnimationFrame(frame);\n}\nrequestAnimationFrame(frame);\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01GJB5sybUG1oxGPzt3B4moW",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017MgKxmRqAzjJdUWxJBaFJE",
+    "content": "wrote src/main.ts (390 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01GJB5sybUG1oxGPzt3B4moW",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm cleaning up some redundant code around the bezel rotation and wheel geometry, checking that the hub disc and tire proportions still look right, and confirming the mirror clone sharing materials works fine.\n\nOne edge case I need to fix: the rAF timestamp could end up slightly earlier than my initial `t0` from `performance.now()`, producing a tiny negative elapsed time, so I should clamp it to zero.\n\n",
+    "signature": "CAQSkwkKEggTEAEYAjgBQgh0aGlua2luZxIMKguSJW27bV7LcnPsGgwERsAN8CoXiG+sI9giMPUqEdYOOlAZ7dOeFCbZvx05ZEONBylfOn5Iv75iEaguIZ53DJUVMQydah3aXcoDtCquCGiQMjydfmzE1rFVDTwgTmQP9XthHoCVuWhqg+yKeFsDpLYDU4lRcTfF9lsp7ll/Ll71v66kNT6aiaDxyb2gSMVxzA7zHtTdzOPadkl6i+oXoWgzUo7A12reol/B1zLmgT7bQ8LUu9qf6qIBbQQGPVU7O5nSG9lpMLMjNt1FY/610sK76jP7X8DjAZ4QRT/uaK4WD96/5Z0bjvcv6sned5Uzzad7TOMAzIqpz3Up1jrj/WVoGJT5l5naeCwP7fi2qWPXw2raxTPAfsGAjLg/BB4Uq3nBrAHn4w6SNUX1kIUtD8F2HJXaLx9tVNfk+KJD6CbZCU++LKNpH75hg0iue6w91XHtn48RjbPaO5i5vmn6WkGhUOnEdWPgmg9+yBxvR3NlNUrmQ9Uopxbs+NEFvf1F6JFy1Sn2SCe40V6Zr3ji3KLUDbeRBl+vztOY2HWrUpBCnF2G02bvw3y6XoDmvhP09XIwUOgHFTtOO1D3tHeJIyYzaBTWS2lHEPEMDqsAY0R6n9ND1gb+VJ30oe3t4u0VINP0C0lXuUp1jxUWHAzC6kP++Pc9vFxRSnJBFds1jeYexPkkZBTtc9RiSBTx2phU/uGdDmBo4m9HiqZH5dJih9BEX6sIdyc98/YnPTD5Vb7L+j1g8PKD+HRL3kbXZXk5PBvK5m6guUfFUwuPr/PK404R6gKrPKyOOJQo0hGDgMQynVVpl4BBAJqcHXTONhhGxpsu1i4oVAMeQ17tDCoZ7Xqfr9ycTURRug9K+tdvEyXTHz+RTSy5IWooWAiO8G0w5h/71oXEFbawUjOj7Yr18O5kdCQPThG1IsrfiqmKDCoHdRx+9WrnLj2R4MB30v2JAbhLQUMqTIwjvuiuQBeCZiRqD8JCnRZjZ6BGPoHS4o3hBpmn3Gv+KGMA8Cv0RbkW7TmbF+DqAR5d8FFnw3m2sjZuU85eybtuRgALTCTefX/LrjdInceRdWgz3PF6y29wH6GTBb5hUOR39saiqCG7xKV9yy9dfyqRPpSrRF8OLPbafzXJMtrNIRAnOy6zMU/4Dwr3I7tNvb4XmIHH27Tr55bVnCEKz8sWHRQ9zV5H+GzOB7V+fI9uOJ1g2w1HM8Vf0xvf65ABLP9u12z9GEYd1NVIE3EVBlwu5pkNmbwxOuLXeo0eUGVavwS4K/J26s/CLA4a8Ct8mKKsOyaip5+IcDHhcdAoad/3LhFl/HsnQN6EI3hrRHroinYg4UfsKTPdZ5np8JlPFkKtaHnmN389loDejbQTEnMLiCE69enYDCq9f554pyUabetnyTD5ZB6s92ZBlia3q1sGDoZeyCvtk3W2vaeVKbi1LpjYOqiCsVT+z+oFYAwEh+duyb52x5pVtduCIJ9rue0sfqVwfcEiUyuzI/Zu464RZQ+QHrstZ0ww6Wx+h/DAghodAg/JGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Sz9x7VLpCHsARqxix1wqiJ",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "  bezel.rotation.y = Math.PI / 2 - 0.35 * side * 0.0 - 0.38;\n  bezel.rotation.y = Math.PI / 2 - Math.atan2(0.42 * side * 0 + 0.3, 1) * 0 - 0.35;",
+     "new_string": "  bezel.rotation.y = Math.PI / 2 - 0.35;"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019UGFzEmVJxLoT5WkbDmwWd",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "  const angle = ((now - t0) / 1000) * DEG_PER_SEC;",
+     "new_string": "  const angle = Math.max(0, (now - t0) / 1000) * DEG_PER_SEC;"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XrTQK8mwR3kX5seECT7MCC",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Sz9x7VLpCHsARqxix1wqiJ",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019UGFzEmVJxLoT5WkbDmwWd",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XrTQK8mwR3kX5seECT7MCC",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01K9voHupz5DhgiVJcP1oKAs",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote src/main.ts, a three.js scene of a candy-red car on a turntable in a dark showroom. It passes typecheck. I couldn't run `vite build` or open the page, so I haven't seen the rendered output and the camera framing and lighting levels are untuned guesses.\n\n- **Body:** a streamlined ellipsoid body, a black glass cabin with a separate painted roof bump, and four rubber wheels with chrome hubs. Chrome trim is a beltline strip, two cross-section rings, a window surround and headlight bezels. Headlights and taillights are emissive.\n- **Paint:** a red `MeshPhysicalMaterial` with a procedural flake texture (a random-facet normal map plus a speckled colour map, unmipmapped so the flakes shimmer as the car turns), topped with a clearcoat.\n- **Reflections:** the environment is generated in code and run through `PMREMGenerator`. It holds two overhead strips, two side strips, a faint cool rim strip and a dim overhead diffuser, so the clearcoat shows soft-box highlights curving over the panels.\n- **Platform:** a circular glossy dark disc with an outer cool-blue ring light and a fainter inner ring. A vertically flipped copy of the car sits under the semi-transparent top to give the faint mirror reflection. An opaque skirt hides that copy when seen from outside the disc.\n- **Scene and loop:** a dark gradient background, cool rim directional lights, and a fixed low three-quarter camera. The turntable turns at 20°/s from a clock, and every frame updates `window.__TASK_STATE__` with an increasing `turntableAngleDeg` and `paintFinish: 'clearcoat'`. It sets `window.__EVAL_READY__` after the first frame.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01K9voHupz5DhgiVJcP1oKAs",
+    "content": "ok"
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "phase": "followup",
+  "content": "Follow-up request from the user: Add three DOM buttons outside the canvas labelled 'Red', 'Blue' and 'Black' that repaint the car body (base paint colour only; the clear coat, flakes, chrome and glass stay) in candy red, deep metallic blue and gloss black. Red is the starting colour. Add paintColor: 'red' | 'blue' | 'black' to window.__TASK_STATE__.\nMake this change in the existing project, check it with typecheck, then call finish again."
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm planning to add color-picker buttons directly in the DOM outside the canvas, appending them in main.ts, and working out paint colors — a red, a deep metallic blue, and a black with lower metalness so the flake sparkle still shows through.\n\n",
+    "signature": "CAQS/gkKEggTEAEYAjgBQgh0aGlua2luZxIMRzkUHcf7WzZYWe+tGgyiJdZe2YFbzTcDgtwiMGoSnmuFyL1o9ZvZjVKF2SVWYqGev2rcYYmHqe7ikOpuWrWJnLAy0adwy34cXYbGdSqZCZ+jbCAq+ZdAqnBHr7yaakwiQCSkVbQqXX5OKhizldv6dE4K0sgOXQNLNHCgVmYhJmZvfw1oWqVp3YNvluV7q/JoMcqneby7sap7uzahUFYValCFBFxj5dWgrbCDowaN5393Bfi16p4u6CQcqDDj7daUMxy183wKvQJrykfOKocbQNiou0UNYeNzkZVj2iav5Ne/sEPt1W/ifSASG7kuq66WUZbfUj47UKYvK366OTWg6bpFCeMfZ2PsvTl87ZQB/pxItjiEpywx9W0CkBr8q9BJ/pigYRlhfys7clCVWfYQqV4kUrPBjOsBemIYE1ZxLqJ6VR8NXlo1lhuDvZgHfxTICY5F9LlgocV3yjEdBKo0ZlGg23gmG3O7QE6tQITjJ/KUQpyMtqTo+gifgsiQhAHR44a0sgn8ydluIeR4VBtXq2hzrZ23eI8wsyqa8MU+zOOwrV3YXFJDSwXLBxqhCsCj48ERbSpYckv8c9JlFtR4byDERr5qi6unoIf5YdY5wYEq53w8v19IhUEfLHevLgcJuePCLPqn7YT4NKs4v0A2X2x+xrDsptTRnB1Xkm8bTIYiaUV5N20t7e3/PRzkHtFe4BJDHOpJ7Q+lT980U9D+Hr6Un8zU+Fs4VYpUIhobJZDYF27g1BxXeKCIplCS1xRgSgRUFJoVY8bGhuDLPaBBu2McBzuJ+YOqGocwSYAAmOuJ851txr7cZLtvehZQ0OF/iwPMdU1YvCPFWjDi0COXcHd207osPWRRX4lKU9SiO4QBDpRT5T0W1yqs1tzBSqaH95iDhSWdBwcUMeD6DfWIyx4Z07ZVd1WSr2i48l7tpE4lMc9D9Il2bj6k4Advmsdf+LR9yXX+IG2GQPNBArVLBkn/ev0k7Y6VpdR+xwQfj2YJ1tBSGo6VwUuG5qn47gKnu+UnDzHtB9+jk27ZO5cYGLylnoMff3o2XDwIpNJw3g0cIWKOGiFU4v0pCwTCYpClX0Jf1eePk8jheqSYTatXp/Ydh/QZ4AEJI0yiRcKpnnz46iD2r5wjB3WsVLrGEUKd5fzW2TNUxvmgo6e34YrHD5/iQI4lZordcnEAIK6/4iZ5W/zvrvMufrrWxOuEBtYcJ9t+IwyEoiWPK3x3hgFcC73QS9utWHgFiLlvxj8oo7fJcG9HHSE1WbfHsgQnZbqQqaiXMgdEsrfLk3aEWRmxiBZ2mFd6kqc2S/T12Ii7VzOByg1ChfSFd2p/CEoIa0TgwHdJAZvvH21hEtekOOeBYj9wwXvbru/wKKMV18dQKLJDxxkNwNI0eAWSKNi5XVKDlOkjciux3SHw6BoW4rpV4cOKpJCX1qla4YCm/I/hvOW4ix72P8O53AMQacrbND/XMUStxxX8+MkvwyBII88bZIUVjjbD1Ez6EDQ9tHCkUMOeeM14g/fYxkV68YFfsH8X04kUs75PdBgFdwUykfErjyNr2ebuCnPJuZ3fztvaxYlf5faaUdM19Om+MtwYGu1vMcFTDj+2Yh1L9J3Pqh7UrrasjjFrW4fS/Tngt3pgdjMpHT8k52rS/G8Mvc2nL1rMnIv+BHyNnWwYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_015dseZouWdPJyvzqGJUGg4G",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "    __TASK_STATE__: { turntableAngleDeg: number; paintFinish: string };",
+     "new_string": "    __TASK_STATE__: { turntableAngleDeg: number; paintFinish: string; paintColor: PaintName };"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012FnZ2dPL67xpxFT9t1srp4",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "declare global {",
+     "new_string": "type PaintName = 'red' | 'blue' | 'black';\n\ndeclare global {"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018wYAVAVtJoQu8Szh23ZaBy",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "window.__TASK_STATE__ = { turntableAngleDeg: 0, paintFinish: 'clearcoat' };",
+     "new_string": "window.__TASK_STATE__ = { turntableAngleDeg: 0, paintFinish: 'clearcoat', paintColor: 'red' };\n\n// ---------- paint selector (DOM buttons below the canvas) ----------\n// Only the base layer colour/metalness change; clearcoat, flakes, chrome and glass are untouched.\nconst PAINTS: Record<PaintName, { label: string; color: number; metalness: number; roughness: number; swatch: string }> = {\n  red: { label: 'Red', color: 0xd0001a, metalness: 0.45, roughness: 0.38, swatch: '#d0001a' },\n  blue: { label: 'Blue', color: 0x0c34d0, metalness: 0.6, roughness: 0.34, swatch: '#0c34d0' },\n  black: { label: 'Black', color: 0x0b0b0d, metalness: 0.3, roughness: 0.3, swatch: '#111' },\n};\n\nconst bar = document.createElement('div');\nbar.style.cssText = 'display:flex;gap:8px;padding:8px;';\ncanvas.insertAdjacentElement('afterend', bar);\nconst buttons = new Map<PaintName, HTMLButtonElement>();\n\nfunction setPaint(name: PaintName): void {\n  const p = PAINTS[name];\n  paint.color.setHex(p.color);\n  paint.metalness = p.metalness;\n  paint.roughness = p.roughness;\n  window.__TASK_STATE__.paintColor = name;\n  for (const [n, b] of buttons) {\n    b.setAttribute('aria-pressed', String(n === name));\n    b.style.outline = n === name ? '2px solid #8fb4ff' : 'none';\n  }\n}\n\nfor (const name of Object.keys(PAINTS) as PaintName[]) {\n  const b = document.createElement('button');\n  b.type = 'button';\n  b.textContent = PAINTS[name].label;\n  b.style.cssText = `padding:6px 16px;border:1px solid #444;border-left:12px solid ${PAINTS[name].swatch};background:#16181d;color:#fff;font:inherit;cursor:pointer;`;\n  b.addEventListener('click', () => setPaint(name));\n  bar.appendChild(b);\n  buttons.set(name, b);\n}\nsetPaint('red');"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014mokWvKXYgHnuaxaPEaNNK",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_015dseZouWdPJyvzqGJUGg4G",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012FnZ2dPL67xpxFT9t1srp4",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018wYAVAVtJoQu8Szh23ZaBy",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014mokWvKXYgHnuaxaPEaNNK",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01U8KpiVonYTwJn1dRPwQhoe",
+    "name": "finish",
+    "input": {
+     "summary": "I added three buttons labelled Red, Blue and Black in a row under the canvas, created from src/main.ts. Red is selected at start. Typecheck passes, but I haven't run the page, so I haven't seen the button layout or how the blue and black paints look.\n\nEach button changes only the paint material's base colour, plus a small metalness and roughness adjustment (blue is more metallic, black less). The clearcoat, flake textures, chrome and glass are untouched. The roof and body share one material, so both change together. The selected button gets an outline. `window.__TASK_STATE__` now includes `paintColor` ('red', 'blue' or 'black'), and the per-frame update leaves it alone."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01U8KpiVonYTwJn1dRPwQhoe",
+    "content": "ok"
+   }
+  ]
+ }
+]

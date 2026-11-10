@@ -1,0 +1,292 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t104-three-r3",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 104,
+  "slug": "stacker",
+  "idx": 3,
+  "order": 4,
+  "seed": 20261108004,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:12:52.708Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Add pause: pressing P pauses the game (the slab stops moving and Space or clicks do not drop it) and pressing P again resumes. Show 'Paused' in the HUD while paused and add paused: boolean to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 59039,
+  "usage": {
+    "input": 64388,
+    "uncachedInput": 64388,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 3882,
+    "turns": 7,
+    "providerCredits": 1.348059,
+    "providerCostUsd": null,
+    "modelMs": 57849,
+    "toolMs": 1189,
+    "perTurnInput": [
+      3226,
+      4373,
+      9504,
+      10131,
+      12056,
+      12440,
+      12658
+    ],
+    "perTurnOutput": [
+      11,
+      55,
+      2562,
+      364,
+      741,
+      41,
+      108
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 43659,
+      "input": 27234,
+      "uncachedInput": 27234,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 2992,
+      "turns": 4,
+      "providerCredits": 0.9217019999999999,
+      "providerCostUsd": null,
+      "modelMs": 42847,
+      "toolMs": 811,
+      "perTurnInput": [
+        3226,
+        4373,
+        9504,
+        10131
+      ],
+      "perTurnOutput": [
+        11,
+        55,
+        2562,
+        364
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.084388,
+        "listUsd": 0.084388,
+        "providerUsd": null,
+        "providerCredits": 0.921702,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 15380,
+      "input": 37154,
+      "uncachedInput": 37154,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 890,
+      "turns": 3,
+      "providerCredits": 0.426357,
+      "providerCostUsd": null,
+      "modelMs": 15002,
+      "toolMs": 378,
+      "perTurnInput": [
+        12056,
+        12440,
+        12658
+      ],
+      "perTurnOutput": [
+        741,
+        41,
+        108
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.083208,
+        "listUsd": 0.083208,
+        "providerUsd": null,
+        "providerCredits": 0.426357,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.167596,
+    "listUsd": 0.167596,
+    "providerUsd": null,
+    "providerCredits": 1.348059,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1419,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 21
+    },
+    {
+      "i": 1,
+      "t": 1419,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 5884,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 5884,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 5884,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 37623,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 6163
+    },
+    {
+      "i": 6,
+      "t": 38434,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 7,
+      "t": 43659,
+      "type": "finish"
+    },
+    {
+      "i": 8,
+      "t": 53527,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 9,
+      "t": 53527,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 10,
+      "t": 53527,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 11,
+      "t": 53527,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 12,
+      "t": 53527,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 13,
+      "t": 53528,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 14,
+      "t": 53528,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 15,
+      "t": 53528,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 16,
+      "t": 53528,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 17,
+      "t": 57144,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 18,
+      "t": 59395,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "P now toggles pause in src/main.ts, and typecheck passes. I haven't run it in a browser. While paused, the slab, falling debris and camera freeze, and Space and canvas clicks do nothing. The HUD status reads \"Status: playing | Paused\", and `window.__TASK_STATE__` now includes `paused: boolean`. P only works while the status is `playing`. R restarts and clears the pause. Clicking the canvas after a game ends restarts it, as before."
+}
