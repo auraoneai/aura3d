@@ -1,0 +1,144 @@
+{
+  "batch": "c1-550-smoke",
+  "stub": false,
+  "arms": {
+    "aura": {
+      "runs": 1,
+      "valid": 1,
+      "invalid": 0,
+      "mainFinished": 0,
+      "mainCapped": 1,
+      "followUpFinished": 1,
+      "followUpCapped": 0,
+      "renderMain": 1,
+      "functionalMainAll": 1,
+      "functionalMainMean": 1,
+      "functionalFollowUpAll": 1,
+      "regressions": 0,
+      "turnsMedian": 48,
+      "turnsMainMedian": 40,
+      "turnsFollowUpMedian": 8,
+      "tokensMainMedian": 2656261,
+      "cliCallsMedian": 25,
+      "renderCallsMedian": 14,
+      "ranges": {
+        "turns": [
+          48,
+          48
+        ],
+        "turnsMain": [
+          40,
+          40
+        ],
+        "tokensIn": [
+          3675601,
+          3675601
+        ],
+        "tokensOut": [
+          27092,
+          27092
+        ],
+        "tokensMain": [
+          2656261,
+          2656261
+        ],
+        "wallSec": [
+          621.8,
+          621.8
+        ],
+        "toolSec": [
+          147.8,
+          147.8
+        ],
+        "billedUsd": [
+          7.622122,
+          7.622122
+        ]
+      },
+      "wallSecMedian": 621.8,
+      "toolSecMedian": 147.8,
+      "tokensInMedian": 3675601,
+      "tokensOutMedian": 27092,
+      "cachedShareMedian": 0,
+      "billedUsdMedian": 7.622122,
+      "billedUsdTotal": 7.6221,
+      "costSources": [
+        "list-price-estimate"
+      ],
+      "jsGzipKBMedian": 2228.4,
+      "totalKBMedian": 10172.4,
+      "loadedKBMedian": 5739.8,
+      "loadMsMedian": 251,
+      "fpsMedian": 60
+    }
+  },
+  "visual": {},
+  "decision": {
+    "verdict": "insufficient data",
+    "all": {
+      "verdict": "insufficient data",
+      "detail": {}
+    },
+    "assets": {
+      "tasks": [
+        101,
+        109,
+        110
+      ],
+      "verdict": "insufficient data",
+      "detail": {}
+    }
+  },
+  "rows": [
+    {
+      "runId": "c1-550-smoke-t109-aura-r1",
+      "arm": "aura",
+      "task": 109,
+      "idx": 1,
+      "valid": true,
+      "invalidReason": null,
+      "mainEnd": "max_turns",
+      "followUpEnd": "finished",
+      "mainFinished": false,
+      "mainCapped": true,
+      "followUpFinished": true,
+      "followUpCapped": false,
+      "turnsMain": 40,
+      "tokensMain": 2656261,
+      "turnsFollowUp": 8,
+      "turns": 48,
+      "wallSec": 621.8,
+      "toolSec": 147.8,
+      "modelSec": 473.9,
+      "tokensIn": 3675601,
+      "tokensOut": 27092,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "cachedShare": 0,
+      "billedUsd": 7.622122,
+      "billedUsdFollowUp": 2.110376,
+      "costSource": "list-price-estimate",
+      "bridgeExports": 0,
+      "bridgeFailures": 0,
+      "cliCalls": 25,
+      "renderCalls": 14,
+      "buildMain": true,
+      "renderMain": true,
+      "buildFollowUp": true,
+      "functionalMain": 1,
+      "functionalMainAll": true,
+      "functionalFollowUp": 1,
+      "functionalFollowUpAll": true,
+      "regressedMain": false,
+      "jsGzipKB": 2228.4,
+      "totalKB": 10172.4,
+      "assetKB": 3119.9,
+      "loadedKB": 5739.8,
+      "loadMs": 251,
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "pageErrors": 0,
+      "probeErrors": []
+    }
+  ]
+}
