@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { statSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -98,12 +98,12 @@ beforeEach(() => {
 afterEach(() => rmSync(temp, { recursive: true, force: true }));
 
 describe("catalog-driven showcase route aliases", () => {
-  it("copies only the built HTML and maps local assets without copying their directories", () => {
+  it("copies the built HTML and route-local directories (fonts) into the alias, and keeps the rewrite rules", () => {
     const aliases = build();
     expect(aliases).toEqual([{ appFolder: old, slug: pretty, url: prettyUrl, sourceUrl: oldUrl }]);
     expect(output(`apps/${pretty}/index.html`)).toBe(html);
     expect(output(`apps/${old}/index.html`)).toBe(html);
-    expect(readdirSync(join(dist, "apps", pretty))).toEqual(["index.html"]);
+    expect(readdirSync(join(dist, "apps", pretty)).sort()).toEqual(readdirSync(join(dist, "apps", old)).filter((n) => n === "index.html" || statSync(join(dist, "apps", old, n)).isDirectory()).sort());
     expect(output(`apps/${old}/settings.json`)).toBe('{"mode":"original"}\n');
     expect(output("assets/game-a1b2.js")).toBe("export const game = true;\n");
 
@@ -134,7 +134,8 @@ describe("catalog-driven showcase route aliases", () => {
       .toBe("/apps/showcase-second-port/fonts/game.css");
     expect(output("apps/showcase-second-port/fonts/game.css")).toBe("second game font");
     expect(output(`apps/${old}/fonts/game.css`)).toBe(css);
-    expect(readdirSync(join(dist, "apps", "second-game"))).toEqual(["index.html"]);
+    expect(readdirSync(join(dist, "apps", "second-game")).sort()).toEqual(["fonts", "index.html"]);
+    expect(output("apps/second-game/fonts/game.css")).toBe("second game font");
   });
 
   it("models query-preserving canonical, legacy, relative font and root bundle requests without loops", () => {

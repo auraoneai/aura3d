@@ -503,20 +503,29 @@ export function buildCatalogRouteAliases({ catalog, routes, reservedRoutes = [],
     if (!targetStat.isDirectory() || plan.previous.get(alias.url) !== alias.sourceUrl) {
       throw new Error(`Catalog alias collides with existing build output: ${targetDir}`);
     }
+    const copiedDirs = new Set((entriesByApp.get(alias.appFolder) ?? []).filter((e) => e.kind === "directory" && !e.sharedAuraAssets).map((e) => e.name));
     for (const entry of readdirSync(targetDir, { withFileTypes: true })) {
+      if (entry.isDirectory() && copiedDirs.has(entry.name)) continue;
       if (entry.name !== "index.html" || !entry.isFile()) {
         throw new Error(`Catalog alias contains unexpected build output: ${targetDir}/${entry.name}`);
       }
     }
   }
 
-  // Preflight above covers every alias before any writes. Only HTML is copied;
-  // nested public payloads keep their one existing copy under the source route.
+  // Preflight above covers every alias before any writes. HTML and route-local directories are copied;
+  // shared Aura assets keep their one copy behind the alias rewrite.
   for (const file of publicFilesToCopy) copyFileSync(file.source, file.built, constants.COPYFILE_EXCL);
   for (const alias of aliases) {
     const targetDir = path.join(outputApps, alias.slug);
     mkdirSync(targetDir, { recursive: true });
     copyFileSync(path.join(outputApps, alias.appFolder, "index.html"), path.join(targetDir, "index.html"));
+    // Route-local directories (fonts, ...) are copied too: Cloudflare Pages does not reliably apply the
+    // alias rewrite rules for them, which left Serpentine Sky Run and Shadowstep Gauntlet without their
+    // fonts (2026-11-09). Shared Aura assets stay single-copy behind their rewrite.
+    for (const entry of entriesByApp.get(alias.appFolder) ?? []) {
+      if (entry.kind !== "directory" || entry.sharedAuraAssets) continue;
+      cpSync(path.join(outputApps, alias.appFolder, entry.name), path.join(targetDir, entry.name), { recursive: true, force: true });
+    }
   }
   if (aliases.length || redirectsStat) writeFileSync(redirectsPath, plan.text, "utf8");
   return aliases;

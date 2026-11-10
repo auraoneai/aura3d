@@ -1,12 +1,12 @@
 # Changelog
 
-Version: 5.5.0
+Version: 5.5.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## Unreleased (5.5.1)
+## 5.5.1 (2026-11-09)
 
-Engine changes after 5.5.0. They go live on the showcase site through the site-only path (AGENTS.md "Shipping rules" 2) once the affected games pass a real-GPU check, and reach npm in the next batched release. WebGL2 output is unchanged; public API additions only.
+The last release of this program: the engine work that put the final two showcase games on WebGPU, worker frame rates, a walking fix for The Bellkeeper's Walk, and a site build fix. All of it was live on the showcase site before this npm release (AGENTS.md "Shipping rules" 2). WebGL2 output is unchanged.
 
 ### WebGPU draw path (P1-P3)
 
@@ -21,6 +21,11 @@ Engine changes after 5.5.0. They go live on the showcase site through the site-o
 ### Worker rendering (P4)
 
 - **Worker fps is real.** The worker stamps each presented frame with its own `performance.now()` (`AuraWorkerFrameResult.presentedAt`, optional) and `workerRootApp` feeds it to the same 1 s frame-rate meter the main-thread loop uses, so a worker app's `diagnostics().fps` is no longer 0. Capture-only frames do not count; results without the stamp fall back to the host clock. Worker rendering stays opt-in (`?worker=1`); per-game worker vs main-thread fps is recorded in `docs/upgrade-5.0.0/README.md` when measured.
+
+### Showcase and site
+
+- **The Bellkeeper's Walk: the walker walks.** The game renders with `app.step(0)` on its own clock, so the engine mixer never advanced and the walk clip stayed frozen at weight 0 while the walker slid. The clips now run through `createAnimationController`, advanced on the game clock at ground speed over the clip's stride speed (1.336 m of travel advances the Walk clip 0.576 s against 0.577 s expected), with a 0.15 s crossfade only when the gait changes. The movement path is unchanged (the 1e-9 reference-trajectory test still passes). The kite string, which read as a stray white line from the walker's hand to the cottage chimney, is removed; the kite stays.
+- **Alias routes keep their fonts.** Catalog alias routes (for example `/apps/serpentine-sky-run/` for `showcase-serpentine-sky-run-port`) now get a copy of the source route's local directories (fonts) next to their `index.html`; Cloudflare Pages did not reliably apply the alias rewrite rules for them, which left Serpentine Sky Run and Shadowstep Gauntlet without their fonts. Shared Aura assets keep one copy behind their rewrite.
 
 ### Agent-authoring comparison (C1)
 
