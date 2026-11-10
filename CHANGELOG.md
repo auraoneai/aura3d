@@ -29,7 +29,13 @@ The last release of this program: the engine work that put the final two showcas
 
 ### Agent-authoring comparison (C1)
 
-- The fixed 8-task comparison (native Aura3D 5.5.0, three.js, three.js + bridge) is frozen in `tests/reports/benchmark-c1/SPEC.md` on `exp/551-c1bench`, with a stub dry run on all three arms; the paid run starts once 5.5.0 is on npm. No engine change.
+- Run on the published 5.5.1 packages (2026-11-09/10, 72 runs: 8 tasks x 3 runs x Aura3D, three.js 0.185.1 and three.js + bridge, one model). The Aura3D apps were 17% shorter than the three.js ones (median 270 vs 326 lines; shorter on 6 of 8 tasks), passed the same functional checks (88% of runs pass every task check, 100% every follow-up check, in both), and won 13 of 24 blind visual pairs. The bridge did not meet its decision rule, so native Aura3D stays the default. Numbers and method: `evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md`, `tests/reports/benchmark-c1/REPORT.md`. No engine change.
+
+### Site and docs after the npm release (site-only, no new version)
+
+- **Shadowstep Gauntlet enemies show colour.** The Meshy caster and scout base-colour textures were grey-beige, so tints could only paint them flat. Their texture atlases are repainted per body region (purple robe, orange jacket, skin, dark legs) with the original texture detail kept; geometry, rig and clips are unchanged. Live 2026-11-10.
+- **Craterline GP colours restored** (exposure, environment light, grade and per-rider suit tints).
+- **Agent docs back to 5.5.1.** An `llms.txt` and skills change (start from `aura3d examples`, a done rule, an exact-signatures block) went to the site on 2026-11-10 and was reverted the same day: its A/B (`tests/reports/benchmark-c1/EFFICIENCY.md`) gave worse-looking scenes on two of three tasks. The CLI half of that experiment was never published.
 
 ## 5.5.0 (2026-11-09)
 

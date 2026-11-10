@@ -100,8 +100,8 @@ three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and too
 - **30 playable games as proof** in the [showcase](https://aura3d.auraone.ai/apps/showcase-index/).
 - **Measured on the published 4.5.0 package.** A one-cube scene reaches its first frame in about 420 ms and draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25. The five benchmark scenes log no console warnings or errors, and the 16 option-coverage tests pass, so an option either takes effect or raises `OPTION_IGNORED`. Software WebGL2 on a remote runner, one run, median of 3 cold loads for the first frame; not GPU numbers ([results](./evidence/vs-threejs/RESULTS-4.5.0.md)).
 
-Agent-authoring benchmark against three.js (turns, tokens and time for the same eight tasks): results pending.
-<!-- C1-RESULTS: one sourced line with turns, tokens and time per arm, linking tests/reports/benchmark-c1/REPORT.md. -->
+**Agent-authoring benchmark (Aura3D 5.5.1, three.js 0.185.1).** The same AI model built the same eight scenes three times with each engine. The Aura3D apps came out 17% shorter (median 270 lines against 326; shorter on 6 of 8 tasks), passed the same functional checks (every check passed in 88% of runs in both, every follow-up edit in 100%), and a blind visual judge picked the Aura3D frame in 13 of 24 pairs. One model (`claude-sonnet-5.5`), 72 runs, frames on a real GPU ([results](./evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md), [full report](./tests/reports/benchmark-c1/REPORT.md)).
+<!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
 
 Full comparison with sources: [`docs/aura3d-vs-threejs.md`](./docs/aura3d-vs-threejs.md). Porting an existing three.js project: [`docs/migration/from-threejs.md`](./docs/migration/from-threejs.md).
 

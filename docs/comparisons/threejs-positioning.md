@@ -85,7 +85,7 @@ Use these as written. The sourced numbers carry the small print shown.
 | 19 | "A bare scene keeps your colours, reflects a studio room and casts a shadow, with no setup." | safe | none | CHANGELOG 5.3.0 N1 to N4; `evidence/n4-frame/` |
 | 20 | "Your agent can validate and screenshot its own scene: `aura3d validate`, `aura3d render`." | safe | none | `docs/agents/agent-tools.md` |
 | 21 | "Bring a three.js scene factory across as a typed asset and an editable Aura3D scene." | needs-qualifier | "Prototype; every run writes a carried / approximated / unsupported report." | `docs/agents/three-bridge.md` |
-| 22 | Agent-authoring benchmark (turns, tokens, time vs three.js) | pending | Results pending; the parent fills this row from `tests/reports/benchmark-c1/REPORT.md`. <!-- C1-RESULTS --> | `tests/reports/benchmark-c1/SPEC.md` |
+| 22 | "The same AI model wrote 17% less app code with Aura3D (median 270 vs 326 lines over eight tasks), passed the same functional checks, and won 13 of 24 blind visual pairs." | safe | "Aura3D 5.5.1 vs three.js 0.185.1, one model, 72 runs; lines measured after the run." Never claim fewer turns, tokens or lower cost: the three.js arm used fewer. <!-- C1-RESULTS --> | `evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md` |
 
 Claims to keep off the site (they don't hold today): "check-deploy catches failed requests and console errors" for the plain command (it is static, `packages/aura3d-cli/src/index.ts:1097`; only `check-deploy --browser` does that, since 4.3.7), and any "faster", "lighter" or "smaller than three.js" wording (see "Not unlocked" below).
 

@@ -98,6 +98,7 @@ candidate. Final release claims require regeneration and source-bound receipts.
 ## WebGPU Limits
 
 - Showcase defaults: WebGPU is the default in all 30 games since the 5.5.1 site update (28 in 5.5.0). Pip's Big Leap and Lamplight Line were switched on a small load-clean sample (1.01x on 1 pair, 0.97x median on 3 pairs, same frame, 0 errors); the 10-pair sample is still to be repeated on a quiet machine. WebGL2 stays available with `?backend=webgl2`.
+- Lamplight Line and Duneglide can show one solid background-colour frame on a quick left or right turn (owner report, 2026-11-10). The cause is not found yet; both games stay on WebGPU. Tracked as F1 in `docs/project/future-engine-work.md`.
 - Worker rendering is opt-in in all 30 games; worker fps is reported from 5.5.1 (worker-presented frames) and was not measurable in 5.5.0.
 - WebGPU behavior depends on browser and hardware support.
 - Native WebGPU claims require adapter/backend state, dispatch/render evidence,

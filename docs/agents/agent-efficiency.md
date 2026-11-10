@@ -1,5 +1,7 @@
 # Agent efficiency: changes and the A/B plan
 
+**Outcome (2026-11-10): stopped, docs change reverted.** Pass eff1 finished 7 of 9 runs. Real-GPU frames of its scenes look worse than the 5.5.1 baseline on t101 spider and t109 product viewer and the same on t104 stacker; the cost saving held on t101 only. The `llms.txt` and skills change (`b89ea3183`) was reverted on `main` and the site in `35a0347dc`. The CLI changes below stay on this branch and were never published. Details: `tests/reports/benchmark-c1/EFFICIENCY.md`. The rest of this page is the original plan.
+
 Branch `exp/agent-efficiency`. Goal: fewer turns and input tokens per Aura3D scene. Interim C1 on 5.5.1 (aura arm): median 20 turns and 731K input tokens, against 7 turns and 64K for three.js. Quality and correctness were comparable or better on Aura3D. A tally of the c1-551 transcripts found that most of the spend is retry loops and resent context, not authoring. Nothing here has been measured with a model yet; the A/B below does that.
 
 ## What changed

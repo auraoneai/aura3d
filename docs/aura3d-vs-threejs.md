@@ -170,11 +170,19 @@ The [showcase](https://aura3d.auraone.ai/apps/showcase-index/) has 30 playable g
 
 ## Agent-authoring benchmark (C1)
 
-A fixed comparison of an AI agent building the same eight scenes in Aura3D and in three.js (turns, tokens, wall time, cost, visual quality and correctness per arm), frozen before any run in `tests/reports/benchmark-c1/SPEC.md`, is running against the published 5.5.x packages.
+The same AI model (`claude-sonnet-5.5`) built the same eight scenes three times with Aura3D 5.5.1 (from npm) and three times with three.js 0.185.1, each run a task plus one follow-up edit. Tasks, functional checks and the visual rubric were frozen before the first run in `tests/reports/benchmark-c1/SPEC.md`; frames are from headless Chrome on a real GPU. Run 2026-11-09/10, 72 runs.
 
-<!-- C1-RESULTS: turns, tokens and time per arm (Aura3D vs three.js), with the run date and method line, go here. -->
+<!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
 
-Results pending.
+| | Aura3D 5.5.1 | three.js 0.185.1 |
+|---|---|---|
+| App code per scene, median lines | 270 | 326 |
+| After the follow-up edit | 289 | 352 |
+| Tasks where the app is shorter | 6 of 8 | 2 of 8 |
+| Runs passing every functional check (task / follow-up) | 88% / 100% | 88% / 100% |
+| Blind visual pairs won | 13 of 24 | 11 of 24 |
+
+Lines are non-blank, non-comment lines in the app's `src/`, without generated asset typings. Numbers, per-task tables and method: [`evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md`](../evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md); full report: [`tests/reports/benchmark-c1/REPORT.md`](../tests/reports/benchmark-c1/REPORT.md).
 
 ## Where Aura3D wins
 

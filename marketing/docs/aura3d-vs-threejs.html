@@ -243,10 +243,16 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
     <div class="wrap">
       <div class="compare-section-head">
         <h2>Agent-authoring benchmark</h2>
-        <p>An AI agent builds the same eight scenes in Aura3D and in three.js; we count turns, tokens and time per arm. The tasks and scoring were frozen before the first run (<code>tests/reports/benchmark-c1/SPEC.md</code>).</p>
+        <p>The same AI model (<code>claude-sonnet-5.5</code>) built the same eight scenes three times with Aura3D 5.5.1 and three times with three.js 0.185.1, each run a task plus one follow-up edit. Tasks, checks and the visual rubric were frozen before the first run (<code>tests/reports/benchmark-c1/SPEC.md</code>); frames are from a real GPU.</p>
       </div>
-      <!-- C1-RESULTS: turns, tokens and time per arm (Aura3D vs three.js), with the run date and method line, go here. -->
-      <p class="compare-note">Results pending.</p>
+      <!-- C1-RESULTS: filled 2026-11-10 -->
+      <div class="compare-facts">
+        <div><strong>270 vs 326</strong><span>median lines of app code per scene (17% fewer; 289 vs 352 after the follow-up edit)</span></div>
+        <div><strong>6 of 8</strong><span>tasks where the Aura3D app was shorter</span></div>
+        <div><strong>88% / 100%</strong><span>runs passing every functional check, task and follow-up, the same as three.js</span></div>
+        <div><strong>13 of 24</strong><span>blind visual pairs won by the Aura3D frame</span></div>
+      </div>
+      <p class="compare-note">Run 2026-11-09/10, 72 runs. Lines are non-blank, non-comment lines in the app&rsquo;s <code>src/</code>, without generated asset typings. Numbers and method: <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md">evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md</a>; full report: <a href="https://github.com/auraoneai/aura3d/blob/main/tests/reports/benchmark-c1/REPORT.md">tests/reports/benchmark-c1/REPORT.md</a>.</p>
     </div>
   </section>
 
