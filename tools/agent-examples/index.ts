@@ -65,9 +65,10 @@ const portable = (path: string) => path.split(sep).join("/");
  */
 const credentialQuery = /(?:^|[&;])(?:sig|sas|sv|se|sp|st|spr|srt|ss|token|(?:access|id|refresh)[_-]?token|key|api[_-]?key|apikey|auth|authorization|signature|credential|password|passwd|pwd|secret|jwt|expires|x-amz-[a-z0-9-]+|x-goog-[a-z0-9-]+)=/i;
 const redactUrlQuery = (text: string) => text.replace(/(https:\/\/[^\s"'<>?]+)\?([^\s"'<>]+)/gi, (match, base: string, query: string) => (credentialQuery.test(query) ? `${base}?[redacted]` : match));
+// `sig`/`sas` must start a token: base64 text (an npm lockfile integrity hash ending in `...VSIg==`) is not a `sig=` pair.
 const redactSensitiveText = (text: string) => redactUrlQuery(text)
   .replace(/(Bearer\s+)[A-Za-z0-9._~+\/-]+=*/gi, "$1[redacted]")
-  .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]");
+  .replace(/((?:access[_-]?token|authorization|password|secret|(?<![A-Za-z0-9+/])(?:sig|sas))["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]");
 /**
  * Source and bundled-output scan. In code a key such as `sig`, `sas` or `authorization` is an ordinary
  * identifier (`sig = parentSignature(world)`, `sig=sig.replace(...)` in vendored decoders), so only a
@@ -76,7 +77,7 @@ const redactSensitiveText = (text: string) => redactUrlQuery(text)
  */
 const redactCodeSensitiveText = (text: string) => redactUrlQuery(text)
   .replace(/(Bearer\s+)[A-Za-z0-9._~+\/-]+=*/gi, "$1[redacted]")
-  .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["'`])[^\s,"'`&}$]{8,}/gi, "$1[redacted]");
+  .replace(/((?:access[_-]?token|authorization|password|secret|(?<![A-Za-z0-9+/])(?:sig|sas))["']?\s*[:=]\s*["'`])[^\s,"'`&}$]{8,}/gi, "$1[redacted]");
 const safeLogText = (text: string) => redactSensitiveText(text)
   .replace(/((?:api[-_]?key|credential|private[-_]?key|token)["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]")
   .replace(/(https?:\/\/)[^/@\s]+@/gi, "$1[redacted]@");
@@ -1627,10 +1628,11 @@ export async function producePackedSource(root: string, runId: string, candidate
       if (!checks.some((check) => check.id === "build")) checks.push(failed(root, logs, "build", "Build not run due to preparation failure"));
       else checks.push(failed(root, logs, "identity", String(error)));
     } finally {
-      try { retainPackedWrapper(wrapper, retainedWrapper); } catch {
+      try { retainPackedWrapper(wrapper, retainedWrapper); } catch (stageError) {
         rmSync(retainedWrapper, { recursive: true, force: true });
         record = undefined;
-        checks.push(failed(root, logs, "retained-identity", "Retained example could not be safely staged"));
+        // The thrown messages are fixed strings that never carry file contents, so they are safe to log.
+        checks.push(failed(root, logs, "retained-identity", `Retained example could not be safely staged: ${stageError instanceof Error ? stageError.message.slice(0, 240) : "unknown"}`));
       } finally { rmSync(wrapper, { recursive: true, force: true }); }
     }
     if (record) {
