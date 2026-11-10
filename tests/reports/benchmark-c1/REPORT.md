@@ -69,6 +69,28 @@ aura vs 505 docs: turns -12%, tokens -21%; aura vs 505 cheat sheet: turns +57%, 
 | 111 solar | three | 7 | 106K | 9K | 117 | 0.3 | 8/8, 8/8, 8/8 | 3/3, 3/3, 3/3 | 3/3 | 3.9 | 100% |
 | 111 solar | bridge | 38 | 2.17M | 14K | 356 | 4.48 | 8/8, 8/8, 8/8 | 3/3, 3/3, 3/3 | 3/3 | 3.43 | 100% |
 
+## Source size (lines of code; measured after the run, not part of the frozen spec)
+
+Non-blank, non-comment lines in the app's `src/` (`.ts`/`.js`) after the task (main) and after the follow-up edit. Generated asset typings (`aura-assets.ts`, `aura-catalog.ts`) are not counted. The bridge arm is left out: most of its scene lives in the imported `three-bridge/` content, so its own line count is not comparable. Computed from `evidence/agent-eval-c1/c1-551/runs/*/snapshots/{main,followup}/src`.
+
+| arm | main, median (min-max) | follow-up, median (min-max) |
+|---|---|---|
+| aura | 270 (105-616) | 289 (116-678) |
+| three | 325.5 (203-794) | 352 (213-816) |
+
+aura vs three: -17% lines after the task, -18% after the follow-up; aura is shorter on 6 of 8 tasks (longer on 109 product and 111 solar).
+
+| task | aura main | three main | aura follow-up | three follow-up |
+|---|---|---|---|---|
+| 101 spider | 145 | 226 | 155 | 243 |
+| 102 portal | 318 | 645 | 346 | 668 |
+| 103 canyon | 280 | 598 | 294 | 625 |
+| 104 stacker | 213 | 234 | 225 | 244 |
+| 106 materials | 269 | 313 | 288 | 330 |
+| 109 product | 382 | 326 | 424 | 357 |
+| 110 clock | 140 | 262 | 168 | 308 |
+| 111 solar | 541 | 507 | 598 | 566 |
+
 ## Spend
 
 | item | list $ | Kiro credits |
@@ -120,7 +142,7 @@ The bridge decision rule (SPEC section 8) is **not met**, so native authoring st
 - **Cost lever for future runs (not applied here, so the three.js arm stays comparable).** The harness sends one stable `X-Prism-Session` per run, and the system prompt and tool list never change. Kiro implicitly caches a byte-identical request prefix, worth about 27% of cold credits when warm. But `pruneOldImages` rewrites the previous screenshot's `tool_result` on every `aura3d render`, so on the Aura3D arms the stable prefix ends at the previous render each time.
   - The fix: stop rewriting history, deliver a requested screenshot in its own block after the tool results, and keep turns within 300 s. It is committed as opt-in `AGENT_EVAL_IMAGE_TURN=1`; the default is unchanged.
   - Prism would also need to return cache fields to make the effect measurable.
-- **Agent-efficiency A/B: partial, see `EFFICIENCY.md`.** Pass eff1 (CLI and docs from `exp/agent-efficiency`) finished 7 of 9 agent runs before the owner's no-local-Chrome order. Two t109 runs ended in Prism overload infra errors. None was scored or judged, and passes eff2 and eff3 were not run. The A/B is to be rerun on a cloud runner.
+- **Agent-efficiency A/B: stopped, change reverted, see `EFFICIENCY.md`.** Pass eff1 (CLI and docs from `exp/agent-efficiency`) finished 7 of 9 agent runs. Their frames, rendered on 2026-11-10 the same way as the baseline, look worse on 101 spider and 109 product and the same on 104 stacker. The docs half of the change (`b89ea3183`, already on `main` and the site) was reverted in `35a0347dc`; the CLI half was never published. Passes eff2 and eff3 were not run.
 
 ## Spend
 

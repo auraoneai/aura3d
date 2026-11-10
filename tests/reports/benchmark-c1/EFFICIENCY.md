@@ -1,6 +1,6 @@
 # Agent-efficiency A/B on the C1 aura arm (tasks 101, 104, 109)
 
-**Partial: eff1 agent phase only (7 of 9 runs, not scored or judged); eff2 and eff3 not run. See Status below.**
+**Outcome (2026-11-10): stopped and reverted.** eff1 finished 7 of 9 runs. Its frames look worse than the baseline on t101 and t109 and the same on t104, and the cost saving held on t101 only. The docs change (`b89ea3183`) was reverted on `main` and the site in `35a0347dc`; the CLI change on `exp/agent-efficiency` was never published and stays unmerged. eff2 and eff3 were not run. See "Frames and decision" below.
 
 Baseline = the c1-551 aura runs of the same tasks (Aura3D 5.5.1 CLI and docs at v5.5.1 `6ee56fe80`). `c1-551-eff1`: same frozen harness, model (`claude-sonnet-5.5` via Kiro Prism), caps (40 + 15 turns), condition and seeds; `@aura3d/cli` from `exp/agent-efficiency` (`93c069d82`: compact render summary, PNG only with `--screenshot`, category starters in `examples`), docs at `b89ea3183` (done rule, exact signatures in `llms.txt`). Planned passes: eff1 = CLI and docs only (harness tool description unchanged, so agents still request screenshots); eff2 = eff1 plus the render tool description matching the new CLI (`AGENT_EVAL_RENDER_DESC=summary`, wording from the branch's `aura3d --help` and `llms.txt`); eff3 = eff2 plus `AGENT_EVAL_IMAGE_TURN=1` (earlier tool results never rewritten; a requested screenshot follows the tool results in its own block). 3 runs per task: report ranges, not just medians. Turns and tokens include the follow-up edit. Cost is list price (Prism reports Kiro credits only, and no cache fields).
 
@@ -45,7 +45,17 @@ Decision rule from the plan (`docs/agents/agent-efficiency.md` on `exp/agent-eff
 
 - **eff1**: not scored, so the rule cannot be applied (it needs functional all-pass). Turns and input tokens both lower on 2/3 tasks (101, 109) on the runs that finished.
 
-## Status: partial, eff1 agent phase only
+## Frames and decision (2026-11-10)
+
+The 7 finished eff1 scenes were built with `vite build` and rendered on the same real GPU as the baseline (headless Chrome, ANGLE Metal, 640x360, two frames 3 s apart after the ready flag). Frames: `evidence/agent-eval-c1/c1-551-eff1/frames/<task>-r<n>-{1,2}.png`. A software-WebGL2 cloud render of the same builds showed the same look, so the renderer is not the cause.
+
+- **t101 spider: worse.** All three eff1 spiders sit on a near-white floor with no cast shadow, and the legs read as grey; the baseline spiders have a grey studio floor, a shadow and dark legs. Same `product-studio` look and engine in both arms; the scenes differ in floor size, exposure and camera, which the agents chose.
+- **t104 stacker: same.**
+- **t109 product viewer: looks off** on the one finished run (glaring white rings, a mirror-like floor).
+- **Likely cause:** no agent in either arm saw an image of its scene (0 image blocks in every transcript). The docs change added a done rule (stop once `validate` passes and the text render says done), so agents stopped earlier with less polish. Three runs per task cannot separate this from noise.
+- **Decision:** revert the docs change (`35a0347dc`, live on the site 2026-11-10), keep the CLI change unmerged, no new version. A retry would test the exact-signatures block alone, with the agent seeing a screenshot and without the done rule.
+
+## Status: eff1 agent phase only
 
 - **eff1 finished 7 of 9 agent runs.** The owner then ordered no local Chrome on this Mac. t109 r1 and r3 ended in Prism "overloaded, no healthy keys" infra errors and were not re-run.
 - **None of the 7 runs was scored** (functional checks, real-GPU frames) or **blind-judged**, so the plan's decision rule cannot be applied.
