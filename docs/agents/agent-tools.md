@@ -5,16 +5,18 @@ Four `@aura3d/cli` commands an agent runs inside a project so it can author, val
 ```bash
 aura3d info                               # installed versions + engine namespaces and their members
 aura3d info --name material.pbr           # one builder: signature and option keys (or close names for a guess)
-aura3d examples "gold product on a pedestal"   # best recipe or template, with its source
+aura3d examples "gold product on a pedestal"   # closest runnable scene: complete src/main.ts + setup
 aura3d examples --id recipe-11- --write src/main.ts
 aura3d validate                           # static checks of src/ (or: aura3d validate src/main.ts)
-aura3d render                             # build, serve, screenshot, diagnostics; --json for the report
-aura3d render --no-build --json           # reuse dist/
-aura3d render --url http://127.0.0.1:5173/ --out shot.png   # an already running dev server
+aura3d render                             # build, serve, render; short text summary (framing, exposure, errors, done)
+aura3d render --no-build --json           # reuse dist/; the same summary as JSON
+aura3d render --screenshot                # also write .aura3d/render.png (only when you must see pixels)
+aura3d render --url http://127.0.0.1:5173/ --screenshot --out shot.png   # an already running dev server
+aura3d render --full --json               # the full diagnostics report (aura3d.render/1)
 aura3d verify --explain VALIDATE_SUBJECT_SMALL                  # cause and fix for any code below
 ```
 
-The loop: `examples` (start from working code) → edit → `validate` (seconds, no browser) → `render` (open the PNG it saves) → fix the first error code → repeat. `aura3d verify` remains the one-shot full pass (typecheck, assets, lint, build, render, inspect).
+The loop: `examples` (start from working code) → edit → `validate` (seconds, no browser) → `render` (read the summary) → fix the first error code → repeat. Done rule: when `validate` passes and one `render` reports `done` (subject framed, exposure ok, no errors), stop; do not keep polishing. `aura3d verify` remains the one-shot full pass (typecheck, assets, lint, build, render, inspect).
 
 ## `aura3d info`
 
@@ -27,12 +29,14 @@ Reads the **installed** `@aura3d/engine` declarations through the TypeScript che
 
 ## `aura3d examples <query>`
 
-Plain BM25 search (camelCase split, light stemming) over two indexes built at run time from files that ship with the CLI and `create-aura3d`, so it cannot go stale against its own docs:
+BM25 search (camelCase split, light stemming) over two indexes built at run time from files that ship with the CLI and `create-aura3d`, so it cannot go stale against its own docs:
 
 - the recipe book `skills/agent-docs/recipes.md` (a copy of [`recipes.md`](recipes.md); every numbered recipe is a complete `src/main.ts` that compiled against the engine), and
 - the `create-aura3d` templates (`templates/<name>/README.md` and `src/main.ts`).
 
-Text mode prints the top 3 with summary, how to use it and origin, plus the top hit's full source (`--no-source` to skip). `--list` prints every id; `--id <id>` (prefix allowed) prints one; `--id <id> --write src/main.ts` saves a recipe's source (refuses to overwrite without `--force`). `--json` uses schema `aura3d.examples/1`. Exit 1 when nothing matches.
+Two nudges on top of BM25. A query that names one of the common scene categories puts that category's runnable starter first: product viewer (recipe 11), character or creature (recipe 8; a skinned GLB character: recipe 3), portal or effect (recipes 14, 15), outdoor (recipes 9, 13, 12), interior (`starter-interior`), small game (recipes 4, 16; a named genre such as racing or fighting keeps its template), materials (recipe 17), presentation (`starter-presentation`). Entries that run as is (only `@aura3d/*` imports, no model assets) rank above ones that need a scaffold unless the query asks for a template, assets or a model.
+
+Text mode prints the top 3. The top hit carries its complete `src/main.ts` (`--no-source` to skip), a `save:` command, `setup:` lines (page mount, HDRIs for looks, model assets, sibling files) and the done rule; the others carry summary and use. `--list` prints every id; `--id <id>` (prefix allowed) prints one; `--id <id> --write src/main.ts` saves its source (refuses to overwrite without `--force`); for a template that imports `./aura-assets` it also copies the template's other `src/` files, `aura.assets.json` and `public/aura-assets/` into the project, never overwriting. `--json` uses schema `aura3d.examples/1` (adds `category`, and `runnable` and `setup` per result). Exit 1 when nothing matches.
 
 ## `aura3d validate [file.ts ... | projectDir]`
 
@@ -55,9 +59,19 @@ Every rule fires only on literal evidence in the source; a value it cannot see (
 
 ## `aura3d render [projectDir]`
 
-`aura3d verify`'s browser half with colour and framing metrics added. Steps: `build` (`npm run build`; skipped by `--no-build` or `--url`), `serve` (a plain static server over `dist/`; a multi-page `dist/` without a root `index.html` is fine when `--route` names an existing page), `render` (local headless Chrome over CDP, waits for `body[data-aura3d-ready]`, two frames a second apart), `inspect`. The first frame is saved to `--out` (default `.aura3d/render.png`). Exit 0 when there is no error finding, 1 otherwise, 2 on a usage error.
+`aura3d verify`'s browser half with colour and framing metrics added. Steps: `build` (`npm run build`; skipped by `--no-build` or `--url`), `serve` (a plain static server over `dist/`; a multi-page `dist/` without a root `index.html` is fine when `--route` names an existing page), `render` (local headless Chrome over CDP, waits for `body[data-aura3d-ready]`, two frames a second apart), `inspect`. Exit 0 when there is no error finding, 1 otherwise, 2 on a usage error.
 
-The report (`--json`, schema `aura3d.render/1`) holds:
+**Text by default.** It prints a short summary; `--json` prints the same summary as JSON (schema `aura3d.render-summary/1`, about 500 bytes). Keys come in a fixed order, numbers are rounded (fill to 5%, fps to 10) and there are no timestamps, durations or served ports, so an unchanged static scene prints the same bytes on every run:
+
+```json
+{"schema":"aura3d.render-summary/1","ok":true,"target":"my-app/","subject":{"framing":"framed","fillPct":60,"inFrame":true,"centred":true,"offset":[0,-0.25],"nodes":2,"source":"engine"},"exposure":"ok","luma":{"mean":218,"p99":251},"shadow":"yes","motion":"moving","fps":60,"backend":"webgl2","drawCalls":3,"errors":[],"warnings":[],"notes":[],"done":true,"next":"Done: no errors, subject framed, exposure ok. If `aura3d validate` passes, stop and finish; do not keep polishing."}
+```
+
+- `subject`: framing measured with the engine's own maths, not pixels. Right after the first frame the CLI reads the first live app on `globalThis.__AURA3D_LIVE_APPS__` (presented camera pose, live `node.bounds()` of runtime nodes, the scene snapshot) and, with the project's installed `@aura3d/engine`, computes each node's world box with `camera.worldBounds` and the fill with `measureFrameFill` (the `camera.frame` definition: the larger of projected height and width as a share of the frame). Ground-like nodes (planes; names like ground, floor, terrain, wall) and wide flat slabs (a stage under the subject) are left out. `framing` is `framed`, `small` (fill under 20%), `cropped`, `off-centre`, `out-of-frame`, `scene-wide` (camera inside the box, or many pieces wider than the frame: a flythrough or environment) or `unknown`. `source` says how it was measured: `engine`, `viewProjection`, or `pixels` (a page with no live app falls back to the border-background estimate below).
+- `exposure`: `ok`, `too-dark` (black or dim frame) or `too-bright` (washed out); `shadow`: `yes` when the renderer sampled a shadow map or ran the contact-shadow pass, `requested-not-drawn`, `no` or `unknown`; `motion`, `fps`, `backend`, `drawCalls`.
+- `errors` and `warnings` (`CODE: message`), `notes` (info codes), `done` (no errors, subject framed or scene-wide, exposure ok) and `next` (the one next step).
+
+`--screenshot` (alias `--image`) also writes the first frame to `--out` (default `.aura3d/render.png`) and adds `screenshot` to the summary. Without it no PNG is written, and a PNG left at that path by an earlier run is removed so a wrapper cannot attach a stale frame. `AURA3D_RENDER_SCREENSHOT=1` restores the old always-write behaviour. `--full` prints the full report instead (schema `aura3d.render/1`, also what `runRender()` returns, now with `framing`, `live` and `summary`):
 
 - `screenshot`, `viewport`, `backend`, `drawCalls`;
 - `frame`: mean, spread and p99 luma, distinct colours, textured-block share, and the black / flat / empty / dim verdicts (same thresholds as the release render gate);
@@ -72,7 +86,7 @@ Codes are the `aura3d verify` render and inspect codes plus:
 | `RENDER_WASHED_OUT` | warning | Drawn frame with mean saturation < 0.12, mean luma > 140 and luma spread < 40: grey, bright and low contrast. |
 | `RENDER_SUBJECT_SMALL` | warning | The measured subject covers under 8% of the frame and under 25% of its height. |
 
-The metrics are measurements of one frame, not a quality score: open the PNG and look before calling the scene done.
+The metrics are measurements of one frame, not a quality score. When `done` is true and `validate` passes, the scene is finished for an agent loop; take a `--screenshot` only to judge looks (art direction, release evidence).
 
 ## What this does not do
 

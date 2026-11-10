@@ -30,8 +30,9 @@ look renders flat on a void.
 2. Read `src/aura-assets.ts` and `aura.assets.json`. Every subject model comes
    from a generated key. If the prompt names a real object and no key exists,
    load `aura3d-assets` first.
-3. Read the installed `@aura3d/engine` type declarations before naming an
-   export. The prompt-plan enums are narrow: `sceneType` is `product-viewer`,
+3. Check a name before using it: the "Exact signatures" list in `llms.txt`,
+   then `aura3d info --name <export>`; do not open `node_modules` type files.
+   The prompt-plan enums are narrow: `sceneType` is `product-viewer`,
    `cinematic-scene`, `mini-game`, or `material-studio`.
 4. Decide the mode. Benchmark mode: if `aura3d look capture` is available,
    run the look-dev loop; otherwise copy the smallest matching recipe, run
@@ -42,9 +43,12 @@ look renders flat on a void.
 
 1. Restate the prompt as scene intent: subject, scene family, camera, lighting,
    effects, interaction, and what a screenshot must visibly show.
-2. Pick the starting point in this order: a template, then a scene kit, then
-   `prefabs.*`, and `primitives.*` only for set dressing, guides, or explicitly
-   abstract visuals.
+2. Pick the starting point in this order: `aura3d examples "<prompt>"` (the
+   closest runnable scene as a complete `src/main.ts`), a template, then a
+   scene kit, then `prefabs.*`, and `primitives.*` only for set dressing,
+   guides, or explicitly abstract visuals. After edits: `aura3d validate`, then
+   one `aura3d render` (text summary). When `validate` passes and `render`
+   says `done`, stop polishing.
 
    | Prompt family | Start from | Screenshot must show |
    | --- | --- | --- |
