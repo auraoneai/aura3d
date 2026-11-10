@@ -1,0 +1,40 @@
+{
+  "bridgeVersion": 1,
+  "name": "canyon",
+  "generator": {
+    "path": "recipes/canyon.mjs",
+    "sha256": "65e1de18f39e14047e44bfd243ee49c28d50f601effa39789210277fa51007d0",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "period": 200,
+    "cols": 190,
+    "spacing": 1
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/canyon.glb",
+    "sha256": "f4c1351a572851a789f48ff95333afb044503dd743acc0fcf5bdf9e5acd7d6d5",
+    "bytes": 6417172
+  },
+  "nodeIds": [
+    "canyon",
+    "canyon__terrain",
+    "canyon__boulders",
+    "canyon__shrubs"
+  ],
+  "materials": [
+    "sandstone",
+    "boulder",
+    "deadwood"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 5,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

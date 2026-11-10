@@ -1,0 +1,112 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t106-aura-r3",
+  "batch": "c1-551",
+  "arm": "aura",
+  "task": 106,
+  "slug": "materials",
+  "idx": 3,
+  "order": 23,
+  "seed": 20261108023,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:46:14.138Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Keys 1, 2 and 3 select the glass, metal and fabric sphere; the selected sphere slowly spins about its vertical axis and the others stay still. Add selected: 'glass' | 'metal' | 'fabric' | null (null before any key) to window.__TASK_STATE__.",
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 503: stream error {\"type\":\"overloaded_error\",\"message\":\"Kiro unavailable after 1 attempts: No healthy keys available (loaded=25, enabled=25, healthy=25, quarantined=0, quota_exhausted=0, circuit_open=0, excluded=0, mod",
+  "endReason": "infra_error",
+  "followUpEndReason": null,
+  "wallMs": null,
+  "usage": null,
+  "phases": [],
+  "cost": {
+    "billedUsd": null,
+    "listUsd": null,
+    "providerUsd": null,
+    "providerCredits": null,
+    "source": "none"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 7097,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 7097,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 2,
+      "t": 9635,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 3,
+      "t": 9636,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 9636,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 5,
+      "t": 12095,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 111
+    },
+    {
+      "i": 6,
+      "t": 13987,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1892
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1892
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "typecheckAfterMain": null,
+  "typecheckAfterFollowUp": null,
+  "summary": null
+}

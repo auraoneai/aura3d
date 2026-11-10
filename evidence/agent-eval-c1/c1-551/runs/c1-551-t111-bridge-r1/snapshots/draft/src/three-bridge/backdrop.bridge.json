@@ -1,0 +1,38 @@
+{
+  "bridgeVersion": 1,
+  "name": "backdrop",
+  "generator": {
+    "path": "recipes/backdrop.mjs",
+    "sha256": "e0494f906e725a43eb313d07313258af347e2b0ebc8c3d8b2f503e5f93e343d7",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "stars": 900,
+    "radius": 260
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/backdrop.glb",
+    "sha256": "6a59d7da43123be2f867c15d00a9eeb2d55e71e974c86895acd3245d563c8ef7",
+    "bytes": 521356
+  },
+  "nodeIds": [
+    "stars_white",
+    "stars_blue",
+    "stars_warm"
+  ],
+  "materials": [
+    "stars_white_mat",
+    "stars_blue_mat",
+    "stars_warm_mat"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 2,
+    "approximated": 3,
+    "unsupported": 0
+  }
+}

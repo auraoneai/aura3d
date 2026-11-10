@@ -1,0 +1,36 @@
+{
+  "bridgeVersion": 1,
+  "name": "stage",
+  "generator": {
+    "path": "recipes/stage.mjs",
+    "sha256": "b48c9c739c8f50e28505f4a41669c5e13c27738db8c5a6097aa5fa7612380f81",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "plinth": "#2b3040",
+    "floor": "#161922"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/stage.glb",
+    "sha256": "9927e4d02ac7df6930ee1c592a39993e2a8309f3fe355765ea7e0d9b443103e2",
+    "bytes": 23548
+  },
+  "nodeIds": [
+    "floor",
+    "plinth"
+  ],
+  "materials": [
+    "stage_meshstandard_0",
+    "stage_meshstandard_1"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 4,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}
