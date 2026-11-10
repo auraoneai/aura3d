@@ -29,7 +29,7 @@ Owner rule for these features: on by default in a game only after it passes a re
 - P3 partly done: native DoF passes share the batch encoder and keep their uniforms, samplers, views and bind groups; Lamplight quad sprites skip unchanged updates.
 - Pip's Big Leap and Lamplight Line switched to WebGPU on the owner's go (same frame, 0 errors, 1.01x and 0.97x on load-clean pairs); live on the site. Open: repeat the 10-pair sample on a quiet machine.
 - P4 done: worker-presented frames counted (`exp/551-workerfps`); per-game worker fps being measured.
-- C1 done on 5.5.1 (2026-11-10): 72 runs, report in `tests/reports/benchmark-c1/REPORT.md`, numbers in `evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md`. Aura3D apps 17% shorter than three.js, same functional pass rate, 13 of 24 blind visual pairs; the three.js arm used fewer turns and tokens. Bridge rule not met.
+- C1 done on 5.5.1 (2026-11-10): 72 runs, report in `tests/reports/benchmark-c1/REPORT.md`, numbers in `evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md`. Aura3D apps 17% shorter than three.js, same functional pass rate, 13 of 24 blind visual pairs. Bridge rule not met.
 - Shipping: engine changes go live on the site through the site-only path, and npm gets them in the next batched release (AGENTS.md "Shipping rules").
 
 **Open after 5.5.1 (recorded 2026-11-10; no version until the owner asks):**
