@@ -15,7 +15,8 @@ else
   SPECS="$(ls tests/browser/wonder-world-*.spec.ts | tr '\n' ' ')"
 fi
 export SPECS
-export EXTRA_DIRS="apps/veer-wonder-world"
+export EXTRA_DIRS="apps/veer-wonder-world aura.exports.json${EXTRA_DIRS:+ $EXTRA_DIRS}"
+export ACR_RG="${ACR_RG:-SHARED-CI-RG}"
 export RUN_ID="${RUN_ID:-wonder-$(date -u +%Y%m%dT%H%M%SZ)}"
 export AURA3D_REPORTER="${AURA3D_REPORTER:-line,json}"
 # Ephemeral by default: the run image is deleted from the registry when the run ends.
